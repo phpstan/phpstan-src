@@ -18,7 +18,7 @@
 		"jetbrains/phpstorm-stubs": "dev-master#56f6b9e55f5885e651553843a1aaf9ec9c586c04",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.4",
-		"nette/neon": "3.3.3",
+		"nette/neon": "3.3.4",
 		"nette/php-generator": "3.6.9",
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",
@@ -117,10 +117,6 @@
 			],
 			"nette/di": [
 				"patches/DependencyChecker.patch"
-			],
-			"nette/neon": [
-				"patches/NetteNeonStringNode.patch",
-				"patches/NeonParser.patch"
 			]
 		}
 	},

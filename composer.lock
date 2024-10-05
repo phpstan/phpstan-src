@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9485ba4e0af44d8602eb360c34f92b8d",
+    "content-hash": "eb6f30bebe27d08d2b3b9e2c729ccf20",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1706,21 +1706,21 @@
         },
         {
             "name": "nette/neon",
-            "version": "v3.3.3",
+            "version": "v3.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/neon.git",
-                "reference": "22e384da162fab42961d48eb06c06d3ad0c11b95"
+                "reference": "bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/neon/zipball/22e384da162fab42961d48eb06c06d3ad0c11b95",
-                "reference": "22e384da162fab42961d48eb06c06d3ad0c11b95",
+                "url": "https://api.github.com/repos/nette/neon/zipball/bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda",
+                "reference": "bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": ">=7.1"
+                "php": "7.1 - 8.4"
             },
             "require-dev": {
                 "nette/tester": "^2.0",
@@ -1768,9 +1768,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/neon/issues",
-                "source": "https://github.com/nette/neon/tree/v3.3.3"
+                "source": "https://github.com/nette/neon/tree/v3.3.4"
             },
-            "time": "2022-03-10T02:04:26+00:00"
+            "time": "2024-10-04T22:17:24+00:00"
         },
         {
             "name": "nette/php-generator",
@@ -6453,7 +6453,7 @@
         "php": "^8.1",
         "composer-runtime-api": "^2.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "8.1.99"
     },

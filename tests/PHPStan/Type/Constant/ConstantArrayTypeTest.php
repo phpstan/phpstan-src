@@ -18,6 +18,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -653,6 +654,42 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new IntegerType(),
 			], [1], [0]),
 			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new IntegerType(),
+				new UnionType([new IntegerType(), new NullType()]),
+			]),
+			new ArrayType(new StringType(), new MixedType()),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('a'),
+				new ConstantStringType('b'),
+			], [
+				new IntegerType(),
+				new UnionType([new IntegerType(), new NullType()]),
+			]),
+			new ArrayType(new StringType(), new StringType()),
+			TrinaryLogic::createNo(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantIntegerType(1),
+				new ConstantIntegerType(2),
+			], [
+				new IntegerType(),
+				new UnionType([new IntegerType(), new NullType()]),
+			]),
+			new ArrayType(new StringType(), new MixedType()),
+			TrinaryLogic::createNo(),
 		];
 	}
 

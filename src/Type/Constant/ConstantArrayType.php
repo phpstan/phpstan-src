@@ -405,7 +405,7 @@ class ConstantArrayType implements Type
 				return TrinaryLogic::createNo();
 			}
 
-			return $result->and($isKeySuperType, $this->getIterableValueType()->isSuperTypeOf($type->getIterableKeyType()));
+			return $result->and($isKeySuperType, $this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()));
 		}
 
 		if ($type instanceof CompoundType) {

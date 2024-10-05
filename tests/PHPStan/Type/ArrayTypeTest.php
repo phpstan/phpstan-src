@@ -71,6 +71,17 @@ class ArrayTypeTest extends PHPStanTestCase
 				new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new ArrayType(new StringType(), new MixedType()),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new IntegerType(),
+					new UnionType([new IntegerType(), new NullType()]),
+				]),
+				TrinaryLogic::createYes(),
+			],
 		];
 	}
 

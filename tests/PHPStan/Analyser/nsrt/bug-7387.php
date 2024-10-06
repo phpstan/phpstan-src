@@ -107,11 +107,11 @@ class HelloWorld
 
 	public function vsprintf(array $array)
 	{
-		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
 		assertType('numeric-string', vsprintf("%4d", $array));
-		assertType('numeric-string', vsprintf("%4d", ['123']));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", ['123']));
 		assertType('\'123\'', vsprintf("%s", ['123']));
 		// too many arguments.. php silently allows it
-		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", ['123', '456']));
 	}
 }

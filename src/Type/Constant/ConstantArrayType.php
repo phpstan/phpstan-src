@@ -241,7 +241,7 @@ class ConstantArrayType implements Type
 			}
 
 			$array = $builder->getArray();
-			if (!$array instanceof ConstantArrayType) {
+			if (!$array instanceof self) {
 				throw new ShouldNotHappenException();
 			}
 
@@ -995,15 +995,14 @@ class ConstantArrayType implements Type
 				$isOptional = true;
 			}
 
-			$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i], $isOptional);
+			$offsetType = $preserveKeys->yes() || $this->keyTypes[$i]->isInteger()->no()
+				? $this->keyTypes[$i]
+				: null;
+
+			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $isOptional);
 		}
 
-		$slice = $builder->getArray();
-		if (!$slice instanceof self) {
-			throw new ShouldNotHappenException();
-		}
-
-		return $preserveKeys->yes() ? $slice : $slice->reindex();
+		return $builder->getArray();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -1149,7 +1148,7 @@ class ConstantArrayType implements Type
 	}
 
 	/** @param positive-int $length */
-	private function removeFirstElements(int $length, bool $reindex = true): self
+	private function removeFirstElements(int $length, bool $reindex = true): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -1176,30 +1175,7 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
-		$array = $builder->getArray();
-		if (!$array instanceof self) {
-			throw new ShouldNotHappenException();
-		}
-
-		return $array;
-	}
-
-	private function reindex(): self
-	{
-		$keyTypes = [];
-		$autoIndex = 0;
-
-		foreach ($this->keyTypes as $keyType) {
-			if (!$keyType instanceof ConstantIntegerType) {
-				$keyTypes[] = $keyType;
-				continue;
-			}
-
-			$keyTypes[] = new ConstantIntegerType($autoIndex);
-			$autoIndex++;
-		}
-
-		return new self($keyTypes, $this->valueTypes, [$autoIndex], $this->optionalKeys, TrinaryLogic::createYes());
+		return $builder->getArray();
 	}
 
 	public function toBoolean(): BooleanType

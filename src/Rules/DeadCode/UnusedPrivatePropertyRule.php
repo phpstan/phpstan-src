@@ -11,6 +11,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\SubtractableType;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -120,6 +121,13 @@ final class UnusedPrivatePropertyRule implements Rule
 				$propertyNameType = $usage->getScope()->getType($fetch->name);
 				$strings = $propertyNameType->getConstantStrings();
 				if (count($strings) === 0) {
+					// handle subtractions of a dynamic property fetch
+					foreach($properties as $propertyName => $data) {
+						if (!(new ConstantStringType($propertyName))->isSuperTypeOf($propertyNameType)->no()) {
+							unset($properties[$propertyName]);
+						}
+					}
+
 					continue;
 				}
 

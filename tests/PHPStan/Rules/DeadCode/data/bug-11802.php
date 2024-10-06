@@ -5,13 +5,16 @@ namespace Bug11802;
 class HelloWorld
 {
 	public function __construct(
-		private bool $isFinal
+		private bool $isFinal,
+		private bool $used
 	)
 	{
 	}
 
-	public function doFoo(HelloWorld $x, string $y): void
+	public function doFoo(HelloWorld $x, $y): void
 	{
-		$s = $x->{$y()};
+		if ($y !== 'isFinal') {
+			$s = $x->{$y};
+		}
 	}
 }

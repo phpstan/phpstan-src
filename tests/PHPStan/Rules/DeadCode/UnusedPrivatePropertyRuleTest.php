@@ -108,11 +108,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				$tip,
 			],
 			[
-				'Property UnusedPrivateProperty\Ipsum::$foo is never read, only written.',
-				136,
-				$tip,
-			],
-			[
 				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
 				153,
 				$tip,

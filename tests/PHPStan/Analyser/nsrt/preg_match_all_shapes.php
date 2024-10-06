@@ -175,3 +175,12 @@ class Bug11457
 		}
 	}
 }
+
+function bug11661(): void {
+	preg_match_all('/(ERR)?(.+)/', 'abc', $results, PREG_SET_ORDER);
+	assertType("list<array{string, ''|'ERR', non-empty-string}>", $results);
+
+	preg_match_all('/(ERR)?.+/', 'abc', $results, PREG_SET_ORDER);
+	assertType("list<array{0: string, 1?: 'ERR'}>", $results);
+
+}

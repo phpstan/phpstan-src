@@ -69,6 +69,11 @@ class FunctionAssertRuleTest extends RuleTestCase
 				'Asserted negated type string for $i with type int does not narrow down the type.',
 				70,
 			],
+			[
+				'PHPDoc tag @phpstan-assert for $array has no value type specified in iterable type array<int, mixed>.',
+				88,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
 		]);
 	}
 

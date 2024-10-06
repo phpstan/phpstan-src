@@ -367,6 +367,7 @@ final class RegexGroupParser
 		if (
 			$ast->getId() === '#concatenation'
 			&& count($children) > 0
+			&& !$walkResult->isInOptionalQuantification()
 		) {
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
@@ -400,13 +401,14 @@ final class RegexGroupParser
 			if ($min === 0) {
 				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
-			if ($min >= 1) {
-				$walkResult = $walkResult
-					->nonEmpty(TrinaryLogic::createYes())
-					->inOptionalQuantification(false);
-			}
-			if ($min >= 2 && !$inAlternation) {
-				$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+
+			if (!$walkResult->isInOptionalQuantification()) {
+				if ($min >= 1) {
+					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
+				}
+				if ($min >= 2 && !$inAlternation) {
+					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+				}
 			}
 
 			$walkResult = $walkResult->onlyLiterals(null);

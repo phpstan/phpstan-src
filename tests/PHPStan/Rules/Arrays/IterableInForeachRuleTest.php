@@ -32,7 +32,7 @@ class IterableInForeachRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Argument of an invalid type array<int, int>|false supplied for foreach, only iterables are supported.',
+				'Argument of an invalid type list<int>|false supplied for foreach, only iterables are supported.',
 				19,
 			],
 			[

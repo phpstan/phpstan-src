@@ -173,7 +173,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/return-list-nullables.php'], [
 			[
-				'Function ReturnListNullables\doFoo() should return array<string>|null but returns array<int, string|null>.',
+				'Function ReturnListNullables\doFoo() should return array<string>|null but returns list<string|null>.',
 				16,
 			],
 		]);

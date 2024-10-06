@@ -86,9 +86,9 @@ function doFoo4($maybeCountable, int $mode): void
 	if (count($maybeCountable, $mode) > 0) {
 		assertType('non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|float', $maybeCountable);
+		assertType('float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|float', $maybeCountable);
+	assertType('float|list<int>', $maybeCountable);
 }
 
 /**
@@ -100,9 +100,9 @@ function doFoo5($maybeCountable, $maybeMode): void
 	if (count($maybeCountable, $maybeMode) > 0) {
 		assertType('non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|float', $maybeCountable);
+		assertType('float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|float', $maybeCountable);
+	assertType('float|list<int>', $maybeCountable);
 }
 
 /**
@@ -113,9 +113,9 @@ function doFoo6($maybeCountable, float $invalidMode): void
 	if (count($maybeCountable, $invalidMode) > 0) {
 		assertType('non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|float', $maybeCountable);
+		assertType('float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|float', $maybeCountable);
+	assertType('float|list<int>', $maybeCountable);
 }
 
 /**
@@ -124,11 +124,11 @@ function doFoo6($maybeCountable, float $invalidMode): void
 function doFoo7($maybeCountable, int $mode): void
 {
 	if (count($maybeCountable, $mode) > 0) {
-		assertType('non-empty-list<int>|Countable', $maybeCountable);
+		assertType('Countable|non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|Countable|float', $maybeCountable);
+		assertType('Countable|float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|Countable|float', $maybeCountable);
+	assertType('Countable|float|list<int>', $maybeCountable);
 }
 
 /**
@@ -138,11 +138,11 @@ function doFoo7($maybeCountable, int $mode): void
 function doFoo8($maybeCountable, $maybeMode): void
 {
 	if (count($maybeCountable, $maybeMode) > 0) {
-		assertType('non-empty-list<int>|Countable', $maybeCountable);
+		assertType('Countable|non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|Countable|float', $maybeCountable);
+		assertType('Countable|float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|Countable|float', $maybeCountable);
+	assertType('Countable|float|list<int>', $maybeCountable);
 }
 
 /**
@@ -151,11 +151,11 @@ function doFoo8($maybeCountable, $maybeMode): void
 function doFoo9($maybeCountable, float $invalidMode): void
 {
 	if (count($maybeCountable, $invalidMode) > 0) {
-		assertType('non-empty-list<int>|Countable', $maybeCountable);
+		assertType('Countable|non-empty-list<int>', $maybeCountable);
 	} else {
-		assertType('list<int>|Countable|float', $maybeCountable);
+		assertType('Countable|float|list<int>', $maybeCountable);
 	}
-	assertType('list<int>|Countable|float', $maybeCountable);
+	assertType('Countable|float|list<int>', $maybeCountable);
 }
 
 function doFooBar1(array $countable, int $mode): void

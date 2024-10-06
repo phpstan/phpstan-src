@@ -27,6 +27,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -45,8 +46,10 @@ use function ksort;
 use function md5;
 use function sprintf;
 use function str_starts_with;
+use function strcasecmp;
 use function strlen;
 use function substr;
+use function usort;
 
 /** @api */
 class IntersectionType implements CompoundType
@@ -292,12 +295,42 @@ class IntersectionType implements CompoundType
 		return $level->handle(
 			function () use ($level): string {
 				$typeNames = [];
+				$isList = $this->isList()->yes();
+				$valueType = null;
 				foreach ($this->getSortedTypes() as $type) {
+					if ($isList) {
+						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
+							$valueType = $type->getIterableValueType();
+							continue;
+						}
+						if ($type instanceof NonEmptyArrayType) {
+							continue;
+						}
+					}
 					if ($type instanceof AccessoryType) {
 						continue;
 					}
 					$typeNames[] = $type->generalize(GeneralizePrecision::lessSpecific())->describe($level);
 				}
+
+				if ($isList) {
+					$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+					$innerType = '';
+					if ($valueType !== null && !$isMixedValueType) {
+						$innerType = sprintf('<%s>', $valueType->describe($level));
+					}
+
+					$typeNames[] = 'list' . $innerType;
+				}
+
+				usort($typeNames, static function ($a, $b) {
+					$cmp = strcasecmp($a, $b);
+					if ($cmp !== 0) {
+						return $cmp;
+					}
+
+					return $a <=> $b;
+				});
 
 				return implode('&', $typeNames);
 			},

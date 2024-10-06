@@ -154,7 +154,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3946.php'], [
 			[
-				'Parameter #1 $keys of function array_combine expects an array of values castable to string, array<int, array<int, string>|Bug3946\stdClass|float|int|string> given.',
+				'Parameter #1 $keys of function array_combine expects an array of values castable to string, array<int, Bug3946\stdClass|float|int|list<string>|string> given.',
 				8,
 			],
 		]);

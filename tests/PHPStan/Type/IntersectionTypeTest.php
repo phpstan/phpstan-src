@@ -7,6 +7,7 @@ use Iterator;
 use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -417,6 +418,78 @@ class IntersectionTypeTest extends PHPStanTestCase
 			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 			VerbosityLevel::precise(),
 			'lowercase-string',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-list<mixed>',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-list<int>',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'array',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'array<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array<int>',
 		];
 	}
 

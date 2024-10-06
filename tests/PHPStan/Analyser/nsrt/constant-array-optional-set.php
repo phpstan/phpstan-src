@@ -60,13 +60,13 @@ class Bar
 	 */
 	public function doFoo($nextAutoIndexes)
 	{
-		assertType('non-empty-list<int>|int', $nextAutoIndexes);
+		assertType('int|non-empty-list<int>', $nextAutoIndexes);
 		if (is_int($nextAutoIndexes)) {
 			assertType('int', $nextAutoIndexes);
 		} else {
 			assertType('non-empty-list<int>', $nextAutoIndexes);
 		}
-		assertType('non-empty-list<int>|int', $nextAutoIndexes);
+		assertType('int|non-empty-list<int>', $nextAutoIndexes);
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Bar
 	 */
 	public function doBar($nextAutoIndexes)
 	{
-		assertType('non-empty-list<int>|int', $nextAutoIndexes);
+		assertType('int|non-empty-list<int>', $nextAutoIndexes);
 		if (is_int($nextAutoIndexes)) {
 			$nextAutoIndexes = [$nextAutoIndexes];
 			assertType('array{int}', $nextAutoIndexes);

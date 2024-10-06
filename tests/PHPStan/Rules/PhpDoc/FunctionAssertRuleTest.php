@@ -70,7 +70,7 @@ class FunctionAssertRuleTest extends RuleTestCase
 				70,
 			],
 			[
-				'PHPDoc tag @phpstan-assert for $array has no value type specified in iterable type array<int, mixed>.',
+				'PHPDoc tag @phpstan-assert for $array has no value type specified in iterable type list.',
 				88,
 				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
 			],

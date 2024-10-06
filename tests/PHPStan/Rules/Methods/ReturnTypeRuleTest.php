@@ -237,7 +237,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				759,
 			],
 			[
-				'Method ReturnTypes\ArrayFillKeysIssue::getIPs2() should return array<string, array<ReturnTypes\Foo>> but returns array<string, array<int, ReturnTypes\Bar>>.',
+				'Method ReturnTypes\ArrayFillKeysIssue::getIPs2() should return array<string, array<ReturnTypes\Foo>> but returns array<string, list<ReturnTypes\Bar>>.',
 				817,
 			],
 			[
@@ -245,7 +245,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				840,
 			],
 			[
-				'Method ReturnTypes\NestedArrayCheck::doFoo() should return array<string, bool> but returns array<string, array<int, string>>.',
+				'Method ReturnTypes\NestedArrayCheck::doFoo() should return array<string, bool> but returns array<string, list<string>>.',
 				860,
 			],
 			[

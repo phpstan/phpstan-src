@@ -12,6 +12,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -25,6 +26,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -206,6 +208,20 @@ class HasOffsetType implements CompoundType, AccessoryType
 	public function shuffleArray(): Type
 	{
 		return new NonEmptyArrayType();
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if (
+			$this->offsetType->isSuperTypeOf($offsetType)->yes()
+			&& ($lengthType->isNull()->yes() || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes())
+		) {
+			return $preserveKeys->yes()
+				? TypeCombinator::intersect($this, new NonEmptyArrayType())
+				: new NonEmptyArrayType();
+		}
+
+		return new MixedType();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

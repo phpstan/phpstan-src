@@ -591,6 +591,11 @@ class ArrayType implements Type
 		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->itemType));
 	}
 
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

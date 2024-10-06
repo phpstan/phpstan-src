@@ -89,4 +89,17 @@ class Foo
 		assertType('array{a: 0}', array_slice($arr, -3, 1));
 	}
 
+
+	public function offsets(array $arr): void
+	{
+		if (array_key_exists(1, $arr)) {
+			assertType('non-empty-array', array_slice($arr, 1, null, false));
+			assertType('hasOffset(1)&non-empty-array', array_slice($arr, 1, null, true));
+		}
+		if (array_key_exists(1, $arr) && $arr[1] === 'foo') {
+			assertType('non-empty-array', array_slice($arr, 1, null, false));
+			assertType("hasOffsetValue(1, 'foo')&non-empty-array", array_slice($arr, 1, null, true));
+		}
+	}
+
 }

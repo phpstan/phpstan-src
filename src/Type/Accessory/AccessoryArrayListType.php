@@ -236,6 +236,19 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if ($preserveKeys->no()) {
+			return $this;
+		}
+
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -163,7 +163,7 @@ final class CommandHelper
 		$currentWorkingDirectoryFileHelper = new FileHelper($currentWorkingDirectory);
 		$currentWorkingDirectory = $currentWorkingDirectoryFileHelper->getWorkingDirectory();
 
-		/** @var array<callable>|false $autoloadFunctionsBefore */
+		/** @var list<callable(string): void>|false $autoloadFunctionsBefore */
 		$autoloadFunctionsBefore = spl_autoload_functions();
 
 		if ($autoloadFile !== null) {
@@ -458,7 +458,7 @@ final class CommandHelper
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}
 
-		/** @var array<callable>|false $autoloadFunctionsAfter */
+		/** @var list<callable(string): void>|false $autoloadFunctionsAfter */
 		$autoloadFunctionsAfter = spl_autoload_functions();
 
 		if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {

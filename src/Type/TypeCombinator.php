@@ -362,7 +362,7 @@ final class TypeCombinator
 					return $benevolentUnionObject->withTypes($types);
 				}
 
-				return new BenevolentUnionType($types);
+				return new BenevolentUnionType($types, true);
 			}
 		}
 

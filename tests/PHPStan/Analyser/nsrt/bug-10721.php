@@ -68,10 +68,10 @@ final class HandpickedWordlistProvider
 		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 1, 3)); // could be non-empty-array
 		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 2, 3));
 
-		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, -1, 3, true));
+		assertType("array<0|1, 'zib'|'zib 2'>", array_slice($list, -1, 3, true));
 		assertType("non-empty-array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 0, 3, true));
-		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 1, 3, true)); // could be non-empty-array
-		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 2, 3, true));
+		assertType("array<0|1, 'zib'|'zib 2'>", array_slice($list, 1, 3, true)); // could be non-empty-array
+		assertType("array<0|1, 'zib'|'zib 2'>", array_slice($list, 2, 3, true));
 
 		assertType("array<0|1, 'zib'|'zib 2'>&list", array_slice($list, -1, 3, false));
 		assertType("non-empty-array<0|1, 'zib'|'zib 2'>&list", array_slice($list, 0, 3, false));

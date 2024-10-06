@@ -163,6 +163,8 @@ interface Type
 
 	public function shuffleArray(): Type;
 
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type;
+
 	/**
 	 * @return list<EnumCaseObjectType>
 	 */

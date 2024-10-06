@@ -14,9 +14,9 @@ class BenevolentUnionType extends UnionType
 	 * @api
 	 * @param Type[] $types
 	 */
-	public function __construct(array $types)
+	public function __construct(array $types, bool $normalized = false)
 	{
-		parent::__construct($types);
+		parent::__construct($types, $normalized);
 	}
 
 	public function describe(VerbosityLevel $level): string

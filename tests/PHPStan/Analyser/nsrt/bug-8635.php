@@ -8,6 +8,6 @@ class HelloWorld
 {
 	public function EchoInt(int $value): void
 	{
-		assertType('numeric-string', "$value");
+		assertType('lowercase-string&numeric-string', "$value");
 	}
 }

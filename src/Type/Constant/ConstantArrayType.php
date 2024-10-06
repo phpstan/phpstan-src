@@ -30,7 +30,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -39,10 +38,10 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Traits\ArrayTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -1176,32 +1175,6 @@ class ConstantArrayType implements Type
 		}
 
 		$array = $builder->getArray();
-		if (!$array instanceof self) {
-			throw new ShouldNotHappenException();
-		}
-
-		return $array;
-	}
-
-	/** @deprecated Use sliceArray() instead */
-	public function slice(int $offset, ?int $limit, bool $preserveKeys = false): self
-	{
-		$array = $this->sliceArray(
-			ConstantTypeHelper::getTypeFromValue($offset),
-			ConstantTypeHelper::getTypeFromValue($limit),
-			TrinaryLogic::createFromBoolean($preserveKeys),
-		);
-		if (!$array instanceof self) {
-			throw new ShouldNotHappenException();
-		}
-
-		return $array;
-	}
-
-	/** @deprecated Use reverseArray() instead */
-	public function reverse(bool $preserveKeys = false): self
-	{
-		$array = $this->reverseArray(TrinaryLogic::createFromBoolean($preserveKeys));
 		if (!$array instanceof self) {
 			throw new ShouldNotHappenException();
 		}

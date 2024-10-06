@@ -26,7 +26,7 @@ use function sha1;
 final class TestCaseSourceLocatorFactory
 {
 
-	/** @var array<int|string, list<SourceLocator>> */
+	/** @var array<string, list<SourceLocator>> */
 	private static array $composerSourceLocatorsCache = [];
 
 	/**

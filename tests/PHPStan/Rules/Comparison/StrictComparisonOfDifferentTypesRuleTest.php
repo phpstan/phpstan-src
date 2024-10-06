@@ -1126,11 +1126,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/hashing.php'], [
 			[
-				"Strict comparison using === between (lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string) and 'ABC' will always evaluate to false.",
+				"Strict comparison using === between lowercase-string&non-falsy-string and 'ABC' will always evaluate to false.",
 				9,
 			],
 			[
-				"Strict comparison using === between (lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string)|false and 'ABC' will always evaluate to false.",
+				"Strict comparison using === between (lowercase-string&non-falsy-string)|false and 'ABC' will always evaluate to false.",
 				12,
 			],
 			[

@@ -84,6 +84,15 @@ final class UnusedPrivateMethodRule implements Rule
 				$methodNameType = $callScope->getType($methodCallNode->name);
 				$strings = $methodNameType->getConstantStrings();
 				if (count($strings) === 0) {
+					// handle subtractions of a dynamic method call
+					foreach ($methods as $lowerMethodName => $method) {
+						if ((new ConstantStringType($method->getNode()->name->toString()))->isSuperTypeOf($methodNameType)->no()) {
+							continue;
+						}
+
+						unset($methods[$lowerMethodName]);
+					}
+
 					continue;
 				}
 
@@ -138,10 +147,10 @@ final class UnusedPrivateMethodRule implements Rule
 				foreach ($arrayType->getConstantArrays() as $constantArray) {
 					foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
 						if ($typeAndMethod->isUnknown()) {
-							continue;
+							return [];
 						}
 						if (!$typeAndMethod->getCertainty()->yes()) {
-							continue;
+							return [];
 						}
 
 						$calledOnType = $typeAndMethod->getType();

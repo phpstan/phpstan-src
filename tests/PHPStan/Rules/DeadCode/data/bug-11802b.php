@@ -9,7 +9,11 @@ class HelloWorld
 
 	private function doBar():void {}
 
-	public function doFoo(HelloWorld $x, string $y): void {
-		$s = $x->$y();
+	private function doFooBar():void {}
+
+	public function doFoo(HelloWorld $x, $y): void {
+		if ($y !== 'doBar') {
+			$s = $x->$y();
+		}
 	}
 }

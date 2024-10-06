@@ -56,10 +56,6 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 				99,
 			],
 			[
-				'Method UnusedPrivateMethod\Ipsum::doFoo() is unused.',
-				115,
-			],
-			[
 				'Method UnusedPrivateMethod\IgnoredByExtension::bar() is unused.',
 				181,
 			],

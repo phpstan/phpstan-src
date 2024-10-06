@@ -54,7 +54,7 @@ abstract class PHPStanTestCase extends TestCase
 	/** @deprecated */
 	public static bool $useStaticReflectionProvider = true;
 
-	/** @var array<string, Container> */
+	/** @var array<int|string, Container> */
 	private static array $containers = [];
 
 	/** @api */

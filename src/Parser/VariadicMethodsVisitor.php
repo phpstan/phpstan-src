@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Node\AnonymousClassNode;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
@@ -20,6 +21,11 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 	private ?string $inClassLike = null;
 
+	/**
+	 * @var array<string>
+	 */
+	private array $classStack = [];
+
 	private ?string $inMethod = null;
 
 	/** @var array<string, array<string, TrinaryLogic>> */
@@ -32,6 +38,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		$this->topNode = null;
 		$this->variadicMethods = [];
 		$this->inNamespace = null;
+		$this->classStack = [];
 		$this->inClassLike = null;
 		$this->inMethod = null;
 
@@ -48,21 +55,28 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			$this->inNamespace = $node->name->toString();
 		}
 
-		if ($node instanceof Node\Stmt\ClassLike && $node->name instanceof Node\Identifier) {
-			$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . $node->name->name : $node->name->name;
+		if (
+			$node instanceof Node\Stmt\Class_
+			|| $node instanceof Node\Stmt\ClassLike
+		) {
+			if (!$node->name instanceof Node\Identifier) {
+				$className = 'class@anonymous';
+			} else {
+				$className = $node->name->name;
+			}
+
+			$this->classStack[] = $className;
+			$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
 			$this->variadicMethods[$this->inClassLike] ??= [];
 		}
 
 		if ($this->inClassLike !== null && $node instanceof ClassMethod) {
-			if ($node->getStmts() === null) {
-				return null; // interface
-			}
-
 			$this->inMethod = $node->name->name;
 		}
 
 		if (
-			$this->inMethod !== null
+			$this->inClassLike !== null
+			&& $this->inMethod !== null
 			&& $node instanceof Node\Expr\FuncCall
 			&& $node->name instanceof Name
 			&& in_array((string) $node->name, ParametersAcceptor::VARIADIC_FUNCTIONS, true)
@@ -80,17 +94,29 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 	public function leaveNode(Node $node): ?Node
 	{
+		if (
+			$node instanceof ClassMethod
+			&& $this->inClassLike !== null
+		) {
+			$this->variadicMethods[$this->inClassLike][$node->name->name] ??= TrinaryLogic::createNo();
+			$this->inMethod = null;
+		}
+
+		if (
+			$node instanceof Node\Stmt\Class_
+			|| $node instanceof Node\Stmt\ClassLike
+		) {
+			array_pop($this->classStack);
+
+			if ($this->classStack !== []) {
+				$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+			} else {
+				$this->inClassLike = null;
+			}
+		}
+
 		if ($node instanceof Node\Stmt\Namespace_ && $node->name !== null) {
 			$this->inNamespace = null;
-		}
-
-		if ($node instanceof Node\Stmt\ClassLike && $node->name instanceof Node\Identifier) {
-			$this->inClassLike = null;
-		}
-
-		if ($node instanceof ClassMethod && $this->inClassLike !== null && $this->inMethod !== null) {
-			$this->variadicMethods[$this->inClassLike][$this->inMethod] ??= TrinaryLogic::createNo();
-			$this->inMethod = null;
 		}
 
 		return null;

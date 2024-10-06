@@ -31,8 +31,36 @@ class ParserTest extends PHPStanTestCase
 				'VariadicMethod\X' => [
 					'non_variadic_fn1' => TrinaryLogic::createNo(),
 					'variadic_fn1' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
+				],
+				'VariadicMethod\Z' => [
+					'non_variadic_fnZ' => TrinaryLogic::createNo(),
+					'variadic_fnZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'implicit_variadic_fnZ' => TrinaryLogic::createYes(),
+				],
+				'VariadicMethod\Z\class@anonymous' => [
+					'non_variadic_fn_subZ' => TrinaryLogic::createNo(),
+					'variadic_fn_subZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'implicit_variadic_subZ' => TrinaryLogic::createYes(),
+				],
+				'VariadicMethod\class@anonymous' => [
+					'non_variadic_fn' => TrinaryLogic::createNo(),
+					'variadic_fn' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'implicit_variadic_fn' => TrinaryLogic::createYes(),
 				],
 			],
+		];
+
+		yield [
+			__DIR__ . '/data/variadic-methods-in-enum.php',
+			VariadicMethodsVisitor::ATTRIBUTE_NAME,
+			[
+				'VariadicMethodEnum\X' => [
+					'non_variadic_fn1' => TrinaryLogic::createNo(),
+					'variadic_fn1' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
+				],
+			]
 		];
 	}
 

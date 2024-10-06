@@ -6,10 +6,11 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
-use PHPStan\Node\AnonymousClassNode;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
+use function array_pop;
+use function implode;
 use function in_array;
 
 final class VariadicMethodsVisitor extends NodeVisitorAbstract
@@ -21,9 +22,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 	private ?string $inClassLike = null;
 
-	/**
-	 * @var array<string>
-	 */
+	/** @var array<string> */
 	private array $classStack = [];
 
 	private ?string $inMethod = null;
@@ -60,7 +59,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			|| $node instanceof Node\Stmt\ClassLike
 		) {
 			if (!$node->name instanceof Node\Identifier) {
-				$className = 'class@anonymous';
+				$className = 'class@anonymous:' . $node->getStartLine();
 			} else {
 				$className = $node->name->name;
 			}

@@ -21,6 +21,7 @@ class ParserTest extends PHPStanTestCase
 				'VariadicFunctions\variadic_fn1' => TrinaryLogic::createYes(),
 				'VariadicFunctions\nonvariadic' => TrinaryLogic::createNo(),
 				'VariadicFunctions\maybe_variadic_fn1' => TrinaryLogic::createNo(),
+				'VariadicFunctions\implicit_variadic_fn1' => TrinaryLogic::createYes(),
 			],
 		];
 
@@ -38,12 +39,12 @@ class ParserTest extends PHPStanTestCase
 					'variadic_fnZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_fnZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\Z\class@anonymous' => [
+				'VariadicMethod\Z\class@anonymous:20' => [
 					'non_variadic_fn_subZ' => TrinaryLogic::createNo(),
 					'variadic_fn_subZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_subZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\class@anonymous' => [
+				'VariadicMethod\class@anonymous:42' => [
 					'non_variadic_fn' => TrinaryLogic::createNo(),
 					'variadic_fn' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_fn' => TrinaryLogic::createYes(),
@@ -60,7 +61,7 @@ class ParserTest extends PHPStanTestCase
 					'variadic_fn1' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
 				],
-			]
+			],
 		];
 	}
 

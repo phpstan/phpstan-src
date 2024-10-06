@@ -120,7 +120,16 @@ final class UnusedPrivatePropertyRule implements Rule
 				$propertyNameType = $usage->getScope()->getType($fetch->name);
 				$strings = $propertyNameType->getConstantStrings();
 				if (count($strings) === 0) {
-					return [];
+					// handle subtractions of a dynamic property fetch
+					foreach ($properties as $propertyName => $data) {
+						if ((new ConstantStringType($propertyName))->isSuperTypeOf($propertyNameType)->no()) {
+							continue;
+						}
+
+						unset($properties[$propertyName]);
+					}
+
+					continue;
 				}
 
 				$propertyNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);

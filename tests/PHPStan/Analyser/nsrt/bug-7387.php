@@ -31,22 +31,22 @@ class HelloWorld
 		// https://3v4l.org/fmVIg
 		assertType('lowercase-string&numeric-string', sprintf('%14s', $i));
 
-		assertType('numeric-string', sprintf('%d', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%d', $i));
 
-		assertType('numeric-string', sprintf('%14b', $i));
-		assertType('non-falsy-string', sprintf('%14c', $i)); // binary string
-		assertType('numeric-string', sprintf('%14d', $i));
-		assertType('numeric-string', sprintf('%14e', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14b', $i));
+		assertType('lowercase-string&non-falsy-string', sprintf('%14c', $i)); // binary string
+		assertType('lowercase-string&numeric-string', sprintf('%14d', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14e', $i));
 		assertType('numeric-string', sprintf('%14E', $i));
-		assertType('numeric-string', sprintf('%14f', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14f', $i));
 		assertType('numeric-string', sprintf('%14F', $i));
-		assertType('numeric-string', sprintf('%14g', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14g', $i));
 		assertType('numeric-string', sprintf('%14G', $i));
-		assertType('numeric-string', sprintf('%14h', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14h', $i));
 		assertType('numeric-string', sprintf('%14H', $i));
-		assertType('numeric-string', sprintf('%14o', $i));
-		assertType('numeric-string', sprintf('%14u', $i));
-		assertType('numeric-string', sprintf('%14x', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14o', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14u', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14x', $i));
 		assertType('numeric-string', sprintf('%14X', $i));
 
 	}
@@ -102,7 +102,7 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('non-falsy-string', sprintf("%%d", $i));
+		assertType('lowercase-string&non-falsy-string', sprintf("%%d", $i));
 	}
 
 	public function vsprintf(array $array)

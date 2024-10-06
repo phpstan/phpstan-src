@@ -467,6 +467,9 @@ function bug11323(string $s): void {
 	if (preg_match('{([-\p{L}[\]*|\x03\a\b+?{}(?:)-]+[^[:digit:]?{}a-z0-9#-k]+)(a-z)}', $s, $matches)) {
 		assertType("array{string, non-falsy-string, 'a-z'}", $matches);
 	}
+	if (preg_match('{(\d+)(?i)insensitive((?xs-i)case SENSITIVE here.+and dot matches new lines)}', $s, $matches)) {
+		assertType('array{string, numeric-string, non-falsy-string}', $matches);
+	}
 	if (preg_match('{(\d+)(?i)insensitive((?x-i)case SENSITIVE here(?i:insensitive non-capturing group))}', $s, $matches)) {
 		assertType('array{string, numeric-string, non-falsy-string}', $matches);
 	}
@@ -776,5 +779,123 @@ function testLtrimDelimiter (string $string): void {
 
 	if (preg_match('  /(x)/', $string, $matches)) {
 		assertType("array{string, 'x'}", $matches);
+	}
+}
+
+function testUnescapeBackslash (string $string): void {
+	if (preg_match(<<<'EOD'
+		~(\[)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, numeric-string}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '\\\d'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, non-falsy-string}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\\\\d)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '\\\\\\\d'}", $matches);
+	}
+}
+
+function testEscapedDelimiter (string $string): void {
+	if (preg_match(<<<'EOD'
+		/(\/)/
+		EOD, $string, $matches)) {
+		assertType("array{string, '/'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\~)~
+		EOD, $string, $matches)) {
+		assertType("array{string, '~'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\[2])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '[2]'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		[(\[2\])]
+		EOD, $string, $matches)) {
+		assertType("array{string, '[2]'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~(\{2})~
+		EOD, $string, $matches)) {
+		assertType("array{string, '{2}'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		{(\{2\})}
+		EOD, $string, $matches)) {
+		assertType("array{string, '{2}'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\]])~
+		EOD, $string, $matches)) {
+		assertType("array{string, ']'|'a'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a[])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\]b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, ']'|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a[b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		~([a\[b])~
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		[([a\[b])]
+		EOD, $string, $matches)) {
+		assertType("array{string, '['|'a'|'b'}", $matches);
+	}
+
+	if (preg_match(<<<'EOD'
+		{(x\\\{)|(y\\\\\})}
+		EOD, $string, $matches)) {
+		assertType("array{string, '', 'y\\\\\\\}'}|array{string, 'x\\\{'}", $matches);
+	}
+}
+
+function bugUnescapedDashAfterRange (string $string): void {
+	if (preg_match('/([0-1-y])/', $string, $matches)) {
+		assertType("array{string, non-empty-string}", $matches);
 	}
 }

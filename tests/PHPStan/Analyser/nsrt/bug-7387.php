@@ -29,7 +29,7 @@ class HelloWorld
 
 	public function specifiers(int $i) {
 		// https://3v4l.org/fmVIg
-		assertType('numeric-string', sprintf('%14s', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14s', $i));
 
 		assertType('lowercase-string&numeric-string', sprintf('%d', $i));
 
@@ -59,9 +59,9 @@ class HelloWorld
 	 */
 	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt, int $nonZeroIntRange, int $intRange) {
 		// https://3v4l.org/vVL0c
-		assertType('numeric-string', sprintf('%2$6s', $mixed, $i));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $posInt));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $negInt));
+		assertType('lowercase-string&numeric-string', sprintf('%2$6s', $mixed, $i));
+		assertType('lowercase-string&non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $posInt));
+		assertType('lowercase-string&non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $negInt));
 		assertType("'     1'|'     2'|'     3'|'     4'|'     5'", sprintf('%2$6s', $mixed, $nonZeroIntRange));
 
 		// https://3v4l.org/1ECIq

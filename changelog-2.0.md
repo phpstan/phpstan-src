@@ -1,4 +1,6 @@
-When PHPStan 2.0 gets released, this will turn into [releases notes on GitHub](https://github.com/phpstan/phpstan/releases) + a separate [UPGRADING](./UPGRADING.md) document.
+When PHPStan 2.0 gets released, this will turn into [releases notes on GitHub](https://github.com/phpstan/phpstan/releases).
+
+Check out the [**UPGRADING guide**](https://github.com/phpstan/phpstan-src/blob/2.0.x/UPGRADING.md)!.
 
 Major new features 🚀
 =====================

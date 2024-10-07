@@ -39,16 +39,20 @@ class ParserTest extends PHPStanTestCase
 					'variadic_fnZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_fnZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\Z\class@anonymous:20' => [
+				'VariadicMethod\Z\class@anonymous:20:1' => [
 					'non_variadic_fn_subZ' => TrinaryLogic::createNo(),
 					'variadic_fn_subZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_subZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\class@anonymous:42' => [
+				'VariadicMethod\class@anonymous:42:2' => [
 					'non_variadic_fn' => TrinaryLogic::createNo(),
 					'variadic_fn' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
 					'implicit_variadic_fn' => TrinaryLogic::createYes(),
 				],
+				'VariadicMethod\class@anonymous:54:3' => [
+					'implicit_variadic_fn' => TrinaryLogic::createYes(),
+				],
+				'VariadicMethod\class@anonymous:54:4' => [],
 			],
 		];
 
@@ -72,7 +76,7 @@ class ParserTest extends PHPStanTestCase
 	 */
 	public function testSimpleParserVariadicCallLikes(string $file, string $attributeName, array $expectedVariadics): void
 	{
-		/** @var RichParser $parser */
+		/** @var SimpleParser $parser */
 		$parser = self::getContainer()->getService('currentPhpVersionSimpleParser');
 		$ast = $parser->parseFile($file);
 		$variadics = $ast[0]->getAttribute($attributeName);

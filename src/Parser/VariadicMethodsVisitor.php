@@ -12,6 +12,7 @@ use function array_key_exists;
 use function array_pop;
 use function implode;
 use function in_array;
+use function sprintf;
 
 final class VariadicMethodsVisitor extends NodeVisitorAbstract
 {
@@ -30,6 +31,8 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	/** @var array<string, array<string, TrinaryLogic>> */
 	private array $variadicMethods = [];
 
+	private int $anonymousClassIndex = 0;
+
 	public const ATTRIBUTE_NAME = 'variadicMethods';
 
 	public function beforeTraverse(array $nodes): ?array
@@ -40,6 +43,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		$this->classStack = [];
 		$this->inClassLike = null;
 		$this->inMethod = null;
+		$this->anonymousClassIndex = 0;
 
 		return null;
 	}
@@ -54,12 +58,9 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			$this->inNamespace = $node->name->toString();
 		}
 
-		if (
-			$node instanceof Node\Stmt\Class_
-			|| $node instanceof Node\Stmt\ClassLike
-		) {
+		if ($node instanceof Node\Stmt\ClassLike) {
 			if (!$node->name instanceof Node\Identifier) {
-				$className = 'class@anonymous:' . $node->getStartLine();
+				$className = sprintf('class@anonymous:%s:%s', $node->getStartLine(), ++$this->anonymousClassIndex);
 			} else {
 				$className = $node->name->name;
 			}
@@ -101,10 +102,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			$this->inMethod = null;
 		}
 
-		if (
-			$node instanceof Node\Stmt\Class_
-			|| $node instanceof Node\Stmt\ClassLike
-		) {
+		if ($node instanceof Node\Stmt\ClassLike) {
 			array_pop($this->classStack);
 
 			if ($this->classStack !== []) {

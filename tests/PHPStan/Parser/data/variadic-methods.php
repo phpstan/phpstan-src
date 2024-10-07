@@ -50,3 +50,9 @@ $x = new class {
 		$args = func_get_args();
 	}
 };
+
+$c = new class (new class {}) {
+	function implicit_variadic_fn() {
+		$args = func_get_args();
+	}
+};

@@ -7,6 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -58,17 +61,8 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 				$newConstantArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$valueType = $constantArray->getOffsetValueType($keyType);
-					if ($keyType->isString()->yes()) {
-						if (!isset($case)) {
-							$keyType = TypeCombinator::union(
-								new ConstantStringType(strtolower((string) $keyType->getValue())),
-								new ConstantStringType(strtoupper((string) $keyType->getValue())),
-							);
-						} elseif ($case === CASE_LOWER) {
-							$keyType = new ConstantStringType(strtolower((string) $keyType->getValue()));
-						} else {
-							$keyType = new ConstantStringType(strtoupper((string) $keyType->getValue()));
-						}
+					if ($keyType instanceof ConstantStringType) {
+						$keyType = $this->mapConstantString($keyType, $case);
 					}
 
 					$newConstantArrayBuilder->setOffsetValueType(
@@ -88,22 +82,30 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 		} else {
 			$keysType = $arrayType->getIterableKeyType();
 
-			$keysType = TypeTraverser::map($keysType, static function (Type $type, callable $traverse) use ($case): Type {
+			$keysType = TypeTraverser::map($keysType, function (Type $type, callable $traverse) use ($case): Type {
 				if ($type instanceof UnionType) {
 					return $traverse($type);
+				}
+
+				if ($type instanceof ConstantStringType) {
+					return $this->mapConstantString($type, $case);
 				}
 
 				if ($type->isString()->yes()) {
 					if ($case === CASE_LOWER) {
 						return TypeCombinator::intersect($type, new AccessoryLowercaseStringType());
 					} elseif ($type->isLowercaseString()->yes()) {
-						return TypeCombinator::intersect(
-							new StringType(),
-							...array_filter(
-								TypeUtils::getAccessoryTypes($type),
-								static fn (Type $accessory): bool => !$accessory instanceof AccessoryLowercaseStringType,
-							),
-						);
+						$types = [new StringType()];
+						if ($type->isNonFalsyString()->yes()) {
+							$types[] = new AccessoryNonFalsyStringType();
+						} elseif ($type->isNonEmptyString()->yes()) {
+							$types[] = new AccessoryNonEmptyStringType();
+						}
+						if ($type->isNumericString()->yes()) {
+							$types[] = new AccessoryNumericStringType();
+						}
+
+						return TypeCombinator::intersect(...$types);
 					}
 				}
 
@@ -121,6 +123,20 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 		}
 
 		return $newArrayType;
+	}
+
+	private function mapConstantString(ConstantStringType $type, ?int $case): Type
+	{
+		if ($case === CASE_LOWER) {
+			return new ConstantStringType(strtolower($type->getValue()));
+		} elseif ($case === CASE_UPPER) {
+			return new ConstantStringType(strtoupper($type->getValue()));
+		} else {
+			return TypeCombinator::union(
+				new ConstantStringType(strtolower($type->getValue())),
+				new ConstantStringType(strtoupper($type->getValue())),
+			);
+		}
 	}
 
 }

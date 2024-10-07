@@ -841,4 +841,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10872(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-10872.php'], []);
+	}
+
 }

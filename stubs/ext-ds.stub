@@ -348,11 +348,21 @@ final class Map implements Collection, ArrayAccess
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
+ * @template TKey
+ * @template TValue
  */
 final class Pair implements JsonSerializable
 {
+	/**
+	 * @var TKey
+	 */
+	public $key;
+
+	/**
+	 * @var TValue
+	 */
+	public $value;
+
 	/**
 	 * @param TKey $key
 	 * @param TValue $value

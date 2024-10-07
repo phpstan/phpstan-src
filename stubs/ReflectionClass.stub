@@ -7,6 +7,12 @@ class ReflectionClass
 {
 
 	/**
+	 * @readonly
+	 * @var class-string<T>
+	 */
+	public $name;
+
+	/**
 	 * @param T|class-string<T> $argument
 	 * @throws ReflectionException
 	 */

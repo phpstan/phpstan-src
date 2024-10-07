@@ -3305,7 +3305,7 @@ return [
 'get_declared_traits' => ['list<trait-string>'],
 'get_defined_constants' => ['array<string, mixed>', 'categorize='=>'bool'],
 'get_defined_functions' => ['array{internal:non-empty-list<callable-string>,user:list<callable-string>}', 'exclude_disabled='=>'bool'],
-'get_defined_vars' => ['array'],
+'get_defined_vars' => ['array<string, mixed>'],
 'get_extension_funcs' => ['list<callable-string>|false', 'extension_name'=>'string'],
 'get_headers' => ['array|false', 'url'=>'string', 'format='=>'int', 'context='=>'resource'],
 'get_html_translation_table' => ['array', 'table='=>'int', 'flags='=>'int', 'encoding='=>'string'],

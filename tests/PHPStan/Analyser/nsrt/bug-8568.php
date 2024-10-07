@@ -8,7 +8,7 @@ class HelloWorld
 {
 	public function sayHello(): void
 	{
-		assertType('lowercase-string&non-falsy-string', 'a' . $this->get());
+		assertType('non-falsy-string', 'a' . $this->get());
 	}
 
 	public function get(): ?int

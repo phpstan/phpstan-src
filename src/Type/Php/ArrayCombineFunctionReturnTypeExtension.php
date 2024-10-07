@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -62,11 +63,13 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 			$keyTypes = $this->sanitizeConstantArrayKeyTypes($keyTypes);
 			if ($keyTypes !== null) {
-				return new ConstantArrayType(
-					$keyTypes,
-					$valueTypes,
-					$keysParamType->getNextAutoIndexes(),
-				);
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($keyTypes as $i => $keyType) {
+					$valueType = $valueTypes[$i];
+					$builder->setOffsetValueType($keyType, $valueType);
+				}
+
+				return $builder->getArray();
 			}
 		}
 

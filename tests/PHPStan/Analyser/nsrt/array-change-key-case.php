@@ -7,15 +7,16 @@ use function PHPStan\Testing\assertType;
 class HelloWorld
 {
 	/**
-	 * @param array<string>                  				   $arr1
-	 * @param array<string, string>           				   $arr2
-	 * @param array<string|int, string>       				   $arr3
-	 * @param array<int, string>              				   $arr4
-	 * @param array<lowercase-string, string> 				   $arr5
+	 * @param array<string> $arr1
+	 * @param array<string, string> $arr2
+	 * @param array<string|int, string> $arr3
+	 * @param array<int, string> $arr4
+	 * @param array<lowercase-string, string> $arr5
 	 * @param array<lowercase-string&non-falsy-string, string> $arr6
-	 * @param array{foo: 1, bar?: 2} 		  				   $arr7
-	 * @param list<string>                                     $list
-	 * @param non-empty-array<string>         				   $nonEmpty
+	 * @param array{foo: 1, bar?: 2} $arr7
+	 * @param array<'foo'|'bar', string> $arr8
+	 * @param list<string> $list
+	 * @param non-empty-array<string> $nonEmpty
 	 */
 	public function sayHello(
 		array $arr1,
@@ -25,6 +26,7 @@ class HelloWorld
 		array $arr5,
 		array $arr6,
 		array $arr7,
+		array $arr8,
 		array $list,
 		array $nonEmpty,
 		int $case
@@ -63,6 +65,11 @@ class HelloWorld
 		assertType('array{foo: 1, bar?: 2}', array_change_key_case($arr7, CASE_LOWER));
 		assertType('array{FOO: 1, BAR?: 2}', array_change_key_case($arr7, CASE_UPPER));
 		assertType("non-empty-array<'BAR'|'bar'|'FOO'|'foo', 1|2>", array_change_key_case($arr7, $case));
+
+		assertType("array<'bar'|'foo', string>", array_change_key_case($arr8));
+		assertType("array<'bar'|'foo', string>", array_change_key_case($arr8, CASE_LOWER));
+		assertType("array<'BAR'|'FOO', string>", array_change_key_case($arr8, CASE_UPPER));
+		assertType("array<'BAR'|'bar'|'FOO'|'foo', string>", array_change_key_case($arr8, $case));
 
 		assertType('list<string>', array_change_key_case($list));
 		assertType('list<string>', array_change_key_case($list, CASE_LOWER));

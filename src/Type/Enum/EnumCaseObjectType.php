@@ -17,6 +17,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
@@ -61,34 +62,39 @@ class EnumCaseObjectType extends ObjectType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSuperTypeOf($type), []);
+		return $this->isSuperTypeOfWithReason($type)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return TrinaryLogic::createFromBoolean(
+			return IsSuperTypeOfResult::createFromBoolean(
 				$this->enumCaseName === $type->enumCaseName && $this->getClassName() === $type->getClassName(),
 			);
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if (
 			$type instanceof SubtractableType
 			&& $type->getSubtractedType() !== null
 		) {
-			$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
+			$isSuperType = $type->getSubtractedType()->isSuperTypeOfWithReason($this);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 		}
 
 		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflection());
 
-		return $parent->isSuperTypeOf($type)->and(TrinaryLogic::createMaybe());
+		return $parent->isSuperTypeOfWithReason($type)->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function subtract(Type $type): Type

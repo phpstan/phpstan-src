@@ -12,6 +12,7 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -87,14 +88,19 @@ class GenericClassStringType extends ClassStringType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if ($type instanceof ConstantStringType) {
 			$genericType = $this->type;
 			if ($genericType instanceof MixedType) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 
 			if ($genericType instanceof StaticType) {
@@ -108,23 +114,23 @@ class GenericClassStringType extends ClassStringType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
+				$isSuperType = $genericType->getBound()->isSuperTypeOfWithReason($objectType);
 			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
+				$isSuperType = $genericType->isSuperTypeOfWithReason($objectType);
 			}
 
 			if (!$type->isClassString()->yes()) {
-				$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
+				$isSuperType = $isSuperType->and(IsSuperTypeOfResult::createMaybe());
 			}
 
 			return $isSuperType;
 		} elseif ($type instanceof self) {
-			return $this->type->isSuperTypeOf($type->type);
+			return $this->type->isSuperTypeOfWithReason($type->type);
 		} elseif ($type instanceof StringType) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function traverse(callable $cb): Type

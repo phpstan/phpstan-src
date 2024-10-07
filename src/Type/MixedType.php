@@ -130,23 +130,28 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($this->subtractedType === null || $type instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($type instanceof self) {
 			if ($type->subtractedType === null) {
-				return TrinaryLogic::createMaybe();
+				return IsSuperTypeOfResult::createMaybe();
 			}
-			$isSuperType = $type->subtractedType->isSuperTypeOf($this->subtractedType);
+			$isSuperType = $type->subtractedType->isSuperTypeOfWithReason($this->subtractedType);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createYes();
+				return $isSuperType;
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return $this->subtractedType->isSuperTypeOf($type)->negate();
+		return $this->subtractedType->isSuperTypeOfWithReason($type)->negate();
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -319,23 +324,28 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof self && !$otherType instanceof TemplateMixedType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($this->subtractedType !== null) {
-			$isSuperType = $this->subtractedType->isSuperTypeOf($otherType);
+			$isSuperType = $this->subtractedType->isSuperTypeOfWithReason($otherType);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 		}
 
-		return TrinaryLogic::createMaybe();
+		return IsSuperTypeOfResult::createMaybe();
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
+		$isSuperType = $this->isSuperTypeOfWithReason($acceptingType)->toAcceptsResult();
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}

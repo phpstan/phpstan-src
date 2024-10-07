@@ -195,19 +195,24 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			return $this->objectType->accepts($type, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true);
+		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
-		return $this->isSuperTypeOfInternal($type, false)->result;
+		return $this->isSuperTypeOfWithReason($type)->result;
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): AcceptsResult
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOfWithReason($this);
+		}
+
+		return $this->isSuperTypeOfInternal($type, false);
+	}
+
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
 			return CallableTypeHelper::isParametersAcceptorSuperTypeOf(
@@ -218,10 +223,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		}
 
 		if ($type->getObjectClassNames() === [Closure::class]) {
-			return AcceptsResult::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return new AcceptsResult($this->objectType->isSuperTypeOf($type), []);
+		return $this->objectType->isSuperTypeOfWithReason($type);
 	}
 
 	public function equals(Type $type): bool

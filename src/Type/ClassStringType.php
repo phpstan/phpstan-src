@@ -32,11 +32,16 @@ class ClassStringType extends StringType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return $type->isClassString();
+		return new IsSuperTypeOfResult($type->isClassString(), []);
 	}
 
 	public function isString(): TrinaryLogic

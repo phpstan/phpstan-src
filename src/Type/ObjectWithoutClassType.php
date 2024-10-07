@@ -62,37 +62,42 @@ class ObjectWithoutClassType implements SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if ($type instanceof self) {
 			if ($this->subtractedType === null) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 			if ($type->subtractedType !== null) {
-				$isSuperType = $type->subtractedType->isSuperTypeOf($this->subtractedType);
+				$isSuperType = $type->subtractedType->isSuperTypeOfWithReason($this->subtractedType);
 				if ($isSuperType->yes()) {
-					return TrinaryLogic::createYes();
+					return $isSuperType;
 				}
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof ObjectShapeType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($type->getObjectClassNames() === []) {
-			return TrinaryLogic::createNo();
+			return IsSuperTypeOfResult::createNo();
 		}
 
 		if ($this->subtractedType === null) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return $this->subtractedType->isSuperTypeOf($type)->negate();
+		return $this->subtractedType->isSuperTypeOfWithReason($type)->negate();
 	}
 
 	public function equals(Type $type): bool

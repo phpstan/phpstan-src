@@ -15,6 +15,7 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_filter;
+use function array_map;
 use function assert;
 use function ceil;
 use function count;
@@ -204,7 +205,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof parent) {
-			return new AcceptsResult($this->isSuperTypeOf($type), []);
+			return $this->isSuperTypeOfWithReason($type)->toAcceptsResult();
 		}
 
 		if ($type instanceof CompoundType) {
@@ -216,6 +217,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self || $type instanceof ConstantIntegerType) {
 			if ($type instanceof self) {
 				$typeMin = $type->min;
@@ -226,48 +232,53 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			}
 
 			if (self::isDisjoint($this->min, $this->max, $typeMin, $typeMax)) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 
 			if (
 				($this->min === null || $typeMin !== null && $this->min <= $typeMin)
 				&& ($this->max === null || $typeMax !== null && $this->max >= $typeMax)
 			) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof parent) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof parent) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
 		if ($otherType instanceof UnionType) {
-			return $this->isSubTypeOfUnion($otherType);
+			return $this->isSubTypeOfUnionWithReason($otherType);
 		}
 
 		if ($otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
-	private function isSubTypeOfUnion(UnionType $otherType): TrinaryLogic
+	private function isSubTypeOfUnionWithReason(UnionType $otherType): IsSuperTypeOfResult
 	{
 		if ($this->min !== null && $this->max !== null) {
 			$matchingConstantIntegers = array_filter(
@@ -276,16 +287,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			);
 
 			if (count($matchingConstantIntegers) === ($this->max - $this->min + 1)) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
-		return TrinaryLogic::createNo()->lazyOr($otherType->getTypes(), fn (Type $innerType) => $this->isSubTypeOf($innerType));
+		return IsSuperTypeOfResult::createNo()->or(...array_map(fn (Type $innerType) => $this->isSubTypeOfWithReason($innerType), $otherType->getTypes()));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

@@ -107,16 +107,21 @@ class ArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self || $type instanceof ConstantArrayType) {
-			return $this->getItemType()->isSuperTypeOf($type->getItemType())
-				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+			return $this->getItemType()->isSuperTypeOfWithReason($type->getItemType())
+				->and($this->getIterableKeyType()->isSuperTypeOfWithReason($type->getIterableKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function equals(Type $type): bool

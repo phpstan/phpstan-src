@@ -11,6 +11,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -71,27 +72,37 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return $type->hasProperty($this->propertyName);
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
+		return new IsSuperTypeOfResult($type->hasProperty($this->propertyName), []);
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
 		if ($otherType instanceof self) {
-			$limit = TrinaryLogic::createYes();
+			$limit = IsSuperTypeOfResult::createYes();
 		} else {
-			$limit = TrinaryLogic::createMaybe();
+			$limit = IsSuperTypeOfResult::createMaybe();
 		}
 
-		return $limit->and($otherType->hasProperty($this->propertyName));
+		return $limit->and(new IsSuperTypeOfResult($otherType->hasProperty($this->propertyName), []));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

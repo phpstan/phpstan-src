@@ -10,24 +10,29 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		$thatClassNames = $type->getObjectClassNames();
 		if ($thatClassNames === []) {
-			return parent::isSuperTypeOf($type);
+			return parent::isSuperTypeOfWithReason($type);
 		}
 
-		$result = TrinaryLogic::createNo();
+		$result = IsSuperTypeOfResult::createNo();
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		foreach ($thatClassNames as $thatClassName) {
 			if (!$reflectionProvider->hasClass($thatClassName)) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 
 			$typeClass = $reflectionProvider->getClass($thatClassName);
-			$result = $result->or(TrinaryLogic::createFromBoolean($typeClass->hasNativeMethod('__toString')));
+			$result = $result->or(IsSuperTypeOfResult::createFromBoolean($typeClass->hasNativeMethod('__toString')));
 		}
 
 		return $result;

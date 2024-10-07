@@ -35,17 +35,22 @@ class ThisType extends StaticType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return $this->getStaticObjectType()->isSuperTypeOf($type);
+			return $this->getStaticObjectType()->isSuperTypeOfWithReason($type);
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		$parent = new parent($this->getClassReflection(), $this->getSubtractedType());
 
-		return $parent->isSuperTypeOf($type)->and(TrinaryLogic::createMaybe());
+		return $parent->isSuperTypeOfWithReason($type)->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type

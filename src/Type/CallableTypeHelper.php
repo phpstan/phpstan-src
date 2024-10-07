@@ -16,7 +16,7 @@ final class CallableTypeHelper
 		CallableParametersAcceptor $ours,
 		CallableParametersAcceptor $theirs,
 		bool $treatMixedAsAny,
-	): AcceptsResult
+	): IsSuperTypeOfResult
 	{
 		$theirParameters = $theirs->getParameters();
 		$ourParameters = $ours->getParameters();
@@ -40,7 +40,7 @@ final class CallableTypeHelper
 			}
 		}
 
-		$result = AcceptsResult::createYes();
+		$result = IsSuperTypeOfResult::createYes();
 		foreach ($theirParameters as $i => $theirParameter) {
 			$parameterDescription = $theirParameter->getName() === '' ? sprintf('#%d', $i + 1) : sprintf('#%d $%s', $i + 1, $theirParameter->getName());
 			if (!isset($ourParameters[$i])) {
@@ -48,7 +48,7 @@ final class CallableTypeHelper
 					continue;
 				}
 
-				$accepts = new AcceptsResult(TrinaryLogic::createNo(), [
+				$accepts = new IsSuperTypeOfResult(TrinaryLogic::createNo(), [
 					sprintf(
 						'Parameter %s of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 						$parameterDescription,
@@ -62,7 +62,7 @@ final class CallableTypeHelper
 			$ourParameterType = $ourParameter->getType();
 
 			if ($ourParameter->isOptional() && !$theirParameter->isOptional()) {
-				$accepts = new AcceptsResult(TrinaryLogic::createNo(), [
+				$accepts = new IsSuperTypeOfResult(TrinaryLogic::createNo(), [
 					sprintf(
 						'Parameter %s of passed callable is required but the parameter of accepting callable is optional. It might be called without it.',
 						$parameterDescription,
@@ -73,13 +73,14 @@ final class CallableTypeHelper
 
 			if ($treatMixedAsAny) {
 				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, true);
+				$isSuperType = new IsSuperTypeOfResult($isSuperType->result, $isSuperType->reasons);
 			} else {
-				$isSuperType = new AcceptsResult($theirParameter->getType()->isSuperTypeOf($ourParameterType), []);
+				$isSuperType = $theirParameter->getType()->isSuperTypeOfWithReason($ourParameterType);
 			}
 
 			if ($isSuperType->maybe()) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($theirParameter->getType(), $ourParameterType);
-				$isSuperType = new AcceptsResult($isSuperType->result, array_merge($isSuperType->reasons, [
+				$isSuperType = new IsSuperTypeOfResult($isSuperType->result, array_merge($isSuperType->reasons, [
 					sprintf(
 						'Type %s of parameter %s of passed callable needs to be same or wider than parameter type %s of accepting callable.',
 						$theirParameter->getType()->describe($verbosity),
@@ -93,21 +94,22 @@ final class CallableTypeHelper
 		}
 
 		if (!$treatMixedAsAny && $theirParameterCount < $ourParameterCount) {
-			$result = $result->and(AcceptsResult::createMaybe());
+			$result = $result->and(IsSuperTypeOfResult::createMaybe());
 		}
 
 		$theirReturnType = $theirs->getReturnType();
 		if ($treatMixedAsAny) {
 			$isReturnTypeSuperType = $ours->getReturnType()->accepts($theirReturnType, true);
+			$isReturnTypeSuperType = new IsSuperTypeOfResult($isReturnTypeSuperType->result, $isReturnTypeSuperType->reasons);
 		} else {
-			$isReturnTypeSuperType = new AcceptsResult($ours->getReturnType()->isSuperTypeOf($theirReturnType), []);
+			$isReturnTypeSuperType = $ours->getReturnType()->isSuperTypeOfWithReason($theirReturnType);
 		}
 
 		$pure = $ours->isPure();
 		if ($pure->yes()) {
-			$result = $result->and(new AcceptsResult($theirs->isPure(), []));
+			$result = $result->and(new IsSuperTypeOfResult($theirs->isPure(), []));
 		} elseif ($pure->no()) {
-			$result = $result->and(new AcceptsResult($theirs->isPure()->negate(), []));
+			$result = $result->and(new IsSuperTypeOfResult($theirs->isPure()->negate(), []));
 		}
 
 		return $result->and($isReturnTypeSuperType);

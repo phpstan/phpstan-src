@@ -75,6 +75,15 @@ interface Type
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic;
 
+	/**
+	 * This is like isSuperTypeOf() but gives reasons
+	 * why the type was not/might not be accepted in some non-intuitive scenarios.
+	 *
+	 * In PHPStan 2.0 this method will be removed and the return type of isSuperTypeOf()
+	 * will change to IsSuperTypeOfResult.
+	 */
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult;
+
 	public function equals(Type $type): bool;
 
 	public function describe(VerbosityLevel $level): string;

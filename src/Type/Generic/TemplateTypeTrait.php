@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\SubtractableType;
@@ -91,7 +92,7 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): AcceptsResult
+	public function isValidVariance(Type $a, Type $b): IsSuperTypeOfResult
 	{
 		return $this->variance->isValidVariance($this, $a, $b);
 	}
@@ -190,19 +191,29 @@ trait TemplateTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if ($type instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return $this->getBound()->isSuperTypeOf($type)
-			->and(TrinaryLogic::createMaybe());
+		return $this->getBound()->isSuperTypeOfWithReason($type)
+			->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
+	{
+		return $this->isSubTypeOfWithReason($type)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $type): IsSuperTypeOfResult
 	{
 		/** @var TBound $bound */
 		$bound = $this->getBound();
@@ -212,19 +223,19 @@ trait TemplateTypeTrait
 			&& !$type instanceof TemplateType
 			&& ($type instanceof UnionType || $type instanceof IntersectionType)
 		) {
-			return $type->isSuperTypeOf($this);
+			return $type->isSuperTypeOfWithReason($this);
 		}
 
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOf($this->getBound());
+			return $type->isSuperTypeOfWithReason($this->getBound());
 		}
 
 		if ($this->getScope()->equals($type->getScope()) && $this->getName() === $type->getName()) {
-			return $type->getBound()->isSuperTypeOf($this->getBound());
+			return $type->getBound()->isSuperTypeOfWithReason($this->getBound());
 		}
 
-		return $type->getBound()->isSuperTypeOf($this->getBound())
-			->and(TrinaryLogic::createMaybe());
+		return $type->getBound()->isSuperTypeOfWithReason($this->getBound())
+			->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function toArrayKey(): Type

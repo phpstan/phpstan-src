@@ -103,3 +103,34 @@ function () {
 	assertType('TemplateDefault\\FormData', $form->mapValues(new FormData));
 	assertType('stdClass', $form->mapValues());
 };
+
+/**
+ * @template T
+ * @template U = string
+ */
+interface Foo
+{
+	/**
+	 * @return U
+	 */
+	public function get(): mixed;
+}
+
+/**
+ * @extends Foo<int>
+ */
+interface Bar extends Foo
+{
+}
+
+/**
+ * @extends Foo<int, bool>
+ */
+interface Baz extends Foo
+{
+}
+
+function (Bar $bar, Baz $baz) {
+	assertType('string', $bar->get());
+	assertType('bool', $baz->get());
+};

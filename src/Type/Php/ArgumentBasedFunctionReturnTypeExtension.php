@@ -18,7 +18,6 @@ final class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionR
 
 	private const FUNCTION_NAMES = [
 		'array_unique' => 0,
-		'array_change_key_case' => 0,
 		'array_diff_assoc' => 0,
 		'array_diff_key' => 0,
 		'array_diff_uassoc' => 0,

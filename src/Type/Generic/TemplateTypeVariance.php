@@ -172,11 +172,11 @@ final class TemplateTypeVariance
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOfWithReason($b);
+			return $a->isSuperTypeOf($b);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOfWithReason($a);
+			return $b->isSuperTypeOf($a);
 		}
 
 		if ($this->bivariant()) {

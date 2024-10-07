@@ -230,15 +230,10 @@ class ObjectShapeType implements Type
 		return $result->and(new AcceptsResult($type->isObject(), []));
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {
@@ -292,7 +287,7 @@ class ObjectShapeType implements Type
 			}
 
 			$otherPropertyType = $otherProperty->getReadableType();
-			$isSuperType = $propertyType->isSuperTypeOfWithReason($otherPropertyType);
+			$isSuperType = $propertyType->isSuperTypeOf($otherPropertyType);
 			if ($isSuperType->no()) {
 				return $isSuperType;
 			}

@@ -2,8 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\TrinaryLogic;
-
 /** @api */
 class NonAcceptingNeverType extends NeverType
 {
@@ -14,12 +12,7 @@ class NonAcceptingNeverType extends NeverType
 		parent::__construct(true);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
 			return IsSuperTypeOfResult::createYes();

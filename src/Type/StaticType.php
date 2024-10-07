@@ -142,15 +142,10 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->accepts($type->getStaticObjectType(), $strictTypes);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
-			return $this->getStaticObjectType()->isSuperTypeOfWithReason($type);
+			return $this->getStaticObjectType()->isSuperTypeOf($type);
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {
@@ -158,7 +153,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof ObjectType) {
-			$result = $this->getStaticObjectType()->isSuperTypeOfWithReason($type);
+			$result = $this->getStaticObjectType()->isSuperTypeOf($type);
 			if ($result->yes()) {
 				$classReflection = $type->getClassReflection();
 				if ($classReflection !== null && $classReflection->isFinal()) {
@@ -170,7 +165,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();

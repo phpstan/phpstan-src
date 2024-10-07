@@ -282,7 +282,7 @@ final class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
 
-			$results[] = $resultType->isSuperTypeOf($argumentType);
+			$results[] = $resultType->isSuperTypeOf($argumentType)->result;
 		}
 
 		foreach ($sureNotTypes as $sureNotType) {
@@ -300,7 +300,7 @@ final class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
-			$results[] = $resultType->isSuperTypeOf($argumentType)->negate();
+			$results[] = $resultType->isSuperTypeOf($argumentType)->negate()->result;
 		}
 
 		if (count($results) === 0) {

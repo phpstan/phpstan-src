@@ -92,30 +92,25 @@ class IterableType implements CompoundType
 		return AcceptsResult::createNo();
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return (new IsSuperTypeOfResult($type->isIterable(), []))
-			->and($this->getIterableValueType()->isSuperTypeOfWithReason($type->getIterableValueType()))
-			->and($this->getIterableKeyType()->isSuperTypeOfWithReason($type->getIterableKeyType()));
+			->and($this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()))
+			->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
 	}
 
-	public function isSuperTypeOfMixed(Type $type): TrinaryLogic
+	public function isSuperTypeOfMixed(Type $type): IsSuperTypeOfResult
 	{
-		return $type->isIterable()
+		return (new IsSuperTypeOfResult($type->isIterable(), []))
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableValueType(), $type->getIterableValueType()))
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableKeyType(), $type->getIterableKeyType()));
 	}
 
-	private function isNestedTypeSuperTypeOf(Type $a, Type $b): TrinaryLogic
+	private function isNestedTypeSuperTypeOf(Type $a, Type $b): IsSuperTypeOfResult
 	{
 		if (!$a instanceof MixedType || !$b instanceof MixedType) {
 			return $a->isSuperTypeOf($b);
@@ -127,24 +122,19 @@ class IterableType implements CompoundType
 
 		if ($a->isExplicitMixed()) {
 			if ($b->isExplicitMixed()) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return TrinaryLogic::createYes();
+		return IsSuperTypeOfResult::createYes();
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
-			return $otherType->isSuperTypeOfWithReason(new UnionType([
+			return $otherType->isSuperTypeOf(new UnionType([
 				new ArrayType($this->keyType, $this->itemType),
 				new IntersectionType([
 					new ObjectType(Traversable::class),
@@ -165,14 +155,14 @@ class IterableType implements CompoundType
 
 		return $limit->and(
 			new IsSuperTypeOfResult($otherType->isIterable(), []),
-			$otherType->getIterableValueType()->isSuperTypeOfWithReason($this->itemType),
-			$otherType->getIterableKeyType()->isSuperTypeOfWithReason($this->keyType),
+			$otherType->getIterableValueType()->isSuperTypeOf($this->itemType),
+			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType),
 		);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
+		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

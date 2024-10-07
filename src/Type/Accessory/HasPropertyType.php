@@ -70,25 +70,15 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return AcceptsResult::createFromBoolean($this->equals($type));
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		return new IsSuperTypeOfResult($type->hasProperty($this->propertyName), []);
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOfWithReason($this);
+			return $otherType->isSuperTypeOf($this);
 		}
 
 		if ($otherType instanceof self) {
@@ -102,7 +92,7 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
+		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

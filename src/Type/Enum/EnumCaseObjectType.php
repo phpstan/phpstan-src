@@ -62,15 +62,10 @@ class EnumCaseObjectType extends ObjectType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		return $this->isSuperTypeOfWithReason($type)->toAcceptsResult();
+		return $this->isSuperTypeOf($type)->toAcceptsResult();
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
 			return IsSuperTypeOfResult::createFromBoolean(
@@ -79,14 +74,14 @@ class EnumCaseObjectType extends ObjectType
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		if (
 			$type instanceof SubtractableType
 			&& $type->getSubtractedType() !== null
 		) {
-			$isSuperType = $type->getSubtractedType()->isSuperTypeOfWithReason($this);
+			$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
 			if ($isSuperType->yes()) {
 				return IsSuperTypeOfResult::createNo();
 			}
@@ -94,7 +89,7 @@ class EnumCaseObjectType extends ObjectType
 
 		$parent = new parent($this->getClassName(), $this->getSubtractedType(), $this->getClassReflection());
 
-		return $parent->isSuperTypeOfWithReason($type)->and(IsSuperTypeOfResult::createMaybe());
+		return $parent->isSuperTypeOf($type)->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function subtract(Type $type): Type

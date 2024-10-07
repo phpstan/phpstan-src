@@ -89,12 +89,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new AcceptsResult($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)), []);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($this->equals($type)) {
 			return IsSuperTypeOfResult::createYes();
@@ -102,15 +97,10 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new IsSuperTypeOfResult($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)), []);
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOfWithReason($this);
+			return $otherType->isSuperTypeOf($this);
 		}
 
 		$result = new IsSuperTypeOfResult($otherType->isOffsetAccessible()->and($otherType->hasOffsetValueType($this->offsetType)), []);
@@ -121,7 +111,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
+		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

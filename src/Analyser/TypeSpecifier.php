@@ -963,7 +963,7 @@ final class TypeSpecifier
 			$isNormalCount = TrinaryLogic::createYes();
 		} else {
 			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
 		}
 
 		if (
@@ -1007,7 +1007,7 @@ final class TypeSpecifier
 			$isNormalCount = TrinaryLogic::createYes();
 		} else {
 			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->or($argType->getIterableValueType()->isArray()->negate());
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
 		}
 
 		if (

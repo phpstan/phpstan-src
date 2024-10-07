@@ -6,7 +6,6 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -86,15 +85,10 @@ class GenericClassStringType extends ClassStringType
 		return $this->type->accepts($objectType, $strictTypes);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof ConstantStringType) {
@@ -114,9 +108,9 @@ class GenericClassStringType extends ClassStringType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOfWithReason($objectType);
+				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
 			} else {
-				$isSuperType = $genericType->isSuperTypeOfWithReason($objectType);
+				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
 			if (!$type->isClassString()->yes()) {
@@ -125,7 +119,7 @@ class GenericClassStringType extends ClassStringType
 
 			return $isSuperType;
 		} elseif ($type instanceof self) {
-			return $this->type->isSuperTypeOfWithReason($type->type);
+			return $this->type->isSuperTypeOf($type->type);
 		} elseif ($type instanceof StringType) {
 			return IsSuperTypeOfResult::createMaybe();
 		}

@@ -3,25 +3,19 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
-use PHPStan\TrinaryLogic;
 
 class StringAlwaysAcceptingObjectWithToStringType extends StringType
 {
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		$thatClassNames = $type->getObjectClassNames();
 		if ($thatClassNames === []) {
-			return parent::isSuperTypeOfWithReason($type);
+			return parent::isSuperTypeOf($type);
 		}
 
 		$result = IsSuperTypeOfResult::createNo();

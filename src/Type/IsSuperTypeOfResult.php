@@ -139,6 +139,11 @@ final class IsSuperTypeOfResult
 		return new self($this->result->negate(), $this->reasons);
 	}
 
+	public function describe(): string
+	{
+		return $this->result->describe();
+	}
+
 	/**
 	 * @param array<self> $operands
 	 *

@@ -189,31 +189,21 @@ trait TemplateTypeTrait
 		return $this->strategy->accepts($this, $type, $strictTypes);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof NeverType) {
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return $this->getBound()->isSuperTypeOfWithReason($type)
+		return $this->getBound()->isSuperTypeOf($type)
 			->and(IsSuperTypeOfResult::createMaybe());
 	}
 
-	public function isSubTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($type)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		/** @var TBound $bound */
 		$bound = $this->getBound();
@@ -223,18 +213,18 @@ trait TemplateTypeTrait
 			&& !$type instanceof TemplateType
 			&& ($type instanceof UnionType || $type instanceof IntersectionType)
 		) {
-			return $type->isSuperTypeOfWithReason($this);
+			return $type->isSuperTypeOf($this);
 		}
 
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOfWithReason($this->getBound());
+			return $type->isSuperTypeOf($this->getBound());
 		}
 
 		if ($this->getScope()->equals($type->getScope()) && $this->getName() === $type->getName()) {
-			return $type->getBound()->isSuperTypeOfWithReason($this->getBound());
+			return $type->getBound()->isSuperTypeOf($this->getBound());
 		}
 
-		return $type->getBound()->isSuperTypeOfWithReason($this->getBound())
+		return $type->getBound()->isSuperTypeOf($this->getBound())
 			->and(IsSuperTypeOfResult::createMaybe());
 	}
 

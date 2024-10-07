@@ -510,7 +510,7 @@ final class ParametersAcceptorSelector
 				if ($parameter->getType() instanceof MixedType) {
 					$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
 				} else {
-					$isSuperType = $isSuperType->and($parameter->getType()->isSuperTypeOf($type));
+					$isSuperType = $isSuperType->and($parameter->getType()->isSuperTypeOf($type)->result);
 				}
 			}
 

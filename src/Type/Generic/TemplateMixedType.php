@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
@@ -35,14 +35,14 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
+	public function isSuperTypeOfMixed(MixedType $type): IsSuperTypeOfResult
 	{
 		return $this->isSuperTypeOf($type);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$isSuperType = $this->isSuperTypeOfWithReason($acceptingType)->toAcceptsResult();
+		$isSuperType = $this->isSuperTypeOf($acceptingType)->toAcceptsResult();
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}

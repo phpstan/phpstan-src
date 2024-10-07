@@ -54,12 +54,7 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->accepts($type, $strictTypes);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		return $this->isSuperTypeOfDefault($type);
 	}
@@ -74,7 +69,7 @@ trait LateResolvableTypeTrait
 			$type = $type->resolve();
 		}
 
-		$isSuperType = $this->resolve()->isSuperTypeOfWithReason($type);
+		$isSuperType = $this->resolve()->isSuperTypeOf($type);
 
 		if (!$this->isResolvable()) {
 			$isSuperType = $isSuperType->and(IsSuperTypeOfResult::createMaybe());
@@ -523,20 +518,15 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->tryRemove($typeToRemove);
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isSubTypeOfWithReason($otherType);
+			return $result->isSubTypeOf($otherType);
 		}
 
-		return $otherType->isSuperTypeOfWithReason($result);
+		return $otherType->isSuperTypeOf($result);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

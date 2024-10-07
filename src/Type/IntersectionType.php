@@ -218,12 +218,7 @@ class IntersectionType implements CompoundType
 		return $result;
 	}
 
-	public function isSuperTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof IntersectionType && $this->equals($otherType)) {
 			return IsSuperTypeOfResult::createYes();
@@ -233,21 +228,16 @@ class IntersectionType implements CompoundType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOfWithReason($otherType), $this->types));
+		return IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if (($otherType instanceof self || $otherType instanceof UnionType) && !$otherType instanceof TemplateType) {
-			return $otherType->isSuperTypeOfWithReason($this);
+			return $otherType->isSuperTypeOf($this);
 		}
 
-		$result = IsSuperTypeOfResult::maxMin(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOfWithReason($innerType), $this->types));
+		$result = IsSuperTypeOfResult::maxMin(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
 				return IsSuperTypeOfResult::createYes();

@@ -139,12 +139,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return "'" . addcslashes($value, '\\\'') . "'";
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof GenericClassStringType) {
 			$genericType = $type->getGenericType();
@@ -162,9 +157,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOfWithReason($objectType);
+				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
 			} else {
-				$isSuperType = $genericType->isSuperTypeOfWithReason($objectType);
+				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
 			// Explicitly handle the uncertainty for Yes & Maybe.
@@ -186,7 +181,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();
@@ -351,7 +346,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($offsetType->isInteger()->yes()) {
 			$strLenType = IntegerRangeType::fromInterval(0, strlen($this->value) - 1);
-			return $strLenType->isSuperTypeOf($offsetType);
+			return $strLenType->isSuperTypeOf($offsetType)->result;
 		}
 
 		return parent::hasOffsetValueType($offsetType);

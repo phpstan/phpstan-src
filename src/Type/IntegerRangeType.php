@@ -206,7 +206,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof parent) {
-			return $this->isSuperTypeOfWithReason($type)->toAcceptsResult();
+			return $this->isSuperTypeOf($type)->toAcceptsResult();
 		}
 
 		if ($type instanceof CompoundType) {
@@ -216,12 +216,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return AcceptsResult::createNo();
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self || $type instanceof ConstantIntegerType) {
 			if ($type instanceof self) {
@@ -251,21 +246,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof parent) {
-			return $otherType->isSuperTypeOfWithReason($this);
+			return $otherType->isSuperTypeOf($this);
 		}
 
 		if ($otherType instanceof UnionType) {
@@ -273,7 +263,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		if ($otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOfWithReason($this);
+			return $otherType->isSuperTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();
@@ -292,12 +282,12 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			}
 		}
 
-		return IsSuperTypeOfResult::createNo()->or(...array_map(fn (Type $innerType) => $this->isSubTypeOfWithReason($innerType), $otherType->getTypes()));
+		return IsSuperTypeOfResult::createNo()->or(...array_map(fn (Type $innerType) => $this->isSubTypeOf($innerType), $otherType->getTypes()));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
+		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

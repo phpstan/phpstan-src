@@ -365,12 +365,7 @@ class ConstantArrayType implements Type
 		return $result;
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
 			if (count($this->keyTypes) === 0) {
@@ -391,7 +386,7 @@ class ConstantArrayType implements Type
 					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOfWithReason($type->getOffsetValueType($keyType));
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType;
 				}
@@ -407,16 +402,16 @@ class ConstantArrayType implements Type
 				return $result;
 			}
 
-			$isKeySuperType = $this->getKeyType()->isSuperTypeOfWithReason($type->getKeyType());
+			$isKeySuperType = $this->getKeyType()->isSuperTypeOf($type->getKeyType());
 			if ($isKeySuperType->no()) {
 				return $isKeySuperType;
 			}
 
-			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOfWithReason($type->getItemType()));
+			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf($type->getItemType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();

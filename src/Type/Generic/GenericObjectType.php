@@ -13,7 +13,6 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -125,15 +124,10 @@ class GenericObjectType extends ObjectType
 		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return $this->isSuperTypeOfInternal($type, false);
@@ -141,7 +135,7 @@ class GenericObjectType extends ObjectType
 
 	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): IsSuperTypeOfResult
 	{
-		$nakedSuperTypeOf = parent::isSuperTypeOfWithReason($type);
+		$nakedSuperTypeOf = parent::isSuperTypeOf($type);
 		if ($nakedSuperTypeOf->no()) {
 			return $nakedSuperTypeOf;
 		}

@@ -196,12 +196,7 @@ class UnionType implements CompoundType
 		return $result;
 	}
 
-	public function isSuperTypeOf(Type $otherType): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if (
 			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
@@ -211,29 +206,24 @@ class UnionType implements CompoundType
 			|| $otherType instanceof ConditionalTypeForParameter
 			|| $otherType instanceof IntegerRangeType
 		) {
-			return $otherType->isSubTypeOfWithReason($this);
+			return $otherType->isSubTypeOf($this);
 		}
 
-		$result = IsSuperTypeOfResult::createNo()->or(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOfWithReason($otherType), $this->types));
+		$result = IsSuperTypeOfResult::createNo()->or(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
 		if ($result->yes()) {
 			return $result;
 		}
 
 		if ($otherType instanceof TemplateUnionType) {
-			return $result->or($otherType->isSubTypeOfWithReason($this));
+			return $result->or($otherType->isSubTypeOf($this));
 		}
 
 		return $result;
 	}
 
-	public function isSubTypeOf(Type $otherType): TrinaryLogic
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
-		return $this->isSubTypeOfWithReason($otherType)->result;
-	}
-
-	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
-	{
-		return IsSuperTypeOfResult::extremeIdentity(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOfWithReason($innerType), $this->types));
+		return IsSuperTypeOfResult::extremeIdentity(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

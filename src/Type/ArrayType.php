@@ -105,20 +105,15 @@ class ArrayType implements Type
 		return AcceptsResult::createNo();
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self || $type instanceof ConstantArrayType) {
-			return $this->getItemType()->isSuperTypeOfWithReason($type->getItemType())
-				->and($this->getIterableKeyType()->isSuperTypeOfWithReason($type->getIterableKeyType()));
+			return $this->getItemType()->isSuperTypeOf($type->getItemType())
+				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		return IsSuperTypeOfResult::createNo();

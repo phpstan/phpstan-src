@@ -305,12 +305,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->checkSubclassAcceptability($thatClassNames[0]);
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		$thatClassNames = $type->getObjectClassNames();
 		if (!$type instanceof CompoundType && $thatClassNames === [] && !$type instanceof ObjectWithoutClassType) {
@@ -330,7 +325,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof CompoundType) {
-			return self::$superTypes[$thisDescription][$description] = $type->isSubTypeOfWithReason($this);
+			return self::$superTypes[$thisDescription][$description] = $type->isSubTypeOf($this);
 		}
 
 		if ($type instanceof ClosureType) {
@@ -349,7 +344,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$transformResult = static fn (IsSuperTypeOfResult $result) => $result;
 		if ($this->subtractedType !== null) {
-			$isSuperType = $this->subtractedType->isSuperTypeOfWithReason($type);
+			$isSuperType = $this->subtractedType->isSuperTypeOf($type);
 			if ($isSuperType->yes()) {
 				return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 			}
@@ -362,7 +357,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$type instanceof SubtractableType
 			&& $type->getSubtractedType() !== null
 		) {
-			$isSuperType = $type->getSubtractedType()->isSuperTypeOfWithReason($this);
+			$isSuperType = $type->getSubtractedType()->isSuperTypeOf($this);
 			if ($isSuperType->yes()) {
 				return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 			}

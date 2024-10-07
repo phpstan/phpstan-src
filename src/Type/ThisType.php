@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\TrinaryLogic;
 use function sprintf;
 
 /** @api */
@@ -33,24 +32,19 @@ class ThisType extends StaticType
 		return sprintf('$this(%s)', $this->getStaticObjectType()->describe($level));
 	}
 
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
-			return $this->getStaticObjectType()->isSuperTypeOfWithReason($type);
+			return $this->getStaticObjectType()->isSuperTypeOf($type);
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
+			return $type->isSubTypeOf($this);
 		}
 
 		$parent = new parent($this->getClassReflection(), $this->getSubtractedType());
 
-		return $parent->isSuperTypeOfWithReason($type)->and(IsSuperTypeOfResult::createMaybe());
+		return $parent->isSuperTypeOf($type)->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type

@@ -75,7 +75,7 @@ final class CallableTypeHelper
 				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, true);
 				$isSuperType = new IsSuperTypeOfResult($isSuperType->result, $isSuperType->reasons);
 			} else {
-				$isSuperType = $theirParameter->getType()->isSuperTypeOfWithReason($ourParameterType);
+				$isSuperType = $theirParameter->getType()->isSuperTypeOf($ourParameterType);
 			}
 
 			if ($isSuperType->maybe()) {
@@ -102,7 +102,7 @@ final class CallableTypeHelper
 			$isReturnTypeSuperType = $ours->getReturnType()->accepts($theirReturnType, true);
 			$isReturnTypeSuperType = new IsSuperTypeOfResult($isReturnTypeSuperType->result, $isReturnTypeSuperType->reasons);
 		} else {
-			$isReturnTypeSuperType = $ours->getReturnType()->isSuperTypeOfWithReason($theirReturnType);
+			$isReturnTypeSuperType = $ours->getReturnType()->isSuperTypeOf($theirReturnType);
 		}
 
 		$pure = $ours->isPure();

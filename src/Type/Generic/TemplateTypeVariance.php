@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -134,30 +135,30 @@ class TemplateTypeVariance
 		return $this->isValidVarianceWithReason(null, $a, $b)->result;
 	}
 
-	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
+	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): AcceptsResult
 	{
 		if ($b instanceof NeverType) {
-			return IsSuperTypeOfResult::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return IsSuperTypeOfResult::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof BenevolentUnionType) {
 			if (!$a->isSuperTypeOf($b)->no()) {
-				return IsSuperTypeOfResult::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof BenevolentUnionType) {
 			if (!$b->isSuperTypeOf($a)->no()) {
-				return IsSuperTypeOfResult::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return IsSuperTypeOfResult::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($this->invariant()) {
@@ -177,19 +178,19 @@ class TemplateTypeVariance
 				}
 			}
 
-			return new IsSuperTypeOfResult(TrinaryLogic::createFromBoolean($result), $reasons);
+			return new AcceptsResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOfWithReason($b);
+			return $a->isSuperTypeOfWithReason($b)->toAcceptsResult();
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOfWithReason($a);
+			return $b->isSuperTypeOfWithReason($a)->toAcceptsResult();
 		}
 
 		if ($this->bivariant()) {
-			return IsSuperTypeOfResult::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		throw new ShouldNotHappenException();

@@ -99,7 +99,7 @@ trait TemplateTypeTrait
 		return $this->isValidVarianceWithReason($a, $b)->result;
 	}
 
-	public function isValidVarianceWithReason(Type $a, Type $b): IsSuperTypeOfResult
+	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult
 	{
 		return $this->variance->isValidVarianceWithReason($this, $a, $b);
 	}

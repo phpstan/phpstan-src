@@ -9,7 +9,6 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function implode;
 use function sprintf;
 
 /**
@@ -63,7 +62,7 @@ final class MissingMethodSelfOutTypeRule implements Rule
 				$methodReflection->getName(),
 				$phpDocTagMessage,
 				$name,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

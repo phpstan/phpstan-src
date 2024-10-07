@@ -14,7 +14,6 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
-use function implode;
 use function sprintf;
 
 final class MixinCheck
@@ -90,7 +89,7 @@ final class MixinCheck
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
 					$innerName,
-					implode(', ', $genericTypeNames),
+					$genericTypeNames,
 				))
 					->identifier('missingType.generics')
 					->build();

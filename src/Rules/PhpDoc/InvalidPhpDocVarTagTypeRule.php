@@ -16,7 +16,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
-use function implode;
 use function is_string;
 use function sprintf;
 
@@ -116,7 +115,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 					'%s contains generic %s but does not specify its types: %s',
 					$identifier,
 					$innerName,
-					implode(', ', $genericTypeNames),
+					$genericTypeNames,
 				))
 					->identifier('missingType.generics')
 					->build();

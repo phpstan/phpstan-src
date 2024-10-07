@@ -14,6 +14,7 @@ use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_filter;
 use function array_keys;
 use function array_values;
 use function count;
@@ -59,15 +60,26 @@ final class GenericObjectTypeCheck
 			$genericTypeVariances = $genericType->getVariances();
 			$templateTypesCount = count($templateTypes);
 			$genericTypeTypesCount = count($genericTypeTypes);
-			if ($templateTypesCount > $genericTypeTypesCount) {
+			$requiredTemplateTypesCount = count(array_filter($templateTypes, static fn (Type $type) => $type instanceof TemplateType && $type->getDefault() === null));
+			if ($requiredTemplateTypesCount > $genericTypeTypesCount) {
+				$templateTypesList = implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()));
+				if ($requiredTemplateTypesCount !== $templateTypesCount) {
+					$templateTypesList .= sprintf(' (%d-%d required).', $requiredTemplateTypesCount, $templateTypesCount);
+				}
+
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$notEnoughTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$classLikeDescription,
 					$classReflection->getDisplayName(false),
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
+					$templateTypesList,
 				))->identifier('generics.lessTypes')->build();
 			} elseif ($templateTypesCount < $genericTypeTypesCount) {
+				$templateTypesList = implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()));
+				if ($requiredTemplateTypesCount !== $templateTypesCount) {
+					$templateTypesList .= sprintf(' (%d-%d required)', $requiredTemplateTypesCount, $templateTypesCount);
+				}
+
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$extraTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
@@ -75,11 +87,10 @@ final class GenericObjectTypeCheck
 					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 					$templateTypesCount,
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
+					$templateTypesList,
 				))->identifier('generics.moreTypes')->build();
 			}
 
-			$templateTypesCount = count($templateTypes);
 			for ($i = 0; $i < $templateTypesCount; $i++) {
 				if (!isset($genericTypeTypes[$i])) {
 					continue;

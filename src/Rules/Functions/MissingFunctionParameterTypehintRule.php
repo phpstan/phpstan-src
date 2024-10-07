@@ -13,7 +13,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use function implode;
 use function sprintf;
 
 /**
@@ -100,7 +99,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterMessage,
 				$name,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

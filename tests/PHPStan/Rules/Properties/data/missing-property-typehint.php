@@ -106,3 +106,31 @@ class NestedArrayInProperty
 	public $args;
 
 }
+
+/**
+ * @template T = string
+ */
+class GenericClassWithDefault
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ */
+class GenericClassWithSomeDefaults
+{
+
+}
+
+class Baz
+{
+
+	/** @var \MissingPropertyTypehint\GenericClassWithDefault */
+	private $foo;
+
+	/** @var \MissingPropertyTypehint\GenericClassWithSomeDefaults */
+	private $bar;
+
+}

@@ -94,3 +94,16 @@ enum TypeProjection implements Generic
 {
 
 }
+
+/**
+ * @template T = string
+ */
+interface GenericDefault
+{
+
+}
+
+enum Foo9 implements GenericDefault
+{
+
+}

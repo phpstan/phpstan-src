@@ -5,7 +5,6 @@ namespace PHPStan\Type\Generic;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -127,30 +126,30 @@ final class TemplateTypeVariance
 		return $other;
 	}
 
-	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): AcceptsResult
+	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
 	{
 		if ($b instanceof NeverType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($a instanceof BenevolentUnionType) {
 			if (!$a->isSuperTypeOf($b)->no()) {
-				return AcceptsResult::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
 		if ($b instanceof BenevolentUnionType) {
 			if (!$b->isSuperTypeOf($a)->no()) {
-				return AcceptsResult::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($this->invariant()) {
@@ -169,19 +168,19 @@ final class TemplateTypeVariance
 				}
 			}
 
-			return new AcceptsResult(TrinaryLogic::createFromBoolean($result), $reasons);
+			return new IsSuperTypeOfResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOfWithReason($b)->toAcceptsResult();
+			return $a->isSuperTypeOfWithReason($b);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOfWithReason($a)->toAcceptsResult();
+			return $b->isSuperTypeOfWithReason($a);
 		}
 
 		if ($this->bivariant()) {
-			return AcceptsResult::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		throw new ShouldNotHappenException();

@@ -83,3 +83,11 @@ function withDifferentNumberOfElements(): void
 {
 	assertType('*NEVER*', array_combine(['foo'], ['bar', 'baz']));
 }
+
+function bug11819(): void
+{
+	$keys = [1, 2, 3];
+	$types = array_combine($keys, array_fill(0, \count($keys), false));
+	$types[] = 'foo';
+	assertType('array{1: false, 2: false, 3: false, 4: \'foo\'}', $types);
+}

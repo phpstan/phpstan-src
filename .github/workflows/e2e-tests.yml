@@ -308,6 +308,9 @@ jobs:
               cd e2e/discussion-11362
               composer install
               ../../bin/phpstan
+          - script: |
+              cd e2e/bug-11819
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

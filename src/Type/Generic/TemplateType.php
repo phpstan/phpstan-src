@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -21,7 +21,7 @@ interface TemplateType extends CompoundType
 
 	public function isArgument(): bool;
 
-	public function isValidVariance(Type $a, Type $b): IsSuperTypeOfResult;
+	public function isValidVariance(Type $a, Type $b): AcceptsResult;
 
 	public function getVariance(): TemplateTypeVariance;
 

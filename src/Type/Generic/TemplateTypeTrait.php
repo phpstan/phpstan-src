@@ -92,7 +92,7 @@ trait TemplateTypeTrait
 		);
 	}
 
-	public function isValidVariance(Type $a, Type $b): IsSuperTypeOfResult
+	public function isValidVariance(Type $a, Type $b): AcceptsResult
 	{
 		return $this->variance->isValidVariance($this, $a, $b);
 	}

@@ -21,8 +21,6 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 	private ?string $inNamespace = null;
 
-	private ?string $inClassLike = null;
-
 	/** @var array<string> */
 	private array $classStack = [];
 
@@ -41,7 +39,6 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		$this->variadicMethods = [];
 		$this->inNamespace = null;
 		$this->classStack = [];
-		$this->inClassLike = null;
 		$this->inMethod = null;
 		$this->anonymousClassIndex = 0;
 
@@ -66,25 +63,27 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			}
 
 			$this->classStack[] = $className;
-			$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
-			$this->variadicMethods[$this->inClassLike] ??= [];
+			$inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+			$this->variadicMethods[$inClassLike] ??= [];
 		}
 
-		if ($this->inClassLike !== null && $node instanceof ClassMethod) {
+		if ($this->classStack !== [] && $node instanceof ClassMethod) {
 			$this->inMethod = $node->name->name;
 		}
 
 		if (
-			$this->inClassLike !== null
+			$this->classStack !== []
 			&& $this->inMethod !== null
 			&& $node instanceof Node\Expr\FuncCall
 			&& $node->name instanceof Name
 			&& in_array((string) $node->name, ParametersAcceptor::VARIADIC_FUNCTIONS, true)
 		) {
-			if (!array_key_exists($this->inMethod, $this->variadicMethods[$this->inClassLike])) {
-				$this->variadicMethods[$this->inClassLike][$this->inMethod] = TrinaryLogic::createYes();
+			$inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+
+			if (!array_key_exists($this->inMethod, $this->variadicMethods[$inClassLike])) {
+				$this->variadicMethods[$inClassLike][$this->inMethod] = TrinaryLogic::createYes();
 			} else {
-				$this->variadicMethods[$this->inClassLike][$this->inMethod]->and(TrinaryLogic::createYes());
+				$this->variadicMethods[$inClassLike][$this->inMethod]->and(TrinaryLogic::createYes());
 			}
 
 		}
@@ -96,20 +95,16 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	{
 		if (
 			$node instanceof ClassMethod
-			&& $this->inClassLike !== null
+			&& $this->classStack !== []
 		) {
-			$this->variadicMethods[$this->inClassLike][$node->name->name] ??= TrinaryLogic::createNo();
+			$inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+
+			$this->variadicMethods[$inClassLike][$node->name->name] ??= TrinaryLogic::createNo();
 			$this->inMethod = null;
 		}
 
 		if ($node instanceof Node\Stmt\ClassLike) {
 			array_pop($this->classStack);
-
-			if ($this->classStack !== []) {
-				$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
-			} else {
-				$this->inClassLike = null;
-			}
 		}
 
 		if ($node instanceof Node\Stmt\Namespace_ && $node->name !== null) {

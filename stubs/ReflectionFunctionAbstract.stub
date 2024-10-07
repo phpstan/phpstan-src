@@ -9,7 +9,7 @@ abstract class ReflectionFunctionAbstract
 	public function getFileName () {}
 
     /**
-     * @return array<ReflectionAttribute<object>>
+     * @return list<ReflectionAttribute<object>>
      */
     public function getAttributes(?string $name = null, int $flags = 0)
     {

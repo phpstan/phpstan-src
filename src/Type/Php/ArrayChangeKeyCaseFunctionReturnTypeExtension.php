@@ -21,11 +21,12 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use function array_filter;
+use function array_map;
 use function count;
 use function strtolower;
 use function strtoupper;
 use const CASE_LOWER;
+use const CASE_UPPER;
 
 final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -48,7 +49,7 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 			$caseType = $scope->getType($functionCall->getArgs()[1]->value);
 			$scalarValues = $caseType->getConstantScalarValues();
 			if (count($scalarValues) === 1) {
-				$case = $scalarValues[0];
+				$case = (int) $scalarValues[0];
 			} else {
 				$case = null;
 			}
@@ -61,8 +62,15 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 				$newConstantArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$valueType = $constantArray->getOffsetValueType($keyType);
-					if ($keyType instanceof ConstantStringType) {
-						$keyType = $this->mapConstantString($keyType, $case);
+
+					$constantStrings = $keyType->getConstantStrings();
+					if (count($constantStrings) > 0) {
+						$keyType = TypeCombinator::union(
+							...array_map(
+								fn (ConstantStringType $type): Type => $this->mapConstantString($type, $case),
+								$constantStrings,
+							),
+						);
 					}
 
 					$newConstantArrayBuilder->setOffsetValueType(
@@ -87,8 +95,14 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 					return $traverse($type);
 				}
 
-				if ($type instanceof ConstantStringType) {
-					return $this->mapConstantString($type, $case);
+				$constantStrings = $type->getConstantStrings();
+				if (count($constantStrings) > 0) {
+					return TypeCombinator::union(
+						...array_map(
+							fn (ConstantStringType $type): Type => $this->mapConstantString($type, $case),
+							$constantStrings,
+						),
+					);
 				}
 
 				if ($type->isString()->yes()) {
@@ -131,12 +145,12 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 			return new ConstantStringType(strtolower($type->getValue()));
 		} elseif ($case === CASE_UPPER) {
 			return new ConstantStringType(strtoupper($type->getValue()));
-		} else {
-			return TypeCombinator::union(
-				new ConstantStringType(strtolower($type->getValue())),
-				new ConstantStringType(strtoupper($type->getValue())),
-			);
 		}
+
+		return TypeCombinator::union(
+			new ConstantStringType(strtolower($type->getValue())),
+			new ConstantStringType(strtoupper($type->getValue())),
+		);
 	}
 
 }

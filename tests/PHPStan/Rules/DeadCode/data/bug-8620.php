@@ -9,7 +9,7 @@ class HelloWorld
 	public function nullCoalesceAndConcatenation (?int $a = null): int
 	{
 		$key = ($a ?? "x") . "-";
-		assertType('lowercase-string&non-falsy-string', $key);
+		assertType('non-falsy-string', $key);
 		if ($key === "x-") { return 0; }
 
 		return 1;

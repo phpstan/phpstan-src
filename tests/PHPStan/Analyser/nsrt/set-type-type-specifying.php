@@ -11,7 +11,7 @@ function doString(string $s, int $i, float $f, array $a, object $o)
 	assertType('string', $s);
 
 	settype($i, 'string');
-	assertType('lowercase-string&numeric-string', $i);
+	assertType('numeric-string', $i);
 
 	settype($f, 'string');
 	assertType('numeric-string', $f);

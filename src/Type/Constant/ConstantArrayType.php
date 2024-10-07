@@ -52,6 +52,7 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_push;
+use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -241,7 +242,7 @@ class ConstantArrayType implements Type
 			}
 
 			$array = $builder->getArray();
-			if (!$array instanceof self) {
+			if (!$array instanceof ConstantArrayType) {
 				throw new ShouldNotHappenException();
 			}
 
@@ -857,16 +858,14 @@ class ConstantArrayType implements Type
 
 	public function reverseArray(TrinaryLogic $preserveKeys): Type
 	{
-		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$keyTypesReversed = array_reverse($this->keyTypes, true);
+		$keyTypes = array_values($keyTypesReversed);
+		$keyTypesReversedKeys = array_keys($keyTypesReversed);
+		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
 
-		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
-			$offsetType = $preserveKeys->yes() || $this->keyTypes[$i]->isInteger()->no()
-				? $this->keyTypes[$i]
-				: null;
-			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $this->isOptionalKey($i));
-		}
+		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
 
-		return $builder->getArray();
+		return $preserveKeys->yes() ? $reversed : $reversed->reindex();
 	}
 
 	public function searchArray(Type $needleType): Type
@@ -995,14 +994,15 @@ class ConstantArrayType implements Type
 				$isOptional = true;
 			}
 
-			$offsetType = $preserveKeys->yes() || $this->keyTypes[$i]->isInteger()->no()
-				? $this->keyTypes[$i]
-				: null;
-
-			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $isOptional);
+			$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i], $isOptional);
 		}
 
-		return $builder->getArray();
+		$slice = $builder->getArray();
+		if (!$slice instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $preserveKeys->yes() ? $slice : $slice->reindex();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -1148,7 +1148,7 @@ class ConstantArrayType implements Type
 	}
 
 	/** @param positive-int $length */
-	private function removeFirstElements(int $length, bool $reindex = true): Type
+	private function removeFirstElements(int $length, bool $reindex = true): self
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -1175,7 +1175,30 @@ class ConstantArrayType implements Type
 			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
-		return $builder->getArray();
+		$array = $builder->getArray();
+		if (!$array instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $array;
+	}
+
+	private function reindex(): self
+	{
+		$keyTypes = [];
+		$autoIndex = 0;
+
+		foreach ($this->keyTypes as $keyType) {
+			if (!$keyType instanceof ConstantIntegerType) {
+				$keyTypes[] = $keyType;
+				continue;
+			}
+
+			$keyTypes[] = new ConstantIntegerType($autoIndex);
+			$autoIndex++;
+		}
+
+		return new self($keyTypes, $this->valueTypes, [$autoIndex], $this->optionalKeys, TrinaryLogic::createYes());
 	}
 
 	public function toBoolean(): BooleanType

@@ -2,15 +2,31 @@
 
 namespace PHPStan\DependencyInjection;
 
+use DirectoryIterator;
 use Nette\DI\Config\Loader;
 use Nette\DI\Container as OriginalNetteContainer;
 use Nette\DI\ContainerLoader;
 use PHPStan\File\CouldNotReadFileException;
+use PHPStan\File\CouldNotWriteFileException;
+use PHPStan\File\FileReader;
+use PHPStan\File\FileWriter;
 use function array_keys;
+use function count;
 use function error_reporting;
+use function explode;
+use function implode;
+use function in_array;
+use function is_dir;
+use function is_file;
 use function restore_error_handler;
 use function set_error_handler;
 use function sha1_file;
+use function sprintf;
+use function str_ends_with;
+use function substr;
+use function time;
+use function trim;
+use function unlink;
 use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
@@ -21,7 +37,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	/** @var string[] */
 	private array $allConfigFiles = [];
 
-	public function __construct(private LoaderFactory $loaderFactory)
+	public function __construct(private LoaderFactory $loaderFactory, private bool $journalContainer)
 	{
 		parent::__construct();
 	}
@@ -59,10 +75,104 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			$this->staticParameters['debugMode'],
 		);
 
-		return $loader->load(
+		$className = $loader->load(
 			[$this, 'generateContainer'],
 			[$this->staticParameters, array_keys($this->dynamicParameters), $this->configs, PHP_VERSION_ID - PHP_RELEASE_VERSION, NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes()],
 		);
+
+		if ($this->journalContainer) {
+			$this->journal($className);
+		}
+
+		return $className;
+	}
+
+	private function journal(string $currentContainerClassName): void
+	{
+		$directory = $this->getContainerCacheDirectory();
+		if (!is_dir($directory)) {
+			return;
+		}
+
+		$journalFile = $directory . '/container.journal';
+		if (!is_file($journalFile)) {
+			try {
+				FileWriter::write($journalFile, sprintf("%s:%d\n", $currentContainerClassName, time()));
+			} catch (CouldNotWriteFileException) {
+				// pass
+			}
+
+			return;
+		}
+
+		try {
+			$journalContents = FileReader::read($journalFile);
+		} catch (CouldNotReadFileException) {
+			return;
+		}
+
+		$journalLines = explode("\n", trim($journalContents));
+		$linesToWrite = [];
+		$usedInTheLastWeek = [];
+		$now = time();
+		$currentAlreadyInTheJournal = false;
+		foreach ($journalLines as $journalLine) {
+			if ($journalLine === '') {
+				continue;
+			}
+			$journalLineParts = explode(':', $journalLine);
+			if (count($journalLineParts) !== 2) {
+				return;
+			}
+			$className = $journalLineParts[0];
+			$containerLastUsedTime = (int) $journalLineParts[1];
+
+			$week = 3600 * 24 * 7;
+
+			if ($containerLastUsedTime + $week >= $now) {
+				$usedInTheLastWeek[] = $className;
+			}
+
+			if ($currentContainerClassName !== $className) {
+				$linesToWrite[] = sprintf('%s:%d', $className, $containerLastUsedTime);
+				continue;
+			}
+
+			$linesToWrite[] = sprintf('%s:%d', $currentContainerClassName, $now);
+			$currentAlreadyInTheJournal = true;
+		}
+
+		if (!$currentAlreadyInTheJournal) {
+			$linesToWrite[] = sprintf('%s:%d', $currentContainerClassName, $now);
+			$usedInTheLastWeek[] = $currentContainerClassName;
+		}
+
+		try {
+			FileWriter::write($journalFile, implode("\n", $linesToWrite) . "\n");
+		} catch (CouldNotWriteFileException) {
+			return;
+		}
+
+		foreach (new DirectoryIterator($directory) as $fileInfo) {
+			if ($fileInfo->isDot()) {
+				continue;
+			}
+			$fileName = $fileInfo->getFilename();
+			if ($fileName === 'container.journal') {
+				continue;
+			}
+			if (!str_ends_with($fileName, '.php')) {
+				continue;
+			}
+			$fileClassName = substr($fileName, 0, -4);
+			if (in_array($fileClassName, $usedInTheLastWeek, true)) {
+				continue;
+			}
+			$basePathname = $fileInfo->getPathname();
+			@unlink($basePathname);
+			@unlink($basePathname . '.lock');
+			@unlink($basePathname . '.meta');
+		}
 	}
 
 	public function createContainer(bool $initialize = true): OriginalNetteContainer

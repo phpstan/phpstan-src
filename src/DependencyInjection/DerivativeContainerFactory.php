@@ -35,6 +35,7 @@ final class DerivativeContainerFactory
 		$containerFactory = new ContainerFactory(
 			$this->currentWorkingDirectory,
 		);
+		$containerFactory->setJournalContainer();
 
 		return $containerFactory->create(
 			$this->tempDirectory,

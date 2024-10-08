@@ -213,6 +213,9 @@ final class CommandHelper
 
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
+		if ($cleanupContainerCache) {
+			$containerFactory->setJournalContainer();
+		}
 		$projectConfig = null;
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
@@ -434,7 +437,6 @@ final class CommandHelper
 		}
 
 		if ($cleanupContainerCache) {
-			$containerFactory->clearOldContainers($tmpDir);
 			$cacheStorage = $container->getService('cacheStorage');
 			if ($cacheStorage instanceof FileCacheStorage) {
 				$cacheStorage->clearUnusedFiles();

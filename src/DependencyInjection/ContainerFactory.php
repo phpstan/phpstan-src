@@ -31,7 +31,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
-use Symfony\Component\Finder\Finder;
 use function array_diff_key;
 use function array_map;
 use function array_merge;
@@ -42,15 +41,12 @@ use function extension_loaded;
 use function getenv;
 use function ini_get;
 use function is_array;
-use function is_dir;
 use function is_file;
 use function is_readable;
 use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
 use function substr;
-use function time;
-use function unlink;
 
 /**
  * @api
@@ -65,6 +61,8 @@ final class ContainerFactory
 	private string $configDirectory;
 
 	private static ?int $lastInitializedContainerId = null;
+
+	private bool $journalContainer = false;
 
 	/** @api */
 	public function __construct(private string $currentWorkingDirectory)
@@ -81,6 +79,11 @@ final class ContainerFactory
 		}
 		$this->rootDirectory = $this->fileHelper->normalizePath($rootDir);
 		$this->configDirectory = $originalRootDir . '/conf';
+	}
+
+	public function setJournalContainer(): void
+	{
+		$this->journalContainer = true;
 	}
 
 	/**
@@ -114,7 +117,7 @@ final class ContainerFactory
 			$this->rootDirectory,
 			$this->currentWorkingDirectory,
 			$generateBaselineFile,
-		));
+		), $this->journalContainer);
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,
 			'extensions' => ExtensionsExtension::class,
@@ -186,42 +189,6 @@ final class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
-	}
-
-	public function clearOldContainers(string $tempDirectory): void
-	{
-		$configurator = new Configurator(new LoaderFactory(
-			$this->fileHelper,
-			$this->rootDirectory,
-			$this->currentWorkingDirectory,
-			null,
-		));
-		$configurator->setDebugMode(true);
-		$configurator->setTempDirectory($tempDirectory);
-
-		$containerDirectory = $configurator->getContainerCacheDirectory();
-		if (!is_dir($containerDirectory)) {
-			return;
-		}
-
-		$finder = new Finder();
-		$finder->name('Container_*')->in($containerDirectory);
-		$twoDaysAgo = time() - 24 * 60 * 60 * 2;
-
-		foreach ($finder as $containerFile) {
-			$path = $containerFile->getRealPath();
-			if ($path === false) {
-				continue;
-			}
-			if ($containerFile->getATime() > $twoDaysAgo) {
-				continue;
-			}
-			if ($containerFile->getCTime() > $twoDaysAgo) {
-				continue;
-			}
-
-			@unlink($path);
-		}
 	}
 
 	public function getCurrentWorkingDirectory(): string

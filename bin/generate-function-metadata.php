@@ -16,7 +16,7 @@ use Symfony\Component\Finder\Finder;
 (function (): void {
 	require_once __DIR__ . '/../vendor/autoload.php';
 
-	$parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
+	$parser = (new ParserFactory())->createForNewestSupportedVersion();
 	$finder = new Finder();
 	$finder->in(__DIR__ . '/../vendor/jetbrains/phpstorm-stubs')->files()->name('*.php');
 
@@ -69,8 +69,19 @@ use Symfony\Component\Finder\Finder;
 		$traverser->addVisitor(new NodeConnectingVisitor());
 		$traverser->addVisitor($visitor);
 
+		$contents = FileReader::read($path);
+		if (str_ends_with($path, '/vendor/jetbrains/phpstorm-stubs/Core/Core.php')) {
+			$contents = str_replace([
+				'function exit',
+				'function die',
+			], [
+				'function _exit',
+				'function _die',
+			], $contents);
+		}
+
 		$traverser->traverse(
-			$parser->parse(FileReader::read($path)),
+			$parser->parse($contents),
 		);
 	}
 

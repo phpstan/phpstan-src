@@ -21,6 +21,8 @@ class Foo
 		(fn($a, $b, $c) => assertType('array{int, array{a: int}, string|null}', [$a, $b, $c]))($integer, $array, $nullableString);
 
 		(fn($a, $b, $c = null) => assertType('array{int, array{a: int}, mixed}', [$a, $b, $c]))($integer, $array);
+
+		($callback = fn($context) => assertType('int', $context))($integer);
 	}
 
 }

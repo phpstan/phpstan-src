@@ -11,6 +11,7 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use ReflectionAttribute;
 use function count;
 
@@ -43,7 +44,7 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new GenericObjectType(ReflectionAttribute::class, [$classType])));
+		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new GenericObjectType(ReflectionAttribute::class, [$classType])), new AccessoryArrayListType());
 	}
 
 }

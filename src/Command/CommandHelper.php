@@ -12,6 +12,7 @@ use Nette\InvalidStateException;
 use Nette\Schema\ValidationException;
 use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
+use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
@@ -434,6 +435,10 @@ final class CommandHelper
 
 		if ($cleanupContainerCache) {
 			$containerFactory->clearOldContainers($tmpDir);
+			$cacheStorage = $container->getService('cacheStorage');
+			if ($cacheStorage instanceof FileCacheStorage) {
+				$cacheStorage->clearUnusedFiles();
+			}
 		}
 
 		/** @var bool|null $customRulesetUsed */

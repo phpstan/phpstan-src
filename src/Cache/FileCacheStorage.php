@@ -4,22 +4,40 @@ namespace PHPStan\Cache;
 
 use InvalidArgumentException;
 use Nette\Utils\Random;
+use PHPStan\File\CouldNotReadFileException;
+use PHPStan\File\CouldNotWriteFileException;
+use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use function array_keys;
+use function closedir;
+use function dirname;
 use function error_get_last;
+use function is_dir;
 use function is_file;
+use function opendir;
+use function readdir;
 use function rename;
+use function rmdir;
 use function sha1;
 use function sprintf;
+use function str_contains;
+use function str_starts_with;
+use function strlen;
 use function substr;
+use function uksort;
 use function unlink;
 use function var_export;
 use const DIRECTORY_SEPARATOR;
 
 final class FileCacheStorage implements CacheStorage
 {
+
+	private const CACHED_CLEARED_VERSION = 'v1-variadic';
 
 	public function __construct(private string $directory)
 	{
@@ -98,6 +116,98 @@ final class FileCacheStorage implements CacheStorage
 			$secondDirectory,
 			$filePath,
 		];
+	}
+
+	public function clearUnusedFiles(): void
+	{
+		if (!is_dir($this->directory)) {
+			return;
+		}
+
+		$cachedClearedFile = $this->directory . '/cache-cleared';
+		if (is_file($cachedClearedFile)) {
+			try {
+				$cachedClearedContents = FileReader::read($cachedClearedFile);
+				if ($cachedClearedContents === self::CACHED_CLEARED_VERSION) {
+					return;
+				}
+			} catch (CouldNotReadFileException) {
+				return;
+			}
+		}
+
+		$iterator = new RecursiveDirectoryIterator($this->directory);
+		$iterator->setFlags(RecursiveDirectoryIterator::SKIP_DOTS);
+		$files = new RecursiveIteratorIterator($iterator);
+		$beginFunction = sprintf(
+			"<?php declare(strict_types = 1);\n\n%s",
+			sprintf('// %s', 'variadic-function-'),
+		);
+		$beginMethod = sprintf(
+			"<?php declare(strict_types = 1);\n\n%s",
+			sprintf('// %s', 'variadic-method-'),
+		);
+		$beginOld = sprintf(
+			"<?php declare(strict_types = 1);\n\n%s",
+			'return PHPStan\\Cache\\CacheItem::',
+		);
+		$emptyDirectoriesToCheck = [];
+		foreach ($files as $file) {
+			try {
+				$path = $file->getPathname();
+				$contents = FileReader::read($path);
+				if (str_contains($contents, 'odsl-')) {
+					continue;
+				}
+				if (
+					!str_starts_with($contents, $beginFunction)
+					&& !str_starts_with($contents, $beginMethod)
+					&& !str_starts_with($contents, $beginOld)
+				) {
+					continue;
+				}
+
+				$emptyDirectoriesToCheck[dirname($path)] = true;
+				$emptyDirectoriesToCheck[dirname($path, 2)] = true;
+
+				@unlink($path);
+			} catch (CouldNotReadFileException) {
+				continue;
+			}
+		}
+
+		uksort($emptyDirectoriesToCheck, static fn ($a, $b) => strlen($b) - strlen($a));
+
+		foreach (array_keys($emptyDirectoriesToCheck) as $directory) {
+			if (!$this->isDirectoryEmpty($directory)) {
+				continue;
+			}
+
+			@rmdir($directory);
+		}
+
+		try {
+			FileWriter::write($cachedClearedFile, self::CACHED_CLEARED_VERSION);
+		} catch (CouldNotWriteFileException) {
+			// pass
+		}
+	}
+
+	private function isDirectoryEmpty(string $directory): bool
+	{
+		$handle = opendir($directory);
+		if ($handle === false) {
+			return false;
+		}
+		while (($entry = readdir($handle)) !== false) {
+			if ($entry !== '.' && $entry !== '..') {
+				closedir($handle);
+				return false;
+			}
+		}
+
+		closedir($handle);
+		return true;
 	}
 
 }

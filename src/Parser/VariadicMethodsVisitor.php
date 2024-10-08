@@ -31,8 +31,6 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	/** @var array<string, array<string, TrinaryLogic>> */
 	private array $variadicMethods = [];
 
-	private int $anonymousClassIndex = 0;
-
 	public const ATTRIBUTE_NAME = 'variadicMethods';
 
 	public function beforeTraverse(array $nodes): ?array
@@ -43,7 +41,6 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		$this->classStack = [];
 		$this->inClassLike = null;
 		$this->inMethod = null;
-		$this->anonymousClassIndex = 0;
 
 		return null;
 	}
@@ -60,13 +57,15 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 		if ($node instanceof Node\Stmt\ClassLike) {
 			if (!$node->name instanceof Node\Identifier) {
-				$className = sprintf('class@anonymous:%s:%s', $node->getStartLine(), ++$this->anonymousClassIndex);
+				$className = sprintf('class@anonymous:%s:%s', $node->getStartLine(), $node->getEndLine());
+				$this->classStack[] = $className;
+				$this->inClassLike = $className; // anonymous classes are in global namespace
 			} else {
 				$className = $node->name->name;
+				$this->classStack[] = $className;
+				$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
 			}
 
-			$this->classStack[] = $className;
-			$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
 			$this->variadicMethods[$this->inClassLike] ??= [];
 		}
 

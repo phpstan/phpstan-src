@@ -35,6 +35,7 @@ use function count;
 use function explode;
 use function in_array;
 use function is_array;
+use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
 
@@ -253,12 +254,17 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			if (count($nodes) > 0) {
 				$variadicMethods = $nodes[0]->getAttribute(VariadicMethodsVisitor::ATTRIBUTE_NAME);
 
+				$className = $declaringClass->getName();
+				if ($declaringClass->isAnonymous()) {
+					$className = sprintf('class@anonymous:%s:%s', $declaringClass->getNativeReflection()->getStartLine(), $declaringClass->getNativeReflection()->getEndLine());
+				}
+
 				if (
 					is_array($variadicMethods)
-					&& array_key_exists($declaringClass->getName(), $variadicMethods)
-					&& array_key_exists($this->reflection->getName(), $variadicMethods[$declaringClass->getName()])
+					&& array_key_exists($className, $variadicMethods)
+					&& array_key_exists($this->reflection->getName(), $variadicMethods[$className])
 				) {
-					return $this->containsVariadicCalls = !$variadicMethods[$declaringClass->getName()][$this->reflection->getName()]->no();
+					return $this->containsVariadicCalls = !$variadicMethods[$className][$this->reflection->getName()]->no();
 				}
 			}
 

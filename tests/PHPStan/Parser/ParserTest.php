@@ -31,28 +31,28 @@ class ParserTest extends PHPStanTestCase
 			[
 				'VariadicMethod\X' => [
 					'non_variadic_fn1' => TrinaryLogic::createNo(),
-					'variadic_fn1' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'variadic_fn1' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
 					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
 				],
 				'VariadicMethod\Z' => [
 					'non_variadic_fnZ' => TrinaryLogic::createNo(),
-					'variadic_fnZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'variadic_fnZ' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
 					'implicit_variadic_fnZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\Z\class@anonymous:20:1' => [
+				'class@anonymous:20:30' => [
 					'non_variadic_fn_subZ' => TrinaryLogic::createNo(),
-					'variadic_fn_subZ' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'variadic_fn_subZ' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
 					'implicit_variadic_subZ' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\class@anonymous:42:2' => [
+				'class@anonymous:42:52' => [
 					'non_variadic_fn' => TrinaryLogic::createNo(),
-					'variadic_fn' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
+					'variadic_fn' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
 					'implicit_variadic_fn' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\class@anonymous:54:3' => [
+				'class@anonymous:54:58' => [
 					'implicit_variadic_fn' => TrinaryLogic::createYes(),
 				],
-				'VariadicMethod\class@anonymous:54:4' => [],
+				'class@anonymous:54:54' => [],
 			],
 		];
 

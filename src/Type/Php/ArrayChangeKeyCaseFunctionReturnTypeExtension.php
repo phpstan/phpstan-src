@@ -106,21 +106,20 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 				}
 
 				if ($type->isString()->yes()) {
-					if ($case === CASE_LOWER) {
-						return TypeCombinator::intersect($type, new AccessoryLowercaseStringType());
-					} elseif ($type->isLowercaseString()->yes()) {
-						$types = [new StringType()];
-						if ($type->isNonFalsyString()->yes()) {
-							$types[] = new AccessoryNonFalsyStringType();
-						} elseif ($type->isNonEmptyString()->yes()) {
-							$types[] = new AccessoryNonEmptyStringType();
-						}
-						if ($type->isNumericString()->yes()) {
-							$types[] = new AccessoryNumericStringType();
-						}
-
-						return TypeCombinator::intersect(...$types);
+					$types = [new StringType()];
+					if ($type->isNonFalsyString()->yes()) {
+						$types[] = new AccessoryNonFalsyStringType();
+					} elseif ($type->isNonEmptyString()->yes()) {
+						$types[] = new AccessoryNonEmptyStringType();
 					}
+					if ($type->isNumericString()->yes()) {
+						$types[] = new AccessoryNumericStringType();
+					}
+					if ($case === CASE_LOWER) {
+						$types[] = new AccessoryLowercaseStringType();
+					}
+
+					return TypeCombinator::intersect(...$types);
 				}
 
 				return $type;

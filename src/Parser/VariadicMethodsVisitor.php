@@ -29,10 +29,10 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 	private ?string $inMethod = null;
 
-	/** @var array<string, array<string, true>> */
+	/** @var array<string, array<string, bool>> */
 	public static array $cache = [];
 
-	/** @var array<string, array<string, true>> */
+	/** @var array<string, array<string, bool>> */
 	private array $variadicMethods = [];
 
 	public function beforeTraverse(array $nodes): ?array
@@ -94,6 +94,10 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	public function leaveNode(Node $node): ?Node
 	{
 		if ($node instanceof ClassMethod) {
+			$lastClass = $this->classStack[count($this->classStack) - 1] ?? null;
+			if ($lastClass !== null) {
+				$this->variadicMethods[$lastClass][$this->inMethod] ??= false;
+			}
 			$this->inMethod = null;
 		}
 
@@ -111,12 +115,18 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	public function afterTraverse(array $nodes): ?array
 	{
 		if ($this->topNode !== null && $this->variadicMethods !== []) {
+			$filteredMethods = [];
 			foreach ($this->variadicMethods as $class => $methods) {
 				foreach ($methods as $name => $variadic) {
 					self::$cache[$class][$name] = $variadic;
+					if (!$variadic) {
+						continue;
+					}
+
+					$filteredMethods[$class][$name] = true;
 				}
 			}
-			$this->topNode->setAttribute(self::ATTRIBUTE_NAME, $this->variadicMethods);
+			$this->topNode->setAttribute(self::ATTRIBUTE_NAME, $filteredMethods);
 		}
 
 		return null;

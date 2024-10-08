@@ -37,7 +37,7 @@ use const DIRECTORY_SEPARATOR;
 final class FileCacheStorage implements CacheStorage
 {
 
-	private const CACHED_CLEARED_VERSION = 'v1-variadic';
+	private const CACHED_CLEARED_VERSION = 'v2-old-two';
 
 	public function __construct(private string $directory)
 	{
@@ -151,6 +151,10 @@ final class FileCacheStorage implements CacheStorage
 			"<?php declare(strict_types = 1);\n\n%s",
 			'return PHPStan\\Cache\\CacheItem::',
 		);
+		$beginOld2 = sprintf(
+			"<?php declare(strict_types = 1);\n\n%s",
+			'return \\PHPStan\\Cache\\CacheItem::',
+		);
 		$emptyDirectoriesToCheck = [];
 		foreach ($files as $file) {
 			try {
@@ -163,6 +167,7 @@ final class FileCacheStorage implements CacheStorage
 					!str_starts_with($contents, $beginFunction)
 					&& !str_starts_with($contents, $beginMethod)
 					&& !str_starts_with($contents, $beginOld)
+					&& !str_starts_with($contents, $beginOld2)
 				) {
 					continue;
 				}

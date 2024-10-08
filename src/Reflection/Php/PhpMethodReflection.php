@@ -250,14 +250,21 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				return $this->containsVariadicCalls;
 			}
 
+			$className = $declaringClass->getName();
+			if ($declaringClass->isAnonymous()) {
+				$className = sprintf('%s:%s:%s', VariadicMethodsVisitor::ANONYMOUS_CLASS_PREFIX, $declaringClass->getNativeReflection()->getStartLine(), $declaringClass->getNativeReflection()->getEndLine());
+			}
+			if (array_key_exists($className, VariadicMethodsVisitor::$cache)) {
+				if (array_key_exists($this->reflection->getName(), VariadicMethodsVisitor::$cache[$className])) {
+					return $this->containsVariadicCalls = VariadicMethodsVisitor::$cache[$className][$this->reflection->getName()];
+				}
+
+				return $this->containsVariadicCalls = false;
+			}
+
 			$nodes = $this->parser->parseFile($filename);
 			if (count($nodes) > 0) {
 				$variadicMethods = $nodes[0]->getAttribute(VariadicMethodsVisitor::ATTRIBUTE_NAME);
-
-				$className = $declaringClass->getName();
-				if ($declaringClass->isAnonymous()) {
-					$className = sprintf('%s:%s:%s', VariadicMethodsVisitor::ANONYMOUS_CLASS_PREFIX, $declaringClass->getNativeReflection()->getStartLine(), $declaringClass->getNativeReflection()->getEndLine());
-				}
 
 				if (
 					is_array($variadicMethods)

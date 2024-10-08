@@ -30,6 +30,9 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	private ?string $inMethod = null;
 
 	/** @var array<string, array<string, true>> */
+	public static array $cache = [];
+
+	/** @var array<string, array<string, true>> */
 	private array $variadicMethods = [];
 
 	public function beforeTraverse(array $nodes): ?array
@@ -108,6 +111,11 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	public function afterTraverse(array $nodes): ?array
 	{
 		if ($this->topNode !== null && $this->variadicMethods !== []) {
+			foreach ($this->variadicMethods as $class => $methods) {
+				foreach ($methods as $name => $variadic) {
+					self::$cache[$class][$name] = $variadic;
+				}
+			}
 			$this->topNode->setAttribute(self::ATTRIBUTE_NAME, $this->variadicMethods);
 		}
 

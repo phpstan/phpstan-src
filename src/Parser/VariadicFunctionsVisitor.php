@@ -20,6 +20,9 @@ final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 	private ?string $inFunction = null;
 
 	/** @var array<string, bool> */
+	public static array $cache = [];
+
+	/** @var array<string, bool> */
 	private array $variadicFunctions = [];
 
 	public const ATTRIBUTE_NAME = 'variadicFunctions';
@@ -78,6 +81,9 @@ final class VariadicFunctionsVisitor extends NodeVisitorAbstract
 	public function afterTraverse(array $nodes): ?array
 	{
 		if ($this->topNode !== null && $this->variadicFunctions !== []) {
+			foreach ($this->variadicFunctions as $name => $variadic) {
+				self::$cache[$name] = $variadic;
+			}
 			$functions = array_filter($this->variadicFunctions, static fn (bool $variadic) => $variadic);
 			$this->topNode->setAttribute(self::ATTRIBUTE_NAME, $functions);
 		}

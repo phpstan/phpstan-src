@@ -140,6 +140,10 @@ final class PhpFunctionReflection implements FunctionReflection
 				return $this->containsVariadicCalls;
 			}
 
+			if (array_key_exists($this->reflection->getName(), VariadicFunctionsVisitor::$cache)) {
+				return $this->containsVariadicCalls = VariadicFunctionsVisitor::$cache[$this->reflection->getName()];
+			}
+
 			$nodes = $this->parser->parseFile($filename);
 			if (count($nodes) > 0) {
 				$variadicFunctions = $nodes[0]->getAttribute(VariadicFunctionsVisitor::ATTRIBUTE_NAME);

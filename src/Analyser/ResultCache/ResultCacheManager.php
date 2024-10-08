@@ -159,7 +159,7 @@ final class ResultCacheManager
 				continue;
 			}
 			if (!is_file($extensionFile)) {
-				if ($output->isVerbose()) {
+				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
 				}
 				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], []);
@@ -169,7 +169,7 @@ final class ResultCacheManager
 				continue;
 			}
 
-			if ($output->isVerbose()) {
+			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
 			}
 
@@ -437,7 +437,7 @@ final class ResultCacheManager
 						continue;
 					}
 
-					if ($output->isVerbose()) {
+					if ($output->isVeryVerbose()) {
 						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
 					}
 

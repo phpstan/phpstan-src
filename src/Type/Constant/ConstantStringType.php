@@ -7,6 +7,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\Internal\StringLiteralHelper;
 use PHPStan\PhpDocParser\Ast\ConstExpr\QuoteAwareConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -43,7 +44,6 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
-use function addcslashes;
 use function in_array;
 use function is_float;
 use function is_int;
@@ -139,12 +139,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private function export(string $value): string
 	{
-		$escapedValue = addcslashes($value, "\0..\37");
-		if ($escapedValue !== $value) {
-			return '"' . addcslashes($value, "\0..\37\\\"") . '"';
-		}
-
-		return "'" . addcslashes($value, '\\\'') . "'";
+		return StringLiteralHelper::quote($value);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

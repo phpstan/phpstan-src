@@ -1,0 +1,53 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Internal;
+
+use function addcslashes;
+use function preg_match;
+use function str_contains;
+use function strtr;
+use function sprintf;
+
+final class StringLiteralHelper
+{
+
+	public static function escape(string $string): string
+	{
+		return addcslashes($string, "\0..\37\177");
+	}
+
+	public static function escapeAndQuoteIfNeeded(string $string): string
+	{
+		if ($string === '') {
+			return "''";
+		}
+
+		$escaped = self::escape($string);
+
+		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
+			return sprintf('"%s"', strtr($escaped, ['"' => '\\"']));
+		}
+
+		if (preg_match('/[!-\/:-@\[-^`\{-~]/', $escaped) === 1 || preg_match('/\p{Zs}/u', $escaped) === 1) {
+			return sprintf("'%s'", strtr($escaped, ['\\' => '\\\\']));
+		}
+
+		return $escaped;
+	}
+
+	public static function quote(string $string): string
+	{
+		if ($string === '') {
+			return "''";
+		}
+
+		$escaped = self::escape($string);
+
+		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
+			return sprintf('"%s"', strtr($escaped, ['"' => '\\"']));
+		}
+
+		return sprintf("'%s'", strtr($escaped, ['\\' => '\\\\']));
+	}
+
+}

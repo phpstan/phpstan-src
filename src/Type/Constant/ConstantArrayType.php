@@ -6,6 +6,7 @@ use Nette\Utils\Strings;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Internal\CombinationsHelper;
+use PHPStan\Internal\StringLiteralHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprIntegerNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
@@ -1474,11 +1475,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 				$keyDescription = $keyType->getValue();
 				if (is_string($keyDescription)) {
-					if (str_contains($keyDescription, '"')) {
-						$keyDescription = sprintf('\'%s\'', $keyDescription);
-					} elseif (str_contains($keyDescription, '\'')) {
-						$keyDescription = sprintf('"%s"', $keyDescription);
-					}
+					$keyDescription = StringLiteralHelper::escapeAndQuoteIfNeeded($keyDescription);
 				}
 
 				$valueTypeDescription = $valueType->describe($level);

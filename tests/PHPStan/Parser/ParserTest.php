@@ -53,6 +53,11 @@ class ParserTest extends PHPStanTestCase
 					'implicit_variadic_fn' => TrinaryLogic::createYes(),
 				],
 				'class@anonymous:54:54' => [],
+				'class@anonymous:61:68' => [
+					'nestedClass' => TrinaryLogic::createNo(),
+					'implicit_variadic_fn' => TrinaryLogic::createYes(),
+				],
+				'class@anonymous:63:63' => [],
 			],
 		];
 

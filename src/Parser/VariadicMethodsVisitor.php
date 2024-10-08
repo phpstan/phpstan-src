@@ -10,9 +10,11 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use function array_key_exists;
 use function array_pop;
+use function count;
 use function implode;
 use function in_array;
 use function sprintf;
+use function str_contains;
 
 final class VariadicMethodsVisitor extends NodeVisitorAbstract
 {
@@ -32,6 +34,8 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	private array $variadicMethods = [];
 
 	public const ATTRIBUTE_NAME = 'variadicMethods';
+
+	private const ANONYMOUS_CLASS_PREFIX = 'class@anonymous';
 
 	public function beforeTraverse(array $nodes): ?array
 	{
@@ -57,7 +61,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 
 		if ($node instanceof Node\Stmt\ClassLike) {
 			if (!$node->name instanceof Node\Identifier) {
-				$className = sprintf('class@anonymous:%s:%s', $node->getStartLine(), $node->getEndLine());
+				$className = sprintf('%s:%s:%s', self::ANONYMOUS_CLASS_PREFIX, $node->getStartLine(), $node->getEndLine());
 				$this->classStack[] = $className;
 				$this->inClassLike = $className; // anonymous classes are in global namespace
 			} else {
@@ -105,7 +109,13 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			array_pop($this->classStack);
 
 			if ($this->classStack !== []) {
-				$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+				$lastClass = $this->classStack[count($this->classStack) - 1];
+
+				if (str_contains($lastClass, self::ANONYMOUS_CLASS_PREFIX)) {
+					$this->inClassLike = $lastClass;
+				} else {
+					$this->inClassLike = $this->inNamespace !== null ? $this->inNamespace . '\\' . implode('\\', $this->classStack) : implode('\\', $this->classStack);
+				}
 			} else {
 				$this->inClassLike = null;
 			}

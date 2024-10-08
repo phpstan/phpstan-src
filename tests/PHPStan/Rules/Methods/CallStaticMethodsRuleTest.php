@@ -852,4 +852,26 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10872.php'], []);
 	}
 
+	public function testBug2920(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-2920b.php'], [
+			[
+				'Call to an undefined static method Bug2920bStaticCall\HelloWorld::a().',
+				13,
+			],
+			[
+				'Parameter #1 $s of static method Bug2920bStaticCall\HelloWorld::b() expects string, int given.',
+				14,
+			],
+			[
+				'Parameter #1 $s of static method Bug2920bStaticCall\HelloWorld::b() expects string, int given.',
+				17,
+			],
+		]);
+	}
+
 }

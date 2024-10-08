@@ -3,7 +3,7 @@
 namespace PHPStan\Parser;
 
 use PHPStan\Testing\PHPStanTestCase;
-use PHPStan\TrinaryLogic;
+use function count;
 
 /**
  * @covers \PHPStan\Parser\RichParser
@@ -18,10 +18,7 @@ class ParserTest extends PHPStanTestCase
 			__DIR__ . '/data/variadic-functions.php',
 			VariadicFunctionsVisitor::ATTRIBUTE_NAME,
 			[
-				'VariadicFunctions\variadic_fn1' => TrinaryLogic::createYes(),
-				'VariadicFunctions\nonvariadic' => TrinaryLogic::createNo(),
-				'VariadicFunctions\maybe_variadic_fn1' => TrinaryLogic::createNo(),
-				'VariadicFunctions\implicit_variadic_fn1' => TrinaryLogic::createYes(),
+				'VariadicFunctions\implicit_variadic_fn1' => true,
 			],
 		];
 
@@ -30,34 +27,23 @@ class ParserTest extends PHPStanTestCase
 			VariadicMethodsVisitor::ATTRIBUTE_NAME,
 			[
 				'VariadicMethod\X' => [
-					'non_variadic_fn1' => TrinaryLogic::createNo(),
-					'variadic_fn1' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
-					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
+					'implicit_variadic_fn1' => true,
 				],
 				'VariadicMethod\Z' => [
-					'non_variadic_fnZ' => TrinaryLogic::createNo(),
-					'variadic_fnZ' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
-					'implicit_variadic_fnZ' => TrinaryLogic::createYes(),
+					'implicit_variadic_fnZ' => true,
 				],
 				'class@anonymous:20:30' => [
-					'non_variadic_fn_subZ' => TrinaryLogic::createNo(),
-					'variadic_fn_subZ' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
-					'implicit_variadic_subZ' => TrinaryLogic::createYes(),
+					'implicit_variadic_subZ' => true,
 				],
 				'class@anonymous:42:52' => [
-					'non_variadic_fn' => TrinaryLogic::createNo(),
-					'variadic_fn' => TrinaryLogic::createNo(), // native variadicness later on detected via reflection
-					'implicit_variadic_fn' => TrinaryLogic::createYes(),
+					'implicit_variadic_fn' => true,
 				],
 				'class@anonymous:54:58' => [
-					'implicit_variadic_fn' => TrinaryLogic::createYes(),
+					'implicit_variadic_fn' => true,
 				],
-				'class@anonymous:54:54' => [],
 				'class@anonymous:61:68' => [
-					'nestedClass' => TrinaryLogic::createNo(),
-					'implicit_variadic_fn' => TrinaryLogic::createYes(),
+					'implicit_variadic_fn' => true,
 				],
-				'class@anonymous:63:63' => [],
 			],
 		];
 
@@ -66,9 +52,7 @@ class ParserTest extends PHPStanTestCase
 			VariadicMethodsVisitor::ATTRIBUTE_NAME,
 			[
 				'VariadicMethodEnum\X' => [
-					'non_variadic_fn1' => TrinaryLogic::createNo(),
-					'variadic_fn1' => TrinaryLogic::createNo(), // variadicness later on detected via reflection
-					'implicit_variadic_fn1' => TrinaryLogic::createYes(),
+					'implicit_variadic_fn1' => true,
 				],
 			],
 		];
@@ -76,7 +60,7 @@ class ParserTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataVariadicCallLikes
-	 * @param array<string, TrinaryLogic>|array<string, array<string, TrinaryLogic>> $expectedVariadics
+	 * @param array<string, true>|array<string, array<string, true>> $expectedVariadics
 	 * @throws ParserErrorsException
 	 */
 	public function testSimpleParserVariadicCallLikes(string $file, string $attributeName, array $expectedVariadics): void
@@ -86,12 +70,16 @@ class ParserTest extends PHPStanTestCase
 		$ast = $parser->parseFile($file);
 		$variadics = $ast[0]->getAttribute($attributeName);
 		$this->assertIsArray($variadics);
-		$this->assertSame($expectedVariadics, $variadics);
+		$this->assertCount(count($expectedVariadics), $variadics);
+		foreach ($expectedVariadics as $key => $expectedVariadic) {
+			$this->assertArrayHasKey($key, $variadics);
+			$this->assertSame($expectedVariadic, $variadics[$key]);
+		}
 	}
 
 	/**
 	 * @dataProvider dataVariadicCallLikes
-	 * @param array<string, TrinaryLogic>|array<string, array<string, TrinaryLogic>> $expectedVariadics
+	 * @param array<string, true>|array<string, array<string, true>> $expectedVariadics
 	 * @throws ParserErrorsException
 	 */
 	public function testRichParserVariadicCallLikes(string $file, string $attributeName, array $expectedVariadics): void
@@ -101,7 +89,11 @@ class ParserTest extends PHPStanTestCase
 		$ast = $parser->parseFile($file);
 		$variadics = $ast[0]->getAttribute($attributeName);
 		$this->assertIsArray($variadics);
-		$this->assertSame($expectedVariadics, $variadics);
+		$this->assertCount(count($expectedVariadics), $variadics);
+		foreach ($expectedVariadics as $key => $expectedVariadic) {
+			$this->assertArrayHasKey($key, $variadics);
+			$this->assertSame($expectedVariadic, $variadics[$key]);
+		}
 	}
 
 }

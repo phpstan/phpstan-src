@@ -148,7 +148,7 @@ final class PhpFunctionReflection implements FunctionReflection
 					is_array($variadicFunctions)
 					&& array_key_exists($this->reflection->getName(), $variadicFunctions)
 				) {
-					return $this->containsVariadicCalls = !$variadicFunctions[$this->reflection->getName()]->no();
+					return $this->containsVariadicCalls = $variadicFunctions[$this->reflection->getName()];
 				}
 			}
 

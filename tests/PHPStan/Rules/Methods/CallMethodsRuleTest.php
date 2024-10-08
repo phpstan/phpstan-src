@@ -3412,4 +3412,26 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2920(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-2920.php'], [
+			[
+				'Call to an undefined method Bug2920MethodCall\HelloWorld::a().',
+				13,
+			],
+			[
+				'Parameter #1 $s of method Bug2920MethodCall\HelloWorld::b() expects string, int given.',
+				14,
+			],
+			[
+				'Parameter #1 $s of method Bug2920MethodCall\HelloWorld::b() expects string, int given.',
+				17,
+			],
+		]);
+	}
+
 }

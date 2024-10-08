@@ -911,4 +911,23 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7173.php'], []);
 	}
 
+	public function testHashing(): void
+	{
+		$this->analyse([__DIR__ . '/data/hashing.php'], [
+			[
+				"Strict comparison using === between lowercase-string&non-falsy-string and 'ABC' will always evaluate to false.",
+				9,
+			],
+			[
+				"Strict comparison using === between (lowercase-string&non-falsy-string)|false and 'ABC' will always evaluate to false.",
+				12,
+			],
+			[
+				"Strict comparison using === between (lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string) and 'A' will always evaluate to false.",
+				31,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 }

@@ -2,16 +2,10 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Declare_;
-use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
-use PHPStan\Cache\Cache;
-use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\VariadicMethodsVisitor;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -21,7 +15,6 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
@@ -36,14 +29,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 use ReflectionException;
+use function array_key_exists;
 use function array_map;
+use function count;
 use function explode;
-use function filemtime;
 use function in_array;
-use function is_bool;
+use function is_array;
 use function sprintf;
 use function strtolower;
-use function time;
 use const PHP_VERSION_ID;
 
 /**
@@ -62,6 +55,8 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
+	private ?bool $containsVariadicCalls = null;
+
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
@@ -75,8 +70,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private ReflectionMethod $reflection,
 		private ReflectionProvider $reflectionProvider,
 		private Parser $parser,
-		private FunctionCallStatementFinder $functionCallStatementFinder,
-		private Cache $cache,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
@@ -252,82 +245,40 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$filename = $this->declaringTrait->getFileName();
 		}
 
-		if (!$isNativelyVariadic && $filename !== null) {
-			$modifiedTime = @filemtime($filename);
-			if ($modifiedTime === false) {
-				$modifiedTime = time();
-			}
-			$key = sprintf('variadic-method-%s-%s-%s', $declaringClass->getName(), $this->reflection->getName(), $filename);
-			$variableCacheKey = sprintf('%d-v4', $modifiedTime);
-			$cachedResult = $this->cache->load($key, $variableCacheKey);
-			if ($cachedResult === null || !is_bool($cachedResult)) {
-				$nodes = $this->parser->parseFile($filename);
-				$result = $this->callsFuncGetArgs($declaringClass, $nodes);
-				$this->cache->save($key, $variableCacheKey, $result);
-				return $result;
+		if (!$isNativelyVariadic && $filename !== null && !$this->declaringClass->isBuiltin()) {
+			if ($this->containsVariadicCalls !== null) {
+				return $this->containsVariadicCalls;
 			}
 
-			return $cachedResult;
+			$className = $declaringClass->getName();
+			if ($declaringClass->isAnonymous()) {
+				$className = sprintf('%s:%s:%s', VariadicMethodsVisitor::ANONYMOUS_CLASS_PREFIX, $declaringClass->getNativeReflection()->getStartLine(), $declaringClass->getNativeReflection()->getEndLine());
+			}
+			if (array_key_exists($className, VariadicMethodsVisitor::$cache)) {
+				if (array_key_exists($this->reflection->getName(), VariadicMethodsVisitor::$cache[$className])) {
+					return $this->containsVariadicCalls = VariadicMethodsVisitor::$cache[$className][$this->reflection->getName()];
+				}
+
+				return $this->containsVariadicCalls = false;
+			}
+
+			$nodes = $this->parser->parseFile($filename);
+			if (count($nodes) > 0) {
+				$variadicMethods = $nodes[0]->getAttribute(VariadicMethodsVisitor::ATTRIBUTE_NAME);
+
+				if (
+					is_array($variadicMethods)
+					&& array_key_exists($className, $variadicMethods)
+					&& array_key_exists($this->reflection->getName(), $variadicMethods[$className])
+				) {
+					return $this->containsVariadicCalls = $variadicMethods[$className][$this->reflection->getName()];
+				}
+			}
+
+			return $this->containsVariadicCalls = false;
 		}
 
 		return $isNativelyVariadic;
-	}
-
-	/**
-	 * @param Node[] $nodes
-	 */
-	private function callsFuncGetArgs(ClassReflection $declaringClass, array $nodes): bool
-	{
-		foreach ($nodes as $node) {
-			if (
-				$node instanceof Node\Stmt\ClassLike
-			) {
-				if (!isset($node->namespacedName)) {
-					continue;
-				}
-				if ($declaringClass->getName() !== (string) $node->namespacedName) {
-					continue;
-				}
-				if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
-					return true;
-				}
-				continue;
-			}
-
-			if ($node instanceof ClassMethod) {
-				if ($node->getStmts() === null) {
-					continue; // interface
-				}
-
-				$methodName = $node->name->name;
-				if ($methodName === $this->reflection->getName()) {
-					return $this->functionCallStatementFinder->findFunctionCallInStatements(ParametersAcceptor::VARIADIC_FUNCTIONS, $node->getStmts()) !== null;
-				}
-
-				continue;
-			}
-
-			if ($node instanceof Function_) {
-				continue;
-			}
-
-			if ($node instanceof Namespace_) {
-				if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
-					return true;
-				}
-				continue;
-			}
-
-			if (!$node instanceof Declare_ || $node->stmts === null) {
-				continue;
-			}
-
-			if ($this->callsFuncGetArgs($declaringClass, $node->stmts)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	public function isPrivate(): bool

@@ -303,6 +303,16 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\VariadicMethodsVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\VariadicFunctionsVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Node\Printer\ExprPrinter
 
 	-
@@ -633,9 +643,6 @@ services:
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 		tags:
 			- phpstan.diagnoseExtension
-
-	-
-		class: PHPStan\Parser\FunctionCallStatementFinder
 
 	-
 		class: PHPStan\Process\CpuCoreCounter

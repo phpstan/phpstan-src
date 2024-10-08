@@ -3412,4 +3412,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11559c(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11559c.php'], [
+			[
+				'Method class@anonymous/tests/PHPStan/Rules/Methods/data/bug-11559c.php:6:1::regular_fn() invoked with 3 parameters, 1 required.',
+				15,
+			],
+		]);
+	}
+
 }

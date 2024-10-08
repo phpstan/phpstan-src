@@ -3421,8 +3421,8 @@ class CallMethodsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-11559c.php'], [
 			[
-				'Method class@anonymous/tests/PHPStan/Rules/Methods/data/bug-11559c.php:5:1::regular_fn() invoked with 3 parameters, 1 required.',
-				14,
+				'Method class@anonymous/tests/PHPStan/Rules/Methods/data/bug-11559c.php:6:1::regular_fn() invoked with 3 parameters, 1 required.',
+				15,
 			],
 		]);
 	}

@@ -245,7 +245,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$filename = $this->declaringTrait->getFileName();
 		}
 
-		if (!$isNativelyVariadic && $filename !== null) {
+		if (!$isNativelyVariadic && $filename !== null && !$this->declaringClass->isBuiltin()) {
 			if ($this->containsVariadicCalls !== null) {
 				return $this->containsVariadicCalls;
 			}

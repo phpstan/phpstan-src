@@ -133,7 +133,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	private function isVariadic(): bool
 	{
 		$isNativelyVariadic = $this->reflection->isVariadic();
-		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
+		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false && !$this->isBuiltin()) {
 			$filename = $this->reflection->getFileName();
 
 			if ($this->containsVariadicCalls !== null) {

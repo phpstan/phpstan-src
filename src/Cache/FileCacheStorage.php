@@ -25,7 +25,6 @@ use function rename;
 use function rmdir;
 use function sha1;
 use function sprintf;
-use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -37,7 +36,7 @@ use const DIRECTORY_SEPARATOR;
 final class FileCacheStorage implements CacheStorage
 {
 
-	private const CACHED_CLEARED_VERSION = 'v2-old-two';
+	private const CACHED_CLEARED_VERSION = 'v2-new';
 
 	public function __construct(private string $directory)
 	{
@@ -147,27 +146,16 @@ final class FileCacheStorage implements CacheStorage
 			"<?php declare(strict_types = 1);\n\n%s",
 			sprintf('// %s', 'variadic-method-'),
 		);
-		$beginOld = sprintf(
-			"<?php declare(strict_types = 1);\n\n%s",
-			'return PHPStan\\Cache\\CacheItem::',
-		);
-		$beginOld2 = sprintf(
-			"<?php declare(strict_types = 1);\n\n%s",
-			'return \\PHPStan\\Cache\\CacheItem::',
-		);
+		$beginNew = "<?php declare(strict_types = 1);\n\n//";
 		$emptyDirectoriesToCheck = [];
 		foreach ($files as $file) {
 			try {
 				$path = $file->getPathname();
 				$contents = FileReader::read($path);
-				if (str_contains($contents, 'odsl-')) {
-					continue;
-				}
 				if (
 					!str_starts_with($contents, $beginFunction)
 					&& !str_starts_with($contents, $beginMethod)
-					&& !str_starts_with($contents, $beginOld)
-					&& !str_starts_with($contents, $beginOld2)
+					&& str_starts_with($contents, $beginNew)
 				) {
 					continue;
 				}

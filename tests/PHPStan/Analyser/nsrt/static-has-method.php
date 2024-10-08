@@ -18,4 +18,3 @@ class HelloWorld
 		$it = rex_var::varsIterator();
 	}
 }
-

@@ -222,12 +222,28 @@ class DumpTypeRuleTest extends RuleTestCase
 				51,
 			],
 			[
-				"Dumped type: array{'shall-we-dance': 'yes'}",
+				"Dumped type: array{shall-we-dance: 'yes'}",
 				52,
 			],
 			[
 				"Dumped type: array{'shall-we-dance?': 'yes'}",
 				53,
+			],
+			[
+				'Dumped type: array{"Let\'go": "Let\'go"}',
+				54,
+			],
+			[
+				'Dumped type: array{\'"HELLO!!"\': \'"HELLO!!"\'}',
+				55,
+			],
+			[
+				'Dumped type: array{"Don\'t say \"lazy\"": "Don\'t say \"lazy\""}',
+				56,
+			],
+			[
+				"Dumped type: array{'Foo\\\\Bar': 'Foo\\\\Bar'}",
+				57,
 			],
 		]);
 	}

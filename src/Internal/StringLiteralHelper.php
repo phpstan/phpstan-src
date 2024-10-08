@@ -4,16 +4,15 @@ namespace PHPStan\Internal;
 
 use function addcslashes;
 use function preg_match;
-use function str_contains;
-use function strtr;
 use function sprintf;
+use function str_contains;
 
 final class StringLiteralHelper
 {
 
 	public static function escape(string $string): string
 	{
-		return addcslashes($string, "\0..\37\177");
+		return addcslashes($string, "\0..\37\177\\");
 	}
 
 	public static function escapeAndQuoteIfNeeded(string $string): string
@@ -25,11 +24,13 @@ final class StringLiteralHelper
 		$escaped = self::escape($string);
 
 		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
-			return sprintf('"%s"', strtr($escaped, ['"' => '\\"']));
+			return ($escaped === addcslashes($string, '\'\\'))
+				? sprintf("'%s'", $escaped)
+				: sprintf('"%s"', addcslashes($escaped, '"'));
 		}
 
-		if (preg_match('/[!-\/:-@\[-^`\{-~]/', $escaped) === 1 || preg_match('/\p{Zs}/u', $escaped) === 1) {
-			return sprintf("'%s'", strtr($escaped, ['\\' => '\\\\']));
+		if (preg_match('/[!-,.\/:-@[-^`{|}~]/', $escaped) === 1 || preg_match('/\p{Zs}/u', $escaped) === 1) {
+			return sprintf("'%s'", addcslashes($escaped, "\\'"));
 		}
 
 		return $escaped;
@@ -44,10 +45,12 @@ final class StringLiteralHelper
 		$escaped = self::escape($string);
 
 		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
-			return sprintf('"%s"', strtr($escaped, ['"' => '\\"']));
+			return ($escaped === addcslashes($string, '\'\\'))
+				? sprintf("'%s'", $escaped)
+				: sprintf('"%s"', addcslashes($escaped, '"'));
 		}
 
-		return sprintf("'%s'", strtr($escaped, ['\\' => '\\\\']));
+		return sprintf("'%s'", addcslashes($escaped, "\\'"));
 	}
 
 }

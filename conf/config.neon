@@ -282,6 +282,7 @@ extensions:
 
 rules:
 	- PHPStan\Rules\Debug\DebugScopeRule
+	- PHPStan\Rules\Debug\DumpPhpDocTypeRule
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
 

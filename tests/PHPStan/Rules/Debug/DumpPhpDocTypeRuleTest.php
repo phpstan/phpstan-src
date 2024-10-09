@@ -93,11 +93,11 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				"Dumped type: array{1: true, 0: false}",
+				'Dumped type: array{1: true, 0: false}',
 				27,
 			],
 			[
-				"Dumped type: T",
+				'Dumped type: T',
 				36,
 			],
 		]);

@@ -287,7 +287,7 @@ final class ResultCacheManager
 		$filesToAnalyse = array_unique($filesToAnalyse);
 		$filesToAnalyseCount = count($filesToAnalyse);
 
-		if ($output->isVerbose()) {
+		if ($output->isVeryVerbose()) {
 			$elapsed = microtime(true) - $startTime;
 			$elapsedString = $elapsed > 5
 				? sprintf(' in %f seconds', round($elapsed, 1))

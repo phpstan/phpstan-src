@@ -104,15 +104,13 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 				'~Result of || is always true.~',
 				[],
 				false,
-				false,
+				true,
 			],
 			[
 				'#Method PragmaRX\Notified\Data\Repositories\Notified::firstOrCreateByEvent() should return PragmaRX\Notified\Data\Models\Notified but returns Illuminate\Database\Eloquent\Model|null#',
-				[
-					'null' => 'null',
-				],
+				[],
 				false,
-				false,
+				true,
 			],
 		];
 	}

@@ -12606,7 +12606,7 @@ return [
 'timezone_version_get' => ['string'],
 'tmpfile' => ['__benevolent<resource|false>'],
 'token_get_all' => ['list<string|array{0:int,1:string,2:int}>', 'source'=>'string', 'flags='=>'int'],
-'token_name' => ['non-empty-string', 'type'=>'int'],
+'token_name' => ['non-falsy-string', 'type'=>'int'],
 'TokyoTyrant::__construct' => ['void', 'host='=>'string', 'port='=>'int', 'options='=>'array'],
 'TokyoTyrant::add' => ['int|float', 'key'=>'string', 'increment'=>'float', 'type='=>'int'],
 'TokyoTyrant::connect' => ['TokyoTyrant', 'host'=>'string', 'port='=>'int', 'options='=>'array'],

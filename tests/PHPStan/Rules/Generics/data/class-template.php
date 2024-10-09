@@ -114,3 +114,29 @@ class Adipiscing
 {
 
 }
+
+/**
+ * @template T = Zazzzu
+ */
+class Elit
+{
+
+}
+
+/**
+ * @template T of object = bool
+ */
+class Venenatis
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+class Mauris
+{
+
+}

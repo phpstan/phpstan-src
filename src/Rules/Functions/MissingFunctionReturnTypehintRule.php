@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
-use function implode;
 use function sprintf;
 
 /**
@@ -58,7 +57,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				'Function %s() return type with generic %s does not specify its types: %s',
 				$functionReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

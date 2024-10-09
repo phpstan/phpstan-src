@@ -176,6 +176,9 @@ final class PhpDocNodeResolver
 							$templateType->bound !== null
 								? $this->typeNodeResolver->resolve($templateType->bound, $nameScope)
 								: new MixedType(),
+							$templateType->default !== null
+								? $this->typeNodeResolver->resolve($templateType->default, $nameScope)
+								: null,
 							TemplateTypeVariance::createInvariant(),
 						);
 					}
@@ -327,9 +330,12 @@ final class PhpDocNodeResolver
 				}
 			}
 
+			$nameScopeWithoutCurrent = $nameScope->unsetTemplateType($valueNode->name);
+
 			$resolved[$valueNode->name] = new TemplateTag(
 				$valueNode->name,
-				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope->unsetTemplateType($valueNode->name)) : new MixedType(true),
+				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScopeWithoutCurrent) : new MixedType(true),
+				$valueNode->default !== null ? $this->typeNodeResolver->resolve($valueNode->default, $nameScopeWithoutCurrent) : null,
 				$variance,
 			);
 			$resolvedPrefix[$valueNode->name] = $prefix;

@@ -23,3 +23,20 @@ class FooCovariantGeneric
 {
 
 }
+
+/**
+ * @template T = string
+ */
+class FooGenericWithDefault
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ */
+class FooGenericWithSomeDefaults
+{
+
+}

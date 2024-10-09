@@ -73,6 +73,18 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type MethodTemplateType\Dolor<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class MethodTemplateType\Dolor.',
 				109,
 			],
+			[
+				'PHPDoc tag @template T for method MethodTemplateType\InvalidDefault::invalid() has invalid default type MethodTemplateType\Zazzzu.',
+				122,
+			],
+			[
+				'Default type bool in PHPDoc tag @template T for method MethodTemplateType\InvalidDefault::outOfBounds() is not subtype of bound type object.',
+				130,
+			],
+			[
+				'PHPDoc tag @template V for method MethodTemplateType\InvalidDefault::requiredAfterOptional() does not have a default type but follows an optional @template U.',
+				140,
+			],
 		]);
 	}
 

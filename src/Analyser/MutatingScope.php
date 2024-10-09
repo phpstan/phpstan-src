@@ -2539,6 +2539,7 @@ final class MutatingScope implements Scope
 				$templateTags[$templateType->getName()] = new TemplateTag(
 					$templateType->getName(),
 					$templateType->getBound(),
+					$templateType->getDefault(),
 					$templateType->getVariance(),
 				);
 			}
@@ -5604,6 +5605,11 @@ final class MutatingScope implements Scope
 			$templateType = $typeMap->getType($tag->getName());
 			if ($templateType !== null) {
 				$list[] = $templateType;
+				continue;
+			}
+			$default = $tag->getDefault();
+			if ($default !== null) {
+				$list[] = $default;
 				continue;
 			}
 			$bound = $tag->getBound();

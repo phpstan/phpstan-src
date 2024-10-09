@@ -531,6 +531,17 @@ final class DependencyResolver
 					}
 					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
 				}
+
+				$default = $templateTag->getDefault();
+				if ($default === null) {
+					continue;
+				}
+				foreach ($default->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
 			}
 
 			foreach ($classReflection->getPropertyTags() as $propertyTag) {

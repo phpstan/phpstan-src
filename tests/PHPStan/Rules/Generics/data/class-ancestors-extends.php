@@ -260,3 +260,16 @@ class TraitInExtends extends FooGeneric
 {
 
 }
+
+/**
+ * @template T = string
+ */
+class FooGenericDefault
+{
+
+}
+
+class FooGenericExtendsDefault extends FooGenericDefault
+{
+
+}

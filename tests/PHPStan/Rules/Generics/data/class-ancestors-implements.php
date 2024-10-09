@@ -242,3 +242,18 @@ class FooCollection implements AbstractFooCollection
 class FooTypeProjection implements FooGeneric
 {
 }
+
+/**
+ * @template T = string
+ */
+interface FooGenericDefault
+{
+}
+
+interface FooGenericExtendsDefault extends FooGenericDefault
+{
+}
+
+class FooGenericImplementsDefault implements FooGenericDefault
+{
+}

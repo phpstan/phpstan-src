@@ -60,6 +60,9 @@ final class GenericCallableRuleHelper
 				sprintf('PHPDoc tag %s template of %s cannot have existing type alias %%s as its name.', $location, $typeDescription),
 				sprintf('PHPDoc tag %s template %%s of %s has invalid bound type %%s.', $location, $typeDescription),
 				sprintf('PHPDoc tag %s template %%s of %s with bound type %%s is not supported.', $location, $typeDescription),
+				sprintf('PHPDoc tag %s template %%s of %s has invalid default type %%s.', $location, $typeDescription),
+				sprintf('Default type %%s in PHPDoc tag %s template %%s of %s is not subtype of bound type %%s.', $location, $typeDescription),
+				sprintf('PHPDoc tag %s template %%s of %s does not have a default type but follows an optional template %%s.', $location, $typeDescription),
 			);
 
 			$templateTags = $type->getTemplateTags();

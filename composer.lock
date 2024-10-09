@@ -4445,21 +4445,21 @@
         },
         {
             "name": "ondrejmirtes/simple-downgrader",
-            "version": "2.x-dev",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "760b4c5c0b5ae631e6604bdcf074387e40e35ed1"
+                "reference": "fb8b7833034f0396d5e4518ed090e3d099b7d9bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/760b4c5c0b5ae631e6604bdcf074387e40e35ed1",
-                "reference": "760b4c5c0b5ae631e6604bdcf074387e40e35ed1",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/fb8b7833034f0396d5e4518ed090e3d099b7d9bc",
+                "reference": "fb8b7833034f0396d5e4518ed090e3d099b7d9bc",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^3.2.5",
-                "nikic/php-parser": "^5.0",
+                "nikic/php-parser": "^5.3.0",
                 "php": "^7.4|^8.0",
                 "phpstan/phpdoc-parser": "^2.0",
                 "symfony/console": "^5.4",
@@ -4470,7 +4470,6 @@
                 "phpstan/phpstan": "^2.0",
                 "phpunit/phpunit": "^9.6"
             },
-            "default-branch": true,
             "bin": [
                 "bin/simple-downgrade"
             ],
@@ -4489,9 +4488,9 @@
             "description": "Simple Downgrader",
             "support": {
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
-                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.x"
+                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.0.0"
             },
-            "time": "2024-09-15T14:01:11+00:00"
+            "time": "2024-10-09T14:55:47+00:00"
         },
         {
             "name": "phar-io/manifest",

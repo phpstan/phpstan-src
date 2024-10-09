@@ -62,9 +62,13 @@ final class TemplateTypeCheck
 		string $sameTemplateTypeNameAsTypeMessage,
 		string $invalidBoundTypeMessage,
 		string $notSupportedBoundMessage,
+		string $invalidDefaultTypeMessage,
+		string $defaultNotSubtypeOfBoundMessage,
+		string $requiredTypeAfterOptionalMessage,
 	): array
 	{
 		$messages = [];
+		$templateTagWithDefaultType = null;
 		foreach ($templateTags as $templateTag) {
 			$templateTagName = $scope->resolveName(new Node\Name($templateTag->getName()));
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
@@ -141,6 +145,65 @@ final class TemplateTypeCheck
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;
 			}
+
+			$defaultType = $templateTag->getDefault();
+			if ($defaultType === null) {
+				if ($templateTagWithDefaultType !== null) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						$requiredTypeAfterOptionalMessage,
+						$templateTagName,
+						$templateTagWithDefaultType,
+					))->identifier('generics.requiredTypeAfterOptional')->build();
+				}
+
+				continue;
+			}
+
+			$templateTagWithDefaultType = $templateTagName;
+
+			foreach ($defaultType->getReferencedClasses() as $referencedClass) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						$invalidDefaultTypeMessage,
+						$templateTagName,
+						$referencedClass,
+					))->identifier('class.notFound')->build();
+					continue;
+				}
+				if (!$this->reflectionProvider->getClass($referencedClass)->isTrait()) {
+					continue;
+				}
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					$invalidDefaultTypeMessage,
+					$templateTagName,
+					$referencedClass,
+				))->identifier('generics.traitBound')->build();
+			}
+
+			$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $defaultType->getReferencedClasses());
+			$messages = array_merge($messages, $this->classCheck->checkClassNames($classNameNodePairs, $this->checkClassCaseSensitivity));
+
+			$genericDefaultErrors = $this->genericObjectTypeCheck->check(
+				$defaultType,
+				sprintf('PHPDoc tag @template %s default contains generic type %%s but class %%s is not generic.', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s default has type %%s which does not specify all template types of class %%s: %%s', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s default has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $escapedTemplateTagName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s default is not subtype of template type %%s of class %%s.', $escapedTemplateTagName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @template %s default is in conflict with %%s template type %%s of %%s %%s.', $escapedTemplateTagName),
+				sprintf('Call-site variance of %%s in generic type %%s in PHPDoc tag @template %s default is redundant, template type %%s of %%s %%s has the same variance.', $escapedTemplateTagName),
+			);
+			foreach ($genericDefaultErrors as $genericDefaultError) {
+				$messages[] = $genericDefaultError;
+			}
+
+			if (!$boundType->accepts($defaultType, $scope->isDeclareStrictTypes())->no()) {
+				continue;
+			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf($defaultNotSubtypeOfBoundMessage, $defaultType->describe(VerbosityLevel::typeOnly()), $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))
+				->identifier('generics.templateDefaultOutOfBounds')
+				->build();
 		}
 
 		return $messages;

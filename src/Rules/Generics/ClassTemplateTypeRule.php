@@ -49,6 +49,9 @@ final class ClassTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for %s cannot have existing type alias %%s as its name.', $displayName),
 			sprintf('PHPDoc tag @template %%s for %s has invalid bound type %%s.', $displayName),
 			sprintf('PHPDoc tag @template %%s for %s with bound type %%s is not supported.', $displayName),
+			sprintf('PHPDoc tag @template %%s for %s has invalid default type %%s.', $displayName),
+			sprintf('Default type %%s in PHPDoc tag @template %%s for %s is not subtype of bound type %%s.', $displayName),
+			sprintf('PHPDoc tag @template %%s for %s does not have a default type but follows an optional @template %%s.', $displayName),
 		);
 	}
 

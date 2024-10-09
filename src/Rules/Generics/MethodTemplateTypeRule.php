@@ -66,6 +66,9 @@ final class MethodTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $escapedClassName, $escapedMethodName),
 			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid bound type %%s.', $escapedClassName, $escapedMethodName),
 			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $escapedClassName, $escapedMethodName),
+			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid default type %%s.', $escapedClassName, $escapedMethodName),
+			sprintf('Default type %%s in PHPDoc tag @template %%s for method %s::%s() is not subtype of bound type %%s.', $escapedClassName, $escapedMethodName),
+			sprintf('PHPDoc tag @template %%s for method %s::%s() does not have a default type but follows an optional @template %%s.', $escapedClassName, $escapedMethodName),
 		);
 
 		$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();

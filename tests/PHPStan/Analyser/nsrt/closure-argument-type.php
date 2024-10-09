@@ -35,6 +35,10 @@ class Foo
 			assertType('array{a: int}', $context2);
 			assertType('mixed', $context3);
 		})($integer, $array);
+
+		($callback = function($context) {
+			assertType('int', $context);
+		})($integer);
 	}
 
 }

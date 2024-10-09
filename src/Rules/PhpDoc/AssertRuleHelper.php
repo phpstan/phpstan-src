@@ -23,7 +23,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_merge;
-use function implode;
 use function sprintf;
 use function substr;
 
@@ -189,7 +188,7 @@ final class AssertRuleHelper
 					$tagName,
 					$assertedExprString,
 					$innerName,
-					implode(', ', $genericTypeNames),
+					$genericTypeNames,
 				))
 					->identifier('missingType.generics')
 					->build();

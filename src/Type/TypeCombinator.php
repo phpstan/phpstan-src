@@ -749,6 +749,7 @@ final class TypeCombinator
 					$templateArray->getVariance(),
 					$templateArray->getName(),
 					$arrayType,
+					$templateArray->getDefault(),
 				);
 			}
 
@@ -1014,6 +1015,7 @@ final class TypeCombinator
 					$union,
 					$type->getVariance(),
 					$type->getStrategy(),
+					$type->getDefault(),
 				);
 			}
 

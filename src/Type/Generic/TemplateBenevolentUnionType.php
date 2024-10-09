@@ -21,6 +21,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		BenevolentUnionType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct($bound->getTypes());
@@ -30,6 +31,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	/** @param Type[] $types */
@@ -41,6 +43,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 			$this->variance,
 			$this->name,
 			new BenevolentUnionType($types),
+			$this->default,
 		);
 	}
 

@@ -241,3 +241,35 @@ class MissingPureClosureSignatureType {
 	}
 
 }
+
+/**
+ * @template T = string
+ */
+class GenericClassWithDefault
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ */
+class GenericClassWithSomeDefaults
+{
+
+}
+
+class Baz
+{
+
+	public function acceptsGenericWithDefault(GenericClassWithDefault $i)
+	{
+
+	}
+
+	public function acceptsGenericWithSomeDefaults(GenericClassWithSomeDefaults $c)
+	{
+
+	}
+
+}

@@ -1432,7 +1432,7 @@ final class ClassReflection
 		$map = [];
 		$i = 0;
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$map[$tag->getName()] = $types[$i] ?? $tag->getBound();
+			$map[$tag->getName()] = $types[$i] ?? $tag->getDefault() ?? $tag->getBound();
 			$i++;
 		}
 
@@ -1469,7 +1469,7 @@ final class ClassReflection
 
 		$list = [];
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$list[] = $typeMap->getType($tag->getName()) ?? $tag->getBound();
+			$list[] = $typeMap->getType($tag->getName()) ?? $tag->getDefault() ?? $tag->getBound();
 		}
 
 		return $list;

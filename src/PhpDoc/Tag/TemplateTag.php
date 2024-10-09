@@ -14,7 +14,7 @@ final class TemplateTag
 	/**
 	 * @param non-empty-string $name
 	 */
-	public function __construct(private string $name, private Type $bound, private TemplateTypeVariance $variance)
+	public function __construct(private string $name, private Type $bound, private ?Type $default, private TemplateTypeVariance $variance)
 	{
 	}
 
@@ -29,6 +29,11 @@ final class TemplateTag
 	public function getBound(): Type
 	{
 		return $this->bound;
+	}
+
+	public function getDefault(): ?Type
+	{
+		return $this->default;
 	}
 
 	public function getVariance(): TemplateTypeVariance

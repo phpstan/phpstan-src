@@ -24,7 +24,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_merge;
-use function implode;
 use function in_array;
 use function sprintf;
 
@@ -206,7 +205,7 @@ final class LocalTypeAliasesCheck
 					$reflection->getDisplayName(),
 					$aliasName,
 					$name,
-					implode(', ', $genericTypeNames),
+					$genericTypeNames,
 				))
 					->identifier('missingType.generics')
 					->build();

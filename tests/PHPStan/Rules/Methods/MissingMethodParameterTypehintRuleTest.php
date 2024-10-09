@@ -82,6 +82,10 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 				'Method MissingMethodParameterTypehint\MissingPureClosureSignatureType::doFoo() has parameter $cb with no signature specified for Closure.',
 				238,
 			],
+			[
+				'Method MissingMethodParameterTypehint\Baz::acceptsGenericWithSomeDefaults() has parameter $c with generic class MissingMethodParameterTypehint\GenericClassWithSomeDefaults but does not specify its types: T, U (1-2 required)',
+				270,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/missing-method-parameter-typehint.php'], $errors);

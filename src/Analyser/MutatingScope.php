@@ -2536,6 +2536,7 @@ final class MutatingScope implements Scope
 				$templateTags[$templateType->getName()] = new TemplateTag(
 					$templateType->getName(),
 					$templateType->getBound(),
+					$templateType->getDefault(),
 					$templateType->getVariance(),
 				);
 			}
@@ -5547,7 +5548,7 @@ final class MutatingScope implements Scope
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $resolvedTemplateTypeMap->getType($type->getName());
 				if ($newType === null || $newType instanceof ErrorType) {
-					return $type->getBound();
+					return $type->getDefault() ?? $type->getBound();
 				}
 
 				return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);

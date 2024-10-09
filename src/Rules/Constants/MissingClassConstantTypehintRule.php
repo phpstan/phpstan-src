@@ -12,7 +12,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
-use function implode;
 use function sprintf;
 
 /**
@@ -76,7 +75,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$name,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

@@ -53,6 +53,10 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 				'Method MissingMethodReturnTypehint\CallableSignature::doFoo() return type has no signature specified for callable.',
 				99,
 			],
+			[
+				'Method MissingMethodReturnTypehint\Baz::returnsGenericWithSomeDefaults() return type with generic class MissingMethodReturnTypehint\GenericClassWithSomeDefaults does not specify its types: T, U (1-2 required)',
+				142,
+			],
 		]);
 	}
 

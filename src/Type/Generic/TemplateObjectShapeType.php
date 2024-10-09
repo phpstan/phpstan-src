@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateObjectShapeType extends ObjectShapeType implements TemplateType
@@ -22,6 +23,7 @@ final class TemplateObjectShapeType extends ObjectShapeType implements TemplateT
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		ObjectShapeType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct($bound->getProperties(), $bound->getOptionalProperties());
@@ -30,6 +32,7 @@ final class TemplateObjectShapeType extends ObjectShapeType implements TemplateT
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

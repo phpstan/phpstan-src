@@ -45,7 +45,7 @@ final class TemplateTypeHelper
 				}
 
 				if ($newType instanceof ErrorType && !$keepErrorTypes) {
-					return $traverse($type->getBound());
+					return $traverse($type->getDefault() ?? $type->getBound());
 				}
 
 				$callSiteVariance = $callSiteVariances->getVariance($type->getName());

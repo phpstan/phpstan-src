@@ -107,8 +107,12 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				73,
 			],
 			[
-				'PHPDoc tag @var for variable $foo contains unknown class InvalidVarTagType\Blabla.',
+				'PHPDoc tag @var for variable $test contains generic class InvalidPhpDocDefinitions\FooGenericWithSomeDefaults but does not specify its types: T, U (1-2 required)',
 				79,
+			],
+			[
+				'PHPDoc tag @var for variable $foo contains unknown class InvalidVarTagType\Blabla.',
+				85,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);

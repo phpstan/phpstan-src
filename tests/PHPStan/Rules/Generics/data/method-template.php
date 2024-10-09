@@ -112,3 +112,34 @@ class Sit
 	}
 
 }
+
+class InvalidDefault
+{
+
+	/**
+	 * @template T = Zazzzu
+	 */
+	public function invalid()
+	{
+
+	}
+
+	/**
+	 * @template T of object = bool
+	 */
+	public function outOfBounds()
+	{
+
+	}
+
+	/**
+	 * @template T
+	 * @template U = string
+	 * @template V
+	 */
+	public function requiredAfterOptional()
+	{
+
+	}
+
+}

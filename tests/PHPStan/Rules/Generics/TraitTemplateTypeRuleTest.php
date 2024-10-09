@@ -69,6 +69,18 @@ class TraitTemplateTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type TraitTemplateType\Dolor<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class TraitTemplateType\Dolor.',
 				64,
 			],
+			[
+				'PHPDoc tag @template T for trait TraitTemplateType\Adipiscing has invalid default type TraitTemplateType\Zazzzu.',
+				72,
+			],
+			[
+				'Default type bool in PHPDoc tag @template T for trait TraitTemplateType\Elit is not subtype of bound type object.',
+				80,
+			],
+			[
+				'PHPDoc tag @template V for trait TraitTemplateType\Consecteur does not have a default type but follows an optional @template U.',
+				90,
+			],
 		]);
 	}
 

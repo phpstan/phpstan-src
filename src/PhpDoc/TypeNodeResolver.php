@@ -792,6 +792,15 @@ final class TypeNodeResolver
 
 			$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
 			if ($classReflection->isGeneric()) {
+				$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
+				for ($i = count($genericTypes), $templateTypesCount = count($templateTypes); $i < $templateTypesCount; $i++) {
+					$templateType = $templateTypes[$i];
+					if (!$templateType instanceof TemplateType || $templateType->getDefault() === null) {
+						continue;
+					}
+					$genericTypes[] = $templateType->getDefault();
+				}
+
 				if (in_array($mainTypeClassName, [
 					Traversable::class,
 					IteratorAggregate::class,
@@ -910,6 +919,9 @@ final class TypeNodeResolver
 					$templateType->bound !== null
 						? $this->resolve($templateType->bound, $nameScope)
 						: new MixedType(),
+					$templateType->default !== null
+						? $this->resolve($templateType->default, $nameScope)
+						: null,
 					TemplateTypeVariance::createInvariant(),
 				);
 			}

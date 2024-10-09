@@ -75,3 +75,29 @@ interface TypeProjections
 {
 
 }
+
+/**
+ * @template T = Zazzzu
+ */
+interface InvalidDefault
+{
+
+}
+
+/**
+ * @template T of object = bool
+ */
+interface OutOfBoundsDefault
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+interface RequiredAfterOptional
+{
+
+}

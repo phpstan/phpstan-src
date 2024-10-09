@@ -24,6 +24,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		MixedType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct(true);
@@ -33,6 +34,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): IsSuperTypeOfResult
@@ -57,6 +59,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->variance,
 			$this->name,
 			new StrictMixedType(),
+			$this->default,
 		);
 	}
 

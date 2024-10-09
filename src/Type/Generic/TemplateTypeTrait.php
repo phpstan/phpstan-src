@@ -36,6 +36,8 @@ trait TemplateTypeTrait
 	/** @var TBound */
 	private Type $bound;
 
+	private ?Type $default;
+
 	/** @return non-empty-string */
 	public function getName(): string
 	{
@@ -53,6 +55,11 @@ trait TemplateTypeTrait
 		return $this->bound;
 	}
 
+	public function getDefault(): ?Type
+	{
+		return $this->default;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
@@ -62,10 +69,12 @@ trait TemplateTypeTrait
 			} else {
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
+			$defaultDescription = $this->default !== null ? sprintf(' = %s', $this->default->describe($level)) : '';
 			return sprintf(
-				'%s%s',
+				'%s%s%s',
 				$this->name,
 				$boundDescription,
+				$defaultDescription,
 			);
 		};
 
@@ -89,6 +98,7 @@ trait TemplateTypeTrait
 			$this->variance,
 			$this->name,
 			TemplateTypeHelper::toArgument($this->getBound()),
+			$this->default !== null ? TemplateTypeHelper::toArgument($this->default) : null,
 		);
 	}
 
@@ -106,6 +116,7 @@ trait TemplateTypeTrait
 			$removedBound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -122,6 +133,7 @@ trait TemplateTypeTrait
 			$bound->getTypeWithoutSubtractedType(),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -138,6 +150,7 @@ trait TemplateTypeTrait
 			$bound->changeSubtractedType($subtractedType),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -156,7 +169,11 @@ trait TemplateTypeTrait
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
 			&& $type->name === $this->name
-			&& $this->bound->equals($type->bound);
+			&& $this->bound->equals($type->bound)
+			&& (
+				($this->default === null && $type->default === null)
+				|| ($this->default !== null && $type->default !== null && $this->default->equals($type->default))
+			);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
@@ -283,7 +300,9 @@ trait TemplateTypeTrait
 	public function traverse(callable $cb): Type
 	{
 		$bound = $cb($this->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null ? $cb($this->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -293,6 +312,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -303,7 +323,9 @@ trait TemplateTypeTrait
 		}
 
 		$bound = $cb($this->getBound(), $right->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null && $right->getDefault() !== null ? $cb($this->getDefault(), $right->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -313,6 +335,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -329,6 +352,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 

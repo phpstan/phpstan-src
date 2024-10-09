@@ -9,11 +9,13 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TypeProjectionHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill_keys;
+use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -166,10 +168,22 @@ final class GenericAncestorsCheck
 					continue;
 				}
 
+				$templateTypes = $unusedNameClassReflection->getTemplateTypeMap()->getTypes();
+				$templateTypesCount = count($templateTypes);
+				$requiredTemplateTypesCount = count(array_filter($templateTypes, static fn (Type $type) => $type instanceof TemplateType && $type->getDefault() === null));
+				if ($requiredTemplateTypesCount === 0) {
+					continue;
+				}
+
+				$templateTypesList = implode(', ', array_keys($templateTypes));
+				if ($requiredTemplateTypesCount !== $templateTypesCount) {
+					$templateTypesList .= sprintf(' (%d-%d required)', $requiredTemplateTypesCount, $templateTypesCount);
+				}
+
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$genericClassInNonGenericObjectType,
 					$unusedName,
-					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
+					$templateTypesList,
 				))
 					->identifier('missingType.generics')
 					->build();

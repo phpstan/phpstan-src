@@ -21,8 +21,11 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use Traversable;
+use function array_filter;
 use function array_keys;
 use function array_merge;
+use function count;
+use function implode;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -91,7 +94,7 @@ final class MissingTypehintCheck
 	}
 
 	/**
-	 * @return array<int, array{string, string[]}>
+	 * @return array<int, array{string, string}>
 	 */
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
 	{
@@ -127,9 +130,22 @@ final class MissingTypehintCheck
 				if (!$resolvedType instanceof ObjectType) {
 					throw new ShouldNotHappenException();
 				}
+
+				$templateTypes = $classReflection->getTemplateTypeMap()->getTypes();
+				$templateTypesCount = count($templateTypes);
+				$requiredTemplateTypesCount = count(array_filter($templateTypes, static fn (Type $type) => $type instanceof TemplateType && $type->getDefault() === null));
+				if ($requiredTemplateTypesCount === 0) {
+					return $type;
+				}
+
+				$templateTypesList = implode(', ', array_keys($templateTypes));
+				if ($requiredTemplateTypesCount !== $templateTypesCount) {
+					$templateTypesList .= sprintf(' (%d-%d required)', $requiredTemplateTypesCount, $templateTypesCount);
+				}
+
 				$objectTypes[] = [
 					sprintf('%s %s', strtolower($classReflection->getClassTypeDescription()), $classReflection->getDisplayName(false)),
-					array_keys($classReflection->getTemplateTypeMap()->getTypes()),
+					$templateTypesList,
 				];
 				return $type;
 			}

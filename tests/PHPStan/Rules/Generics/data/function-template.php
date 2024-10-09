@@ -95,3 +95,29 @@ function typeProjections()
 {
 
 }
+
+/**
+ * @template T = Zazzzu
+ */
+function invalidDefault()
+{
+
+}
+
+/**
+ * @template T of object = bool
+ */
+function outOfBoundsDefault()
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ * @template V
+ */
+function requiredAfterOptional()
+{
+
+}

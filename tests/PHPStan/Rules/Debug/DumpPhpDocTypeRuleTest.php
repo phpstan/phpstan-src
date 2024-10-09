@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Debug;
 
+use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -13,7 +14,7 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DumpPhpDocTypeRule($this->createReflectionProvider());
+		return new DumpPhpDocTypeRule($this->createReflectionProvider(), new Printer());
 	}
 
 	public function testRuleSymbols(): void

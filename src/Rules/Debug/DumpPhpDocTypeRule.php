@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Debug;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -17,7 +19,7 @@ use function strtolower;
 final class DumpPhpDocTypeRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider, private Printer $printer)
 	{
 	}
 
@@ -49,7 +51,7 @@ final class DumpPhpDocTypeRule implements Rule
 			RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getType($node->getArgs()[0]->value)->toPhpDocNode(),
+					$this->printer->print($scope->getType($node->getArgs()[0]->value)->toPhpDocNode()),
 				),
 			)->nonIgnorable()->identifier('phpstan.dumpPhpDocType')->build(),
 		];

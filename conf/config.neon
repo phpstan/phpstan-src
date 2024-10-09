@@ -282,6 +282,7 @@ extensions:
 
 rules:
 	- PHPStan\Rules\Debug\DebugScopeRule
+	- PHPStan\Rules\Debug\DumpPhpDocTypeRule
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
 
@@ -432,6 +433,9 @@ services:
 			preserveTypeAliasesWithInvalidTypes: true
 			usedAttributes:
 				lines: %featureToggles.phpDocParserIncludeLines%
+
+	-
+		class: PHPStan\PhpDocParser\Printer\Printer
 
 	-
 		class: PHPStan\PhpDoc\ConstExprParserFactory

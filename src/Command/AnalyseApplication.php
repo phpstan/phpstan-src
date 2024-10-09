@@ -60,7 +60,7 @@ final class AnalyseApplication
 			$collectedData = [];
 			$savedResultCache = false;
 			$memoryUsageBytes = memory_get_peak_usage(true);
-			if ($errorOutput->isDebug()) {
+			if ($errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths = [];

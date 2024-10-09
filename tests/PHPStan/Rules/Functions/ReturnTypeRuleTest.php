@@ -322,4 +322,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11549.php'], []);
 	}
 
+	public function testBug11301(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-11301.php'], [
+			[
+				'Function Bug11301\cString() should return array<string, string> but returns array<int, string>.',
+				35,
+			],
+		]);
+	}
+
 }

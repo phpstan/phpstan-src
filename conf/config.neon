@@ -197,6 +197,7 @@ extensions:
 
 rules:
 	- PHPStan\Rules\Debug\DebugScopeRule
+	- PHPStan\Rules\Debug\DumpPhpDocTypeRule
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
 
@@ -353,6 +354,9 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
+
+	-
+		class: PHPStan\PhpDocParser\Printer\Printer
 
 	-
 		class: PHPStan\PhpDoc\PhpDocInheritanceResolver

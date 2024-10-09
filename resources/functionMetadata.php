@@ -651,7 +651,6 @@ return [
 	'StringBackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'StubTests\\CodeStyle\\BracesOneLineFixer::getDefinition' => ['hasSideEffects' => false],
 	'StubTests\\Parsers\\ExpectedFunctionArgumentsInfo::__toString' => ['hasSideEffects' => false],
-	'StubTests\\Parsers\\Visitors\\CoreStubASTVisitor::__construct' => ['hasSideEffects' => false],
 	'StubTests\\StubsMetaExpectedArgumentsTest::getClassMemberFqn' => ['hasSideEffects' => false],
 	'StubTests\\StubsParameterNamesTest::printParameters' => ['hasSideEffects' => false],
 	'Transliterator::createInverse' => ['hasSideEffects' => false],

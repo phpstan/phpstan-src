@@ -69,19 +69,8 @@ use Symfony\Component\Finder\Finder;
 		$traverser->addVisitor(new NodeConnectingVisitor());
 		$traverser->addVisitor($visitor);
 
-		$contents = FileReader::read($path);
-		if (str_ends_with($path, '/vendor/jetbrains/phpstorm-stubs/Core/Core.php')) {
-			$contents = str_replace([
-				'function exit',
-				'function die',
-			], [
-				'function _exit',
-				'function _die',
-			], $contents);
-		}
-
 		$traverser->traverse(
-			$parser->parse($contents),
+			$parser->parse(FileReader::read($path)),
 		);
 	}
 

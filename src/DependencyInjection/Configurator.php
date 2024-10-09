@@ -129,11 +129,11 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 
 			$week = 3600 * 24 * 7;
 
-			if ($containerLastUsedTime + $week >= $now) {
-				$usedInTheLastWeek[] = $className;
-			} else {
+			if ($containerLastUsedTime + $week < $now) {
 				continue;
 			}
+
+			$usedInTheLastWeek[] = $className;
 
 			if ($currentContainerClassName !== $className) {
 				$linesToWrite[] = sprintf('%s:%d', $className, $containerLastUsedTime);

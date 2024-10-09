@@ -24,7 +24,7 @@ final class StringLiteralHelper
 		$escaped = self::escape($string);
 
 		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
-			return ($escaped === addcslashes($string, '\'\\'))
+			return $escaped === addcslashes($string, '\'\\')
 				? sprintf("'%s'", $escaped)
 				: sprintf('"%s"', addcslashes($escaped, '"'));
 		}
@@ -45,7 +45,7 @@ final class StringLiteralHelper
 		$escaped = self::escape($string);
 
 		if (str_contains($escaped, '\\') || str_contains($escaped, "'")) {
-			return ($escaped === addcslashes($string, '\'\\'))
+			return $escaped === addcslashes($string, '\'\\')
 				? sprintf("'%s'", $escaped)
 				: sprintf('"%s"', addcslashes($escaped, '"'));
 		}

@@ -63,7 +63,7 @@ class DumpTypeRuleTest extends RuleTestCase
 			],
 			[
 				'Dumped type: array{"\002": \'STX\', STX: "\002"}',
-				8
+				8,
 			],
 			[
 				'Dumped type: array{"\003": \'ETX\', ETX: "\003"}',

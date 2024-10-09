@@ -131,6 +131,8 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 
 			if ($containerLastUsedTime + $week >= $now) {
 				$usedInTheLastWeek[] = $className;
+			} else {
+				continue;
 			}
 
 			if ($currentContainerClassName !== $className) {

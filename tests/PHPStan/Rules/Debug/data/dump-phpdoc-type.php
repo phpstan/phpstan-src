@@ -4,6 +4,8 @@ namespace PHPStan;
 
 dumpPhpDocType(['' => '']);
 dumpPhpDocType(["\0" => 'NUL', 'NUL' => "\0"]);
+dumpPhpDocType(["\x01" => 'SOH', 'SOH' => "\x01"]);
+dumpPhpDocType(["\t" => 'HT', 'HT' => "\t"]);
 
 // Space
 dumpPhpDocType([" " => 'SP', 'SP' => ' ']);
@@ -21,6 +23,8 @@ dumpPhpDocType(["shall-we-dance" => 'yes']);
 dumpPhpDocType(["shall-we-dance?" => 'yes']);
 dumpPhpDocType(['Let\'s go' => "Let's go"]);
 dumpPhpDocType(['Foo\\Bar' => 'Foo\\Bar']);
+dumpPhpDocType(['3.14' => 3.14]);
+dumpPhpDocType([true => true, false => false]);
 
 /**
  * @template T

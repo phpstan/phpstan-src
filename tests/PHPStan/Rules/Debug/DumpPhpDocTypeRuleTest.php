@@ -28,60 +28,76 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 				6,
 			],
 			[
+				"Dumped type: array{'\001': 'SOH', SOH: '\001'}",
+				7,
+			],
+			[
+				"Dumped type: array{'\t': 'HT', HT: '\t'}",
+				8,
+			],
+			[
 				"Dumped type: array{' ': 'SP', SP: ' '}",
-				9,
+				11,
 			],
 			[
 				"Dumped type: array{'foo ': 'ends with SP', ' foo': 'starts with SP', ' foo ': 'surrounded by SP', foo: 'no SP'}",
-				10,
+				12,
 			],
 			[
 				"Dumped type: array{'foo?': 'foo?'}",
-				13,
-			],
-			[
-				"Dumped type: array{shallwedance: 'yes'}",
-				14,
-			],
-			[
-				"Dumped type: array{'shallwedance?': 'yes'}",
 				15,
 			],
 			[
-				"Dumped type: array{'Shall we dance': 'yes'}",
+				"Dumped type: array{shallwedance: 'yes'}",
 				16,
 			],
 			[
-				"Dumped type: array{'Shall we dance?': 'yes'}",
+				"Dumped type: array{'shallwedance?': 'yes'}",
 				17,
 			],
 			[
-				"Dumped type: array{shall_we_dance: 'yes'}",
+				"Dumped type: array{'Shall we dance': 'yes'}",
 				18,
 			],
 			[
-				"Dumped type: array{'shall_we_dance?': 'yes'}",
+				"Dumped type: array{'Shall we dance?': 'yes'}",
 				19,
 			],
 			[
-				"Dumped type: array{shall-we-dance: 'yes'}",
+				"Dumped type: array{shall_we_dance: 'yes'}",
 				20,
 			],
 			[
-				"Dumped type: array{'shall-we-dance?': 'yes'}",
+				"Dumped type: array{'shall_we_dance?': 'yes'}",
 				21,
 			],
 			[
-				"Dumped type: array{'Let\'s go': 'Let\'s go'}",
+				"Dumped type: array{shall-we-dance: 'yes'}",
 				22,
 			],
 			[
-				"Dumped type: array{Foo\\Bar: 'Foo\\\\Bar'}",
+				"Dumped type: array{'shall-we-dance?': 'yes'}",
 				23,
 			],
 			[
+				"Dumped type: array{'Let\'s go': 'Let\'s go'}",
+				24,
+			],
+			[
+				"Dumped type: array{Foo\\Bar: 'Foo\\\\Bar'}",
+				25,
+			],
+			[
+				"Dumped type: array{'3.14': 3.14}",
+				26,
+			],
+			[
+				"Dumped type: array{1: true, 0: false}",
+				27,
+			],
+			[
 				"Dumped type: T",
-				32,
+				36,
 			],
 		]);
 	}

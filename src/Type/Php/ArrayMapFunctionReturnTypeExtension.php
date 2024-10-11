@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
+use function array_reduce;
 use function array_slice;
 use function count;
 
@@ -55,19 +56,18 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			)->getReturnType();
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			$argIterableValueTypes = [];
-			$addNull = false;
+			$argTypes = [];
+			$areAllSameSize = true;
 			$expectedSize = null;
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
-				$argType = $scope->getType($arg->value);
-				$argIterableValueTypes[$index] = $argType->getIterableValueType();
-				if ($addNull) {
+				$argTypes[$index] = $argType = $scope->getType($arg->value);
+				if (!$areAllSameSize || $numArgs === 2) {
 					continue;
 				}
 
 				$arraySizes = $argType->getArraySize()->getConstantScalarValues();
 				if ($arraySizes === []) {
-					$addNull = true;
+					$areAllSameSize = false;
 					continue;
 				}
 
@@ -77,12 +77,30 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 						continue;
 					}
 
-					$addNull = true;
-					break;
+					$areAllSameSize = false;
+					continue 2;
 				}
 			}
 
-			foreach ($argIterableValueTypes as $index => $offsetValueType) {
+			if (!$areAllSameSize) {
+				$firstArr = $functionCall->getArgs()[1]->value;
+				$identities = [];
+				foreach (array_slice($functionCall->getArgs(), 2) as $arg) {
+					$identities[] = new Node\Expr\BinaryOp\Identical($firstArr, $arg->value);
+				}
+
+				$and = array_reduce(
+					$identities,
+					static fn (Node\Expr $a, Node\Expr $b) => new Node\Expr\BinaryOp\BooleanAnd($a, $b),
+					new Node\Expr\ConstFetch(new Node\Name('true')),
+				);
+				$areAllSameSize = $scope->getType($and)->isTrue()->yes();
+			}
+
+			$addNull = !$areAllSameSize;
+
+			foreach ($argTypes as $index => $argType) {
+				$offsetValueType = $argType->getIterableValueType();
 				if ($addNull) {
 					$offsetValueType = TypeCombinator::addNull($offsetValueType);
 				}

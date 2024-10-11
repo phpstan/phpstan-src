@@ -248,6 +248,13 @@ jobs:
               cd e2e/bad-exclude-paths
               OUTPUT=$(../../bin/phpstan analyse -c ignoreReportUnmatchedFalse.neon)
               echo "$OUTPUT"
+          - script: |
+              cd e2e/bug-11826
+              composer install
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Child process error (exit code 255): PHP Fatal error' "$OUTPUT"
+              ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
 
     steps:
       - name: "Checkout"

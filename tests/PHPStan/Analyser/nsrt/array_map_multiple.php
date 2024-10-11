@@ -29,8 +29,8 @@ class Foo
 		assertType('non-empty-array<int, array{1|2|3, 4|5|6}>', array_map(null, [1, 2, 3], [4, 5, 6]));
 
 		assertType('non-empty-array<string, int>', array_map(null, $array));
-		assertType('non-empty-array<int, array{int, int}>', array_map(null, $array, $array));
-		assertType('non-empty-array<int, array{int, bool}>', array_map(null, $array, $other));
+		assertType('non-empty-array<int, array{int|null, int|null}>', array_map(null, $array, $array));
+		assertType('non-empty-array<int, array{int|null, bool|null}>', array_map(null, $array, $other));
 	}
 
 }

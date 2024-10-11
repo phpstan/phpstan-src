@@ -32,7 +32,8 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$numArgs = count($functionCall->getArgs());
+		if ($numArgs < 2) {
 			return null;
 		}
 
@@ -54,10 +55,41 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			)->getReturnType();
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			$argIterableValueTypes = [];
+			$addNull = false;
+			$expectedSize = null;
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
+				$argType = $scope->getType($arg->value);
+				$argIterableValueTypes[$index] = $argType->getIterableValueType();
+				if ($addNull) {
+					continue;
+				}
+
+				$arraySizes = $argType->getArraySize()->getConstantScalarValues();
+				if ($arraySizes === []) {
+					$addNull = true;
+					continue;
+				}
+
+				foreach ($arraySizes as $size) {
+					$expectedSize ??= $size;
+					if ($expectedSize === $size) {
+						continue;
+					}
+
+					$addNull = true;
+					break;
+				}
+			}
+
+			foreach ($argIterableValueTypes as $index => $offsetValueType) {
+				if ($addNull) {
+					$offsetValueType = TypeCombinator::addNull($offsetValueType);
+				}
+
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($index),
-					$scope->getType($arg->value)->getIterableValueType(),
+					$offsetValueType,
 				);
 			}
 			$valueType = $arrayBuilder->getArray();

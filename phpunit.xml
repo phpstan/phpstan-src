@@ -26,7 +26,8 @@
 
 	<testsuites>
 		<testsuite name="PHPStan">
-			<file>tests/PHPStan/Analyser/NodeScopeResolverTest.php</file>
+			<directory suffix="Test.php">tests/PHPStan</directory>
+			<exclude>tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php</exclude>
 		</testsuite>
 	</testsuites>
 

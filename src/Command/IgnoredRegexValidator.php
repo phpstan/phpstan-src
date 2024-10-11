@@ -12,7 +12,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
-use function str_contains;
 use function strrpos;
 use function substr;
 
@@ -37,10 +36,10 @@ final class IgnoredRegexValidator
 			return new IgnoredRegexValidatorResult([], false, false);
 		}
 
-		if (str_contains($regex, '||')) {
+		if (Strings::match($regex, '~(?<!\\\\)(?:\\\\\\\\)*\|\|~')) {
 			return new IgnoredRegexValidatorResult([], false, true, '||', '\|\|');
 		}
-		if (str_contains($regex, '()')) {
+		if (Strings::match($regex, '~(?<!\\\\)(?:\\\\\\\\)*\(\)~')) {
 			return new IgnoredRegexValidatorResult([], false, true, '()', '\(\)');
 		}
 

@@ -279,11 +279,12 @@ final class ParallelAnalyser
 				}
 				$someChildEnded = true;
 
-				$this->processPool->tryQuitProcess($processIdentifier);
 				if ($exitCode === 0) {
+					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
 				if ($exitCode === null) {
+					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
 
@@ -294,6 +295,7 @@ final class ParallelAnalyser
 							continue;
 						}
 
+						$this->processPool->tryQuitProcess($processIdentifier);
 						return;
 					}
 					$internalErrors[] = new InternalError(sprintf(
@@ -303,11 +305,13 @@ final class ParallelAnalyser
 						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
 					), 'running parallel worker', [], null, false);
 					$internalErrorsCount++;
+					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
 
 				$internalErrors[] = new InternalError(sprintf('Child process error (exit code %d): %s', $exitCode, $output), 'running parallel worker', [], null, true);
 				$internalErrorsCount++;
+				$this->processPool->tryQuitProcess($processIdentifier);
 			});
 			$this->processPool->attachProcess($processIdentifier, $process);
 		}

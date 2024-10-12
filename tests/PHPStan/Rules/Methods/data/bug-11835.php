@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug11835;
+
 /**
  * @template TKey of array-key
  * @template TValue

@@ -656,15 +656,15 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-11617.php'], [
 			[
-				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array|string>.',
+				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array<mixed>|string>.',
 				14,
 			],
 			[
-				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array|string>.',
+				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array<mixed>|string>.',
 				16,
 			],
 			[
-				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array|string>.',
+				'Property Bug11617\HelloWorld::$params (array<string, string>) does not accept array<int|string, array<mixed>|string>.',
 				21,
 			],
 		]);

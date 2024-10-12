@@ -13,7 +13,7 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
-			message: '#^Cannot assign offset ''realCount'' to array\|string\.$#'
+			message: '#^Cannot assign offset ''realCount'' to array\<mixed\>\|string\.$#'
 			identifier: offsetAssign.dimType
 			count: 1
 			path: src/Analyser/Ignore/IgnoredErrorHelperResult.php

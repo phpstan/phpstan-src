@@ -89,5 +89,5 @@ function invariant(bool $condition, string $message): void
 
 function (mixed $value) {
 	invariant(is_array($value), 'must be array');
-	assertType('array', $value);
+	assertType('array<mixed, mixed>', $value);
 };

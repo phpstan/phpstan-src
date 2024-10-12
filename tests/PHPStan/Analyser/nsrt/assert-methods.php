@@ -37,7 +37,7 @@ class Foo
 	public function doBar2(array $objects)
 	{
 		self::doFoo($objects, stdClass::class);
-		assertType('array<stdClass>', $objects);
+		assertType('array<mixed, stdClass>', $objects);
 	}
 
 	/**
@@ -47,7 +47,7 @@ class Foo
 	public function doBar3(array $strings)
 	{
 		self::doFoo($strings, stdClass::class);
-		assertType('array<class-string<stdClass>>', $strings);
+		assertType('array<mixed, class-string<stdClass>>', $strings);
 	}
 
 	/**

@@ -11,74 +11,74 @@ use function PHPStan\Testing\assertType;
  */
 function doFoo(string $s, $a, $strings, $mixed) {
 	if (in_array('foo', $a, true)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
 		assertType("array<mixed~'foo'>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array('foo', $a, false)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array('foo', $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array('0', $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array('1', $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array(true, $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array(false, $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array($s, $a, true)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array($s, $a, false)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array($s, $a)) {
-		assertType('non-empty-array', $a);
+		assertType('non-empty-array<mixed>', $a);
 	} else {
-		assertType("array", $a);
+		assertType("array<mixed>", $a);
 	}
-	assertType('array', $a);
+	assertType('array<mixed>', $a);
 
 	if (in_array($mixed, $strings, true)) {
 		assertType('non-empty-array<string>', $strings);

@@ -11,7 +11,7 @@ class HelloWorld
 		if(is_array($mixed)) {
 			assertType('list<(int|string)>', array_keys($mixed));
 		} else {
-			assertType('mixed~array', $mixed);
+			assertType('mixed~array<mixed, mixed>', $mixed);
 			assertType('*NEVER*', array_keys($mixed));
 		}
 	}

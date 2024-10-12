@@ -56,7 +56,7 @@ function validateNotNull($value) : void {}
  * @param mixed[] $arr
  */
 function takesArray(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	validateStringArray($arr);
 	assertType('array<string>', $arr);
@@ -66,22 +66,22 @@ function takesArray(array $arr) : void {
  * @param mixed[] $arr
  */
 function takesArrayIfTrue(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (validateStringArrayIfTrue($arr)) {
 		assertType('array<string>', $arr);
 	} else {
-		assertType('array', $arr);
+		assertType('array<mixed>', $arr);
 	}
 }
 /**
  * @param mixed[] $arr
  */
 function takesArrayIfTrue1(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (!validateStringArrayIfTrue($arr)) {
-		assertType('array', $arr);
+		assertType('array<mixed>', $arr);
 	} else {
 		assertType('array<string>', $arr);
 	}
@@ -91,12 +91,12 @@ function takesArrayIfTrue1(array $arr) : void {
  * @param mixed[] $arr
  */
 function takesArrayIfFalse(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (!validateStringArrayIfFalse($arr)) {
 		assertType('array<string>', $arr);
 	} else {
-		assertType('array', $arr);
+		assertType('array<mixed>', $arr);
 	}
 }
 
@@ -104,10 +104,10 @@ function takesArrayIfFalse(array $arr) : void {
  * @param mixed[] $arr
  */
 function takesArrayIfFalse1(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (validateStringArrayIfFalse($arr)) {
-		assertType('array', $arr);
+		assertType('array<mixed>', $arr);
 	} else {
 		assertType('array<string>', $arr);
 	}
@@ -117,7 +117,7 @@ function takesArrayIfFalse1(array $arr) : void {
  * @param mixed[] $arr
  */
 function takesStringOrIntArray(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (validateStringOrIntArray($arr)) {
 		assertType('array<string>', $arr);
@@ -130,7 +130,7 @@ function takesStringOrIntArray(array $arr) : void {
  * @param mixed[] $arr
  */
 function takesStringOrNonEmptyIntArray(array $arr) : void {
-	assertType('array', $arr);
+	assertType('array<mixed>', $arr);
 
 	if (validateStringOrNonEmptyIntArray($arr)) {
 		assertType('array<string>', $arr);

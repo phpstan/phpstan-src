@@ -106,19 +106,19 @@ function true($a): void
 function nonEmptyArray1($a): void
 {
 	if (is_array($a) && [] !== $a || null === $a) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 
 	if ([] !== $a && is_array($a) || null === $a) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 
 	if (null === $a || is_array($a) && [] !== $a) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 
 	if (null === $a || [] !== $a && is_array($a)) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 }
 
@@ -128,11 +128,11 @@ function nonEmptyArray1($a): void
 function nonEmptyArray2($a): void
 {
 	if (is_array($a) && count($a) > 0 || null === $a) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 
 	if (null === $a || is_array($a) && count($a) > 0) {
-		assertType('non-empty-array|null', $a);
+		assertType('non-empty-array<mixed, mixed>|null', $a);
 	}
 }
 
@@ -155,7 +155,7 @@ function inverse($a, $b, $c): void
 
 	if (null !== $c && (!is_array($c) || count($c) <= 0)) {
 	} else {
-		assertType('non-empty-array|null', $c);
+		assertType('non-empty-array<mixed, mixed>|null', $c);
 	}
 }
 

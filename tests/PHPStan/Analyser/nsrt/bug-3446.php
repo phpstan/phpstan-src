@@ -15,7 +15,7 @@ class HelloWorld
 
 	public function main2(string $input) : void{
 		if(is_array($var = json_decode($input))){
-			assertType('array', $var);
+			assertType('array<mixed, mixed>', $var);
 		}
 	}
 }

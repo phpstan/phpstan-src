@@ -34,7 +34,7 @@ class Foo{
 		/** @var non-empty-array<mixed> */
 		private array $array
 	){
-		assertType('non-empty-array', $this->array);
+		assertType('non-empty-array<mixed>', $this->array);
 		assertNativeType('array', $this->array);
 		if(count($array) === 0){
 			throw new \InvalidArgumentException();

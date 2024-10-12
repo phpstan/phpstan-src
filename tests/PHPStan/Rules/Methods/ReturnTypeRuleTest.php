@@ -901,7 +901,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/magic-serialization.php'], [
 			[
-				'Method MagicSerialization\WrongSignature::__serialize() should return array but returns string.',
+				'Method MagicSerialization\WrongSignature::__serialize() should return array<mixed, mixed> but returns string.',
 				23,
 			],
 			[
@@ -928,7 +928,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 				43,
 			],
 			[
-				'Method MagicSignatures\WrongSignature::__debugInfo() should return array|null but returns string.',
+				'Method MagicSignatures\WrongSignature::__debugInfo() should return array<mixed, mixed>|null but returns string.',
 				47,
 			],
 			[

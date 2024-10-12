@@ -17,7 +17,7 @@ class Foo
 		if (array_is_list($a)) {
 			assertType('list<mixed>', $a);
 		} else {
-			assertType('array', $a); // could be non-empty-array
+			assertType('array<mixed>', $a); // could be non-empty-array
 		}
 	}
 
@@ -40,7 +40,7 @@ class Foo
 		if (array_is_list($a)) {
 			assertType('non-empty-list<mixed>', $a);
 		} else {
-			assertType('non-empty-array', $a);
+			assertType('non-empty-array<mixed>', $a);
 		}
 	}
 

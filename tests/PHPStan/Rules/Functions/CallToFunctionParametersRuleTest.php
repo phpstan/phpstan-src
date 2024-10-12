@@ -1688,22 +1688,22 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID < 80000) {
 			$errors = [
 				[
-					'Parameter #1 $var of function count expects array|Countable, array|false given.',
+					'Parameter #1 $var of function count expects array|Countable, array<mixed>|false given.',
 					8,
 				],
 				[
-					'Parameter #1 $var of function count expects array|Countable, array|false given.',
+					'Parameter #1 $var of function count expects array|Countable, array<mixed>|false given.',
 					16,
 				],
 			];
 		} else {
 			$errors = [
 				[
-					'Parameter #1 $value of function count expects array|Countable, array|false given.',
+					'Parameter #1 $value of function count expects array|Countable, array<mixed>|false given.',
 					8,
 				],
 				[
-					'Parameter #1 $value of function count expects array|Countable, array|false given.',
+					'Parameter #1 $value of function count expects array|Countable, array<mixed>|false given.',
 					16,
 				],
 			];

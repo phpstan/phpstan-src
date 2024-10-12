@@ -11,7 +11,7 @@ class Foo
 	{
 		/** @var mixed[] $arr */
 		assertType('list<non-empty-list<mixed>>', array_chunk($arr, 2));
-		assertType('list<non-empty-array>', array_chunk($arr, 2, true));
+		assertType('list<non-empty-array<mixed>>', array_chunk($arr, 2, true));
 
 		/** @var array<string, int> $arr */
 		assertType('list<non-empty-list<int>>', array_chunk($arr, 2));

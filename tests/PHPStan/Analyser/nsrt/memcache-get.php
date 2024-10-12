@@ -10,5 +10,5 @@ function (): void {
 	$memcache = new Memcache();
 
 	assertType('mixed', $memcache->get("key1"));
-	assertType('array|false', $memcache->get(array("key1", "key2", "key3")));
+	assertType('array<mixed>|false', $memcache->get(array("key1", "key2", "key3")));
 };

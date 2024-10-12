@@ -107,7 +107,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 				]),
 				new UnionType([
 					new ConstantBooleanType(false),
-					new ArrayType(new MixedType(true), new MixedType(true)),
+					new ArrayType(new MixedType(), new MixedType()),
 				]),
 				false,
 			],

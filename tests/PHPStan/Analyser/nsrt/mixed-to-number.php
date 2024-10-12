@@ -35,7 +35,7 @@ function doFoo($mixed, int $i, float $f, $numericS) {
 	}
 
 	if (!is_array($mixed)) {
-		assertType('mixed~array', $mixed);
+		assertType('mixed~array<mixed, mixed>', $mixed);
 		assertType('(float|int)', $mixed + $mixed);
 	}
 }

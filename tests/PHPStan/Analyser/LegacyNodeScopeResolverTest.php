@@ -1763,7 +1763,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$this->arrayPropertyOne',
 			],
 			[
-				'array',
+				'array<mixed>',
 				'$this->arrayPropertyOther',
 			],
 			[
@@ -3423,7 +3423,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayParameterOne',
 			],
 			[
-				'array',
+				'array<mixed>',
 				'$arrayParameterOther',
 			],
 			[
@@ -5779,7 +5779,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$null',
 			],
 			[
-				'array',
+				'array<mixed, mixed>',
 				'$array',
 			],
 			[
@@ -9252,7 +9252,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$this->bool',
 			],
 			[
-				'array',
+				'array<mixed, mixed>',
 				'$this->array',
 			],
 		];

@@ -14,8 +14,8 @@ class Foo
 	 */
 	public function normalArrays(array $a, array $b): void
 	{
-		assertType('array', array_reverse($a));
-		assertType('array', array_reverse($a, true));
+		assertType('array<mixed>', array_reverse($a));
+		assertType('array<mixed>', array_reverse($a, true));
 
 		assertType('array<string, int>', array_reverse($b));
 		assertType('array<string, int>', array_reverse($b, true));
@@ -68,8 +68,8 @@ class Foo
 
 	public function mixed(mixed $mixed): void
 	{
-		assertType('array', array_reverse($mixed));
-		assertType('array', array_reverse($mixed, true));
+		assertType('array<mixed, mixed>', array_reverse($mixed));
+		assertType('array<mixed, mixed>', array_reverse($mixed, true));
 
 		if (array_key_exists('foo', $mixed)) {
 			assertType('non-empty-array', array_reverse($mixed));

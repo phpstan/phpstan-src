@@ -27,7 +27,7 @@ class HelloWorld
 			}
 
 			assertType('array<Bug5333\Route>', $foo);
-			assertNativeType('array', $foo);
+			assertNativeType('array<mixed, mixed>', $foo);
 
 			assertType('Bug5333\Route', $res);
 			assertNativeType('Bug5333\Route', $res);

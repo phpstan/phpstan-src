@@ -163,8 +163,8 @@ function testF($arrayOfInt, $callableOrNull)
 		return $a;
 	}));
 	assertType('array<string>', f($arrayOfInt, $callableOrNull));
-	assertType('array', f($arrayOfInt, null));
-	assertType('array', f($arrayOfInt, ''));
+	assertType('array<mixed>', f($arrayOfInt, null));
+	assertType('array<mixed>', f($arrayOfInt, ''));
 }
 
 /**

@@ -551,7 +551,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-8356.php'], [
 			[
-				"Offset 'x' might not exist on array|string.",
+				"Offset 'x' might not exist on array<mixed>|string.",
 				7,
 			],
 		]);

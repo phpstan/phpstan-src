@@ -77,7 +77,7 @@ class Foo
 		if(is_array($mixed)) {
 			assertType('mixed', array_pop($mixed));
 		} else {
-			assertType('mixed~array', $mixed);
+			assertType('mixed~array<mixed, mixed>', $mixed);
 			assertType('mixed', array_pop($mixed));
 			assertType('*ERROR*', $mixed);
 		}

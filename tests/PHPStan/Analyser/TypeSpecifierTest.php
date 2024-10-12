@@ -1218,8 +1218,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
-				['$a' => 'non-empty-array|null'],
-				['$a' => 'mixed~non-empty-array & ~null'],
+				['$a' => 'non-empty-array<mixed, mixed>|null'],
+				['$a' => 'mixed~non-empty-array<mixed, mixed> & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -1234,7 +1234,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => 'array<string, mixed>',
-					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array', // could be 'array<string, mixed>'
+					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array<mixed, mixed>', // could be 'array<string, mixed>'
 				],
 				[],
 			],
@@ -1250,7 +1250,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$foo' => 'non-empty-array',
+					'$foo' => 'non-empty-array<mixed, mixed>',
 					'count($foo)' => 'mixed~(0.0|int<min, 1>|false|null)',
 				],
 				[],
@@ -1267,7 +1267,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$foo' => 'non-empty-array',
+					'$foo' => 'non-empty-array<mixed, mixed>',
 					'count($foo)' => '2',
 				],
 				[],

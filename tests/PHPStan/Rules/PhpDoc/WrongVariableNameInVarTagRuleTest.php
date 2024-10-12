@@ -466,7 +466,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				204,
 			],
 			[
-				'PHPDoc tag @var with type array|null is not subtype of type array{id: int}|null.',
+				'PHPDoc tag @var with type array<mixed>|null is not subtype of type array{id: int}|null.',
 				235,
 			],
 		]];

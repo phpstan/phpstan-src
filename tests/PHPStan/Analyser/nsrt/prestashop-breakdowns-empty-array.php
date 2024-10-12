@@ -21,13 +21,13 @@ class Foo
 
 		foreach ($breakdowns as $type => $bd) {
 			if (empty($bd)) {
-				assertType('array{product_tax?: mixed, shipping_tax?: array, ecotax_tax?: array, wrapping_tax?: array}', $breakdowns);
+				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
 				unset($breakdowns[$type]);
-				assertType('array{product_tax?: mixed, shipping_tax?: array, ecotax_tax?: array, wrapping_tax?: array}', $breakdowns);
+				assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
 			}
 		}
 
-		assertType('array{product_tax?: mixed, shipping_tax?: array, ecotax_tax?: array, wrapping_tax?: array}', $breakdowns);
+		assertType('array{product_tax?: mixed, shipping_tax?: array<mixed>, ecotax_tax?: array<mixed>, wrapping_tax?: array<mixed>}', $breakdowns);
 	}
 
 	public function doFoo(): void

@@ -1949,7 +1949,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/only-relevant-unable-to-resolve-template-type.php'], [
 			[
-				'Parameter #1 $a of method OnlyRelevantUnableToResolve\Foo::doBaz() expects array, int given.',
+				'Parameter #1 $a of method OnlyRelevantUnableToResolve\Foo::doBaz() expects array<mixed>, int given.',
 				41,
 			],
 			[
@@ -2260,11 +2260,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				58,
 			],
 			[
-				'Parameter #1 $a of method LiteralStringMethod\Foo::requireArrayOfLiteralStrings() expects array<literal-string>, array given.',
+				'Parameter #1 $a of method LiteralStringMethod\Foo::requireArrayOfLiteralStrings() expects array<literal-string>, array<mixed> given.',
 				60,
 			],
 			[
-				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array given.',
+				'Parameter #1 $s of method LiteralStringMethod\Foo::requireLiteralString() expects literal-string, array<mixed> given.',
 				65,
 			],
 			[

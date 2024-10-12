@@ -546,15 +546,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/discussion-7004.php'], [
 			[
-				'Parameter #1 $data of static method Discussion7004\Foo::fromArray1() expects array<array{newsletterName: string, subscriberCount: int}>, array given.',
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray1() expects array<array{newsletterName: string, subscriberCount: int}>, array<mixed, mixed> given.',
 				46,
 			],
 			[
-				'Parameter #1 $data of static method Discussion7004\Foo::fromArray2() expects array{array{newsletterName: string, subscriberCount: int}}, array given.',
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray2() expects array{array{newsletterName: string, subscriberCount: int}}, array<mixed, mixed> given.',
 				47,
 			],
 			[
-				'Parameter #1 $data of static method Discussion7004\Foo::fromArray3() expects array{newsletterName: string, subscriberCount: int}, array given.',
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray3() expects array{newsletterName: string, subscriberCount: int}, array<mixed, mixed> given.',
 				48,
 			],
 		]);

@@ -14,9 +14,9 @@ function doFoo(string $x, array $arr): void {
 	assertType('string', $x);
 
 	if ((bool) array_search($x, $arr, true)) {
-		assertType('non-empty-array', $arr);
+		assertType('non-empty-array<mixed>', $arr);
 	} else {
-		assertType('array', $arr);
+		assertType('array<mixed>', $arr);
 	}
 	assertType('string', $x);
 

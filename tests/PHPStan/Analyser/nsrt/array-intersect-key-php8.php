@@ -16,7 +16,7 @@ class Foo
 			/** @var array<string, int> $otherArrs */
 			assertType('array<string, mixed>', array_intersect_key($mixed, $otherArrs));
 		} else {
-			assertType('mixed~array', $mixed);
+			assertType('mixed~array<mixed, mixed>', $mixed);
 			/** @var array<int, string> $otherArrs */
 			assertType('*NEVER*', array_intersect_key($mixed, $otherArrs));
 			/** @var array<string, int> $otherArrs */

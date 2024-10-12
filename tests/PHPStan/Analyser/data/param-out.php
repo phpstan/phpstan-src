@@ -315,7 +315,7 @@ function testParseStr() {
 	echo $output['arr'][1];//baz
 	*/
 
-	\PHPStan\Testing\assertType('array<int|string, array|lowercase-string>', $output);
+	\PHPStan\Testing\assertType('array<int|string, array<mixed>|lowercase-string>', $output);
 }
 
 function fooSimilar() {
@@ -392,10 +392,10 @@ function fooHeadersSent() {
 
 function fooMbParseStr() {
 	mb_parse_str("foo=bar", $output);
-	assertType('array<string, array|string>', $output);
+	assertType('array<string, array<mixed>|string>', $output);
 
 	mb_parse_str('email=mail@example.org&city=town&x=1&y[g]=3&f=1.23', $output);
-	assertType('array<string, array|string>', $output);
+	assertType('array<string, array<mixed>|string>', $output);
 }
 
 function fooPreg()

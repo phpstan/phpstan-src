@@ -63,7 +63,7 @@ class HelloWorld2
 function to_utf8($data, bool $isArray = false)
 {
 	if ($isArray) {
-		assertType('array', $data);
+		assertType('array<mixed>', $data);
 		if (is_array($data)) { // always true
 			foreach ($data as $k => $value) {
 				$data[$k] = to_utf8($value, is_array($value));

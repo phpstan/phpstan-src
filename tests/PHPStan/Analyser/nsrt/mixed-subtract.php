@@ -21,7 +21,7 @@ function subtract(mixed $m, $moreThenFalsy) {
 		assertType('bool', (bool) $m);
 	}
 	if (!is_array($m)) {
-		assertType('mixed~array', $m);
+		assertType('mixed~array<mixed, mixed>', $m);
 		assertType('bool', (bool) $m);
 	}
 
@@ -55,7 +55,7 @@ function subtract(mixed $m, $moreThenFalsy) {
 	}
 
 	if ($m != 0 && !is_array($m) && $m != null && !is_object($m)) { // subtract more types then falsy
-		assertType("mixed~(0|0.0|''|'0'|array|object|false|null)", $m);
+		assertType("mixed~(0|0.0|''|'0'|array<mixed, mixed>|object|false|null)", $m);
 		assertType('true', (bool) $m);
 	}
 }

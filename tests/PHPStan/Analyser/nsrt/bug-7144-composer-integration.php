@@ -32,14 +32,14 @@ Class Foo {
 		$curlHandle = curl_init();
 		foreach (self::$options as $type => $curlOptions) {
 			foreach ($curlOptions as $name => $curlOption) {
-				\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array}', $options);
+				\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array<mixed>}', $options);
 				if (isset($options[$type][$name])) {
-					\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array}', $options);
+					\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array<mixed>}', $options);
 					if ($type === 'ssl' && $name === 'verify_peer_name') {
-						\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array}', $options);
+						\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array<mixed>}', $options);
 						curl_setopt($curlHandle, $curlOption, $options[$type][$name] === true ? 2 : $options[$type][$name]);
 					} else {
-						\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array}', $options);
+						\PHPStan\Testing\assertType('array{http: array{header: array<string>, proxy?: string, request_fulluri: bool}, ssl?: array<mixed>}', $options);
 						curl_setopt($curlHandle, $curlOption, $options[$type][$name]);
 					}
 				}

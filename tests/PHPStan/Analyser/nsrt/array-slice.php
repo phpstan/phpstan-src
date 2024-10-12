@@ -24,7 +24,7 @@ class Foo
 	 */
 	public function fromMixed($arr): void
 	{
-		assertType('array', array_slice($arr, 1, 2));
+		assertType('array<mixed, mixed>', array_slice($arr, 1, 2));
 	}
 
 	public function normalArrays(array $arr): void

@@ -44,14 +44,14 @@ class Foo
 	 */
 	public function doBar(array $result): void
 	{
-		assertType('array', $result);
+		assertType('array<mixed>', $result);
 		assert($result['totals']['file_errors'] === 3);
-		assertType("array", $result);
+		assertType("array<mixed>", $result);
 		assertType("mixed", $result['totals']);
 		assertType('3', $result['totals']['file_errors']);
 		assertType('mixed', $result['totals']['errors']);
 		assert($result['totals']['errors'] === 0);
-		assertType("array", $result);
+		assertType("array<mixed>", $result);
 		assertType("mixed", $result['totals']);
 		assertType('3', $result['totals']['file_errors']);
 		assertType('0', $result['totals']['errors']);

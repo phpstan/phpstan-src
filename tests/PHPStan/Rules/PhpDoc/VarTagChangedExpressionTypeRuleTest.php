@@ -52,19 +52,19 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-10130.php'], [
 			[
-				'PHPDoc tag @var with type array is not subtype of type array<int>.',
+				'PHPDoc tag @var with type array<mixed> is not subtype of type array<int>.',
 				14,
 			],
 			[
-				'PHPDoc tag @var with type array is not subtype of type list<int>.',
+				'PHPDoc tag @var with type array<mixed> is not subtype of type list<int>.',
 				17,
 			],
 			[
-				'PHPDoc tag @var with type array is not subtype of type array{id: int}.',
+				'PHPDoc tag @var with type array<mixed> is not subtype of type array{id: int}.',
 				20,
 			],
 			[
-				'PHPDoc tag @var with type array is not subtype of type list<array{id: int}>.',
+				'PHPDoc tag @var with type array<mixed> is not subtype of type list<array{id: int}>.',
 				23,
 			],
 		]);

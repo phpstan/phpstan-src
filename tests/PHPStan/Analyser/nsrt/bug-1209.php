@@ -13,7 +13,7 @@ class HelloWorld
 	{
 		$isArray = is_array($value);
 		if($isArray){
-			assertType('array', $value);
+			assertType('array<mixed>', $value);
 		}
 	}
 

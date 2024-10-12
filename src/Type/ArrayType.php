@@ -128,8 +128,8 @@ class ArrayType implements Type
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
-		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$this->keyType->isExplicitMixed();
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed' && !$this->itemType->isExplicitMixed();
 
 		$valueHandler = function () use ($level, $isMixedKeyType, $isMixedItemType): string {
 			if ($isMixedKeyType || $this->keyType instanceof NeverType) {
@@ -500,8 +500,8 @@ class ArrayType implements Type
 
 	public function toPhpDocNode(): TypeNode
 	{
-		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed';
-		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed';
+		$isMixedKeyType = $this->keyType instanceof MixedType && $this->keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$this->keyType->isExplicitMixed();
+		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed' && !$this->itemType->isExplicitMixed();
 
 		if ($isMixedKeyType) {
 			if ($isMixedItemType) {

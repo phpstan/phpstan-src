@@ -85,11 +85,11 @@ function mixedInput(mixed $input): void
 	], false));
 
 	// filter flag with add_empty=default
-	assertType('array<int|false>', filter_var_array($input, FILTER_VALIDATE_INT));
+	assertType('array<mixed, int|false>', filter_var_array($input, FILTER_VALIDATE_INT));
 	// filter flag with add_empty=true
-	assertType('array<int|false>', filter_var_array($input, FILTER_VALIDATE_INT, true));
+	assertType('array<mixed, int|false>', filter_var_array($input, FILTER_VALIDATE_INT, true));
 	// filter flag with add_empty=false
-	assertType('array<int|false>', filter_var_array($input, FILTER_VALIDATE_INT, false));
+	assertType('array<mixed, int|false>', filter_var_array($input, FILTER_VALIDATE_INT, false));
 
 	$filter = [
 		'filter' => FILTER_VALIDATE_INT,

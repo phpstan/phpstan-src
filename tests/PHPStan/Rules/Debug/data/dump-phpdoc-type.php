@@ -31,7 +31,7 @@ dumpPhpDocType([true => true, false => false]);
  * @param T $value
  * @return T
  */
-function id(mixed $value): mixed
+function id($value)
 {
 	dumpPhpDocType($value);
 

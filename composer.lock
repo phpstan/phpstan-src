@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d6cc3eb297a7d5f481c67f8c671b208",
+    "content-hash": "a26a44dbb1ffe6df5fcd90884b4be5d4",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2184,16 +2184,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.25.0.19",
+            "version": "6.25.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "3c20bd3dea6f5a04a729891f9dd4326feb2e288c"
+                "reference": "a04fde59afcca51b0b2b439e05eb74503994cf4b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/3c20bd3dea6f5a04a729891f9dd4326feb2e288c",
-                "reference": "3c20bd3dea6f5a04a729891f9dd4326feb2e288c",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/a04fde59afcca51b0b2b439e05eb74503994cf4b",
+                "reference": "a04fde59afcca51b0b2b439e05eb74503994cf4b",
                 "shasum": ""
             },
             "require": {
@@ -2250,9 +2250,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.25.0.19"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.25.0.20"
             },
-            "time": "2024-09-10T09:53:53+00:00"
+            "time": "2024-10-12T09:20:20+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -6589,7 +6589,7 @@
         "php": "^8.1",
         "composer-runtime-api": "^2.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "8.1.99"
     },

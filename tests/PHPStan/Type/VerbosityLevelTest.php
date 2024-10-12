@@ -32,7 +32,7 @@ class VerbosityLevelTest extends PHPStanTestCase
 				],
 				null,
 				null,
-				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()]
+				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
 			),
 			new GenericObjectType(
 				'ArrayAccess',
@@ -42,7 +42,7 @@ class VerbosityLevelTest extends PHPStanTestCase
 				],
 				null,
 				null,
-				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()]
+				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
 			),
 			VerbosityLevel::precise(),
 		];

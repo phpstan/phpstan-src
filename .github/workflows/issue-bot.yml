@@ -106,6 +106,9 @@ jobs:
           attempt_limit: 5
           attempt_delay: 1000
 
+      - name: "Add level 10 config file"
+        run: "cp issue-bot/config.level10.neon conf/"
+
       - name: "Run PHPStan"
         working-directory: "issue-bot"
         timeout-minutes: 5

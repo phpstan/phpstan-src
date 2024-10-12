@@ -1054,4 +1054,19 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10715.php'], []);
 	}
 
+	public function testBug11835(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11835.php'], [
+			[
+				'Method ProjectionCumulativeHeadersResolver::resolve() should return Collection<int, non-falsy-string> but returns Collection<int, lowercase-string&non-falsy-string>.',
+				37,
+				'Template type TValue on class Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Method ProjectionCumulativeHeadersResolver::test() should return false but returns string.',
+				47,
+			],
+		]);
+	}
+
 }

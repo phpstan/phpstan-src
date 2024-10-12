@@ -26,5 +26,5 @@ interface AssertNonEmptyArray
 function intersection($assert, mixed $value): void
 {
 	$assert->assert($value);
-	assertType('non-empty-list<mixed>', $value);
+	assertType('non-empty-list', $value);
 }

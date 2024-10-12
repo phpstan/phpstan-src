@@ -11,7 +11,7 @@ use function PHPStan\Testing\assertType;
  */
 function addSomeKey(array $arr, int $value): array {
 	$arr['mykey'] = $value;
-	assertType("hasOffsetValue('mykey', int)&non-empty-array", $arr); // should preserve T
+	assertType("non-empty-array&hasOffsetValue('mykey', int)", $arr); // should preserve T
 	return $arr;
 }
 

@@ -10,9 +10,9 @@ function test(array $variables) {
 	if (!empty($variables['button'])) {
 		assertType('non-empty-array', $attributes);
 		$attributes['type'] = 'button';
-		assertType("hasOffsetValue('type', 'button')&non-empty-array", $attributes);
+		assertType("non-empty-array&hasOffsetValue('type', 'button')", $attributes);
 		unset($attributes['href']);
-		assertType("array<mixed~'href', mixed>&hasOffsetValue('type', 'button')", $attributes);
+		assertType("non-empty-array<mixed~'href', mixed>&hasOffsetValue('type', 'button')", $attributes);
 	}
 	assertType('array', $attributes);
 	return $attributes;

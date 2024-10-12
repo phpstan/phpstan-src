@@ -12,7 +12,7 @@ class HelloWorld
 		if (array_key_exists('nearest_premise', $innerHits) || array_key_exists('matching_premises', $innerHits)) {
 			assertType('array', $innerHits);
 			$x = array_key_exists('nearest_premise', $innerHits)
-				? assertType("array&hasOffset('nearest_premise')", $innerHits)
+				? assertType("non-empty-array&hasOffset('nearest_premise')", $innerHits)
 				: assertType('array', $innerHits);
 
 			assertType('array', $innerHits);
@@ -25,7 +25,7 @@ class HelloWorld
 		if (array_key_exists('nearest_premise', $innerHits) || array_key_exists('matching_premises', $innerHits)) {
 			assertType('array', $innerHits);
 			if (array_key_exists('nearest_premise', $innerHits)) {
-				assertType("array&hasOffset('nearest_premise')", $innerHits);
+				assertType("non-empty-array&hasOffset('nearest_premise')", $innerHits);
 			} else {
 				assertType('array', $innerHits);
 			}

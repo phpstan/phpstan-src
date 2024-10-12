@@ -34,7 +34,7 @@ class GenericList implements IteratorAggregate
 		if ($item) {
 			assertType("T of mixed~(0|0.0|''|'0'|array{}|false|null) (class Bug4117Types\GenericList, argument)", $item);
 		} else {
-			assertType("(T of mixed~null (class Bug4117Types\GenericList, argument)&false)|(0.0&T of mixed~null (class Bug4117Types\GenericList, argument))|(0&T of mixed~null (class Bug4117Types\GenericList, argument))|(array{}&T of mixed~null (class Bug4117Types\GenericList, argument))|(''&T of mixed~null (class Bug4117Types\GenericList, argument))|('0'&T of mixed~null (class Bug4117Types\GenericList, argument))|null", $item);
+			assertType("(T of mixed~null (class Bug4117Types\GenericList, argument)&false)|(0.0&T of mixed~null (class Bug4117Types\GenericList, argument))|(0&T of mixed~null (class Bug4117Types\GenericList, argument))|(list{}&T of mixed~null (class Bug4117Types\GenericList, argument))|(''&T of mixed~null (class Bug4117Types\GenericList, argument))|('0'&T of mixed~null (class Bug4117Types\GenericList, argument))|null", $item);
 		}
 
 		assertType('T of mixed~null (class Bug4117Types\GenericList, argument)|null', $item);

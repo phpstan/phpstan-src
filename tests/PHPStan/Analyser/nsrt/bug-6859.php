@@ -30,7 +30,7 @@ class HelloWorld
 	public function values($body)
 	{
 		if (array_key_exists("someParam", $body)) {
-			assertType('non-empty-list<mixed>', array_values($body));
+			assertType('non-empty-list', array_values($body));
 		}
 	}
 }

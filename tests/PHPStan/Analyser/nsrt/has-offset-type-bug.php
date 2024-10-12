@@ -65,7 +65,7 @@ class Foo
 	{
 		assertType("array{}|array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		if (isset($range['min']) || isset($range['max'])) {
-			assertType("array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}&non-empty-array", $range);
+			assertType("non-empty-array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		} else {
 			assertType("array{}|array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		}
@@ -144,7 +144,7 @@ class AssignVsNarrow
 	public function doFoo2(array $a)
 	{
 		if (is_int($a['a'])) {
-			assertType("array<string, string>&hasOffsetValue('a', *NEVER*)", $a);
+			assertType("non-empty-array<string, string>&hasOffsetValue('a', *NEVER*)", $a);
 		}
 	}
 

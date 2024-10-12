@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -265,7 +266,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		yield [
 			new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()), new AccessoryArrayListType()]),
-			'list<mixed>',
+			'list',
 		];
 
 		yield [
@@ -274,7 +275,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 				new AccessoryArrayListType(),
 			]),
-			'non-empty-list<mixed>',
+			'non-empty-list',
 		];
 
 		yield [
@@ -308,6 +309,122 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantStringType('bar'),
 			], [2], [1]),
 			"array{0: 'foo', 1?: 'bar'}",
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()),
+				new AccessoryArrayListType(),
+			]),
+			'list<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
+				new AccessoryArrayListType(),
+			]),
+			'list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType(true)),
+				new AccessoryArrayListType(),
+			]),
+			'list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType(true)),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-array',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-array<mixed>',
+		];
+		$constantArrayWithOptionalKeys = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		], [
+			new StringType(),
+			new StringType(),
+			new StringType(),
+			new StringType(),
+		], [3], [2, 3], TrinaryLogic::createMaybe());
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			'list{0: string, 1: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			'list{0: string, 1: string, 2?: string, 3?: string}',
+		];
+
+		$constantArrayWithAllOptionalKeys = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		], [
+			new StringType(),
+			new StringType(),
+			new StringType(),
+			new StringType(),
+		], [3], [0, 1, 2, 3], TrinaryLogic::createMaybe());
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			'list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new NonEmptyArrayType(),
+				new AccessoryArrayListType(),
+			]),
+			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-array{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 	}
 

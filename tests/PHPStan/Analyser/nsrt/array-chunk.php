@@ -60,8 +60,8 @@ class Foo
 	 * @param int<50, max> $bigger50
 	 */
 	public function lengthIntRanges(array $arr, int $positiveInt, int $bigger50) {
-		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $positiveInt));
-		assertType('list<non-empty-list<mixed>>', array_chunk($arr, $bigger50));
+		assertType('list<non-empty-list>', array_chunk($arr, $positiveInt));
+		assertType('list<non-empty-list>', array_chunk($arr, $bigger50));
 	}
 
 	/**
@@ -78,11 +78,11 @@ class Foo
 	public function offsets(array $arr, array $map): void
 	{
 		if (array_key_exists('foo', $arr)) {
-			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-list>', array_chunk($arr, 2));
 			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
 		}
 		if (array_key_exists('foo', $arr) && $arr['foo'] === 'bar') {
-			assertType('non-empty-list<non-empty-list<mixed>>', array_chunk($arr, 2));
+			assertType('non-empty-list<non-empty-list>', array_chunk($arr, 2));
 			assertType('non-empty-list<non-empty-array>', array_chunk($arr, 2, true));
 		}
 

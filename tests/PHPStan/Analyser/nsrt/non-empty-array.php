@@ -26,7 +26,7 @@ class Foo
 	): void
 	{
 		assertType('non-empty-array', $array);
-		assertType('non-empty-list<mixed>', $list);
+		assertType('non-empty-list', $list);
 		assertType('non-empty-array<int, string>', $arrayOfStrings);
 		assertType('non-empty-list<stdClass>', $listOfStd);
 		assertType('non-empty-list<stdClass>', $listOfStd2);

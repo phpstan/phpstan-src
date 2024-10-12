@@ -15,7 +15,7 @@ class Foo
 	public function nonEmpty(array $a, array $b, array $c): void
 	{
 		assertType('array', array_slice($a, 1));
-		assertType('list<mixed>', array_slice($b, 1));
+		assertType('list', array_slice($b, 1));
 		assertType('array<int|string>', array_slice($c, 1));
 	}
 
@@ -94,11 +94,11 @@ class Foo
 	{
 		if (array_key_exists(1, $arr)) {
 			assertType('non-empty-array', array_slice($arr, 1, null, false));
-			assertType('hasOffset(1)&non-empty-array', array_slice($arr, 1, null, true));
+			assertType('non-empty-array&hasOffset(1)', array_slice($arr, 1, null, true));
 		}
 		if (array_key_exists(1, $arr) && $arr[1] === 'foo') {
 			assertType('non-empty-array', array_slice($arr, 1, null, false));
-			assertType("hasOffsetValue(1, 'foo')&non-empty-array", array_slice($arr, 1, null, true));
+			assertType("non-empty-array&hasOffsetValue(1, 'foo')", array_slice($arr, 1, null, true));
 		}
 	}
 

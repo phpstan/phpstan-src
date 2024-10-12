@@ -22,11 +22,11 @@ class HelloWorld
 
 		$data['foo'] = 'a';
 		$data['bar'] = 'b';
-		assertType("hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')&non-empty-array", $data);
+		assertType("non-empty-array&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
 
 		unset($data['id']);
 
-		assertType("array<mixed~'id', mixed>&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
+		assertType("non-empty-array<mixed~'id', mixed>&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
 		return $data;
 	}
 }

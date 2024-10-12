@@ -9,19 +9,19 @@ class Foo
 	/** @param list $list */
 	public function directAssertion($list): void
 	{
-		assertType('list<mixed>', $list);
+		assertType('list', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionParamHint(array $list): void
 	{
-		assertType('list<mixed>', $list);
+		assertType('list', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionNullableParamHint(array $list = null): void
 	{
-		assertType('list<mixed>|null', $list);
+		assertType('list|null', $list);
 	}
 
 	/** @param list<\DateTime> $list */
@@ -37,7 +37,7 @@ class Foo
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();
-		assertType('non-empty-list<mixed>', $list);
+		assertType('non-empty-list', $list);
 	}
 
 
@@ -83,17 +83,17 @@ class Foo
 		// These won't output errors for now but should when list type will be fully implemented
 		/** @var list $list */
 		$list = [];
-		assertType('list<mixed>', $list);
+		assertType('list', $list);
 		$list[] = '1';
-		assertType('non-empty-list<mixed>', $list);
+		assertType('non-empty-list', $list);
 		$list[] = '2';
-		assertType('non-empty-list<mixed>', $list);
+		assertType('non-empty-list', $list);
 		unset($list[0]);//break list behaviour
 		assertType('array<int<1, max>, mixed>', $list);
 
 		/** @var list $list2 */
 		$list2 = [];
-		assertType('list<mixed>', $list2);
+		assertType('list', $list2);
 		$list2[2] = '1';//Most likely to create a gap in indexes
 		assertType('non-empty-array<int<0, max>, mixed>&hasOffsetValue(2, \'1\')', $list2);
 	}

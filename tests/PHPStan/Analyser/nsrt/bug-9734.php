@@ -15,7 +15,7 @@ class Foo
 	public function doFoo(array $a): void
 	{
 		if (array_is_list($a)) {
-			assertType('list<mixed>', $a);
+			assertType('list', $a);
 		} else {
 			assertType('array<mixed>', $a); // could be non-empty-array
 		}
@@ -38,7 +38,7 @@ class Foo
 	public function doFoo3(array $a): void
 	{
 		if (array_is_list($a)) {
-			assertType('non-empty-list<mixed>', $a);
+			assertType('non-empty-list', $a);
 		} else {
 			assertType('non-empty-array<mixed>', $a);
 		}

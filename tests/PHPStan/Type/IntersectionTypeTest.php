@@ -436,7 +436,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 			]),
 			VerbosityLevel::value(),
-			'non-empty-list<mixed>',
+			'non-empty-list',
 		];
 
 		yield [
@@ -490,6 +490,221 @@ class IntersectionTypeTest extends PHPStanTestCase
 			]),
 			VerbosityLevel::value(),
 			'non-empty-array<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new IntegerType()),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'list<int>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-list',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new AccessoryArrayListType(),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-list<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'array',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'array<mixed>',
+		];
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array<mixed>',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new NonEmptyArrayType(),
+				new OversizedArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array<mixed>',
+		];
+
+		yield [
+			new IntersectionType([
+				new ArrayType(new MixedType(), new MixedType(true)),
+				new NonEmptyArrayType(),
+				new OversizedArrayType(),
+			]),
+			VerbosityLevel::precise(),
+			'non-empty-array<mixed>&oversized-array',
+		];
+
+		$constantArrayWithOptionalKeys = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		], [
+			new StringType(),
+			new StringType(),
+			new StringType(),
+			new StringType(),
+		], [3], [2, 3], TrinaryLogic::createMaybe());
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::typeOnly(),
+			'list<string>',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'list{0: string, 1: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::precise(),
+			'list{0: string, 1: string, 2?: string, 3?: string}',
+		];
+
+		$constantArrayWithAllOptionalKeys = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		], [
+			new StringType(),
+			new StringType(),
+			new StringType(),
+			new StringType(),
+		], [3], [0, 1, 2, 3], TrinaryLogic::createMaybe());
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new NonEmptyArrayType(),
+				new AccessoryArrayListType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
+		yield [
+			new IntersectionType([
+				$constantArrayWithAllOptionalKeys,
+				new NonEmptyArrayType(),
+			]),
+			VerbosityLevel::value(),
+			'non-empty-array{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 	}
 

@@ -48,7 +48,7 @@ class Foo
 		assertType('array{}', array_intersect_key($arr, $otherArrs));
 
 		if (array_key_exists(17, $arr2)) {
-			assertType('array<17, string>&hasOffset(17)', array_intersect_key($arr2, [17 => 'bar']));
+			assertType('non-empty-array<17, string>&hasOffset(17)', array_intersect_key($arr2, [17 => 'bar']));
 			/** @var array<int, string> $otherArrs */
 			assertType('array<int, string>', array_intersect_key($arr2, $otherArrs));
 			/** @var array<string, int> $otherArrs */
@@ -56,7 +56,7 @@ class Foo
 		}
 
 		if (array_key_exists(17, $arr2) && $arr2[17] === 'foo') {
-			assertType("array<17, string>&hasOffsetValue(17, 'foo')", array_intersect_key($arr2, [17 => 'bar']));
+			assertType("non-empty-array<17, string>&hasOffsetValue(17, 'foo')", array_intersect_key($arr2, [17 => 'bar']));
 			/** @var array<int, string> $otherArrs */
 			assertType('array<int, string>', array_intersect_key($arr2, $otherArrs));
 			/** @var array<string, int> $otherArrs */
@@ -79,7 +79,7 @@ class Foo
 	/** @param list<string> $arr */
 	public function list(array $arr, array $otherArrs): void
 	{
-		assertType('array<0|1, string>&list', array_intersect_key($arr, ['foo', 'bar']));
+		assertType('list<string>', array_intersect_key($arr, ['foo', 'bar']));
 		/** @var array<int, string> $otherArrs */
 		assertType('array<int<0, max>, string>', array_intersect_key($arr, $otherArrs));
 		/** @var array<string, int> $otherArrs */

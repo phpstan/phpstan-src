@@ -73,7 +73,7 @@ class Foo
 
 		if (array_key_exists('foo', $mixed)) {
 			assertType('non-empty-array', array_reverse($mixed));
-			assertType("array&hasOffset('foo')", array_reverse($mixed, true));
+			assertType("non-empty-array&hasOffset('foo')", array_reverse($mixed, true));
 		}
 	}
 }

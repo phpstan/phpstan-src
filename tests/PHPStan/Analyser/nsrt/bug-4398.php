@@ -14,5 +14,5 @@ function (array $meters): void {
 	assertType('array', array_reverse());
 	assertType('non-empty-array', array_reverse($meters));
 	assertType('non-empty-list<(int|string)>', array_keys($meters));
-	assertType('non-empty-list<mixed>', array_values($meters));
+	assertType('non-empty-list', array_values($meters));
 };

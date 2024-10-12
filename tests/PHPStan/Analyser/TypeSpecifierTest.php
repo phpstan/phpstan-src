@@ -1064,7 +1064,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'array&hasOffset(\'foo\')',
+					'$array' => 'non-empty-array&hasOffset(\'foo\')',
 				],
 				[
 					'$array' => '~hasOffset(\'foo\')',
@@ -1112,7 +1112,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('array')),
 				]),
 				[
-					'$array' => 'array&hasOffset(\'foo\')',
+					'$array' => 'non-empty-array&hasOffset(\'foo\')',
 				],
 				[
 					'$array' => '~hasOffset(\'foo\')',

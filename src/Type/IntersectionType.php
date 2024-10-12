@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
@@ -45,7 +46,6 @@ use function in_array;
 use function ksort;
 use function md5;
 use function sprintf;
-use function str_starts_with;
 use function strcasecmp;
 use function strlen;
 use function substr;
@@ -347,6 +347,10 @@ class IntersectionType implements CompoundType
 
 		$nonEmptyStr = false;
 		$nonFalsyStr = false;
+		$isList = $this->isList()->yes();
+		$isArray = $this->isArray()->yes();
+		$isNonEmptyArray = $this->isIterableAtLeastOnce()->yes();
+		$describedTypes = [];
 		foreach ($this->getSortedTypes() as $i => $type) {
 			if ($type instanceof AccessoryNonEmptyStringType
 				|| $type instanceof AccessoryLiteralStringType
@@ -379,10 +383,45 @@ class IntersectionType implements CompoundType
 				$skipTypeNames[] = 'string';
 				continue;
 			}
-			if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
-				$typesToDescribe[$i] = $type;
-				$skipTypeNames[] = 'array';
-				continue;
+			if ($isList || $isArray) {
+				if ($type instanceof ArrayType) {
+					$keyType = $type->getKeyType();
+					$valueType = $type->getItemType();
+					if ($isList) {
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$valueTypeDescription = '';
+						if (!$isMixedValueType) {
+							$valueTypeDescription = sprintf('<%s>', $valueType->describe($level));
+						}
+
+						$describedTypes[$i] = ($isNonEmptyArray ? 'non-empty-list' : 'list') . $valueTypeDescription;
+					} else {
+						$isMixedKeyType = $keyType instanceof MixedType && $keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$keyType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$typeDescription = '';
+						if (!$isMixedKeyType) {
+							$typeDescription = sprintf('<%s, %s>', $keyType->describe($level), $valueType->describe($level));
+						} elseif (!$isMixedValueType) {
+							$typeDescription = sprintf('<%s>', $valueType->describe($level));
+						}
+
+						$describedTypes[$i] = ($isNonEmptyArray ? 'non-empty-array' : 'array') . $typeDescription;
+					}
+					continue;
+				} elseif ($type instanceof ConstantArrayType) {
+					$description = $type->describe($level);
+					$descriptionWithoutKind = substr($description, strlen('array'));
+					$begin = $isList ? 'list' : 'array';
+					if ($isNonEmptyArray && !$type->isIterableAtLeastOnce()->yes()) {
+						$begin = 'non-empty-' . $begin;
+					}
+
+					$describedTypes[$i] = $begin . $descriptionWithoutKind;
+					continue;
+				}
+				if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
+					continue;
+				}
 			}
 
 			if ($type instanceof CallableType && $type->isCommonCallable()) {
@@ -404,7 +443,6 @@ class IntersectionType implements CompoundType
 			$typesToDescribe[$i] = $type;
 		}
 
-		$describedTypes = [];
 		foreach ($baseTypes as $i => $type) {
 			$typeDescription = $type->describe($level);
 
@@ -416,36 +454,6 @@ class IntersectionType implements CompoundType
 						continue 2;
 					}
 				}
-			}
-
-			if (
-				str_starts_with($typeDescription, 'array<')
-				&& in_array('array', $skipTypeNames, true)
-			) {
-				$nonEmpty = false;
-				$typeName = 'array';
-				foreach ($typesToDescribe as $j => $typeToDescribe) {
-					if (
-						$typeToDescribe instanceof AccessoryArrayListType
-						&& substr($typeDescription, 0, strlen('array<int<0, max>, ')) === 'array<int<0, max>, '
-					) {
-						$typeName = 'list';
-						$typeDescription = 'array<' . substr($typeDescription, strlen('array<int<0, max>, '));
-					} elseif ($typeToDescribe instanceof NonEmptyArrayType) {
-						$nonEmpty = true;
-					} else {
-						continue;
-					}
-
-					unset($typesToDescribe[$j]);
-				}
-
-				if ($nonEmpty) {
-					$typeName = 'non-empty-' . $typeName;
-				}
-
-				$describedTypes[$i] = $typeName . '<' . substr($typeDescription, strlen('array<'));
-				continue;
 			}
 
 			if (in_array($typeDescription, $skipTypeNames, true)) {
@@ -1139,6 +1147,10 @@ class IntersectionType implements CompoundType
 
 		$nonEmptyStr = false;
 		$nonFalsyStr = false;
+		$isList = $this->isList()->yes();
+		$isArray = $this->isArray()->yes();
+		$isNonEmptyArray = $this->isIterableAtLeastOnce()->yes();
+		$describedTypes = [];
 
 		foreach ($this->getSortedTypes() as $i => $type) {
 			if ($type instanceof AccessoryNonEmptyStringType
@@ -1168,11 +1180,70 @@ class IntersectionType implements CompoundType
 				$skipTypeNames[] = 'string';
 				continue;
 			}
-			if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
-				$typesToDescribe[$i] = $type;
-				$skipTypeNames[] = 'array';
-				continue;
+
+			if ($isList || $isArray) {
+				if ($type instanceof ArrayType) {
+					$keyType = $type->getKeyType();
+					$valueType = $type->getItemType();
+					if ($isList) {
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$identifierTypeNode = new IdentifierTypeNode($isNonEmptyArray ? 'non-empty-list' : 'list');
+						if (!$isMixedValueType) {
+							$describedTypes[$i] = new GenericTypeNode($identifierTypeNode, [
+								$valueType->toPhpDocNode(),
+							]);
+						} else {
+							$describedTypes[$i] = $identifierTypeNode;
+						}
+					} else {
+						$isMixedKeyType = $keyType instanceof MixedType && $keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$keyType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$identifierTypeNode = new IdentifierTypeNode($isNonEmptyArray ? 'non-empty-array' : 'array');
+						if (!$isMixedKeyType) {
+							$describedTypes[$i] = new GenericTypeNode($identifierTypeNode, [
+								$keyType->toPhpDocNode(),
+								$valueType->toPhpDocNode(),
+							]);
+						} elseif (!$isMixedValueType) {
+							$describedTypes[$i] = new GenericTypeNode($identifierTypeNode, [
+								$valueType->toPhpDocNode(),
+							]);
+						} else {
+							$describedTypes[$i] = $identifierTypeNode;
+						}
+					}
+					continue;
+				} elseif ($type instanceof ConstantArrayType) {
+					$constantArrayTypeNode = $type->toPhpDocNode();
+					if ($constantArrayTypeNode instanceof ArrayShapeNode) {
+						$newKind = $constantArrayTypeNode->kind;
+						if ($isList) {
+							if ($isNonEmptyArray && !$type->isIterableAtLeastOnce()->yes()) {
+								$newKind = ArrayShapeNode::KIND_NON_EMPTY_LIST;
+							} else {
+								$newKind = ArrayShapeNode::KIND_LIST;
+							}
+						} elseif ($isNonEmptyArray && !$type->isIterableAtLeastOnce()->yes()) {
+							$newKind = ArrayShapeNode::KIND_NON_EMPTY_ARRAY;
+						}
+
+						if ($newKind !== $constantArrayTypeNode->kind) {
+							if ($constantArrayTypeNode->sealed) {
+								$constantArrayTypeNode = ArrayShapeNode::createSealed($constantArrayTypeNode->items, $newKind);
+							} else {
+								$constantArrayTypeNode = ArrayShapeNode::createUnsealed($constantArrayTypeNode->items, $constantArrayTypeNode->unsealedType, $newKind);
+							}
+						}
+
+						$describedTypes[$i] = $constantArrayTypeNode;
+						continue;
+					}
+				}
+				if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
+					continue;
+				}
 			}
+
 			if (!$type instanceof AccessoryType) {
 				$baseTypes[$i] = $type;
 				continue;
@@ -1186,7 +1257,6 @@ class IntersectionType implements CompoundType
 			$typesToDescribe[$i] = $type;
 		}
 
-		$describedTypes = [];
 		foreach ($baseTypes as $i => $type) {
 			$typeNode = $type->toPhpDocNode();
 			if ($typeNode instanceof GenericTypeNode && $typeNode->type->name === 'array') {

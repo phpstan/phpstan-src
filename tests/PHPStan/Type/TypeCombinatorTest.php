@@ -965,7 +965,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				IntersectionType::class,
-				'array&hasOffsetValue(\'foo\', mixed)',
+				'non-empty-array&hasOffsetValue(\'foo\', mixed)',
 			],
 			[
 				[
@@ -2267,7 +2267,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new IntegerType())),
 			],
 			IntersectionType::class,
-			'array&hasOffsetValue(\'a\', int)',
+			'non-empty-array&hasOffsetValue(\'a\', int)',
 		];
 
 		yield [
@@ -2288,7 +2288,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 			],
 			IntersectionType::class,
-			"array&hasOffsetValue('a', mixed)",
+			"non-empty-array&hasOffsetValue('a', mixed)",
 		];
 
 		yield [
@@ -2315,7 +2315,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 			],
 			IntersectionType::class,
-			"array<int, array>&hasOffsetValue(0, array&hasOffsetValue('code', mixed))",
+			"non-empty-array<int, array>&hasOffsetValue(0, non-empty-array&hasOffsetValue('code', mixed))",
 		];
 
 		yield [
@@ -2513,7 +2513,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 			],
 			UnionType::class,
-			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
+			'array{a?: true, b: true}|non-empty-array{a?: true, c?: true}',
 		];
 
 		yield [
@@ -2600,7 +2600,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 			],
 			IntersectionType::class,
-			'array&hasOffsetValue(\'thing\', mixed)',
+			'non-empty-array&hasOffsetValue(\'thing\', mixed)',
 		];
 	}
 
@@ -3109,7 +3109,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				IntersectionType::class,
-				'array<string, string>&hasOffset(\'a\')',
+				'non-empty-array<string, string>&hasOffset(\'a\')',
 			],
 			[
 				[
@@ -3118,7 +3118,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				IntersectionType::class,
-				'array<string, string>&hasOffset(\'a\')',
+				'non-empty-array<string, string>&hasOffset(\'a\')',
 			],
 			[
 				[
@@ -3267,7 +3267,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 				],
 				IntersectionType::class,
-				'array&hasOffset(\'bar\')&hasOffset(\'foo\')',
+				'non-empty-array&hasOffset(\'bar\')&hasOffset(\'foo\')',
 			],
 			[
 				[
@@ -4047,7 +4047,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new IntegerType())),
 			],
 			IntersectionType::class,
-			'array&hasOffsetValue(\'a\', 1)',
+			'non-empty-array&hasOffsetValue(\'a\', 1)',
 		];
 		yield [
 			[
@@ -4207,7 +4207,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 			],
 			UnionType::class,
-			'array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)',
+			'array{a?: true, b: true}|non-empty-array{a?: true, c?: true}',
 		];
 		yield [
 			[
@@ -4243,7 +4243,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new NonEmptyArrayType(),
 			],
 			IntersectionType::class,
-			'array{a?: true, c?: true}&non-empty-array',
+			'non-empty-array{a?: true, c?: true}',
 		];
 		yield [
 			[

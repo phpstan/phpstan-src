@@ -20,6 +20,6 @@ function (): void {
 	assertType('array{}|array{a?: true, b: true}|array{a?: true, c?: true}', $warnings);
 
 	if (!empty($warnings)) {
-		assertType('array{a?: true, b: true}|(array{a?: true, c?: true}&non-empty-array)', $warnings);
+		assertType('array{a?: true, b: true}|non-empty-array{a?: true, c?: true}', $warnings);
 	}
 };

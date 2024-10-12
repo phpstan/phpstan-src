@@ -240,7 +240,7 @@ function foo16() {
 function fooShuffle() {
 	$array = ["foo" => 123, "bar" => 456];
 	shuffle($array);
-	assertType('non-empty-array<0|1, 123|456>&list', $array);
+	assertType('non-empty-list<123|456>', $array);
 
 	$emptyArray = [];
 	shuffle($emptyArray);

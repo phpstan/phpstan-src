@@ -351,25 +351,25 @@ class CountWithOptionalKeys
 		if (count($row) >= $twoOrThree) {
 			assertType('array{0: int, 1: string|null, 2?: int|null}', $row);
 		} else {
-			assertType('(array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}&list)|array{string}', $row);
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 
 		if (count($row) >= $tenOrEleven) {
 			assertType('*NEVER*', $row);
 		} else {
-			assertType('(array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}&list)|array{string}', $row);
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 
 		if (count($row) >= $twoOrMore) {
-			assertType('array{0: int, 1: string|null, 2?: int|null, 3?: float|null}&list', $row);
+			assertType('list{0: int, 1: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
-			assertType('(array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}&list)|array{string}', $row);
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 
 		if (count($row) >= $maxThree) {
-			assertType('(array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}&list)|array{string}', $row);
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
-			assertType('array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}&list', $row);
+			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 	}
 

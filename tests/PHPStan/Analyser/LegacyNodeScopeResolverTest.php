@@ -4846,7 +4846,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_pop($stringKeys)',
 			],
 			[
-				'array<stdClass>&hasOffsetValue(\'baz\', stdClass)',
+				'non-empty-array<stdClass>&hasOffsetValue(\'baz\', stdClass)',
 				'$stdClassesWithIsset',
 			],
 			[
@@ -8077,7 +8077,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array',
 			],
 			[
-				'array&hasOffsetValue(\'key\', mixed)',
+				'non-empty-array&hasOffsetValue(\'key\', mixed)',
 				'$generalArray',
 			],
 			[
@@ -8563,11 +8563,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixedIsset',
 			],
 			[
-				'array&hasOffset(\'a\')',
+				'non-empty-array&hasOffset(\'a\')',
 				'$mixedArrayKeyExists',
 			],
 			[
-				'array<int>&hasOffsetValue(\'a\', int)',
+				'non-empty-array<int>&hasOffsetValue(\'a\', int)',
 				'$integers',
 			],
 			[

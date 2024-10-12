@@ -19,7 +19,7 @@ class Foo
 		$foos[0] = null;
 
 		assertType('null', $foos[0]);
-		assertType('hasOffsetValue(0, null)&non-empty-array', $foos);
+		assertType('non-empty-array&hasOffsetValue(0, null)', $foos);
 	}
 
 	/** @return self[] */

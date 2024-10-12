@@ -175,7 +175,7 @@ class ArrayColumnTest
 		assertType('list<string>', array_column($array, 'nodeName'));
 		assertType('array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('list', array_column($array, 'foo'));
 		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
 		assertType('array<int|string, string>', array_column($array, 'nodeName', 'foo'));
 		assertType('array<int|string, DOMElement>', array_column($array, null, 'foo'));
@@ -187,7 +187,7 @@ class ArrayColumnTest
 		assertType('non-empty-list<string>', array_column($array, 'nodeName'));
 		assertType('non-empty-array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('list', array_column($array, 'foo'));
 		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
 		assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
 		assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));
@@ -199,7 +199,7 @@ class ArrayColumnTest
 		assertType('array{string}', array_column($array, 'nodeName'));
 		assertType('non-empty-array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('list', array_column($array, 'foo'));
 		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
 		assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
 		assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));

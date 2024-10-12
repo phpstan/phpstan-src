@@ -14,7 +14,7 @@ function foo(array $params)
 	assertNativeType('array', $params);
 	if (array_key_exists('help', $params)) {
 		assertType('array{help: null}', $params);
-		assertNativeType("array&hasOffset('help')", $params);
+		assertNativeType("non-empty-array&hasOffset('help')", $params);
 		unset($params['help']);
 
 		assertType('array{}', $params);

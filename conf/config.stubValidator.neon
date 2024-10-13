@@ -11,6 +11,12 @@ services:
 		arguments:
 			php8Parser: @php8PhpParser
 
+	defaultAnalysisParser:
+		class: PHPStan\Parser\StubParser
+		arguments!:
+			parser: @php8PhpParser
+		autowired: false
+
 	nodeScopeResolverReflector:
 		factory: @stubReflector
 

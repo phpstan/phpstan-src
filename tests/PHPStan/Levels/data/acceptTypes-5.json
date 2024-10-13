@@ -180,7 +180,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array{} given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array<mixed>, array{} given.",
         "line": 733,
         "ignorable": true
     },

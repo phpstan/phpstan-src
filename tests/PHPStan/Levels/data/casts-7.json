@@ -1,11 +1,11 @@
 [
     {
-        "message": "Cannot cast array|(callable(): mixed) to int.",
+        "message": "Cannot cast array<mixed>|(callable(): mixed) to int.",
         "line": 20,
         "ignorable": true
     },
     {
-        "message": "Cannot cast array|float|int to string.",
+        "message": "Cannot cast array<mixed>|float|int to string.",
         "line": 21,
         "ignorable": true
     }

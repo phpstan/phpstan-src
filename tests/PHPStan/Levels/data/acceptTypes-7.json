@@ -95,12 +95,12 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array<mixed>, array|Levels\\AcceptTypes\\Foo given.",
+        "message": "Parameter #1 $array of method Levels\\AcceptTypes\\Baz::requireArray() expects array<mixed>, array<mixed>|Levels\\AcceptTypes\\Foo given.",
         "line": 542,
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array|Levels\\AcceptTypes\\Foo given.",
+        "message": "Parameter #1 $foo of method Levels\\AcceptTypes\\Baz::requireFoo() expects Levels\\AcceptTypes\\Foo, array<mixed>|Levels\\AcceptTypes\\Foo given.",
         "line": 543,
         "ignorable": true
     },
@@ -160,7 +160,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array<mixed>, array given.",
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array<mixed>, array<mixed> given.",
         "line": 735,
         "ignorable": true
     },

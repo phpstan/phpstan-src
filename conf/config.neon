@@ -1944,7 +1944,7 @@ services:
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
-			parser: @defaultAnalysisParser
+			parser: @stubParser
 
 	# Reflection providers
 
@@ -2043,6 +2043,12 @@ services:
 			currentPhpVersionRichParser: @currentPhpVersionRichParser
 			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
 			php8Parser: @php8Parser
+		autowired: false
+
+	stubParser:
+		class: PHPStan\Parser\StubParser
+		arguments:
+			parser: @php8PhpParser
 		autowired: false
 
 	phpstanDiagnoseExtension:

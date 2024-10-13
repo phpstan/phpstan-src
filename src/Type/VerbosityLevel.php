@@ -131,11 +131,11 @@ final class VerbosityLevel
 		}
 
 		if ($moreVerbose) {
-			return self::value();
+			$verbosity = self::value();
 		}
 
 		if ($acceptedType === null) {
-			return self::typeOnly();
+			return $verbosity ?? self::typeOnly();
 		}
 
 		$containsInvariantTemplateType = false;
@@ -163,7 +163,7 @@ final class VerbosityLevel
 		});
 
 		if (!$containsInvariantTemplateType) {
-			return self::typeOnly();
+			return $verbosity ?? self::typeOnly();
 		}
 
 		/** @var bool $moreVerbose */
@@ -176,7 +176,7 @@ final class VerbosityLevel
 			return self::precise();
 		}
 
-		return $moreVerbose ? self::value() : self::typeOnly();
+		return $moreVerbose ? self::value() : $verbosity ?? self::typeOnly();
 	}
 
 	/**

@@ -8,7 +8,6 @@ use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -38,9 +37,6 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		}
 
 		$functionName = (string) $node->name;
-		if (strtolower($functionName) === 'is_a') {
-			return [];
-		}
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
 			return [];

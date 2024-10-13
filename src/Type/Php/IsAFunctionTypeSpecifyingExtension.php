@@ -9,9 +9,12 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function strtolower;
 
@@ -47,9 +50,20 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(false);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
+		$superType = $allowString
+			? TypeCombinator::union(new ObjectWithoutClassType(), new ClassStringType())
+			: new ObjectWithoutClassType();
+
+		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, true);
+
+		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
+		if ($resultType->equals($superType) && $resultType->isSuperTypeOf($objectOrClassType)->yes()) {
+			return new SpecifiedTypes([], []);
+		}
+
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, true),
+			$resultType,
 			$context,
 			false,
 			$scope,

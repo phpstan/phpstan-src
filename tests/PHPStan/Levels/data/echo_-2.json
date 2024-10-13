@@ -5,7 +5,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #2 (array|(callable(): mixed)) of echo cannot be converted to string.",
+        "message": "Parameter #2 (array<mixed>|(callable(): mixed)) of echo cannot be converted to string.",
         "line": 21,
         "ignorable": true
     }

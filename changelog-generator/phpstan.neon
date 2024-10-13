@@ -11,4 +11,6 @@ parameters:
 	paths:
 		- src
 		- run.php
-	checkGenericClassInNonGenericObjectType: false
+	ignoreErrors:
+		-
+			identifier: missingType.generics

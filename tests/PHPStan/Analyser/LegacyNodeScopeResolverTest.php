@@ -4264,7 +4264,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$str',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'list<mixed>' : 'array<int|string, mixed>',
+				PHP_VERSION_ID < 80000 ? 'list' : 'array<int|string, mixed>',
 				'$arr',
 			],
 			[

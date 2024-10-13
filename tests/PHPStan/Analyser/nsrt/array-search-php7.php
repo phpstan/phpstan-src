@@ -16,7 +16,7 @@ class Foo
 			assertType('int|string|false', array_search('foo', $mixed));
 			assertType('int|string|false', array_search($string, $mixed, true));
 		} else {
-			assertType('mixed~array', $mixed);
+			assertType('mixed~array<mixed, mixed>', $mixed);
 			assertType('null', array_search('foo', $mixed, true));
 			assertType('null', array_search('foo', $mixed));
 			assertType('null', array_search($string, $mixed, true));

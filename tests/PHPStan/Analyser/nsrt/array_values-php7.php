@@ -12,7 +12,7 @@ class HelloWorld
 		if (is_array($mixed)) {
 			assertType('list<mixed>', array_values($mixed));
 		} else {
-			assertType('mixed~array', $mixed);
+			assertType('mixed~array<mixed, mixed>', $mixed);
 			assertType('null', array_values($mixed));
 		}
 	}

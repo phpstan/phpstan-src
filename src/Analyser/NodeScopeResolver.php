@@ -1193,10 +1193,8 @@ final class NodeScopeResolver
 
 			if ($alwaysIterates) {
 				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
-			} elseif ($isIterableAtLeastOnce) {
-				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {
-				$isAlwaysTerminating = false;
+				$isAlwaysTerminating = $isIterableAtLeastOnce && $finalScopeResult->isAlwaysTerminating();
 			}
 			$condScope = $condResult->getFalseyScope();
 			if (!$isIterableAtLeastOnce) {
@@ -1313,6 +1311,7 @@ final class NodeScopeResolver
 			}
 
 			$bodyScope = $initScope;
+			$alwaysIterates = $stmt->cond === [] && $context->isTopLevel();
 			$isIterableAtLeastOnce = TrinaryLogic::createYes();
 			foreach ($stmt->cond as $condExpr) {
 				$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, static function (): void {
@@ -1410,10 +1409,16 @@ final class NodeScopeResolver
 				}
 			}
 
+			if ($alwaysIterates) {
+				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+			} else {
+				$isAlwaysTerminating = false; // $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable
+			}
+
 			return new StatementResult(
 				$finalScope,
 				$finalScopeResult->hasYield() || $hasYield,
-				false/* $finalScopeResult->isAlwaysTerminating() && $isAlwaysIterable*/,
+				$isAlwaysTerminating,
 				$finalScopeResult->getExitPointsForOuterLoop(),
 				array_merge($throwPoints, $finalScopeResult->getThrowPoints()),
 				array_merge($impurePoints, $finalScopeResult->getImpurePoints()),

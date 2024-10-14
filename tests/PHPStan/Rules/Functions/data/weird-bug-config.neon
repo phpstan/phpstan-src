@@ -1,0 +1,10 @@
+services:
+	-
+		class: WeirdBugExtensions\MethodParameterClosureTypeExtension
+		tags:
+			- phpstan.methodParameterClosureTypeExtension
+
+	-
+		class: WeirdBugExtensions\BuilderForwardsCallsToAnotherBuilderExtensions
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

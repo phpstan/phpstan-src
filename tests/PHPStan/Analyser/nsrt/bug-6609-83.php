@@ -50,7 +50,7 @@ class Foo
 	 */
 	function modify3(\DateTimeInterface $date, string $s) {
 		$date = $date->modify($s);
-		assertType('DateTime|DateTimeImmutable', $date);
+		assertType('T of DateTime|DateTimeImmutable (method Bug6609Php83\Foo::modify3(), argument)', $date);
 
 		return $date;
 	}

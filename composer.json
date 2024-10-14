@@ -117,6 +117,9 @@
 			],
 			"nette/di": [
 				"patches/DependencyChecker.patch"
+			],
+			"react/http": [
+				"patches/Sender.patch"
 			]
 		}
 	},

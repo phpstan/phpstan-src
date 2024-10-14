@@ -123,6 +123,9 @@
 			"nette/neon": [
 				"patches/NetteNeonStringNode.patch",
 				"patches/NeonParser.patch"
+			],
+			"react/http": [
+				"patches/Sender.patch"
 			]
 		}
 	},

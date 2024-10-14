@@ -8,7 +8,21 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 final class LooseComparisonHelper
 {
 
+	/**
+	 * @deprecated Use getConstantScalarValuesForComparison instead
+	 */
 	public static function compareConstantScalars(ConstantScalarType $leftType, ConstantScalarType $rightType, PhpVersion $phpVersion): BooleanType
+	{
+		[$leftValue, $rightValue] = self::getConstantScalarValuesForComparison($leftType, $rightType, $phpVersion);
+
+		// @phpstan-ignore equal.notAllowed
+		return new ConstantBooleanType($leftValue == $rightValue); // phpcs:ignore
+	}
+
+	/**
+	 * @return array{scalar|null, scalar|null}
+	 */
+	public static function getConstantScalarValuesForComparison(ConstantScalarType $leftType, ConstantScalarType $rightType, PhpVersion $phpVersion): array
 	{
 		if ($phpVersion->castsNumbersToStringsOnLooseComparison()) {
 			$isNumber = new UnionType([
@@ -17,34 +31,27 @@ final class LooseComparisonHelper
 			]);
 
 			if ($leftType->isString()->yes() && $leftType->isNumericString()->no() && $isNumber->isSuperTypeOf($rightType)->yes()) {
-				$stringValue = (string) $rightType->getValue();
-				return new ConstantBooleanType($stringValue === $leftType->getValue());
+				return [$leftType->getValue(), (string) $rightType->getValue()];
 			}
 			if ($rightType->isString()->yes() && $rightType->isNumericString()->no() && $isNumber->isSuperTypeOf($leftType)->yes()) {
-				$stringValue = (string) $leftType->getValue();
-				return new ConstantBooleanType($stringValue === $rightType->getValue());
+				return [(string) $leftType->getValue(), $rightType->getValue()];
 			}
 		} else {
 			if ($leftType->isString()->yes() && $leftType->isNumericString()->no() && $rightType->isFloat()->yes()) {
-				$numericPart = (float) $leftType->getValue();
-				return new ConstantBooleanType($numericPart === $rightType->getValue());
+				return [(float) $leftType->getValue(), $rightType->getValue()];
 			}
 			if ($rightType->isString()->yes() && $rightType->isNumericString()->no() && $leftType->isFloat()->yes()) {
-				$numericPart = (float) $rightType->getValue();
-				return new ConstantBooleanType($numericPart === $leftType->getValue());
+				return [$leftType->getValue(), (float) $rightType->getValue()];
 			}
 			if ($leftType->isString()->yes() && $leftType->isNumericString()->no() && $rightType->isInteger()->yes()) {
-				$numericPart = (int) $leftType->getValue();
-				return new ConstantBooleanType($numericPart === $rightType->getValue());
+				return [(int) $leftType->getValue(), $rightType->getValue()];
 			}
 			if ($rightType->isString()->yes() && $rightType->isNumericString()->no() && $leftType->isInteger()->yes()) {
-				$numericPart = (int) $rightType->getValue();
-				return new ConstantBooleanType($numericPart === $leftType->getValue());
+				return [$leftType->getValue(), (int) $rightType->getValue()];
 			}
 		}
 
-		// @phpstan-ignore equal.notAllowed
-		return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
+		return [$leftType->getValue(), $rightType->getValue()];
 	}
 
 }

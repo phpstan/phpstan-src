@@ -19,11 +19,14 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
+	private bool $checkBenevolentUnionTypes = false;
+
 	protected function getRule(): Rule
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, true, $this->checkBenevolentUnionTypes),
+			true,
 			true,
 		);
 	}
@@ -282,7 +285,12 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 
 	public function testBug8827(): void
 	{
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8827.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8827.php'], [
+			[
+				'Binary operation "/" between int<0, max> and int<0, max> might result in an error.',
+				25,
+			],
+		]);
 	}
 
 	public function testRuleWithNullsafeVariant(): void
@@ -660,6 +668,14 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				105,
 			],
 			[
+				'Binary operation "/" between (array<string, string>|bool|int|object|resource) and (array<string, string>|bool|int|object|resource) might result in an error.',
+				108,
+			],
+			[
+				'Binary operation "/=" between 1 and (array<string, string>|bool|int|object|resource) might result in an error.',
+				111,
+			],
+			[
 				'Binary operation "/=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
 				114,
 			],
@@ -668,12 +684,32 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				117,
 			],
 			[
+				"Binary operation \"/=\" between '123' and (array<string, string>|bool|int|object|resource) might result in an error.",
+				120,
+			],
+			[
+				'Binary operation "/=" between 1.23 and (array<string, string>|bool|int|object|resource) might result in an error.',
+				123,
+			],
+			[
+				'Binary operation "/=" between (array<string, string>|bool|int|object|resource) and (array<string, string>|bool|int|object|resource) might result in an error.',
+				126,
+			],
+			[
 				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
 				135,
 			],
 			[
-				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\\Foo results in an error.',
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and BinaryOpBenevolentUnion\Foo results in an error.',
 				136,
+			],
+			[
+				'Binary operation "%" between (array<string, string>|bool|int|object|resource) and (array<string, string>|bool|int|object|resource) might result in an error.',
+				139,
+			],
+			[
+				'Binary operation "%=" between 1 and (array<string, string>|bool|int|object|resource) might result in an error.',
+				142,
 			],
 			[
 				'Binary operation "%=" between array{} and (array<string, string>|bool|int|object|resource) results in an error.',
@@ -682,6 +718,18 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			[
 				'Binary operation "%=" between BinaryOpBenevolentUnion\\Foo and (array<string, string>|bool|int|object|resource) results in an error.',
 				148,
+			],
+			[
+				"Binary operation \"%=\" between '123' and (array<string, string>|bool|int|object|resource) might result in an error.",
+				151,
+			],
+			[
+				'Binary operation "%=" between 1.23 and (array<string, string>|bool|int|object|resource) might result in an error.',
+				154,
+			],
+			[
+				'Binary operation "%=" between (array<string, string>|bool|int|object|resource) and (array<string, string>|bool|int|object|resource) might result in an error.',
+				157,
 			],
 			[
 				'Binary operation "-" between (array<string, string>|bool|int|object|resource) and array{} results in an error.',
@@ -808,6 +856,96 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				10,
 			],
 		]);
+	}
+
+	/**
+	 * @dataProvider dataDivisionByMaybeZero
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
+	 */
+	public function testDivisionByMaybeZero(bool $checkBenevolentUnionTypes, array $expectedErrors): void
+	{
+		$this->checkBenevolentUnionTypes = $checkBenevolentUnionTypes;
+
+		$this->analyse([__DIR__ . '/data/invalid-division.php'], $expectedErrors);
+	}
+
+	public function dataDivisionByMaybeZero(): iterable
+	{
+		yield [
+			false,
+			[
+				[
+					'Binary operation "/" between int and int<0, max> might result in an error.',
+					12,
+				],
+				[
+					'Binary operation "/=" between int and int<0, max> might result in an error.',
+					13,
+				],
+				[
+					'Binary operation "%" between int and int<0, max> might result in an error.',
+					21,
+				],
+				[
+					'Binary operation "%=" between int and int<0, max> might result in an error.',
+					22,
+				],
+				[
+					'Binary operation "/" between int and int<0, max> might result in an error.',
+					61,
+				],
+				[
+					'Binary operation "/" between int and float|int might result in an error.',
+					90,
+				],
+				[
+					'Binary operation "/" between int and (int|true) might result in an error.',
+					106,
+				],
+				[
+					'Binary operation "/" between int and -5|int<0, max> might result in an error.',
+					123,
+				],
+			],
+		];
+
+		yield [
+			true,
+			[
+				[
+					'Binary operation "/" between int and int<0, max> might result in an error.',
+					12,
+				],
+				[
+					'Binary operation "/=" between int and int<0, max> might result in an error.',
+					13,
+				],
+				[
+					'Binary operation "%" between int and int<0, max> might result in an error.',
+					21,
+				],
+				[
+					'Binary operation "%=" between int and int<0, max> might result in an error.',
+					22,
+				],
+				[
+					'Binary operation "/" between int and int<0, max> might result in an error.',
+					61,
+				],
+				[
+					'Binary operation "/" between int and float|int might result in an error.',
+					90,
+				],
+				[
+					'Binary operation "/" between int and (int|true) might result in an error.',
+					106,
+				],
+				[
+					'Binary operation "/" between int and -5|int<0, max> might result in an error.',
+					123,
+				],
+			],
+		];
 	}
 
 }

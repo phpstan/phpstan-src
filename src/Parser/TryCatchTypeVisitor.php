@@ -24,7 +24,14 @@ final class TryCatchTypeVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Stmt || $node instanceof Node\Expr\Match_) {
+		if (
+			$node instanceof Node\Stmt
+			|| $node instanceof Node\Expr\Match_
+			|| $node instanceof Node\Expr\AssignOp\Div
+			|| $node instanceof Node\Expr\AssignOp\Mod
+			|| $node instanceof Node\Expr\BinaryOp\Div
+			|| $node instanceof Node\Expr\BinaryOp\Mod
+		) {
 			if (count($this->typeStack) > 0) {
 				$node->setAttribute(self::ATTRIBUTE_NAME, $this->typeStack[count($this->typeStack) - 1]);
 			}

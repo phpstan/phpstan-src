@@ -184,6 +184,7 @@ services:
 		class: PHPStan\Rules\Operators\InvalidBinaryOperationRule
 		arguments:
 			bleedingEdge: %featureToggles.bleedingEdge%
+			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
 	-

@@ -2,17 +2,24 @@
 
 namespace PHPStan\Rules\Operators;
 
+use DivisionByZeroError;
 use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Parser\TryCatchTypeVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
 use function sprintf;
 use function strlen;
 use function substr;
@@ -27,6 +34,7 @@ final class InvalidBinaryOperationRule implements Rule
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $bleedingEdge,
+		private bool $reportMaybes,
 	)
 	{
 	}
@@ -108,6 +116,39 @@ final class InvalidBinaryOperationRule implements Rule
 			->assignVariable($rightName, $rightType, $rightType);
 
 		if (!$scope->getType($newNode) instanceof ErrorType) {
+			if (
+				$this->reportMaybes
+				&& (
+					$node instanceof Node\Expr\AssignOp\Div
+					|| $node instanceof Node\Expr\AssignOp\Mod
+					|| $node instanceof Node\Expr\BinaryOp\Div
+					|| $node instanceof Node\Expr\BinaryOp\Mod
+				)
+				&& !$this->isDivisionByZeroCaught($node)
+				&& !$this->hasDivisionByZeroThrowsTag($scope)
+			) {
+				$rightType = $scope->getType($right);
+				// as long as we don't support float-ranges, we prevent false positives for maybe floats
+				if ($rightType instanceof BenevolentUnionType && $rightType->isFloat()->maybe()) {
+					return [];
+				}
+
+				$zeroType = new ConstantIntegerType(0);
+				if ($zeroType->isSuperTypeOf($rightType)->maybe()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Binary operation "%s" between %s and %s might result in an error.',
+							substr(substr($this->exprPrinter->printExpr($newNode), strlen($leftName) + 2), 0, -(strlen($rightName) + 2)),
+							$scope->getType($left)->describe(VerbosityLevel::value()),
+							$scope->getType($right)->describe(VerbosityLevel::value()),
+						))
+							->line($left->getStartLine())
+							->identifier(sprintf('%s.invalid', $identifier))
+							->build(),
+					];
+				}
+			}
+
 			return [];
 		}
 
@@ -122,6 +163,33 @@ final class InvalidBinaryOperationRule implements Rule
 				->identifier(sprintf('%s.invalid', $identifier))
 				->build(),
 		];
+	}
+
+	private function isDivisionByZeroCaught(Node $node): bool
+	{
+		$tryCatchTypes = $node->getAttribute(TryCatchTypeVisitor::ATTRIBUTE_NAME);
+		if ($tryCatchTypes === null) {
+			return false;
+		}
+
+		$tryCatchType = TypeCombinator::union(...array_map(static fn (string $class) => new ObjectType($class), $tryCatchTypes));
+
+		return $tryCatchType->isSuperTypeOf(new ObjectType(DivisionByZeroError::class))->yes();
+	}
+
+	private function hasDivisionByZeroThrowsTag(Scope $scope): bool
+	{
+		$function = $scope->getFunction();
+		if ($function === null) {
+			return false;
+		}
+
+		$throwsType = $function->getThrowType();
+		if ($throwsType === null) {
+			return false;
+		}
+
+		return $throwsType->isSuperTypeOf(new ObjectType(DivisionByZeroError::class))->yes();
 	}
 
 }

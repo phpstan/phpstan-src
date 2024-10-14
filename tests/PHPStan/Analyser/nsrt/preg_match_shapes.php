@@ -901,6 +901,48 @@ function bugUnescapedDashAfterRange (string $string): void
 	}
 }
 
+function bugEmptySubexpression (string $string): void {
+	if (preg_match('//', $string, $matches)) {
+		assertType("array{string}", $matches); // could be array{''}
+	}
+
+	if (preg_match('/()/', $string, $matches)) {
+		assertType("array{string, ''}", $matches); // could be array{'', ''}
+	}
+
+	if (preg_match('/|/', $string, $matches)) {
+		assertType("array{string}", $matches); // could be array{''}
+	}
+
+	if (preg_match('~|(a)~', $string, $matches)) {
+		assertType("array{0: string, 1?: 'a'}", $matches);
+	}
+
+	if (preg_match('~(a)|~', $string, $matches)) {
+		assertType("array{0: string, 1?: 'a'}", $matches);
+	}
+
+	if (preg_match('~(a)||(b)~', $string, $matches)) {
+		assertType("array{0: string, 1?: 'a'}|array{string, '', 'b'}", $matches);
+	}
+
+	if (preg_match('~(|(a))~', $string, $matches)) {
+		assertType("array{0: string, 1: ''|'a', 2?: 'a'}", $matches);
+	}
+
+	if (preg_match('~((a)|)~', $string, $matches)) {
+		assertType("array{0: string, 1: ''|'a', 2?: 'a'}", $matches);
+	}
+
+	if (preg_match('~((a)||(b))~', $string, $matches)) {
+		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: 'b'}", $matches);
+	}
+
+	if (preg_match('~((a)|()|(b))~', $string, $matches)) {
+		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
+	}
+}
+
 function bug11744(string $string): void
 {
 	if (!preg_match('~^((/[a-z]+)?)~', $string, $matches)) {

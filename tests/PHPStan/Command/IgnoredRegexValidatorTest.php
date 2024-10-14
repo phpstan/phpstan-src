@@ -101,10 +101,46 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'~(a\()~',
+				[],
+				false,
+				false,
+			],
+			[
+				'~b\\\()~',
+				[],
+				false,
+				true,
+			],
+			[
+				'~(c\\\\\()~',
+				[],
+				false,
+				false,
+			],
+			[
 				'~Result of || is always true.~',
 				[],
 				false,
 				true,
+			],
+			[
+				'~a\||~',
+				[],
+				false,
+				false,
+			],
+			[
+				'~b\\\||~',
+				[],
+				false,
+				true,
+			],
+			[
+				'~c\\\\\||~',
+				[],
+				false,
+				false,
 			],
 			[
 				'#Method PragmaRX\Notified\Data\Repositories\Notified::firstOrCreateByEvent() should return PragmaRX\Notified\Data\Models\Notified but returns Illuminate\Database\Eloquent\Model|null#',

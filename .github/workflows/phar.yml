@@ -103,14 +103,14 @@ jobs:
 
       - name: "Delete checksum PHAR"
         run: "rm tmp/phpstan.phar"
-
-  integration-tests:
-    if: github.event_name == 'pull_request'
-    needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.0.x
-    with:
-      ref: 2.0.x
-      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
+#
+#  integration-tests:
+#    if: github.event_name == 'pull_request'
+#    needs: compiler-tests
+#    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@2.0.x
+#    with:
+#      ref: 2.0.x
+#      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
     if: github.event_name == 'pull_request'

@@ -1194,8 +1194,10 @@ final class NodeScopeResolver
 
 			if ($alwaysIterates) {
 				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+			} elseif ($isIterableAtLeastOnce) {
+				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {
-				$isAlwaysTerminating = $isIterableAtLeastOnce && $finalScopeResult->isAlwaysTerminating();
+				$isAlwaysTerminating = false;
 			}
 			$condScope = $condResult->getFalseyScope();
 			if (!$isIterableAtLeastOnce) {

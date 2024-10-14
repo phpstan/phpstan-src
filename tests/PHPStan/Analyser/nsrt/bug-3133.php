@@ -52,7 +52,7 @@ class Foo
 	{
 		$a = [];
 		$a[$numericString] = 'foo';
-		assertType('non-empty-array<int, \'foo\'>', $a);
+		assertType('non-empty-array<int|numeric-string, \'foo\'>', $a);
 	}
 
 }

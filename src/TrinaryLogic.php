@@ -252,6 +252,10 @@ class TrinaryLogic
 		return $labels[$this->value];
 	}
 
+	public function green(): void
+	{
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

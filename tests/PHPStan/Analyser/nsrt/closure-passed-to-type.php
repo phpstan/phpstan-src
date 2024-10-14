@@ -13,6 +13,7 @@ class Foo
 	 * @param array<T> $items
 	 * @param callable(T): U $cb
 	 * @return array<U>
+	 * @pure-unless-callable-impure $cb
 	 */
 	public function doFoo(array $items, callable $cb)
 	{

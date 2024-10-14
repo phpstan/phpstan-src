@@ -603,7 +603,7 @@ final class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $pureUnlessCallableIsImpureParameters] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($stmt, $param, $scope, $nodeCallback);
@@ -4578,6 +4578,23 @@ final class NodeScopeResolver
 					}
 					$parameter = $lastParameter;
 				}
+
+				if ($parameter instanceof ParameterReflectionWithPhpDocs
+					&& $parameter->isPureUnlessCallableIsImpureParameter()
+					&& $parameterType->isTrue()->yes()
+				) {
+					if (count($parameterType->getCallableParametersAcceptors($scope)) > 0) {
+						$parameterCallable = $parameterType->getCallableParametersAcceptors($scope)[0];
+						$certain = $parameterCallable->isPure()->yes();
+						if ($certain) {
+							$impurePoints[] = new SimpleImpurePoint(
+								'functionCall',
+								sprintf('call to function %s()', $calleeReflection->getName()),
+								$certain,
+							);
+						}
+					}
+				}
 			}
 
 			$lookForUnset = false;
@@ -5973,7 +5990,7 @@ final class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool}
+	 * @return array{TemplateTypeMap, array<string, Type>, array<string, bool>, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool, array<string, bool>}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -6003,6 +6020,7 @@ final class NodeScopeResolver
 		$resolvedPhpDoc = null;
 		$functionName = null;
 		$phpDocParameterOutTypes = [];
+		$phpDocPureUnlessCallableIsImpureParameters = [];
 
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
@@ -6125,9 +6143,10 @@ final class NodeScopeResolver
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 			$varTags = $resolvedPhpDoc->getVarTags();
+			$phpDocPureUnlessCallableIsImpureParameters = $resolvedPhpDoc->getParamsPureUnlessCallableIsImpure();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocImmediatelyInvokedCallableParameters, $phpDocClosureThisTypeParameters, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation, $phpDocPureUnlessCallableIsImpureParameters];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

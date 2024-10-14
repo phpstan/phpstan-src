@@ -70,4 +70,9 @@ final class AnnotationsMethodParameterReflection implements ParameterReflectionW
 		return $this->defaultValue;
 	}
 
+	public function isPureUnlessCallableIsImpureParameter(): bool
+	{
+		return false;
+	}
+
 }

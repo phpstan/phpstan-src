@@ -1032,6 +1032,12 @@ services:
 		arguments:
 			phpParser: @defaultAnalysisParser
 
+	stubFileTypeMapper:
+		class: PHPStan\Type\FileTypeMapper
+		arguments:
+			phpParser: @stubParser
+		autowired: false
+
 	-
 		class: PHPStan\Type\TypeAliasResolver
 		factory: PHPStan\Type\UsefulTypeAliasResolver
@@ -1945,6 +1951,7 @@ services:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
 			parser: @stubParser
+			fileTypeMapper: @stubFileTypeMapper
 
 	# Reflection providers
 
@@ -2045,10 +2052,17 @@ services:
 			php8Parser: @php8Parser
 		autowired: false
 
-	stubParser:
+	freshStubParser:
 		class: PHPStan\Parser\StubParser
 		arguments:
 			parser: @php8PhpParser
+		autowired: false
+
+	stubParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @freshStubParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 		autowired: false
 
 	phpstanDiagnoseExtension:

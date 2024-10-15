@@ -174,6 +174,50 @@ class StatementResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'while (true) { exit; }',
+				true,
+			],
+			[
+				'while (true) { while (true) { } }',
+				true,
+			],
+			[
+				'while (true) { while (true) { return; } }',
+				true,
+			],
+			[
+				'while (true) { while (true) { break; } }',
+				true,
+			],
+			[
+				'while (true) { while (true) { exit; } }',
+				true,
+			],
+			[
+				'while (true) { while (true) { break 2; } }',
+				false,
+			],
+			[
+				'while (true) { while ($x) { } }',
+				true,
+			],
+			[
+				'while (true) { while ($x) { return; } }',
+				true,
+			],
+			[
+				'while (true) { while ($x) { break; } }',
+				true,
+			],
+			[
+				'while (true) { while ($x) { exit; } }',
+				true,
+			],
+			[
+				'while (true) { while ($x) { break 2; } }',
+				false,
+			],
+			[
 				'for (;;) { }',
 				true,
 			],
@@ -183,6 +227,50 @@ class StatementResultTest extends PHPStanTestCase
 			],
 			[
 				'for (;;) { break; }',
+				false,
+			],
+			[
+				'for (;;) { exit; }',
+				true,
+			],
+			[
+				'for (;;) { for (;;) { } }',
+				true,
+			],
+			[
+				'for (;;) { for (;;) { return; } }',
+				true,
+			],
+			[
+				'for (;;) { for (;;) { break; }	}',
+				true,
+			],
+			[
+				'for (;;) { for (;;) { exit; } }',
+				true,
+			],
+			[
+				'for (;;) { for (;;) { break 2; } }',
+				false,
+			],
+			[
+				'for (;;) { for ($i = 0; $i< 5; $i++) { } }',
+				true,
+			],
+			[
+				'for (;;) { for ($i = 0; $i< 5; $i++) { return; } }',
+				true,
+			],
+			[
+				'for (;;) { for ($i = 0; $i< 5; $i++) { break; } }',
+				true,
+			],
+			[
+				'for (;;) { for ($i = 0; $i< 5; $i++) { exit; } }',
+				true,
+			],
+			[
+				'for (;;) { for ($i = 0; $i< 5; $i++) { break 2; } }',
 				false,
 			],
 			[

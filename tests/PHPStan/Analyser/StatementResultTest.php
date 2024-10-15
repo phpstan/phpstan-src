@@ -243,7 +243,7 @@ class StatementResultTest extends PHPStanTestCase
 			],
 			[
 				'for ($i = 0; $i < 10; $i++) { return; }',
-				false, // will be true with range types
+				true,
 			],
 			[
 				'for ($i = 0; $i < 0; $i++) { return; }',

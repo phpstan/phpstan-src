@@ -156,6 +156,11 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
+
+		-
 			message: "#^Variable \\$action might not be defined\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php

@@ -107,12 +107,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					140,
 				],
 				[
-					'Strict comparison using !== between StrictComparison\Foo|null and 1 will always evaluate to true.',
-					154,
+					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
+					150,
 				],
 				[
-					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
-					164,
+					'Strict comparison using !== between StrictComparison\Foo|null and 1 will always evaluate to true.',
+					161,
 				],
 				[
 					'Strict comparison using !== between StrictComparison\Node|null and false will always evaluate to true.',
@@ -333,7 +333,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				],
 				[
 					'Strict comparison using === between non-empty-array and null will always evaluate to false.',
-					164,
+					150,
 				],
 				[
 					'Strict comparison using === between 1 and 2 will always evaluate to false.',

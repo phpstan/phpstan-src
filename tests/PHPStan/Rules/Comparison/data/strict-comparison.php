@@ -146,6 +146,13 @@ class Foo
 
 	public function forWithTypeChange()
 	{
+		for (; $val = $this->returnArray();) {
+			if ($val === null) {
+
+			}
+			$val = null;
+		}
+
 		$foo = null;
 		for (;;) {
 			if ($foo !== null) {
@@ -158,13 +165,6 @@ class Foo
 			if (something()) {
 				$foo = new self();
 			}
-		}
-
-		for (; $val = $this->returnArray();) {
-			if ($val === null) {
-
-			}
-			$val = null;
 		}
 	}
 

@@ -19,10 +19,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		ini_set('opcache.enable', 'Off');
 	}
 
-	if (PHP_VERSION_ID < 70300) {
-		gc_disable(); // performance boost
-	}
-
 	define('__PHPSTAN_RUNNING__', true);
 
 	$analysisStartTime = microtime(true);

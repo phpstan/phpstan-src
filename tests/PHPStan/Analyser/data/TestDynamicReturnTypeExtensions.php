@@ -7,6 +7,10 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierAwareExtension;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -18,6 +22,7 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -297,5 +302,36 @@ class Bug7391BDynamicStaticMethodReturnTypeExtension implements DynamicStaticMet
 	): Type {
 		// return instantiated type from class string
 		return $scope->getType(new New_($methodCall->class));
+	}
+}
+
+class Bug7385MethodTypeSpecifyingExtension implements TypeSpecifierAwareExtension, MethodTypeSpecifyingExtension
+{
+	public function getClass(): string
+	{
+		return \Bug7385\Model::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection, MethodCall $methodCall = null, TypeSpecifierContext $context = null): bool
+	{
+		return $methodReflection->getName() === 'assertHasIface';
+	}
+
+	/** @var TypeSpecifier */
+	protected $typeSpecifier;
+
+	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
+	{
+		$this->typeSpecifier = $typeSpecifier;
+	}
+
+	public function specifyTypes(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$type = TypeCombinator::intersect(
+			$scope->getType($methodCall->var),
+			new ObjectType(\Bug7385\Iface::class)
+		);
+
+		return $this->typeSpecifier->create($methodCall->var, $type, TypeSpecifierContext::createNull());
 	}
 }

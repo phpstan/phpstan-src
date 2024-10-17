@@ -799,7 +799,7 @@ final class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 			$rightType = $this->getType($node->right);
 
-			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType);
+			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotEqual) {
@@ -959,7 +959,7 @@ final class MutatingScope implements Scope
 				return new BooleanType();
 			}
 
-			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType)->type;
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {

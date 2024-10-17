@@ -1017,3 +1017,23 @@ class TestLiteralStringVerbosityFix
 	}
 
 }
+
+class SubtractedMixedAgainstNull
+{
+
+	public function doFoo($m): void
+	{
+		if ($m === null) {
+			return;
+		}
+
+		if ($m === null) {
+
+		}
+
+		if ($m !== null) {
+
+		}
+	}
+
+}

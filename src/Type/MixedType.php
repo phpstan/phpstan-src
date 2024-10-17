@@ -159,7 +159,18 @@ class MixedType implements CompoundType, SubtractableType
 			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return $this->subtractedType->isSuperTypeOfWithReason($type)->negate();
+		$result = $this->subtractedType->isSuperTypeOfWithReason($type)->negate();
+		if ($result->no()) {
+			return IsSuperTypeOfResult::createNo([
+				sprintf(
+					'Type %s has already been eliminated from %s.',
+					$this->subtractedType->describe(VerbosityLevel::precise()),
+					$this->describe(VerbosityLevel::typeOnly()),
+				),
+			]);
+		}
+
+		return $result;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type

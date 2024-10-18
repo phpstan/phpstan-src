@@ -8,15 +8,21 @@ namespace PHPStan\Type;
 final class TypeResult
 {
 
+	public readonly Type $type;
+
+	public readonly array $reasons;
+
 	/**
 	 * @param T $type
 	 * @param list<string> $reasons
 	 */
 	public function __construct(
-		public readonly Type $type,
-		public readonly array $reasons,
+		Type $type,
+		array $reasons,
 	)
 	{
+		$this->type = $type;
+		$this->reasons = $reasons;
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_INT_SIZE;
@@ -20,6 +21,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new StrictComparisonOfDifferentTypesRule(
+			self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,
@@ -212,10 +214,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
+					'Type 1|string has already been eliminated from mixed.',
 				],
 				[
 					'Strict comparison using !== between mixed and 1 will always evaluate to true.',
 					812,
+					'Type 1|string has already been eliminated from mixed.',
 				],
 				[
 					'Strict comparison using === between \'foo\' and \'foo\' will always evaluate to true.',
@@ -270,6 +274,21 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
 					1014,
 					$tipText,
+				],
+				[
+					'Strict comparison using === between mixed and null will always evaluate to false.',
+					1030,
+					'Type null has already been eliminated from mixed.',
+				],
+				[
+					'Strict comparison using !== between mixed and null will always evaluate to true.',
+					1034,
+					'Type null has already been eliminated from mixed.',
+				],
+				[
+					'Strict comparison using !== between array{1, mixed, 3} and array{int, null, int} will always evaluate to true.',
+					1048,
+					'Offset 1: Type null has already been eliminated from mixed.',
 				],
 			],
 		);

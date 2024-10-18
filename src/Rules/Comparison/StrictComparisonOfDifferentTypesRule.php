@@ -3,13 +3,17 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /**
@@ -19,6 +23,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
 	public function __construct(
+		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $reportAlwaysTrueInLastCondition,
 		private bool $treatPhpDocTypesAsCertainTip,
@@ -33,11 +38,19 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node instanceof Node\Expr\BinaryOp\Identical && !$node instanceof Node\Expr\BinaryOp\NotIdentical) {
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($node instanceof Node\Expr\BinaryOp\Identical) {
+			$nodeTypeResult = $this->richerScopeGetTypeHelper->getIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node);
+		} elseif ($node instanceof Node\Expr\BinaryOp\NotIdentical) {
+			$nodeTypeResult = $this->richerScopeGetTypeHelper->getNotIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node);
+		} else {
 			return [];
 		}
 
-		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
+		$nodeType = $nodeTypeResult->type;
 		if (!$nodeType instanceof ConstantBooleanType) {
 			return [];
 		}
@@ -45,7 +58,12 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		$leftType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->left) : $scope->getNativeType($node->left);
 		$rightType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->right) : $scope->getNativeType($node->right);
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $nodeTypeResult): RuleErrorBuilder {
+			$reasons = $nodeTypeResult->reasons;
+			if (count($reasons) > 0) {
+				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
+			}
+
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;
 			}

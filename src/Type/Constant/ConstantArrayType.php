@@ -387,7 +387,7 @@ class ConstantArrayType implements Type
 
 				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
 				if ($isValueSuperType->no()) {
-					return $isValueSuperType;
+					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
 				$results[] = $isValueSuperType;
 			}

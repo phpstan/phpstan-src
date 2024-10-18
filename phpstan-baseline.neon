@@ -55,6 +55,12 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/RicherScopeGetTypeHelper.php
+
+		-
 			message: '#^Doing instanceof PHPStan\\Type\\ConstantScalarType is error\-prone and deprecated\. Use Type\:\:isConstantScalarValue\(\) or Type\:\:getConstantScalarTypes\(\) or Type\:\:getConstantScalarValues\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2

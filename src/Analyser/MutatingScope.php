@@ -202,6 +202,7 @@ final class MutatingScope implements Scope
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
+		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private ConstantResolver $constantResolver,
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
@@ -796,7 +797,7 @@ final class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 			$rightType = $this->getType($node->right);
 
-			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType);
+			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotEqual) {
@@ -921,46 +922,11 @@ final class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Identical) {
-			if (
-				$node->left instanceof Variable
-				&& is_string($node->left->name)
-				&& $node->right instanceof Variable
-				&& is_string($node->right->name)
-				&& $node->left->name === $node->right->name
-			) {
-				return new ConstantBooleanType(true);
-			}
-
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
-
-			if (
-				(
-					$node->left instanceof Node\Expr\PropertyFetch
-					|| $node->left instanceof Node\Expr\StaticPropertyFetch
-				)
-				&& $rightType->isNull()->yes()
-				&& !$this->hasPropertyNativeType($node->left)
-			) {
-				return new BooleanType();
-			}
-
-			if (
-				(
-					$node->right instanceof Node\Expr\PropertyFetch
-					|| $node->right instanceof Node\Expr\StaticPropertyFetch
-				)
-				&& $leftType->isNull()->yes()
-				&& !$this->hasPropertyNativeType($node->right)
-			) {
-				return new BooleanType();
-			}
-
-			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+			return $this->richerScopeGetTypeHelper->getIdenticalResult($this, $node)->type;
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {
-			return $this->getType(new Expr\BooleanNot(new BinaryOp\Identical($node->left, $node->right)));
+			return $this->richerScopeGetTypeHelper->getNotIdenticalResult($this, $node)->type;
 		}
 
 		if ($node instanceof Expr\Instanceof_) {
@@ -2647,7 +2613,7 @@ final class MutatingScope implements Scope
 	/**
 	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
-	private function hasPropertyNativeType($propertyFetch): bool
+	public function hasPropertyNativeType($propertyFetch): bool
 	{
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $this);
 		if ($propertyReflection === null) {

@@ -485,6 +485,9 @@ services:
 			cacheFilePath: %resultCachePath%
 
 	-
+		class: PHPStan\Analyser\RicherScopeGetTypeHelper
+
+	-
 		class: PHPStan\Cache\Cache
 		arguments:
 			storage: @cacheStorage

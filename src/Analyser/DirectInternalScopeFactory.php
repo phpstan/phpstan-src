@@ -29,6 +29,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
+		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private PhpVersion $phpVersion,
 		private ConstantResolver $constantResolver,
 	)
@@ -73,6 +74,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->propertyReflectionFinder,
 			$this->parser,
 			$this->nodeScopeResolver,
+			$this->richerScopeGetTypeHelper,
 			$this->constantResolver,
 			$context,
 			$this->phpVersion,

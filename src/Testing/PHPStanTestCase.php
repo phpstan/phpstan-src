@@ -6,6 +6,7 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -138,17 +139,19 @@ abstract class PHPStanTestCase extends TestCase
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames);
 
+		$initializerExprTypeResolver = new InitializerExprTypeResolver(
+			$constantResolver,
+			$reflectionProviderProvider,
+			$container->getByType(PhpVersion::class),
+			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
+			new OversizedArrayBuilder(),
+			$container->getParameter('usePathConstantsAsConstantString'),
+		);
+
 		return new ScopeFactory(
 			new DirectInternalScopeFactory(
 				$reflectionProvider,
-				new InitializerExprTypeResolver(
-					$constantResolver,
-					$reflectionProviderProvider,
-					$container->getByType(PhpVersion::class),
-					$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-					new OversizedArrayBuilder(),
-					$container->getParameter('usePathConstantsAsConstantString'),
-				),
+				$initializerExprTypeResolver,
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 				$container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class),
 				$container->getByType(ExprPrinter::class),
@@ -156,6 +159,7 @@ abstract class PHPStanTestCase extends TestCase
 				new PropertyReflectionFinder(),
 				self::getParser(),
 				$container->getByType(NodeScopeResolver::class),
+				new RicherScopeGetTypeHelper($initializerExprTypeResolver),
 				$container->getByType(PhpVersion::class),
 				$constantResolver,
 			),

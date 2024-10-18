@@ -289,6 +289,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					1034,
 					'Type null has already been eliminated from mixed.',
 				],
+				[
+					'Strict comparison using !== between array{1, mixed, 3} and array{int, null, int} will always evaluate to true.',
+					1048,
+					'Offset 1: Type null has already been eliminated from mixed.',
+				],
 			],
 		);
 	}

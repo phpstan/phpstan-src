@@ -36,6 +36,10 @@ final class RicherScopeGetTypeHelper
 		$leftType = $scope->getType($expr->left);
 		$rightType = $scope->getType($expr->right);
 
+		if (!$scope instanceof MutatingScope) {
+			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+		}
+
 		if (
 			(
 				$expr->left instanceof Node\Expr\PropertyFetch

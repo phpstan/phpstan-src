@@ -1036,4 +1036,18 @@ class SubtractedMixedAgainstNull
 		}
 	}
 
+	public function doBar($m, int $i, int $j): void
+	{
+		if ($m === null) {
+			return;
+		}
+
+		$a = [1, $m, 3];
+		$b = [$i, null, $j];
+
+		if ($a !== $b) {
+
+		}
+	}
+
 }

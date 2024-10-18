@@ -67,6 +67,11 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
+			count: 1
+			path: src/Analyser/RicherScopeGetTypeHelper.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\ConstantScalarType is error\\-prone and deprecated\\. Use Type\\:\\:isConstantScalarValue\\(\\) or Type\\:\\:getConstantScalarTypes\\(\\) or Type\\:\\:getConstantScalarValues\\(\\) instead\\.$#"
 			count: 2
 			path: src/Analyser/TypeSpecifier.php
@@ -486,6 +491,14 @@ parameters:
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 2
 			path: src/Rules/Comparison/NumberComparisonOperatorsConstantConditionRule.php
+
+		-
+			message: """
+				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of interface PHPStan\\\\Analyser\\\\Scope\\:
+				Use getNativeType\\(\\)$#
+			"""
+			count: 2
+			path: src/Rules/Comparison/StrictComparisonOfDifferentTypesRule.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"

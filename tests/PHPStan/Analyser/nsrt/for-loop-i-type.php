@@ -94,4 +94,12 @@ class HelloWorld
 
 		return $capacities;
 	}
+
+	public function lastConditionResult(): void
+	{
+		for ($i = 0, $j = 5; $i < 10, $j > 0; $i++, $j--) {
+			assertType('int<0, max>', $i); // int<0,4> would be more precise, see https://github.com/phpstan/phpstan/issues/11872
+			assertType('int<1, 5>', $j);
+		}
+	}
 }

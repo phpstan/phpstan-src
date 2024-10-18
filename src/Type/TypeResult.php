@@ -10,6 +10,7 @@ final class TypeResult
 
 	public readonly Type $type;
 
+	/** @var list<string> */
 	public readonly array $reasons;
 
 	/**

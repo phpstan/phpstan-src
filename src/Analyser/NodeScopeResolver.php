@@ -1320,12 +1320,7 @@ final class NodeScopeResolver
 				$initScope = $condResult->getScope();
 				$condResultScope = $condResult->getScope();
 				$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
-				if ($condTruthiness instanceof ConstantBooleanType) {
-					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());
-				} else {
-					$condTruthinessTrinary = TrinaryLogic::createMaybe();
-				}
-				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthinessTrinary);
+				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 				$hasYield = $hasYield || $condResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());

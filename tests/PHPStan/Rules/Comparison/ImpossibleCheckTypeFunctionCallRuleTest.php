@@ -1102,4 +1102,19 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/always-true-preg-match.php'], []);
 	}
 
+	public function testBug11799(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11799.php'], [
+			[
+				"Call to function in_array() with arguments string, array{'publishDate', 'approvedAt', 'allowedValues'} and true will always evaluate to false.",
+				11,
+				"• 'publishDate' is not lowercase.
+• 'approvedAt' is not lowercase.
+• 'allowedValues' is not lowercase."
+			],
+		]);
+	}
+
 }

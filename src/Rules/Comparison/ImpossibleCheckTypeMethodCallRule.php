@@ -10,6 +10,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use function count;
 use function sprintf;
 
 /**
@@ -45,7 +46,7 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 		}
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
-			if (count($reasons)) {
+			if (count($reasons) > 0) {
 				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
 			}
 

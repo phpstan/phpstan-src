@@ -30,6 +30,7 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 {
@@ -110,9 +111,14 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		return (new IsSuperTypeOfResult($otherType->isLowercaseString(), [
-			sprintf("%s is not lowercase.", $otherType->describe(VerbosityLevel::value())),
-		]))
+		$isLowercase = $otherType->isLowercaseString();
+
+		return (new IsSuperTypeOfResult(
+			$isLowercase,
+			$otherType->isString()->yes() && $isLowercase->no()
+				? [sprintf("%s is not lowercase.", $otherType->describe(VerbosityLevel::value()))]
+				: []
+		))
 			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
 	}
 

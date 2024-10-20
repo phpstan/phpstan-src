@@ -1112,7 +1112,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				11,
 				"• 'publishDate' is not lowercase.
 • 'approvedAt' is not lowercase.
-• 'allowedValues' is not lowercase."
+• 'allowedValues' is not lowercase.",
 			],
 		]);
 	}

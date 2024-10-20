@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
 use function sprintf;
 use function strtolower;
 

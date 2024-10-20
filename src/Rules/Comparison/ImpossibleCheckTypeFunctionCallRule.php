@@ -41,17 +41,21 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		if (strtolower($functionName) === 'is_a') {
 			return [];
 		}
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
+		[$isAlways, $reasons] = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
 			return [];
 		}
 
-		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
+		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
+			if (count($reasons) > 0) {
+				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
+			}
+
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node)[0];
 			if ($isAlways !== null) {
 				return $ruleErrorBuilder;
 			}

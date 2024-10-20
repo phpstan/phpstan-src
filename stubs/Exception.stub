@@ -52,6 +52,17 @@ interface Throwable
 
 class Exception implements Throwable
 {
+	/** @var string */
+	protected $message;
+
+	/** @var mixed */
+	protected $code;
+
+	/** @var string */
+	protected $file;
+
+	/** @var int */
+	protected $line;
 
 	/**
 	 * @return string
@@ -99,6 +110,17 @@ class Exception implements Throwable
 
 class Error implements Throwable
 {
+	/** @var string */
+	protected $message;
+
+	/** @var mixed */
+	protected $code;
+
+	/** @var string */
+	protected $file;
+
+	/** @var int */
+	protected $line;
 
 	/**
 	 * @return string

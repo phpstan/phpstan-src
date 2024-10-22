@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Use of constant E_STRICT is deprecated\.$#'
+			identifier: constant.deprecated
+			count: 1
+			path: ../src/Analyser/FileAnalyser.php

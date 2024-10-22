@@ -29,6 +29,10 @@ if (PHP_VERSION_ID >= 80300) {
 	$includes[] = __DIR__ . '/datetime-php-83.neon';
 }
 
+if (PHP_VERSION_ID >= 80400) {
+	$includes[] = __DIR__ . '/deprecated-8.4.neon';
+}
+
 $config = [];
 $config['includes'] = $includes;
 

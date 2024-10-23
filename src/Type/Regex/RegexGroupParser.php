@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_values;
 use function count;
 use function in_array;
 use function is_int;
@@ -67,6 +68,9 @@ final class RegexGroupParser
 			return null;
 		}
 
+		$this->updateAlternationAstRemoveVerticalBarsAndAddEmptyToken($ast);
+		$this->updateCapturingAstAddEmptyToken($ast);
+
 		$captureOnlyNamed = false;
 		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
 		if ($this->phpVersion->supportsPregCaptureOnlyNamedGroups()) {
@@ -86,6 +90,51 @@ final class RegexGroupParser
 		);
 
 		return [$astWalkResult->getCapturingGroups(), $astWalkResult->getMarkVerbs()];
+	}
+
+	private function createEmptyTokenTreeNode(TreeNode $parentAst): TreeNode
+	{
+		return new TreeNode('token', ['token' => 'literal', 'value' => '', 'namespace' => 'default'], [], $parentAst);
+	}
+
+	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(TreeNode $ast): void
+	{
+		$children = $ast->getChildren();
+
+		foreach ($children as $i => $child) {
+			$this->updateAlternationAstRemoveVerticalBarsAndAddEmptyToken($child);
+
+			if ($ast->getId() !== '#alternation' || $child->getValueToken() !== 'alternation') {
+				continue;
+			}
+
+			unset($children[$i]);
+
+			if ($i !== 0
+				&& isset($children[$i + 1])
+				&& $children[$i + 1]->getValueToken() !== 'alternation') {
+				continue;
+			}
+
+			$children[$i] = $this->createEmptyTokenTreeNode($ast);
+		}
+
+		$ast->setChildren(array_values($children));
+	}
+
+	private function updateCapturingAstAddEmptyToken(TreeNode $ast): void
+	{
+		foreach ($ast->getChildren() as $child) {
+			$this->updateCapturingAstAddEmptyToken($child);
+		}
+
+		if ($ast->getId() !== '#capturing' || $ast->getChildren() !== []) {
+			return;
+		}
+
+		$emptyAlternationAst = new TreeNode('#alternation', null, [], $ast);
+		$emptyAlternationAst->setChildren([$this->createEmptyTokenTreeNode($emptyAlternationAst)]);
+		$ast->setChildren([$emptyAlternationAst]);
 	}
 
 	private function walkRegexAst(

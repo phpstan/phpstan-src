@@ -19,4 +19,6 @@ interface ParameterReflectionWithPhpDocs extends ParameterReflection
 
 	public function getClosureThisType(): ?Type;
 
+	public function isPureUnlessCallableIsImpureParameter(): bool;
+
 }

@@ -2952,6 +2952,7 @@ final class MutatingScope implements Scope
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
+	 * @param array<string, bool> $phpDocPureUnlessCallableIsImpureParameters
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -2971,6 +2972,7 @@ final class MutatingScope implements Scope
 		array $parameterOutTypes = [],
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
+		array $phpDocPureUnlessCallableIsImpureParameters = [],
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -3001,6 +3003,7 @@ final class MutatingScope implements Scope
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
+				$phpDocPureUnlessCallableIsImpureParameters,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -3070,6 +3073,7 @@ final class MutatingScope implements Scope
 	 * @param Type[] $parameterOutTypes
 	 * @param array<string, bool> $immediatelyInvokedCallableParameters
 	 * @param array<string, Type> $phpDocClosureThisTypeParameters
+	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -3088,6 +3092,7 @@ final class MutatingScope implements Scope
 		array $parameterOutTypes = [],
 		array $immediatelyInvokedCallableParameters = [],
 		array $phpDocClosureThisTypeParameters = [],
+		array $pureUnlessCallableIsImpureParameters = [],
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -3112,6 +3117,7 @@ final class MutatingScope implements Scope
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
 				$immediatelyInvokedCallableParameters,
 				$phpDocClosureThisTypeParameters,
+				$pureUnlessCallableIsImpureParameters,
 			),
 			false,
 		);

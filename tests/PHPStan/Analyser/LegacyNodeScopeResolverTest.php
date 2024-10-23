@@ -4577,7 +4577,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$reducedToInt',
 			],
 			[
-				'array<0|1|2, 1|2|3>',
+				'array{1, 2, 3}',
 				'array_change_key_case($integers)',
 			],
 			[

@@ -5595,8 +5595,10 @@ final class MutatingScope implements Scope
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$newTypes = [];
+			$oneTypeHasBeenRemoved = false;
 			foreach ($typeWithMethod->getTypes() as $innerType) {
 				if (!$innerType->hasMethod($methodName)->yes()) {
+					$oneTypeHasBeenRemoved = true;
 					continue;
 				}
 
@@ -5605,7 +5607,9 @@ final class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return null;
 			}
-			$typeWithMethod = TypeCombinator::union(...$newTypes);
+			if ($oneTypeHasBeenRemoved) {
+				$typeWithMethod = TypeCombinator::union(...$newTypes);
+			}
 		}
 
 		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
@@ -5710,8 +5714,10 @@ final class MutatingScope implements Scope
 	{
 		if ($typeWithProperty instanceof UnionType) {
 			$newTypes = [];
+			$oneTypeHasBeenRemoved = false;
 			foreach ($typeWithProperty->getTypes() as $innerType) {
 				if (!$innerType->hasProperty($propertyName)->yes()) {
+					$oneTypeHasBeenRemoved = true;
 					continue;
 				}
 
@@ -5720,7 +5726,9 @@ final class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return null;
 			}
-			$typeWithProperty = TypeCombinator::union(...$newTypes);
+			if ($oneTypeHasBeenRemoved) {
+				$typeWithProperty = TypeCombinator::union(...$newTypes);
+			}
 		}
 		if (!$typeWithProperty->hasProperty($propertyName)->yes()) {
 			return null;
@@ -5750,8 +5758,10 @@ final class MutatingScope implements Scope
 	{
 		if ($typeWithConstant instanceof UnionType) {
 			$newTypes = [];
+			$oneTypeHasBeenRemoved = false;
 			foreach ($typeWithConstant->getTypes() as $innerType) {
 				if (!$innerType->hasConstant($constantName)->yes()) {
+					$oneTypeHasBeenRemoved = true;
 					continue;
 				}
 
@@ -5760,7 +5770,9 @@ final class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return null;
 			}
-			$typeWithConstant = TypeCombinator::union(...$newTypes);
+			if ($oneTypeHasBeenRemoved) {
+				$typeWithConstant = TypeCombinator::union(...$newTypes);
+			}
 		}
 		if (!$typeWithConstant->hasConstant($constantName)->yes()) {
 			return null;
@@ -5805,8 +5817,10 @@ final class MutatingScope implements Scope
 	{
 		if ($iteratee instanceof UnionType) {
 			$newTypes = [];
+			$oneTypeHasBeenRemoved = false;
 			foreach ($iteratee->getTypes() as $innerType) {
 				if (!$innerType->isIterable()->yes()) {
+					$oneTypeHasBeenRemoved = true;
 					continue;
 				}
 
@@ -5815,7 +5829,9 @@ final class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return $iteratee->getIterableKeyType();
 			}
-			$iteratee = TypeCombinator::union(...$newTypes);
+			if ($oneTypeHasBeenRemoved) {
+				$iteratee = TypeCombinator::union(...$newTypes);
+			}
 		}
 
 		return $iteratee->getIterableKeyType();
@@ -5825,8 +5841,10 @@ final class MutatingScope implements Scope
 	{
 		if ($iteratee instanceof UnionType) {
 			$newTypes = [];
+			$oneTypeHasBeenRemoved = false;
 			foreach ($iteratee->getTypes() as $innerType) {
 				if (!$innerType->isIterable()->yes()) {
+					$oneTypeHasBeenRemoved = true;
 					continue;
 				}
 
@@ -5835,7 +5853,9 @@ final class MutatingScope implements Scope
 			if (count($newTypes) === 0) {
 				return $iteratee->getIterableValueType();
 			}
-			$iteratee = TypeCombinator::union(...$newTypes);
+			if ($oneTypeHasBeenRemoved) {
+				$iteratee = TypeCombinator::union(...$newTypes);
+			}
 		}
 
 		return $iteratee->getIterableValueType();

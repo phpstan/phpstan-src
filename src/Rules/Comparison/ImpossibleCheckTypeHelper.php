@@ -53,14 +53,17 @@ final class ImpossibleCheckTypeHelper
 	{
 	}
 
+	/**
+	 * @return array{bool|null, list<string>}
+	 */
 	public function findSpecifiedType(
 		Scope $scope,
 		Expr $node,
-	): ?bool
+	): array
 	{
 		if ($node instanceof FuncCall) {
 			if ($node->isFirstClassCallable()) {
-				return null;
+				return [null, []];
 			}
 			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
@@ -69,10 +72,10 @@ final class ImpossibleCheckTypeHelper
 					$arg = $node->getArgs()[0]->value;
 					$assertValue = ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg) : $scope->getNativeType($arg))->toBoolean();
 					if (!$assertValue instanceof ConstantBooleanType) {
-						return null;
+						return [null, []];
 					}
 
-					return $assertValue->getValue();
+					return [$assertValue->getValue(), []];
 				}
 				if (in_array($functionName, [
 					'class_exists',
@@ -80,23 +83,23 @@ final class ImpossibleCheckTypeHelper
 					'trait_exists',
 					'enum_exists',
 				], true)) {
-					return null;
+					return [null, []];
 				}
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
-					return null;
+					return [null, []];
 				} elseif ($functionName === 'defined') {
-					return null;
+					return [null, []];
 				} elseif ($functionName === 'array_search') {
-					return null;
+					return [null, []];
 				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
 					$haystackArg = $node->getArgs()[1]->value;
 					$haystackType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg));
 					if ($haystackType instanceof MixedType) {
-						return null;
+						return [null, []];
 					}
 
 					if (!$haystackType->isArray()->yes()) {
-						return null;
+						return [null, []];
 					}
 
 					$needleArg = $node->getArgs()[0]->value;
@@ -113,36 +116,36 @@ final class ImpossibleCheckTypeHelper
 						|| $haystackType->getIterableValueType()->isEnum()->yes();
 
 					if (!$isStrictComparison) {
-						return null;
+						return [null, []];
 					}
 
 					$valueType = $haystackType->getIterableValueType();
 					$constantNeedleTypesCount = count($needleType->getFiniteTypes());
 					$constantHaystackTypesCount = count($valueType->getFiniteTypes());
-					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
+					$isNeedleSupertype = $needleType->isSuperTypeOfWithReason($valueType);
 					if ($haystackType->isConstantArray()->no()) {
 						if ($haystackType->isIterableAtLeastOnce()->yes()) {
 							// In this case the generic implementation via typeSpecifier fails, because the argument types cannot be narrowed down.
 							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
-								if ($isNeedleSupertype->yes()) {
-									return true;
+								if ($isNeedleSupertype->result->yes()) {
+									return [true, $isNeedleSupertype->reasons];
 								}
-								if ($isNeedleSupertype->no()) {
-									return false;
+								if ($isNeedleSupertype->result->no()) {
+									return [false, $isNeedleSupertype->reasons];
 								}
 							}
 
-							return null;
+							return [null, []];
 						}
 					}
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
 						$haystackArrayTypes = $haystackType->getArrays();
 						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
-							return null;
+							return [null, []];
 						}
 
-						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
+						if ($isNeedleSupertype->result->maybe() || $isNeedleSupertype->result->yes()) {
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								if ($haystackArrayType instanceof ConstantArrayType) {
 									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
@@ -164,18 +167,18 @@ final class ImpossibleCheckTypeHelper
 									}
 								}
 
-								return null;
+								return [null, []];
 							}
 						}
 
-						if ($isNeedleSupertype->yes()) {
+						if ($isNeedleSupertype->result->yes()) {
 							$hasConstantNeedleTypes = $constantNeedleTypesCount > 0;
 							$hasConstantHaystackTypes = $constantHaystackTypesCount > 0;
 							if (
 								(!$hasConstantNeedleTypes && !$hasConstantHaystackTypes)
 								|| $hasConstantNeedleTypes !== $hasConstantHaystackTypes
 							) {
-								return null;
+								return [null, []];
 							}
 						}
 					}
@@ -186,7 +189,7 @@ final class ImpossibleCheckTypeHelper
 					if ($objectType instanceof ConstantStringType
 						&& !$this->reflectionProvider->hasClass($objectType->getValue())
 					) {
-						return false;
+						return [false, []];
 					}
 
 					$methodArg = $node->getArgs()[1]->value;
@@ -199,11 +202,11 @@ final class ImpossibleCheckTypeHelper
 
 						if ($objectType->getObjectClassNames() !== []) {
 							if ($objectType->hasMethod($methodType->getValue())->yes()) {
-								return true;
+								return [true, []];
 							}
 
 							if ($objectType->hasMethod($methodType->getValue())->no()) {
-								return false;
+								return [false, []];
 							}
 						}
 
@@ -219,7 +222,7 @@ final class ImpossibleCheckTypeHelper
 
 						if ($genericType instanceof TypeWithClassName) {
 							if ($genericType->hasMethod($methodType->getValue())->yes()) {
-								return true;
+								return [true, []];
 							}
 
 							$classReflection = $genericType->getClassReflection();
@@ -227,7 +230,7 @@ final class ImpossibleCheckTypeHelper
 								$classReflection !== null
 								&& $classReflection->isFinal()
 								&& $genericType->hasMethod($methodType->getValue())->no()) {
-								return false;
+								return [false, []];
 							}
 						}
 					}
@@ -240,7 +243,7 @@ final class ImpossibleCheckTypeHelper
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
-			return null;
+			return [null, []];
 		}
 
 		$sureTypes = $specifiedTypes->getSureTypes();
@@ -249,15 +252,15 @@ final class ImpossibleCheckTypeHelper
 		$rootExpr = $specifiedTypes->getRootExpr();
 		if ($rootExpr !== null) {
 			if (self::isSpecified($typeSpecifierScope, $node, $rootExpr)) {
-				return null;
+				return [null, []];
 			}
 
 			$rootExprType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr));
 			if ($rootExprType instanceof ConstantBooleanType) {
-				return $rootExprType->getValue();
+				return [$rootExprType->getValue(), []];
 			}
 
-			return null;
+			return [null, []];
 		}
 
 		$results = [];
@@ -277,7 +280,12 @@ final class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
 
-			$results[] = $resultType->isSuperTypeOf($argumentType);
+			$isSuperType = $resultType->isSuperTypeOfWithReason($argumentType);
+			if ($isSuperType->result->no()) {
+				return [false, $isSuperType->reasons];
+			}
+
+			$results[] = $isSuperType->result;
 		}
 
 		foreach ($sureNotTypes as $sureNotType) {
@@ -295,15 +303,20 @@ final class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
-			$results[] = $resultType->isSuperTypeOf($argumentType)->negate();
+			$isSuperType = $resultType->isSuperTypeOfWithReason($argumentType);
+			if ($isSuperType->result->yes()) {
+				return [false, $isSuperType->reasons];
+			}
+
+			$results[] = $isSuperType->result->negate();
 		}
 
 		if (count($results) === 0) {
-			return null;
+			return [null, []];
 		}
 
 		$result = TrinaryLogic::createYes()->and(...$results);
-		return $result->maybe() ? null : $result->yes();
+		return $result->maybe() ? [null, []] : [$result->yes(), []];
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

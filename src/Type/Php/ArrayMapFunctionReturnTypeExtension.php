@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
+use function array_reduce;
 use function array_slice;
 use function count;
 
@@ -32,7 +33,8 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$numArgs = count($functionCall->getArgs());
+		if ($numArgs < 2) {
 			return null;
 		}
 
@@ -54,10 +56,58 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			)->getReturnType();
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			$argTypes = [];
+			$areAllSameSize = true;
+			$expectedSize = null;
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
+				$argTypes[$index] = $argType = $scope->getType($arg->value);
+				if (!$areAllSameSize || $numArgs === 2) {
+					continue;
+				}
+
+				$arraySizes = $argType->getArraySize()->getConstantScalarValues();
+				if ($arraySizes === []) {
+					$areAllSameSize = false;
+					continue;
+				}
+
+				foreach ($arraySizes as $size) {
+					$expectedSize ??= $size;
+					if ($expectedSize === $size) {
+						continue;
+					}
+
+					$areAllSameSize = false;
+					continue 2;
+				}
+			}
+
+			if (!$areAllSameSize) {
+				$firstArr = $functionCall->getArgs()[1]->value;
+				$identities = [];
+				foreach (array_slice($functionCall->getArgs(), 2) as $arg) {
+					$identities[] = new Node\Expr\BinaryOp\Identical($firstArr, $arg->value);
+				}
+
+				$and = array_reduce(
+					$identities,
+					static fn (Node\Expr $a, Node\Expr $b) => new Node\Expr\BinaryOp\BooleanAnd($a, $b),
+					new Node\Expr\ConstFetch(new Node\Name('true')),
+				);
+				$areAllSameSize = $scope->getType($and)->isTrue()->yes();
+			}
+
+			$addNull = !$areAllSameSize;
+
+			foreach ($argTypes as $index => $argType) {
+				$offsetValueType = $argType->getIterableValueType();
+				if ($addNull) {
+					$offsetValueType = TypeCombinator::addNull($offsetValueType);
+				}
+
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($index),
-					$scope->getType($arg->value)->getIterableValueType(),
+					$offsetValueType,
 				);
 			}
 			$valueType = $arrayBuilder->getArray();

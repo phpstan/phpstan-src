@@ -30,7 +30,11 @@ class Foo
 
 		assertType('non-empty-array<string, int>', array_map(null, $array));
 		assertType('non-empty-array<int, array{int, int}>', array_map(null, $array, $array));
-		assertType('non-empty-array<int, array{int, bool}>', array_map(null, $array, $other));
+		assertType('non-empty-array<int, array{int, int, int}>', array_map(null, $array, $array, $array));
+		assertType('non-empty-array<int, array{int|null, bool|null}>', array_map(null, $array, $other));
+
+		assertType('array{1}|array{true}', array_map(null, rand() ? [1] : [true]));
+		assertType('array{1}|array{true, false}', array_map(null, rand() ? [1] : [true, false]));
 	}
 
 }

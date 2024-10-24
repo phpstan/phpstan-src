@@ -44,9 +44,8 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		$preserveKeysType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantBooleanType(false);
-		$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeysType);
 
-		return $arrayType->chunkArray($lengthType, $preserveKeys);
+		return $arrayType->chunkArray($lengthType, $preserveKeysType->isTrue());
 	}
 
 }

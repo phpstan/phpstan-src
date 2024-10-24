@@ -80,19 +80,29 @@ class StrictMixedType implements CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
+		return IsSuperTypeOfResult::createYes();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof self) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 		if ($otherType instanceof MixedType && !$otherType instanceof TemplateMixedType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return TrinaryLogic::createMaybe();
+		return IsSuperTypeOfResult::createMaybe();
 	}
 
 	public function equals(Type $type): bool

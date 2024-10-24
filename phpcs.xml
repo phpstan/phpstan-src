@@ -202,6 +202,7 @@
 		<properties>
 			<property name="enable" value="true"/>
 		</properties>
+		<exclude-pattern>src/Type/TypeResult.php</exclude-pattern>
 	</rule>
 	<exclude-pattern>compiler/tests/*/data/</exclude-pattern>
 	<exclude-pattern>tests/*/Fixture/</exclude-pattern>

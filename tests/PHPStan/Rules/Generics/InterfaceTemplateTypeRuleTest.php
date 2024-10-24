@@ -65,6 +65,18 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				'Call-site variance of contravariant int in generic type InterfaceTemplateType\Covariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of interface InterfaceTemplateType\Covariant.',
 				74,
 			],
+			[
+				'PHPDoc tag @template T for interface InterfaceTemplateType\InvalidDefault has invalid default type InterfaceTemplateType\Zazzzu.',
+				82,
+			],
+			[
+				'Default type bool in PHPDoc tag @template T for interface InterfaceTemplateType\OutOfBoundsDefault is not subtype of bound type object.',
+				90,
+			],
+			[
+				'PHPDoc tag @template V for interface InterfaceTemplateType\RequiredAfterOptional does not have a default type but follows an optional @template U.',
+				100,
+			],
 		]);
 	}
 

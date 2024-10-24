@@ -24,6 +24,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		MixedType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct(true);
@@ -33,6 +34,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
@@ -47,7 +49,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
+		$isSuperType = $this->isSuperTypeOfWithReason($acceptingType)->toAcceptsResult();
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}
@@ -62,6 +64,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->variance,
 			$this->name,
 			new StrictMixedType(),
+			$this->default,
 		);
 	}
 

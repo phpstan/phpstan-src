@@ -60,6 +60,9 @@ final class FunctionTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for function %s() cannot have existing type alias %%s as its name.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template %%s for function %s() has invalid bound type %%s.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName),
+			sprintf('PHPDoc tag @template %%s for function %s() has invalid default type %%s.', $escapedFunctionName),
+			sprintf('Default type %%s in PHPDoc tag @template %%s for function %s() is not subtype of bound type %%s.', $escapedFunctionName),
+			sprintf('PHPDoc tag @template %%s for function %s() does not have a default type but follows an optional @template %%s.', $escapedFunctionName),
 		);
 	}
 

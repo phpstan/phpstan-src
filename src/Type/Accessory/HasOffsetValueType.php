@@ -14,7 +14,9 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
@@ -27,6 +29,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -89,34 +92,44 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult(
-			$type->isOffsetAccessible()
-				->and($type->hasOffsetValueType($this->offsetType))
-				->and($this->valueType->accepts($type->getOffsetValueType($this->offsetType), $strictTypes)),
-			[],
-		);
+		$result = new AcceptsResult($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)), []);
+
+		return $result->and($this->valueType->acceptsWithReason($type->getOffsetValueType($this->offsetType), $strictTypes));
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($this->equals($type)) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
-		return $type->isOffsetAccessible()
-			->and($type->hasOffsetValueType($this->offsetType))
-			->and($this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType)));
+
+		$result = new IsSuperTypeOfResult($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)), []);
+
+		return $result
+			->and($this->valueType->isSuperTypeOfWithReason($type->getOffsetValueType($this->offsetType)));
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		return $otherType->isOffsetAccessible()
-			->and($otherType->hasOffsetValueType($this->offsetType))
-			->and($otherType->getOffsetValueType($this->offsetType)->isSuperTypeOf($this->valueType))
-			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
+		$result = new IsSuperTypeOfResult($otherType->isOffsetAccessible()->and($otherType->hasOffsetValueType($this->offsetType)), []);
+
+		return $result
+			->and($otherType->getOffsetValueType($this->offsetType)->isSuperTypeOfWithReason($this->valueType))
+			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -126,7 +139,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool
@@ -262,6 +275,20 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function shuffleArray(): Type
 	{
 		return new NonEmptyArrayType();
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if (
+			$this->offsetType->isSuperTypeOf($offsetType)->yes()
+			&& ($lengthType->isNull()->yes() || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes())
+		) {
+			return $preserveKeys->yes()
+				? TypeCombinator::intersect($this, new NonEmptyArrayType())
+				: new NonEmptyArrayType();
+		}
+
+		return new MixedType();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

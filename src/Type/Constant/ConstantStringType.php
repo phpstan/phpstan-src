@@ -33,6 +33,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -148,10 +149,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof GenericClassStringType) {
 			$genericType = $type->getGenericType();
 			if ($genericType instanceof MixedType) {
-				return TrinaryLogic::createMaybe();
+				return IsSuperTypeOfResult::createMaybe();
 			}
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
@@ -164,34 +170,34 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
 			if ($genericType instanceof TemplateType) {
-				$isSuperType = $genericType->getBound()->isSuperTypeOf($objectType);
+				$isSuperType = $genericType->getBound()->isSuperTypeOfWithReason($objectType);
 			} else {
-				$isSuperType = $genericType->isSuperTypeOf($objectType);
+				$isSuperType = $genericType->isSuperTypeOfWithReason($objectType);
 			}
 
 			// Explicitly handle the uncertainty for Yes & Maybe.
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createMaybe();
+				return IsSuperTypeOfResult::createMaybe();
 			}
-			return TrinaryLogic::createNo();
+			return IsSuperTypeOfResult::createNo();
 		}
 		if ($type instanceof ClassStringType) {
-			return $this->isClassStringType()->yes() ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+			return $this->isClassStringType()->yes() ? IsSuperTypeOfResult::createMaybe() : IsSuperTypeOfResult::createNo();
 		}
 
 		if ($type instanceof self) {
-			return $this->value === $type->value ? TrinaryLogic::createYes() : TrinaryLogic::createNo();
+			return $this->value === $type->value ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createNo();
 		}
 
 		if ($type instanceof parent) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function isCallable(): TrinaryLogic

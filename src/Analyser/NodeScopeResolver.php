@@ -1320,12 +1320,7 @@ final class NodeScopeResolver
 				$initScope = $condResult->getScope();
 				$condResultScope = $condResult->getScope();
 				$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
-				if ($condTruthiness instanceof ConstantBooleanType) {
-					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());
-				} else {
-					$condTruthinessTrinary = TrinaryLogic::createMaybe();
-				}
-				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthinessTrinary);
+				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
 				$hasYield = $hasYield || $condResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
@@ -3159,15 +3154,27 @@ final class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 		} elseif ($expr instanceof Expr\ClassConstFetch) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
 				$impurePoints = $result->getImpurePoints();
+			} else {
+				$hasYield = false;
+				$throwPoints = [];
+				$impurePoints = [];
+				$nodeCallback($expr->class, $scope);
+			}
+
+			if ($expr->name instanceof Expr) {
+				$result = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
+				$scope = $result->getScope();
+				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			} else {
+				$nodeCallback($expr->name, $scope);
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);

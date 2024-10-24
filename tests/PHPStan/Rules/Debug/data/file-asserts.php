@@ -46,4 +46,23 @@ class Foo
 		assertVariableCertainty(TrinaryLogic::createMaybe(), $b);
 	}
 
+	/**
+	 * @param array{firstName: string, lastName?: string, sub: array{other: string}} $context
+	 */
+	public function arrayOffset(array $context) : void
+	{
+		assertVariableCertainty(TrinaryLogic::createYes(), $context['firstName']);
+		assertVariableCertainty(TrinaryLogic::createYes(), $context['sub']);
+		assertVariableCertainty(TrinaryLogic::createYes(), $context['sub']['other']);
+
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $context['lastName']);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $context['nonexistent']['somethingElse']);
+
+		assertVariableCertainty(TrinaryLogic::createNo(), $context['sub']['nonexistent']);
+		assertVariableCertainty(TrinaryLogic::createNo(), $context['email']);
+
+		// Deliberate error:
+		assertVariableCertainty(TrinaryLogic::createNo(), $context['firstName']);
+	}
+
 }

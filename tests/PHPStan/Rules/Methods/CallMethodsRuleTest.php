@@ -457,14 +457,17 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $i of method Test\SubtractedMixed::requireInt() expects int, mixed given.',
 				1277,
+				'Type int has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #1 $i of method Test\SubtractedMixed::requireInt() expects int, mixed given.',
 				1284,
+				'Type int|string has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #1 $parameter of method Test\SubtractedMixed::requireIntOrString() expects int|string, mixed given.',
 				1285,
+				'Type int|string has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #2 $b of method Test\ExpectsExceptionGenerics::expectsExceptionUpperBound() expects Exception, Throwable given.',
@@ -793,14 +796,17 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $i of method Test\SubtractedMixed::requireInt() expects int, mixed given.',
 				1277,
+				'Type int has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #1 $i of method Test\SubtractedMixed::requireInt() expects int, mixed given.',
 				1284,
+				'Type int|string has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #1 $parameter of method Test\SubtractedMixed::requireIntOrString() expects int|string, mixed given.',
 				1285,
+				'Type int|string has already been eliminated from mixed.',
 			],
 			[
 				'Parameter #2 $b of method Test\ExpectsExceptionGenerics::expectsExceptionUpperBound() expects Exception, Throwable given.',
@@ -3384,6 +3390,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-10159.php'], []);
+	}
+
+	public function testBug4801(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-4801.php'], []);
 	}
 
 }

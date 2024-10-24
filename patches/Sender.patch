@@ -1,0 +1,11 @@
+--- src/Io/Sender.php	2024-03-27 18:20:46
++++ src/Io/Sender.php	2024-10-14 10:19:28
+@@ -48,7 +48,7 @@
+      * @param ConnectorInterface|null $connector
+      * @return self
+      */
+-    public static function createFromLoop(LoopInterface $loop, ConnectorInterface $connector = null)
++    public static function createFromLoop(LoopInterface $loop, ?ConnectorInterface $connector = null)
+     {
+         if ($connector === null) {
+             $connector = new Connector(array(), $loop);

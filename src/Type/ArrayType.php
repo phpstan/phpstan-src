@@ -129,16 +129,21 @@ class ArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
-			return $this->getItemType()->isSuperTypeOf($type->getItemType())
-				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+			return $this->getItemType()->isSuperTypeOfWithReason($type->getItemType())
+				->and($this->getIterableKeyType()->isSuperTypeOfWithReason($type->getIterableKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function equals(Type $type): bool
@@ -589,6 +594,11 @@ class ArrayType implements Type
 	public function shuffleArray(): Type
 	{
 		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->itemType));
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this;
 	}
 
 	public function isCallable(): TrinaryLogic

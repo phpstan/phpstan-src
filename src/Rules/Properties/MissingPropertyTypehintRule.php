@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
-use function implode;
 use function sprintf;
 
 /**
@@ -68,7 +67,7 @@ final class MissingPropertyTypehintRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$name,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

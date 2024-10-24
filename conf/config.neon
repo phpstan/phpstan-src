@@ -283,6 +283,7 @@ extensions:
 
 rules:
 	- PHPStan\Rules\Debug\DebugScopeRule
+	- PHPStan\Rules\Debug\DumpPhpDocTypeRule
 	- PHPStan\Rules\Debug\DumpTypeRule
 	- PHPStan\Rules\Debug\FileAssertRule
 
@@ -435,6 +436,9 @@ services:
 				lines: %featureToggles.phpDocParserIncludeLines%
 
 	-
+		class: PHPStan\PhpDocParser\Printer\Printer
+
+	-
 		class: PHPStan\PhpDoc\ConstExprParserFactory
 		arguments:
 			unescapeStrings: %featureToggles.unescapeStrings%
@@ -578,6 +582,9 @@ services:
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer
 		arguments:
 			cacheFilePath: %resultCachePath%
+
+	-
+		class: PHPStan\Analyser\RicherScopeGetTypeHelper
 
 	-
 		class: PHPStan\Cache\Cache
@@ -1084,6 +1091,10 @@ services:
 
 	-
 		class: PHPStan\Rules\PhpDoc\AssertRuleHelper
+		arguments:
+			checkMissingTypehints: %checkMissingTypehints%
+			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			absentTypeChecks: %featureToggles.absentTypeChecks%
 
 	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper

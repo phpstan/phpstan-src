@@ -222,27 +222,37 @@ class IntersectionType implements CompoundType
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof IntersectionType && $this->equals($otherType)) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($otherType instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return TrinaryLogic::createYes()->lazyAnd($this->getTypes(), static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType));
+		return IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOfWithReason($otherType), $this->types));
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if (($otherType instanceof self || $otherType instanceof UnionType) && !$otherType instanceof TemplateType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		$result = TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
+		$result = IsSuperTypeOfResult::maxMin(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOfWithReason($innerType), $this->types));
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
-				return TrinaryLogic::createYes();
+				return IsSuperTypeOfResult::createYes();
 			}
 		}
 
@@ -778,6 +788,11 @@ class IntersectionType implements CompoundType
 	public function shuffleArray(): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->shuffleArray());
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));
 	}
 
 	public function getEnumCases(): array

@@ -336,4 +336,19 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7251.php'], []);
 	}
 
+	public function testBug11802(): void
+	{
+		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-11802.php'], [
+			[
+				'Property Bug11802\HelloWorld::$isFinal is never read, only written.',
+				8,
+				$tip,
+			],
+		]);
+	}
+
 }

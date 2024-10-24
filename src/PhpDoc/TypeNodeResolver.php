@@ -106,6 +106,7 @@ use PHPStan\Type\VoidType;
 use Traversable;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function count;
 use function explode;
 use function get_class;
@@ -792,6 +793,15 @@ final class TypeNodeResolver
 
 			$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
 			if ($classReflection->isGeneric()) {
+				$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
+				for ($i = count($genericTypes), $templateTypesCount = count($templateTypes); $i < $templateTypesCount; $i++) {
+					$templateType = $templateTypes[$i];
+					if (!$templateType instanceof TemplateType || $templateType->getDefault() === null) {
+						continue;
+					}
+					$genericTypes[] = $templateType->getDefault();
+				}
+
 				if (in_array($mainTypeClassName, [
 					Traversable::class,
 					IteratorAggregate::class,
@@ -910,6 +920,9 @@ final class TypeNodeResolver
 					$templateType->bound !== null
 						? $this->resolve($templateType->bound, $nameScope)
 						: new MixedType(),
+					$templateType->default !== null
+						? $this->resolve($templateType->default, $nameScope)
+						: null,
 					TemplateTypeVariance::createInvariant(),
 				);
 			}
@@ -1003,8 +1016,18 @@ final class TypeNodeResolver
 		}
 
 		$arrayType = $builder->getArray();
-		if ($typeNode->kind === ArrayShapeNode::KIND_LIST) {
+		if (in_array($typeNode->kind, [
+			ArrayShapeNode::KIND_LIST,
+			ArrayShapeNode::KIND_NON_EMPTY_LIST,
+		], true)) {
 			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+		}
+
+		if (in_array($typeNode->kind, [
+			ArrayShapeNode::KIND_NON_EMPTY_ARRAY,
+			ArrayShapeNode::KIND_NON_EMPTY_LIST,
+		], true)) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 
 		return $arrayType;

@@ -133,4 +133,14 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
+	public function testBug11802(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11802b.php'], [
+			[
+				'Method Bug11802b\HelloWorld::doBar() is unused.',
+				10,
+			],
+		]);
+	}
+
 }

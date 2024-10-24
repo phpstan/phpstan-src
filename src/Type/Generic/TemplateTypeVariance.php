@@ -181,11 +181,11 @@ class TemplateTypeVariance
 		}
 
 		if ($this->covariant()) {
-			return new AcceptsResult($a->isSuperTypeOf($b), []);
+			return $a->isSuperTypeOfWithReason($b)->toAcceptsResult();
 		}
 
 		if ($this->contravariant()) {
-			return new AcceptsResult($b->isSuperTypeOf($a), []);
+			return $b->isSuperTypeOfWithReason($a)->toAcceptsResult();
 		}
 
 		if ($this->bivariant()) {

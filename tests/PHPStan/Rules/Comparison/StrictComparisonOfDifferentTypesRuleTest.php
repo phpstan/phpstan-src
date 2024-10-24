@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_INT_SIZE;
@@ -22,6 +23,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new StrictComparisonOfDifferentTypesRule(
+			self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
 			$this->checkAlwaysTrueStrictComparison,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
@@ -216,10 +218,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
+					'Type 1|string has already been eliminated from mixed.',
 				],
 				[
 					'Strict comparison using !== between mixed and 1 will always evaluate to true.',
 					812,
+					'Type 1|string has already been eliminated from mixed.',
 				],
 				[
 					'Strict comparison using === between \'foo\' and \'foo\' will always evaluate to true.',
@@ -274,6 +278,21 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
 					1014,
 					$tipText,
+				],
+				[
+					'Strict comparison using === between mixed and null will always evaluate to false.',
+					1030,
+					'Type null has already been eliminated from mixed.',
+				],
+				[
+					'Strict comparison using !== between mixed and null will always evaluate to true.',
+					1034,
+					'Type null has already been eliminated from mixed.',
+				],
+				[
+					'Strict comparison using !== between array{1, mixed, 3} and array{int, null, int} will always evaluate to true.',
+					1048,
+					'Offset 1: Type null has already been eliminated from mixed.',
 				],
 			],
 		);
@@ -419,6 +438,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
+					'Type 1|string has already been eliminated from mixed.',
 				],
 				[
 					'Strict comparison using === between NAN and NAN will always evaluate to false.',
@@ -432,6 +452,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
 					1014,
 					$tipText,
+				],
+				[
+					'Strict comparison using === between mixed and null will always evaluate to false.',
+					1030,
+					'Type null has already been eliminated from mixed.',
 				],
 			],
 		);
@@ -1119,6 +1144,26 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-10493.php'], []);
+	}
+
+	public function testHashing(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/hashing.php'], [
+			[
+				"Strict comparison using === between lowercase-string&non-falsy-string and 'ABC' will always evaluate to false.",
+				9,
+			],
+			[
+				"Strict comparison using === between (lowercase-string&non-falsy-string)|false and 'ABC' will always evaluate to false.",
+				12,
+			],
+			[
+				"Strict comparison using === between (lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string) and 'A' will always evaluate to false.",
+				31,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
 	}
 
 }

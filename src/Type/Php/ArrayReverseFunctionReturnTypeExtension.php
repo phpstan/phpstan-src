@@ -36,9 +36,8 @@ final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionRe
 		}
 
 		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new ConstantBooleanType(false);
-		$preserveKeys = (new ConstantBooleanType(true))->isSuperTypeOf($preserveKeysType);
 
-		return $type->reverseArray($preserveKeys);
+		return $type->reverseArray($preserveKeysType->isTrue());
 	}
 
 }

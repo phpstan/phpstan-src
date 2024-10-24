@@ -69,3 +69,17 @@ class Dolor
 	use GenericTrait;
 
 }
+
+/**
+ * @template T = string
+ */
+trait GenericDefault
+{
+}
+
+class Sit
+{
+
+	use GenericDefault;
+
+}

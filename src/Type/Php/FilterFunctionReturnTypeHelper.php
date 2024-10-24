@@ -397,13 +397,13 @@ final class FilterFunctionReturnTypeHelper
 
 		$optionNames = array_merge(['default'], $this->getFilterTypeOptions()[$filterValue] ?? []);
 		foreach ($optionNames as $optionName) {
-			$optionaNameType = new ConstantStringType($optionName);
-			if (!$optionsType->hasOffsetValueType($optionaNameType)->yes()) {
+			$optionalNameType = new ConstantStringType($optionName);
+			if (!$optionsType->hasOffsetValueType($optionalNameType)->yes()) {
 				$options[$optionName] = null;
 				continue;
 			}
 
-			$options[$optionName] = $optionsType->getOffsetValueType($optionaNameType);
+			$options[$optionName] = $optionsType->getOffsetValueType($optionalNameType);
 		}
 
 		return $options;

@@ -102,13 +102,18 @@ class IterableType implements CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return $type->isIterable()
-			->and($this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()))
-			->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+		return (new IsSuperTypeOfResult($type->isIterable(), []))
+			->and($this->getIterableValueType()->isSuperTypeOfWithReason($type->getIterableValueType()))
+			->and($this->getIterableKeyType()->isSuperTypeOfWithReason($type->getIterableKeyType()));
 	}
 
 	public function isSuperTypeOfMixed(Type $type): TrinaryLogic
@@ -141,8 +146,13 @@ class IterableType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
-			return $otherType->isSuperTypeOf(new UnionType([
+			return $otherType->isSuperTypeOfWithReason(new UnionType([
 				new ArrayType($this->keyType, $this->itemType),
 				new IntersectionType([
 					new ObjectType(Traversable::class),
@@ -152,19 +162,19 @@ class IterableType implements CompoundType
 		}
 
 		if ($otherType instanceof self) {
-			$limit = TrinaryLogic::createYes();
+			$limit = IsSuperTypeOfResult::createYes();
 		} else {
-			$limit = TrinaryLogic::createMaybe();
+			$limit = IsSuperTypeOfResult::createMaybe();
 		}
 
 		if ($otherType->isConstantArray()->yes() && $otherType->isIterableAtLeastOnce()->no()) {
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		return $limit->and(
-			$otherType->isIterable(),
-			$otherType->getIterableValueType()->isSuperTypeOf($this->itemType),
-			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType),
+			new IsSuperTypeOfResult($otherType->isIterable(), []),
+			$otherType->getIterableValueType()->isSuperTypeOfWithReason($this->itemType),
+			$otherType->getIterableKeyType()->isSuperTypeOfWithReason($this->keyType),
 		);
 	}
 
@@ -175,7 +185,7 @@ class IterableType implements CompoundType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

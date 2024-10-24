@@ -71,6 +71,12 @@ class Foo
 
 		/** @var \InvalidPhpDocDefinitions\FooCovariantGeneric<contravariant int> $test */
 		$test = doFoo();
+
+		/** @var \InvalidPhpDocDefinitions\FooGenericWithDefault $test */
+		$test = doFoo();
+
+		/** @var \InvalidPhpDocDefinitions\FooGenericWithSomeDefaults $test */
+		$test = doFoo();
 	}
 
 	public function doBar($foo)

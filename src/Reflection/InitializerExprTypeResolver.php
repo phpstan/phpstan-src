@@ -65,6 +65,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
+use PHPStan\Type\TypeResult;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -298,7 +299,7 @@ final class InitializerExprTypeResolver
 			return $this->resolveIdenticalType(
 				$this->getType($expr->left, $context),
 				$this->getType($expr->right, $context),
-			);
+			)->type;
 		}
 
 		if ($expr instanceof BinaryOp\NotIdentical) {
@@ -309,7 +310,7 @@ final class InitializerExprTypeResolver
 			return $this->resolveEqualType(
 				$this->getType($expr->left, $context),
 				$this->getType($expr->right, $context),
-			);
+			)->type;
 		}
 
 		if ($expr instanceof BinaryOp\NotEqual) {
@@ -1349,34 +1350,42 @@ final class InitializerExprTypeResolver
 		return $this->resolveCommonMath(new Expr\BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
 	}
 
-	public function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
+	/**
+	 * @return TypeResult<BooleanType>
+	 */
+	public function resolveIdenticalType(Type $leftType, Type $rightType): TypeResult
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new ConstantBooleanType(false);
+			return new TypeResult(new ConstantBooleanType(false), []);
 		}
 
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
-			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
+			return new TypeResult(new ConstantBooleanType($leftType->getValue() === $rightType->getValue()), []);
 		}
 
 		$leftTypeFiniteTypes = $leftType->getFiniteTypes();
 		$rightTypeFiniteType = $rightType->getFiniteTypes();
 		if (count($leftTypeFiniteTypes) === 1 && count($rightTypeFiniteType) === 1) {
-			return new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0]));
+			return new TypeResult(new ConstantBooleanType($leftTypeFiniteTypes[0]->equals($rightTypeFiniteType[0])), []);
 		}
 
-		if ($leftType->isSuperTypeOf($rightType)->no() && $rightType->isSuperTypeOf($leftType)->no()) {
-			return new ConstantBooleanType(false);
+		$leftIsSuperTypeOfRight = $leftType->isSuperTypeOfWithReason($rightType);
+		$rightIsSuperTypeOfLeft = $rightType->isSuperTypeOfWithReason($leftType);
+		if ($leftIsSuperTypeOfRight->no() && $rightIsSuperTypeOfLeft->no()) {
+			return new TypeResult(new ConstantBooleanType(false), array_merge($leftIsSuperTypeOfRight->reasons, $rightIsSuperTypeOfLeft->reasons));
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveIdenticalType($leftValueType, $rightValueType));
 		}
 
-		return new BooleanType();
+		return new TypeResult(new BooleanType(), []);
 	}
 
-	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
+	/**
+	 * @return TypeResult<BooleanType>
+	 */
+	public function resolveEqualType(Type $leftType, Type $rightType): TypeResult
 	{
 		if (
 			($leftType->isEnum()->yes() && $rightType->isTrue()->no())
@@ -1386,16 +1395,17 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveEqualType($leftValueType, $rightValueType));
 		}
 
-		return $leftType->looseCompare($rightType, $this->phpVersion);
+		return new TypeResult($leftType->looseCompare($rightType, $this->phpVersion), []);
 	}
 
 	/**
-	 * @param callable(Type, Type): BooleanType $valueComparisonCallback
+	 * @param callable(Type, Type): TypeResult<BooleanType> $valueComparisonCallback
+	 * @return TypeResult<BooleanType>
 	 */
-	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
+	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): TypeResult
 	{
 		$leftKeyTypes = $leftType->getKeyTypes();
 		$rightKeyTypes = $rightType->getKeyTypes();
@@ -1412,7 +1422,7 @@ final class InitializerExprTypeResolver
 
 			if (count($rightKeyTypes) === 0) {
 				if (!$leftOptional) {
-					return new ConstantBooleanType(false);
+					return new TypeResult(new ConstantBooleanType(false), []);
 				}
 				continue;
 			}
@@ -1425,13 +1435,13 @@ final class InitializerExprTypeResolver
 					$found = true;
 					break;
 				} elseif (!$rightType->isOptionalKey($j)) {
-					return new ConstantBooleanType(false);
+					return new TypeResult(new ConstantBooleanType(false), []);
 				}
 			}
 
 			if (!$found) {
 				if (!$leftOptional) {
-					return new ConstantBooleanType(false);
+					return new TypeResult(new ConstantBooleanType(false), []);
 				}
 				continue;
 			}
@@ -1448,21 +1458,22 @@ final class InitializerExprTypeResolver
 				}
 			}
 
-			$leftIdenticalToRight = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
+			$leftIdenticalToRightResult = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
+			$leftIdenticalToRight = $leftIdenticalToRightResult->type;
 			if ($leftIdenticalToRight->isFalse()->yes()) {
-				return new ConstantBooleanType(false);
+				return $leftIdenticalToRightResult;
 			}
 			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
 		}
 
 		foreach (array_keys($rightKeyTypes) as $j) {
 			if (!$rightType->isOptionalKey($j)) {
-				return new ConstantBooleanType(false);
+				return new TypeResult(new ConstantBooleanType(false), []);
 			}
 			$resultType = new BooleanType();
 		}
 
-		return $resultType->toBoolean();
+		return new TypeResult($resultType->toBoolean(), []);
 	}
 
 	private function callOperatorTypeSpecifyingExtensions(Expr\BinaryOp $expr, Type $leftType, Type $rightType): ?Type

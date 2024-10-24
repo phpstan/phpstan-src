@@ -75,7 +75,7 @@ function narrowKey($mixed, string $s, int $i, array $generalArr, array $intKeyed
 	assertType('int', $i);
 
 	if (isset($intKeyedArr[$s])) {
-		assertType("numeric-string", $s);
+		assertType("lowercase-string&numeric-string", $s);
 	} else {
 		assertType('string', $s);
 	}

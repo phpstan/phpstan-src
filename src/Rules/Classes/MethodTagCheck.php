@@ -16,7 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
-use function implode;
 use function sprintf;
 
 final class MethodTagCheck
@@ -174,7 +173,7 @@ final class MethodTagCheck
 				$methodName,
 				$description,
 				$innerName,
-				implode(', ', $genericTypeNames),
+				$genericTypeNames,
 			))
 				->identifier('missingType.generics')
 				->build();

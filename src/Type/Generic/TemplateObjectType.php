@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateObjectType extends ObjectType implements TemplateType
@@ -22,6 +23,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		ObjectType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct($bound->getClassName());
@@ -31,6 +33,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 }

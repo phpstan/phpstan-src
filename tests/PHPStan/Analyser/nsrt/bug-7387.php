@@ -29,24 +29,24 @@ class HelloWorld
 
 	public function specifiers(int $i) {
 		// https://3v4l.org/fmVIg
-		assertType('numeric-string', sprintf('%14s', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14s', $i));
 
-		assertType('numeric-string', sprintf('%d', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%d', $i));
 
-		assertType('numeric-string', sprintf('%14b', $i));
-		assertType('non-falsy-string', sprintf('%14c', $i)); // binary string
-		assertType('numeric-string', sprintf('%14d', $i));
-		assertType('numeric-string', sprintf('%14e', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14b', $i));
+		assertType('lowercase-string&non-falsy-string', sprintf('%14c', $i)); // binary string
+		assertType('lowercase-string&numeric-string', sprintf('%14d', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14e', $i));
 		assertType('numeric-string', sprintf('%14E', $i));
-		assertType('numeric-string', sprintf('%14f', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14f', $i));
 		assertType('numeric-string', sprintf('%14F', $i));
-		assertType('numeric-string', sprintf('%14g', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14g', $i));
 		assertType('numeric-string', sprintf('%14G', $i));
-		assertType('numeric-string', sprintf('%14h', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14h', $i));
 		assertType('numeric-string', sprintf('%14H', $i));
-		assertType('numeric-string', sprintf('%14o', $i));
-		assertType('numeric-string', sprintf('%14u', $i));
-		assertType('numeric-string', sprintf('%14x', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14o', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14u', $i));
+		assertType('lowercase-string&numeric-string', sprintf('%14x', $i));
 		assertType('numeric-string', sprintf('%14X', $i));
 
 	}
@@ -59,9 +59,9 @@ class HelloWorld
 	 */
 	public function positionalArgs($mixed, int $i, float $f, string $s, int $posInt, int $negInt, int $nonZeroIntRange, int $intRange) {
 		// https://3v4l.org/vVL0c
-		assertType('numeric-string', sprintf('%2$6s', $mixed, $i));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $posInt));
-		assertType('non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $negInt));
+		assertType('lowercase-string&numeric-string', sprintf('%2$6s', $mixed, $i));
+		assertType('lowercase-string&non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $posInt));
+		assertType('lowercase-string&non-falsy-string&numeric-string', sprintf('%2$6s', $mixed, $negInt));
 		assertType("'     1'|'     2'|'     3'|'     4'|'     5'", sprintf('%2$6s', $mixed, $nonZeroIntRange));
 
 		// https://3v4l.org/1ECIq
@@ -102,16 +102,16 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('non-falsy-string', sprintf("%%d", $i));
+		assertType('lowercase-string&non-falsy-string', sprintf("%%d", $i));
 	}
 
 	public function vsprintf(array $array)
 	{
-		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
 		assertType('numeric-string', vsprintf("%4d", $array));
-		assertType('numeric-string', vsprintf("%4d", ['123']));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", ['123']));
 		assertType('\'123\'', vsprintf("%s", ['123']));
 		// too many arguments.. php silently allows it
-		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
+		assertType('lowercase-string&numeric-string', vsprintf("%4d", ['123', '456']));
 	}
 }

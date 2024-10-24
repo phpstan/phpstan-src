@@ -76,3 +76,18 @@ function negate1(int $i): void
 function negate2(int $i): void
 {
 }
+
+/**
+ * @param array<mixed> $array
+ * @param string $message
+ *
+ * @phpstan-impure
+ *
+ * @psalm-assert list $array
+ */
+function isList($array, $message = ''): void
+{
+	if (!array_is_list($array)) {
+
+	}
+}

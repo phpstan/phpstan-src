@@ -138,23 +138,39 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($this->subtractedType === null || $type instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($type instanceof self) {
 			if ($type->subtractedType === null) {
-				return TrinaryLogic::createMaybe();
+				return IsSuperTypeOfResult::createMaybe();
 			}
-			$isSuperType = $type->subtractedType->isSuperTypeOf($this->subtractedType);
+			$isSuperType = $type->subtractedType->isSuperTypeOfWithReason($this->subtractedType);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createYes();
+				return $isSuperType;
 			}
 
-			return TrinaryLogic::createMaybe();
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
-		return $this->subtractedType->isSuperTypeOf($type)->negate();
+		$result = $this->subtractedType->isSuperTypeOfWithReason($type)->negate();
+		if ($result->no()) {
+			return IsSuperTypeOfResult::createNo([
+				sprintf(
+					'Type %s has already been eliminated from %s.',
+					$this->subtractedType->describe(VerbosityLevel::precise()),
+					$this->describe(VerbosityLevel::typeOnly()),
+				),
+			]);
+		}
+
+		return $result;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -274,6 +290,15 @@ class MixedType implements CompoundType, SubtractableType
 		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
 	}
 
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		if ($this->isArray()->no()) {
+			return new ErrorType();
+		}
+
+		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
@@ -318,18 +343,23 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof self && !$otherType instanceof TemplateMixedType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($this->subtractedType !== null) {
-			$isSuperType = $this->subtractedType->isSuperTypeOf($otherType);
+			$isSuperType = $this->subtractedType->isSuperTypeOfWithReason($otherType);
 			if ($isSuperType->yes()) {
-				return TrinaryLogic::createNo();
+				return IsSuperTypeOfResult::createNo();
 			}
 		}
 
-		return TrinaryLogic::createMaybe();
+		return IsSuperTypeOfResult::createMaybe();
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -339,7 +369,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
+		$isSuperType = $this->isSuperTypeOfWithReason($acceptingType)->toAcceptsResult();
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}

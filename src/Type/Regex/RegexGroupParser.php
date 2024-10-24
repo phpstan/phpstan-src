@@ -73,51 +73,39 @@ final class RegexGroupParser
 			$captureOnlyNamed = str_contains($modifiers, 'n');
 		}
 
-		$capturingGroups = [];
-		$alternationId = -1;
-		$captureGroupId = 100;
-		$markVerbs = [];
-		$this->walkRegexAst(
+		$astWalkResult = $this->walkRegexAst(
 			$ast,
 			null,
-			$alternationId,
 			0,
 			false,
 			null,
-			$captureGroupId,
-			$capturingGroups,
-			$markVerbs,
 			$captureOnlyNamed,
 			false,
 			$modifiers,
+			RegexAstWalkResult::createEmpty(),
 		);
 
-		return [$capturingGroups, $markVerbs];
+		return [$astWalkResult->getCapturingGroups(), $astWalkResult->getMarkVerbs()];
 	}
 
-	/**
-	 * @param array<int, RegexCapturingGroup> $capturingGroups
-	 * @param list<string> $markVerbs
-	 */
 	private function walkRegexAst(
 		TreeNode $ast,
 		?RegexAlternation $alternation,
-		int &$alternationId,
 		int $combinationIndex,
 		bool $inOptionalQuantification,
 		RegexCapturingGroup|RegexNonCapturingGroup|null $parentGroup,
-		int &$captureGroupId,
-		array &$capturingGroups,
-		array &$markVerbs,
 		bool $captureOnlyNamed,
 		bool $repeatedMoreThanOnce,
 		string $patternModifiers,
-	): void
+		RegexAstWalkResult $astWalkResult,
+	): RegexAstWalkResult
 	{
 		$group = null;
 		if ($ast->getId() === '#capturing') {
+			$astWalkResult = $astWalkResult->nextCaptureGroupId();
+
 			$group = new RegexCapturingGroup(
-				$captureGroupId++,
+				$astWalkResult->getCaptureGroupId(),
 				null,
 				$alternation,
 				$inOptionalQuantification,
@@ -130,9 +118,11 @@ final class RegexGroupParser
 			);
 			$parentGroup = $group;
 		} elseif ($ast->getId() === '#namedcapturing') {
+			$astWalkResult = $astWalkResult->nextCaptureGroupId();
+
 			$name = $ast->getChild(0)->getValueValue();
 			$group = new RegexCapturingGroup(
-				$captureGroupId++,
+				$astWalkResult->getCaptureGroupId(),
 				$name,
 				$alternation,
 				$inOptionalQuantification,
@@ -176,20 +166,19 @@ final class RegexGroupParser
 		}
 
 		if ($ast->getId() === '#alternation') {
-			$alternationId++;
-			$alternation = new RegexAlternation($alternationId, count($ast->getChildren()));
+			$astWalkResult = $astWalkResult->nextAlternationId();
+			$alternation = new RegexAlternation($astWalkResult->getAlternationId(), count($ast->getChildren()));
 		}
 
 		if ($ast->getId() === '#mark') {
-			$markVerbs[] = $ast->getChild(0)->getValueValue();
-			return;
+			return $astWalkResult->markVerb($ast->getChild(0)->getValueValue());
 		}
 
 		if (
 			$group instanceof RegexCapturingGroup &&
 			(!$captureOnlyNamed || $group->isNamed())
 		) {
-			$capturingGroups[$group->getId()] = $group;
+			$astWalkResult = $astWalkResult->addCapturingGroup($group);
 
 			if ($alternation !== null) {
 				$alternation->pushGroup($combinationIndex, $group);
@@ -197,19 +186,16 @@ final class RegexGroupParser
 		}
 
 		foreach ($ast->getChildren() as $child) {
-			$this->walkRegexAst(
+			$astWalkResult = $this->walkRegexAst(
 				$child,
 				$alternation,
-				$alternationId,
 				$combinationIndex,
 				$inOptionalQuantification,
 				$parentGroup,
-				$captureGroupId,
-				$capturingGroups,
-				$markVerbs,
 				$captureOnlyNamed,
 				$repeatedMoreThanOnce,
 				$patternModifiers,
+				$astWalkResult,
 			);
 
 			if ($ast->getId() !== '#alternation') {
@@ -218,6 +204,8 @@ final class RegexGroupParser
 
 			$combinationIndex++;
 		}
+
+		return $astWalkResult;
 	}
 
 	private function allowConstantTypes(
@@ -379,6 +367,7 @@ final class RegexGroupParser
 		if (
 			$ast->getId() === '#concatenation'
 			&& count($children) > 0
+			&& !$walkResult->isInOptionalQuantification()
 		) {
 			$meaningfulTokens = 0;
 			foreach ($children as $child) {
@@ -412,13 +401,14 @@ final class RegexGroupParser
 			if ($min === 0) {
 				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
-			if ($min >= 1) {
-				$walkResult = $walkResult
-					->nonEmpty(TrinaryLogic::createYes())
-					->inOptionalQuantification(false);
-			}
-			if ($min >= 2 && !$inAlternation) {
-				$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+
+			if (!$walkResult->isInOptionalQuantification()) {
+				if ($min >= 1) {
+					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
+				}
+				if ($min >= 2 && !$inAlternation) {
+					$walkResult = $walkResult->nonFalsy(TrinaryLogic::createYes());
+				}
 			}
 
 			$walkResult = $walkResult->onlyLiterals(null);
@@ -525,11 +515,11 @@ final class RegexGroupParser
 
 		if (
 			in_array($token, [
-				'literal', 'escaped_end_class',
+				'literal',
 				// literal "-" in front/back of a character class like '[-a-z]' or '[abc-]', not forming a range
 				'range',
 				// literal "[" or "]" inside character classes '[[]' or '[]]'
-				'class_', '_class_literal',
+				'class_', '_class',
 			], true)
 		) {
 			if (str_contains($patternModifiers, 'x') && trim($value) === '') {
@@ -544,7 +534,6 @@ final class RegexGroupParser
 
 			if (
 				$appendLiterals
-				&& in_array($token, ['literal', 'range', 'class_', '_class_literal'], true)
 				&& $onlyLiterals !== null
 				&& (!in_array($value, ['.'], true) || $isEscaped || $inCharacterClass)
 			) {

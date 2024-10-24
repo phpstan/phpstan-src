@@ -363,7 +363,7 @@ class TypeCombinator
 					return $benevolentUnionObject->withTypes($types);
 				}
 
-				return new BenevolentUnionType($types);
+				return new BenevolentUnionType($types, true);
 			}
 		}
 
@@ -750,6 +750,7 @@ class TypeCombinator
 					$templateArray->getVariance(),
 					$templateArray->getName(),
 					$arrayType,
+					$templateArray->getDefault(),
 				);
 			}
 
@@ -1015,6 +1016,7 @@ class TypeCombinator
 					$union,
 					$type->getVariance(),
 					$type->getStrategy(),
+					$type->getDefault(),
 				);
 			}
 

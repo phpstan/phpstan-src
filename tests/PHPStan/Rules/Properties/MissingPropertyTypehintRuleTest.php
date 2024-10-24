@@ -54,6 +54,10 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 				106,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
+			[
+				'Property MissingPropertyTypehint\Baz::$bar with generic class MissingPropertyTypehint\GenericClassWithSomeDefaults does not specify its types: T, U (1-2 required)',
+				134,
+			],
 		]);
 	}
 

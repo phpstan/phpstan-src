@@ -417,7 +417,20 @@ final class RegexArrayShapeMatcher
 	private function createGroupValueType(RegexCapturingGroup $captureGroup, TrinaryLogic $wasMatched, int $flags, bool $isTrailingOptional, bool $isLastGroup, bool $matchesAll): Type
 	{
 		if ($matchesAll) {
-			if (!$this->containsSetOrder($flags) && !$this->containsUnmatchedAsNull($flags, $matchesAll) && $captureGroup->isOptional()) {
+			if (
+				(
+					!$this->containsSetOrder($flags)
+					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
+					&& $captureGroup->isOptional()
+				)
+				||
+				(
+					$this->containsSetOrder($flags)
+					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
+					&& $captureGroup->isOptional()
+					&& !$isTrailingOptional
+				)
+			) {
 				$groupValueType = $this->getValueType(
 					TypeCombinator::union($captureGroup->getType(), new ConstantStringType('')),
 					$flags,

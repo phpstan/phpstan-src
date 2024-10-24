@@ -31,14 +31,17 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -48,7 +51,6 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_push;
-use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -362,9 +364,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof self) {
 			if (count($this->keyTypes) === 0) {
-				return $type->isIterableAtLeastOnce()->negate();
+				return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
 			}
 
 			$results = [];
@@ -372,44 +379,44 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($hasOffset->no()) {
 					if (!$this->isOptionalKey($i)) {
-						return TrinaryLogic::createNo();
+						return IsSuperTypeOfResult::createNo();
 					}
 
-					$results[] = TrinaryLogic::createYes();
+					$results[] = IsSuperTypeOfResult::createYes();
 					continue;
 				} elseif ($hasOffset->maybe() && !$this->isOptionalKey($i)) {
-					$results[] = TrinaryLogic::createMaybe();
+					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOfWithReason($type->getOffsetValueType($keyType));
 				if ($isValueSuperType->no()) {
-					return TrinaryLogic::createNo();
+					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
 				$results[] = $isValueSuperType;
 			}
 
-			return TrinaryLogic::createYes()->and(...$results);
+			return IsSuperTypeOfResult::createYes()->and(...$results);
 		}
 
 		if ($type instanceof ArrayType) {
-			$result = TrinaryLogic::createMaybe();
+			$result = IsSuperTypeOfResult::createMaybe();
 			if (count($this->keyTypes) === 0) {
 				return $result;
 			}
 
-			$isKeySuperType = $this->getKeyType()->isSuperTypeOf($type->getKeyType());
+			$isKeySuperType = $this->getKeyType()->isSuperTypeOfWithReason($type->getKeyType());
 			if ($isKeySuperType->no()) {
-				return TrinaryLogic::createNo();
+				return $isKeySuperType;
 			}
 
-			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOf($type->getItemType()));
+			return $result->and($isKeySuperType, $this->getItemType()->isSuperTypeOfWithReason($type->getItemType()));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return TrinaryLogic::createNo();
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
@@ -812,7 +819,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 				$keyTypesCount = count($this->keyTypes);
 				for ($i = 0; $i < $keyTypesCount; $i += $length) {
-					$chunk = $this->slice($i, $length, true);
+					$chunk = $this->sliceArray(new ConstantIntegerType($i), new ConstantIntegerType($length), TrinaryLogic::createYes());
 					$builder->setOffsetValueType(null, $preserveKeys->yes() ? $chunk : $chunk->getValuesArray());
 				}
 
@@ -882,21 +889,18 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->removeLastElements(1);
 	}
 
-	private function reverseConstantArray(TrinaryLogic $preserveKeys): self
-	{
-		$keyTypesReversed = array_reverse($this->keyTypes, true);
-		$keyTypes = array_values($keyTypesReversed);
-		$keyTypesReversedKeys = array_keys($keyTypesReversed);
-		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
-
-		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
-
-		return $preserveKeys->yes() ? $reversed : $reversed->reindex();
-	}
-
 	public function reverseArray(TrinaryLogic $preserveKeys): Type
 	{
-		return $this->reverseConstantArray($preserveKeys);
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$offsetType = $preserveKeys->yes() || $this->keyTypes[$i]->isInteger()->no()
+				? $this->keyTypes[$i]
+				: null;
+			$builder->setOffsetValueType($offsetType, $this->valueTypes[$i], $this->isOptionalKey($i));
+		}
+
+		return $builder->getArray();
 	}
 
 	public function searchArray(Type $needleType): Type
@@ -955,6 +959,85 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $generalizedArray;
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
+	{
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
+			return $this;
+		}
+
+		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
+		$length = $lengthType instanceof ConstantIntegerType ? $lengthType->getValue() : $keyTypesCount;
+
+		if ($length < 0) {
+			// Negative lengths prevent access to the most right n elements
+			return $this->removeLastElements($length * -1)
+				->sliceArray($offsetType, new NullType(), $preserveKeys);
+		}
+
+		if ($keyTypesCount + $offset <= 0) {
+			// A negative offset cannot reach left outside the array
+			$offset = 0;
+		}
+
+		if ($offset < 0) {
+			/*
+			 * Transforms the problem with the negative offset in one with a positive offset using array reversion.
+			 * The reason is belows handling of optional keys which works only from left to right.
+			 *
+			 * e.g.
+			 * array{a: 0, b: 1, c: 2, d: 3, e: 4}
+			 * with offset -4 and length 2 (which would be sliced to array{b: 1, c: 2})
+			 *
+			 * is transformed via reversion to
+			 *
+			 * array{e: 4, d: 3, c: 2, b: 1, a: 0}
+			 * with offset 2 and length 2 (which will be sliced to array{c: 2, b: 1} and then reversed again)
+			 */
+			$offset *= -1;
+			$reversedLength = min($length, $offset);
+			$reversedOffset = $offset - $reversedLength;
+			return $this->reverseArray(TrinaryLogic::createYes())
+				->sliceArray(new ConstantIntegerType($reversedOffset), new ConstantIntegerType($reversedLength), $preserveKeys)
+				->reverseArray(TrinaryLogic::createYes());
+		}
+
+		if ($offset > 0) {
+			return $this->removeFirstElements($offset, false)
+				->sliceArray(new ConstantIntegerType(0), $lengthType, $preserveKeys);
+		}
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$nonOptionalElementsCount = 0;
+		$hasOptional = false;
+		for ($i = 0; $nonOptionalElementsCount < $length && $i < $keyTypesCount; $i++) {
+			$isOptional = $this->isOptionalKey($i);
+			if (!$isOptional) {
+				$nonOptionalElementsCount++;
+			} else {
+				$hasOptional = true;
+			}
+
+			$isLastElement = $nonOptionalElementsCount >= $length || $i + 1 >= $keyTypesCount;
+			if ($isLastElement && $length < $keyTypesCount && $hasOptional) {
+				// If the slice is not full yet, but has at least one optional key
+				// the last non-optional element is going to be optional.
+				// Otherwise, it would not fit into the slice if previous non-optional keys are there.
+				$isOptional = true;
+			}
+
+			$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i], $isOptional);
+		}
+
+		$slice = $builder->getArray();
+		if (!$slice instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $preserveKeys->yes() ? $slice : $slice->reindex();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -1147,87 +1230,30 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $array;
 	}
 
+	/** @deprecated Use sliceArray() instead */
 	public function slice(int $offset, ?int $limit, bool $preserveKeys = false): self
 	{
-		$keyTypesCount = count($this->keyTypes);
-		if ($keyTypesCount === 0) {
-			return $this;
-		}
-
-		$limit ??= $keyTypesCount;
-		if ($limit < 0) {
-			// Negative limits prevent access to the most right n elements
-			return $this->removeLastElements($limit * -1)
-				->slice($offset, null, $preserveKeys);
-		}
-
-		if ($keyTypesCount + $offset <= 0) {
-			// A negative offset cannot reach left outside the array
-			$offset = 0;
-		}
-
-		if ($offset < 0) {
-			/*
-			 * Transforms the problem with the negative offset in one with a positive offset using array reversion.
-			 * The reason is belows handling of optional keys which works only from left to right.
-			 *
-			 * e.g.
-			 * array{a: 0, b: 1, c: 2, d: 3, e: 4}
-			 * with offset -4 and limit 2 (which would be sliced to array{b: 1, c: 2})
-			 *
-			 * is transformed via reversion to
-			 *
-			 * array{e: 4, d: 3, c: 2, b: 1, a: 0}
-			 * with offset 2 and limit 2 (which will be sliced to array{c: 2, b: 1} and then reversed again)
-			 */
-			$offset *= -1;
-			$reversedLimit = min($limit, $offset);
-			$reversedOffset = $offset - $reversedLimit;
-			return $this->reverseConstantArray(TrinaryLogic::createYes())
-				->slice($reversedOffset, $reversedLimit, $preserveKeys)
-				->reverseConstantArray(TrinaryLogic::createYes());
-		}
-
-		if ($offset > 0) {
-			return $this->removeFirstElements($offset, false)
-				->slice(0, $limit, $preserveKeys);
-		}
-
-		$builder = ConstantArrayTypeBuilder::createEmpty();
-
-		$nonOptionalElementsCount = 0;
-		$hasOptional = false;
-		for ($i = 0; $nonOptionalElementsCount < $limit && $i < $keyTypesCount; $i++) {
-			$isOptional = $this->isOptionalKey($i);
-			if (!$isOptional) {
-				$nonOptionalElementsCount++;
-			} else {
-				$hasOptional = true;
-			}
-
-			$isLastElement = $nonOptionalElementsCount >= $limit || $i + 1 >= $keyTypesCount;
-			if ($isLastElement && $limit < $keyTypesCount && $hasOptional) {
-				// If the slice is not full yet, but has at least one optional key
-				// the last non-optional element is going to be optional.
-				// Otherwise, it would not fit into the slice if previous non-optional keys are there.
-				$isOptional = true;
-			}
-
-			$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i], $isOptional);
-		}
-
-		$slice = $builder->getArray();
-		if (!$slice instanceof self) {
+		$array = $this->sliceArray(
+			ConstantTypeHelper::getTypeFromValue($offset),
+			ConstantTypeHelper::getTypeFromValue($limit),
+			TrinaryLogic::createFromBoolean($preserveKeys),
+		);
+		if (!$array instanceof self) {
 			throw new ShouldNotHappenException();
 		}
 
-		return $preserveKeys ? $slice : $slice->reindex();
+		return $array;
 	}
 
 	/** @deprecated Use reverseArray() instead */
 	public function reverse(bool $preserveKeys = false): self
 	{
-		return $this->reverseConstantArray(TrinaryLogic::createFromBoolean($preserveKeys));
+		$array = $this->reverseArray(TrinaryLogic::createFromBoolean($preserveKeys));
+		if (!$array instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $array;
 	}
 
 	/**

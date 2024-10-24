@@ -79,6 +79,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(PropertyReflectionFinder::class),
 			$this->container->getService('currentPhpVersionSimpleParser'),
 			$this->container->getByType(NodeScopeResolver::class),
+			$this->container->getByType(RicherScopeGetTypeHelper::class),
 			$this->container->getByType(ConstantResolver::class),
 			$context,
 			$this->container->getByType(PhpVersion::class),

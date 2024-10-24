@@ -140,21 +140,26 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true);
+		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof CompoundType && !$type instanceof self) {
-			return $type->isSubTypeOf($this);
-		}
-
-		return $this->isSuperTypeOfInternal($type, false)->result;
+		return $this->isSuperTypeOfWithReason($type)->result;
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): AcceptsResult
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
 	{
-		$isCallable = new AcceptsResult($type->isCallable(), []);
+		if ($type instanceof CompoundType && !$type instanceof self) {
+			return $type->isSubTypeOfWithReason($this);
+		}
+
+		return $this->isSuperTypeOfInternal($type, false);
+	}
+
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): IsSuperTypeOfResult
+	{
+		$isCallable = new IsSuperTypeOfResult($type->isCallable(), []);
 		if ($isCallable->no()) {
 			return $isCallable;
 		}
@@ -171,7 +176,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$typePure = $typePure->and($variant->isPure());
 				}
 
-				return $isCallable->and(new AcceptsResult($typePure, []));
+				return $isCallable->and(new IsSuperTypeOfResult($typePure, []));
 			}
 
 			return $isCallable;
@@ -196,12 +201,17 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		return $otherType->isCallable()
-			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
+		return (new IsSuperTypeOfResult($otherType->isCallable(), []))
+			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -211,7 +221,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool

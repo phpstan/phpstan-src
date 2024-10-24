@@ -9,6 +9,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\SubtractableType;
@@ -37,6 +38,8 @@ trait TemplateTypeTrait
 	/** @var TBound */
 	private Type $bound;
 
+	private ?Type $default;
+
 	/** @return non-empty-string */
 	public function getName(): string
 	{
@@ -54,6 +57,11 @@ trait TemplateTypeTrait
 		return $this->bound;
 	}
 
+	public function getDefault(): ?Type
+	{
+		return $this->default;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
@@ -63,10 +71,12 @@ trait TemplateTypeTrait
 			} else {
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
+			$defaultDescription = $this->default !== null ? sprintf(' = %s', $this->default->describe($level)) : '';
 			return sprintf(
-				'%s%s',
+				'%s%s%s',
 				$this->name,
 				$boundDescription,
+				$defaultDescription,
 			);
 		};
 
@@ -90,6 +100,7 @@ trait TemplateTypeTrait
 			$this->variance,
 			$this->name,
 			TemplateTypeHelper::toArgument($this->getBound()),
+			$this->default !== null ? TemplateTypeHelper::toArgument($this->default) : null,
 		);
 	}
 
@@ -112,6 +123,7 @@ trait TemplateTypeTrait
 			$removedBound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -128,6 +140,7 @@ trait TemplateTypeTrait
 			$bound->getTypeWithoutSubtractedType(),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -144,6 +157,7 @@ trait TemplateTypeTrait
 			$bound->changeSubtractedType($subtractedType),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -162,7 +176,11 @@ trait TemplateTypeTrait
 		return $type instanceof self
 			&& $type->scope->equals($this->scope)
 			&& $type->name === $this->name
-			&& $this->bound->equals($type->bound);
+			&& $this->bound->equals($type->bound)
+			&& (
+				($this->default === null && $type->default === null)
+				|| ($this->default !== null && $type->default !== null && $this->default->equals($type->default))
+			);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -207,19 +225,29 @@ trait TemplateTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
 		if ($type instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
-		return $this->getBound()->isSuperTypeOf($type)
-			->and(TrinaryLogic::createMaybe());
+		return $this->getBound()->isSuperTypeOfWithReason($type)
+			->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
+	{
+		return $this->isSubTypeOfWithReason($type)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $type): IsSuperTypeOfResult
 	{
 		/** @var TBound $bound */
 		$bound = $this->getBound();
@@ -229,19 +257,19 @@ trait TemplateTypeTrait
 			&& !$type instanceof TemplateType
 			&& ($type instanceof UnionType || $type instanceof IntersectionType)
 		) {
-			return $type->isSuperTypeOf($this);
+			return $type->isSuperTypeOfWithReason($this);
 		}
 
 		if (!$type instanceof TemplateType) {
-			return $type->isSuperTypeOf($this->getBound());
+			return $type->isSuperTypeOfWithReason($this->getBound());
 		}
 
 		if ($this->getScope()->equals($type->getScope()) && $this->getName() === $type->getName()) {
-			return $type->getBound()->isSuperTypeOf($this->getBound());
+			return $type->getBound()->isSuperTypeOfWithReason($this->getBound());
 		}
 
-		return $type->getBound()->isSuperTypeOf($this->getBound())
-			->and(TrinaryLogic::createMaybe());
+		return $type->getBound()->isSuperTypeOfWithReason($this->getBound())
+			->and(IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function toArrayKey(): Type
@@ -306,7 +334,9 @@ trait TemplateTypeTrait
 	public function traverse(callable $cb): Type
 	{
 		$bound = $cb($this->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null ? $cb($this->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -316,6 +346,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -326,7 +357,9 @@ trait TemplateTypeTrait
 		}
 
 		$bound = $cb($this->getBound(), $right->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null && $right->getDefault() !== null ? $cb($this->getDefault(), $right->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -336,6 +369,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -352,6 +386,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -371,6 +406,7 @@ trait TemplateTypeTrait
 			$properties['variance'],
 			$properties['name'],
 			$properties['bound'],
+			$properties['default'] ?? null,
 		);
 	}
 

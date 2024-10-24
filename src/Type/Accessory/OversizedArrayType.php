@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -87,27 +88,35 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		return $this->isSuperTypeOfWithReason($type)->result;
+	}
+
+	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
+	{
 		if ($this->equals($type)) {
-			return TrinaryLogic::createYes();
+			return IsSuperTypeOfResult::createYes();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
+			return $type->isSubTypeOfWithReason($this);
 		}
 
-		return $type->isArray()
-			->and($type->isOversizedArray());
+		return new IsSuperTypeOfResult($type->isArray()->and($type->isOversizedArray()), []);
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
+		return $this->isSubTypeOfWithReason($otherType)->result;
+	}
+
+	public function isSubTypeOfWithReason(Type $otherType): IsSuperTypeOfResult
+	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
-			return $otherType->isSuperTypeOf($this);
+			return $otherType->isSuperTypeOfWithReason($this);
 		}
 
-		return $otherType->isArray()
-			->and($otherType->isOversizedArray())
-			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
+		return (new IsSuperTypeOfResult($otherType->isArray()->and($otherType->isOversizedArray()), []))
+			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
@@ -117,7 +126,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
+		return $this->isSubTypeOfWithReason($acceptingType)->toAcceptsResult();
 	}
 
 	public function equals(Type $type): bool
@@ -216,6 +225,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 	}
 
 	public function shuffleArray(): Type
+	{
+		return $this;
+	}
+
+	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
 		return $this;
 	}

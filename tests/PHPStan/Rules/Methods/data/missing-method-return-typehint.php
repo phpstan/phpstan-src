@@ -113,3 +113,35 @@ class IterableIntersection
 	}
 
 }
+
+/**
+ * @template T = string
+ */
+class GenericClassWithDefault
+{
+
+}
+
+/**
+ * @template T
+ * @template U = string
+ */
+class GenericClassWithSomeDefaults
+{
+
+}
+
+class Baz
+{
+
+	public function returnsGenericWithDefault(): GenericClassWithDefault
+	{
+
+	}
+
+	public function returnsGenericWithSomeDefaults(): GenericClassWithSomeDefaults
+	{
+
+	}
+
+}

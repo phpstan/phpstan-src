@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "674f9ec5e66603e465b9ef2aaa90189a",
+    "content-hash": "c3be42ae2bb62bce3d8c4ddd8efcdea4",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -6470,6 +6470,75 @@
             "time": "2024-08-08T08:12:32+00:00"
         },
         {
+            "name": "shipmonk/dead-code-detector",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shipmonk-rnd/dead-code-detector.git",
+                "reference": "fc01208e573c00ab89cfa41d23c893fdb8d56d9a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/fc01208e573c00ab89cfa41d23c893fdb8d56d9a",
+                "reference": "fc01208e573c00ab89cfa41d23c893fdb8d56d9a",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0",
+                "phpstan/phpstan": "^1.11.0"
+            },
+            "require-dev": {
+                "doctrine/orm": "^2.19 || ^3.0",
+                "editorconfig-checker/editorconfig-checker": "^10.3.0",
+                "ergebnis/composer-normalize": "^2.28",
+                "nette/application": "^3.1",
+                "nette/component-model": "^3.0",
+                "nette/utils": "^3.0 || ^4.0",
+                "phpstan/phpstan-phpunit": "^1.1.1",
+                "phpstan/phpstan-strict-rules": "^1.2.3",
+                "phpstan/phpstan-symfony": "^1.4",
+                "phpunit/phpunit": "^9.5.20",
+                "shipmonk/composer-dependency-analyser": "^1.6",
+                "shipmonk/name-collision-detector": "^2.0.0",
+                "shipmonk/phpstan-rules": "^3.1",
+                "slevomat/coding-standard": "^8.15.0",
+                "symfony/contracts": "^2.5 || ^3.0",
+                "symfony/event-dispatcher": "^5.4 || ^6.0 || ^7.0",
+                "symfony/http-kernel": "^5.4 || ^6.0 || ^7.0",
+                "symfony/routing": "^5.4 || ^6.0 || ^7.0"
+            },
+            "default-branch": true,
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ShipMonk\\PHPStan\\DeadCode\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Dead code detector to find unused PHP code via PHPStan extension.",
+            "keywords": [
+                "PHPStan",
+                "dead code",
+                "static analysis",
+                "unused code"
+            ],
+            "support": {
+                "issues": "https://github.com/shipmonk-rnd/dead-code-detector/issues",
+                "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/master"
+            },
+            "time": "2024-10-24T08:20:54+00:00"
+        },
+        {
             "name": "shipmonk/name-collision-detector",
             "version": "2.1.1",
             "source": {
@@ -6581,7 +6650,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "shipmonk/dead-code-detector": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

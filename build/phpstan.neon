@@ -4,6 +4,7 @@ includes:
 	- ../vendor/phpstan/phpstan-phpunit/extension.neon
 	- ../vendor/phpstan/phpstan-phpunit/rules.neon
 	- ../vendor/phpstan/phpstan-strict-rules/rules.neon
+	- ../vendor/shipmonk/dead-code-detector/rules.neon
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 	- ../phpstan-baseline.php
@@ -91,6 +92,10 @@ parameters:
 			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- '#^Parameter \#1 \$offsetType of class PHPStan\\Type\\Accessory\\HasOffsetType constructor expects PHPStan\\Type\\Constant\\ConstantIntegerType\|PHPStan\\Type\\Constant\\ConstantStringType#'
 		- '#^Short ternary operator is not allowed#'
+
+		- '#^Unused .*?Factory::create$#' # likely used in DIC
+		- '#^Unused .*?::__construct$#' # disable dead construct analysis, DIC services might not be autowired
+
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:
@@ -111,3 +116,7 @@ services:
 		class: PHPStan\Internal\ContainerDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Build\ApiPhpDocEntrypointProvider
+		tags:
+			- shipmonk.deadCode.entrypointProvider

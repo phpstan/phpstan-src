@@ -8315,7 +8315,7 @@ return [
 'openal_stream' => ['resource', 'source'=>'resource', 'format'=>'int', 'rate'=>'int'],
 'opendir' => ['resource|false', 'path'=>'string', 'context='=>'resource'],
 'openlog' => ['bool', 'ident'=>'string', 'option'=>'int', 'facility'=>'int'],
-'openssl_cipher_iv_length' => ['int|false', 'method'=>'string'],
+'openssl_cipher_iv_length' => ['__benevolent<int|false>', 'method'=>'string'],
 'openssl_csr_export' => ['bool', 'csr'=>'string|resource', '&w_out'=>'string', 'notext='=>'bool'],
 'openssl_csr_export_to_file' => ['bool', 'csr'=>'string|resource', 'outfilename'=>'string', 'notext='=>'bool'],
 'openssl_csr_get_public_key' => ['resource|false', 'csr'=>'string|resource', 'use_shortnames='=>'bool'],

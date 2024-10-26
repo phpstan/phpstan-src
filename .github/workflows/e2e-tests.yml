@@ -318,9 +318,10 @@ jobs:
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-version-config-invalid
-              OUTPUT=$(../../bin/phpstan 2>&1 || true)
-              grep 'Invalid configuration' <<< "$OUTPUT"
-              grep 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' <<< "$OUTPUT"
+              OUTPUT=$(../bashunit -a exit_code "1" ../../bin/phpstan)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Invalid configuration' "$OUTPUT"
+              ../bashunit -a contains 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' "$OUTPUT"
 
     steps:
       - name: "Checkout"
@@ -336,6 +337,9 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
+
+      - name: "Install bashunit"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.17.0"
 
       - name: "Test"
         run: ${{ matrix.script }}

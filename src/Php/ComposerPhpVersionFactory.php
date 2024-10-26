@@ -31,7 +31,7 @@ final class ComposerPhpVersionFactory
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
 		int|array|null $phpVersion,
-		bool $bleedingEdge,
+		bool $narrowPhpVersionFromComposerJson,
 	)
 	{
 		if (is_int($phpVersion)) {
@@ -49,7 +49,7 @@ final class ComposerPhpVersionFactory
 			return;
 		}
 
-		if (!$bleedingEdge) {
+		if (!$narrowPhpVersionFromComposerJson) {
 			return;
 		}
 

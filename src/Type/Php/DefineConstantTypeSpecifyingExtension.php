@@ -52,11 +52,17 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
+		$valueType = $scope->getType($node->getArgs()[1]->value);
+		$finalType = $scope->getConstantExplicitTypeFromConfig(
+			$constantName->getValue(),
+			$valueType,
+		);
+
 		return $this->typeSpecifier->create(
 			new Node\Expr\ConstFetch(
 				new Node\Name\FullyQualified($constantName->getValue()),
 			),
-			$scope->getType($node->getArgs()[1]->value),
+			$finalType,
 			TypeSpecifierContext::createTruthy(),
 			$scope,
 		)->setAlwaysOverwriteTypes();

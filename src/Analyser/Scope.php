@@ -81,6 +81,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ClassConstantReflection;
 
+	public function getConstantExplicitTypeFromConfig(string $constantName, Type $constantType): Type;
+
 	public function getIterableKeyType(Type $iteratee): Type;
 
 	public function getIterableValueType(Type $iteratee): Type;

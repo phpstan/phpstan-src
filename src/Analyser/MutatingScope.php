@@ -1129,9 +1129,6 @@ final class MutatingScope implements Scope
 				}
 
 				$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
-				if (count($resultType->getConstantStrings()) === 0) {
-					return $resultType;
-				}
 			}
 
 			return $resultType ?? new ConstantStringType('');

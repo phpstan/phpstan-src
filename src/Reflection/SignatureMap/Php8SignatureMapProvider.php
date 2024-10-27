@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PhpParser\Node\AttributeGroup;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -22,6 +23,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use ReflectionFunctionAbstract;
 use function array_key_exists;
@@ -409,10 +411,23 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				throw new ShouldNotHappenException();
 			}
 			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection);
+			$phpDocParameterType = $phpDocParameterTypes[$name->name] ?? null;
+
+			if ($param->default instanceof ConstFetch) {
+				$constName = (string) $param->default->name;
+				$loweredConstName = strtolower($constName);
+				if ($loweredConstName === 'null') {
+					$parameterType = TypeCombinator::addNull($parameterType);
+					if ($phpDocParameterType !== null) {
+						$phpDocParameterType = TypeCombinator::addNull($phpDocParameterType);
+					}
+				}
+			}
+
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,
-				TypehintHelper::decideType($parameterType, $phpDocParameterTypes[$name->name] ?? null),
+				TypehintHelper::decideType($parameterType, $phpDocParameterType),
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,

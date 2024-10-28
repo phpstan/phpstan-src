@@ -5016,7 +5016,7 @@ return [
 'Imagick::waveImage' => ['bool', 'amplitude'=>'float', 'length'=>'float'],
 'Imagick::whiteThresholdImage' => ['bool', 'threshold'=>'mixed'],
 'Imagick::writeImage' => ['bool', 'filename='=>'string'],
-'Imagick::writeImageFile' => ['bool', 'filehandle'=>'resource'],
+'Imagick::writeImageFile' => ['bool', 'filehandle'=>'resource', 'format'=>'string'],
 'Imagick::writeImages' => ['bool', 'filename'=>'string', 'adjoin'=>'bool'],
 'Imagick::writeImagesFile' => ['bool', 'filehandle'=>'resource'],
 'ImagickDraw::__construct' => ['void'],

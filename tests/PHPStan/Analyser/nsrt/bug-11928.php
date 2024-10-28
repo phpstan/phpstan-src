@@ -1,0 +1,51 @@
+<?php
+
+namespace Bug11928;
+
+use function PHPStan\Testing\assertType;
+
+function doFoo()
+{
+	$a = [2 => 1, 3 => 2, 4 => 1];
+
+	$keys = array_keys($a, 1); // returns [2, 4]
+	assertType('list<int>', $keys);
+
+	$keys = array_keys($a); // returns [2, 3, 4]
+	assertType('array{2, 3, 4}', $keys);
+}
+
+function doFooStrings() {
+	$a = [2 => 'hi', 3 => '123', 'xy' => 5];
+	$keys = array_keys($a, 1);
+	assertType('list<int|string>', $keys);
+
+	$keys = array_keys($a);
+	assertType("array{2, 3, 'xy'}", $keys);
+}
+
+/**
+ * @param array<int, int> $array
+ * @param list<int> $list
+ * @param array<string, string> $strings
+ * @return void
+ */
+function doFooBar(array $array, array $list, array $strings) {
+	$keys = array_keys($strings, "a", true);
+	assertType('list<string>', $keys);
+
+	$keys = array_keys($strings, "a", false);
+	assertType('list<string>', $keys);
+
+	$keys = array_keys($array, 1, true);
+	assertType('list<int>', $keys);
+
+	$keys = array_keys($array, 1, false);
+	assertType('list<int>', $keys);
+
+	$keys = array_keys($list, 1, true);
+	assertType('list<int<0, max>>', $keys);
+
+	$keys = array_keys($list, 1, true);
+	assertType('list<int<0, max>>', $keys);
+}

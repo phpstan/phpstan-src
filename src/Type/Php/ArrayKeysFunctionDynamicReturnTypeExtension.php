@@ -7,14 +7,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 use function strtolower;
 
@@ -42,22 +38,15 @@ final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFuncti
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$keysArray = $arrayType->getKeysArray();
-		if (count($functionCall->getArgs()) === 1) {
-			return $keysArray;
+		$strict = false;
+		$filterType = null;
+		if (count($functionCall->getArgs()) >= 2) {
+			$filterType = $scope->getType($functionCall->getArgs()[1]->value);
 		}
-
-		$newArrayType = $keysArray;
-		if (!$keysArray->isConstantArray()->no()) {
-			$newArrayType = new ArrayType(
-				$keysArray->getIterableKeyType()->generalize(GeneralizePrecision::lessSpecific()),
-				$keysArray->getIterableValueType()->generalize(GeneralizePrecision::lessSpecific()),
-			);
+		if (count($functionCall->getArgs()) >= 3) {
+			$strict = $scope->getType($functionCall->getArgs()[2]->value)->isTrue()->yes();
 		}
-		if ($keysArray->isList()->yes()) {
-			$newArrayType = TypeCombinator::intersect($newArrayType, new AccessoryArrayListType());
-		}
-		return $newArrayType;
+		return $arrayType->getKeysArray($filterType, $strict);
 	}
 
 }

@@ -1372,9 +1372,21 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	public function getKeysArray(): self
+	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
 	{
-		return $this->getKeysOrValuesArray($this->keyTypes);
+		$keysArray = $this->getKeysOrValuesArray($this->keyTypes);
+
+		if ($filterValueType !== null) {
+			return TypeCombinator::intersect(
+				new ArrayType(
+					$keysArray->getIterableKeyType()->generalize(GeneralizePrecision::lessSpecific()),
+					$keysArray->getIterableValueType()->generalize(GeneralizePrecision::lessSpecific()),
+				),
+				new AccessoryArrayListType(),
+			);
+		}
+
+		return $keysArray;
 	}
 
 	public function getValuesArray(): self

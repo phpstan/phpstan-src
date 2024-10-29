@@ -172,7 +172,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
 	{
 		return $this;
 	}

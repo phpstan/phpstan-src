@@ -731,9 +731,9 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getKeysArray());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getKeysArray($filterValueType, $strict));
 	}
 
 	public function getValuesArray(): Type

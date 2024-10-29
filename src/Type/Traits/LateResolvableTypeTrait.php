@@ -248,9 +248,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->unsetOffset($offsetType);
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
 	{
-		return $this->resolve()->getKeysArray();
+		return $this->resolve()->getKeysArray($filterValueType, $strict);
 	}
 
 	public function getValuesArray(): Type

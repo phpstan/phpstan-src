@@ -734,6 +734,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ImmediatelyInvokedClosureVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parallel\ParallelAnalyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

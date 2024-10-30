@@ -4228,7 +4228,7 @@ final class NodeScopeResolver
 		}
 
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
-		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
+		$closureScope = $closureScope->processClosureScope($expr, $scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
 			throw new ShouldNotHappenException();
@@ -4298,7 +4298,7 @@ final class NodeScopeResolver
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
 			}
 			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
-			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
+			$closureScope = $closureScope->processClosureScope($expr, $intermediaryClosureScope, $prevScope, $byRefUses);
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
@@ -4318,7 +4318,7 @@ final class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ProcessClosureResult($scope->processClosureScope($closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+		return new ProcessClosureResult($scope->processClosureScope($expr, $closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 	}
 
 	/**

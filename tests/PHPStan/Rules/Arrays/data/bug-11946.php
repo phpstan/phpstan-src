@@ -43,7 +43,7 @@ class HelloWorld
 		string $nonEmpty,
 		string $nonFalsy,
 		string $lowerCase,
-	    int $maybeWrong
+	    int    $maybeWrong, int $oneToTwo
 	)
 	{
 		echo $s[$maybeWrong];
@@ -52,7 +52,10 @@ class HelloWorld
 		echo $nonFalsy[$maybeWrong];
 		echo $lowerCase[$maybeWrong];
 
-		$s = 'hi';
+		$s = 'hia';
 		echo $s[$maybeWrong];
+		if ($maybeWrong >= 1 && $maybeWrong < 3) {
+			echo $s[$maybeWrong];
+		}
 	}
 }

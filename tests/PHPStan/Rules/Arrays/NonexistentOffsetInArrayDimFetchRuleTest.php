@@ -832,7 +832,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				53,
 			],
 			[
-				"Offset int<-5, 5> might not exist on 'hi'.",
+				"Offset int<-5, 5> might not exist on 'hia'.",
 				56,
 			],
 		]);

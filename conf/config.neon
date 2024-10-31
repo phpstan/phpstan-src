@@ -26,6 +26,7 @@ parameters:
 		skipCheckGenericClasses: []
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
+		reportPossiblyNonexistentStringOffset: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -63,7 +64,6 @@ parameters:
 	reportAnyTypeWideningInVarTag: false
 	reportPossiblyNonexistentGeneralArrayOffset: false
 	reportPossiblyNonexistentConstantArrayOffset: false
-	reportPossiblyNonexistentStringOffset: false
 	checkMissingOverrideMethodAttribute: false
 	mixinExcludeClasses: []
 	scanFiles: []
@@ -838,7 +838,7 @@ services:
 			reportMaybes: %reportMaybes%
 			reportPossiblyNonexistentGeneralArrayOffset: %reportPossiblyNonexistentGeneralArrayOffset%
 			reportPossiblyNonexistentConstantArrayOffset: %reportPossiblyNonexistentConstantArrayOffset%
-			reportPossiblyNonexistentStringOffset: %reportPossiblyNonexistentStringOffset%
+			reportPossiblyNonexistentStringOffset: %featureToggles.reportPossiblyNonexistentStringOffset%
 
 	-
 		class: PHPStan\Rules\ClassNameCheck

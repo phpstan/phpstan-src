@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
@@ -64,6 +65,15 @@ final class NonexistentOffsetInArrayDimFetchCheck
 
 		if ($this->reportMaybes) {
 			$report = false;
+
+			$zeroOrMore = IntegerRangeType::fromInterval(0, null);
+			if (
+				$type->isString()->yes()
+				&& $dimType->isInteger()->yes()
+				&& !$zeroOrMore->isSuperTypeOf($dimType)->yes()
+			) {
+				$report = true;
+			}
 
 			if ($type instanceof BenevolentUnionType) {
 				$flattenedTypes = [$type];

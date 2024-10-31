@@ -23,11 +23,29 @@ class HelloWorld
 		echo $nonEmpty[-1];
 		echo $nonFalsy[-1];
 		echo $lowerCase[-1];
+	}
 
-		echo $s[0];
-		echo $numericS[0];
-		echo $nonEmpty[0];
-		echo $nonFalsy[0];
-		echo $lowerCase[0];
+	/**
+	 * @param numeric-string $numericS
+	 * @param non-empty-string $nonEmpty
+	 * @param non-falsy-string $nonFalsy
+	 * @param lowercase-string $lowerCase
+	 *
+	 * @param int<-5, 5> $maybeWrong
+	 */
+	public function maybeNonExistentStringOffset(
+		string $s,
+		string $numericS,
+		string $nonEmpty,
+		string $nonFalsy,
+		string $lowerCase,
+	    int $maybeWrong
+	)
+	{
+		echo $s[$maybeWrong];
+		echo $numericS[$maybeWrong];
+		echo $nonEmpty[$maybeWrong];
+		echo $nonFalsy[$maybeWrong];
+		echo $lowerCase[$maybeWrong];
 	}
 }

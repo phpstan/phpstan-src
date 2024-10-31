@@ -803,6 +803,26 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset -1 does not exist on string.',
 				25,
 			],
+			[
+				'Offset int<-5, 5> might not exist on string.',
+				45
+			],
+			[
+				'Offset int<-5, 5> might not exist on numeric-string.',
+				46
+			],
+			[
+				'Offset int<-5, 5> might not exist on non-empty-string.',
+				47
+			],
+			[
+				'Offset int<-5, 5> might not exist on non-falsy-string.',
+				48
+			],
+			[
+				'Offset int<-5, 5> might not exist on string.',
+				49
+			],
 		]);
 	}
 

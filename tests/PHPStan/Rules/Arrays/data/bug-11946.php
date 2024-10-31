@@ -23,6 +23,10 @@ class HelloWorld
 		echo $nonEmpty[-1];
 		echo $nonFalsy[-1];
 		echo $lowerCase[-1];
+
+		$s = 'hi';
+		echo $s[1];
+		echo $s[10];
 	}
 
 	/**
@@ -47,5 +51,8 @@ class HelloWorld
 		echo $nonEmpty[$maybeWrong];
 		echo $nonFalsy[$maybeWrong];
 		echo $lowerCase[$maybeWrong];
+
+		$s = 'hi';
+		echo $s[$maybeWrong];
 	}
 }

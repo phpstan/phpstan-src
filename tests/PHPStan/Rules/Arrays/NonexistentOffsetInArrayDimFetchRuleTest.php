@@ -780,4 +780,30 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid-php84.php'], []);
 	}
 
+	public function testBug11946(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11946.php'], [
+			[
+				'Offset -1 does not exist on string.',
+				21,
+			],
+			[
+				'Offset -1 does not exist on numeric-string.',
+				22,
+			],
+			[
+				'Offset -1 does not exist on non-empty-string.',
+				23,
+			],
+			[
+				'Offset -1 does not exist on non-falsy-string.',
+				24,
+			],
+			[
+				'Offset -1 does not exist on string.',
+				25,
+			],
+		]);
+	}
+
 }

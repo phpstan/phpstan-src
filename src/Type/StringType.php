@@ -63,7 +63,8 @@ class StringType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		return $offsetType->isInteger()->and(TrinaryLogic::createMaybe());
+		$zeroOrMore = IntegerRangeType::fromInterval(0, null);
+		return $zeroOrMore->isSuperTypeOf($offsetType)->result->and(TrinaryLogic::createMaybe());
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type

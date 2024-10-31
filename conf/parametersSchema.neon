@@ -74,6 +74,7 @@ parametersSchema:
 	reportAnyTypeWideningInVarTag: bool()
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
+	reportPossiblyNonexistentStringOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
 	parallel: structure([
 		jobSize: int(),

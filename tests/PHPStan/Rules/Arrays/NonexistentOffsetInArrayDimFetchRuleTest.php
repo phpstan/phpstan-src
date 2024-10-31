@@ -21,13 +21,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	private bool $reportPossiblyNonexistentConstantArrayOffset = false;
 
+	private bool $reportPossiblyNonexistentStringOffset = false;
+
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset, $this->reportPossiblyNonexistentStringOffset),
 			true,
 		);
 	}
@@ -782,6 +784,8 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug11946(): void
 	{
+		$this->reportPossiblyNonexistentStringOffset = true;
+
 		$this->analyse([__DIR__ . '/data/bug-11946.php'], [
 			[
 				'Offset -1 does not exist on string.',
@@ -805,23 +809,23 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			],
 			[
 				'Offset int<-5, 5> might not exist on string.',
-				45
+				45,
 			],
 			[
 				'Offset int<-5, 5> might not exist on numeric-string.',
-				46
+				46,
 			],
 			[
 				'Offset int<-5, 5> might not exist on non-empty-string.',
-				47
+				47,
 			],
 			[
 				'Offset int<-5, 5> might not exist on non-falsy-string.',
-				48
+				48,
 			],
 			[
 				'Offset int<-5, 5> might not exist on string.',
-				49
+				49,
 			],
 		]);
 	}

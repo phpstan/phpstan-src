@@ -15,7 +15,7 @@ class HelloWorld
 		string $numericS,
 		string $nonEmpty,
 		string $nonFalsy,
-		string $lowerCase,
+		string $lowerCase
 	)
 	{
 		echo $s[-1];

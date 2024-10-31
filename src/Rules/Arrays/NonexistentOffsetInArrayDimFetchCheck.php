@@ -26,6 +26,7 @@ final class NonexistentOffsetInArrayDimFetchCheck
 		private bool $reportMaybes,
 		private bool $reportPossiblyNonexistentGeneralArrayOffset,
 		private bool $reportPossiblyNonexistentConstantArrayOffset,
+		private bool $reportPossiblyNonexistentStringOffset,
 	)
 	{
 	}
@@ -68,8 +69,9 @@ final class NonexistentOffsetInArrayDimFetchCheck
 
 			$zeroOrMore = IntegerRangeType::fromInterval(0, null);
 			if (
-				$type->isString()->yes()
-				&& $dimType->isInteger()->yes()
+				$this->reportPossiblyNonexistentStringOffset
+				&& $type->isString()->yes()
+				&& $dimType instanceof IntegerRangeType
 				&& !$zeroOrMore->isSuperTypeOf($dimType)->yes()
 			) {
 				$report = true;

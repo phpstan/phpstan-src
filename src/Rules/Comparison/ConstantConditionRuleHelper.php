@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\BooleanType;
+use function is_string;
 
 final class ConstantConditionRuleHelper
 {
@@ -18,7 +19,7 @@ final class ConstantConditionRuleHelper
 	{
 	}
 
-	public function shouldSkip(Scope $scope, Expr $expr): bool
+	private function shouldSkip(Scope $scope, Expr $expr): bool
 	{
 		if (
 			$expr instanceof Expr\BinaryOp\Equal
@@ -55,6 +56,14 @@ final class ConstantConditionRuleHelper
 			if ($isAlways !== null) {
 				return true;
 			}
+		}
+
+		if (
+			$expr instanceof Expr\Variable
+			&& is_string($expr->name)
+			&& !$scope->hasVariableType($expr->name)->yes()
+		) {
+			return true;
 		}
 
 		return false;

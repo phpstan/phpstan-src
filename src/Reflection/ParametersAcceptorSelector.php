@@ -9,6 +9,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Parser\ArrayFilterArgVisitor;
+use PHPStan\Parser\ArrayFindArgVisitor;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ArrayWalkArgVisitor;
 use PHPStan\Parser\ClosureBindArgVisitor;
@@ -204,6 +205,70 @@ class ParametersAcceptorSelector
 						new CallableType(
 							$arrayFilterParameters ?? [
 								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+							],
+							new BooleanType(),
+							false,
+						),
+						new NullType(),
+					]),
+					$parameters[1]->passedByReference(),
+					$parameters[1]->isVariadic(),
+					$parameters[1]->getDefaultValue(),
+				);
+				$parametersAcceptors = [
+					new FunctionVariant(
+						$acceptor->getTemplateTypeMap(),
+						$acceptor->getResolvedTemplateTypeMap(),
+						$parameters,
+						$acceptor->isVariadic(),
+						$acceptor->getReturnType(),
+						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					),
+				];
+			}
+
+			if (isset($args[0]) && (bool) $args[0]->getAttribute(ArrayWalkArgVisitor::ATTRIBUTE_NAME)) {
+				$arrayWalkParameters = [
+					new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createReadsArgument(), false, null),
+					new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+				];
+				if (isset($args[2])) {
+					$arrayWalkParameters[] = new DummyParameter('arg', $scope->getType($args[2]->value), false, PassedByReference::createNo(), false, null);
+				}
+
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				$parameters[1] = new NativeParameterReflection(
+					$parameters[1]->getName(),
+					$parameters[1]->isOptional(),
+					new CallableType($arrayWalkParameters, new MixedType(), false),
+					$parameters[1]->passedByReference(),
+					$parameters[1]->isVariadic(),
+					$parameters[1]->getDefaultValue(),
+				);
+				$parametersAcceptors = [
+					new FunctionVariant(
+						$acceptor->getTemplateTypeMap(),
+						$acceptor->getResolvedTemplateTypeMap(),
+						$parameters,
+						$acceptor->isVariadic(),
+						$acceptor->getReturnType(),
+						$acceptor instanceof ParametersAcceptorWithPhpDocs ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+					),
+				];
+			}
+
+			if (isset($args[0]) && (bool) $args[0]->getAttribute(ArrayFindArgVisitor::ATTRIBUTE_NAME)) {
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				$parameters[1] = new NativeParameterReflection(
+					$parameters[1]->getName(),
+					$parameters[1]->isOptional(),
+					new UnionType([
+						new CallableType(
+							[
+								new DummyParameter('value', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
 							],
 							new BooleanType(),
 							false,

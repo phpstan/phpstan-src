@@ -326,6 +326,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ArrayFindArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\ArrayMapArgVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

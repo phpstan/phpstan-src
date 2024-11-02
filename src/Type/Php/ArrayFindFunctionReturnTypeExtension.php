@@ -7,7 +7,6 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
@@ -33,7 +32,7 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		$resultTypes = $scope->getType(new FuncCall(new Name('\array_filter'), $functionCall->getArgs()));
-		$resultType = TypeCombinator::union(...array_map(fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));
+		$resultType = TypeCombinator::union(...array_map(static fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));
 
 		return $resultTypes->isIterableAtLeastOnce()->yes() ? $resultType : TypeCombinator::addNull($resultType);
 	}

@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -14,6 +13,10 @@ use function count;
 
 final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private ArrayFilterFunctionReturnTypeHelper $arrayFilterFunctionReturnTypeHelper)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -31,7 +34,10 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return null;
 		}
 
-		$resultTypes = $scope->getType(new FuncCall(new Name('\array_filter'), $functionCall->getArgs()));
+		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
+		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
+
+		$resultTypes = $this->arrayFilterFunctionReturnTypeHelper->getType($scope, $arrayArg, $callbackArg, null);
 		$resultType = TypeCombinator::union(...array_map(static fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));
 
 		return $resultTypes->isIterableAtLeastOnce()->yes() ? $resultType : TypeCombinator::addNull($resultType);

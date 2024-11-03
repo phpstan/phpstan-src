@@ -1208,6 +1208,9 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ArrayFilterFunctionReturnTypeHelper
+
+	-
 		class: PHPStan\Type\Php\ArrayFilterFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

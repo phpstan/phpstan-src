@@ -15,7 +15,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
@@ -24,7 +23,6 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -40,7 +38,7 @@ use function is_string;
 use function sprintf;
 use function substr;
 
-final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayFilterFunctionReturnTypeHelper
 {
 
 	private const USE_BOTH = 1;
@@ -51,17 +49,8 @@ final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionRet
 	{
 	}
 
-	public function isFunctionSupported(FunctionReflection $functionReflection): bool
+	public function getType(Scope $scope, ?Expr $arrayArg, ?Expr $callbackArg, ?Expr $flagArg): Type
 	{
-		return $functionReflection->getName() === 'array_filter';
-	}
-
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
-	{
-		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
-		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
-		$flagArg = $functionCall->getArgs()[2]->value ?? null;
-
 		if ($arrayArg === null) {
 			return new ArrayType(new MixedType(), new MixedType());
 		}
@@ -151,7 +140,7 @@ final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionRet
 		return new ArrayType($keyType, $itemType);
 	}
 
-	public function removeFalsey(Type $type): Type
+	private function removeFalsey(Type $type): Type
 	{
 		$falseyTypes = StaticTypeFactory::falsey();
 

@@ -1,0 +1,5 @@
+services:
+	-
+		class: Bug11857\RelationDynamicMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

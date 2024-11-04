@@ -119,6 +119,7 @@ use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
+use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -4232,7 +4233,7 @@ final class NodeScopeResolver
 		}
 
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
-		$closureScope = $closureScope->processClosureScope($expr, $scope, null, $byRefUses);
+		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
 			throw new ShouldNotHappenException();
@@ -4291,6 +4292,24 @@ final class NodeScopeResolver
 			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 		}
 
+		if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
+			$intermediaryClosureScopeResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, static function (): void {
+			}, StatementContext::createTopLevel());
+			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
+
+			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
+			$nodeCallback(new ClosureReturnStatementsNode(
+				$expr,
+				$gatheredReturnStatements,
+				$gatheredYieldStatements,
+				$statementResult,
+				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
+			), $closureScope);
+
+			return new ProcessClosureResult($scope->processClosureScope($intermediaryClosureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+		}
+
 		$count = 0;
 		do {
 			$prevScope = $closureScope;
@@ -4302,7 +4321,7 @@ final class NodeScopeResolver
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
 			}
 			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
-			$closureScope = $closureScope->processClosureScope($expr, $intermediaryClosureScope, $prevScope, $byRefUses);
+			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
@@ -4322,7 +4341,7 @@ final class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ProcessClosureResult($scope->processClosureScope($expr, $closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+		return new ProcessClosureResult($scope->processClosureScope($closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 	}
 
 	/**

@@ -46,7 +46,6 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
-use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -4795,7 +4794,6 @@ final class MutatingScope implements Scope
 	 * @param Expr\ClosureUse[] $byRefUses
 	 */
 	public function processClosureScope(
-		Expr\Closure $expr,
 		self $closureScope,
 		?self $prevScope,
 		array $byRefUses,
@@ -4828,9 +4826,7 @@ final class MutatingScope implements Scope
 				$prevVariableType = $prevScope->getVariableType($variableName);
 				if (!$variableType->equals($prevVariableType)) {
 					$variableType = TypeCombinator::union($variableType, $prevVariableType);
-					if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) !== true) {
-						$variableType = self::generalizeType($variableType, $prevVariableType, 0);
-					}
+					$variableType = self::generalizeType($variableType, $prevVariableType, 0);
 				}
 			}
 

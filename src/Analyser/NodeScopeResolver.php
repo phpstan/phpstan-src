@@ -4278,6 +4278,7 @@ final class NodeScopeResolver
 
 			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 		};
+
 		if (count($byRefUses) === 0) {
 			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
 			$nodeCallback(new ClosureReturnStatementsNode(
@@ -4296,6 +4297,9 @@ final class NodeScopeResolver
 			$intermediaryClosureScopeResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, static function (): void {
 			}, StatementContext::createTopLevel());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
+			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
+				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
+			}
 
 			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
 			$nodeCallback(new ClosureReturnStatementsNode(

@@ -34,6 +34,9 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	/** @var Scope[][] */
 	private static array $assertTypesCache = [];
 
+	/** @var array<string, Scope> */
+	private static array $fileScopes = [];
+
 	public function testClassMethodScope(): void
 	{
 		self::processFile(__DIR__ . '/data/class.php', function (Node $node, Scope $scope): void {
@@ -230,507 +233,421 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataAssignInIf(): array
 	{
-		$testScope = $this->getFileScope(__DIR__ . '/data/if.php');
-
 		return [
 			[
-				$testScope,
 				'nonexistentVariable',
 				TrinaryLogic::createNo(),
 			],
 			[
-				$testScope,
 				'foo',
 				TrinaryLogic::createMaybe(),
 				'bool', // mixed?
 			],
 			[
-				$testScope,
 				'lorem',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'callParameter',
 				TrinaryLogic::createYes(),
 				'3',
 			],
 			[
-				$testScope,
 				'arrOne',
 				TrinaryLogic::createYes(),
 				'array{\'one\'}',
 			],
 			[
-				$testScope,
 				'arrTwo',
 				TrinaryLogic::createYes(),
 				'array{test: \'two\', 0: Foo}',
 			],
 			[
-				$testScope,
 				'arrThree',
 				TrinaryLogic::createYes(),
 				'array{\'three\'}',
 			],
 			[
-				$testScope,
 				'inArray',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'i',
 				TrinaryLogic::createYes(),
 				'int<0, 4>',
 			],
 			[
-				$testScope,
 				'f',
 				TrinaryLogic::createMaybe(),
 				'int<1, max>',
 			],
 			[
-				$testScope,
 				'anotherF',
 				TrinaryLogic::createYes(),
 				'int<1, max>',
 			],
 			[
-				$testScope,
 				'matches',
 				TrinaryLogic::createYes(),
 				'array{0?: string}',
 			],
 			[
-				$testScope,
 				'anotherArray',
 				TrinaryLogic::createYes(),
 				'array{test: array{\'another\'}}',
 			],
 			[
-				$testScope,
 				'ifVar',
 				TrinaryLogic::createYes(),
 				'1|2|3',
 			],
 			[
-				$testScope,
 				'ifNotVar',
 				TrinaryLogic::createMaybe(),
 				'1|2',
 			],
 			[
-				$testScope,
 				'ifNestedVar',
 				TrinaryLogic::createYes(),
 				'1|2|3',
 			],
 			[
-				$testScope,
 				'ifNotNestedVar',
 				TrinaryLogic::createMaybe(),
 				'1|2|3',
 			],
 			[
-				$testScope,
 				'variableOnlyInEarlyTerminatingElse',
 				TrinaryLogic::createNo(),
 			],
 			[
-				$testScope,
 				'matches2',
 				TrinaryLogic::createMaybe(),
 				'array{0?: string}',
 			],
 			[
-				$testScope,
 				'inTry',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'matches3',
 				TrinaryLogic::createYes(),
 				'array{}|array{string}',
 			],
 			[
-				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
 				'array{}|array{string}',
 			],
 			[
-				$testScope,
 				'issetFoo',
 				TrinaryLogic::createYes(),
 				'Foo',
 			],
 			[
-				$testScope,
 				'issetBar',
 				TrinaryLogic::createYes(),
 				'mixed~null',
 			],
 			[
-				$testScope,
 				'issetBaz',
 				TrinaryLogic::createYes(),
 				'mixed~null',
 			],
 			[
-				$testScope,
 				'doWhileVar',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'switchVar',
 				TrinaryLogic::createYes(),
 				'1|2|3|4',
 			],
 			[
-				$testScope,
 				'noSwitchVar',
 				TrinaryLogic::createMaybe(),
 				'1',
 			],
 			[
-				$testScope,
 				'anotherNoSwitchVar',
 				TrinaryLogic::createMaybe(),
 				'1',
 			],
 			[
-				$testScope,
 				'inTryTwo',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'ternaryMatches',
 				TrinaryLogic::createYes(),
 				'array{string}',
 			],
 			[
-				$testScope,
 				'previousI',
 				TrinaryLogic::createYes(),
 				'int<1, max>',
 			],
 			[
-				$testScope,
 				'previousJ',
 				TrinaryLogic::createYes(),
 				'0',
 			],
 			[
-				$testScope,
 				'frame',
 				TrinaryLogic::createYes(),
 				'mixed~null',
 			],
 			[
-				$testScope,
 				'listOne',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'listTwo',
 				TrinaryLogic::createYes(),
 				'2',
 			],
 			[
-				$testScope,
 				'e',
 				TrinaryLogic::createYes(),
 				'Exception',
 			],
 			[
-				$testScope,
 				'exception',
 				TrinaryLogic::createYes(),
 				'Exception',
 			],
 			[
-				$testScope,
 				'inTryNotInCatch',
 				TrinaryLogic::createMaybe(),
 				'1',
 			],
 			[
-				$testScope,
 				'fooObjectFromTryCatch',
 				TrinaryLogic::createYes(),
 				'InTryCatchFoo',
 			],
 			[
-				$testScope,
 				'mixedVarFromTryCatch',
 				TrinaryLogic::createYes(),
 				'1|1.0',
 			],
 			[
-				$testScope,
 				'nullableIntegerFromTryCatch',
 				TrinaryLogic::createYes(),
 				'1|null',
 			],
 			[
-				$testScope,
 				'anotherNullableIntegerFromTryCatch',
 				TrinaryLogic::createYes(),
 				'1|null',
 			],
 			[
-				$testScope,
 				'nullableIntegers',
 				TrinaryLogic::createYes(),
 				'array{1, 2, 3, null}',
 			],
 			[
-				$testScope,
 				'union',
 				TrinaryLogic::createYes(),
 				'array{1, 2, 3, \'foo\'}',
 				'1|2|3|\'foo\'',
 			],
 			[
-				$testScope,
 				'trueOrFalse',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'falseOrTrue',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'true',
 				TrinaryLogic::createYes(),
 				'true',
 			],
 			[
-				$testScope,
 				'false',
 				TrinaryLogic::createYes(),
 				'false',
 			],
 			[
-				$testScope,
 				'trueOrFalseFromSwitch',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'trueOrFalseInSwitchWithDefault',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'trueOrFalseInSwitchInAllCases',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'trueOrFalseInSwitchInAllCasesWithDefault',
 				TrinaryLogic::createYes(),
 				'bool',
 			],
 			[
-				$testScope,
 				'trueOrFalseInSwitchInAllCasesWithDefaultCase',
 				TrinaryLogic::createYes(),
 				'true',
 			],
 			[
-				$testScope,
 				'variableDefinedInSwitchWithOtherCasesWithEarlyTermination',
 				TrinaryLogic::createYes(),
 				'true',
 			],
 			[
-				$testScope,
 				'anotherVariableDefinedInSwitchWithOtherCasesWithEarlyTermination',
 				TrinaryLogic::createYes(),
 				'true',
 			],
 			[
-				$testScope,
 				'variableDefinedOnlyInEarlyTerminatingSwitchCases',
 				TrinaryLogic::createNo(),
 			],
 			[
-				$testScope,
 				'nullableTrueOrFalse',
 				TrinaryLogic::createYes(),
 				'bool|null',
 			],
 			[
-				$testScope,
 				'nonexistentVariableOutsideFor',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'integerOrNullFromFor',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'nonexistentVariableOutsideWhile',
 				TrinaryLogic::createMaybe(),
 				'1',
 			],
 			[
-				$testScope,
 				'integerOrNullFromWhile',
 				TrinaryLogic::createYes(),
 				'1|null',
 			],
 			[
-				$testScope,
 				'nonexistentVariableOutsideForeach',
 				TrinaryLogic::createMaybe(),
 				'null',
 			],
 			[
-				$testScope,
 				'integerOrNullFromForeach',
 				TrinaryLogic::createYes(),
 				'1|null',
 			],
 			[
-				$testScope,
 				'notNullableString',
 				TrinaryLogic::createYes(),
 				'string',
 			],
 			[
-				$testScope,
 				'anotherNotNullableString',
 				TrinaryLogic::createYes(),
 				'string',
 			],
 			[
-				$testScope,
 				'notNullableObject',
 				TrinaryLogic::createYes(),
 				'Foo',
 			],
 			[
-				$testScope,
 				'nullableString',
 				TrinaryLogic::createYes(),
 				'string|null',
 			],
 			[
-				$testScope,
 				'alsoNotNullableString',
 				TrinaryLogic::createYes(),
 				'string',
 			],
 			[
-				$testScope,
 				'integerOrString',
 				TrinaryLogic::createYes(),
 				'\'str\'|int',
 			],
 			[
-				$testScope,
 				'nullableIntegerAfterNeverCondition',
 				TrinaryLogic::createYes(),
 				'int|null',
 			],
 			[
-				$testScope,
 				'stillNullableInteger',
 				TrinaryLogic::createYes(),
 				'2|null',
 			],
 			[
-				$testScope,
 				'arrayOfIntegers',
 				TrinaryLogic::createYes(),
 				'array{1, 2, 3}',
 			],
 			[
-				$testScope,
 				'arrayAccessObject',
 				TrinaryLogic::createYes(),
 				\ObjectWithArrayAccess\Foo::class,
 			],
 			[
-				$testScope,
 				'width',
 				TrinaryLogic::createYes(),
 				'2.0',
 			],
 			[
-				$testScope,
 				'someVariableThatWillGetOverrideInFinally',
 				TrinaryLogic::createYes(),
 				'\'foo\'',
 			],
 			[
-				$testScope,
 				'maybeDefinedButLaterCertainlyDefined',
 				TrinaryLogic::createYes(),
 				'2|3',
 			],
 			[
-				$testScope,
 				'mixed',
 				TrinaryLogic::createYes(),
 				'mixed~bool',
 			],
 			[
-				$testScope,
 				'variableDefinedInSwitchWithoutEarlyTermination',
 				TrinaryLogic::createMaybe(),
 				'false',
 			],
 			[
-				$testScope,
 				'anotherVariableDefinedInSwitchWithoutEarlyTermination',
 				TrinaryLogic::createMaybe(),
 				'bool',
 			],
 			[
-				$testScope,
 				'alwaysDefinedFromSwitch',
 				TrinaryLogic::createYes(),
 				'1|null',
 			],
 			[
-				$testScope,
 				'exceptionFromTryCatch',
 				TrinaryLogic::createYes(),
 				'(AnotherException&Throwable)|(Throwable&YetAnotherException)|null',
 			],
 			[
-				$testScope,
 				'nullOverwrittenInSwitchToOne',
 				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
-				$testScope,
 				'variableFromSwitchShouldBeBool',
 				TrinaryLogic::createYes(),
 				'bool',
@@ -742,15 +659,16 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 * @dataProvider dataAssignInIf
 	 */
 	public function testAssignInIf(
-		Scope $scope,
 		string $variableName,
 		TrinaryLogic $expectedCertainty,
 		?string $typeDescription = null,
 		?string $iterableValueTypeDescription = null,
 	): void
 	{
+		self::$fileScopes['if.php'] ??= $this->getFileScope(__DIR__ . '/data/if.php');
+
 		$this->assertVariables(
-			$scope,
+			self::$fileScopes['if.php'],
 			$variableName,
 			$expectedCertainty,
 			$typeDescription,
@@ -760,116 +678,92 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataConstantTypes(): array
 	{
-		$testScope = $this->getFileScope(__DIR__ . '/data/constantTypes.php');
-
 		return [
 			[
-				$testScope,
 				'postIncrement',
 				'2',
 			],
 			[
-				$testScope,
 				'postDecrement',
 				'4',
 			],
 			[
-				$testScope,
 				'preIncrement',
 				'2',
 			],
 			[
-				$testScope,
 				'preDecrement',
 				'4',
 			],
 			[
-				$testScope,
 				'literalArray',
 				'array{a: 2, b: 4, c: 2, d: 4}',
 			],
 			[
-				$testScope,
 				'nullIncremented',
 				'1',
 			],
 			[
-				$testScope,
 				'nullDecremented',
 				'null',
 			],
 			[
-				$testScope,
 				'incrementInIf',
 				'1|2|3',
 			],
 			[
-				$testScope,
 				'anotherIncrementInIf',
 				'2|3',
 			],
 			[
-				$testScope,
 				'valueOverwrittenInIf',
 				'1|2',
 			],
 			[
-				$testScope,
 				'incrementInForLoop',
 				'int<2, max>',
 			],
 			[
-				$testScope,
 				'valueOverwrittenInForLoop',
 				'2',
 			],
 			[
-				$testScope,
 				'arrayOverwrittenInForLoop',
 				'array{a: int<2, max>, b: \'bar\'}',
 			],
 			[
-				$testScope,
 				'anotherValueOverwrittenInIf',
 				'5|10',
 			],
 			[
-				$testScope,
 				'intProperty',
 				'int<2, max>',
 			],
 			[
-				$testScope,
 				'staticIntProperty',
 				'int<2, max>',
 			],
 			[
-				$testScope,
 				'anotherIntProperty',
 				'1|2',
 			],
 			[
-				$testScope,
 				'anotherStaticIntProperty',
 				'1|2',
 			],
 			[
-				$testScope,
 				'variableIncrementedInClosurePassedByReference',
 				'int<0, max>',
 			],
 			[
-				$testScope,
 				'anotherVariableIncrementedInClosure',
 				'0',
 			],
 			[
-				$testScope,
 				'yetAnotherVariableInClosurePassedByReference',
 				'0|1',
 			],
 			[
-				$testScope,
 				'variableIncrementedInFinally',
 				'1',
 			],
@@ -880,13 +774,14 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 * @dataProvider dataConstantTypes
 	 */
 	public function testConstantTypes(
-		Scope $scope,
 		string $variableName,
 		string $typeDescription,
 	): void
 	{
+		self::$fileScopes['constantTypes.php'] ??= $this->getFileScope(__DIR__ . '/data/constantTypes.php');
+
 		$this->assertVariables(
-			$scope,
+			self::$fileScopes['constantTypes.php'],
 			$variableName,
 			TrinaryLogic::createYes(),
 			$typeDescription,

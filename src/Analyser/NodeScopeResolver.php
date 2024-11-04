@@ -4294,6 +4294,7 @@ final class NodeScopeResolver
 		}
 
 		$count = 0;
+		$closureResultScope = null;
 		do {
 			$prevScope = $closureScope;
 
@@ -4321,7 +4322,7 @@ final class NodeScopeResolver
 			$count++;
 		} while ($count < self::LOOP_SCOPE_ITERATIONS);
 
-		if (!isset($closureResultScope)) {
+		if ($closureResultScope === null) {
 			$closureResultScope = $closureScope;
 		}
 

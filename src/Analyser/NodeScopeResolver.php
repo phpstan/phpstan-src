@@ -4293,27 +4293,6 @@ final class NodeScopeResolver
 			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 		}
 
-		if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
-			$intermediaryClosureScopeResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, static function (): void {
-			}, StatementContext::createTopLevel());
-			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
-			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
-				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
-			}
-
-			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
-			$nodeCallback(new ClosureReturnStatementsNode(
-				$expr,
-				$gatheredReturnStatements,
-				$gatheredYieldStatements,
-				$statementResult,
-				$executionEnds,
-				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
-			), $closureScope);
-
-			return new ProcessClosureResult($scope->processClosureScope($intermediaryClosureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
-		}
-
 		$count = 0;
 		do {
 			$prevScope = $closureScope;
@@ -4324,8 +4303,15 @@ final class NodeScopeResolver
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
 			}
+
+			if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
+				$closureResultScope = $intermediaryClosureScope;
+				break;
+			}
+
 			$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
 			$closureScope = $closureScope->processClosureScope($intermediaryClosureScope, $prevScope, $byRefUses);
+
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
@@ -4334,6 +4320,10 @@ final class NodeScopeResolver
 			}
 			$count++;
 		} while ($count < self::LOOP_SCOPE_ITERATIONS);
+
+		if (!isset($closureResultScope)) {
+			$closureResultScope = $closureScope;
+		}
 
 		$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
 		$nodeCallback(new ClosureReturnStatementsNode(
@@ -4345,7 +4335,7 @@ final class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ProcessClosureResult($scope->processClosureScope($closureScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
 	}
 
 	/**

@@ -888,6 +888,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testArrayAllCallback(): void
 	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test skipped on lower version than 8.4 (needs array_all function)');
+		}
+
 		$this->analyse([__DIR__ . '/data/array_all.php'], [
 			[
 				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
@@ -914,6 +918,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testArrayAnyCallback(): void
 	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test skipped on lower version than 8.4 (needs array_any function)');
+		}
+
 		$this->analyse([__DIR__ . '/data/array_any.php'], [
 			[
 				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',

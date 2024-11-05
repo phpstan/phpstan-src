@@ -886,6 +886,58 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
 	}
 
+	public function testArrayAllCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_all.php'], [
+			[
+				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				22,
+			],
+			[
+				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				30,
+			],
+			[
+				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
+				36,
+			],
+			[
+				'Parameter #2 $callback of function array_all expects callable(mixed, int|string): bool, Closure(string, array): false given.',
+				52,
+			],
+			[
+				'Parameter #2 $callback of function array_all expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
+				55,
+			],
+		]);
+	}
+
+	public function testArrayAnyCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_any.php'], [
+			[
+				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				22,
+			],
+			[
+				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				30,
+			],
+			[
+				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
+				36,
+			],
+			[
+				'Parameter #2 $callback of function array_any expects callable(mixed, int|string): bool, Closure(string, array): false given.',
+				52,
+			],
+			[
+				'Parameter #2 $callback of function array_any expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
+				55,
+			],
+		]);
+	}
+
 	public function testArrayFindCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/array_find.php'], [

@@ -31,7 +31,6 @@ final class ComposerPhpVersionFactory
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
 		int|array|null $phpVersion,
-		bool $narrowPhpVersionFromComposerJson,
 	)
 	{
 		if (is_int($phpVersion)) {
@@ -46,10 +45,6 @@ final class ComposerPhpVersionFactory
 			$this->minVersion = new PhpVersion($phpVersion['min']);
 			$this->maxVersion = new PhpVersion($phpVersion['max']);
 
-			return;
-		}
-
-		if (!$narrowPhpVersionFromComposerJson) {
 			return;
 		}
 

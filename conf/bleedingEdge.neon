@@ -3,5 +3,4 @@ parameters:
 		bleedingEdge: true
 		skipCheckGenericClasses!: []
 		stricterFunctionMap: true
-		narrowPhpVersionFromComposerJson: true
 

@@ -23,7 +23,6 @@ final class PhpVersionFactoryFactory
 	public function __construct(
 		private int|array|null $phpVersion,
 		private array $composerAutoloaderProjectPaths,
-		private bool $narrowPhpVersionFromComposerJson,
 	)
 	{
 	}
@@ -53,7 +52,7 @@ final class PhpVersionFactoryFactory
 			$versionId = $this->phpVersion;
 		}
 
-		if ($this->narrowPhpVersionFromComposerJson && is_array($this->phpVersion)) {
+		if (is_array($this->phpVersion)) {
 			$versionId = $this->phpVersion['min'];
 		}
 

@@ -24,7 +24,6 @@ parameters:
 		bleedingEdge: false
 		skipCheckGenericClasses: []
 		stricterFunctionMap: false
-		narrowPhpVersionFromComposerJson: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -342,14 +341,12 @@ services:
 		arguments:
 			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
-			narrowPhpVersionFromComposerJson: %featureToggles.narrowPhpVersionFromComposerJson%
 
 	-
 		class: PHPStan\Php\ComposerPhpVersionFactory
 		arguments:
 			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
-			narrowPhpVersionFromComposerJson: %featureToggles.narrowPhpVersionFromComposerJson%
 
 	-
 		class: PHPStan\PhpDocParser\ParserConfig

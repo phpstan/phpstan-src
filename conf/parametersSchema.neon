@@ -30,7 +30,6 @@ parametersSchema:
 		bleedingEdge: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		stricterFunctionMap: bool()
-		narrowPhpVersionFromComposerJson: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -261,20 +261,18 @@ class ParametersAcceptorSelector
 			if (isset($args[0]) && (bool) $args[0]->getAttribute(ArrayFindArgVisitor::ATTRIBUTE_NAME)) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
+				$argType = $scope->getType($args[0]->value);
 				$parameters[1] = new NativeParameterReflection(
 					$parameters[1]->getName(),
 					$parameters[1]->isOptional(),
-					new UnionType([
-						new CallableType(
-							[
-								new DummyParameter('value', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
-								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
-							],
-							new BooleanType(),
-							false,
-						),
-						new NullType(),
-					]),
+					new CallableType(
+						[
+							new DummyParameter('value', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null),
+							new DummyParameter('key', $scope->getIterableKeyType($argType), false, PassedByReference::createNo(), false, null),
+						],
+						new BooleanType(),
+						false,
+					),
 					$parameters[1]->passedByReference(),
 					$parameters[1]->isVariadic(),
 					$parameters[1]->getDefaultValue(),

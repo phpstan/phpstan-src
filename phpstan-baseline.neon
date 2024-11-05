@@ -1305,7 +1305,7 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantBooleanType is error\\-prone and deprecated\\. Use Type\\:\\:isTrue\\(\\) or Type\\:\\:isFalse\\(\\) instead\\.$#"
 			count: 1
-			path: src/Type/Php/ArrayFilterFunctionReturnTypeExtension.php
+			path: src/Type/Php/ArrayFilterFunctionReturnTypeHelper.php
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"

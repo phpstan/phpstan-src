@@ -5594,10 +5594,7 @@ final class MutatingScope implements Scope
 	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
 	{
 		if ($typeWithMethod instanceof UnionType) {
-			$typeWithMethod = $typeWithMethod->filterTypes(fn (Type $innerType) => $innerType->hasMethod($methodName)->yes());
-			if ($typeWithMethod === null) {
-				return null;
-			}
+			$typeWithMethod = $typeWithMethod->filterTypes(static fn (Type $innerType) => $innerType->hasMethod($methodName)->yes());
 		}
 
 		if (!$typeWithMethod->hasMethod($methodName)->yes()) {
@@ -5701,10 +5698,7 @@ final class MutatingScope implements Scope
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
 	{
 		if ($typeWithProperty instanceof UnionType) {
-			$typeWithProperty = $typeWithProperty->filterTypes(fn (Type $innerType) => $innerType->hasProperty($propertyName)->yes());
-			if ($typeWithProperty === null) {
-				return null;
-			}
+			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasProperty($propertyName)->yes());
 		}
 		if (!$typeWithProperty->hasProperty($propertyName)->yes()) {
 			return null;
@@ -5733,10 +5727,7 @@ final class MutatingScope implements Scope
 	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ConstantReflection
 	{
 		if ($typeWithConstant instanceof UnionType) {
-			$typeWithConstant = $typeWithConstant->filterTypes(fn (Type $innerType) => $innerType->hasConstant($constantName)->yes());
-			if ($typeWithConstant === null) {
-				return null;
-			}
+			$typeWithConstant = $typeWithConstant->filterTypes(static fn (Type $innerType) => $innerType->hasConstant($constantName)->yes());
 		}
 		if (!$typeWithConstant->hasConstant($constantName)->yes()) {
 			return null;
@@ -5780,7 +5771,10 @@ final class MutatingScope implements Scope
 	public function getIterableKeyType(Type $iteratee): Type
 	{
 		if ($iteratee instanceof UnionType) {
-			$iteratee = $iteratee->filterTypes(fn (Type $innerType) => $innerType->isIterable()->yes()) ?? $iteratee;
+			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
+			if (!$filtered instanceof NeverType) {
+				$iteratee = $filtered;
+			}
 		}
 
 		return $iteratee->getIterableKeyType();
@@ -5789,7 +5783,10 @@ final class MutatingScope implements Scope
 	public function getIterableValueType(Type $iteratee): Type
 	{
 		if ($iteratee instanceof UnionType) {
-			$iteratee = $iteratee->filterTypes(fn (Type $innerType) => $innerType->isIterable()->yes()) ?? $iteratee;
+			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
+			if (!$filtered instanceof NeverType) {
+				$iteratee = $filtered;
+			}
 		}
 
 		return $iteratee->getIterableValueType();

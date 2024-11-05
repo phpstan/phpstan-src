@@ -88,10 +88,8 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): bool $filterCb
-	 *
-	 * @return Type|null
 	 */
-	public function filterTypes(callable $filterCb): ?Type
+	public function filterTypes(callable $filterCb): Type
 	{
 		$newTypes = [];
 		foreach ($this->getTypes() as $innerType) {
@@ -100,9 +98,6 @@ class UnionType implements CompoundType
 			}
 
 			$newTypes[] = $innerType;
-		}
-		if (count($newTypes) === 0) {
-			return null;
 		}
 
 		return TypeCombinator::union(...$newTypes);

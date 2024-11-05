@@ -886,6 +886,58 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
 	}
 
+	public function testArrayFindCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_find.php'], [
+			[
+				'Parameter #2 $callback of function array_find expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				22,
+			],
+			[
+				'Parameter #2 $callback of function array_find expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				30,
+			],
+			[
+				'Parameter #2 $callback of function array_find expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
+				36,
+			],
+			[
+				'Parameter #2 $callback of function array_find expects callable(mixed, int|string): bool, Closure(string, array): false given.',
+				49,
+			],
+			[
+				'Parameter #2 $callback of function array_find expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
+				52,
+			],
+		]);
+	}
+
+	public function testArrayFindKeyCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_find_key.php'], [
+			[
+				'Parameter #2 $callback of function array_find_key expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				22,
+			],
+			[
+				'Parameter #2 $callback of function array_find_key expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
+				30,
+			],
+			[
+				'Parameter #2 $callback of function array_find_key expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
+				36,
+			],
+			[
+				'Parameter #2 $callback of function array_find_key expects callable(mixed, int|string): bool, Closure(string, array): false given.',
+				49,
+			],
+			[
+				'Parameter #2 $callback of function array_find_key expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
+				52,
+			],
+		]);
+	}
+
 	public function testBug5356(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5356.php'], [

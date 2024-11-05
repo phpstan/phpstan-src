@@ -15,7 +15,7 @@ final class ArrayFindArgVisitor extends NodeVisitorAbstract
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
 			$functionName = $node->name->toLowerString();
-			if (in_array($functionName, ['array_find', 'array_find_key'], true)) {
+			if (in_array($functionName, ['array_all', 'array_any', 'array_find', 'array_find_key'], true)) {
 				$args = $node->getRawArgs();
 				if (isset($args[0])) {
 					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);

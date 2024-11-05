@@ -903,11 +903,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #2 $callback of function array_find expects callable(mixed, int|string): bool, Closure(string, array): false given.',
-				49,
+				52,
 			],
 			[
 				'Parameter #2 $callback of function array_find expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
-				52,
+				55,
 			],
 		]);
 	}
@@ -929,11 +929,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #2 $callback of function array_find_key expects callable(mixed, int|string): bool, Closure(string, array): false given.',
-				49,
+				52,
 			],
 			[
 				'Parameter #2 $callback of function array_find_key expects callable(mixed, int|string): bool, Closure(string, int): array{} given.',
-				52,
+				55,
 			],
 		]);
 	}

@@ -45,6 +45,9 @@ if (is_array($array)) {
 	// ok
 	array_find_key($array, fn (string $value, int $key) => $key === 0);
 
+	// ok
+	array_find_key($array, fn (string $value) => $value === 'foo');
+
 	// bad parameters
 	array_find_key($array, fn (string $item, array $key) => $key === 0);
 

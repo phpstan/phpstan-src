@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "35d6da6b01195515a7b8fcee8a2f952b",
+    "content-hash": "350cc72e1a307581ffc8228f105bd273",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1442,19 +1442,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "08ee6c06d3d6021399c02ae1e4e91ae2ceaf90ab"
+                "reference": "1f0dca06d54cf187adb3481a9c3e7d74af01743b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/08ee6c06d3d6021399c02ae1e4e91ae2ceaf90ab",
-                "reference": "08ee6c06d3d6021399c02ae1e4e91ae2ceaf90ab",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/1f0dca06d54cf187adb3481a9c3e7d74af01743b",
+                "reference": "1f0dca06d54cf187adb3481a9c3e7d74af01743b",
                 "shasum": ""
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "v3.61.1",
+                "friendsofphp/php-cs-fixer": "v3.64.0",
                 "nikic/php-parser": "v5.3.1",
                 "phpdocumentor/reflection-docblock": "5.4.1",
-                "phpunit/phpunit": "11.3.0"
+                "phpunit/phpunit": "11.4.3"
             },
             "default-branch": true,
             "type": "library",
@@ -1482,7 +1482,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2024-10-28T16:40:57+00:00"
+            "time": "2024-11-04T21:28:48+00:00"
         },
         {
             "name": "nette/bootstrap",

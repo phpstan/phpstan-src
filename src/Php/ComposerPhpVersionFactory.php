@@ -24,17 +24,27 @@ final class ComposerPhpVersionFactory
 
 	private ?PhpVersion $maxVersion = null;
 
+	private bool $initialized = false;
+
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param int|array{min: int, max: int}|null $phpVersion
 	 */
 	public function __construct(
 		private array $composerAutoloaderProjectPaths,
-		int|array|null $phpVersion,
+		private int|array|null $phpVersion,
 	)
 	{
+	}
+
+	private function initVersions(): void
+	{
+		$this->initialized = true;
+
+		$phpVersion = $this->phpVersion;
+
 		if (is_int($phpVersion)) {
-			return;
+			throw new ShouldNotHappenException();
 		}
 
 		if (is_array($phpVersion)) {
@@ -73,11 +83,27 @@ final class ComposerPhpVersionFactory
 
 	public function getMinVersion(): ?PhpVersion
 	{
+		if (is_int($this->phpVersion)) {
+			return null;
+		}
+
+		if ($this->initialized === false) {
+			$this->initVersions();
+		}
+
 		return $this->minVersion;
 	}
 
 	public function getMaxVersion(): ?PhpVersion
 	{
+		if (is_int($this->phpVersion)) {
+			return null;
+		}
+
+		if ($this->initialized === false) {
+			$this->initVersions();
+		}
+
 		return $this->maxVersion;
 	}
 

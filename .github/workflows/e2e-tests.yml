@@ -305,7 +305,19 @@ jobs:
               composer install
               ../../bin/phpstan analyze test.php --level=0
           - script: |
+              cd e2e/composer-min-version-v5
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-min-version-v7
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
               cd e2e/composer-min-version
+              composer install
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-no-versions
               composer install
               ../../bin/phpstan analyze test.php --level=0
           - script: |

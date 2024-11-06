@@ -48,6 +48,15 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			'<info>PHP runtime version:</info> %s',
 			$phpRuntimeVersion->getVersionString(),
 		));
+
+		$composerPhpVersion = $this->getComposerRequireVersion();
+		if ($composerPhpVersion !== null) {
+			$output->writeLineFormatted(sprintf(
+				'<info>PHP composer.json required version:</info> %s',
+				$composerPhpVersion,
+			));
+		}
+
 		$output->writeLineFormatted(sprintf(
 			'<info>PHP version for analysis:</info> %s (from %s)',
 			$this->phpVersion->getVersionString(),
@@ -164,6 +173,24 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$output->writeLineFormatted($composerAutoloaderProjectPath);
 		}
 		$output->writeLineFormatted('');
+	}
+
+	private function getComposerRequireVersion(): ?string
+	{
+		$composerPhpVersion = null;
+
+		if (count($this->composerAutoloaderProjectPaths) > 0) {
+			$composer = ComposerHelper::getComposerConfig(end($this->composerAutoloaderProjectPaths));
+			if ($composer !== null) {
+				$requiredVersion = $composer['require']['php'] ?? null;
+
+				if (is_string($requiredVersion)) {
+					$composerPhpVersion = $requiredVersion;
+				}
+			}
+		}
+
+		return $composerPhpVersion;
 	}
 
 }

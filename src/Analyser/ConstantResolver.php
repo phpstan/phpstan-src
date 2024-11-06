@@ -88,10 +88,10 @@ final class ConstantResolver
 			$maxMajor = null;
 
 			if ($this->composerMinPhpVersion !== null) {
-				$minMajor = max($minMajor, $this->composerMinPhpVersion->getMajor());
+				$minMajor = max($minMajor, $this->composerMinPhpVersion->getMajorVersionId());
 			}
 			if ($this->composerMaxPhpVersion !== null) {
-				$maxMajor = $this->composerMaxPhpVersion->getMajor();
+				$maxMajor = $this->composerMaxPhpVersion->getMajorVersionId();
 			}
 
 			return $this->createInteger($minMajor, $maxMajor);
@@ -103,10 +103,10 @@ final class ConstantResolver
 			if (
 				$this->composerMinPhpVersion !== null
 				&& $this->composerMaxPhpVersion !== null
-				&& $this->composerMaxPhpVersion->getMajor() === $this->composerMinPhpVersion->getMajor()
+				&& $this->composerMaxPhpVersion->getMajorVersionId() === $this->composerMinPhpVersion->getMajorVersionId()
 			) {
-				$minMinor = $this->composerMinPhpVersion->getMinor();
-				$maxMinor = $this->composerMaxPhpVersion->getMinor();
+				$minMinor = $this->composerMinPhpVersion->getMinorVersionId();
+				$maxMinor = $this->composerMaxPhpVersion->getMinorVersionId();
 			}
 
 			return $this->createInteger($minMinor, $maxMinor);
@@ -118,11 +118,11 @@ final class ConstantResolver
 			if (
 				$this->composerMinPhpVersion !== null
 				&& $this->composerMaxPhpVersion !== null
-				&& $this->composerMaxPhpVersion->getMajor() === $this->composerMinPhpVersion->getMajor()
-				&& $this->composerMaxPhpVersion->getMinor() === $this->composerMinPhpVersion->getMinor()
+				&& $this->composerMaxPhpVersion->getMajorVersionId() === $this->composerMinPhpVersion->getMajorVersionId()
+				&& $this->composerMaxPhpVersion->getMinorVersionId() === $this->composerMinPhpVersion->getMinorVersionId()
 			) {
-				$minRelease = $this->composerMinPhpVersion->getPatch();
-				$maxRelease = $this->composerMaxPhpVersion->getPatch();
+				$minRelease = $this->composerMinPhpVersion->getPatchVersionId();
+				$maxRelease = $this->composerMaxPhpVersion->getPatchVersionId();
 			}
 
 			return $this->createInteger($minRelease, $maxRelease);

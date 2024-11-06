@@ -306,11 +306,11 @@ jobs:
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-min-version-v5
-              composer install
+              composer install --ignore-platform-reqs
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-min-version-v7
-              composer install
+              composer install --ignore-platform-reqs
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-min-version

@@ -6157,13 +6157,9 @@ final class NodeScopeResolver
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($declaringClass): Type {
-			if ($type instanceof ThisType) {
-				return $traverse($type);
-			}
-
 			if ($type instanceof StaticType) {
 				$changedType = $type->changeBaseClass($declaringClass);
-				if ($declaringClass->isFinal()) {
+				if ($declaringClass->isFinal() && !$type instanceof ThisType) {
 					$changedType = $changedType->getStaticObjectType();
 				}
 				return $traverse($changedType);

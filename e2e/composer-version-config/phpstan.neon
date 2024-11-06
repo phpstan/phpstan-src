@@ -1,5 +1,3 @@
-includes:
-	- ../../conf/bleedingEdge.neon
 parameters:
 	phpVersion:
 		min: 80103

@@ -60,7 +60,7 @@ final class ComposerPhpVersionFactory
 			return;
 		}
 
-		$this->minVersion = new PhpVersion(PhpVersionFactory::MIN_PHP_VERSION);
+		// don't limit minVersion... PHPStan can analyze even PHP5
 		$this->maxVersion = new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION);
 
 		// fallback to composer.json based php-version constraint
@@ -145,7 +145,6 @@ final class ComposerPhpVersionFactory
 		$patch = $matches[3] ?? 0;
 		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
 
-		$versionId = max($versionId, PhpVersionFactory::MIN_PHP_VERSION);
 		$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
 
 		return new PhpVersion($versionId);

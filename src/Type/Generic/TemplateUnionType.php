@@ -34,4 +34,21 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		$this->default = $default;
 	}
 
+	public function filterTypes(callable $filterCb): Type
+	{
+		$result = parent::filterTypes($filterCb);
+		if (!$result instanceof TemplateType) {
+			return TemplateTypeFactory::create(
+				$this->getScope(),
+				$this->getName(),
+				$result,
+				$this->getVariance(),
+				$this->getStrategy(),
+				$this->getDefault(),
+			);
+		}
+
+		return $result;
+	}
+
 }

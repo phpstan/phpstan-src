@@ -19,6 +19,16 @@ class BenevolentUnionType extends UnionType
 		parent::__construct($types, $normalized);
 	}
 
+	public function filterTypes(callable $filterCb): Type
+	{
+		$result = parent::filterTypes($filterCb);
+		if (!$result instanceof self && $result instanceof UnionType) {
+			return TypeUtils::toBenevolentUnion($result);
+		}
+
+		return $result;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return '(' . parent::describe($level) . ')';

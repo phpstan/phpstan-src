@@ -274,6 +274,30 @@ class StatementResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'for ($i = 0; $i < 5;) { }',
+				true,
+			],
+			[
+				'for ($i = 0; $i < 5; $i--) { }',
+				true,
+			],
+			[
+				'for (; 0, 1;) { }',
+				true,
+			],
+			[
+				'for (; 1, 0;) { }',
+				false,
+			],
+			[
+				'for (; "", "a";) { }',
+				true,
+			],
+			[
+				'for (; "a", "";) { }',
+				false,
+			],
+			[
 				'do { } while (doFoo());',
 				false,
 			],

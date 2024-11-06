@@ -14,7 +14,7 @@ if (foo()) {
 	$onlyInIf = 1;
 }
 
-for ($forI = 0; $forI < 10, $anotherVariableFromForCond = 1; $forI++, $forJ = $forI) {
+for ($forI = 0; $anotherVariableFromForCond = 1, $forI < 10; $forI++, $forJ = $forI) {
 
 }
 

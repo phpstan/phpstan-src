@@ -1314,7 +1314,6 @@ final class NodeScopeResolver
 			}
 
 			$bodyScope = $initScope;
-			$alwaysIterates = $stmt->cond === [] && $context->isTopLevel();
 			$isIterableAtLeastOnce = TrinaryLogic::createYes();
 			$lastCondExpr = $stmt->cond[count($stmt->cond) - 1] ?? null;
 			foreach ($stmt->cond as $condExpr) {
@@ -1385,7 +1384,10 @@ final class NodeScopeResolver
 				$loopScope = $this->processExprNode($stmt, $loopExpr, $loopScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
 			$finalScope = $finalScope->generalizeWith($loopScope);
+
+			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
 			if ($lastCondExpr !== null) {
+				$alwaysIterates = $alwaysIterates->and($finalScope->getType($lastCondExpr)->toBoolean()->isTrue());
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
 			}
 
@@ -1412,7 +1414,7 @@ final class NodeScopeResolver
 				}
 			}
 
-			if ($alwaysIterates) {
+			if ($alwaysIterates->yes()) {
 				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
 			} elseif ($isIterableAtLeastOnce->yes()) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();

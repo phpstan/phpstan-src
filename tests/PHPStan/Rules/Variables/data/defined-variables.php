@@ -243,7 +243,7 @@ function () {
 
 	}
 
-	for ($forI = 0; $forI < 10, $forK = 5; $forI++, $forK++, $forJ = $forI) {
+	for ($forI = 0; $forK = 5, $forI < 10; $forI++, $forK++, $forJ = $forI) {
 		echo $forI;
 	}
 
@@ -322,7 +322,7 @@ function () {
 	include($fileB='includeB.php');
 	echo $fileB;
 
-	for ($forLoopVariableInit = 0; $forLoopVariableInit < 5; $forLoopVariableInit = $forLoopVariable, $anotherForLoopVariable = 1) {
+	for ($forLoopVariableInit = 0; $forLoopVariableInit < 5 && rand(0, 1); $forLoopVariableInit = $forLoopVariable, $anotherForLoopVariable = 1) {
 		$forLoopVariable = 2;
 	}
 	echo $anotherForLoopVariable;
@@ -357,7 +357,7 @@ function () {
 
 	}
 
-	for (; $forVariableUsedAndThenDefined && $forVariableUsedAndThenDefined = 1;) {
+	for (; $forVariableUsedAndThenDefined && $forVariableUsedAndThenDefined = 1 && rand(0, 1);) {
 
 	}
 

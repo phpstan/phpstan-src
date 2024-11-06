@@ -39,7 +39,7 @@ final class ComposerPhpVersionFactory
 	{
 	}
 
-	private function initVersions(): void
+	private function initializeVersions(): void
 	{
 		$this->initialized = true;
 
@@ -93,7 +93,7 @@ final class ComposerPhpVersionFactory
 		}
 
 		if ($this->initialized === false) {
-			$this->initVersions();
+			$this->initializeVersions();
 		}
 
 		return $this->minVersion;
@@ -106,7 +106,7 @@ final class ComposerPhpVersionFactory
 		}
 
 		if ($this->initialized === false) {
-			$this->initVersions();
+			$this->initializeVersions();
 		}
 
 		return $this->maxVersion;

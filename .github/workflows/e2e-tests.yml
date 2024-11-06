@@ -255,6 +255,10 @@ jobs:
               echo "$OUTPUT"
               ../bashunit -a contains 'Child process error (exit code 255): PHP Fatal error' "$OUTPUT"
               ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
+          - script: |
+              cd e2e/bug-11857
+              composer install
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

@@ -22,6 +22,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
@@ -106,7 +107,22 @@ class UnionType implements CompoundType
 			return $this;
 		}
 
-		return TypeCombinator::union(...$newTypes);
+		$result = TypeCombinator::union(...$newTypes);
+		if ($this instanceof BenevolentUnionType) {
+			$result = TypeUtils::toBenevolentUnion($result);
+		}
+		if ($this instanceof TemplateType) {
+			$result = TemplateTypeFactory::create(
+				$this->getScope(),
+				$this->getName(),
+				$result,
+				$this->getVariance(),
+				$this->getStrategy(),
+				$this->getDefault(),
+			);
+		}
+
+		return $result;
 	}
 
 	public function isNormalized(): bool

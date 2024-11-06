@@ -26,6 +26,14 @@ class BuilderB
 	}
 }
 
+interface A
+{
+	public function doFoo(): static;
+}
+
+interface B
+{
+}
 
 class Test
 {
@@ -37,5 +45,35 @@ class Test
 	public function test($template)
 	{
 		return $template->where('test');
+	}
+
+	/**
+	 * @param __benevolent<BuilderA|BuilderB|false> $template
+	 * @return __benevolent<BuilderA|BuilderB>
+	 */
+	public function test2($template)
+	{
+		return $template->where('test');
+	}
+
+
+	/**
+	 * @template T of A|B
+	 * @param T $ab
+	 * @return T
+	 */
+	function foo(A|B $ab): A|B
+	{
+		return $ab->doFoo();
+	}
+
+	/**
+	 * @template T of __benevolent<A|B>
+	 * @param T $ab
+	 * @return T
+	 */
+	function foo2(A|B $ab): A|B
+	{
+		return $ab->doFoo();
 	}
 }

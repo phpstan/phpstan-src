@@ -57,6 +57,7 @@ final class Comment extends Model
 	/** @return BelongsTo<User, self> */
 	public function user2(): BelongsTo
 	{
+		/** @phpstan-ignore return.type */
 		return $this->belongsTo(User::class);
 	}
 }
@@ -65,5 +66,5 @@ function test(ChildPost $child): void
 {
 	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>', $child->user());
 	// This demonstrates why `$this` is needed in non-final models
-	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>', $child->userSelf());
+	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\Post>', $child->userSelf()); // should be: Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>
 }

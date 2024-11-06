@@ -66,6 +66,5 @@ function test(ChildPost $child): void
 {
 	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>', $child->user());
 	// This demonstrates why `$this` is needed in non-final models
-	// Should be: Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>
-	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\Post>', $child->userSelf());
+	assertType('Bug11857\BelongsTo<Bug11857\User, Bug11857\Post>', $child->userSelf()); // should be: Bug11857\BelongsTo<Bug11857\User, Bug11857\ChildPost>
 }

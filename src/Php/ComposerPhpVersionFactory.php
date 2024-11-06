@@ -15,6 +15,8 @@ use function is_array;
 use function is_file;
 use function is_int;
 use function is_string;
+use function max;
+use function min;
 use function sprintf;
 
 final class ComposerPhpVersionFactory
@@ -57,6 +59,9 @@ final class ComposerPhpVersionFactory
 
 			return;
 		}
+
+		$this->minVersion = new PhpVersion(PhpVersionFactory::MIN_PHP_VERSION);
+		$this->maxVersion = new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION);
 
 		// fallback to composer.json based php-version constraint
 		$composerPhpVersion = $this->getComposerRequireVersion();
@@ -139,6 +144,9 @@ final class ComposerPhpVersionFactory
 		$minor = $matches[2];
 		$patch = $matches[3] ?? 0;
 		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
+
+		$versionId = max($versionId, PhpVersionFactory::MIN_PHP_VERSION);
+		$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
 
 		return new PhpVersion($versionId);
 	}

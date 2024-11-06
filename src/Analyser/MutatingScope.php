@@ -3012,6 +3012,9 @@ final class MutatingScope implements Scope
 			if (!$this->isInClass()) {
 				return $type;
 			}
+			if ($type instanceof ThisType) {
+				return $traverse($type);
+			}
 			if ($type instanceof StaticType) {
 				$classReflection = $this->getClassReflection();
 				$changedType = $type->changeBaseClass($classReflection);

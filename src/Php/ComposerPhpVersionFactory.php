@@ -72,7 +72,7 @@ final class ComposerPhpVersionFactory
 		$constraint = $parser->parseConstraints($composerPhpVersion);
 
 		if (!$constraint->getLowerBound()->isZero()) {
-			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion());
+			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion(), false);
 
 			if ($minVersion !== null) {
 				$this->minVersion = new PhpVersion($minVersion->getVersionId());
@@ -82,7 +82,7 @@ final class ComposerPhpVersionFactory
 			return;
 		}
 
-		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion());
+		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion(), true);
 	}
 
 	public function getMinVersion(): ?PhpVersion
@@ -132,9 +132,9 @@ final class ComposerPhpVersionFactory
 		return $composerPhpVersion;
 	}
 
-	private function buildVersion(string $minVersion): ?PhpVersion
+	private function buildVersion(string $version, bool $isMaxVersion): ?PhpVersion
 	{
-		$matches = Strings::match($minVersion, '#^(\d+)\.(\d+)(?:\.(\d+))?#');
+		$matches = Strings::match($version, '#^(\d+)\.(\d+)(?:\.(\d+))?#');
 		if ($matches === null) {
 			return null;
 		}
@@ -144,7 +144,13 @@ final class ComposerPhpVersionFactory
 		$patch = $matches[3] ?? 0;
 		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
 
-		$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
+		if ($isMaxVersion && $version === '6.0.0.0-dev') {
+			$versionId = min($versionId, PhpVersionFactory::MAX_PHP5_VERSION);
+		} elseif ($isMaxVersion && $version === '8.0.0.0-dev') {
+			$versionId = min($versionId, PhpVersionFactory::MAX_PHP7_VERSION);
+		} else {
+			$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
+		}
 
 		return new PhpVersion($versionId);
 	}

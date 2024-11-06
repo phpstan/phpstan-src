@@ -2108,6 +2108,7 @@ services:
 		arguments:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			allConfigFiles: %allConfigFiles%
+			configPhpVersion: %phpVersion%
 		autowired: false
 
 	# Error formatters

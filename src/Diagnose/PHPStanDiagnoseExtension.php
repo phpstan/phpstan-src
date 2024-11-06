@@ -14,11 +14,14 @@ use function array_slice;
 use function class_exists;
 use function count;
 use function dirname;
+use function end;
 use function explode;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_file;
 use function is_readable;
+use function is_string;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -29,11 +32,13 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 {
 
 	/**
+	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string [] $allConfigFiles
 	 */
 	public function __construct(
 		private PhpVersion $phpVersion,
+		private int|array|null $configPhpVersion,
 		private FileHelper $fileHelper,
 		private array $composerAutoloaderProjectPaths,
 		private array $allConfigFiles,
@@ -57,11 +62,27 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			));
 		}
 
-		$output->writeLineFormatted(sprintf(
-			'<info>PHP version for analysis:</info> %s (from %s)',
-			$this->phpVersion->getVersionString(),
-			$this->phpVersion->getSourceLabel(),
-		));
+		if (
+			$this->phpVersion->getSource() === PhpVersion::SOURCE_CONFIG
+			&& is_array($this->configPhpVersion)
+		) {
+			$minVersion = new PhpVersion($this->configPhpVersion['min']);
+			$maxVersion = new PhpVersion($this->configPhpVersion['max']);
+
+			$output->writeLineFormatted(sprintf(
+				'<info>PHP version for analysis:</info> %s-%s (from %s)',
+				$minVersion->getVersionString(),
+				$maxVersion->getVersionString(),
+				$this->phpVersion->getSourceLabel(),
+			));
+
+		} else {
+			$output->writeLineFormatted(sprintf(
+				'<info>PHP version for analysis:</info> %s (from %s)',
+				$this->phpVersion->getVersionString(),
+				$this->phpVersion->getSourceLabel(),
+			));
+		}
 		$output->writeLineFormatted('');
 
 		$output->writeLineFormatted(sprintf(

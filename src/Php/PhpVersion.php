@@ -22,6 +22,14 @@ final class PhpVersion
 	{
 	}
 
+	/**
+	 * @return self::SOURCE_*
+	 */
+	public function getSource(): int
+	{
+		return $this->source;
+	}
+
 	public function getSourceLabel(): string
 	{
 		switch ($this->source) {

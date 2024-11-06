@@ -328,7 +328,7 @@ jobs:
               ../bashunit -a contains 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' "$OUTPUT"
           - script: |
               cd e2e/composer-version-config-patch
-              composer install
+              composer install --ignore-platform-reqs
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/composer-version-config

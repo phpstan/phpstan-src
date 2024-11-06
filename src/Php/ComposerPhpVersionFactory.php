@@ -15,7 +15,6 @@ use function is_array;
 use function is_file;
 use function is_int;
 use function is_string;
-use function max;
 use function min;
 use function sprintf;
 

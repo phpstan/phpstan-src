@@ -412,8 +412,8 @@ final class ConstantResolver
 		if ($constantType->isConstantValue()->yes()) {
 			if (array_key_exists($constantName, $this->dynamicConstantNames)) {
 				$phpdocTypes = $this->dynamicConstantNames[$constantName];
-				$typeStringResolver = $this->container?->getByType(TypeStringResolver::class);
-				if ($typeStringResolver !== null) {
+				if ($this->container !== null) {
+					$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
 					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], null));
 				}
 			}
@@ -435,8 +435,8 @@ final class ConstantResolver
 
 			if ($constantType->isConstantValue()->yes()) {
 				$phpdocTypes = $this->dynamicConstantNames[$lookupConstantName];
-				$typeStringResolver = $this->container?->getByType(TypeStringResolver::class);
-				if ($typeStringResolver !== null) {
+				if ($this->container !== null) {
+					$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
 					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
 				}
 			}

@@ -48,4 +48,15 @@ class HelloWorld
 
 		assertType('array{string, non-falsy-string&numeric-string}', $matches);
 	}
+
+	public function sayHello6(string $s): void
+	{
+		if (1 > preg_match('/data-(\d{6})\.json$/', $s, $matches)) {
+			assertType('array{}', $matches);
+
+			return;
+		}
+
+		assertType('array{string, non-falsy-string&numeric-string}', $matches);
+	}
 }

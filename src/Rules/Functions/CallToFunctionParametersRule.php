@@ -57,14 +57,14 @@ final class CallToFunctionParametersRule implements Rule
 			'Function ' . $functionName . ' invoked with %d parameters, at least %d required.',
 			'Function ' . $functionName . ' invoked with %d parameter, %d-%d required.',
 			'Function ' . $functionName . ' invoked with %d parameters, %d-%d required.',
-			'Parameter %s of function ' . $functionName . ' expects %s, %s given.',
+			'%s of function ' . $functionName . ' expects %s, %s given.',
 			'Result of function ' . $functionName . ' (void) is used.',
-			'Parameter %s of function ' . $functionName . ' is passed by reference, so it expects variables only.',
+			'%s of function ' . $functionName . ' is passed by reference, so it expects variables only.',
 			'Unable to resolve the template type %s in call to function ' . $functionName,
 			'Missing parameter $%s in call to function ' . $functionName . '.',
 			'Unknown parameter $%s in call to function ' . $functionName . '.',
 			'Return type of call to function ' . $functionName . ' contains unresolvable type.',
-			'Parameter %s of function ' . $functionName . ' contains unresolvable type.',
+			'%s of function ' . $functionName . ' contains unresolvable type.',
 			'Function ' . $functionName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 		);
 	}

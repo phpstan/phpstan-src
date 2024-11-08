@@ -209,14 +209,14 @@ final class InstantiationRule implements Rule
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameters, at least %d required.',
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameter, %d-%d required.',
 			'Class ' . $classDisplayName . ' constructor invoked with %d parameters, %d-%d required.',
-			'Parameter %s of class ' . $classDisplayName . ' constructor expects %s, %s given.',
+			'%s of class ' . $classDisplayName . ' constructor expects %s, %s given.',
 			'', // constructor does not have a return type
-			'Parameter %s of class ' . $classDisplayName . ' constructor is passed by reference, so it expects variables only',
+			' %s of class ' . $classDisplayName . ' constructor is passed by reference, so it expects variables only',
 			'Unable to resolve the template type %s in instantiation of class ' . $classDisplayName,
 			'Missing parameter $%s in call to ' . $classDisplayName . ' constructor.',
 			'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
 			'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
-			'Parameter %s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
+			'%s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
 			'Class ' . $classDisplayName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 		));
 	}

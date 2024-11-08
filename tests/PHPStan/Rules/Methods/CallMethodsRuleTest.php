@@ -1907,7 +1907,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				91,
 			],
 			[
-				'Parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
 				91,
 			],
 			[
@@ -1921,6 +1921,14 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Unpacked argument (...) cannot be followed by a non-unpacked argument.',
 				94,
+			],
+			[
+				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				95,
+			],
+			[
+				'Named argument bar for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				95,
 			],
 		]);
 	}

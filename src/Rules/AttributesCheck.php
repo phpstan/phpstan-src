@@ -144,14 +144,14 @@ final class AttributesCheck
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, at least %d required.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d-%d required.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d-%d required.',
-					'Parameter %s of attribute class ' . $attributeClassName . ' constructor expects %s, %s given.',
+					'%s of attribute class ' . $attributeClassName . ' constructor expects %s, %s given.',
 					'', // constructor does not have a return type
-					'Parameter %s of attribute class ' . $attributeClassName . ' constructor is passed by reference, so it expects variables only',
+					'%s of attribute class ' . $attributeClassName . ' constructor is passed by reference, so it expects variables only',
 					'Unable to resolve the template type %s in instantiation of attribute class ' . $attributeClassName,
 					'Missing parameter $%s in call to ' . $attributeClassName . ' constructor.',
 					'Unknown parameter $%s in call to ' . $attributeClassName . ' constructor.',
 					'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
-					'Parameter %s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
+					'%s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
 					'Attribute class ' . $attributeClassName . ' constructorinvoked with %s, but it\'s not allowed because of @no-named-arguments.',
 				);
 

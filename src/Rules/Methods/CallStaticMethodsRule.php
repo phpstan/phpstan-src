@@ -71,14 +71,14 @@ final class CallStaticMethodsRule implements Rule
 			$displayMethodName . ' invoked with %d parameters, at least %d required.',
 			$displayMethodName . ' invoked with %d parameter, %d-%d required.',
 			$displayMethodName . ' invoked with %d parameters, %d-%d required.',
-			'Parameter %s of ' . $lowercasedMethodName . ' expects %s, %s given.',
+			'%s of ' . $lowercasedMethodName . ' expects %s, %s given.',
 			'Result of ' . $lowercasedMethodName . ' (void) is used.',
-			'Parameter %s of ' . $lowercasedMethodName . ' is passed by reference, so it expects variables only.',
+			'%s of ' . $lowercasedMethodName . ' is passed by reference, so it expects variables only.',
 			'Unable to resolve the template type %s in call to method ' . $lowercasedMethodName,
 			'Missing parameter $%s in call to ' . $lowercasedMethodName . '.',
 			'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
 			'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
-			'Parameter %s of ' . $lowercasedMethodName . ' contains unresolvable type.',
+			'%s of ' . $lowercasedMethodName . ' contains unresolvable type.',
 			$displayMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 		));
 

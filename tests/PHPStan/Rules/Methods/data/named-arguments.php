@@ -92,6 +92,7 @@ class Foo
 		$this->doIpsum(...['a' => 1, 'foo' => 'foo']);
 		$this->doIpsum(...['b' => 1, 'foo' => 'foo']);
 		$this->doIpsum(...[1, 2], 'foo');
+		$this->doIpsum(1, 2, foo: 1, bar: 2);
 	}
 
 }

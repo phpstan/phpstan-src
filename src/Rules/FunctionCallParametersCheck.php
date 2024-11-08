@@ -30,6 +30,7 @@ use function array_fill;
 use function array_key_exists;
 use function count;
 use function implode;
+use function is_int;
 use function is_string;
 use function max;
 use function sprintf;
@@ -331,7 +332,7 @@ final class FunctionCallParametersCheck
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							$wrongArgumentTypeMessage,
-							$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
+							$this->describeParameter($parameter, $argumentName ?? $i + 1),
 							$parameterType->describe($verbosityLevel),
 							$argumentValueType->describe($verbosityLevel),
 						))
@@ -409,7 +410,7 @@ final class FunctionCallParametersCheck
 					}
 
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Parameter %s is passed by reference so it does not accept %s.',
+						'%s is passed by reference so it does not accept %s.',
 						$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
 						$propertyDescription,
 					))->identifier('argument.byRef')->line($argumentLine)->build();
@@ -625,11 +626,15 @@ final class FunctionCallParametersCheck
 		return [$errors, $newArguments];
 	}
 
-	private function describeParameter(ParameterReflection $parameter, ?int $position): string
+	private function describeParameter(ParameterReflection $parameter, int|string|null $positionOrNamed): string
 	{
 		$parts = [];
-		if ($position !== null) {
-			$parts[] = '#' . $position;
+		if (is_int($positionOrNamed)) {
+			$parts[] = 'Parameter #' . $positionOrNamed;
+		} elseif ($parameter->isVariadic() && is_string($positionOrNamed)) {
+			$parts[] = 'Named argument ' . $positionOrNamed . ' for variadic parameter';
+		} else {
+			$parts[] = 'Parameter';
 		}
 
 		$name = $parameter->getName();

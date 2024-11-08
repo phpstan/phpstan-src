@@ -242,11 +242,11 @@ final class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->getArgs()) >= 1
 				&& $expr->left->name instanceof Name
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen'], true)
+				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen'], true)
+					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
@@ -334,6 +334,22 @@ final class TypeSpecifier
 						);
 					}
 				}
+			}
+
+			if (
+				!$context->null()
+				&& $expr->right instanceof FuncCall
+				&& count($expr->right->getArgs()) === 3
+				&& $expr->right->name instanceof Name
+				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+			) {
+				return $this->specifyTypesInCondition(
+					$scope,
+					new Expr\BinaryOp\NotIdentical($expr->right, new ConstFetch(new Name('false'))),
+					$context,
+					$rootExpr,
+				);
 			}
 
 			if (

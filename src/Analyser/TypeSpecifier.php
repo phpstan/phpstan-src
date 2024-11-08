@@ -339,7 +339,7 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) === 3
+				&& count($expr->right->getArgs()) >= 3
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
 				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()

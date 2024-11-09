@@ -65,6 +65,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private TrinaryLogic $isPure;
 
+	private TrinaryLogic $isDeprecated;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -78,6 +80,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		private array $templateTags = [],
 		?TrinaryLogic $isPure = null,
+		?TrinaryLogic $isDeprecated = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
@@ -86,6 +89,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->isPure = $isPure ?? TrinaryLogic::createMaybe();
+		$this->isDeprecated = $isDeprecated ?? TrinaryLogic::createNo();
 	}
 
 	/**
@@ -101,6 +105,14 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->isPure;
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->isDeprecated;
+	}
+
+	/**
+	 * @return list<string>
+	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = [];
@@ -231,6 +243,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$this->resolvedTemplateTypeMap,
 					$this->templateTags,
 					$this->isPure,
+					$this->isDeprecated,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -445,6 +458,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->isDeprecated,
 		);
 	}
 
@@ -495,6 +509,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->isDeprecated,
 		);
 	}
 

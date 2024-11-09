@@ -123,6 +123,7 @@ final class GenericParametersAcceptorResolver
 				$result,
 				$originalParametersAcceptor->getThrowPoints(),
 				$originalParametersAcceptor->isPure(),
+				$originalParametersAcceptor->isDeprecated(),
 				$originalParametersAcceptor->getImpurePoints(),
 				$originalParametersAcceptor->getInvalidateExpressions(),
 				$originalParametersAcceptor->getUsedVariables(),

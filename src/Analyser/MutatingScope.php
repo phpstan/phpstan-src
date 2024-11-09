@@ -1342,6 +1342,7 @@ final class MutatingScope implements Scope
 						$cachedClosureData['invalidateExpressions'],
 						$cachedClosureData['usedVariables'],
 						TrinaryLogic::createYes(),
+						TrinaryLogic::createNo(),
 					);
 				}
 				if (self::$resolveClosureTypeDepth >= 2) {
@@ -1557,6 +1558,7 @@ final class MutatingScope implements Scope
 				$invalidateExpressions,
 				$usedVariables,
 				TrinaryLogic::createYes(),
+				TrinaryLogic::createNo(),
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {

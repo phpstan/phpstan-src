@@ -135,6 +135,11 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Param
 		return $certainCount > 0 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->function->isDeprecated();
+	}
+
 	public function getImpurePoints(): array
 	{
 		if ($this->impurePoints !== null) {

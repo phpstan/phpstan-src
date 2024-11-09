@@ -65,6 +65,8 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private TrinaryLogic $isPure;
 
+	private TrinaryLogic $isDeprecated;
+
 	/**
 	 * @api
 	 * @param array<int, ParameterReflection>|null $parameters
@@ -78,6 +80,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		private array $templateTags = [],
 		?TrinaryLogic $isPure = null,
+		?TrinaryLogic $isDeprecated = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
@@ -86,6 +89,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->isPure = $isPure ?? TrinaryLogic::createMaybe();
+		$this->isDeprecated = $isDeprecated ?? TrinaryLogic::createNo();
 	}
 
 	/**
@@ -99,6 +103,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function isPure(): TrinaryLogic
 	{
 		return $this->isPure;
+	}
+
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->isDeprecated;
 	}
 
 	/**
@@ -254,6 +263,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$this->resolvedTemplateTypeMap,
 					$this->templateTags,
 					$this->isPure,
+					$this->isDeprecated,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -468,6 +478,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->isDeprecated,
 		);
 	}
 
@@ -518,6 +529,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->templateTags,
 			$this->isPure,
+			$this->isDeprecated,
 		);
 	}
 
@@ -703,6 +715,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$properties['resolvedTemplateTypeMap'],
 			$properties['templateTags'],
 			$properties['isPure'],
+			$properties['isDeprecated'],
 		);
 	}
 

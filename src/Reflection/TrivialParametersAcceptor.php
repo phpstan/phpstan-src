@@ -73,6 +73,11 @@ class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs, Callab
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function getImpurePoints(): array
 	{
 		return [

@@ -106,6 +106,7 @@ final class RuleLevelHelper
 					$acceptedType->getResolvedTemplateTypeMap(),
 					$acceptedType->getTemplateTags(),
 					$acceptedType->isPure(),
+					$acceptedType->isDeprecated(),
 				);
 			}
 

@@ -65,6 +65,11 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->methodReflection->isDeprecated();
+	}
+
 	public function getImpurePoints(): array
 	{
 		return [

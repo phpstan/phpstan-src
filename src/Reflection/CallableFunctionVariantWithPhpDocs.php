@@ -32,6 +32,7 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 		?TemplateTypeVarianceMap $callSiteVarianceMap,
 		private array $throwPoints,
 		private TrinaryLogic $isPure,
+		private TrinaryLogic $isDeprecated,
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private array $usedVariables,
@@ -58,6 +59,11 @@ final class CallableFunctionVariantWithPhpDocs extends FunctionVariantWithPhpDoc
 	public function isPure(): TrinaryLogic
 	{
 		return $this->isPure;
+	}
+
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->isDeprecated;
 	}
 
 	public function getImpurePoints(): array

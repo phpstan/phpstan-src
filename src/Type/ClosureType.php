@@ -143,6 +143,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $certainCount > 0 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function getClassName(): string
 	{
 		return $this->objectType->getClassName();

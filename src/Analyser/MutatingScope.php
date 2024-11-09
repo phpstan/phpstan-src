@@ -4900,6 +4900,68 @@ final class MutatingScope implements Scope
 		);
 	}
 
+	public function processAlwaysIterableForScopeWithoutPollute(self $finalScope, self $initScope): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$initScopeExpressionTypes = $initScope->expressionTypes;
+		foreach ($finalScope->expressionTypes as $variableExprString => $variableTypeHolder) {
+			if (!isset($expressionTypes[$variableExprString])) {
+				if (isset($initScopeExpressionTypes[$variableExprString])) {
+					$expressionTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+					continue;
+				}
+
+				$expressionTypes[$variableExprString] = $variableTypeHolder;
+				continue;
+			}
+
+			$expressionTypes[$variableExprString] = new ExpressionTypeHolder(
+				$variableTypeHolder->getExpr(),
+				$variableTypeHolder->getType(),
+				$variableTypeHolder->getCertainty()->and($expressionTypes[$variableExprString]->getCertainty()),
+			);
+		}
+
+		$nativeTypes = $this->nativeExpressionTypes;
+		$initScopeNativeExpressionTypes = $initScope->nativeExpressionTypes;
+		foreach ($finalScope->nativeExpressionTypes as $variableExprString => $variableTypeHolder) {
+			if (!isset($nativeTypes[$variableExprString])) {
+				if (isset($initScopeNativeExpressionTypes[$variableExprString])) {
+					$nativeTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+					continue;
+				}
+
+				$nativeTypes[$variableExprString] = $variableTypeHolder;
+				continue;
+			}
+
+			$nativeTypes[$variableExprString] = new ExpressionTypeHolder(
+				$variableTypeHolder->getExpr(),
+				$variableTypeHolder->getType(),
+				$variableTypeHolder->getCertainty()->and($nativeTypes[$variableExprString]->getCertainty()),
+			);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function generalizeWith(self $otherScope): self
 	{
 		$variableTypeHolders = $this->generalizeVariableTypeHolders(

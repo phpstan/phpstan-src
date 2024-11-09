@@ -91,6 +91,7 @@ final class RuleLevelHelper
 					$acceptedType->getResolvedTemplateTypeMap(),
 					$acceptedType->getTemplateTags(),
 					$acceptedType->isPure(),
+					$acceptedType->isDeprecated(),
 				);
 			}
 
@@ -112,6 +113,7 @@ final class RuleLevelHelper
 					$acceptedType->getInvalidateExpressions(),
 					$acceptedType->getUsedVariables(),
 					$acceptedType->acceptsNamedArguments(),
+					$acceptedType->isDeprecated(),
 				);
 			}
 

@@ -611,6 +611,7 @@ final class ParametersAcceptorSelector
 		$callableOccurred = false;
 		$throwPoints = [];
 		$isPure = TrinaryLogic::createNo();
+		$isDeprecated = TrinaryLogic::createNo();
 		$impurePoints = [];
 		$invalidateExpressions = [];
 		$usedVariables = [];
@@ -627,6 +628,7 @@ final class ParametersAcceptorSelector
 				$callableOccurred = true;
 				$throwPoints = array_merge($throwPoints, $acceptor->getThrowPoints());
 				$isPure = $isPure->or($acceptor->isPure());
+				$isDeprecated = $isDeprecated->or($acceptor->isDeprecated());
 				$impurePoints = array_merge($impurePoints, $acceptor->getImpurePoints());
 				$invalidateExpressions = array_merge($invalidateExpressions, $acceptor->getInvalidateExpressions());
 				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
@@ -729,6 +731,7 @@ final class ParametersAcceptorSelector
 				null,
 				$throwPoints,
 				$isPure,
+				$isDeprecated,
 				$impurePoints,
 				$invalidateExpressions,
 				$usedVariables,
@@ -765,6 +768,7 @@ final class ParametersAcceptorSelector
 				TemplateTypeVarianceMap::createEmpty(),
 				$acceptor->getThrowPoints(),
 				$acceptor->isPure(),
+				$acceptor->isDeprecated(),
 				$acceptor->getImpurePoints(),
 				$acceptor->getInvalidateExpressions(),
 				$acceptor->getUsedVariables(),

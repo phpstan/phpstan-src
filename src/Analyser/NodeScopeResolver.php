@@ -1119,8 +1119,7 @@ final class NodeScopeResolver
 			} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 				$finalScope = $scope;
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
-				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
-				// get types from finalScope, but don't create new variables
+				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope, $stmt);
 			}
 
 			if (!$isIterableAtLeastOnce->no()) {

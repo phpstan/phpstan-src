@@ -4851,12 +4851,24 @@ final class MutatingScope implements Scope
 		);
 	}
 
-	public function processAlwaysIterableForeachScopeWithoutPollute(self $finalScope): self
+	public function processAlwaysIterableForeachScopeWithoutPollute(self $finalScope, Node\Stmt\Foreach_ $stmt): self
 	{
+		$keyVarExprString = $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
+			? '$' . $stmt->keyVar->name
+			: null;
+		$valueVarExprString = $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
+			? '$' . $stmt->valueVar->name
+			: null;
+
 		$expressionTypes = $this->expressionTypes;
 		foreach ($finalScope->expressionTypes as $variableExprString => $variableTypeHolder) {
 			if (!isset($expressionTypes[$variableExprString])) {
-				$expressionTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+				if ($variableExprString === $keyVarExprString || $variableExprString === $valueVarExprString) {
+					$expressionTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+					continue;
+				}
+
+				$expressionTypes[$variableExprString] = $variableTypeHolder;
 				continue;
 			}
 
@@ -4869,7 +4881,12 @@ final class MutatingScope implements Scope
 		$nativeTypes = $this->nativeExpressionTypes;
 		foreach ($finalScope->nativeExpressionTypes as $variableExprString => $variableTypeHolder) {
 			if (!isset($nativeTypes[$variableExprString])) {
-				$nativeTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+				if ($variableExprString === $keyVarExprString || $variableExprString === $valueVarExprString) {
+					$nativeTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+					continue;
+				}
+
+				$nativeTypes[$variableExprString] = $variableTypeHolder;
 				continue;
 			}
 

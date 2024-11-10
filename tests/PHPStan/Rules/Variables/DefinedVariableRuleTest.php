@@ -526,10 +526,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 						20,
 					],
 					[
-						'Variable $test might not be defined.',
-						21,
-					],
-					[
 						'Variable $key might not be defined.',
 						32,
 					],

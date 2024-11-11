@@ -298,6 +298,14 @@ class StatementResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'for ($c = (0x80 | 0x40); $c & 0x80; $c = $c << 1) { }',
+				false,
+			],
+			[
+				'for ($i = 0; $i < 10; $i++) { $i = 5; }',
+				true,
+			],
+			[
 				'do { } while (doFoo());',
 				false,
 			],

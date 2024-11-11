@@ -8,6 +8,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -35,11 +36,13 @@ final class CountCharsFunctionDynamicReturnTypeExtension implements DynamicFunct
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$modeType = $scope->getType($functionCall->getArgs()[1]->value);
+		$modeType = count($args) === 2 ? $scope->getType($args[1]->value) : new ConstantIntegerType(0);
 
 		if (IntegerRangeType::fromInterval(0, 2)->isSuperTypeOf($modeType)->yes()) {
 			$arrayType = new ArrayType(new IntegerType(), new IntegerType());

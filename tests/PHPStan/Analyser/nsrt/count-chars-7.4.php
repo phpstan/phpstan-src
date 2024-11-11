@@ -8,6 +8,7 @@ class X {
 	const ABC = 'abcdef';
 
 	function doFoo(): void {
+		assertType('array<int, int>|false', count_chars(self::ABC));
 		assertType('array<int, int>|false', count_chars(self::ABC, 0));
 		assertType('array<int, int>|false', count_chars(self::ABC, 1));
 		assertType('array<int, int>|false', count_chars(self::ABC, 2));

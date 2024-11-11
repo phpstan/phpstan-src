@@ -1374,7 +1374,7 @@ class ClassReflection
 				if ($type instanceof ErrorType) {
 					$templateType = $templateTypeMap->getType($name);
 					if ($templateType !== null) {
-						return TemplateTypeHelper::resolveToBounds($templateType);
+						return TemplateTypeHelper::resolveToDefaults($templateType);
 					}
 				}
 

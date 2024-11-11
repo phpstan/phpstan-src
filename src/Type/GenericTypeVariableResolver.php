@@ -44,7 +44,7 @@ class GenericTypeVariableResolver
 				return new MixedType(false);
 			}
 
-			return $bound;
+			return TemplateTypeHelper::resolveToDefaults($templateType);
 		}
 
 		return $type;

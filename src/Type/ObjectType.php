@@ -841,7 +841,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				return new MixedType(false);
 			}
 
-			return $bound;
+			return TemplateTypeHelper::resolveToDefaults($templateType);
 		}
 
 		return $type;

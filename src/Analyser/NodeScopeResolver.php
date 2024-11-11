@@ -1361,7 +1361,10 @@ final class NodeScopeResolver
 			}
 
 			$bodyScope = $bodyScope->mergeWith($initScope);
+
+			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
 			if ($lastCondExpr !== null) {
+				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
 				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
 			}
 
@@ -1377,9 +1380,7 @@ final class NodeScopeResolver
 			}
 			$finalScope = $finalScope->generalizeWith($loopScope);
 
-			$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
 			if ($lastCondExpr !== null) {
-				$alwaysIterates = $alwaysIterates->and($finalScope->getType($lastCondExpr)->toBoolean()->isTrue());
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
 			}
 

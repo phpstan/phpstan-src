@@ -3,10 +3,12 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
+use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -21,6 +23,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function in_array;
+use function is_array;
+use function is_int;
 use function max;
 use function sprintf;
 use const INF;
@@ -35,12 +39,13 @@ final class ConstantResolver
 
 	/**
 	 * @param string[] $dynamicConstantNames
+	 * @param int|array{min: int, max: int}|null $phpVersion
 	 */
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private array $dynamicConstantNames,
-		private ?PhpVersion $composerMinPhpVersion,
-		private ?PhpVersion $composerMaxPhpVersion,
+		private int|array|null $phpVersion,
+		private ?ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)
 	{
 	}
@@ -87,11 +92,11 @@ final class ConstantResolver
 			$minMajor = 5;
 			$maxMajor = null;
 
-			if ($this->composerMinPhpVersion !== null) {
-				$minMajor = max($minMajor, $this->composerMinPhpVersion->getMajorVersionId());
+			if ($this->getMinPhpVersion() !== null) {
+				$minMajor = max($minMajor, $this->getMinPhpVersion()->getMajorVersionId());
 			}
-			if ($this->composerMaxPhpVersion !== null) {
-				$maxMajor = $this->composerMaxPhpVersion->getMajorVersionId();
+			if ($this->getMaxPhpVersion() !== null) {
+				$maxMajor = $this->getMaxPhpVersion()->getMajorVersionId();
 			}
 
 			return $this->createInteger($minMajor, $maxMajor);
@@ -101,12 +106,12 @@ final class ConstantResolver
 			$maxMinor = null;
 
 			if (
-				$this->composerMinPhpVersion !== null
-				&& $this->composerMaxPhpVersion !== null
-				&& $this->composerMaxPhpVersion->getMajorVersionId() === $this->composerMinPhpVersion->getMajorVersionId()
+				$this->getMinPhpVersion() !== null
+				&& $this->getMaxPhpVersion() !== null
+				&& $this->getMaxPhpVersion()->getMajorVersionId() === $this->getMinPhpVersion()->getMajorVersionId()
 			) {
-				$minMinor = $this->composerMinPhpVersion->getMinorVersionId();
-				$maxMinor = $this->composerMaxPhpVersion->getMinorVersionId();
+				$minMinor = $this->getMinPhpVersion()->getMinorVersionId();
+				$maxMinor = $this->getMaxPhpVersion()->getMinorVersionId();
 			}
 
 			return $this->createInteger($minMinor, $maxMinor);
@@ -116,13 +121,13 @@ final class ConstantResolver
 			$maxRelease = null;
 
 			if (
-				$this->composerMinPhpVersion !== null
-				&& $this->composerMaxPhpVersion !== null
-				&& $this->composerMaxPhpVersion->getMajorVersionId() === $this->composerMinPhpVersion->getMajorVersionId()
-				&& $this->composerMaxPhpVersion->getMinorVersionId() === $this->composerMinPhpVersion->getMinorVersionId()
+				$this->getMinPhpVersion() !== null
+				&& $this->getMaxPhpVersion() !== null
+				&& $this->getMaxPhpVersion()->getMajorVersionId() === $this->getMinPhpVersion()->getMajorVersionId()
+				&& $this->getMaxPhpVersion()->getMinorVersionId() === $this->getMinPhpVersion()->getMinorVersionId()
 			) {
-				$minRelease = $this->composerMinPhpVersion->getPatchVersionId();
-				$maxRelease = $this->composerMaxPhpVersion->getPatchVersionId();
+				$minRelease = $this->getMinPhpVersion()->getPatchVersionId();
+				$maxRelease = $this->getMaxPhpVersion()->getPatchVersionId();
 			}
 
 			return $this->createInteger($minRelease, $maxRelease);
@@ -130,11 +135,11 @@ final class ConstantResolver
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
 			$minVersion = 50207;
 			$maxVersion = null;
-			if ($this->composerMinPhpVersion !== null) {
-				$minVersion = max($minVersion, $this->composerMinPhpVersion->getVersionId());
+			if ($this->getMinPhpVersion() !== null) {
+				$minVersion = max($minVersion, $this->getMinPhpVersion()->getVersionId());
 			}
-			if ($this->composerMaxPhpVersion !== null) {
-				$maxVersion = $this->composerMaxPhpVersion->getVersionId();
+			if ($this->getMaxPhpVersion() !== null) {
+				$maxVersion = $this->getMaxPhpVersion()->getVersionId();
 			}
 
 			return $this->createInteger($minVersion, $maxVersion);
@@ -349,6 +354,48 @@ final class ConstantResolver
 		}
 
 		return null;
+	}
+
+	private function getMinPhpVersion(): ?PhpVersion
+	{
+		if (is_int($this->phpVersion)) {
+			return null;
+		}
+
+		if (is_array($this->phpVersion)) {
+			if ($this->phpVersion['max'] < $this->phpVersion['min']) {
+				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+			}
+
+			return new PhpVersion($this->phpVersion['min']);
+		}
+
+		if ($this->composerPhpVersionFactory === null) {
+			return null;
+		}
+
+		return $this->composerPhpVersionFactory->getMinVersion();
+	}
+
+	private function getMaxPhpVersion(): ?PhpVersion
+	{
+		if (is_int($this->phpVersion)) {
+			return null;
+		}
+
+		if (is_array($this->phpVersion)) {
+			if ($this->phpVersion['max'] < $this->phpVersion['min']) {
+				throw new ShouldNotHappenException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+			}
+
+			return new PhpVersion($this->phpVersion['max']);
+		}
+
+		if ($this->composerPhpVersionFactory === null) {
+			return null;
+		}
+
+		return $this->composerPhpVersionFactory->getMaxVersion();
 	}
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type

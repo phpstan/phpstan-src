@@ -345,7 +345,6 @@ services:
 	-
 		class: PHPStan\Php\ComposerPhpVersionFactory
 		arguments:
-			phpVersion: %phpVersion%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 
 	-

@@ -23,8 +23,8 @@ final class ConstantResolverFactory
 		return new ConstantResolver(
 			$this->reflectionProviderProvider,
 			$this->container->getParameter('dynamicConstantNames'),
-			$composerFactory->getMinVersion(),
-			$composerFactory->getMaxVersion(),
+			$this->container->getParameter('phpVersion'),
+			$composerFactory,
 		);
 	}
 

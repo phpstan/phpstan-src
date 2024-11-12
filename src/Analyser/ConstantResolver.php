@@ -45,7 +45,7 @@ final class ConstantResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private array $dynamicConstantNames,
 		private int|array|null $phpVersion,
-		private ?ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)
 	{
 	}
@@ -370,10 +370,6 @@ final class ConstantResolver
 			return new PhpVersion($this->phpVersion['min']);
 		}
 
-		if ($this->composerPhpVersionFactory === null) {
-			return null;
-		}
-
 		return $this->composerPhpVersionFactory->getMinVersion();
 	}
 
@@ -389,10 +385,6 @@ final class ConstantResolver
 			}
 
 			return new PhpVersion($this->phpVersion['max']);
-		}
-
-		if ($this->composerPhpVersionFactory === null) {
-			return null;
 		}
 
 		return $this->composerPhpVersionFactory->getMaxVersion();

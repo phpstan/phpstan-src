@@ -12,6 +12,7 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileExcluder;
+use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -65,7 +66,8 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
 		PhpVersionStaticAccessor::registerInstance(new PhpVersion(PHP_VERSION_ID));
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, null);
+		$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, $composerPhpVersionFactory);
 
 		$phpDocParserConfig = new ParserConfig([]);
 		$ignoredRegexValidator = new IgnoredRegexValidator(

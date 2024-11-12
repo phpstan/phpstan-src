@@ -4,10 +4,10 @@ use function PHPStan\Testing\assertType;
 
 // core, https://www.php.net/manual/en/reserved.constants.php
 assertType('non-falsy-string', PHP_VERSION);
-assertType('int<5, max>', PHP_MAJOR_VERSION);
+assertType('int<5, 8>', PHP_MAJOR_VERSION);
 assertType('int<0, max>', PHP_MINOR_VERSION);
 assertType('int<0, max>', PHP_RELEASE_VERSION);
-assertType('int<50207, max>', PHP_VERSION_ID);
+assertType('int<50207, 80499>', PHP_VERSION_ID);
 assertType('string', PHP_EXTRA_VERSION);
 assertType('0|1', PHP_ZTS);
 assertType('0|1', PHP_DEBUG);

@@ -21,6 +21,7 @@ use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
@@ -137,7 +138,8 @@ abstract class PHPStanTestCase extends TestCase
 		}
 
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, null, null);
+		$composerPhpVersionFactory = $container->getByType(ComposerPhpVersionFactory::class);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, null, $composerPhpVersionFactory);
 
 		$initializerExprTypeResolver = new InitializerExprTypeResolver(
 			$constantResolver,

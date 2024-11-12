@@ -88,15 +88,23 @@ final class ConstantResolver
 				new AccessoryNonFalsyStringType(),
 			]);
 		}
+
+		$minPhpVersion = null;
+		$maxPhpVersion = null;
+		if (in_array($resolvedConstantName, ['PHP_VERSION_ID', 'PHP_MAJOR_VERSION', 'PHP_MINOR_VERSION', 'PHP_RELEASE_VERSION'], true)) {
+			$minPhpVersion = $this->getMinPhpVersion();
+			$maxPhpVersion = $this->getMaxPhpVersion();
+		}
+
 		if ($resolvedConstantName === 'PHP_MAJOR_VERSION') {
 			$minMajor = 5;
 			$maxMajor = null;
 
-			if ($this->getMinPhpVersion() !== null) {
-				$minMajor = max($minMajor, $this->getMinPhpVersion()->getMajorVersionId());
+			if ($minPhpVersion !== null) {
+				$minMajor = max($minMajor, $minPhpVersion->getMajorVersionId());
 			}
-			if ($this->getMaxPhpVersion() !== null) {
-				$maxMajor = $this->getMaxPhpVersion()->getMajorVersionId();
+			if ($maxPhpVersion !== null) {
+				$maxMajor = $maxPhpVersion->getMajorVersionId();
 			}
 
 			return $this->createInteger($minMajor, $maxMajor);
@@ -106,12 +114,12 @@ final class ConstantResolver
 			$maxMinor = null;
 
 			if (
-				$this->getMinPhpVersion() !== null
-				&& $this->getMaxPhpVersion() !== null
-				&& $this->getMaxPhpVersion()->getMajorVersionId() === $this->getMinPhpVersion()->getMajorVersionId()
+				$minPhpVersion !== null
+				&& $maxPhpVersion !== null
+				&& $maxPhpVersion->getMajorVersionId() === $minPhpVersion->getMajorVersionId()
 			) {
-				$minMinor = $this->getMinPhpVersion()->getMinorVersionId();
-				$maxMinor = $this->getMaxPhpVersion()->getMinorVersionId();
+				$minMinor = $minPhpVersion->getMinorVersionId();
+				$maxMinor = $maxPhpVersion->getMinorVersionId();
 			}
 
 			return $this->createInteger($minMinor, $maxMinor);
@@ -121,13 +129,13 @@ final class ConstantResolver
 			$maxRelease = null;
 
 			if (
-				$this->getMinPhpVersion() !== null
-				&& $this->getMaxPhpVersion() !== null
-				&& $this->getMaxPhpVersion()->getMajorVersionId() === $this->getMinPhpVersion()->getMajorVersionId()
-				&& $this->getMaxPhpVersion()->getMinorVersionId() === $this->getMinPhpVersion()->getMinorVersionId()
+				$minPhpVersion !== null
+				&& $maxPhpVersion !== null
+				&& $maxPhpVersion->getMajorVersionId() === $minPhpVersion->getMajorVersionId()
+				&& $maxPhpVersion->getMinorVersionId() === $minPhpVersion->getMinorVersionId()
 			) {
-				$minRelease = $this->getMinPhpVersion()->getPatchVersionId();
-				$maxRelease = $this->getMaxPhpVersion()->getPatchVersionId();
+				$minRelease = $minPhpVersion->getPatchVersionId();
+				$maxRelease = $maxPhpVersion->getPatchVersionId();
 			}
 
 			return $this->createInteger($minRelease, $maxRelease);
@@ -135,11 +143,11 @@ final class ConstantResolver
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
 			$minVersion = 50207;
 			$maxVersion = null;
-			if ($this->getMinPhpVersion() !== null) {
-				$minVersion = max($minVersion, $this->getMinPhpVersion()->getVersionId());
+			if ($minPhpVersion !== null) {
+				$minVersion = max($minVersion, $minPhpVersion->getVersionId());
 			}
-			if ($this->getMaxPhpVersion() !== null) {
-				$maxVersion = $this->getMaxPhpVersion()->getVersionId();
+			if ($maxPhpVersion !== null) {
+				$maxVersion = $maxPhpVersion->getVersionId();
 			}
 
 			return $this->createInteger($minVersion, $maxVersion);

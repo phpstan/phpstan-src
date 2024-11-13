@@ -7,6 +7,7 @@ use PHPStan\Command\Output;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use ReflectionClass;
 use function array_key_exists;
@@ -42,6 +43,7 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		private FileHelper $fileHelper,
 		private array $composerAutoloaderProjectPaths,
 		private array $allConfigFiles,
+		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)
 	{
 	}
@@ -54,12 +56,21 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$phpRuntimeVersion->getVersionString(),
 		));
 
-		$composerPhpVersion = $this->getComposerRequireVersion();
-		if ($composerPhpVersion !== null) {
-			$output->writeLineFormatted(sprintf(
-				'<info>PHP composer.json required version:</info> %s',
-				$composerPhpVersion,
-			));
+		$minComposerPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
+		$maxComposerPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
+		if ($minComposerPhpVersion !== null && $maxComposerPhpVersion !== null) {
+			if ($minComposerPhpVersion->getVersionId() === $maxComposerPhpVersion->getVersionId()) {
+				$output->writeLineFormatted(sprintf(
+					'<info>PHP composer.json required version:</info> %s',
+					$minComposerPhpVersion->getVersionString(),
+				));
+			} else {
+				$output->writeLineFormatted(sprintf(
+					'<info>PHP composer.json required version:</info> %s-%s',
+					$minComposerPhpVersion->getVersionString(),
+					$maxComposerPhpVersion->getVersionString(),
+				));
+			}
 		}
 
 		if (
@@ -194,24 +205,6 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$output->writeLineFormatted($composerAutoloaderProjectPath);
 		}
 		$output->writeLineFormatted('');
-	}
-
-	private function getComposerRequireVersion(): ?string
-	{
-		$composerPhpVersion = null;
-
-		if (count($this->composerAutoloaderProjectPaths) > 0) {
-			$composer = ComposerHelper::getComposerConfig(end($this->composerAutoloaderProjectPaths));
-			if ($composer !== null) {
-				$requiredVersion = $composer['require']['php'] ?? null;
-
-				if (is_string($requiredVersion)) {
-					$composerPhpVersion = $requiredVersion;
-				}
-			}
-		}
-
-		return $composerPhpVersion;
 	}
 
 }

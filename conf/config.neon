@@ -70,7 +70,9 @@ parameters:
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
-	phpVersion: null
+	phpVersion:
+		min: 80303
+		max: 80104
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true
 	polluteScopeWithBlock: true

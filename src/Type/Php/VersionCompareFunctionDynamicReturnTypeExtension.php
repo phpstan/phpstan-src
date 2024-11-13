@@ -24,7 +24,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 {
 
 	/**
-	 * @param int|array{min: int, max: int}|null $phpVersion
+	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 */
 	public function __construct(
 		private int|array|null $configPhpVersion,

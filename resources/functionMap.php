@@ -286,7 +286,7 @@ return [
 'array_map' => ['array', 'callback'=>'?callable', 'array'=>'array', '...args='=>'array'],
 'array_merge' => ['array', 'arr1'=>'array', '...args='=>'array'],
 'array_merge_recursive' => ['array', 'arr1'=>'array', '...args='=>'array'],
-'array_multisort' => ['bool', 'rw_array1'=>'array', 'array1_sort_order='=>'array|int', 'array1_sort_flags='=>'array|int', '...args='=>'array|int'],
+'array_multisort' => ['bool', 'array1'=>'array', 'array1_sort_order='=>'array|int', 'array1_sort_flags='=>'array|int', '...args='=>'array|int'],
 'array_pad' => ['array', 'input'=>'array', 'pad_size'=>'int', 'pad_value'=>'mixed'],
 'array_pop' => ['mixed', '&rw_stack'=>'array'],
 'array_product' => ['int|float', 'input'=>'array'],

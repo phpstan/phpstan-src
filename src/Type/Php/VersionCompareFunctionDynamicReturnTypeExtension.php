@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\ComposerPhpVersionFactory;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -16,12 +17,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_filter;
 use function count;
+use function is_array;
 use function version_compare;
 
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private ComposerPhpVersionFactory $composerPhpVersionFactory)
+	public function __construct(
+		private int|array|null $configPhpVersion,
+		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+	)
 	{
 	}
 
@@ -93,13 +98,21 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		if (
 			$expr instanceof Expr\ConstFetch
 			&& $expr->name->toString() === 'PHP_VERSION'
-			&& $this->composerPhpVersionFactory->getMinVersion() !== null
-			&& $this->composerPhpVersionFactory->getMaxVersion() !== null
 		) {
-			return [
-				new ConstantStringType($this->composerPhpVersionFactory->getMinVersion()->getVersionString()),
-				new ConstantStringType($this->composerPhpVersionFactory->getMaxVersion()->getVersionString()),
-			];
+			if (is_array($this->configPhpVersion)) {
+				$minVersion = new PhpVersion($this->configPhpVersion['min']);
+				$maxVersion = new PhpVersion($this->configPhpVersion['max']);
+			} else {
+				$minVersion = $this->composerPhpVersionFactory->getMinVersion();
+				$maxVersion = $this->composerPhpVersionFactory->getMaxVersion();
+			}
+
+			if ($minVersion !== null && $maxVersion !== null) {
+				return [
+					new ConstantStringType($minVersion->getVersionString()),
+					new ConstantStringType($maxVersion->getVersionString()),
+				];
+			}
 		}
 
 		return $scope->getType($expr)->getConstantStrings();

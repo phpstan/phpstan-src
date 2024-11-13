@@ -23,6 +23,9 @@ use function version_compare;
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	/**
+	 * @param int|array{min: int, max: int}|null $phpVersion
+	 */
 	public function __construct(
 		private int|array|null $configPhpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,

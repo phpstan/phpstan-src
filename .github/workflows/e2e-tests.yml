@@ -297,6 +297,10 @@ jobs:
               cd e2e/bug-11819
               ../../bin/phpstan
           - script: |
+              cd e2e/composer-and-phpstan-version-config
+              composer install --ignore-platform-reqs
+              ../../bin/phpstan analyze test.php --level=0
+          - script: |
               cd e2e/composer-max-version
               composer install
               ../../bin/phpstan analyze test.php --level=0

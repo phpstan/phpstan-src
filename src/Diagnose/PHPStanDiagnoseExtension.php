@@ -54,23 +54,6 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			$phpRuntimeVersion->getVersionString(),
 		));
 
-		$minComposerPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
-		$maxComposerPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
-		if ($minComposerPhpVersion !== null && $maxComposerPhpVersion !== null) {
-			if ($minComposerPhpVersion->getVersionId() !== $maxComposerPhpVersion->getVersionId()) {
-				$output->writeLineFormatted(sprintf(
-					'<info>PHP composer.json required version:</info> %s-%s',
-					$minComposerPhpVersion->getVersionString(),
-					$maxComposerPhpVersion->getVersionString(),
-				));
-			} else {
-				$output->writeLineFormatted(sprintf(
-					'<info>PHP composer.json required version:</info> %s',
-					$minComposerPhpVersion->getVersionString(),
-				));
-			}
-		}
-
 		if (
 			$this->phpVersion->getSource() === PhpVersion::SOURCE_CONFIG
 			&& is_array($this->configPhpVersion)
@@ -86,6 +69,23 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 			));
 
 		} else {
+			$minComposerPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
+			$maxComposerPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
+			if ($minComposerPhpVersion !== null && $maxComposerPhpVersion !== null) {
+				if ($minComposerPhpVersion->getVersionId() !== $maxComposerPhpVersion->getVersionId()) {
+					$output->writeLineFormatted(sprintf(
+						'<info>PHP composer.json required version:</info> %s-%s',
+						$minComposerPhpVersion->getVersionString(),
+						$maxComposerPhpVersion->getVersionString(),
+					));
+				} else {
+					$output->writeLineFormatted(sprintf(
+						'<info>PHP composer.json required version:</info> %s',
+						$minComposerPhpVersion->getVersionString(),
+					));
+				}
+			}
+
 			$output->writeLineFormatted(sprintf(
 				'<info>PHP version for analysis:</info> %s (from %s)',
 				$this->phpVersion->getVersionString(),

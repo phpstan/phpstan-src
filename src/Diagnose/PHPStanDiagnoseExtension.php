@@ -15,14 +15,12 @@ use function array_slice;
 use function class_exists;
 use function count;
 use function dirname;
-use function end;
 use function explode;
 use function implode;
 use function in_array;
 use function is_array;
 use function is_file;
 use function is_readable;
-use function is_string;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -59,16 +57,16 @@ final class PHPStanDiagnoseExtension implements DiagnoseExtension
 		$minComposerPhpVersion = $this->composerPhpVersionFactory->getMinVersion();
 		$maxComposerPhpVersion = $this->composerPhpVersionFactory->getMaxVersion();
 		if ($minComposerPhpVersion !== null && $maxComposerPhpVersion !== null) {
-			if ($minComposerPhpVersion->getVersionId() === $maxComposerPhpVersion->getVersionId()) {
-				$output->writeLineFormatted(sprintf(
-					'<info>PHP composer.json required version:</info> %s',
-					$minComposerPhpVersion->getVersionString(),
-				));
-			} else {
+			if ($minComposerPhpVersion->getVersionId() !== $maxComposerPhpVersion->getVersionId()) {
 				$output->writeLineFormatted(sprintf(
 					'<info>PHP composer.json required version:</info> %s-%s',
 					$minComposerPhpVersion->getVersionString(),
 					$maxComposerPhpVersion->getVersionString(),
+				));
+			} else {
+				$output->writeLineFormatted(sprintf(
+					'<info>PHP composer.json required version:</info> %s',
+					$minComposerPhpVersion->getVersionString(),
 				));
 			}
 		}

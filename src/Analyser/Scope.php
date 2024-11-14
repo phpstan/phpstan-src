@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -135,5 +136,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function filterByFalseyValue(Expr $expr): self;
 
 	public function isInFirstLevelStatement(): bool;
+
+	public function getPhpVersions(): PhpVersions;
 
 }

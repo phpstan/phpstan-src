@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -10,42 +9,27 @@ use PHPStan\Testing\RuleTestCase;
 class FinalPrivateMethodRuleTest extends RuleTestCase
 {
 
-	private int $phpVersionId;
-
 	protected function getRule(): Rule
 	{
-		return new FinalPrivateMethodRule(
-			new PhpVersion($this->phpVersionId),
-		);
+		return new FinalPrivateMethodRule();
 	}
 
-	public function dataRule(): array
+	public function testRule(): void
 	{
-		return [
+		$this->analyse([__DIR__ . '/data/final-private-method.php'], [
 			[
-				70400,
-				[],
+				'Private method FinalPrivateMethod\Foo::foo() cannot be final as it is never overridden by other classes.',
+				8,
 			],
 			[
-				80000,
-				[
-					[
-						'Private method FinalPrivateMethod\Foo::foo() cannot be final as it is never overridden by other classes.',
-						8,
-					],
-				],
+				'Private method FinalPrivateMethod\FooBarPhp8orHigher::foo() cannot be final as it is never overridden by other classes.',
+				39,
 			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataRule
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	public function testRule(int $phpVersion, array $errors): void
-	{
-		$this->phpVersionId = $phpVersion;
-		$this->analyse([__DIR__ . '/data/final-private-method.php'], $errors);
+			[
+				'Private method FinalPrivateMethod\FooBarPhp74OrHigher::foo() cannot be final as it is never overridden by other classes.',
+				59,
+			],
+		]);
 	}
 
 }

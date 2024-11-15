@@ -918,6 +918,32 @@ final class ParametersAcceptorSelector
 			}
 		}
 
+		$nullableStringConstants = [
+			'CURLOPT_ACCEPT_ENCODING',
+			'CURLOPT_CUSTOMREQUEST',
+			'CURLOPT_DNS_INTERFACE',
+			'CURLOPT_DNS_LOCAL_IP4',
+			'CURLOPT_DNS_LOCAL_IP6',
+			'CURLOPT_DOH_URL',
+			'CURLOPT_FTP_ACCOUNT',
+			'CURLOPT_FTPPORT',
+			'CURLOPT_HSTS',
+			'CURLOPT_KRBLEVEL',
+			'CURLOPT_RANGE',
+			'CURLOPT_RTSP_SESSION_ID',
+			'CURLOPT_UNIX_SOCKET_PATH',
+			'CURLOPT_XOAUTH2_BEARER',
+		];
+		foreach ($nullableStringConstants as $constName) {
+			if (defined($constName) && constant($constName) === $curlOpt) {
+				return TypeCombinator::intersect(
+					new NullType(),
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				);
+			}
+		}
+
 		$nonEmptyStringConstants = [
 			'CURLOPT_ABSTRACT_UNIX_SOCKET',
 			'CURLOPT_ALTSVC',
@@ -927,15 +953,10 @@ final class ParametersAcceptorSelector
 			'CURLOPT_COOKIE',
 			'CURLOPT_COOKIEJAR',
 			'CURLOPT_COOKIELIST',
-			'CURLOPT_CUSTOMREQUEST',
 			'CURLOPT_DEFAULT_PROTOCOL',
-			'CURLOPT_DNS_INTERFACE',
-			'CURLOPT_DNS_LOCAL_IP4',
-			'CURLOPT_DNS_LOCAL_IP6',
 			'CURLOPT_DNS_SERVERS',
 			'CURLOPT_EGDSOCKET',
 			'CURLOPT_FTP_ALTERNATIVE_TO_USER',
-			'CURLOPT_FTPPORT',
 			'CURLOPT_INTERFACE',
 			'CURLOPT_KEYPASSWD',
 			'CURLOPT_KRB4LEVEL',
@@ -966,7 +987,6 @@ final class ParametersAcceptorSelector
 			'CURLOPT_PROXYUSERNAME',
 			'CURLOPT_PROXYUSERPWD',
 			'CURLOPT_RANDOM_FILE',
-			'CURLOPT_RANGE',
 			'CURLOPT_REDIR_PROTOCOLS_STR',
 			'CURLOPT_REFERER',
 			'CURLOPT_REQUEST_TARGET',
@@ -994,12 +1014,10 @@ final class ParametersAcceptorSelector
 			'CURLOPT_TLSAUTH_TYPE',
 			'CURLOPT_TLSAUTH_USERNAME',
 			'CURLOPT_TRANSFER_ENCODING',
-			'CURLOPT_UNIX_SOCKET_PATH',
 			'CURLOPT_URL',
 			'CURLOPT_USERAGENT',
 			'CURLOPT_USERNAME',
 			'CURLOPT_USERPWD',
-			'CURLOPT_XOAUTH2_BEARER',
 		];
 		foreach ($nonEmptyStringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {

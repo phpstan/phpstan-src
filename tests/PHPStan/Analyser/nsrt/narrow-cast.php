@@ -33,7 +33,7 @@ function castString($x, string $s, bool $b) {
 	if ((string) $x) {
 		assertType('int<-5, 5>', $x);
 	} else {
-		assertType('int<-5, 5>', $x);
+		assertType('0', $x);
 	}
 
 	if ((string) $b) {

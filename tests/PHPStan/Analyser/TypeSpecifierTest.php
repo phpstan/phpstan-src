@@ -477,8 +477,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Variable('foo'),
 					new Expr\ConstFetch(new Name('null')),
 				),
-				['$foo' => self::SURE_NOT_TRUTHY],
-				['$foo' => self::SURE_NOT_FALSEY],
+				['$foo' => '0|0.0|\'\'|array{}|false|null'],
+				['$foo' => '~0|0.0|\'\'|array{}|false|null'],
 			],
 			[
 				new Expr\BinaryOp\Identical(

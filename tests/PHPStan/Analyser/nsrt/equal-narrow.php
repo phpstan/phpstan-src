@@ -37,7 +37,7 @@ function doNull($x, $y, $z): void
 	if ($z == null) {
 		assertType("0|0.0|''|array{}|false|null", $z);
 	} else {
-		assertType("mixed~0|0.0|''|array{}|false|null", $z);
+		assertType("mixed~(0|0.0|''|array{}|false|null)", $z);
 	}
 }
 
@@ -74,7 +74,7 @@ function doFalse($x, $y, $z): void
 	if ($z == false) {
 		assertType("0|0.0|''|'0'|array{}|false|null", $z);
 	} else {
-		assertType("mixed~0|0.0|''|'0'|array{}|false|null", $z);
+		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $z);
 	}
 }
 
@@ -109,7 +109,7 @@ function doTrue($x, $y, $z): void
 	}
 
 	if ($z == true) {
-		assertType("mixed~0|0.0|''|'0'|array{}|false|null", $z);
+		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $z);
 	} else {
 		assertType("0|0.0|''|'0'|array{}|false|null", $z);
 	}
@@ -143,6 +143,6 @@ function doEmptyString($x, $y, $z): void
 	if ($z == '') {
 		assertType("0|0.0|''|false|null", $z);
 	} else {
-		assertType("mixed~''|false|null", $z);
+		assertType("mixed~(''|false|null)", $z);
 	}
 }

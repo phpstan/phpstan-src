@@ -422,8 +422,8 @@ class MoreNonEmptyStringFunctions
 			assertType('non-falsy-string', (string) $m);
 		}
 		if ($m != '') {
-			assertType("mixed", $m);
-			assertType('string', (string) $m);
+			assertType("mixed~(''|false|null)", $m);
+			assertType('non-empty-string', (string) $m);
 		}
 		if ($m !== '') {
 			assertType("mixed~''", $m);

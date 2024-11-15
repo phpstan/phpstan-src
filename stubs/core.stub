@@ -328,3 +328,8 @@ function ltrim(string $string, string $characters = " \n\r\t\v\x00"): string {}
  * @return ($string is lowercase-string ? lowercase-string : string)
  */
 function rtrim(string $string, string $characters = " \n\r\t\v\x00"): string {}
+
+/**
+ * @return ($categorize is true ? array<string, array<string, mixed>> : array<string, mixed>)
+ */
+function get_defined_constants(bool $categorize = false): array {}

@@ -15,6 +15,7 @@ class HelloWorld
 		// expecting string
 		curl_setopt($curl, CURLOPT_URL, $i);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, $i);
+		curl_setopt($curl, CURLOPT_ABSTRACT_UNIX_SOCKET, null);
 		// expecting bool
 		curl_setopt($curl, CURLOPT_AUTOREFERER, $i);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, $s);
@@ -26,6 +27,9 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_FILE, $s);
 		// expecting string or array
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $i);
+		// expecting non empty string
+		curl_setopt($curl, CURLOPT_URL, '');
+		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, '');
 	}
 
 	/**
@@ -41,6 +45,8 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_AUTOREFERER, true);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, null);
 
 		$fp = fopen("example_homepage.txt", "w");
 		if ($fp === false) {

@@ -936,11 +936,13 @@ final class ParametersAcceptorSelector
 		];
 		foreach ($nullableStringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {
-				return TypeCombinator::intersect(
+				return new UnionType([
 					new NullType(),
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-				);
+					TypeCombinator::intersect(
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					),
+				]);
 			}
 		}
 

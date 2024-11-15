@@ -1611,7 +1611,7 @@ final class TypeSpecifier
 	}
 
 	/**
-	 * @return array{Expr, ConstantScalarType}|null
+	 * @return array{Expr, ConstantScalarType, Type}|null
 	 */
 	private function findTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
 	{
@@ -1633,13 +1633,13 @@ final class TypeSpecifier
 			&& !$rightExpr instanceof ConstFetch
 			&& !$rightExpr instanceof ClassConstFetch
 		) {
-			return [$binaryOperation->right, $leftType];
+			return [$binaryOperation->right, $leftType, $rightType];
 		} elseif (
 			$rightType instanceof ConstantScalarType
 			&& !$leftExpr instanceof ConstFetch
 			&& !$leftExpr instanceof ClassConstFetch
 		) {
-			return [$binaryOperation->left, $rightType];
+			return [$binaryOperation->left, $rightType, $leftType];
 		}
 
 		return null;
@@ -1950,6 +1950,7 @@ final class TypeSpecifier
 		if ($expressions !== null) {
 			$exprNode = $expressions[0];
 			$constantType = $expressions[1];
+			$otherType = $expressions[2];
 
 			if (!$context->null() && $constantType->getValue() === null) {
 				$trueTypes = [
@@ -1979,6 +1980,30 @@ final class TypeSpecifier
 					$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
 					$rootExpr,
 				);
+			}
+
+			if (!$context->null() && $constantType->getValue() === 0 && !$otherType->isInteger()->yes()) {
+				/* There is a difference between php 7.x and 8.x on the equality
+				 * behavior between zero and the empty string, so to be conservative
+				 * we leave it untouched regardless of the language version */
+				if ($context->true()) {
+					$trueTypes = [
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantIntegerType(0),
+						new ConstantFloatType(0.0),
+						new StringType(),
+					];
+				} else {
+					$trueTypes = [
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantIntegerType(0),
+						new ConstantFloatType(0.0),
+						new ConstantStringType('0'),
+					];
+				}
+				return $this->create($exprNode, new UnionType($trueTypes), $context, false, $scope, $rootExpr);
 			}
 
 			if (!$context->null() && $constantType->getValue() === '') {

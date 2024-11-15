@@ -120,6 +120,38 @@ function doTrue($x, $y, $z): void
  * @param int|string|null $y
  * @param mixed $z
  */
+function doZero($x, $y, $z): void
+{
+	// PHP 7.x/8.x compatibility: Keep zero in both cases
+	if ($x == 0) {
+		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+	} else {
+		assertType("1|''|'x'|array{}|object|true", $x);
+	}
+	if (0 != $x) {
+		assertType("1|''|'x'|array{}|object|true", $x);
+	} else {
+		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+	}
+
+	if ($y == 0) {
+		assertType("0|string|null", $y);
+	} else {
+		assertType("int<min, -1>|int<1, max>|string", $y);
+	}
+
+	if ($z == 0) {
+		assertType("0|0.0|string|false|null", $z);
+	} else {
+		assertType("mixed~(0|0.0|'0'|false|null)", $z);
+	}
+}
+
+/**
+ * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param int|string|null $y
+ * @param mixed $z
+ */
 function doEmptyString($x, $y, $z): void
 {
 	// PHP 7.x/8.x compatibility: Keep zero in both cases

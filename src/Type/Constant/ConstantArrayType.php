@@ -481,7 +481,19 @@ class ConstantArrayType implements Type
 			$typeAndMethods,
 		);
 
-		return TrinaryLogic::createYes()->and(...$results);
+		$isCallable = TrinaryLogic::createYes()->and(...$results);
+		if ($isCallable->yes()) {
+			$callableArray = $this->getClassOrObjectAndMethods();
+			if ($callableArray !== []) {
+				[$classOrObject, $methods] = $callableArray;
+
+				if (count($methods->getConstantStrings()) !== count($typeAndMethods)) {
+					return TrinaryLogic::createMaybe();
+				}
+			}
+		}
+
+		return $isCallable;
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

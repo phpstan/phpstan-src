@@ -1982,7 +1982,7 @@ final class TypeSpecifier
 				);
 			}
 
-			if (!$context->null() && $constantType->getValue() === 0 && !$otherType->isInteger()->yes()) {
+			if (!$context->null() && $constantType->getValue() === 0 && !$otherType->isInteger()->yes() && !$otherType->isBoolean()->yes()) {
 				/* There is a difference between php 7.x and 8.x on the equality
 				 * behavior between zero and the empty string, so to be conservative
 				 * we leave it untouched regardless of the language version */
@@ -2121,11 +2121,13 @@ final class TypeSpecifier
 
 	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context, ?Expr $rootExpr): SpecifiedTypes
 	{
+		// Normalize to: fn() === expr
 		$leftExpr = $expr->left;
 		$rightExpr = $expr->right;
 		if ($rightExpr instanceof FuncCall && !$leftExpr instanceof FuncCall) {
 			[$leftExpr, $rightExpr] = [$rightExpr, $leftExpr];
 		}
+
 		$unwrappedLeftExpr = $leftExpr;
 		if ($leftExpr instanceof AlwaysRememberedExpr) {
 			$unwrappedLeftExpr = $leftExpr->getExpr();
@@ -2134,8 +2136,10 @@ final class TypeSpecifier
 		if ($rightExpr instanceof AlwaysRememberedExpr) {
 			$unwrappedRightExpr = $rightExpr->getExpr();
 		}
+
 		$rightType = $scope->getType($rightExpr);
 
+		// (count($a) === $b)
 		if (
 			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2200,6 +2204,7 @@ final class TypeSpecifier
 			}
 		}
 
+		// strlen($a) === $b
 		if (
 			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2236,6 +2241,7 @@ final class TypeSpecifier
 			}
 		}
 
+		// preg_match($a) === $b
 		if (
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2251,6 +2257,7 @@ final class TypeSpecifier
 			);
 		}
 
+		// get_class($a) === 'Foo'
 		if (
 			$context->true()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2270,6 +2277,7 @@ final class TypeSpecifier
 			}
 		}
 
+		// get_class($a) === 'Foo'
 		if (
 			$context->truthy()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2350,6 +2358,7 @@ final class TypeSpecifier
 			}
 		}
 
+		// $a::class === 'Foo'
 		if (
 			$context->true() &&
 			$unwrappedLeftExpr instanceof ClassConstFetch &&
@@ -2372,6 +2381,8 @@ final class TypeSpecifier
 		}
 
 		$leftType = $scope->getType($leftExpr);
+
+		// 'Foo' === $a::class
 		if (
 			$context->true() &&
 			$unwrappedRightExpr instanceof ClassConstFetch &&
@@ -2417,7 +2428,11 @@ final class TypeSpecifier
 		$types = null;
 		if (
 			count($leftType->getFiniteTypes()) === 1
-			|| ($context->true() && $leftType->isConstantValue()->yes() && !$rightType->equals($leftType) && $rightType->isSuperTypeOf($leftType)->yes())
+			|| (
+				$context->true()
+				&& $leftType->isConstantValue()->yes()
+				&& !$rightType->equals($leftType)
+				&& $rightType->isSuperTypeOf($leftType)->yes())
 		) {
 			$types = $this->create(
 				$rightExpr,
@@ -2440,7 +2455,12 @@ final class TypeSpecifier
 		}
 		if (
 			count($rightType->getFiniteTypes()) === 1
-			|| ($context->true() && $rightType->isConstantValue()->yes() && !$leftType->equals($rightType) && $leftType->isSuperTypeOf($rightType)->yes())
+			|| (
+				$context->true()
+				&& $rightType->isConstantValue()->yes()
+				&& !$leftType->equals($rightType)
+				&& $leftType->isSuperTypeOf($rightType)->yes()
+			)
 		) {
 			$leftTypes = $this->create(
 				$leftExpr,

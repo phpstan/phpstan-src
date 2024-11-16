@@ -21,6 +21,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -50,6 +51,10 @@ class ArrayType implements Type
 		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
 			$keyType = new MixedType();
 		}
+		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {
+			$keyType = new UnionType([new StringType(), new IntegerType()]);
+		}
+
 		$this->keyType = $keyType;
 	}
 

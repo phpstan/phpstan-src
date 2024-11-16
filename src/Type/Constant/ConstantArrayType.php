@@ -1476,7 +1476,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				if (is_string($keyDescription)) {
 					if (str_contains($keyDescription, '"')) {
 						$keyDescription = sprintf('\'%s\'', $keyDescription);
-					} elseif (str_contains($keyDescription, '\'')) {
+					} else {
 						$keyDescription = sprintf('"%s"', $keyDescription);
 					}
 				}

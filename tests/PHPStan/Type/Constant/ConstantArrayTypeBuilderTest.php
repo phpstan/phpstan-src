@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
@@ -160,6 +161,40 @@ class ConstantArrayTypeBuilderTest extends TestCase
 
 		$builder->setOffsetValueType($oneOrFour, new NullType());
 		$this->assertFalse($builder->isList());
+	}
+
+	public function dataQuotedOffsetNames(): iterable
+	{
+		yield [
+			'array{"count(*)": 1}',
+			new ConstantStringType('count(*)'),
+			new ConstantIntegerType(1),
+		];
+
+		yield [
+			"array{'cou\"nt(*)': 1}",
+			new ConstantStringType('cou"nt(*)'),
+			new ConstantIntegerType(1),
+		];
+
+		yield [
+			'array{"count\'ed": 1}',
+			new ConstantStringType("count'ed"),
+			new ConstantIntegerType(1),
+		];
+	}
+
+	/**
+	 * @dataProvider dataQuotedOffsetNames
+	 */
+	public function testQuotedOffsetNames(string $expectedDescription, Type $key, Type $value): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->setOffsetValueType($key, $value);
+
+		$array1 = $builder->getArray();
+		$this->assertInstanceOf(ConstantArrayType::class, $array1);
+		$this->assertSame($expectedDescription, $array1->describe(VerbosityLevel::precise()));
 	}
 
 }

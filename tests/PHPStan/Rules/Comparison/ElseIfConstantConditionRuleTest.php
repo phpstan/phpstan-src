@@ -135,6 +135,10 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 				'Elseif condition is always false.',
 				28,
 			],
+			[
+				'Elseif condition is always false.',
+				36,
+			],
 		]);
 	}
 

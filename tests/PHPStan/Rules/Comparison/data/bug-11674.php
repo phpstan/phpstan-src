@@ -10,7 +10,7 @@ class Test {
 		if ((int) $this->param) {
 			echo 1;
 		} elseif ($this->param) {
-			echo 2;
+			echo 2; // might be "0"
 		}
 	}
 
@@ -18,7 +18,7 @@ class Test {
 		if ((float) $this->param) {
 			echo 1;
 		} elseif ($this->param) {
-			echo 2;
+			echo 2; // might be "0"
 		}
 	}
 
@@ -26,7 +26,7 @@ class Test {
 		if ((bool) $this->param) {
 			echo 1;
 		} elseif ($this->param) {
-			echo 2;
+			echo 2; // not possible
 		}
 	}
 
@@ -34,7 +34,7 @@ class Test {
 		if ((string) $this->param) {
 			echo 1;
 		} elseif ($this->param) {
-			echo 2;
+			echo 2; // not possible
 		}
 	}
 }

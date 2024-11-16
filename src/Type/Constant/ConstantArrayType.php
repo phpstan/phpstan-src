@@ -458,17 +458,41 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethods = $this->findTypeAndMethodNames();
-		if ($typeAndMethods === []) {
+		$callableArray = $this->getClassOrObjectAndMethods();
+		if ($callableArray === []) {
 			return TrinaryLogic::createNo();
 		}
 
-		$results = array_map(
-			static fn (ConstantArrayTypeAndMethod $typeAndMethod): TrinaryLogic => $typeAndMethod->getCertainty(),
-			$typeAndMethods,
-		);
+		[$classOrObject, $methods] = $callableArray;
+		if (count($methods->getConstantStrings()) === 0) {
+			return TrinaryLogic::createMaybe();
+		}
 
-		return TrinaryLogic::createYes()->and(...$results);
+		$type = $classOrObject->getObjectTypeOrClassStringObjectType();
+		if (!$type->isObject()->yes()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		$hasMethodTrinary = [];
+		$phpVersion = PhpVersionStaticAccessor::getInstance();
+		foreach ($methods->getConstantStrings() as $method) {
+			$has = $type->hasMethod($method->getValue());
+
+			if ($has->yes()) {
+				if (!$phpVersion->supportsCallableInstanceMethods()) {
+					$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
+					if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
+						$has = $has->and(TrinaryLogic::createNo());
+					}
+				} elseif ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+					$has = $has->and(TrinaryLogic::createMaybe());
+				}
+			}
+
+			$hasMethodTrinary[] = $has;
+		}
+
+		return TrinaryLogic::extremeIdentity(...$hasMethodTrinary);
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

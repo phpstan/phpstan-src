@@ -29,6 +29,7 @@ use function array_values;
 use function count;
 use function in_array;
 use function intval;
+use function is_array;
 use function is_string;
 use function preg_match;
 use function sprintf;
@@ -69,7 +70,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			static fn (Type $type): bool => $type->toString()->isLowercaseString()->yes()
 		);
 
-		$singlePlaceholderEarlyReturn = null;
+		$singlePlaceholderEarlyReturn = [];
 		$allPatternsNonEmpty = count($formatStrings) !== 0;
 		$allPatternsNonFalsy = count($formatStrings) !== 0;
 		foreach ($formatStrings as $constantString) {
@@ -93,8 +94,11 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 				$allPatternsNonFalsy = false;
 			}
 
-			// The printf format is %[argnum$][flags][width][.precision]specifier.
-			if (preg_match('/^%(?P<argnum>[0-9]*\$)?(?P<width>[0-9]*)\.?[0-9]*(?P<specifier>[sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1) {
+			if (
+				is_array($singlePlaceholderEarlyReturn)
+				// The printf format is %[argnum$][flags][width][.precision]specifier.
+				&& preg_match('/^%(?P<argnum>[0-9]*\$)?(?P<width>[0-9]*)\.?[0-9]*(?P<specifier>[sbdeEfFgGhHouxX])$/', $constantString->getValue(), $matches) === 1
+			) {
 				if ($matches['argnum'] !== '') {
 					// invalid positional argument
 					if ($matches['argnum'] === '0$') {
@@ -132,14 +136,14 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 								continue 2;
 							}
 						}
-						$singlePlaceholderEarlyReturn = TypeCombinator::union(...$result);
+						$singlePlaceholderEarlyReturn[] = TypeCombinator::union(...$result);
 
 						continue;
 					}
 
-					$singlePlaceholderEarlyReturn = $checkArgType->toString();
+					$singlePlaceholderEarlyReturn[] = $checkArgType->toString();
 				} elseif ($matches['specifier'] !== 's') {
-					$singlePlaceholderEarlyReturn = $this->getStringReturnType(
+					$singlePlaceholderEarlyReturn[] = $this->getStringReturnType(
 						new AccessoryNumericStringType(),
 						$isLowercase,
 					);
@@ -149,11 +153,10 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			}
 
 			$singlePlaceholderEarlyReturn = null;
-			break;
 		}
 
-		if ($singlePlaceholderEarlyReturn !== null) {
-			return $singlePlaceholderEarlyReturn;
+		if (is_array($singlePlaceholderEarlyReturn) && count($singlePlaceholderEarlyReturn) > 0) {
+			return TypeCombinator::union(...$singlePlaceholderEarlyReturn);
 		}
 
 		if ($allPatternsNonFalsy) {

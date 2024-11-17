@@ -482,7 +482,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				if (!$phpVersion->supportsCallableInstanceMethods()) {
 					$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
 					if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
-						$has = $has->and(TrinaryLogic::createNo());
+						$has = TrinaryLogic::createNo();
 					}
 				} elseif ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
 					$has = $has->and(TrinaryLogic::createMaybe());

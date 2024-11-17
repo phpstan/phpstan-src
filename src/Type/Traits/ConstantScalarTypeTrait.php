@@ -34,6 +34,7 @@ trait ConstantScalarTypeTrait
 		}
 
 		if (get_parent_class($this) !== false) {
+			// @phpstan-ignore class.noParent
 			return parent::acceptsWithReason($type, $strictTypes)->and(AcceptsResult::createMaybe());
 		}
 

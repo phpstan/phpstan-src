@@ -248,6 +248,9 @@ final class PhpVersion
 		return $this->versionId < 70300;
 	}
 
+	/**
+	 * @deprecated use PhpVersions::producesWarningForFinalPrivateMethods() instead
+	 */
 	public function producesWarningForFinalPrivateMethods(): bool
 	{
 		return $this->versionId >= 80000;

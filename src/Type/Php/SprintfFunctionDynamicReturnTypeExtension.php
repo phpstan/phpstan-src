@@ -126,17 +126,15 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 						$constArgTypes = $checkArgType->getConstantScalarTypes();
 					}
 					if ($constArgTypes !== []) {
-						$result = [];
 						$printfArgs = array_fill(0, count($args) - 1, '');
 						foreach ($constArgTypes as $constArgType) {
 							$printfArgs[$checkArg - 1] = $constArgType->getValue();
 							try {
-								$result[] = new ConstantStringType(@sprintf($constantString->getValue(), ...$printfArgs));
+								$singlePlaceholderEarlyReturn[] = new ConstantStringType(@sprintf($constantString->getValue(), ...$printfArgs));
 							} catch (Throwable) {
 								continue 2;
 							}
 						}
-						$singlePlaceholderEarlyReturn[] = TypeCombinator::union(...$result);
 
 						continue;
 					}

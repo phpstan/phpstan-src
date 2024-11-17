@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -23,6 +24,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 class NullType implements ConstantScalarType
 {
 
+	use ConstantScalarTypeTrait;
 	use NonArrayTypeTrait;
 	use NonCallableTypeTrait;
 	use NonIterableTypeTrait;
@@ -72,71 +74,9 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
-	{
-		return $this->acceptsWithReason($type, $strictTypes)->result;
-	}
-
-	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
-	{
-		if ($type instanceof self) {
-			return AcceptsResult::createYes();
-		}
-
-		if ($type instanceof CompoundType) {
-			return $type->isAcceptedWithReasonBy($this, $strictTypes);
-		}
-
-		return AcceptsResult::createNo();
-	}
-
-	public function isSuperTypeOf(Type $type): TrinaryLogic
-	{
-		return $this->isSuperTypeOfWithReason($type)->result;
-	}
-
-	public function isSuperTypeOfWithReason(Type $type): IsSuperTypeOfResult
-	{
-		if ($type instanceof self) {
-			return IsSuperTypeOfResult::createYes();
-		}
-
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOfWithReason($this);
-		}
-
-		return IsSuperTypeOfResult::createNo();
-	}
-
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self;
-	}
-
-	public function isSmallerThan(Type $otherType): TrinaryLogic
-	{
-		if ($otherType instanceof ConstantScalarType) {
-			return TrinaryLogic::createFromBoolean(null < $otherType->getValue());
-		}
-
-		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThan($this);
-		}
-
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
-	{
-		if ($otherType instanceof ConstantScalarType) {
-			return TrinaryLogic::createFromBoolean(null <= $otherType->getValue());
-		}
-
-		if ($otherType instanceof CompoundType) {
-			return $otherType->isGreaterThanOrEqual($this);
-		}
-
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -228,26 +168,6 @@ class NullType implements ConstantScalarType
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
-	}
-
-	public function isConstantValue(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function isConstantScalarValue(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function getConstantScalarTypes(): array
-	{
-		return [$this];
-	}
-
-	public function getConstantScalarValues(): array
-	{
-		return [$this->getValue()];
 	}
 
 	public function isTrue(): TrinaryLogic

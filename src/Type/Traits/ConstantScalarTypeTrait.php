@@ -13,6 +13,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
+use function get_parent_class;
 
 trait ConstantScalarTypeTrait
 {
@@ -32,7 +33,11 @@ trait ConstantScalarTypeTrait
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return parent::acceptsWithReason($type, $strictTypes)->and(AcceptsResult::createMaybe());
+		if (get_parent_class($this) !== false) {
+			return parent::acceptsWithReason($type, $strictTypes)->and(AcceptsResult::createMaybe());
+		}
+
+		return AcceptsResult::createNo();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -46,7 +51,7 @@ trait ConstantScalarTypeTrait
 			return IsSuperTypeOfResult::createFromBoolean($this->equals($type));
 		}
 
-		if ($type instanceof parent) {
+		if (get_parent_class($this) !== false && $type instanceof parent) {
 			return IsSuperTypeOfResult::createMaybe();
 		}
 
@@ -76,18 +81,22 @@ trait ConstantScalarTypeTrait
 			return $type->looseCompare($this, $phpVersion);
 		}
 
-		return parent::looseCompare($type, $phpVersion);
+		if (get_parent_class($this) !== false) {
+			return parent::looseCompare($type, $phpVersion);
+		}
+
+		return new BooleanType();
 	}
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self && $this->value === $type->value;
+		return $type instanceof self && $this->getValue() === $type->getValue();
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			return TrinaryLogic::createFromBoolean($this->value < $otherType->getValue());
+			return TrinaryLogic::createFromBoolean($this->getValue() < $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {
@@ -100,7 +109,7 @@ trait ConstantScalarTypeTrait
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			return TrinaryLogic::createFromBoolean($this->value <= $otherType->getValue());
+			return TrinaryLogic::createFromBoolean($this->getValue() <= $otherType->getValue());
 		}
 
 		if ($otherType instanceof CompoundType) {

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /** @extends RuleTestCase<FinalPrivateMethodRule> */
 class FinalPrivateMethodRuleTest extends RuleTestCase
@@ -16,11 +17,16 @@ class FinalPrivateMethodRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/final-private-method.php'], [
-			[
+		$error = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$error = [
 				'Private method FinalPrivateMethod\Foo::foo() cannot be final as it is never overridden by other classes.',
 				8,
-			],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/final-private-method.php'], [
+			$error,
 			[
 				'Private method FinalPrivateMethod\FooBarPhp8orHigher::foo() cannot be final as it is never overridden by other classes.',
 				39,

@@ -29,6 +29,10 @@ class FinalPrivateMethodRuleTest extends RuleTestCase
 				'Private method FinalPrivateMethod\FooBarPhp74OrHigher::foo() cannot be final as it is never overridden by other classes.',
 				59,
 			],
+			[
+				'Private method FinalPrivateMethod\FooBarPhp8orHigher::foo() cannot be final as it is never overridden by other classes.',
+				69,
+			],
 		]);
 	}
 

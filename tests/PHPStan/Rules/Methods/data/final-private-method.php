@@ -61,3 +61,13 @@ if (PHP_VERSION_ID > 70400) {
 		}
 	}
 }
+
+if (PHP_VERSION_ID < 70400 || PHP_VERSION_ID >= 80100) {
+	class FooBarPhp8orHigher
+	{
+
+		final private function foo(): void
+		{
+		}
+	}
+}

@@ -145,7 +145,6 @@ use function get_class;
 use function implode;
 use function in_array;
 use function is_bool;
-use function is_int;
 use function is_numeric;
 use function is_string;
 use function ltrim;
@@ -5727,35 +5726,10 @@ final class MutatingScope implements Scope
 	{
 		$versionExpr = new ConstFetch(new Name('PHP_VERSION_ID'));
 		if (!$this->hasExpressionType($versionExpr)->yes()) {
-			return new PhpVersions([$this->phpVersion->getVersionId()]);
+			return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
 		}
 
-		$versionId = $this->getType($versionExpr);
-		if ($versionId instanceof IntegerRangeType) {
-			if ($versionId->getMin() !== null && $versionId->getMax() !== null) {
-				return new PhpVersions([$versionId->getMin(), $versionId->getMax()]);
-			}
-			if ($versionId->getMin() !== null) {
-				return new PhpVersions([$versionId->getMin()]);
-			}
-			if ($versionId->getMax() !== null) {
-				return new PhpVersions([$versionId->getMax()]);
-			}
-		}
-
-		$scalars = $versionId->getConstantScalarValues();
-		if ($scalars !== []) {
-			$ints = [];
-			foreach ($scalars as $scalar) {
-				if (!is_int($scalar)) {
-					throw new ShouldNotHappenException();
-				}
-				$ints[] = $scalar;
-			}
-			return new PhpVersions($ints);
-		}
-
-		return new PhpVersions([$this->phpVersion->getVersionId()]);
+		return new PhpVersions($this->getType($versionExpr));
 	}
 
 }

@@ -27,6 +27,9 @@ class ConstantArrayTypeAndMethod
 		TrinaryLogic $certainty,
 	): self
 	{
+		if ($certainty->no()) {
+			throw new ShouldNotHappenException();
+		}
 		return new self($type, $method, $certainty);
 	}
 

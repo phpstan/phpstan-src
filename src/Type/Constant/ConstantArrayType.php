@@ -458,7 +458,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethods = $this->findTypeAndMethodNames(false);
+		$typeAndMethods = $this->findTypeAndMethodNames();
 		if ($typeAndMethods === []) {
 			return TrinaryLogic::createNo();
 		}
@@ -468,7 +468,19 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$typeAndMethods,
 		);
 
-		return TrinaryLogic::extremeIdentity(...$results);
+		$isCallable = TrinaryLogic::createYes()->and(...$results);
+		if ($isCallable->yes()) {
+			$callableArray = $this->getClassOrObjectAndMethods();
+			if ($callableArray !== []) {
+				[$classOrObject, $methods] = $callableArray;
+
+				if (count($methods->getConstantStrings()) !== count($typeAndMethods)) {
+					return TrinaryLogic::createMaybe();
+				}
+			}
+		}
+
+		return $isCallable;
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
@@ -561,7 +573,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	}
 
 	/** @return ConstantArrayTypeAndMethod[] */
-	public function findTypeAndMethodNames(bool $atLeastMaybe = true): array
+	public function findTypeAndMethodNames(): array
 	{
 		$callableArray = $this->getClassOrObjectAndMethods();
 		if ($callableArray === []) {
@@ -582,21 +594,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$phpVersion = PhpVersionStaticAccessor::getInstance();
 		foreach ($methods->getConstantStrings() as $method) {
 			$has = $type->hasMethod($method->getValue());
+			if ($has->no()) {
+				continue;
+			}
 
-			if ($has->yes()) {
-				if (BleedingEdgeToggle::isBleedingEdge() && !$phpVersion->supportsCallableInstanceMethods()) {
-					$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
-					if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
-						$has = TrinaryLogic::createNo();
-					}
-				} elseif ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
-					$has = $has->and(TrinaryLogic::createMaybe());
+			if (
+				BleedingEdgeToggle::isBleedingEdge()
+				&& $has->yes()
+				&& !$phpVersion->supportsCallableInstanceMethods()
+			) {
+				$methodReflection = $type->getMethod($method->getValue(), new OutOfClassScope());
+				if ($classOrObject->isString()->yes() && !$methodReflection->isStatic()) {
+					continue;
 				}
 			}
 
-			if ($atLeastMaybe && $has->no()) {
-				continue;
+			if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+				$has = $has->and(TrinaryLogic::createMaybe());
 			}
+
 			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
 		}
 

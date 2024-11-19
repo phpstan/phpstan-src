@@ -594,9 +594,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				}
 			}
 
-			if (!$atLeastMaybe || !$has->no()) {
-				$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			if ($atLeastMaybe && $has->no()) {
+				continue;
 			}
+			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
 		}
 
 		return $typeAndMethods;

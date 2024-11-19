@@ -418,7 +418,7 @@ return [
 'bbcode_set_arg_parser' => ['bool', 'bbcode_container'=>'resource', 'bbcode_arg_parser'=>'resource'],
 'bbcode_set_flags' => ['bool', 'bbcode_container'=>'resource', 'flags'=>'int', 'mode='=>'int'],
 'bcadd' => ['numeric-string', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
-'bccomp' => ['int', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
+'bccomp' => ['0|1|-1', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
 'bcdiv' => ['numeric-string|null', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
 'bcmod' => ['numeric-string|null', 'left_operand'=>'string', 'right_operand'=>'numeric-string', 'scale='=>'int'],
 'bcmul' => ['numeric-string', 'left_operand'=>'numeric-string', 'right_operand'=>'numeric-string', 'scale='=>'int'],

@@ -4,9 +4,7 @@ namespace PHPStan\Reflection\BetterReflection\Type;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionType;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -56,9 +54,7 @@ final class AdapterReflectionEnumCaseDynamicReturnTypeExtension implements Dynam
 
 		if ($methodReflection->getName() === 'getType') {
 			return new UnionType([
-				new ObjectType(ReflectionIntersectionType::class),
-				new ObjectType(ReflectionNamedType::class),
-				new ObjectType(ReflectionUnionType::class),
+				new ObjectType(ReflectionType::class),
 				new NullType(),
 			]);
 		}

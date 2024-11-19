@@ -72,10 +72,7 @@ final class AdapterReflectionEnumDynamicReturnTypeExtension implements DynamicMe
 		}
 
 		if (in_array($methodReflection->getName(), ['getStartLine', 'getEndLine'], true)) {
-			return new UnionType([
-				new IntegerType(),
-				new ConstantBooleanType(false),
-			]);
+			return new IntegerType();
 		}
 
 		if ($methodReflection->getName() === 'getReflectionConstant') {

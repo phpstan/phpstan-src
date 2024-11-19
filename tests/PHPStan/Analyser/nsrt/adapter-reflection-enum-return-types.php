@@ -5,12 +5,13 @@ namespace AdapterReflectionEnumReturnTypes;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionType;
 use function PHPStan\Testing\assertType;
 
 function (ReflectionEnum $r, string $s): void {
 	assertType('non-empty-string|false', $r->getFileName());
-	assertType('int|false', $r->getStartLine());
-	assertType('int|false', $r->getEndLine());
+	assertType('int', $r->getStartLine());
+	assertType('int', $r->getEndLine());
 	assertType('string|false', $r->getDocComment());
 	assertType('PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant|false', $r->getReflectionConstant($s));
 	assertType('PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass|false', $r->getParentClass());
@@ -20,10 +21,10 @@ function (ReflectionEnum $r, string $s): void {
 
 function (ReflectionEnumBackedCase $r): void {
 	assertType('string|false', $r->getDocComment());
-	assertType('PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType|PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType|PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType|null', $r->getType());
+	assertType(ReflectionType::class . '|null', $r->getType());
 };
 
 function (ReflectionEnumUnitCase $r): void {
 	assertType('string|false', $r->getDocComment());
-	assertType('PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType|PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType|PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType|null', $r->getType());
+	assertType(ReflectionType::class . '|null', $r->getType());
 };

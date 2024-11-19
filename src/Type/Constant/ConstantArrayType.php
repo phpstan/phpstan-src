@@ -458,7 +458,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethods = $this->findTypeAndMethodNames();
+		$typeAndMethods = $this->findTypeAndMethodNames(false);
 		if ($typeAndMethods === []) {
 			return TrinaryLogic::createNo();
 		}
@@ -561,7 +561,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	}
 
 	/** @return ConstantArrayTypeAndMethod[] */
-	public function findTypeAndMethodNames(): array
+	public function findTypeAndMethodNames(bool $atLeastMaybe = true): array
 	{
 		$callableArray = $this->getClassOrObjectAndMethods();
 		if ($callableArray === []) {
@@ -594,7 +594,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				}
 			}
 
-			$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			if (!$atLeastMaybe || !$has->no()) {
+				$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			}
 		}
 
 		return $typeAndMethods;

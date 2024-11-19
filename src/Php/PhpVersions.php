@@ -18,7 +18,6 @@ final class PhpVersions
 	private int $maxVersionId;
 
 	/**
-	 * @api
 	 * @param list<int> $phpVersionIds
 	 */
 	public function __construct(

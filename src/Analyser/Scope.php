@@ -137,6 +137,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function isInFirstLevelStatement(): bool;
 
-	public function getPhpVersions(): PhpVersions;
+	public function getPhpVersion(): PhpVersions;
 
 }

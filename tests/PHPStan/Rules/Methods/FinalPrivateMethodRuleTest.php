@@ -48,7 +48,7 @@ class FinalPrivateMethodRuleTest extends RuleTestCase
 			$testVersion->getMajorVersionId() !== $runtimeVersion->getMajorVersionId()
 			|| $testVersion->getMinorVersionId() !== $runtimeVersion->getMinorVersionId()
 		) {
-			$this->markTestSkipped('Test requires PHP version ' . $phpVersion);
+			$this->markTestSkipped('Test requires PHP version ' . $testVersion->getMajorVersionId() . '.' . $testVersion->getMinorVersionId() . '.*');
 		}
 
 		$this->analyse([__DIR__ . '/data/final-private-method.php'], $errors);

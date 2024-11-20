@@ -21,14 +21,14 @@ class HelloWorld
 		$maybeNegativeConstStrings, $maybeNonNumericConstStrings, $maybeFloatConstStrings,
 		bool $bool, float $float
 	): void {
-		assertType('lowercase-string&non-falsy-string', '0'.$i);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $i.'0');
+		assertType('lowercase-string&non-falsy-string&uppercase-string', '0'.$i);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $i.'0');
 
-		assertType('lowercase-string&non-falsy-string&numeric-string', '0'.$positiveInt);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $positiveInt.'0');
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', '0'.$positiveInt);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $positiveInt.'0');
 
-		assertType('lowercase-string&non-falsy-string', '0'.$negativeInt);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $negativeInt.'0');
+		assertType('lowercase-string&non-falsy-string&uppercase-string', '0'.$negativeInt);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $negativeInt.'0');
 
 		assertType("'00'|'01'|'02'", '0'.$positiveConstStrings);
 		assertType( "'00'|'10'|'20'", $positiveConstStrings.'0');
@@ -39,29 +39,29 @@ class HelloWorld
 		assertType("'00'|'01'|'0a'", '0'.$maybeNonNumericConstStrings);
 		assertType("'00'|'10'|'a0'", $maybeNonNumericConstStrings.'0');
 
-		assertType('lowercase-string&non-falsy-string&numeric-string', $i.$positiveConstStrings);
-		assertType('lowercase-string&non-falsy-string', $positiveConstStrings.$i);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $i.$positiveConstStrings);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $positiveConstStrings.$i);
 
-		assertType('lowercase-string&non-falsy-string', $i.$maybeNegativeConstStrings);
-		assertType('lowercase-string&non-falsy-string', $maybeNegativeConstStrings.$i);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $i.$maybeNegativeConstStrings);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $maybeNegativeConstStrings.$i);
 
 		assertType('lowercase-string&non-falsy-string', $i.$maybeNonNumericConstStrings);
 		assertType('lowercase-string&non-falsy-string', $maybeNonNumericConstStrings.$i);
 
-		assertType('lowercase-string&non-falsy-string', $i.$maybeFloatConstStrings); // could be 'lowercase-string&non-falsy-string&numeric-string'
-		assertType('lowercase-string&non-falsy-string', $maybeFloatConstStrings.$i);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $i.$maybeFloatConstStrings); // could be 'lowercase-string&non-falsy-string&numeric-string'
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $maybeFloatConstStrings.$i);
 
-		assertType('lowercase-string&non-empty-string&numeric-string', $i.$bool);
-		assertType('lowercase-string&non-empty-string', $bool.$i);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $positiveInt.$bool);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $bool.$positiveInt);
-		assertType('lowercase-string&non-falsy-string&numeric-string', $negativeInt.$bool);
-		assertType('lowercase-string&non-falsy-string', $bool.$negativeInt);
+		assertType('lowercase-string&non-empty-string&numeric-string&uppercase-string', $i.$bool);
+		assertType('lowercase-string&non-empty-string&uppercase-string', $bool.$i);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $positiveInt.$bool);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $bool.$positiveInt);
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $negativeInt.$bool);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $bool.$negativeInt);
 
-		assertType('lowercase-string&non-falsy-string', $i.$i);
-		assertType('lowercase-string&non-falsy-string', $negativeInt.$negativeInt);
-		assertType('lowercase-string&non-falsy-string', $maybeNegativeConstStrings.$negativeInt);
-		assertType('lowercase-string&non-falsy-string', $negativeInt.$maybeNegativeConstStrings);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $i.$i);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $negativeInt.$negativeInt);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $maybeNegativeConstStrings.$negativeInt);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', $negativeInt.$maybeNegativeConstStrings);
 
 		// https://3v4l.org/BCS2K
 		assertType('non-falsy-string', $float.$float);

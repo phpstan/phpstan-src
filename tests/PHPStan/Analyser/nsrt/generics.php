@@ -147,10 +147,10 @@ function f($a, $b)
  */
 function testF($arrayOfInt, $callableOrNull)
 {
-	assertType('Closure(int): (lowercase-string&numeric-string)', function (int $a): string {
+	assertType('Closure(int): (lowercase-string&numeric-string&uppercase-string)', function (int $a): string {
 		return (string)$a;
 	});
-	assertType('array<lowercase-string&numeric-string>', f($arrayOfInt, function (int $a): string {
+	assertType('array<lowercase-string&numeric-string&uppercase-string>', f($arrayOfInt, function (int $a): string {
 		return (string)$a;
 	}));
 	assertType('Closure(mixed): string', function ($a): string {
@@ -224,7 +224,7 @@ function testArrayMap(array $listOfIntegers)
 
 		return (string) $int;
 	}, $listOfIntegers);
-	assertType('array<lowercase-string&numeric-string>', $strings);
+	assertType('array<lowercase-string&numeric-string&uppercase-string>', $strings);
 }
 
 /**

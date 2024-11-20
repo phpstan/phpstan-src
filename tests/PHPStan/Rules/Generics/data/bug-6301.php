@@ -22,7 +22,7 @@ class HelloWorld
 	 * @param literal-string $literalString
 	 */
 	public function foo(int $i, $nonEmpty, $numericString, $literalString):void {
-		assertType('lowercase-string&numeric-string', $this->str((string) $i));
+		assertType('lowercase-string&numeric-string&uppercase-string', $this->str((string) $i));
 		assertType('non-empty-string', $this->str($nonEmpty));
 		assertType('numeric-string', $this->str($numericString));
 		assertType('literal-string', $this->str($literalString));

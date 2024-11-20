@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -83,6 +84,7 @@ class IntegerType implements Type
 		return new IntersectionType([
 			new StringType(),
 			new AccessoryLowercaseStringType(),
+			new AccessoryUppercaseStringType(),
 			new AccessoryNumericStringType(),
 		]);
 	}

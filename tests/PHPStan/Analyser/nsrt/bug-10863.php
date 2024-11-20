@@ -12,7 +12,7 @@ class Foo
 	 */
 	public function doFoo($b): void
 	{
-		assertType('lowercase-string&non-falsy-string', '@' . $b);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', '@' . $b);
 	}
 
 	/**
@@ -20,7 +20,7 @@ class Foo
 	 */
 	public function doFoo2($b): void
 	{
-		assertType('lowercase-string&non-falsy-string', '@' . $b);
+		assertType('lowercase-string&non-falsy-string&uppercase-string', '@' . $b);
 	}
 
 }

@@ -20,7 +20,7 @@ final class PhpVersions
 
 	public function producesWarningForFinalPrivateMethods(): TrinaryLogic
 	{
-		return $this->phpVersions->isSuperTypeOf(IntegerRangeType::fromInterval(80000, null))->result;
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
 }

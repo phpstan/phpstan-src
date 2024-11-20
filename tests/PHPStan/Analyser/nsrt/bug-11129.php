@@ -64,11 +64,11 @@ class HelloWorld
 		assertType('lowercase-string&non-falsy-string&uppercase-string', $negativeInt.$maybeNegativeConstStrings);
 
 		// https://3v4l.org/BCS2K
-		assertType('non-falsy-string', $float.$float);
-		assertType('non-falsy-string&numeric-string', $float.$positiveInt);
-		assertType('non-falsy-string', $float.$negativeInt);
-		assertType('non-falsy-string', $float.$i);
-		assertType('non-falsy-string', $i.$float); // could be 'non-falsy-string&numeric-string'
+		assertType('non-falsy-string&uppercase-string', $float.$float);
+		assertType('non-falsy-string&numeric-string&uppercase-string', $float.$positiveInt);
+		assertType('non-falsy-string&uppercase-string', $float.$negativeInt);
+		assertType('non-falsy-string&uppercase-string', $float.$i);
+		assertType('non-falsy-string&uppercase-string', $i.$float); // could be 'non-falsy-string&numeric-string&uppercase-string'
 		assertType('non-falsy-string', $numericString.$float);
 		assertType('non-falsy-string', $numericString.$maybeFloatConstStrings);
 

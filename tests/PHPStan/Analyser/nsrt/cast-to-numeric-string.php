@@ -14,10 +14,10 @@ use function PHPStan\Testing\assertType;
  */
 function foo(int $a, float $b, $numeric, $numeric2, $number, $positive, $negative, $constantInt): void {
 	assertType('lowercase-string&numeric-string&uppercase-string', (string)$a);
-	assertType('numeric-string', (string)$b);
+	assertType('numeric-string&uppercase-string', (string)$b);
 	assertType('numeric-string', (string)$numeric);
 	assertType('numeric-string', (string)$numeric2);
-	assertType('numeric-string', (string)$number);
+	assertType('numeric-string&uppercase-string', (string)$number);
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', (string)$positive);
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', (string)$negative);
 	assertType("'1'", (string)$constantInt);
@@ -33,19 +33,19 @@ function foo(int $a, float $b, $numeric, $numeric2, $number, $positive, $negativ
  */
 function concatEmptyString(int $a, float $b, $numeric, $numeric2, $number, $positive, $negative, $constantInt): void {
 	assertType('lowercase-string&numeric-string&uppercase-string', '' . $a);
-	assertType('numeric-string', '' . $b);
+	assertType('numeric-string&uppercase-string', '' . $b);
 	assertType('numeric-string', '' . $numeric);
 	assertType('numeric-string', '' . $numeric2);
-	assertType('numeric-string', '' . $number);
+	assertType('numeric-string&uppercase-string', '' . $number);
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', '' . $positive);
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', '' . $negative);
 	assertType("'1'", '' . $constantInt);
 
 	assertType('lowercase-string&numeric-string&uppercase-string', $a . '');
-	assertType('numeric-string', $b . '');
+	assertType('numeric-string&uppercase-string', $b . '');
 	assertType('numeric-string', $numeric . '');
 	assertType('numeric-string', $numeric2 . '');
-	assertType('numeric-string', $number . '');
+	assertType('numeric-string&uppercase-string', $number . '');
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $positive . '');
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $negative . '');
 	assertType("'1'", $constantInt . '');
@@ -57,7 +57,7 @@ function concatAssignEmptyString(int $i, float $f) {
 
 	$s = '';
 	$s .= $f;
-	assertType('numeric-string', $s);
+	assertType('numeric-string&uppercase-string', $s);
 }
 
 /**

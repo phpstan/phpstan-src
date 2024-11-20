@@ -91,7 +91,7 @@ function withNotConstantArray(array $foo, array $bar, array $baz, array $floats,
 	assertType("array<string, null>", array_fill_keys($foo, null));
 	assertType("array<int, null>", array_fill_keys($bar, null));
 	assertType("array<'foo', null>", array_fill_keys($baz, null));
-	assertType("array<numeric-string, null>", array_fill_keys($floats, null));
+	assertType("array<numeric-string&uppercase-string, null>", array_fill_keys($floats, null));
 	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
 	assertType('array<string, null>', array_fill_keys($list, null));
 	assertType('*ERROR*', array_fill_keys($objectsWithoutToString, null));

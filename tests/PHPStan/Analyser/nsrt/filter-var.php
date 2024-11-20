@@ -154,7 +154,7 @@ class FilterVar
 		assertType("''|'1'", filter_var($bool));
 		assertType("'1'", filter_var(true));
 		assertType("''", filter_var(false));
-		assertType('numeric-string', filter_var($float));
+		assertType('numeric-string&uppercase-string', filter_var($float));
 		assertType("'17'", filter_var(17.0));
 		assertType("'17.1'", filter_var(17.1));
 		assertType("'1.0E-50'", filter_var(1e-50));

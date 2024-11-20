@@ -3,26 +3,29 @@
 namespace PHPStan\Php;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\UnionType;
 use PHPUnit\Framework\TestCase;
 
 class PhpVersionsTest extends TestCase
 {
+
 	/**
 	 * @dataProvider dataProducesWarningForFinalPrivateMethods
 	 */
-	public function testProducesWarningForFinalPrivateMethods(TrinaryLogic $expected, Type $versionType ) {
+	public function testProducesWarningForFinalPrivateMethods(TrinaryLogic $expected, Type $versionType): void
+	{
 		$phpVersions = new PhpVersions($versionType);
 		$this->assertSame(
 			$expected->describe(),
-			$phpVersions->producesWarningForFinalPrivateMethods()->describe()
+			$phpVersions->producesWarningForFinalPrivateMethods()->describe(),
 		);
 	}
 
-	public function dataProducesWarningForFinalPrivateMethods(): iterable {
+	public function dataProducesWarningForFinalPrivateMethods(): iterable
+	{
 		yield [
 			TrinaryLogic::createNo(),
 			new ConstantIntegerType(70400),
@@ -40,17 +43,17 @@ class PhpVersionsTest extends TestCase
 
 		yield [
 			TrinaryLogic::createYes(),
-			IntegerRangeType::fromInterval(80000, null)
+			IntegerRangeType::fromInterval(80000, null),
 		];
 
 		yield [
 			TrinaryLogic::createMaybe(),
-			IntegerRangeType::fromInterval(null, 80000)
+			IntegerRangeType::fromInterval(null, 80000),
 		];
 
 		yield [
 			TrinaryLogic::createNo(),
-			IntegerRangeType::fromInterval(70200, 70400)
+			IntegerRangeType::fromInterval(70200, 70400),
 		];
 
 		yield [
@@ -58,7 +61,8 @@ class PhpVersionsTest extends TestCase
 			new UnionType([
 				IntegerRangeType::fromInterval(70200, 70400),
 				IntegerRangeType::fromInterval(80200, 80400),
-			])
+			]),
 		];
 	}
+
 }

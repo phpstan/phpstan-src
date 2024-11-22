@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Error;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Php\PhpVersion;
@@ -52,7 +53,7 @@ class UnionType implements CompoundType
 
 	public const EQUAL_UNION_CLASSES = [
 		DateTimeInterface::class => [DateTimeImmutable::class, DateTime::class],
-		Throwable::class => [Error::class, Throwable::class],
+		Throwable::class => [Error::class, Exception::class], // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
 		Traversable::class => [IteratorAggregate::class, Iterator::class],
 	];
 

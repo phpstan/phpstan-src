@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Error;
-use Exception;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Php\PhpVersion;
@@ -53,7 +52,7 @@ class UnionType implements CompoundType
 
 	public const EQUAL_UNION_CLASSES = [
 		DateTimeInterface::class => [DateTimeImmutable::class, DateTime::class],
-		Throwable::class => [Error::class, Exception::class],
+		Throwable::class => [Error::class, Throwable::class],
 		Traversable::class => [IteratorAggregate::class, Iterator::class],
 	];
 
@@ -196,13 +195,15 @@ class UnionType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
-			if ($type->equals(new ObjectType($baseClass))) {
-				$union = TypeCombinator::union(
-					...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes)
-				);
-				if ($this->accepts($union, $strictTypes)->yes()) {
-					return AcceptsResult::createYes();
-				}
+			if (!$type->equals(new ObjectType($baseClass))) {
+				continue;
+			}
+
+			$union = TypeCombinator::union(
+				...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes),
+			);
+			if ($this->accepts($union, $strictTypes)->yes()) {
+				return AcceptsResult::createYes();
 			}
 		}
 

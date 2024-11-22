@@ -41,7 +41,6 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use Throwable;
 use Traversable;
 use function array_key_exists;
 use function array_map;
@@ -1556,14 +1555,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		foreach (UnionType::EQUAL_UNION_CLASSES as $baseClass => $classes) {
-			if ($this->getClassName() === $baseClass && $typeToRemove instanceof ObjectType) {
-				foreach ($classes as $index => $class) {
-					if ($typeToRemove->getClassName() === $class) {
-						unset($classes[$index]);
-						return TypeCombinator::union(
-							...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes)
-						);
-					}
+			if ($this->getClassName() !== $baseClass || !($typeToRemove instanceof ObjectType)) {
+				continue;
+			}
+
+			foreach ($classes as $index => $class) {
+				if ($typeToRemove->getClassName() === $class) {
+					unset($classes[$index]);
+					return TypeCombinator::union(
+						...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes),
+					);
 				}
 			}
 		}

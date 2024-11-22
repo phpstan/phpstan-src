@@ -1565,7 +1565,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 						unset($classes[$index]);
 
 						return TypeCombinator::union(
-							...array_map(static fn(string $objectClass): Type => new ObjectType($objectClass), $classes),
+							...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes),
 						);
 					}
 				}

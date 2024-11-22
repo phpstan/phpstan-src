@@ -1554,17 +1554,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		foreach (UnionType::EQUAL_UNION_CLASSES as $baseClass => $classes) {
-			if ($this->getClassName() !== $baseClass || !($typeToRemove instanceof ObjectType)) {
-				continue;
-			}
+		if ($typeToRemove instanceof ObjectType) {
+			foreach (UnionType::EQUAL_UNION_CLASSES as $baseClass => $classes) {
+				if ($this->getClassName() !== $baseClass) {
+					continue;
+				}
 
-			foreach ($classes as $index => $class) {
-				if ($typeToRemove->getClassName() === $class) {
-					unset($classes[$index]);
-					return TypeCombinator::union(
-						...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes),
-					);
+				foreach ($classes as $index => $class) {
+					if ($typeToRemove->getClassName() === $class) {
+						unset($classes[$index]);
+
+						return TypeCombinator::union(
+							...array_map(static fn(string $objectClass): Type => new ObjectType($objectClass), $classes),
+						);
+					}
 				}
 			}
 		}

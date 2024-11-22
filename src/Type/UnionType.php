@@ -205,6 +205,7 @@ class UnionType implements CompoundType
 			if ($this->accepts($union, $strictTypes)->yes()) {
 				return AcceptsResult::createYes();
 			}
+			break;
 		}
 
 		$result = AcceptsResult::createNo();

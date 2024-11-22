@@ -5,6 +5,10 @@ namespace PHPStan\Type;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Error;
+use Exception;
+use Iterator;
+use IteratorAggregate;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
@@ -26,6 +30,8 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use Throwable;
+use Traversable;
 use function array_diff_assoc;
 use function array_fill_keys;
 use function array_map;
@@ -44,6 +50,12 @@ class UnionType implements CompoundType
 {
 
 	use NonGeneralizableTypeTrait;
+
+	public const EQUAL_UNION_CLASSES = [
+		DateTimeInterface::class => [DateTimeImmutable::class, DateTime::class],
+		Throwable::class => [Error::class, Exception::class],
+		Traversable::class => [IteratorAggregate::class, Iterator::class],
+	];
 
 	private bool $sortedTypes = false;
 
@@ -183,14 +195,15 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if (
-			$type->equals(new ObjectType(DateTimeInterface::class))
-			&& $this->accepts(
-				new UnionType([new ObjectType(DateTime::class), new ObjectType(DateTimeImmutable::class)]),
-				$strictTypes,
-			)->yes()
-		) {
-			return AcceptsResult::createYes();
+		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
+			if ($type->equals(new ObjectType($baseClass))) {
+				$union = TypeCombinator::union(
+					...array_map(static fn (string $objectClass): Type => new ObjectType($objectClass), $classes)
+				);
+				if ($this->accepts($union, $strictTypes)->yes()) {
+					return AcceptsResult::createYes();
+				}
+			}
 		}
 
 		$result = AcceptsResult::createNo();

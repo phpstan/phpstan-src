@@ -163,6 +163,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container->getByType(NodeScopeResolver::class),
 				new RicherScopeGetTypeHelper($initializerExprTypeResolver),
 				$container->getByType(PhpVersion::class),
+				$container->getParameter('phpVersion'),
 				$constantResolver,
 			),
 		);

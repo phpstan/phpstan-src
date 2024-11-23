@@ -67,6 +67,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(ConstantResolver::class),
 			$context,
 			$this->container->getByType(PhpVersion::class),
+			$this->container->getParameter('phpVersion'),
 			$declareStrictTypes,
 			$function,
 			$namespace,

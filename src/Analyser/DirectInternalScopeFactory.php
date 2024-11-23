@@ -19,6 +19,9 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 final class DirectInternalScopeFactory implements InternalScopeFactory
 {
 
+	/**
+	 * @param int|array{min: int, max: int}|null $configPhpVersion
+	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -31,6 +34,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private NodeScopeResolver $nodeScopeResolver,
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private PhpVersion $phpVersion,
+		private int|array|null $configPhpVersion,
 		private ConstantResolver $constantResolver,
 	)
 	{
@@ -78,6 +82,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->constantResolver,
 			$context,
 			$this->phpVersion,
+			$this->configPhpVersion,
 			$declareStrictTypes,
 			$function,
 			$namespace,

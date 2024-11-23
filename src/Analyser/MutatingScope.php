@@ -144,6 +144,7 @@ use function explode;
 use function get_class;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_bool;
 use function is_numeric;
 use function is_string;
@@ -184,6 +185,7 @@ final class MutatingScope implements Scope
 	private static int $resolveClosureTypeDepth = 0;
 
 	/**
+	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param list<string> $inClosureBindScopeClasses
@@ -207,6 +209,7 @@ final class MutatingScope implements Scope
 		private ConstantResolver $constantResolver,
 		private ScopeContext $context,
 		private PhpVersion $phpVersion,
+		private int|array|null $configPhpVersion,
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
@@ -5726,6 +5729,9 @@ final class MutatingScope implements Scope
 	{
 		$versionExpr = new ConstFetch(new Name('PHP_VERSION_ID'));
 		if (!$this->hasExpressionType($versionExpr)->yes()) {
+			if (is_array($this->configPhpVersion)) {
+				return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
+			}
 			return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
 		}
 

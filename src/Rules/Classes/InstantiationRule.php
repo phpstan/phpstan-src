@@ -16,11 +16,16 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateGenericObjectType;
+use PHPStan\Type\StaticType;
+use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function count;
 use function sprintf;
+use function str_starts_with;
 use function strtolower;
 
 /**
@@ -244,6 +249,21 @@ final class InstantiationRule implements Rule
 		}
 
 		$type = $scope->getType($node->class);
+
+		if (str_starts_with($type->describe(VerbosityLevel::precise()), 'class-string')) {
+			$classStringObjectType = $type->getClassStringObjectType();
+
+			if (
+				!$classStringObjectType instanceof StaticType
+				&& !$classStringObjectType instanceof CompoundType
+				&& !$classStringObjectType instanceof TemplateGenericObjectType
+			) {
+				return array_map(
+					static fn (string $name): array => [$name, true],
+					$classStringObjectType->getObjectClassNames(),
+				);
+			}
+		}
 
 		return array_merge(
 			array_map(

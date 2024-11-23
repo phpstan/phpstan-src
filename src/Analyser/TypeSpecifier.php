@@ -156,14 +156,17 @@ final class TypeSpecifier
 			}
 
 			$classType = $scope->getType($expr->class);
-			$type = TypeTraverser::map($classType, static function (Type $type, callable $traverse): Type {
+			$uncertainty = false;
+			$type = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 				if ($type->getObjectClassNames() !== []) {
+					$uncertainty = true;
 					return $type;
 				}
 				if ($type instanceof GenericClassStringType) {
+					$uncertainty = true;
 					return $type->getGenericType();
 				}
 				if ($type instanceof ConstantStringType) {
@@ -179,7 +182,7 @@ final class TypeSpecifier
 						new ObjectWithoutClassType(),
 					);
 					return $this->create($exprNode, $type, $context, false, $scope, $rootExpr);
-				} elseif ($context->false()) {
+				} elseif ($context->false() && !$uncertainty) {
 					$exprType = $scope->getType($expr->expr);
 					if (!$type->isSuperTypeOf($exprType)->yes()) {
 						return $this->create($exprNode, $type, $context, false, $scope, $rootExpr);

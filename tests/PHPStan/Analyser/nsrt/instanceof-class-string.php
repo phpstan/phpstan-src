@@ -32,7 +32,7 @@ class Bar extends Foo
 		if ($foo instanceof $class) {
 			assertType(self::class, $foo);
 		} else {
-			assertType('InstanceOfClassString\Foo~InstanceOfClassString\Bar', $foo);
+			assertType('InstanceOfClassString\Foo', $foo);
 		}
 	}
 

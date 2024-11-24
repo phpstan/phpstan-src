@@ -11,24 +11,77 @@ class A
     }
 }
 
-class HelloWorld
+abstract class B
+{
+    public function __construct(public int $i)
+    {
+    }
+}
+
+class C extends B
+{
+}
+
+interface D
+{
+}
+
+class Foo
 {
     /**
      * @return class-string<A>
      */
-    public static function sayHelloBug(): string
+    public static function returnClassStringA(): string
     {
         return A::class;
     }
+
+    /**
+     * @return class-string<B>
+     */
+    public static function returnClassStringB(): string
+    {
+        return B::class;
+    }
+
+    /**
+     * @return class-string<C>
+     */
+    public static function returnClassStringC(): string
+    {
+        return C::class;
+    }
+
+    /**
+     * @return class-string<D>
+     */
+    public static function returnClassStringD(): string
+    {
+        return D::class;
+    }
 }
 
-$classString = HelloWorld::sayHelloBug();
-$bug = new (HelloWorld::sayHelloBug())('O_O');
-$bug = new ($classString)('O_O');
-$bug = new $classString('O_O');
+$classString = Foo::returnClassStringA();
+$error = new (Foo::returnClassStringA())('O_O');
+$error = new ($classString)('O_O');
+$error = new $classString('O_O');
+
+$classString = Foo::returnClassStringB();
+$ok = new (Foo::returnClassStringB())('O_O');
+$ok = new ($classString)('O_O');
+$ok = new $classString('O_O');
+
+$classString = Foo::returnClassStringC();
+$error = new (Foo::returnClassStringC())('O_O');
+$error = new ($classString)('O_O');
+$error = new $classString('O_O');
+
+$classString = Foo::returnClassStringD();
+$ok = new (Foo::returnClassStringD())('O_O');
+$ok = new ($classString)('O_O');
+$ok = new $classString('O_O');
 
 $className = A::class;
-$ok = new ($className)('O_O');
-$ok = new $className('O_O');
-
-$ok = new A('O_O');
+$error = new ($className)('O_O');
+$error = new $className('O_O');
+$error = new A('O_O');

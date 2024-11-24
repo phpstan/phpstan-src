@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
@@ -13,10 +12,6 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 final class NoncapturingCatchRule implements Rule
 {
-
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
 
 	public function getNodeType(): string
 	{
@@ -28,7 +23,7 @@ final class NoncapturingCatchRule implements Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($this->phpVersion->supportsNoncapturingCatches()) {
+		if ($scope->getPhpVersion()->supportsNoncapturingCatches()->yes()) {
 			return [];
 		}
 

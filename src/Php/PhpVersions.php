@@ -18,6 +18,11 @@ final class PhpVersions
 	{
 	}
 
+	public function supportsNoncapturingCatches(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function producesWarningForFinalPrivateMethods(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;

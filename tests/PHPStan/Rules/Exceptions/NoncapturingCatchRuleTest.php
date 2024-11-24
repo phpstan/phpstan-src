@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NoncapturingCatchRule>
@@ -12,11 +13,9 @@ use PHPStan\Testing\RuleTestCase;
 class NoncapturingCatchRuleTest extends RuleTestCase
 {
 
-	private PhpVersion $phpVersion;
-
 	protected function getRule(): Rule
 	{
-		return new NoncapturingCatchRule($this->phpVersion);
+		return new NoncapturingCatchRule();
 	}
 
 	public function dataRule(): array
@@ -49,7 +48,14 @@ class NoncapturingCatchRuleTest extends RuleTestCase
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
-		$this->phpVersion = new PhpVersion($phpVersion);
+		$testVersion = new PhpVersion($phpVersion);
+		$runtimeVersion = new PhpVersion(PHP_VERSION_ID);
+		if (
+			$testVersion->getMajorVersionId() !== $runtimeVersion->getMajorVersionId()
+			|| $testVersion->getMinorVersionId() !== $runtimeVersion->getMinorVersionId()
+		) {
+			$this->markTestSkipped('Test requires PHP version ' . $testVersion->getMajorVersionId() . '.' . $testVersion->getMinorVersionId() . '.*');
+		}
 
 		$this->analyse([
 			__DIR__ . '/data/noncapturing-catch.php',

@@ -7,7 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -111,16 +112,17 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$neverType = new NeverType();
 		$falseType = new ConstantBooleanType(false);
-		$nonEmptyString = new IntersectionType([
+		$nonFalsyLowercaseString = new IntersectionType([
 			new StringType(),
-			new AccessoryNonEmptyStringType(),
+			new AccessoryNonFalsyStringType(),
+			new AccessoryLowercaseStringType(),
 		]);
 
 		$invalidAlgorithmType = $this->phpVersion->throwsValueErrorForInternalFunctions() ? $neverType : $falseType;
 		$functionData = self::SUPPORTED_FUNCTIONS[strtolower($functionReflection->getName())];
 
 		$returnTypes = array_map(
-			function (ConstantStringType $type) use ($functionData, $nonEmptyString, $invalidAlgorithmType) {
+			function (ConstantStringType $type) use ($functionData, $nonFalsyLowercaseString, $invalidAlgorithmType) {
 				$algorithm = strtolower($type->getValue());
 				if (!in_array($algorithm, $this->hashAlgorithms, true)) {
 					return $invalidAlgorithmType;
@@ -128,7 +130,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 				if ($functionData['cryptographic'] && in_array($algorithm, self::NON_CRYPTOGRAPHIC_ALGORITHMS, true)) {
 					return $invalidAlgorithmType;
 				}
-				return $nonEmptyString;
+				return $nonFalsyLowercaseString;
 			},
 			$constantAlgorithmTypes,
 		);

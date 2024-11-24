@@ -10448,8 +10448,6 @@ return [
 'settype' => ['bool', '&rw_var'=>'mixed', 'type'=>'string'],
 'sha1' => ['non-falsy-string&lowercase-string', 'str'=>'string', 'raw_output='=>'bool'],
 'sha1_file' => ['(non-falsy-string&lowercase-string)|false', 'filename'=>'string', 'raw_output='=>'bool'],
-'sha256' => ['string', 'str'=>'string', 'raw_output='=>'bool'],
-'sha256_file' => ['string', 'filename'=>'string', 'raw_output='=>'bool'],
 'shapefileObj::__construct' => ['void', 'filename'=>'string', 'type'=>'int'],
 'shapefileObj::addPoint' => ['int', 'point'=>'pointObj'],
 'shapefileObj::addShape' => ['int', 'shape'=>'shapeObj'],

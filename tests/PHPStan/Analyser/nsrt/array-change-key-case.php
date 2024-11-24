@@ -42,12 +42,12 @@ class HelloWorld
 
 		assertType('array<lowercase-string, string>', array_change_key_case($arr2));
 		assertType('array<lowercase-string, string>', array_change_key_case($arr2, CASE_LOWER));
-		assertType('array<string, string>', array_change_key_case($arr2, CASE_UPPER));
+		assertType('array<uppercase-string, string>', array_change_key_case($arr2, CASE_UPPER));
 		assertType('array<string, string>', array_change_key_case($arr2, $case));
 
 		assertType('array<int|lowercase-string, string>', array_change_key_case($arr3));
 		assertType('array<int|lowercase-string, string>', array_change_key_case($arr3, CASE_LOWER));
-		assertType('array<int|string, string>', array_change_key_case($arr3, CASE_UPPER));
+		assertType('array<int|uppercase-string, string>', array_change_key_case($arr3, CASE_UPPER));
 		assertType('array<int|string, string>', array_change_key_case($arr3, $case));
 
 		assertType('array<int, string>', array_change_key_case($arr4));
@@ -57,22 +57,22 @@ class HelloWorld
 
 		assertType('array<lowercase-string, string>', array_change_key_case($arr5));
 		assertType('array<lowercase-string, string>', array_change_key_case($arr5, CASE_LOWER));
-		assertType('array<string, string>', array_change_key_case($arr5, CASE_UPPER));
+		assertType('array<uppercase-string, string>', array_change_key_case($arr5, CASE_UPPER));
 		assertType('array<string, string>', array_change_key_case($arr5, $case));
 
 		assertType('array<lowercase-string&non-falsy-string, string>', array_change_key_case($arr6));
 		assertType('array<lowercase-string&non-falsy-string, string>', array_change_key_case($arr6, CASE_LOWER));
-		assertType('array<non-falsy-string, string>', array_change_key_case($arr6, CASE_UPPER));
+		assertType('array<non-falsy-string&uppercase-string, string>', array_change_key_case($arr6, CASE_UPPER));
 		assertType('array<non-falsy-string, string>', array_change_key_case($arr6, $case));
 
 		assertType('array<lowercase-string&non-empty-string, string>', array_change_key_case($arr7));
 		assertType('array<lowercase-string&non-empty-string, string>', array_change_key_case($arr7, CASE_LOWER));
-		assertType('array<non-empty-string, string>', array_change_key_case($arr7, CASE_UPPER));
+		assertType('array<non-empty-string&uppercase-string, string>', array_change_key_case($arr7, CASE_UPPER));
 		assertType('array<non-empty-string, string>', array_change_key_case($arr7, $case));
 
 		assertType('array<lowercase-string, string>', array_change_key_case($arr8));
 		assertType('array<lowercase-string, string>', array_change_key_case($arr8, CASE_LOWER));
-		assertType('array<string, string>', array_change_key_case($arr8, CASE_UPPER));
+		assertType('array<uppercase-string, string>', array_change_key_case($arr8, CASE_UPPER));
 		assertType('array<string, string>', array_change_key_case($arr8, $case));
 
 		assertType('array{foo: 1, bar?: 2}', array_change_key_case($arr9));

@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -117,6 +118,8 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 					}
 					if ($case === CASE_LOWER) {
 						$types[] = new AccessoryLowercaseStringType();
+					} elseif ($case === CASE_UPPER) {
+						$types[] = new AccessoryUppercaseStringType();
 					}
 
 					return TypeCombinator::intersect(...$types);

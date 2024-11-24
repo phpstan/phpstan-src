@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -42,7 +41,6 @@ final class FunctionCallParametersCheck
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private NullsafeCheck $nullsafeCheck,
-		private PhpVersion $phpVersion,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private bool $checkArgumentTypes,
@@ -201,7 +199,7 @@ final class FunctionCallParametersCheck
 			];
 		}
 
-		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
+		if ($hasNamedArguments && !$scope->getPhpVersion()->supportsNamedArguments()->yes() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')
 				->identifier('argument.namedNotSupported')
 				->line($funcCall->getStartLine())

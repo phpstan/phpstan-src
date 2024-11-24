@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -47,7 +46,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
 				new NullsafeCheck(),
-				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				true,

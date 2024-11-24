@@ -3138,7 +3138,7 @@ final class MutatingScope implements Scope
 
 			$paramExprString = '$' . $parameter->getName();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()->yes()) {
+				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
 					$parameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $parameterType), new AccessoryArrayListType());
@@ -3153,7 +3153,7 @@ final class MutatingScope implements Scope
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()->yes()) {
+				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
 					$nativeParameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $nativeParameterType), new AccessoryArrayListType());
@@ -3628,7 +3628,7 @@ final class MutatingScope implements Scope
 			);
 		}
 		if ($isVariadic) {
-			if ($this->phpVersion->supportsNamedArguments()) {
+			if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {
 				return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $this->getFunctionType(
 					$type,
 					false,

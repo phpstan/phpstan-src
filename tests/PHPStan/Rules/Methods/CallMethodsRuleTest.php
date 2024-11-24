@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -28,15 +27,13 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
-	private int $phpVersion = PHP_VERSION_ID;
-
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, false);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 
@@ -1822,12 +1819,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDisallowNamedArgumentsInPhpVersionScope(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/disallow-named-arguments-php-version-scope.php'], [
+			[
+				'Named arguments are supported only on PHP 8.0 and later.',
+				26,
+			],
+		]);
+	}
+
 	public function testNamedArguments(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->phpVersion = 80000;
 
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], [
 			[
@@ -2104,7 +2114,6 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->phpVersion = 80000;
 		$this->analyse([__DIR__ . '/data/bug-4800.php'], [
 			[
 				'Missing parameter $bar (string) in call to method Bug4800\HelloWorld2::a().',

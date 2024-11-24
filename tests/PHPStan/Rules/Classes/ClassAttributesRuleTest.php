@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Classes;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -35,7 +34,6 @@ class ClassAttributesRuleTest extends RuleTestCase
 				new FunctionCallParametersCheck(
 					new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
 					new NullsafeCheck(),
-					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
 					true,

@@ -16,11 +16,9 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\Generic\TemplateGenericObjectType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\VerbosityLevel;
+use function array_filter;
 use function array_map;
 use function array_merge;
 use function count;
@@ -253,16 +251,13 @@ final class InstantiationRule implements Rule
 		if (str_starts_with($type->describe(VerbosityLevel::precise()), 'class-string')) {
 			$classStringObjectType = $type->getClassStringObjectType();
 
-			if (
-				!$classStringObjectType instanceof StaticType
-				&& !$classStringObjectType instanceof CompoundType
-				&& !$classStringObjectType instanceof TemplateGenericObjectType
-			) {
-				return array_map(
-					static fn (string $name): array => [$name, true],
-					$classStringObjectType->getObjectClassNames(),
-				);
-			}
+			return array_map(
+				static fn (string $name): array => [$name, true],
+				array_filter($classStringObjectType->getObjectClassNames(), function (string $name): bool {
+					$reflectionClass = $this->reflectionProvider->getClass($name);
+					return !$reflectionClass->isAbstract() && !$reflectionClass->isInterface();
+				}),
+			);
 		}
 
 		return array_merge(

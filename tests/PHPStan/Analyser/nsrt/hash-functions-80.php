@@ -11,7 +11,8 @@ class HashFunctionTests80
 	{
 		assertType('*NEVER*', hash_hmac('crc32', 'data', 'key'));
 		assertType('*NEVER*', hash_hmac('invalid', 'data', 'key'));
-		assertType('non-empty-string', hash_hmac($string, 'data', 'key'));
+		assertType('lowercase-string&non-falsy-string', hash_hmac($string, 'data', 'key'));
+		assertType('non-falsy-string', hash_hmac($string, 'data', 'key', true));
 	}
 
 	public function hash_hmac_file(): void
@@ -23,7 +24,7 @@ class HashFunctionTests80
 	public function hash(string $string): void
 	{
 		assertType('*NEVER*', hash('invalid', 'data', false));
-		assertType('non-falsy-string', hash($string, 'data'));
+		assertType('lowercase-string&non-falsy-string', hash($string, 'data'));
 	}
 
 	public function hash_file(): void
@@ -42,7 +43,7 @@ class HashFunctionTests80
 	{
 		assertType('*NEVER*', hash_pbkdf2('crc32', 'password', 'salt', 1000));
 		assertType('*NEVER*', hash_pbkdf2('invalid', 'password', 'salt', 1000));
-		assertType('non-empty-string', hash_pbkdf2($string, 'password', 'salt', 1000));
+		assertType('lowercase-string&non-falsy-string', hash_pbkdf2($string, 'password', 'salt', 1000));
 	}
 
 	public function caseSensitive()

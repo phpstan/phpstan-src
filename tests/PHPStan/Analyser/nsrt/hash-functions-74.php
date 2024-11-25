@@ -12,6 +12,7 @@ class HashFunctionTests74
 		assertType('false', hash_hmac('crc32', 'data', 'key'));
 		assertType('false', hash_hmac('invalid', 'data', 'key'));
 		assertType('((lowercase-string&non-falsy-string)|false)', hash_hmac($string, 'data', 'key'));
+		assertType('(non-falsy-string|false)', hash_hmac($string, 'data', 'key', true));
 	}
 
 	public function hash_hmac_file(): void
@@ -24,6 +25,7 @@ class HashFunctionTests74
 	{
 		assertType('false', hash('invalid', 'data', false));
 		assertType('((lowercase-string&non-falsy-string)|false)', hash($string, 'data'));
+		assertType('(non-falsy-string|false)', hash($string, 'data', true));
 	}
 
 	public function hash_file(): void
@@ -35,7 +37,7 @@ class HashFunctionTests74
 	{
 		assertType('false', hash_hkdf('crc32', 'key'));
 		assertType('false', hash_hkdf('invalid', 'key'));
-		assertType('((lowercase-string&non-falsy-string)|false)', hash_hkdf($string, 'key'));
+		assertType('(non-falsy-string|false)', hash_hkdf($string, 'key'));
 	}
 
 	public function hash_pbkdf2(string $string): void
@@ -43,6 +45,7 @@ class HashFunctionTests74
 		assertType('false', hash_pbkdf2('crc32', 'password', 'salt', 1000));
 		assertType('false', hash_pbkdf2('invalid', 'password', 'salt', 1000));
 		assertType('((lowercase-string&non-falsy-string)|false)', hash_pbkdf2($string, 'password', 'salt', 1000));
+		assertType('(non-falsy-string|false)', hash_pbkdf2($string, 'password', 'salt', 1000, 0, true));
 	}
 
 	public function caseSensitive()

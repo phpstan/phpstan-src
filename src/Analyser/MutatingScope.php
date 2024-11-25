@@ -610,12 +610,7 @@ final class MutatingScope implements Scope
 			return $this->fileHasCompilerHaltStatementCalls();
 		}
 
-		if (!$name->isFullyQualified() && $this->getNamespace() !== null) {
-			if ($this->hasExpressionType(new ConstFetch(new FullyQualified([$this->getNamespace(), $name->toString()])))->yes()) {
-				return true;
-			}
-		}
-		if ($this->hasExpressionType(new ConstFetch(new FullyQualified($name->toString())))->yes()) {
+		if ($this->getGlobalConstantType($name) !== null) {
 			return true;
 		}
 
@@ -5686,6 +5681,25 @@ final class MutatingScope implements Scope
 		return $constantTypes;
 	}
 
+	private function getGlobalConstantType(Name $name): ?Type
+	{
+		$fetches = [];
+		if (!$name->isFullyQualified() && $this->getNamespace() !== null) {
+			$fetches[] = new ConstFetch(new FullyQualified([$this->getNamespace(), $name->toString()]));
+		}
+
+		$fetches[] = new ConstFetch(new FullyQualified($name->toString()));
+		$fetches[] = new ConstFetch($name);
+
+		foreach($fetches as $constFetch) {
+			if ($this->hasExpressionType($constFetch)->yes()) {
+				return $this->getType($constFetch);
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * @return array<string, ExpressionTypeHolder>
 	 */
@@ -5728,15 +5742,15 @@ final class MutatingScope implements Scope
 
 	public function getPhpVersion(): PhpVersions
 	{
-		$name = new Name('PHP_VERSION_ID');
-		if (!$this->hasConstant($name)) {
-			if (is_array($this->configPhpVersion)) {
-				return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
-			}
-			return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
+		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
+		if ($constType !== null) {
+			return new PhpVersions($constType);
 		}
 
-		return new PhpVersions($this->getType(new ConstFetch($name)));
+		if (is_array($this->configPhpVersion)) {
+			return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
+		}
+		return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
 	}
 
 }

@@ -5691,7 +5691,7 @@ final class MutatingScope implements Scope
 		$fetches[] = new ConstFetch(new FullyQualified($name->toString()));
 		$fetches[] = new ConstFetch($name);
 
-		foreach($fetches as $constFetch) {
+		foreach ($fetches as $constFetch) {
 			if ($this->hasExpressionType($constFetch)->yes()) {
 				return $this->getType($constFetch);
 			}

@@ -30,6 +30,7 @@ use function array_fill;
 use function array_key_exists;
 use function count;
 use function implode;
+use function in_array;
 use function is_int;
 use function is_string;
 use function max;
@@ -128,30 +129,32 @@ final class FunctionCallParametersCheck
 			if ($arg->unpack) {
 				$arrays = $type->getConstantArrays();
 				if (count($arrays) > 0) {
-					$minKeys = null;
+					$maxKeys = null;
 					foreach ($arrays as $array) {
 						$countType = $array->getArraySize();
 						if ($countType instanceof ConstantIntegerType) {
 							$keysCount = $countType->getValue();
 						} elseif ($countType instanceof IntegerRangeType) {
-							$keysCount = $countType->getMin();
+							$keysCount = $countType->getMax();
 							if ($keysCount === null) {
 								throw new ShouldNotHappenException();
 							}
 						} else {
 							throw new ShouldNotHappenException();
 						}
-						if ($minKeys !== null && $keysCount >= $minKeys) {
+						if ($maxKeys !== null && $keysCount >= $maxKeys) {
 							continue;
 						}
 
-						$minKeys = $keysCount;
+						$maxKeys = $keysCount;
 					}
 
-					for ($j = 0; $j < $minKeys; $j++) {
+					for ($j = 0; $j < $maxKeys; $j++) {
 						$types = [];
 						$commonKey = null;
+						$isOptionalKey = false;
 						foreach ($arrays as $constantArray) {
+							$isOptionalKey = in_array($j, $constantArray->getOptionalKeys(), true);
 							$types[] = $constantArray->getValueTypes()[$j];
 							$keyType = $constantArray->getKeyTypes()[$j];
 							if ($commonKey === null) {
@@ -165,6 +168,10 @@ final class FunctionCallParametersCheck
 							$keyArgumentName = $commonKey;
 							$hasNamedArguments = true;
 						}
+						if ($isOptionalKey) {
+							continue;
+						}
+
 						$arguments[] = [
 							$arg->value,
 							TypeCombinator::union(...$types),

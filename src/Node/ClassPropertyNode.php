@@ -142,4 +142,17 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return [];
 	}
 
+	public function hasHooks(): bool
+	{
+		return $this->getHooks() !== [];
+	}
+
+	/**
+	 * @return Node\PropertyHook[]
+	 */
+	public function getHooks(): array
+	{
+		return $this->originalNode->hooks;
+	}
+
 }

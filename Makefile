@@ -76,6 +76,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/extends-readonly-class.php \
 		--exclude tests/PHPStan/Rules/Classes/data/instantiation-promoted-properties.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-11592.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-bodies-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-visibility-in-interface.php \
 		src tests
 
 cs:

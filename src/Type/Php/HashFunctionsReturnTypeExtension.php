@@ -120,7 +120,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		$algorithmType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantAlgorithmTypes = $algorithmType->getConstantStrings();
 		if (count($constantAlgorithmTypes) === 0) {
-			if ($functionData['possiblyFalse']) {
+			if ($functionData['possiblyFalse'] || !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 				return TypeUtils::toBenevolentUnion(TypeCombinator::union($stringReturnType, new ConstantBooleanType(false)));
 			}
 

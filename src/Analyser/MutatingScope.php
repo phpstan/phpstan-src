@@ -5728,15 +5728,15 @@ final class MutatingScope implements Scope
 
 	public function getPhpVersion(): PhpVersions
 	{
-		$versionExpr = new ConstFetch(new Name('PHP_VERSION_ID'));
-		if (!$this->hasExpressionType($versionExpr)->yes()) {
+		$name = new Name('PHP_VERSION_ID');
+		if (!$this->hasConstant($name)) {
 			if (is_array($this->configPhpVersion)) {
 				return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
 			}
 			return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
 		}
 
-		return new PhpVersions($this->getType($versionExpr));
+		return new PhpVersions($this->getType(new ConstFetch($name)));
 	}
 
 }

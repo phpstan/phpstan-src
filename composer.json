@@ -24,7 +24,7 @@
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^5.3.0",
 		"ondram/ci-detector": "^3.4.0",
-		"ondrejmirtes/better-reflection": "6.43.0.2",
+		"ondrejmirtes/better-reflection": "6.43.0.4",
 		"phpstan/php-8-stubs": "0.4.6",
 		"phpstan/phpdoc-parser": "2.0.0",
 		"psr/http-message": "^1.1",

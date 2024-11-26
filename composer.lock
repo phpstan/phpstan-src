@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "274e72a3422f81d92070bbbedbb9f8f5",
+    "content-hash": "1866d60acbec835ca58159c3cb6c07a8",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2187,16 +2187,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.43.0.2",
+            "version": "6.43.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "c34ee726f9abc5a7057b0dacdf1c0991c9090584"
+                "reference": "6b869bb58972b7877509e8a24757b4108effcd79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/c34ee726f9abc5a7057b0dacdf1c0991c9090584",
-                "reference": "c34ee726f9abc5a7057b0dacdf1c0991c9090584",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/6b869bb58972b7877509e8a24757b4108effcd79",
+                "reference": "6b869bb58972b7877509e8a24757b4108effcd79",
                 "shasum": ""
             },
             "require": {
@@ -2213,7 +2213,7 @@
                 "phpstan/phpstan": "^1.10.60",
                 "phpstan/phpstan-phpunit": "^1.3.16",
                 "phpunit/phpunit": "^11.4.3",
-                "rector/rector": "0.14.3"
+                "rector/rector": "1.2.10"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2252,9 +2252,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.43.0.2"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.43.0.4"
             },
-            "time": "2024-11-19T19:32:34+00:00"
+            "time": "2024-11-26T19:58:24+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

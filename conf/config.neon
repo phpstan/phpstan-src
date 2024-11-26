@@ -2174,3 +2174,9 @@ services:
 		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+
+	errorFormatter.multiple:
+		class: PHPStan\Command\ErrorFormatter\ChainErrorFormatter
+		arguments:
+			formatters:
+				- @errorFormatter.table

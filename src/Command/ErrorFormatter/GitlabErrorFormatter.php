@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function file_put_contents;
 use function hash;
 use function implode;
 
@@ -15,7 +16,10 @@ use function implode;
 final class GitlabErrorFormatter implements ErrorFormatter
 {
 
-	public function __construct(private RelativePathHelper $relativePathHelper)
+	public function __construct(
+		private RelativePathHelper $relativePathHelper,
+		private ?string $fileLocation = null,
+	)
 	{
 	}
 
@@ -64,7 +68,11 @@ final class GitlabErrorFormatter implements ErrorFormatter
 
 		$json = Json::encode($errorsArray, Json::PRETTY);
 
-		$output->writeRaw($json);
+		if ($this->fileLocation !== null) {
+			file_put_contents($this->fileLocation, $json);
+		} else {
+			$output->writeRaw($json);
+		}
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}

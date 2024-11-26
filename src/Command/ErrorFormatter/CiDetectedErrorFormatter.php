@@ -18,6 +18,7 @@ final class CiDetectedErrorFormatter implements ErrorFormatter
 	public function __construct(
 		private GithubErrorFormatter $githubErrorFormatter,
 		private TeamcityErrorFormatter $teamcityErrorFormatter,
+		private GitlabErrorFormatter $gitlabErrorFormatter,
 	)
 	{
 	}
@@ -32,6 +33,8 @@ final class CiDetectedErrorFormatter implements ErrorFormatter
 				return $this->githubErrorFormatter->formatErrors($analysisResult, $output);
 			} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
 				return $this->teamcityErrorFormatter->formatErrors($analysisResult, $output);
+			} elseif ($ci->getCiName() === CiDetector::CI_GITLAB) {
+				return $this->gitlabErrorFormatter->formatErrors($analysisResult, $output);
 			}
 		} catch (CiNotDetectedException) {
 			// pass

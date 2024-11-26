@@ -1,7 +1,7 @@
 <?php // lint >= 8.0
 
 namespace Bug4800;
-if (PHP_VERSION_ID < 80000) return;
+
 class HelloWorld
 {
 	/**

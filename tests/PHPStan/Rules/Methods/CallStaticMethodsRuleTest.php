@@ -412,6 +412,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->analyse([__DIR__ . '/data/static-method-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to static method StaticMethodNamedArguments\Foo::doFoo().',

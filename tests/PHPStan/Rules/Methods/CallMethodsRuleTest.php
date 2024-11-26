@@ -1835,6 +1835,10 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2114,6 +2118,11 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-4800.php'], [
 			[
 				'Missing parameter $bar (string) in call to method Bug4800\HelloWorld2::a().',

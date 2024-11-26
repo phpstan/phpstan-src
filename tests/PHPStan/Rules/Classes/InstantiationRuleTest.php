@@ -289,6 +289,10 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->analyse([__DIR__ . '/data/instantiation-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to InstantiationNamedArguments\Foo constructor.',
@@ -500,6 +504,10 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testBug11815(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-11815.php'], []);
 	}
 

@@ -156,6 +156,10 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$this->analyse([__DIR__ . '/data/callables-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to closure.',

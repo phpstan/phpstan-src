@@ -1,7 +1,7 @@
 <?php
 
 namespace StaticMethodNamedArguments;
-if (PHP_VERSION_ID < 80000) return;
+
 class Foo
 {
 

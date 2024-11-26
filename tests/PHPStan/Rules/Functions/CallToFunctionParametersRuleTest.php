@@ -476,6 +476,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
 		$errors = [
 			[
 				'Missing parameter $j (int) in call to function FunctionNamedArguments\foo.',
@@ -490,12 +494,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 		];
-		if (PHP_VERSION_ID < 80000) {
-			$errors[] = [
-				'Missing parameter $arr1 (array) in call to function array_merge.',
-				14,
-			];
-		}
 
 		require_once __DIR__ . '/data/named-arguments-define.php';
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], $errors);

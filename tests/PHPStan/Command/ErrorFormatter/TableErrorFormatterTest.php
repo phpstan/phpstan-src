@@ -325,6 +325,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			new CiDetectedErrorFormatter(
 				new GithubErrorFormatter($relativePathHelper),
 				new TeamcityErrorFormatter($relativePathHelper),
+				new GitlabErrorFormatter($relativePathHelper),
 			),
 			false,
 			$editorUrl,

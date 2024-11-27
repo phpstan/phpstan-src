@@ -23,7 +23,9 @@ class Test
 	{
 		$this->array[1] = 1;
 	}
-}
 
-$a = new Test();
-$a->setAtOne();
+	public function setAtTwo(): void
+	{
+		$this->array[2] = 1;
+	}
+}

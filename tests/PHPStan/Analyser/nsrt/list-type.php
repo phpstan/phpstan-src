@@ -106,4 +106,29 @@ class Foo
 		assertType('array<int<0, 1>|int<3, max>, int>', $list);
 	}
 
+	/** @param list<int> $list */
+	public function testSetOffsetExplicitlyWithoutGap(array $list): void
+	{
+		assertType('list<int>', $list);
+		$list[0] = 17;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)', $list);
+		$list[1] = 19;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)', $list);
+		$list[0] = 21;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 21)&hasOffsetValue(1, 19)', $list);
+
+		$list[2] = 23;
+		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 21)&hasOffsetValue(1, 19)&hasOffsetValue(2, 23)', $list);
+	}
+
+	/** @param list<int> $list */
+	public function testSetOffsetExplicitlyWithGap(array $list): void
+	{
+		assertType('list<int>', $list);
+		$list[0] = 17;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)', $list);
+		$list[2] = 21;
+		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 17)&hasOffsetValue(2, 21)', $list);
+	}
+
 }

@@ -772,9 +772,8 @@ final class ClassReflection
 			if ($case instanceof ReflectionEnumBackedCase) {
 				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
 			}
-			/** @var string $caseName */
 			$caseName = $case->getName();
-			$cases[$caseName] = new EnumCaseReflection($this, $caseName, $valueType);
+			$cases[$caseName] = new EnumCaseReflection($this, $case, $valueType);
 		}
 
 		return $this->enumCases = $cases;
@@ -800,7 +799,7 @@ final class ClassReflection
 			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 
-		return new EnumCaseReflection($this, $name, $valueType);
+		return new EnumCaseReflection($this, $case, $valueType);
 	}
 
 	public function isClass(): bool

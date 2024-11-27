@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\VariadicFunctionsVisitor;
 use PHPStan\Reflection\Assertions;
@@ -188,6 +189,11 @@ final class PhpFunctionReflection implements FunctionReflection
 	{
 		if ($this->isDeprecated) {
 			return $this->deprecatedDescription;
+		}
+
+		if ($this->reflection->isDeprecated()) {
+			$attributes = $this->reflection->getBetterReflection()->getAttributes();
+			return DeprecatedAttributeHelper::getDeprecatedDescription($attributes);
 		}
 
 		return null;

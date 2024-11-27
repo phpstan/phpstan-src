@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node\Expr;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
+use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
@@ -111,13 +112,18 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->isDeprecated);
+		return TrinaryLogic::createFromBoolean($this->isDeprecated || $this->reflection->isDeprecated());
 	}
 
 	public function getDeprecatedDescription(): ?string
 	{
 		if ($this->isDeprecated) {
 			return $this->deprecatedDescription;
+		}
+
+		if ($this->reflection->isDeprecated()) {
+			$attributes = $this->reflection->getBetterReflection()->getAttributes();
+			return DeprecatedAttributeHelper::getDeprecatedDescription($attributes);
 		}
 
 		return null;

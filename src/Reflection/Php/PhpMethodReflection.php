@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\VariadicMethodsVisitor;
 use PHPStan\Reflection\Assertions;
@@ -350,6 +351,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	{
 		if ($this->isDeprecated) {
 			return $this->deprecatedDescription;
+		}
+
+		if ($this->reflection->isDeprecated()) {
+			$attributes = $this->reflection->getBetterReflection()->getAttributes();
+			return DeprecatedAttributeHelper::getDeprecatedDescription($attributes);
 		}
 
 		return null;

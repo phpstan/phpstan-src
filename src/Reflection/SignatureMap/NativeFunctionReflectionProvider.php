@@ -57,6 +57,7 @@ final class NativeFunctionReflectionProvider
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
 			$returnsByReference = TrinaryLogic::createFromBoolean($reflectionFunctionAdapter->returnsReference());
 			$realFunctionName = $reflectionFunction->getName();
+			$isDeprecated = $reflectionFunction->isDeprecated();
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();
@@ -66,7 +67,6 @@ final class NativeFunctionReflectionProvider
 					if ($throwsTag !== null) {
 						$throwType = $throwsTag->getType();
 					}
-					$isDeprecated = $reflectionFunction->isDeprecated();
 				}
 			}
 		} catch (IdentifierNotFound | InvalidIdentifierName) {

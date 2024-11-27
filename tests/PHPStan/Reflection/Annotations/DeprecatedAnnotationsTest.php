@@ -10,9 +10,13 @@ use DeprecatedAnnotations\DeprecatedWithMultipleTags;
 use DeprecatedAnnotations\Foo;
 use DeprecatedAnnotations\FooInterface;
 use DeprecatedAnnotations\SubBazInterface;
+use DeprecatedAttributeConstants\FooWithConstants;
+use DeprecatedAttributeMethods\FooWithMethods;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
+use const PHP_VERSION_ID;
 
 class DeprecatedAnnotationsTest extends PHPStanTestCase
 {
@@ -151,6 +155,191 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertTrue($reflectionProvider->getClass(BazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 		$this->assertTrue($reflectionProvider->getClass(SubBazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
 		$this->assertTrue($reflectionProvider->getClass(Baz::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
+	}
+
+	public function dataDeprecatedAttributeAboveFunction(): iterable
+	{
+		yield [
+			'DeprecatedAttributeFunctions\\notDeprecated',
+			TrinaryLogic::createNo(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributeFunctions\\foo',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributeFunctions\\fooWithMessage',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			'DeprecatedAttributeFunctions\\fooWithMessage2',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+		yield [
+			'DeprecatedAttributeFunctions\\fooWithConstantMessage',
+			TrinaryLogic::createYes(),
+			'DeprecatedAttributeFunctions\\fooWithConstantMessage',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDeprecatedAttributeAboveFunction
+	 *
+	 * @param non-empty-string $functionName
+	 */
+	public function testDeprecatedAttributeAboveFunction(string $functionName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
+	{
+		require_once __DIR__ . '/data/deprecated-attribute-functions.php';
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$function = $reflectionProvider->getFunction(new Name($functionName), null);
+		$this->assertSame($isDeprecated->describe(), $function->isDeprecated()->describe());
+		$this->assertSame($deprecatedDescription, $function->getDeprecatedDescription());
+	}
+
+	public function dataDeprecatedAttributeAboveMethod(): iterable
+	{
+		yield [
+			FooWithMethods::class,
+			'notDeprecated',
+			TrinaryLogic::createNo(),
+			null,
+		];
+		yield [
+			FooWithMethods::class,
+			'foo',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			FooWithMethods::class,
+			'fooWithMessage',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			FooWithMethods::class,
+			'fooWithMessage2',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDeprecatedAttributeAboveMethod
+	 */
+	public function testDeprecatedAttributeAboveMethod(string $className, string $methodName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$method = $class->getNativeMethod($methodName);
+		$this->assertSame($isDeprecated->describe(), $method->isDeprecated()->describe());
+		$this->assertSame($deprecatedDescription, $method->getDeprecatedDescription());
+	}
+
+	public function dataDeprecatedAttributeAboveClassConstant(): iterable
+	{
+		yield [
+			FooWithConstants::class,
+			'notDeprecated',
+			TrinaryLogic::createNo(),
+			null,
+		];
+		yield [
+			FooWithConstants::class,
+			'foo',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			FooWithConstants::class,
+			'fooWithMessage',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			FooWithConstants::class,
+			'fooWithMessage2',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'foo',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'fooWithMessage',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'fooWithMessage2',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDeprecatedAttributeAboveClassConstant
+	 */
+	public function testDeprecatedAttributeAboveClassConstant(string $className, string $constantName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$constant = $class->getConstant($constantName);
+		$this->assertSame($isDeprecated->describe(), $constant->isDeprecated()->describe());
+		$this->assertSame($deprecatedDescription, $constant->getDeprecatedDescription());
+	}
+
+	public function dataDeprecatedAttributeAboveEnumCase(): iterable
+	{
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'foo',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'fooWithMessage',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
+			'fooWithMessage2',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDeprecatedAttributeAboveEnumCase
+	 */
+	public function testDeprecatedAttributeAboveEnumCase(string $className, string $caseName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$case = $class->getEnumCase($caseName);
+		$this->assertSame($isDeprecated->describe(), $case->isDeprecated()->describe());
+		$this->assertSame($deprecatedDescription, $case->getDeprecatedDescription());
 	}
 
 }

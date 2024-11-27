@@ -760,7 +760,7 @@ class IntersectionType implements CompoundType
 		$result = $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 
 		if ($offsetType !== null && $this->isList()->yes() && $this->isIterableAtLeastOnce()->yes() && (new ConstantIntegerType(1))->isSuperTypeOf($offsetType)->yes()) {
-			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+			$result = AccessoryArrayListType::intersectWith($result);
 		}
 
 		return $result;

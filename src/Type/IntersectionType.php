@@ -756,7 +756,14 @@ class IntersectionType implements CompoundType
 				);
 			});
 		}
-		return $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
+
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
+
+		if ($offsetType !== null && $this->isList()->yes() && $this->isIterableAtLeastOnce()->yes() && (new ConstantIntegerType(1))->isSuperTypeOf($offsetType)->yes()) {
+			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+		}
+
+		return $result;
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type

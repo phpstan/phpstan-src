@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac31d4286789897fa7f8d303b33a72b0",
+    "content-hash": "c1cf63bf474629a0d7b5fea00c2ec54c",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1442,12 +1442,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "9efcc4aa48b9c752c68de25f6240fcced0c95151"
+                "reference": "7809499af1a5f3bdd20f1cab71717a2a9e1f8cf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/9efcc4aa48b9c752c68de25f6240fcced0c95151",
-                "reference": "9efcc4aa48b9c752c68de25f6240fcced0c95151",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/7809499af1a5f3bdd20f1cab71717a2a9e1f8cf7",
+                "reference": "7809499af1a5f3bdd20f1cab71717a2a9e1f8cf7",
                 "shasum": ""
             },
             "require-dev": {
@@ -1482,7 +1482,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2024-11-25T11:21:35+00:00"
+            "time": "2024-11-27T14:37:09+00:00"
         },
         {
             "name": "nette/bootstrap",

@@ -13,32 +13,38 @@ use const PHP_VERSION_ID;
 class PropertiesInInterfaceRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion = PHP_VERSION_ID;
-
 	protected function getRule(): Rule
 	{
-		return new PropertiesInInterfaceRule(new PhpVersion($this->phpVersion));
+		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testPhp83AndPropertiesInInterface(): void
 	{
-		$this->phpVersion = 80300;
+		if (PHP_VERSION_ID >= 80400) {
+			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Interfaces may not include properties.',
+				'Property hooks in interfaces are supported only on PHP 8.4 and later.',
 				7,
 			],
 			[
 				'Interfaces may not include properties.',
 				9,
 			],
+			[
+				'Interfaces may not include properties.',
+				11,
+			],
 		]);
 	}
 
 	public function testPhp83AndPropertyHooksInInterface(): void
 	{
-		$this->phpVersion = 80300;
+		if (PHP_VERSION_ID >= 80400) {
+			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
 
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [
 			[
@@ -54,23 +60,27 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 	public function testPhp84AndPropertiesInInterface(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
 				'Interfaces may only include hooked properties.',
-				7,
+				9,
 			],
 			[
 				'Interfaces may only include hooked properties.',
-				9,
+				11,
 			],
 		]);
 	}
 
 	public function testPhp84AndNonPublicPropertyHooksInInterface(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/property-hooks-visibility-in-interface.php'], [
 			[
@@ -86,7 +96,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 	public function testPhp84AndPropertyHooksWithBodiesInInterface(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/property-hooks-bodies-in-interface.php'], [
 			[

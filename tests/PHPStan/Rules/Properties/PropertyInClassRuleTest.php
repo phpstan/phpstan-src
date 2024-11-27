@@ -13,24 +13,56 @@ use const PHP_VERSION_ID;
 class PropertyInClassRuleTest extends RuleTestCase
 {
 
-	private int $phpVersion = PHP_VERSION_ID;
-
 	protected function getRule(): Rule
 	{
-		return new PropertyInClassRule(new PhpVersion($this->phpVersion));
+		return new PropertyInClassRule(new PhpVersion(PHP_VERSION_ID));
+	}
+
+	public function testPhpLessThan84AndHookedPropertiesInClass(): void
+	{
+		if (PHP_VERSION_ID >= 80400) {
+			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
+
+		$this->analyse([__DIR__ . '/data/hooked-properties-in-class.php'], [
+			[
+				'Property hooks in classes are supported only on PHP 8.4 and later.',
+				7,
+			],
+		]);
+	}
+
+	public function testPhp84AndHookedPropertiesWithoutBodiesInClass(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/hooked-properties-without-bodies-in-class.php'], [
+			[
+				'Non-abstract classes may not include hooked properties without bodies.',
+				7,
+			],
+			[
+				'Non-abstract classes may not include hooked properties without bodies.',
+				9,
+			],
+		]);
 	}
 
 	public function testPhp84AndNonAbstractHookedPropertiesInClass(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-class.php'], [
 			[
-				'Classes may not include hooked properties without bodies.',
+				'Non-abstract classes may not include hooked properties without bodies.',
 				7,
 			],
 			[
-				'Classes may not include hooked properties without bodies.',
+				'Non-abstract classes may not include hooked properties without bodies.',
 				9,
 			],
 		]);
@@ -38,7 +70,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 	public function testPhp84AndAbstractHookedPropertiesInClass(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-in-class.php'], [
 			[
@@ -54,7 +88,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 	public function testPhp84AndNonAbstractHookedPropertiesInAbstractClass(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-abstract-class.php'], [
 			[
@@ -70,7 +106,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 	public function testPhp84AndAbstractNonHookedPropertiesInAbstractClass(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/abstract-non-hooked-properties-in-abstract-class.php'], [
 			[
@@ -86,7 +124,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 	public function testPhp84AndAbstractHookedPropertiesWithBodies(): void
 	{
-		$this->phpVersion = 80400;
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
 
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-with-bodies.php'], [
 			[

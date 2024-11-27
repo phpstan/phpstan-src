@@ -4,6 +4,8 @@ namespace PropertiesInInterface;
 
 interface HelloWorld
 {
+	public string $name { get; }
+
     public \DateTimeInterface $dateTime;
 
     public static \Closure $callable;

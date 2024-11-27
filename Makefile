@@ -84,6 +84,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/abstract-non-hooked-properties-in-abstract-class.php \
 		--exclude tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-abstract-class.php \
 		--exclude tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-class.php \
+		--exclude tests/PHPStan/Rules/Properties/data/hooked-properties-in-class.php \
+		--exclude tests/PHPStan/Rules/Properties/data/hooked-properties-without-bodies-in-class.php \
 		src tests
 
 cs:

@@ -69,7 +69,7 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 			throw new ShouldNotHappenException();
 		}
 		chdir(__DIR__ . '/../../../..');
-		exec(sprintf('%s %s clear-result-cache %s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : '') . ' 2>&1', $clearResultCacheOutputLines, $clearResultCacheExitCode);
+		exec(sprintf('%s %s clear-result-cache %s 2>&1', escapeshellarg(PHP_BINARY), 'bin/phpstan', $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 		if ($clearResultCacheExitCode !== 0) {
 			throw new ShouldNotHappenException('Could not clear result cache:' . "\n" . implode("\n", $clearResultCacheOutputLines));
 		}

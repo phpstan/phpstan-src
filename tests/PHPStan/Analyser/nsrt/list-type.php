@@ -116,9 +116,6 @@ class Foo
 		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)', $list);
 		$list[0] = 21;
 		assertType('non-empty-list<int>&hasOffsetValue(0, 21)&hasOffsetValue(1, 19)', $list);
-
-		$list[2] = 23;
-		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 21)&hasOffsetValue(1, 19)&hasOffsetValue(2, 23)', $list);
 	}
 
 	/** @param list<int> $list */

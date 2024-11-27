@@ -111,6 +111,11 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return $this->isAllowedPrivateMutation;
 	}
 
+	public function isAbstract(): bool
+	{
+		return (bool) ($this->flags & Modifiers::ABSTRACT);
+	}
+
 	public function getNativeType(): ?Type
 	{
 		return $this->type;

@@ -79,6 +79,11 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-bodies-in-interface.php \
 		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-in-interface.php \
 		--exclude tests/PHPStan/Rules/Properties/data/property-hooks-visibility-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-hooked-properties-in-class.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-hooked-properties-with-bodies.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-non-hooked-properties-in-abstract-class.php \
+		--exclude tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-abstract-class.php \
+		--exclude tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-class.php \
 		src tests
 
 cs:

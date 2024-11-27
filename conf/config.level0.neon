@@ -96,6 +96,7 @@ rules:
 	- PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
 	- PHPStan\Rules\Properties\PropertiesInInterfaceRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
+	- PHPStan\Rules\Properties\PropertyInClassRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
 	- PHPStan\Rules\Regexp\RegularExpressionPatternRule

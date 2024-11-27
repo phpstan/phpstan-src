@@ -83,7 +83,6 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -5016,12 +5015,8 @@ final class NodeScopeResolver
 			$originalVar = $var;
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
-				$varForSetOffsetValue = $var->var;
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
-				}
 				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
-					$varForSetOffsetValue,
+					$var->var,
 					$var->dim,
 					$assignedPropertyExpr,
 				);
@@ -5336,12 +5331,8 @@ final class NodeScopeResolver
 			$dimFetchStack = [];
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ExistingArrayDimFetch) {
-				$varForSetOffsetValue = $var->getVar();
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
-				}
 				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
-					$varForSetOffsetValue,
+					$var->getVar(),
 					$var->getDim(),
 					$assignedPropertyExpr,
 				);

@@ -32,7 +32,6 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
@@ -688,15 +687,6 @@ final class MutatingScope implements Scope
 		}
 		if ($node instanceof TypeExpr) {
 			return $node->getExprType();
-		}
-
-		if ($node instanceof OriginalPropertyTypeExpr) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->getPropertyFetch(), $this);
-			if ($propertyReflection === null) {
-				return new ErrorType();
-			}
-
-			return $propertyReflection->getReadableType();
 		}
 
 		$key = $this->getNodeKey($node);

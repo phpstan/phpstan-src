@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -61,7 +62,16 @@ final class TypesAssignedToPropertiesRule implements Rule
 
 		$propertyType = $propertyReflection->getWritableType();
 		$scope = $propertyReflection->getScope();
-		$assignedValueType = $scope->getType($assignedExpr);
+
+		if ($assignedExpr instanceof SetOffsetValueTypeExpr) {
+			// TODO: Document why we need this only for setting offset values, do we actually need this?! xD
+			$assignedValueType = $propertyType->setOffsetValueType(
+				$assignedExpr->getDim() !== null ? $scope->getType($assignedExpr->getDim()) : null,
+				$scope->getType($assignedExpr->getValue()),
+			);
+		} else {
+			$assignedValueType = $scope->getType($assignedExpr);
+		}
 
 		$accepts = $this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes());
 		if (!$accepts->result) {

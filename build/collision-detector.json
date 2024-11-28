@@ -11,17 +11,6 @@
 		"../tests/PHPStan/Rules/Names/data/no-namespace.php",
 		"../tests/notAutoloaded",
 		"../tests/PHPStan/Rules/Functions/data/define-bug-3349.php",
-		"../tests/PHPStan/Levels/data/stubs/function.php",
-		"../tests/PHPStan/Rules/Properties/data/properties-in-interface.php",
-		"../tests/PHPStan/Rules/Properties/data/property-hooks-bodies-in-interface.php",
-		"../tests/PHPStan/Rules/Properties/data/property-hooks-in-interface.php",
-		"../tests/PHPStan/Rules/Properties/data/property-hooks-visibility-in-interface.php",
-		"../tests/PHPStan/Rules/Properties/data/abstract-hooked-properties-in-class.php",
-		"../tests/PHPStan/Rules/Properties/data/abstract-hooked-properties-with-bodies.php",
-		"../tests/PHPStan/Rules/Properties/data/abstract-non-hooked-properties-in-abstract-class.php",
-		"../tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-abstract-class.php",
-		"../tests/PHPStan/Rules/Properties/data/non-abstract-hooked-properties-in-class.php",
-		"../tests/PHPStan/Rules/Properties/data/hooked-properties-in-class.php",
-		"../tests/PHPStan/Rules/Properties/data/hooked-properties-without-bodies-in-class.php"
+		"../tests/PHPStan/Levels/data/stubs/function.php"
     ]
 }

@@ -31,6 +31,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			new MethodSignatureRule($phpClassReflectionExtension, true, true),
 			false,
 			new MethodParameterComparisonHelper($phpVersion),
+			new MethodVisibilityComparisonHelper(),
 			$phpClassReflectionExtension,
 			$this->checkMissingOverrideMethodAttribute,
 		);

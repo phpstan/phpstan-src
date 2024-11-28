@@ -35,6 +35,7 @@ final class OverridingMethodRule implements Rule
 		private MethodSignatureRule $methodSignatureRule,
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
+		private MethodVisibilityComparisonHelper $methodVisibilityComparisonHelper,
 		private PhpClassReflectionExtension $phpClassReflectionExtension,
 		private bool $checkMissingOverrideMethodAttribute,
 	)
@@ -165,32 +166,7 @@ final class OverridingMethodRule implements Rule
 		}
 
 		if ($checkVisibility) {
-			if ($prototype->isPublic()) {
-				if (!$method->isPublic()) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
-						'%s method %s::%s() overriding public method %s::%s() should also be public.',
-						$method->isPrivate() ? 'Private' : 'Protected',
-						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName(),
-						$prototypeDeclaringClass->getDisplayName(true),
-						$prototype->getName(),
-					))
-						->nonIgnorable()
-						->identifier('method.visibility')
-						->build();
-				}
-			} elseif ($method->isPrivate()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Private method %s::%s() overriding protected method %s::%s() should be protected or public.',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
-				))
-					->nonIgnorable()
-					->identifier('method.visibility')
-					->build();
-			}
+			$messages = array_merge($messages, $this->methodVisibilityComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method));
 		}
 
 		$prototypeVariants = $prototype->getVariants();

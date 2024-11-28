@@ -12,7 +12,10 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ConsistentConstructorRule(self::getContainer()->getByType(MethodParameterComparisonHelper::class));
+		return new ConsistentConstructorRule(
+			self::getContainer()->getByType(MethodParameterComparisonHelper::class),
+			self::getContainer()->getByType(MethodVisibilityComparisonHelper::class),
+		);
 	}
 
 	public function testRule(): void
@@ -40,6 +43,16 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 	public function testRuleNoErrors(): void
 	{
 		$this->analyse([__DIR__ . '/data/consistent-constructor-no-errors.php'], []);
+	}
+
+	public function testBug12137(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12137.php'], [
+			[
+				'Private method Bug12137\ChildClass::__construct() overriding protected method Bug12137\ParentClass::__construct() should be protected or public.',
+				20,
+			],
+		]);
 	}
 
 }

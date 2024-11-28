@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Rules\Rule;
+use function array_merge;
 use function strtolower;
 
 /** @implements Rule<InClassMethodNode> */
@@ -15,6 +16,7 @@ final class ConsistentConstructorRule implements Rule
 
 	public function __construct(
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
+		private MethodVisibilityComparisonHelper $methodVisibilityComparisonHelper,
 	)
 	{
 	}
@@ -47,7 +49,10 @@ final class ConsistentConstructorRule implements Rule
 			return [];
 		}
 
-		return $this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, true);
+		return array_merge(
+			$this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, true),
+			$this->methodVisibilityComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method),
+		);
 	}
 
 }

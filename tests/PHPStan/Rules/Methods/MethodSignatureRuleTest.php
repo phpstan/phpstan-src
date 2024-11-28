@@ -29,6 +29,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			new MethodSignatureRule($phpClassReflectionExtension, $this->reportMaybes, $this->reportStatic),
 			true,
 			new MethodParameterComparisonHelper($phpVersion),
+			new MethodVisibilityComparisonHelper(),
 			$phpClassReflectionExtension,
 			false,
 		);

@@ -68,6 +68,7 @@ use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
 use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
 use PHPStan\Rules\Methods\MethodSignatureRule;
+use PHPStan\Rules\Methods\MethodVisibilityComparisonHelper;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule;
@@ -209,7 +210,15 @@ final class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, true, false),
-			new OverridingMethodRule($phpVersion, new MethodSignatureRule($phpClassReflectionExtension, true, true), true, new MethodParameterComparisonHelper($phpVersion), $phpClassReflectionExtension, $container->getParameter('checkMissingOverrideMethodAttribute')),
+			new OverridingMethodRule(
+				$phpVersion,
+				new MethodSignatureRule($phpClassReflectionExtension, true, true),
+				true,
+				new MethodParameterComparisonHelper($phpVersion),
+				new MethodVisibilityComparisonHelper(),
+				$phpClassReflectionExtension,
+				$container->getParameter('checkMissingOverrideMethodAttribute'),
+			),
 			new DuplicateDeclarationRule(),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),
 			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),

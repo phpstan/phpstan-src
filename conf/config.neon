@@ -992,6 +992,9 @@ services:
 		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper
 
 	-
+		class: PHPStan\Rules\Methods\MethodVisibilityComparisonHelper
+
+	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkMissingCallableSignature: %checkMissingCallableSignature%

@@ -30,15 +30,6 @@ final class PropertiesInInterfaceRule implements Rule
 			return [];
 		}
 
-		if (!$this->phpVersion->supportsPropertyHooks() && $node->hasHooks()) {
-			return [
-				RuleErrorBuilder::message('Property hooks in interfaces are supported only on PHP 8.4 and later.')
-					->nonIgnorable()
-					->identifier('property.unsupportedHooksInInterface')
-					->build(),
-			];
-		}
-
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			return [
 				RuleErrorBuilder::message('Interfaces may not include properties.')

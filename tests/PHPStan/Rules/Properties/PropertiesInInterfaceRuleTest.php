@@ -29,7 +29,7 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Property hooks in interfaces are supported only on PHP 8.4 and later.',
+				'Interfaces may not include properties.',
 				7,
 			],
 			[

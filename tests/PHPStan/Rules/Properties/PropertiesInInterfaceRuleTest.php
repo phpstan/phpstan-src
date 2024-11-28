@@ -29,15 +29,15 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Interfaces may not include properties.',
+				'Interfaces cannot include properties.',
 				7,
 			],
 			[
-				'Interfaces may not include properties.',
+				'Interfaces cannot include properties.',
 				9,
 			],
 			[
-				'Interfaces may not include properties.',
+				'Interfaces cannot include properties.',
 				11,
 			],
 		]);
@@ -54,11 +54,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [
 			[
-				'Interfaces may not include properties.',
+				'Interfaces cannot include properties.',
 				7,
 			],
 			[
-				'Interfaces may not include properties.',
+				'Interfaces cannot include properties.',
 				9,
 			],
 		]);
@@ -72,11 +72,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Interfaces may only include hooked properties.',
+				'Interfaces can only include hooked properties.',
 				9,
 			],
 			[
-				'Interfaces may only include hooked properties.',
+				'Interfaces can only include hooked properties.',
 				11,
 			],
 		]);
@@ -90,11 +90,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-hooks-visibility-in-interface.php'], [
 			[
-				'Interfaces may not include non-public properties.',
+				'Interfaces cannot include non-public properties.',
 				7,
 			],
 			[
-				'Interfaces may not include non-public properties.',
+				'Interfaces cannot include non-public properties.',
 				9,
 			],
 		]);
@@ -108,11 +108,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-hooks-bodies-in-interface.php'], [
 			[
-				'Interfaces may not include property hooks with bodies.',
+				'Interfaces cannot include property hooks with bodies.',
 				7,
 			],
 			[
-				'Interfaces may not include property hooks with bodies.',
+				'Interfaces cannot include property hooks with bodies.',
 				13,
 			],
 		]);

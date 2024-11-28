@@ -32,16 +32,16 @@ final class PropertyInClassRule implements Rule
 			return [];
 		}
 
-		if (!$this->phpVersion->supportsPropertyHooks() && $node->hasHooks()) {
-			return [
-				RuleErrorBuilder::message('Property hooks in classes are supported only on PHP 8.4 and later.')
-					->nonIgnorable()
-					->identifier('property.unsupportedHooksInClass')
-					->build(),
-			];
-		}
-
 		if (!$this->phpVersion->supportsPropertyHooks()) {
+			if ($node->hasHooks()) {
+				return [
+					RuleErrorBuilder::message('Property hooks are supported only on PHP 8.4 and later.')
+						->nonIgnorable()
+						->identifier('property.hooksNotSupported')
+						->build(),
+				];
+			}
+
 			return [];
 		}
 
@@ -49,9 +49,9 @@ final class PropertyInClassRule implements Rule
 			if ($node->isAbstract()) {
 				if (!$node->hasHooks()) {
 					return [
-						RuleErrorBuilder::message('Only hooked properties may be declared abstract.')
+						RuleErrorBuilder::message('Only hooked properties can be declared abstract.')
 							->nonIgnorable()
-							->identifier('property.nonHookedAbstractInClass')
+							->identifier('property.abstractNonHooked')
 							->build(),
 					];
 				}
@@ -60,7 +60,7 @@ final class PropertyInClassRule implements Rule
 					return [
 						RuleErrorBuilder::message('Abstract properties must specify at least one abstract hook.')
 							->nonIgnorable()
-							->identifier('property.hookedAbstractWithBodies')
+							->identifier('property.abstractWithoutAbstractHook')
 							->build(),
 					];
 				}
@@ -69,9 +69,9 @@ final class PropertyInClassRule implements Rule
 			if (!$node->isAbstract()) {
 				if ($node->hasHooks()) {
 					return [
-						RuleErrorBuilder::message('Abstract classes may not include non-abstract hooked properties without bodies.')
+						RuleErrorBuilder::message('Abstract classes cannot include non-abstract hooked properties without bodies.')
 							->nonIgnorable()
-							->identifier('property.nonAbstractHookedWithoutBodyInAbstractClass')
+							->identifier('property.nonAbstractWithAbstractHook')
 							->build(),
 					];
 				}
@@ -83,18 +83,18 @@ final class PropertyInClassRule implements Rule
 		if ($node->hasHooks()) {
 			if ($node->isAbstract()) {
 				return [
-					RuleErrorBuilder::message('Classes may not include abstract hooked properties.')
+					RuleErrorBuilder::message('Non-abstract classes cannot include abstract properties.')
 						->nonIgnorable()
-						->identifier('property.abstractHookedInClass')
+						->identifier('property.abstract')
 						->build(),
 				];
 			}
 
 			if (!$this->doAllHooksHaveBody($node)) {
 				return [
-					RuleErrorBuilder::message('Non-abstract classes may not include hooked properties without bodies.')
+					RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
 						->nonIgnorable()
-						->identifier('property.hookedWithoutBodyInClass')
+						->identifier('property.hookWithoutBody')
 						->build(),
 				];
 			}

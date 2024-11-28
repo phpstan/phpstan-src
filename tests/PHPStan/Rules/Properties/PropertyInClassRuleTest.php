@@ -29,7 +29,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/hooked-properties-in-class.php'], [
 			[
-				'Property hooks in classes are supported only on PHP 8.4 and later.',
+				'Property hooks are supported only on PHP 8.4 and later.',
 				7,
 			],
 		]);
@@ -43,11 +43,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/hooked-properties-without-bodies-in-class.php'], [
 			[
-				'Non-abstract classes may not include hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				7,
 			],
 			[
-				'Non-abstract classes may not include hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				9,
 			],
 		]);
@@ -61,11 +61,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-class.php'], [
 			[
-				'Non-abstract classes may not include hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				7,
 			],
 			[
-				'Non-abstract classes may not include hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				9,
 			],
 		]);
@@ -79,11 +79,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-in-class.php'], [
 			[
-				'Classes may not include abstract hooked properties.',
+				'Non-abstract classes cannot include abstract properties.',
 				7,
 			],
 			[
-				'Classes may not include abstract hooked properties.',
+				'Non-abstract classes cannot include abstract properties.',
 				9,
 			],
 		]);
@@ -97,11 +97,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-abstract-class.php'], [
 			[
-				'Abstract classes may not include non-abstract hooked properties without bodies.',
+				'Abstract classes cannot include non-abstract hooked properties without bodies.',
 				7,
 			],
 			[
-				'Abstract classes may not include non-abstract hooked properties without bodies.',
+				'Abstract classes cannot include non-abstract hooked properties without bodies.',
 				9,
 			],
 		]);
@@ -115,11 +115,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/abstract-non-hooked-properties-in-abstract-class.php'], [
 			[
-				'Only hooked properties may be declared abstract.',
+				'Only hooked properties can be declared abstract.',
 				7,
 			],
 			[
-				'Only hooked properties may be declared abstract.',
+				'Only hooked properties can be declared abstract.',
 				9,
 			],
 		]);

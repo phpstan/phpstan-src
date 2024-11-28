@@ -32,7 +32,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			return [
-				RuleErrorBuilder::message('Interfaces may not include properties.')
+				RuleErrorBuilder::message('Interfaces cannot include properties.')
 					->nonIgnorable()
 					->identifier('property.inInterface')
 					->build(),
@@ -41,7 +41,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if (!$node->hasHooks()) {
 			return [
-				RuleErrorBuilder::message('Interfaces may only include hooked properties.')
+				RuleErrorBuilder::message('Interfaces can only include hooked properties.')
 					->nonIgnorable()
 					->identifier('property.nonHookedInInterface')
 					->build(),
@@ -50,7 +50,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if (!$node->isPublic()) {
 			return [
-				RuleErrorBuilder::message('Interfaces may not include non-public properties.')
+				RuleErrorBuilder::message('Interfaces cannot include non-public properties.')
 					->nonIgnorable()
 					->identifier('property.nonPublicInInterface')
 					->build(),
@@ -59,7 +59,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if ($this->hasAnyHookBody($node)) {
 			return [
-				RuleErrorBuilder::message('Interfaces may not include property hooks with bodies.')
+				RuleErrorBuilder::message('Interfaces cannot include property hooks with bodies.')
 					->nonIgnorable()
 					->identifier('property.hookBodyInInterface')
 					->build(),

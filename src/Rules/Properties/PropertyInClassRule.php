@@ -45,43 +45,26 @@ final class PropertyInClassRule implements Rule
 			return [];
 		}
 
-		if ($classReflection->isAbstract()) {
-			if ($node->isAbstract()) {
-				if (!$node->hasHooks()) {
-					return [
-						RuleErrorBuilder::message('Only hooked properties can be declared abstract.')
-							->nonIgnorable()
-							->identifier('property.abstractNonHooked')
-							->build(),
-					];
-				}
-
-				if (!$this->isAtLeastOneHookBodyEmpty($node)) {
-					return [
-						RuleErrorBuilder::message('Abstract properties must specify at least one abstract hook.')
-							->nonIgnorable()
-							->identifier('property.abstractWithoutAbstractHook')
-							->build(),
-					];
-				}
-
-				return [];
-			}
-
-			if (!$this->doAllHooksHaveBody($node)) {
+		if ($node->isAbstract()) {
+			if (!$node->hasHooks()) {
 				return [
-					RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
+					RuleErrorBuilder::message('Only hooked properties can be declared abstract.')
 						->nonIgnorable()
-						->identifier('property.hookWithoutBody')
+						->identifier('property.abstractNonHooked')
 						->build(),
 				];
 			}
 
-			return [];
-		}
+			if (!$this->isAtLeastOneHookBodyEmpty($node)) {
+				return [
+					RuleErrorBuilder::message('Abstract properties must specify at least one abstract hook.')
+						->nonIgnorable()
+						->identifier('property.abstractWithoutAbstractHook')
+						->build(),
+				];
+			}
 
-		if ($node->hasHooks()) {
-			if ($node->isAbstract()) {
+			if (!$classReflection->isAbstract()) {
 				return [
 					RuleErrorBuilder::message('Non-abstract classes cannot include abstract properties.')
 						->nonIgnorable()
@@ -90,14 +73,16 @@ final class PropertyInClassRule implements Rule
 				];
 			}
 
-			if (!$this->doAllHooksHaveBody($node)) {
-				return [
-					RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
-						->nonIgnorable()
-						->identifier('property.hookWithoutBody')
-						->build(),
-				];
-			}
+			return [];
+		}
+
+		if (!$this->doAllHooksHaveBody($node)) {
+			return [
+				RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
+					->nonIgnorable()
+					->identifier('property.hookWithoutBody')
+					->build(),
+			];
 		}
 
 		return [];

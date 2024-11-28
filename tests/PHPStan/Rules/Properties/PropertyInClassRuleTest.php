@@ -97,12 +97,16 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-abstract-class.php'], [
 			[
-				'Abstract classes cannot include non-abstract hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				7,
 			],
 			[
-				'Abstract classes cannot include non-abstract hooked properties without bodies.',
+				'Non-abstract properties cannot include hooks without bodies.',
 				9,
+			],
+			[
+				'Non-abstract properties cannot include hooks without bodies.',
+				25,
 			],
 		]);
 	}

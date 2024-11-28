@@ -1,1 +1,1 @@
-includes: [ build/phpstan.neon ]
+includes: [ build/phpstan.php ]

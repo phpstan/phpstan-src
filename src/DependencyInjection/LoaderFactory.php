@@ -23,6 +23,7 @@ final class LoaderFactory
 		$loader = new NeonLoader($this->fileHelper, $this->generateBaselineFile);
 		$loader->addAdapter('dist', NeonAdapter::class);
 		$loader->addAdapter('neon', NeonAdapter::class);
+		$loader->addAdapter('php', PhpAdapter::class);
 		$loader->setParameters([
 			'rootDir' => $this->rootDir,
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,

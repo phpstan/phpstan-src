@@ -3,7 +3,6 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\Bootstrap\Extensions\PhpExtension;
-use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Definitions\Statement;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Helpers;

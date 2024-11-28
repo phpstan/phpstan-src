@@ -23,6 +23,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80400) {
 			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
 		}
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
+		}
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
@@ -44,6 +47,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 	{
 		if (PHP_VERSION_ID >= 80400) {
 			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
 
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [

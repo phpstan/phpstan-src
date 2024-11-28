@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection\ProjectConfig;
 
+use PHPStan\DependencyInjection\ProjectConfig\Exceptions\CheckConfig;
+
 final class ExceptionsConfig implements Arrayable
 {
 
@@ -18,7 +20,7 @@ final class ExceptionsConfig implements Arrayable
 		private readonly array|Undefined $checkedExceptionRegexes = Undefined::Undefined,
 		/** @var list<string>|Undefined */
 		private readonly array|Undefined $checkedExceptionClasses = Undefined::Undefined,
-		private readonly ExceptionsCheckConfig|Undefined $check = Undefined::Undefined,
+		private readonly CheckConfig|Undefined $check = Undefined::Undefined,
 	)
 	{
 	}

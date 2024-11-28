@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use PHPStan\DependencyInjection\ProjectConfig\CacheConfig;
-use PHPStan\DependencyInjection\ProjectConfig\ExceptionsCheckConfig;
+use PHPStan\DependencyInjection\ProjectConfig\Exceptions\CheckConfig;
 use PHPStan\DependencyInjection\ProjectConfig\ExceptionsConfig;
 use PHPStan\DependencyInjection\ProjectConfig\ExcludePathsConfig;
 use PHPStan\DependencyInjection\ProjectConfig\IgnoreErrorsConfig;
@@ -80,7 +80,7 @@ return new ProjectConfig(
 				'LogicException',
 				'Error',
 			],
-			check: new ExceptionsCheckConfig(missingCheckedExceptionInThrows: true, tooWideThrowType: true),
+			check: new CheckConfig(missingCheckedExceptionInThrows: true, tooWideThrowType: true),
 		),
 		ignoreErrors: [
 			'#^Dynamic call to static method PHPUnit\\\Framework\\\\\S+\(\)\.$#',

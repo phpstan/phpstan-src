@@ -244,10 +244,15 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
-		$result = IsSuperTypeOfResult::createNo()->or(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
-		if ($result->yes()) {
-			return $result;
+		$results = [];
+		foreach ($this->types as $innerType) {
+			$result = $innerType->isSuperTypeOf($otherType);
+			if ($result->yes()) {
+				return $result;
+			}
+			$results[] = $result;
 		}
+		$result = IsSuperTypeOfResult::createNo()->or(...$results);
 
 		if ($otherType instanceof TemplateUnionType) {
 			return $result->or($otherType->isSubTypeOf($this));

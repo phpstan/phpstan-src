@@ -245,7 +245,16 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOfWithReason($this);
 		}
 
-		$result = IsSuperTypeOfResult::createNo()->or(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOfWithReason($otherType), $this->types));
+		$results = [];
+		foreach ($this->types as $innerType) {
+			$result = $innerType->isSuperTypeOfWithReason($otherType);
+			if ($result->yes()) {
+				return $result;
+			}
+			$results[] = $result;
+		}
+
+		$result = IsSuperTypeOfResult::createNo()->or(...$results);
 		if ($result->yes()) {
 			return $result;
 		}

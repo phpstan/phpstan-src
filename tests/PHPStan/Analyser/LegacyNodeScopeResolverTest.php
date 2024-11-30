@@ -3328,7 +3328,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'BooleansArray'",
 			],
 			[
-				'int|string',
+				'(int|string)',
 				"'UnknownConstantArray'",
 			],
 		];
@@ -9147,7 +9147,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<string, non-empty-array<int|string, array{saveCount: int<0, max>, removeCount: int<0, max>, loadCount: int<0, max>, hitCount: int<0, max>}>>',
+				'array<string, non-empty-array<array{saveCount: int<0, max>, removeCount: int<0, max>, loadCount: int<0, max>, hitCount: int<0, max>}>>',
 				'$statistics',
 			],
 		];

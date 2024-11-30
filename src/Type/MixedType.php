@@ -600,7 +600,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toArrayKey(): Type
 	{
-		return new UnionType([new IntegerType(), new StringType()]);
+		return new BenevolentUnionType([new IntegerType(), new StringType()]);
 	}
 
 	public function isIterable(): TrinaryLogic

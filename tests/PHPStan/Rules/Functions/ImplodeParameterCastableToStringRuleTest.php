@@ -17,7 +17,7 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ImplodeParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, false, false, false)));
+		return new ImplodeParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false)));
 	}
 
 	public function testNamedArguments(): void
@@ -98,6 +98,16 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 	public function testBug8467a(): void
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/bug-8467a.php'], []);
+	}
+
+	public function testBug12146(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12146.php'], [
+			[
+				'Parameter #2 $array of function implode expects array<string>, array<int|stdClass> given.',
+				28,
+			],
+		]);
 	}
 
 }

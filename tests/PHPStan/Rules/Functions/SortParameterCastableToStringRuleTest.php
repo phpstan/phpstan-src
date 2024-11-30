@@ -19,7 +19,7 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new SortParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, false, false, false)));
+		return new SortParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false)));
 	}
 
 	public function testRule(): void
@@ -143,6 +143,16 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	public function testBug11167(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11167.php'], []);
+	}
+
+	public function testBug12146(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackParameterNames([
+			[
+				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int|stdClass> given.',
+				46,
+			],
+		]));
 	}
 
 	/**

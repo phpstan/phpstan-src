@@ -36,11 +36,13 @@ final class ParameterCastableToStringCheck
 			$scope,
 			$parameter->value,
 			'',
-			static fn (Type $type): bool => !$castFn($type->getIterableValueType()) instanceof ErrorType,
+			static fn (Type $type): bool => $type->isArray()->yes() && !$castFn($type->getIterableValueType()) instanceof ErrorType,
 		);
 
-		if ($typeResult->getType() instanceof ErrorType
-			|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType) {
+		if (
+			! $typeResult->getType()->isArray()->yes()
+			|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType
+		) {
 			return null;
 		}
 

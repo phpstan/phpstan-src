@@ -19,7 +19,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ParameterCastableToNumberRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, false, false, false)));
+		return new ParameterCastableToNumberRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false)));
 	}
 
 	public function testRule(): void
@@ -128,6 +128,20 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 				14,
 			],
 		]);
+	}
+
+	public function testBug12146(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackPhp74ErrorMessages([
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int|stdClass> given.',
+				16,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int|stdClass> given.',
+				22,
+			],
+		]));
 	}
 
 	/**

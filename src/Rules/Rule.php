@@ -20,18 +20,18 @@ use PHPStan\Analyser\Scope;
  * Learn more: https://phpstan.org/developing-extensions/rules
  *
  * @api
- * @phpstan-template TNodeType of Node
+ * @template TNodeType of Node
  */
 interface Rule
 {
 
 	/**
-	 * @phpstan-return class-string<TNodeType>
+	 * @return class-string<TNodeType>
 	 */
 	public function getNodeType(): string;
 
 	/**
-	 * @phpstan-param TNodeType $node
+	 * @param TNodeType $node
 	 * @return (string|RuleError)[] errors
 	 */
 	public function processNode(Node $node, Scope $scope): array;

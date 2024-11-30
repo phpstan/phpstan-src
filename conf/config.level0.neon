@@ -68,6 +68,7 @@ rules:
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\ReadOnlyClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
+	- PHPStan\Rules\Constants\ClassAsClassConstantRule
 	- PHPStan\Rules\Constants\DynamicClassConstantFetchRule
 	- PHPStan\Rules\Constants\FinalConstantRule
 	- PHPStan\Rules\Constants\NativeTypedClassConstantRule

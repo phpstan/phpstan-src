@@ -919,7 +919,6 @@ final class ParametersAcceptorSelector
 		}
 
 		$nullableStringConstants = [
-			'CURLOPT_ACCEPT_ENCODING',
 			'CURLOPT_CUSTOMREQUEST',
 			'CURLOPT_DNS_INTERFACE',
 			'CURLOPT_DNS_LOCAL_IP4',
@@ -1032,7 +1031,7 @@ final class ParametersAcceptorSelector
 
 		$stringConstants = [
 			'CURLOPT_COOKIEFILE',
-			'CURLOPT_ENCODING',
+			'CURLOPT_ENCODING', // Alias: CURLOPT_ACCEPT_ENCODING
 			'CURLOPT_PRE_PROXY',
 			'CURLOPT_PRIVATE',
 			'CURLOPT_PROXY',

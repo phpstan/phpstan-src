@@ -499,6 +499,24 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], $errors);
 	}
 
+	public function testNamedArgumentsAfterUnpacking(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/named-arguments-after-unpacking.php'], [
+			[
+				'Named parameter cannot overwrite already unpacked argument $b.',
+				14,
+			],
+			[
+				'Argument for parameter $b has already been passed.',
+				14,
+			],
+		]);
+	}
+
 	public function testBug4514(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4514.php'], []);
@@ -1934,6 +1952,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-12051.php'], []);
+	}
+
+	public function testBug11418(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11418.php'], []);
 	}
 
 }

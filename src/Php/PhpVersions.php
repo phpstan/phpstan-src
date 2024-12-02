@@ -38,4 +38,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsNamedArgumentAfterUnpackedArgument(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

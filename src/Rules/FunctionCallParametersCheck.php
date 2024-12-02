@@ -27,6 +27,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
+use function array_slice;
 use function count;
 use function implode;
 use function in_array;
@@ -81,12 +82,15 @@ final class FunctionCallParametersCheck
 	{
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
+		$functionParameterNames = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
 
 			$functionParametersMaxCount++;
+
+			$functionParameterNames[] = $parameter->getName();
 		}
 
 		if ($parametersAcceptor->isVariadic()) {
@@ -101,6 +105,12 @@ final class FunctionCallParametersCheck
 		$hasUnpackedArgument = false;
 		$errors = [];
 		foreach ($args as $arg) {
+			$argumentName = null;
+			if ($arg->name !== null) {
+				$hasNamedArguments = true;
+				$argumentName = $arg->name->toString();
+			}
+
 			if ($hasNamedArguments && $arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')
 					->identifier('argument.unpackAfterNamed')
@@ -109,19 +119,24 @@ final class FunctionCallParametersCheck
 					->build();
 			}
 			if ($hasUnpackedArgument && !$arg->unpack) {
-				$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
-					->identifier('argument.nonUnpackAfterUnpacked')
-					->line($arg->getStartLine())
-					->nonIgnorable()
-					->build();
+				if ($argumentName !== null && $scope->getPhpVersion()->supportsNamedArgumentAfterUnpackedArgument()->yes()) {
+					if (in_array($argumentName, array_slice($functionParameterNames, 0, count($arguments)), true)) {
+						$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $argumentName))
+							->identifier('argument.namedOverwriteAfterUnpacked')
+							->line($arg->getStartLine())
+							->nonIgnorable()
+							->build();
+					}
+				} else {
+					$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
+						->identifier('argument.nonUnpackAfterUnpacked')
+						->line($arg->getStartLine())
+						->nonIgnorable()
+						->build();
+				}
 			}
 			if ($arg->unpack) {
 				$hasUnpackedArgument = true;
-			}
-			$argumentName = null;
-			if ($arg->name !== null) {
-				$hasNamedArguments = true;
-				$argumentName = $arg->name->toString();
 			}
 			if ($arg->unpack) {
 				$type = $scope->getType($arg->value);

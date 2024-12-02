@@ -1321,40 +1321,48 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects bool, int given.',
+				'Parameter #3 $value of function curl_setopt expects string, int given.',
+				19,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects string, int given.',
 				20,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects bool, string given.',
-				21,
+				'Parameter #3 $value of function curl_setopt expects bool, int given.',
+				22,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects int, string given.',
+				'Parameter #3 $value of function curl_setopt expects bool, string given.',
 				23,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects array, string given.',
+				'Parameter #3 $value of function curl_setopt expects int, string given.',
 				25,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects resource, string given.',
+				'Parameter #3 $value of function curl_setopt expects array, string given.',
 				27,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects array|string, int given.',
+				'Parameter #3 $value of function curl_setopt expects resource, string given.',
 				29,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects non-empty-string, \'\' given.',
+				'Parameter #3 $value of function curl_setopt expects array|string, int given.',
 				31,
 			],
 			[
+				'Parameter #3 $value of function curl_setopt expects non-empty-string, \'\' given.',
+				33,
+			],
+			[
 				'Parameter #3 $value of function curl_setopt expects non-empty-string|null, \'\' given.',
-				32,
+				34,
 			],
 			[
 				'Parameter #3 $value of function curl_setopt expects array<int, string>, array<string, string> given.',
-				75,
+				77,
 			],
 		]);
 	}

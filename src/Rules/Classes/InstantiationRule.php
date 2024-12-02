@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -17,13 +18,11 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\VerbosityLevel;
 use function array_filter;
 use function array_map;
 use function array_merge;
 use function count;
 use function sprintf;
-use function str_starts_with;
 use function strtolower;
 
 /**
@@ -248,16 +247,18 @@ final class InstantiationRule implements Rule
 
 		$type = $scope->getType($node->class);
 
-		if (str_starts_with($type->describe(VerbosityLevel::precise()), 'class-string')) {
-			$classStringObjectType = $type->getClassStringObjectType();
-
-			return array_map(
-				static fn (string $name): array => [$name, true],
-				array_filter($classStringObjectType->getObjectClassNames(), function (string $name): bool {
-					$reflectionClass = $this->reflectionProvider->getClass($name);
-					return !$reflectionClass->isAbstract() && !$reflectionClass->isInterface();
-				}),
+		if ($type->isClassString()->yes()) {
+			$concretes = array_filter(
+				$type->getClassStringObjectType()->getObjectClassReflections(),
+				static fn (ClassReflection $classReflection): bool => !$classReflection->isAbstract() && !$classReflection->isInterface(),
 			);
+
+			if (0 < count($concretes)) {
+				return array_map(
+					static fn (ClassReflection $classReflection): array => [$classReflection->getName(), true],
+					$concretes,
+				);
+			}
 		}
 
 		return array_merge(

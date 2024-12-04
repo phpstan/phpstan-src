@@ -272,22 +272,20 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				if ($argType instanceof UnionType) {
-					$sizeType = null;
-					if ($leftType instanceof ConstantIntegerType) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-						}
-					} elseif ($leftType instanceof IntegerRangeType) {
-						$sizeType = $leftType;
+				$sizeType = null;
+				if ($leftType instanceof ConstantIntegerType) {
+					if ($orEqual) {
+						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+					} else {
+						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
+				} elseif ($leftType instanceof IntegerRangeType) {
+					$sizeType = $leftType;
+				}
 
-					$narrowed = $this->narrowUnionByArraySize($expr->right, $argType, $sizeType, $context, $scope, $expr);
-					if ($narrowed !== null) {
-						return $narrowed;
-					}
+				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
+				if ($specifiedTypes !== null) {
+					$result = $result->unionWith($specifiedTypes);
 				}
 
 				if (
@@ -1046,66 +1044,52 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
-	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function specifyTypesForCountFuncCall(FuncCall $countFuncCall, Type $type, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
 	{
 		if ($sizeType === null) {
 			return null;
 		}
 
-		if (count($countFuncCall->getArgs()) === 1) {
-			$isNormalCount = TrinaryLogic::createYes();
-		} else {
-			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
-		}
-
 		if (
-			$isNormalCount->yes()
-			&& $argType->isConstantArray()->yes()
+			$this->isFuncCallWithNormalCount($countFuncCall, $scope)->yes()
+			&& $type->isConstantArray()->yes()
 		) {
-			$result = [];
-			foreach ($argType->getTypes() as $innerType) {
-				$arraySize = $innerType->getArraySize();
+			$resultType = TypeTraverser::map($type, function (Type $type, callable $traverse) use ($sizeType, $context) {
+				if ($type instanceof UnionType) {
+					return $traverse($type);
+				}
+
+				$arraySize = $type->getArraySize();
 				$isSize = $sizeType->isSuperTypeOf($arraySize);
 				if ($context->truthy()) {
 					if ($isSize->no()) {
-						continue;
+						return new NeverType();
 					}
 
-					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $scope);
+					$constArray = $this->turnListIntoConstantArray($type, $sizeType);
 					if ($constArray !== null) {
-						$innerType = $constArray;
+						$type = $constArray;
 					}
 				}
 				if ($context->falsey()) {
 					if (!$isSize->yes()) {
-						continue;
+						return new NeverType();
 					}
 				}
 
-				$result[] = $innerType;
-			}
+				return $type;
+			});
 
-			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$result), $context, $scope)->setRootExpr($rootExpr);
+			return $this->create($countFuncCall->getArgs()[0]->value, $resultType, $context, $scope)->setRootExpr($rootExpr);
 		}
 
 		return null;
 	}
 
-	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
+	private function turnListIntoConstantArray(Type $type, Type $sizeType): ?Type
 	{
-		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
-
-		if (count($countFuncCall->getArgs()) === 1) {
-			$isNormalCount = TrinaryLogic::createYes();
-		} else {
-			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
-		}
-
 		if (
-			$isNormalCount->yes()
-			&& $type->isList()->yes()
+			$type->isList()->yes()
 			&& $sizeType instanceof ConstantIntegerType
 			&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 		) {
@@ -1119,8 +1103,7 @@ final class TypeSpecifier
 		}
 
 		if (
-			$isNormalCount->yes()
-			&& $type->isList()->yes()
+			$type->isList()->yes()
 			&& $sizeType instanceof IntegerRangeType
 			&& $sizeType->getMin() !== null
 		) {
@@ -1155,6 +1138,18 @@ final class TypeSpecifier
 		}
 
 		return null;
+	}
+
+	private function isFuncCallWithNormalCount(FuncCall $countFuncCall, Scope $scope): TrinaryLogic
+	{
+		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
+
+		if (count($countFuncCall->getArgs()) === 1) {
+			return TrinaryLogic::createYes();
+		}
+		$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+
+		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
 	}
 
 	private function specifyTypesForConstantBinaryExpression(
@@ -2186,11 +2181,9 @@ final class TypeSpecifier
 				);
 			}
 
-			if ($argType instanceof UnionType) {
-				$narrowed = $this->narrowUnionByArraySize($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
-				if ($narrowed !== null) {
-					return $narrowed;
-				}
+			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
 			}
 
 			if ($context->truthy()) {
@@ -2203,7 +2196,8 @@ final class TypeSpecifier
 					}
 
 					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
-					$constArray = $this->turnListIntoConstantArray($unwrappedLeftExpr, $argType, $rightType, $scope);
+					$isNormalCount = $this->isFuncCallWithNormalCount($unwrappedLeftExpr, $scope);
+					$constArray = $isNormalCount->yes() ? $this->turnListIntoConstantArray($argType, $rightType) : null;
 					if ($constArray !== null) {
 						return $funcTypes->unionWith(
 							$this->create($unwrappedLeftExpr->getArgs()[0]->value, $constArray, $context, $scope)->setRootExpr($expr),

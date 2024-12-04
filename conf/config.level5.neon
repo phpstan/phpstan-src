@@ -6,6 +6,8 @@ parameters:
 	checkArgumentsPassedByReference: true
 
 conditionalTags:
+	PHPStan\Rules\Functions\ArrayColumnRule:
+		phpstan.rules.rule: %featureToggles.arrayColumn%
 	PHPStan\Rules\Functions\ArrayFilterRule:
 		phpstan.rules.rule: %featureToggles.arrayFilter%
 	PHPStan\Rules\Functions\ArrayValuesRule:
@@ -56,3 +58,9 @@ services:
 		class: PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
 	-
 		class: PHPStan\Rules\Functions\SortParameterCastableToStringRule
+
+	-
+		class: PHPStan\Rules\Functions\ArrayColumnRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%

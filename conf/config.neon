@@ -39,6 +39,7 @@ parameters:
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false
+		arrayColumn: false
 		arrayFilter: false
 		arrayUnpacking: false
 		arrayValues: false
@@ -1191,6 +1192,9 @@ services:
 		class: PHPStan\Type\Php\ArrayColumnFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ArrayColumnHelper
 
 	-
 		class: PHPStan\Type\Php\ArrayCombineFunctionReturnTypeExtension

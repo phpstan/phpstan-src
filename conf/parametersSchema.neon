@@ -34,6 +34,7 @@ parametersSchema:
 		explicitMixedInUnknownGenericNew: bool(),
 		explicitMixedForGlobalVariables: bool(),
 		explicitMixedViaIsArray: bool(),
+		arrayColumn: bool(),
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
 		arrayValues: bool(),

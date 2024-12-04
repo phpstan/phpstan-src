@@ -5,6 +5,7 @@ parameters:
 		explicitMixedInUnknownGenericNew: true
 		explicitMixedForGlobalVariables: true
 		explicitMixedViaIsArray: true
+		arrayColumn: true
 		arrayFilter: true
 		arrayUnpacking: true
 		arrayValues: true

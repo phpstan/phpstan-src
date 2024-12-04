@@ -11,7 +11,9 @@ use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -24,9 +26,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
+use const PHP_INT_MAX;
 
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const CONST_ARRAY_LIMIT = 8;
 
 	public function __construct(private PhpVersion $phpVersion)
 	{
@@ -73,11 +78,21 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$returnType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $returnValueType), new AccessoryArrayListType());
-		if (
-			!isset($args[2])
-			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($args[2]->value))->yes()
-		) {
-			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
+		$limitType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantIntegerType(PHP_INT_MAX);
+		if (IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($limitType)->yes()) {
+			$constantScalarTypes = $limitType->getConstantScalarTypes();
+			if (count($constantScalarTypes) === 1 && IntegerRangeType::fromInterval(0, self::CONST_ARRAY_LIMIT)->isSuperTypeOf($limitType)->yes()) {
+				$limit = (int) $constantScalarTypes[0]->getValue() ?: 1; // 0 is treated as 1
+
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				for ($i = 0; $i < $limit; $i++) {
+					$builder->setOffsetValueType(null, $returnValueType, $i !== 0);
+				}
+
+				$returnType = $builder->getArray();
+			} else {
+				$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
+			}
 		}
 
 		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {

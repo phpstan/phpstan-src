@@ -26,11 +26,14 @@ final class ArrayColumnHelper
 	{
 	}
 
-	public function handleAnyArray(Type $arrayType, Type $columnType, ?Type $indexType, Scope $scope): Type
+	/**
+	 * @return array{Type, TrinaryLogic}
+	 */
+	public function getReturnValueType(Type $arrayType, Type $columnType, Scope $scope): array
 	{
 		$iterableAtLeastOnce = $arrayType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
-			return new ConstantArrayType([], []);
+			return [new NeverType(), $iterableAtLeastOnce];
 		}
 
 		$iterableValueType = $arrayType->getIterableValueType();
@@ -44,11 +47,19 @@ final class ArrayColumnHelper
 			}
 		}
 
+		return [$returnValueType, $iterableAtLeastOnce];
+	}
+
+	public function handleAnyArray(Type $arrayType, Type $columnType, ?Type $indexType, Scope $scope): Type
+	{
+		[$returnValueType, $iterableAtLeastOnce] = $this->getReturnValueType($arrayType, $columnType, $scope);
 		if ($returnValueType instanceof NeverType) {
 			return new ConstantArrayType([], []);
 		}
 
 		if ($indexType !== null) {
+			$iterableValueType = $arrayType->getIterableValueType();
+
 			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
 			if ($type !== null) {
 				$returnKeyType = $type;

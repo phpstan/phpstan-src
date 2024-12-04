@@ -17,12 +17,10 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -83,10 +81,6 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
 			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
-		}
-
-		if ($delimiterType instanceof MixedType) {
-			$returnType = TypeUtils::toBenevolentUnion($returnType);
 		}
 
 		return $returnType;

@@ -280,7 +280,7 @@ final class TypeSpecifier
 						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
 				} elseif ($leftType instanceof IntegerRangeType) {
-					$sizeType = $leftType;
+					$sizeType = $leftType->shift($offset);
 				}
 
 				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
@@ -1061,23 +1061,14 @@ final class TypeSpecifier
 
 				$arraySize = $type->getArraySize();
 				$isSize = $sizeType->isSuperTypeOf($arraySize);
-				if ($context->truthy()) {
-					if ($isSize->no()) {
-						return new NeverType();
-					}
-
-					$constArray = $this->turnListIntoConstantArray($type, $sizeType);
-					if ($constArray !== null) {
-						$type = $constArray;
-					}
+				if ($context->truthy() && $isSize->no()) {
+					return new NeverType();
 				}
-				if ($context->falsey()) {
-					if (!$isSize->yes()) {
-						return new NeverType();
-					}
+				if ($context->falsey() && !$isSize->yes()) {
+					return new NeverType();
 				}
 
-				return $type;
+				return $this->turnListIntoConstantArray($type, $sizeType) ?? $type;
 			});
 
 			return $this->create($countFuncCall->getArgs()[0]->value, $resultType, $context, $scope)->setRootExpr($rootExpr);

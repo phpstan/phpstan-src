@@ -8,6 +8,7 @@ use function PHPStan\Testing\assertType;
 use function strtolower;
 use function strtoupper;
 use function ucfirst;
+use const ENT_SUBSTITUTE;
 
 class Foo
 {
@@ -333,9 +334,17 @@ class MoreNonEmptyStringFunctions
 		assertType('string', ucwords($s));
 		assertType('non-empty-string', ucwords($nonEmpty));
 		assertType('string', htmlspecialchars($s));
+		assertType('string', htmlspecialchars($s, ENT_SUBSTITUTE));
+		assertType('string', htmlspecialchars($s, 0));
 		assertType('non-empty-string', htmlspecialchars($nonEmpty));
+		assertType('non-empty-string', htmlspecialchars($nonEmpty, ENT_SUBSTITUTE));
+		assertType('string', htmlspecialchars($nonEmpty, 0));
 		assertType('string', htmlentities($s));
+		assertType('string', htmlentities($s, ENT_SUBSTITUTE));
+		assertType('string', htmlentities($s, 0));
 		assertType('non-empty-string', htmlentities($nonEmpty));
+		assertType('non-empty-string', htmlentities($nonEmpty, ENT_SUBSTITUTE));
+		assertType('string', htmlentities($nonEmpty, 0));
 
 		assertType('string', urlencode($s));
 		assertType('non-empty-string', urlencode($nonEmpty));

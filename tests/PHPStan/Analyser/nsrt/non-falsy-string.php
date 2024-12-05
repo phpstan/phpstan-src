@@ -3,6 +3,7 @@
 namespace NonFalseyString;
 
 use function PHPStan\Testing\assertType;
+use const ENT_SUBSTITUTE;
 
 class Foo {
 	/**
@@ -95,7 +96,11 @@ class Foo {
 		assertType('non-falsy-string', ucfirst($nonFalsey));
 		assertType('non-falsy-string', ucwords($nonFalsey));
 		assertType('non-falsy-string', htmlspecialchars($nonFalsey));
+		assertType('non-falsy-string', htmlspecialchars($nonFalsey, ENT_SUBSTITUTE));
+		assertType('string', htmlspecialchars($nonFalsey, 0));
 		assertType('non-falsy-string', htmlentities($nonFalsey));
+		assertType('non-falsy-string', htmlentities($nonFalsey, ENT_SUBSTITUTE));
+		assertType('string', htmlentities($nonFalsey, 0));
 
 		assertType('non-falsy-string', urlencode($nonFalsey));
 		assertType('non-falsy-string', urldecode($nonFalsey));

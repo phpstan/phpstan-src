@@ -85,7 +85,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 		return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$calledOnType = $scope->getScopeType($expr->var);
@@ -97,7 +97,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			$expr->var,
 			$expr->name,
 			$attributes,
-		), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
+		), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context, null);
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
 		// the nullsafe operation is processed; emit a virtual node carrying the

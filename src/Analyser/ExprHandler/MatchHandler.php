@@ -207,11 +207,11 @@ final class MatchHandler implements ExprHandler
 		return $armScopesAndTypes;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$deepContext = $context->enterDeep();
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext, null);
 		$condType = $condResult->getType();
 		$condNativeType = $condResult->getNativeType();
 		$scope = $condResult->getScope();
@@ -322,7 +322,7 @@ final class MatchHandler implements ExprHandler
 							}
 						}
 
-						$nodeScopeResolver->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext);
+						$nodeScopeResolver->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext, null);
 
 						$condNodes[] = new MatchExpressionArmCondition(
 							$cond,
@@ -359,6 +359,7 @@ final class MatchHandler implements ExprHandler
 						$storage,
 						$nodeCallback,
 						ExpressionContext::createTopLevel(),
+						null,
 					);
 					$armScope = $armResult->getScope();
 					if (!$armResult->isAlwaysTerminating()) {
@@ -395,7 +396,7 @@ final class MatchHandler implements ExprHandler
 				$hasDefaultCond = true;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel(), null);
 				$matchScope = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
@@ -420,7 +421,7 @@ final class MatchHandler implements ExprHandler
 					continue;
 				}
 				$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getStartLine());
-				$armCondResult = $nodeScopeResolver->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext);
+				$armCondResult = $nodeScopeResolver->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext, null);
 				$hasYield = $hasYield || $armCondResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armCondResult->getImpurePoints());
@@ -451,6 +452,7 @@ final class MatchHandler implements ExprHandler
 				$storage,
 				$nodeCallback,
 				ExpressionContext::createTopLevel(),
+				null,
 			);
 			$armScope = $armResult->getScope();
 			if (!$armResult->isAlwaysTerminating()) {

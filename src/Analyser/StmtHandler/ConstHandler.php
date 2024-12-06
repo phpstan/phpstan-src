@@ -40,7 +40,7 @@ final class ConstHandler implements StmtHandler
 		$entryScope = $scope;
 		$impurePoints = [];
 		foreach ($stmt->consts as $const) {
-			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			// the constant's callback fires after its value was processed, so
 			// rule-side asks about the value answer from the storage
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);

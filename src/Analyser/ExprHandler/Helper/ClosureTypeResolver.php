@@ -178,6 +178,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 						$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 					},
 					ExpressionContext::createDeep(),
+					null,
 				);
 			} finally {
 				self::$resolveClosureTypeDepth--;

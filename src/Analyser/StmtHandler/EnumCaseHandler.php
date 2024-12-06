@@ -37,7 +37,7 @@ final class EnumCaseHandler implements StmtHandler
 		$nodeScopeResolver->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $storage, $nodeCallback);
 		$impurePoints = [];
 		if ($stmt->expr !== null) {
-			$exprResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$impurePoints = $exprResult->getImpurePoints();
 		}
 

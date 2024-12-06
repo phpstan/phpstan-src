@@ -54,7 +54,7 @@ final class AssignOpHandler implements ExprHandler
 		return $expr instanceof AssignOp;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$target = $this->assignHandler->prepareTarget(
@@ -86,7 +86,7 @@ final class AssignOpHandler implements ExprHandler
 			}
 		}
 
-		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep(), null);
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			$isAlwaysTerminatingCoalesce = $valueResult->isAlwaysTerminating() && $valueBeforeScope->getType($expr->var)->isNull()->yes();
 			$valueResult = $this->expressionResultFactory->create(

@@ -46,7 +46,7 @@ final class TernaryHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
-		$condResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->cond), $expr->cond, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+		$condResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->cond), $expr->cond, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep(), null);
 		if ($expr->if === null) {
 			$conditionType = $scope->getType($expr->cond);
 			$booleanConditionType = $conditionType->toBoolean();
@@ -100,9 +100,9 @@ final class TernaryHandler implements ExprHandler
 		return $typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
-		$ternaryCondResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$ternaryCondResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 		$throwPoints = $ternaryCondResult->getThrowPoints();
 		$impurePoints = $ternaryCondResult->getImpurePoints();
 		$hasYield = $ternaryCondResult->hasYield();
@@ -111,20 +111,20 @@ final class TernaryHandler implements ExprHandler
 		$ifTrueType = null;
 
 		if ($expr->if === null) {
-			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context, null);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
 			$hasYield = $hasYield || $elseResult->hasYield();
 			$ifFalseScope = $elseResult->getScope();
 		} else {
-			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
+			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context, null);
 			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
 			$hasYield = $hasYield || $ifResult->hasYield();
 			$ifTrueScope = $ifResult->getScope();
 			$ifTrueType = $ifResult->getType();
 
-			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context, null);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
 			$hasYield = $hasYield || $elseResult->hasYield();

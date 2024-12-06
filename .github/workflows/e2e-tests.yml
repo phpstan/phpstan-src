@@ -1522,6 +1522,10 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress")
               echo "$OUTPUT"
               ../bashunit -a contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
+          - script: |
+              cd e2e/parameter-type-extension
+              composer install
+              ../../bin/phpstan analyze
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

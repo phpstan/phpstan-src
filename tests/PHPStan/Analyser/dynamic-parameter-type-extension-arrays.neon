@@ -1,0 +1,7 @@
+services:
+	-
+		class: DynamicParameterTypeExtensionArrays\DynamicParameterTypeExtension
+		tags:
+			- phpstan.dynamicFunctionParameterTypeExtension
+			- phpstan.dynamicMethodParameterTypeExtension
+			- phpstan.dynamicStaticMethodParameterTypeExtension

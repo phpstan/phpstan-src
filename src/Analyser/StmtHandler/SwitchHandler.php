@@ -43,7 +43,7 @@ final class SwitchHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$entryScope = $scope;
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
 		$scope = $condResult->getScope();
 		$scopeForBranches = $scope;
@@ -69,7 +69,7 @@ final class SwitchHandler implements StmtHandler
 			if ($caseNode->cond !== null) {
 				$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
 				$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
-				$caseResult = $nodeScopeResolver->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$caseResult = $nodeScopeResolver->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 				$scopeForBranches = $caseResult->getScope();
 				$hasYield = $hasYield || $caseResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $caseResult->getThrowPoints());

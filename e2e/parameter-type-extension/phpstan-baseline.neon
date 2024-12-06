@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$relations of method App\\Builder\<App\\User\>\:\:with\(\) expects array\<string, Closure\(App\\Relation\<\*, \*, \*\>\)\: mixed\>, array\{car\: Closure\(App\\HasOne\)\: App\\HasOne, monitorable\: Closure\(App\\MorphTo\)\: App\\MorphTo\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/test.php

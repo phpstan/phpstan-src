@@ -43,11 +43,12 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
+		?Type $overriddenType,
 	): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$innerExpr = $expr->getExpr();
-		$innerResult = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context);
+		$innerResult = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context, null);
 		$scope = $innerResult->getScope();
 
 		return $this->expressionResultFactory->create(

@@ -303,7 +303,7 @@ final class AssignHandler implements ExprHandler
 		return $specifiedTypes;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$target = $this->prepareTarget(
@@ -348,7 +348,7 @@ final class AssignHandler implements ExprHandler
 			);
 		}
 
-		$assignedExprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep());
+		$assignedExprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $valueScope, $storage, $nodeCallback, $valueContext->enterDeep(), null);
 		$valueImpurePoints = array_merge($valueImpurePoints, $assignedExprResult->getImpurePoints());
 		$valueScope = $assignedExprResult->getScope();
 
@@ -489,7 +489,7 @@ final class AssignHandler implements ExprHandler
 				if (!is_string($var->name)) {
 					// `$$name OP= ...` evaluates the name before reading the old
 					// value: walk it once here, the write flow consumes the result
-					$variableNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+					$variableNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context, null);
 					$hasYield = $variableNameResult->hasYield();
 					$throwPoints = $variableNameResult->getThrowPoints();
 					$impurePoints = $variableNameResult->getImpurePoints();
@@ -559,7 +559,7 @@ final class AssignHandler implements ExprHandler
 			if ($enterExpressionAssign) {
 				$scope = $scope->enterExpressionAssign($var, false);
 			}
-			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$rootReadResult = $result;
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -611,7 +611,7 @@ final class AssignHandler implements ExprHandler
 						throwPoints: [],
 						impurePoints: [],
 					));
-					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
+					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 					$dimResults[$key] = $result;
 					$offsetTypes[] = [$result->getType(), $dimFetch];
 					$offsetNativeTypes[] = [$result->getNativeType(), $dimFetch];
@@ -662,7 +662,7 @@ final class AssignHandler implements ExprHandler
 
 		if ($var instanceof PropertyFetch) {
 			$scopeBeforeVar = $scope;
-			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
+			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context, null);
 			$hasYield = $objectResult->hasYield();
 			$throwPoints = $objectResult->getThrowPoints();
 			$impurePoints = $objectResult->getImpurePoints();
@@ -674,7 +674,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;
 			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context, null);
 				$hasYield = $hasYield || $propertyNameResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
@@ -713,7 +713,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->class instanceof Node\Name) {
 				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
-				$classResult = $nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context);
+				$classResult = $nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context, null);
 				$propertyHolderType = $scope->getType($var->class);
 			}
 
@@ -722,7 +722,7 @@ final class AssignHandler implements ExprHandler
 			if ($var->name instanceof Node\Identifier) {
 				$propertyName = $var->name->name;
 			} else {
-				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context, null);
 				$hasYield = $propertyNameResult->hasYield();
 				$throwPoints = $propertyNameResult->getThrowPoints();
 				$impurePoints = $propertyNameResult->getImpurePoints();
@@ -821,7 +821,7 @@ final class AssignHandler implements ExprHandler
 			);
 		}
 
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context, null);
 			$hasYield = $varResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
@@ -903,7 +903,7 @@ final class AssignHandler implements ExprHandler
 					if ($if === null) {
 						$if = $assignedExpr->cond;
 					}
-					$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
+					$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep(), null)->getScope();
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
 					$truthyScope = $condScope->applySpecifiedTypes($truthySpecifiedTypes);
@@ -994,7 +994,7 @@ final class AssignHandler implements ExprHandler
 				// a plain assignment does not read the target, so the dynamic name
 				// is walked here; read-modify-write targets walked it in
 				// prepareTarget() and already carry its state
-				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context, null);
 				$hasYield = $hasYield || $nameExprResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
@@ -1287,7 +1287,7 @@ final class AssignHandler implements ExprHandler
 				$itemScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemScope, $storage);
 				if ($arrayItem->key !== null) {
-					$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $itemScope, $storage, $nodeCallback, $context->enterDeep());
+					$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $itemScope, $storage, $nodeCallback, $context->enterDeep(), null);
 					$hasYield = $hasYield || $keyResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());

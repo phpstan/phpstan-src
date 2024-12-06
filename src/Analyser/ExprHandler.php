@@ -32,6 +32,7 @@ interface ExprHandler
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
+		?Type $overriddenType,
 	): ExpressionResult;
 
 	/**

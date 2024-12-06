@@ -85,7 +85,7 @@ final class DoWhileHandler implements StmtHandler
 					$replayPassStorage = $storage;
 					$replayPassResult = $bodyScopeResult;
 				}
-				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
+				$bodyScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep(), null)->getTruthyScope();
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
@@ -137,13 +137,13 @@ final class DoWhileHandler implements StmtHandler
 			$finalScope = $scope;
 		}
 		if (!$alwaysTerminating) {
-			$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$finalScope = $condResult->getFalseyScope();
 		} else {
-			$nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 		}
 
 		$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);

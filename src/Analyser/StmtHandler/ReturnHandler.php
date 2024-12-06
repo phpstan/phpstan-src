@@ -37,7 +37,7 @@ final class ReturnHandler implements StmtHandler
 	{
 		$entryScope = $scope;
 		if ($stmt->expr !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 			$scope = $result->getScope();

@@ -37,7 +37,7 @@ final class BreakContinueHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		if ($stmt->num !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->num, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $stmt->num, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();

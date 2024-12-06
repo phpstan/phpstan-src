@@ -75,7 +75,7 @@ final class MethodCallHandler implements ExprHandler
 		return $expr instanceof MethodCall && !$expr->isFirstClassCallable();
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$originalScope = $scope;
@@ -91,7 +91,7 @@ final class MethodCallHandler implements ExprHandler
 			);
 		}
 
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 		$hasYield = $varResult->hasYield();
 		$throwPoints = $varResult->getThrowPoints();
 		$impurePoints = $varResult->getImpurePoints();
@@ -117,7 +117,7 @@ final class MethodCallHandler implements ExprHandler
 				$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $variants, $namedArgumentsVariants);
 			}
 		} else {
-			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
 			$scope = $methodNameResult->getScope();
 		}

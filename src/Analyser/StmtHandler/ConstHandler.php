@@ -40,7 +40,7 @@ final class ConstHandler implements StmtHandler
 		$impurePoints = [];
 		foreach ($stmt->consts as $const) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $const, $scope, $storage);
-			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$constResult = $nodeScopeResolver->processExprNode($stmt, $const->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(), null);
 			$impurePoints = array_merge($impurePoints, $constResult->getImpurePoints());
 			if ($const->namespacedName !== null) {
 				$constantName = new Name\FullyQualified($const->namespacedName->toString());

@@ -38,7 +38,7 @@ final class ExitHandler implements ExprHandler
 		return $expr instanceof Exit_;
 	}
 
-	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context, ?Type $overriddenType): ExpressionResult
 	{
 		$beforeScope = $scope;
 		$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
@@ -50,7 +50,7 @@ final class ExitHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		if ($expr->expr !== null) {
-			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep(), null);
 			$hasYield = $exprResult->hasYield();
 			$throwPoints = $exprResult->getThrowPoints();
 			$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());

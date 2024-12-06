@@ -77,6 +77,7 @@ use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -171,6 +172,7 @@ class NodeScopeResolver
 		private readonly ExtensionsCollection $methodParameterClosureThisExtensions,
 		#[AutowiredExtensions(of: StaticMethodParameterClosureThisExtension::class)]
 		private readonly ExtensionsCollection $staticMethodParameterClosureThisExtensions,
+		private readonly DynamicParameterTypeResolver $dynamicParameterTypeResolver,
 		#[AutowiredExtensions(of: FunctionParameterClosureTypeExtension::class)]
 		private readonly ExtensionsCollection $functionParameterClosureTypeExtensions,
 		#[AutowiredExtensions(of: MethodParameterClosureTypeExtension::class)]
@@ -2050,7 +2052,8 @@ class NodeScopeResolver
 				}
 
 				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+					$overwritingParameterType = $this->dynamicParameterTypeResolver->resolve($callLike, $calleeReflection, $parameter, $scopeToPass)
+						?? $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;
@@ -2141,7 +2144,8 @@ class NodeScopeResolver
 				}
 
 				if ($parameter !== null) {
-					$overwritingParameterType = $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
+					$overwritingParameterType = $this->dynamicParameterTypeResolver->resolve($callLike, $calleeReflection, $parameter, $scopeToPass)
+						?? $this->getParameterTypeFromParameterClosureTypeExtension($callLike, $calleeReflection, $parameter, $scopeToPass);
 
 					if ($overwritingParameterType !== null) {
 						$parameterType = $overwritingParameterType;

@@ -31,33 +31,28 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 		}
 
 		$traversableType = $scope->getType($arguments[0]->value);
+
+		if (isset($arguments[1])) {
+			$preserveKeysType = $scope->getType($arguments[1]->value);
+
+			if ($preserveKeysType->isFalse()->yes()) {
+				return AccessoryArrayListType::intersectWith(new ArrayType(
+					new IntegerType(),
+					$traversableType->getIterableValueType(),
+				));
+			}
+		}
+
 		$arrayKeyType = $traversableType->getIterableKeyType()->toArrayKey();
 
 		if ($arrayKeyType instanceof ErrorType) {
 			return new NeverType(true);
 		}
 
-		$isList = false;
-
-		if (isset($arguments[1])) {
-			$preserveKeysType = $scope->getType($arguments[1]->value);
-
-			if ($preserveKeysType->isFalse()->yes()) {
-				$arrayKeyType = new IntegerType();
-				$isList = true;
-			}
-		}
-
-		$arrayType = new ArrayType(
+		return new ArrayType(
 			$arrayKeyType,
 			$traversableType->getIterableValueType(),
 		);
-
-		if ($isList) {
-			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
-		}
-
-		return $arrayType;
 	}
 
 }

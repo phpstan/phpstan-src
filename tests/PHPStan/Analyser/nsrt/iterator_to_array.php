@@ -49,7 +49,9 @@ class Foo
 		};
 
 		assertType('array<0|1|2|\'\', 1|2|3|4>', iterator_to_array($generator1()));
+		assertType('list<1|2|3|4>', iterator_to_array($generator1(), false));
 		assertType('array<0|1|\'\'|\'a\', 1|2|3|4>', iterator_to_array($generator2()));
+		assertType('list<1|2|3|4>', iterator_to_array($generator2(), false));
 	}
 
 	public function testOnGeneratorsWithIllegalKeysForArray(): void
@@ -60,5 +62,6 @@ class Foo
 		};
 
 		assertType('*NEVER*', iterator_to_array($illegalGenerator()));
+		assertType('list<\'b\'|\'c\'>', iterator_to_array($illegalGenerator(), false));
 	}
 }

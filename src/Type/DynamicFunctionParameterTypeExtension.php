@@ -9,24 +9,22 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 
 /**
- * This is the interface for parameter closure type extensions for functions.
+ * This is the interface for dynamic parameter type extensions for functions.
  *
- * To register it in the configuration file use the `phpstan.functionParameterClosureTypeExtension` service tag:
+ * To register it in the configuration file use the `phpstan.dynamicFunctionParameterTypeExtension` service tag:
  *
  * ```
  * services:
  * 	-
  *		class: App\PHPStan\MyExtension
  *		tags:
- *			- phpstan.functionParameterClosureTypeExtension
+ *			- phpstan.dynamicFunctionParameterTypeExtension
  * ```
  *
  * @api
- * @deprecated
- * @see \PHPStan\Type\DynamicFunctionParameterTypeExtension
  */
-#[ExtensionInterface(tag: 'phpstan.functionParameterClosureTypeExtension')]
-interface FunctionParameterClosureTypeExtension
+#[ExtensionInterface(tag: 'phpstan.dynamicFunctionParameterTypeExtension')]
+interface DynamicFunctionParameterTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool;

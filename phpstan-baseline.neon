@@ -91,6 +91,96 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method getTypeFromFunctionCall() of deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method getTypeFromMethodCall() of deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method getTypeFromStaticMethodCall() of deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 2
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method isFunctionSupported() of deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method isMethodSupported() of deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Call to method isStaticMethodSupported() of deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.'
+			identifier: method.deprecatedInterface
+			count: 2
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter $functionParameterClosureTypeExtensions of method PHPStan\Analyser\NodeScopeResolver::__construct() has typehint with deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.'
+			identifier: parameter.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter $methodParameterClosureTypeExtensions of method PHPStan\Analyser\NodeScopeResolver::__construct() has typehint with deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.'
+			identifier: parameter.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: 'Parameter $staticMethodParameterClosureTypeExtensions of method PHPStan\Analyser\NodeScopeResolver::__construct() has typehint with deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.'
+			identifier: parameter.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: Property $functionParameterClosureTypeExtensions references deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension in its type.
+			identifier: property.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: Property $methodParameterClosureTypeExtensions references deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension in its type.
+			identifier: property.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			rawMessage: Property $staticMethodParameterClosureTypeExtensions references deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension in its type.
+			identifier: property.deprecatedInterface
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -731,6 +821,42 @@ parameters:
 			identifier: return.internalClass
 			count: 1
 			path: src/Testing/LevelsTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/RuleTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/RuleTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/RuleTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/TypeInferenceTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/TypeInferenceTestCase.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: src/Testing/TypeInferenceTestCase.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
@@ -1763,6 +1889,24 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/VoidType.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\FunctionParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: tests/PHPStan/Analyser/AnalyserTest.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\MethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: tests/PHPStan/Analyser/AnalyserTest.php
+
+		-
+			rawMessage: Access to constant on deprecated interface PHPStan\Type\StaticMethodParameterClosureTypeExtension.
+			identifier: classConstant.deprecatedInterface
+			count: 1
+			path: tests/PHPStan/Analyser/AnalyserTest.php
 
 		-
 			rawMessage: 'Class PHPStan\Analyser\AnonymousClassNameRuleTest extends generic class PHPStan\Testing\RuleTestCase but does not specify its types: TRule'

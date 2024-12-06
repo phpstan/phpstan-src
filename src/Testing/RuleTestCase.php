@@ -26,6 +26,7 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
@@ -96,6 +97,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureThisExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureThisExtension::class),
+			self::getContainer()->getByType(DynamicParameterTypeResolver::class),
 			self::getContainer()->getExtensionsCollection(FunctionParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(MethodParameterClosureTypeExtension::class),
 			self::getContainer()->getExtensionsCollection(StaticMethodParameterClosureTypeExtension::class),

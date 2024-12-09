@@ -15,7 +15,7 @@ class Foo
 
 			return rand(0, 1) ? $a : $b;
 		}, ['foo' => $i], ['bar' => $s]);
-		assertType('non-empty-array<int, int|string>', $result);
+		assertType('non-empty-list<int|string>', $result);
 	}
 
 	/**
@@ -26,12 +26,12 @@ class Foo
 	{
 		assertType('array{}', array_map(null, []));
 		assertType('array{foo: true}', array_map(null, ['foo' => true]));
-		assertType('non-empty-array<int, array{1|2|3, 4|5|6}>', array_map(null, [1, 2, 3], [4, 5, 6]));
+		assertType('non-empty-list<array{1|2|3, 4|5|6}>', array_map(null, [1, 2, 3], [4, 5, 6]));
 
 		assertType('non-empty-array<string, int>', array_map(null, $array));
-		assertType('non-empty-array<int, array{int, int}>', array_map(null, $array, $array));
-		assertType('non-empty-array<int, array{int, int, int}>', array_map(null, $array, $array, $array));
-		assertType('non-empty-array<int, array{int|null, bool|null}>', array_map(null, $array, $other));
+		assertType('non-empty-list<array{int, int}>', array_map(null, $array, $array));
+		assertType('non-empty-list<array{int, int, int}>', array_map(null, $array, $array, $array));
+		assertType('non-empty-list<array{int|null, bool|null}>', array_map(null, $array, $other));
 
 		assertType('array{1}|array{true}', array_map(null, rand() ? [1] : [true]));
 		assertType('array{1}|array{true, false}', array_map(null, rand() ? [1] : [true, false]));

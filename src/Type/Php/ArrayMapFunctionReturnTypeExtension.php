@@ -168,10 +168,12 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				);
 			}
 		} else {
-			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
-				new IntegerType(),
-				$valueType,
-			), ...TypeUtils::getAccessoryTypes($arrayType));
+			$mappedArrayType = AccessoryArrayListType::intersectWith(
+				TypeCombinator::intersect(new ArrayType(
+					new IntegerType(),
+					$valueType,
+				), ...TypeUtils::getAccessoryTypes($arrayType)),
+			);
 		}
 
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {

@@ -167,4 +167,14 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12224.php'], [
+			[
+				'Function PHPStan\Rules\Pure\data\pureWithThrowsVoid() is marked as pure but returns void.',
+				18,
+			],
+		]);
+	}
+
 }

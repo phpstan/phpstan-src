@@ -19,6 +19,7 @@ return [
 		'http_clear_last_response_headers' => ['void'],
 		'mb_lcfirst' => ['string', 'string'=>'string', 'encoding='=>'string'],
 		'mb_ucfirst' => ['string', 'string'=>'string', 'encoding='=>'string'],
+		'fpow' => ['float', 'num'=>'float', 'exponent'=>'float'],
 	],
 	'old' => [
 

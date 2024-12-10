@@ -9,10 +9,8 @@ interface Registry
 
 	/**
 	 * @template TNodeType of Node
-	 * @phpstan-param class-string<TNodeType> $nodeType
-	 * @param Node $nodeType
-	 * @phpstan-return array<Rule<TNodeType>>
-	 * @return Rule[]
+	 * @param class-string<TNodeType> $nodeType
+	 * @return array<Rule<TNodeType>>
 	 */
 	public function getRules(string $nodeType): array;
 

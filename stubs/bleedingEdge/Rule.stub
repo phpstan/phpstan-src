@@ -7,18 +7,18 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @phpstan-template TNodeType of Node
+ * @template TNodeType of Node
  */
 interface Rule
 {
 
 	/**
-	 * @phpstan-return class-string<TNodeType>
+	 * @return class-string<TNodeType>
 	 */
 	public function getNodeType(): string;
 
 	/**
-	 * @phpstan-param TNodeType $node
+	 * @param TNodeType $node
 	 * @return list<IdentifierRuleError>
 	 */
 	public function processNode(Node $node, Scope $scope): array;

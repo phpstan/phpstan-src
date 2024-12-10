@@ -14,10 +14,9 @@ interface Container
 	public function getService(string $serviceName);
 
 	/**
-	 * @phpstan-template T of object
-	 * @phpstan-param class-string<T> $className
-	 * @phpstan-return T
-	 * @return mixed
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return T
 	 */
 	public function getByType(string $className);
 

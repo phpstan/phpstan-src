@@ -7,6 +7,7 @@ use Closure;
 use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\BinaryOp;
@@ -21,6 +22,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
@@ -2961,6 +2963,7 @@ final class MutatingScope implements Scope
 			new PhpMethodFromParserNodeReflection(
 				$this->getClassReflection(),
 				$classMethod,
+				null,
 				$this->getFile(),
 				$templateTypeMap,
 				$this->getRealParameterTypes($classMethod),
@@ -2983,6 +2986,88 @@ final class MutatingScope implements Scope
 				array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocClosureThisTypeParameters),
 			),
 			!$classMethod->isStatic(),
+		);
+	}
+
+	/**
+	 * @param Type[] $phpDocParameterTypes
+	 */
+	public function enterPropertyHook(
+		Node\PropertyHook $hook,
+		string $propertyName,
+		Identifier|Name|ComplexType|null $nativePropertyTypeNode,
+		?Type $phpDocPropertyType,
+		array $phpDocParameterTypes,
+		?Type $throwType,
+		?string $phpDocComment,
+	): self
+	{
+		if (!$this->isInClass()) {
+			throw new ShouldNotHappenException();
+		}
+
+		$phpDocParameterTypes = array_map(fn (Type $type): Type => $this->transformStaticType(TemplateTypeHelper::toArgument($type)), $phpDocParameterTypes);
+
+		$hookName = $hook->name->toLowerString();
+		if ($hookName === 'set') {
+			if ($hook->params === []) {
+				$hook = clone $hook;
+				$hook->params = [
+					new Node\Param(new Variable('value'), null, $nativePropertyTypeNode),
+				];
+			}
+
+			$firstParam = $hook->params[0] ?? null;
+			if (
+				$firstParam !== null
+				&& $phpDocPropertyType !== null
+				&& $firstParam->var instanceof Variable
+				&& is_string($firstParam->var->name)
+			) {
+				$valueParamPhpDocType = $phpDocParameterTypes[$firstParam->var->name] ?? null;
+				if ($valueParamPhpDocType === null) {
+					$phpDocParameterTypes[$firstParam->var->name] = $this->transformStaticType(TemplateTypeHelper::toArgument($phpDocPropertyType));
+				}
+			}
+
+			$realReturnType = new VoidType();
+			$phpDocReturnType = null;
+		} elseif ($hookName === 'get') {
+			$realReturnType = $this->getFunctionType($nativePropertyTypeNode, false, false);
+			$phpDocReturnType = $phpDocPropertyType !== null ? $this->transformStaticType(TemplateTypeHelper::toArgument($phpDocPropertyType)) : null;
+		} else {
+			throw new ShouldNotHappenException();
+		}
+
+		$realParameterTypes = $this->getRealParameterTypes($hook);
+
+		return $this->enterFunctionLike(
+			new PhpMethodFromParserNodeReflection(
+				$this->getClassReflection(),
+				$hook,
+				$propertyName,
+				$this->getFile(),
+				TemplateTypeMap::createEmpty(),
+				$realParameterTypes,
+				$phpDocParameterTypes,
+				[],
+				$realReturnType,
+				$phpDocReturnType,
+				$throwType,
+				null,
+				false,
+				false,
+				false,
+				false,
+				true,
+				Assertions::createEmpty(),
+				null,
+				$phpDocComment,
+				[],
+				[],
+				[],
+			),
+			true,
 		);
 	}
 

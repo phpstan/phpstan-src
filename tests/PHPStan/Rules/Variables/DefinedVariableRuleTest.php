@@ -1068,4 +1068,34 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10228.php'], []);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/property-hooks.php'], [
+			[
+				'Undefined variable: $val',
+				16,
+			],
+			[
+				'Undefined variable: $value',
+				28,
+			],
+			[
+				'Undefined variable: $val',
+				43,
+			],
+			[
+				'Undefined variable: $value',
+				51,
+			],
+		]);
+	}
+
 }

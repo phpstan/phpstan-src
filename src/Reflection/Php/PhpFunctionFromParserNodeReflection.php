@@ -30,14 +30,14 @@ use function is_string;
 class PhpFunctionFromParserNodeReflection implements FunctionReflection, ExtendedParametersAcceptor
 {
 
-	/** @var Function_|ClassMethod */
+	/** @var Function_|ClassMethod|Node\PropertyHook */
 	private Node\FunctionLike $functionLike;
 
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param Function_|ClassMethod $functionLike
+	 * @param Function_|ClassMethod|Node\PropertyHook $functionLike
 	 * @param Type[] $realParameterTypes
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $realParameterDefaultValues
@@ -84,6 +84,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	{
 		if ($this->functionLike instanceof ClassMethod) {
 			return $this->functionLike->name->name;
+		}
+
+		if (!$this->functionLike instanceof Function_) {
+			// PropertyHook is handled in PhpMethodFromParserNodeReflection subclass
+			throw new ShouldNotHappenException();
 		}
 
 		if ($this->functionLike->namespacedName === null) {

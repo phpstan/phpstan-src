@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\Assertions;
@@ -9,6 +10,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -21,6 +23,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
 use function in_array;
+use function sprintf;
 use function strtolower;
 
 /**
@@ -38,7 +41,8 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	 */
 	public function __construct(
 		private ClassReflection $declaringClass,
-		private ClassMethod $classMethod,
+		private ClassMethod|Node\PropertyHook $classMethod,
+		private ?string $hookForProperty,
 		string $fileName,
 		TemplateTypeMap $templateTypeMap,
 		array $realParameterTypes,
@@ -61,6 +65,14 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		array $phpDocClosureThisTypeParameters,
 	)
 	{
+		if ($this->classMethod instanceof Node\PropertyHook) {
+			if ($this->hookForProperty === null) {
+				throw new ShouldNotHappenException('Hook was provided but property was not');
+			}
+		} elseif ($this->hookForProperty !== null) {
+			throw new ShouldNotHappenException('Hooked property was provided but hook was not');
+		}
+
 		$name = strtolower($classMethod->name->name);
 		if (in_array($name, ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
 			$realReturnType = new VoidType();
@@ -131,36 +143,75 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		}
 	}
 
-	private function getClassMethod(): ClassMethod
+	private function getClassMethod(): ClassMethod|Node\PropertyHook
 	{
-		/** @var Node\Stmt\ClassMethod $functionLike */
+		/** @var Node\Stmt\ClassMethod|Node\PropertyHook $functionLike */
 		$functionLike = $this->getFunctionLike();
 		return $functionLike;
 	}
 
+	public function getName(): string
+	{
+		$function = $this->getFunctionLike();
+		if (!$function instanceof Node\PropertyHook) {
+			return parent::getName();
+		}
+
+		if ($this->hookForProperty === null) {
+			throw new ShouldNotHappenException('Hook was provided but property was not');
+		}
+
+		return sprintf('$%s::%s', $this->hookForProperty, $function->name->toString());
+	}
+
 	public function isStatic(): bool
 	{
-		return $this->getClassMethod()->isStatic();
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return false;
+		}
+
+		return $method->isStatic();
 	}
 
 	public function isPrivate(): bool
 	{
-		return $this->getClassMethod()->isPrivate();
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return false;
+		}
+
+		return $method->isPrivate();
 	}
 
 	public function isPublic(): bool
 	{
-		return $this->getClassMethod()->isPublic();
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return true;
+		}
+
+		return $method->isPublic();
 	}
 
 	public function isFinal(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->classMethod->isFinal() || $this->isFinal);
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return TrinaryLogic::createFromBoolean((bool) ($method->flags & Modifiers::FINAL));
+		}
+
+		return TrinaryLogic::createFromBoolean($method->isFinal() || $this->isFinal);
 	}
 
 	public function isFinalByKeyword(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->classMethod->isFinal());
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return TrinaryLogic::createFromBoolean((bool) ($method->flags & Modifiers::FINAL));
+		}
+
+		return TrinaryLogic::createFromBoolean($method->isFinal());
 	}
 
 	public function isBuiltin(): bool
@@ -180,7 +231,12 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 
 	public function isAbstract(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->getClassMethod()->isAbstract());
+		$method = $this->getClassMethod();
+		if ($method instanceof Node\PropertyHook) {
+			return TrinaryLogic::createFromBoolean($method->body === null);
+		}
+
+		return TrinaryLogic::createFromBoolean($method->isAbstract());
 	}
 
 	public function hasSideEffects(): TrinaryLogic

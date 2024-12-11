@@ -10,6 +10,7 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\AttributeGroup;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -35,6 +36,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Class_;
@@ -98,6 +100,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Node\InClosureNode;
 use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Node\InvalidateExprNode;
@@ -642,6 +645,8 @@ final class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
+			$classReflection = $scope->getClassReflection();
+
 			$isFromTrait = $stmt->getAttribute('originalTraitMethodName') === '__construct';
 			if ($isFromTrait || $stmt->name->toLowerString() === '__construct') {
 				foreach ($stmt->params as $param) {
@@ -659,7 +664,7 @@ final class NodeScopeResolver
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
 						$param->flags,
-						$param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $scope->getClassReflection()) : null,
+						$param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection) : null,
 						null,
 						$phpDoc,
 						$phpDocParameterTypes[$param->var->name] ?? null,
@@ -668,10 +673,19 @@ final class NodeScopeResolver
 						$param,
 						false,
 						$scope->isInTrait(),
-						$scope->getClassReflection()->isReadOnly(),
+						$classReflection->isReadOnly(),
 						false,
-						$scope->getClassReflection(),
+						$classReflection,
 					), $methodScope);
+					$this->processPropertyHooks(
+						$stmt,
+						$param->type,
+						$phpDocParameterTypes[$param->var->name] ?? null,
+						$param->var->name,
+						$param->hooks,
+						$scope,
+						$nodeCallback,
+					);
 					$methodScope = $methodScope->assignExpression(new PropertyInitializationExpr($param->var->name), new MixedType(), new MixedType());
 				}
 			}
@@ -681,7 +695,7 @@ final class NodeScopeResolver
 				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
 					throw new ShouldNotHappenException();
 				}
-				$nodeCallback(new InClassMethodNode($scope->getClassReflection(), $methodReflection, $stmt), $methodScope);
+				$nodeCallback(new InClassMethodNode($classReflection, $methodReflection, $stmt), $methodScope);
 			}
 
 			if ($stmt->stmts !== null) {
@@ -729,8 +743,6 @@ final class NodeScopeResolver
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 				}, StatementContext::createTopLevel());
-
-				$classReflection = $scope->getClassReflection();
 
 				$methodReflection = $methodScope->getFunction();
 				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
@@ -893,29 +905,38 @@ final class NodeScopeResolver
 			$impurePoints = [];
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $scope, $nodeCallback);
 
+			$nativePropertyType = $stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null;
+
+			[,,,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags, $isAllowedPrivateMutation] = $this->getPhpDocs($scope, $stmt);
+			$phpDocType = null;
+			if (isset($varTags[0]) && count($varTags) === 1) {
+				$phpDocType = $varTags[0]->getType();
+			}
+
 			foreach ($stmt->props as $prop) {
 				$nodeCallback($prop, $scope);
 				if ($prop->default !== null) {
 					$this->processExprNode($stmt, $prop->default, $scope, $nodeCallback, ExpressionContext::createDeep());
 				}
-				[,,,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags, $isAllowedPrivateMutation] = $this->getPhpDocs($scope, $stmt);
+
 				if (!$scope->isInClass()) {
 					throw new ShouldNotHappenException();
 				}
 				$propertyName = $prop->name->toString();
-				$phpDocType = null;
-				if (isset($varTags[0]) && count($varTags) === 1) {
-					$phpDocType = $varTags[0]->getType();
-				} elseif (isset($varTags[$propertyName])) {
-					$phpDocType = $varTags[$propertyName]->getType();
+
+				if ($phpDocType === null) {
+					if (isset($varTags[$propertyName])) {
+						$phpDocType = $varTags[$propertyName]->getType();
+					}
 				}
+
 				$propStmt = clone $stmt;
 				$propStmt->setAttributes($prop->getAttributes());
 				$nodeCallback(
 					new ClassPropertyNode(
 						$propertyName,
 						$stmt->flags,
-						$stmt->type !== null ? ParserNodeTypeToPHPStanType::resolve($stmt->type, $scope->getClassReflection()) : null,
+						$nativePropertyType,
 						$prop->default,
 						$docComment,
 						$phpDocType,
@@ -929,6 +950,21 @@ final class NodeScopeResolver
 						$scope->getClassReflection(),
 					),
 					$scope,
+				);
+			}
+
+			if (count($stmt->hooks) > 0) {
+				if (!isset($propertyName)) {
+					throw new ShouldNotHappenException('Property name should be known when analysing hooks.');
+				}
+				$this->processPropertyHooks(
+					$stmt,
+					$stmt->type,
+					$phpDocType,
+					$propertyName,
+					$stmt->hooks,
+					$scope,
+					$nodeCallback,
 				);
 			}
 
@@ -4611,6 +4647,60 @@ final class NodeScopeResolver
 				$nodeCallback($attr, $scope);
 			}
 			$nodeCallback($attrGroup, $scope);
+		}
+	}
+
+	/**
+	 * @param Node\PropertyHook[] $hooks
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processPropertyHooks(
+		Node\Stmt $stmt,
+		Identifier|Name|ComplexType|null $nativeTypeNode,
+		?Type $phpDocType,
+		string $propertyName,
+		array $hooks,
+		MutatingScope $scope,
+		callable $nodeCallback,
+	): void
+	{
+		if (!$scope->isInClass()) {
+			throw new ShouldNotHappenException();
+		}
+
+		$classReflection = $scope->getClassReflection();
+
+		foreach ($hooks as $hook) {
+			$nodeCallback($hook, $scope);
+			$this->processAttributeGroups($stmt, $hook->attrGroups, $scope, $nodeCallback);
+
+			[, $phpDocParameterTypes,,,, $phpDocThrowType,,,,,,,, $phpDocComment] = $this->getPhpDocs($scope, $hook);
+
+			foreach ($hook->params as $param) {
+				$this->processParamNode($stmt, $param, $scope, $nodeCallback);
+			}
+
+			$hookScope = $scope->enterPropertyHook(
+				$hook,
+				$propertyName,
+				$nativeTypeNode,
+				$phpDocType,
+				$phpDocParameterTypes,
+				$phpDocThrowType,
+				$phpDocComment,
+			);
+			$hookReflection = $hookScope->getFunction();
+			if (!$hookReflection instanceof PhpMethodFromParserNodeReflection) {
+				throw new ShouldNotHappenException();
+			}
+			$nodeCallback(new InPropertyHookNode($classReflection, $hookReflection, $hook), $hookScope);
+
+			if ($hook->body instanceof Expr) {
+				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
+			} elseif (is_array($hook->body)) {
+				$this->processStmtNodes($stmt, $hook->body, $hookScope, $nodeCallback, StatementContext::createTopLevel());
+			}
+
 		}
 	}
 

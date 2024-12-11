@@ -446,7 +446,30 @@ final class RegexGroupParser
 		}
 
 		if ($ast->getId() === '#alternation') {
-			$inAlternation = true;
+			$newLiterals = [];
+			foreach ($children as $child) {
+				$walkResult = $this->walkGroupAst(
+					$child,
+					true,
+					$inClass,
+					$patternModifiers,
+					$walkResult->onlyLiterals([]),
+				);
+
+				if ($newLiterals === null) {
+					continue;
+				}
+
+				if (count($walkResult->getOnlyLiterals() ?? []) > 0) {
+					foreach ($walkResult->getOnlyLiterals() as $alternationLiterals) {
+						$newLiterals[] = $alternationLiterals;
+					}
+				} else {
+					$newLiterals = null;
+				}
+			}
+
+			return $walkResult->onlyLiterals($newLiterals);
 		}
 
 		// [^0-9] should not parse as numeric-string, and [^list-everything-but-numbers] is technically

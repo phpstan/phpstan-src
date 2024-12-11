@@ -645,7 +645,7 @@ final class NodeScopeResolver
 			$isFromTrait = $stmt->getAttribute('originalTraitMethodName') === '__construct';
 			if ($isFromTrait || $stmt->name->toLowerString() === '__construct') {
 				foreach ($stmt->params as $param) {
-					if ($param->flags === 0) {
+					if ($param->flags === 0 && $param->hooks === []) {
 						continue;
 					}
 

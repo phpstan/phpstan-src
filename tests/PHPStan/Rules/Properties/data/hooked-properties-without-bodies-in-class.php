@@ -8,3 +8,13 @@ class AbstractPerson
 
 	public string $lastName { get; set; }
 }
+
+class PromotedHookedPropertyWithoutVisibility
+{
+
+	public function __construct(mixed $test { get; })
+	{
+
+	}
+
+}

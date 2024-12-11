@@ -50,6 +50,10 @@ class PropertyInClassRuleTest extends RuleTestCase
 				'Non-abstract properties cannot include hooks without bodies.',
 				9,
 			],
+			[
+				'Non-abstract properties cannot include hooks without bodies.',
+				15,
+			],
 		]);
 	}
 

@@ -34,6 +34,10 @@ use function trim;
 final class RegexGroupParser
 {
 
+	private const NOT_SUPPORTED_MODIFIERS = [
+		'J', // rare modifier too complicated to support
+	];
+
 	private static ?Parser $parser = null;
 
 	public function __construct(
@@ -67,8 +71,14 @@ final class RegexGroupParser
 			return null;
 		}
 
-		$captureOnlyNamed = false;
 		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
+		foreach (self::NOT_SUPPORTED_MODIFIERS as $notSupportedModifier) {
+			if (str_contains($modifiers, $notSupportedModifier)) {
+				return null;
+			}
+		}
+
+		$captureOnlyNamed = false;
 		if ($this->phpVersion->supportsPregCaptureOnlyNamedGroups()) {
 			$captureOnlyNamed = str_contains($modifiers, 'n');
 		}

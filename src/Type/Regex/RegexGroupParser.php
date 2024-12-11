@@ -535,13 +535,19 @@ final class RegexGroupParser
 			if (
 				$appendLiterals
 				&& $onlyLiterals !== null
-				&& (!in_array($value, ['.'], true) || $isEscaped || $inCharacterClass)
 			) {
-				if ($onlyLiterals === []) {
-					$onlyLiterals = [$value];
+				if (
+					in_array($value, ['.'], true)
+					&& !($isEscaped || $inCharacterClass)
+				) {
+					$onlyLiterals = null;
 				} else {
-					foreach ($onlyLiterals as &$literal) {
-						$literal .= $value;
+					if ($onlyLiterals === []) {
+						$onlyLiterals = [$value];
+					} else {
+						foreach ($onlyLiterals as &$literal) {
+							$literal .= $value;
+						}
 					}
 				}
 			}

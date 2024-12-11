@@ -104,4 +104,19 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9577.php'], []);
 	}
 
+	public function testHooks(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->phpVersion = 80100;
+		$this->analyse([__DIR__ . '/data/invalid-hooked-properties.php'], [
+			[
+				'Promoted properties can be in constructor only.',
+				9,
+			],
+		]);
+	}
+
 }

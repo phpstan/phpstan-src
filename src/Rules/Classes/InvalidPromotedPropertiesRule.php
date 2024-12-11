@@ -31,7 +31,12 @@ final class InvalidPromotedPropertiesRule implements Rule
 		$hasPromotedProperties = false;
 
 		foreach ($node->getParams() as $param) {
-			if ($param->flags === 0) {
+			if ($param->flags !== 0) {
+				$hasPromotedProperties = true;
+				break;
+			}
+
+			if ($param->hooks === []) {
 				continue;
 			}
 

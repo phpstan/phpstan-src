@@ -67,7 +67,19 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList', 'Threaded'];
+	private const EXTRA_OFFSET_CLASSES = [
+		'DOMNamedNodeMap', // Only read and existence
+		'Dom\NamedNodeMap', // Only read and existence
+		'DOMNodeList', // Only read and existence
+		'Dom\NodeList', // Only read and existence
+		'Dom\HTMLCollection', // Only read and existence
+		'Dom\DtdNamedNodeMap', // Only read and existence
+		'PDORow', // Only read and existence
+		'ResourceBundle', // Only read
+		'FFI\CData', // Very funky and weird
+		'SimpleXMLElement',
+		'Threaded',
+	];
 
 	private ?Type $subtractedType;
 

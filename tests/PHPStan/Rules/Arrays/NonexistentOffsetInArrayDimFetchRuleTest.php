@@ -898,4 +898,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2634.php'], []);
 	}
 
+	public function testInternalClassesWithOverloadedOffsetAccess(): void
+	{
+		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access.php'], []);
+	}
+
+	public function testInternalClassesWithOverloadedOffsetAccessInvalid(): void
+	{
+		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid.php'], []);
+	}
+
 }

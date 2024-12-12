@@ -57,6 +57,7 @@ parametersSchema:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	checkDynamicProperties: bool()
+	strictRulesInstalled: bool()
 	deprecationRulesInstalled: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 

@@ -51,6 +51,7 @@ parameters:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	checkDynamicProperties: false
+	strictRulesInstalled: false
 	deprecationRulesInstalled: false
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false

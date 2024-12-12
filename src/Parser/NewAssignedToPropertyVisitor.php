@@ -12,7 +12,7 @@ final class NewAssignedToPropertyVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
+		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef || $node instanceof Node\Expr\AssignOp\Coalesce) {
 			if (
 				($node->var instanceof Node\Expr\PropertyFetch || $node->var instanceof Node\Expr\StaticPropertyFetch)
 				&& $node->expr instanceof Node\Expr\New_

@@ -1,4 +1,4 @@
-<?php // lint >= 8.4
+<?php
 /**
  * All of these offset accesses are invalid
  * ++ and -- are also disallowed in general are they operate "by ref"

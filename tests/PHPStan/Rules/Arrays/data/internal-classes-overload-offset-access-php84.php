@@ -1,4 +1,4 @@
-<?php // lint >= 8.4
+<?php
 
 namespace InternalClassesOverloadOffsetAccess\Php84;
 

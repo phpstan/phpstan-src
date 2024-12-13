@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\PropertyHookNameVisitor;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -279,6 +280,11 @@ final class FileTypeMapper
 					}
 				} elseif ($node instanceof Node\Stmt\Function_) {
 					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
+				} elseif ($node instanceof Node\PropertyHook) {
+					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					if ($propertyName !== null) {
+						$functionStack[] = sprintf('$%s::%s', $propertyName, $node->name->toString());
+					}
 				}
 
 				$className = $classStack[count($classStack) - 1] ?? null;
@@ -289,6 +295,17 @@ final class FileTypeMapper
 					if ($docComment !== null) {
 						$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 						$phpDocNodeMap[$nameScopeKey] = $this->phpDocStringResolver->resolve($docComment);
+					}
+
+					return null;
+				} elseif ($node instanceof Node\PropertyHook) {
+					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					if ($propertyName !== null) {
+						$docComment = GetLastDocComment::forNode($node);
+						if ($docComment !== null) {
+							$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
+							$phpDocNodeMap[$nameScopeKey] = $this->phpDocStringResolver->resolve($docComment);
+						}
 					}
 
 					return null;
@@ -376,6 +393,15 @@ final class FileTypeMapper
 					}
 
 					array_pop($functionStack);
+				} elseif ($node instanceof Node\PropertyHook) {
+					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					if ($propertyName !== null) {
+						if (count($functionStack) === 0) {
+							throw new ShouldNotHappenException();
+						}
+
+						array_pop($functionStack);
+					}
 				}
 			},
 		);
@@ -476,6 +502,11 @@ final class FileTypeMapper
 					}
 				} elseif ($node instanceof Node\Stmt\Function_) {
 					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
+				} elseif ($node instanceof Node\PropertyHook) {
+					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					if ($propertyName !== null) {
+						$functionStack[] = sprintf('$%s::%s', $propertyName, $node->name->toString());
+					}
 				}
 
 				$className = $classStack[count($classStack) - 1] ?? null;
@@ -483,6 +514,7 @@ final class FileTypeMapper
 				$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+					// property hook skipped on purpose, it does not support @template
 					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
 						$phpDocNode = $phpDocNodeMap[$nameScopeKey];
 						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocNode, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
@@ -512,16 +544,20 @@ final class FileTypeMapper
 				$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
 
 				if (
-					$node instanceof Node\Stmt
-					&& !$node instanceof Node\Stmt\Namespace_
-					&& !$node instanceof Node\Stmt\Declare_
-					&& !$node instanceof Node\Stmt\Use_
-					&& !$node instanceof Node\Stmt\GroupUse
-					&& !$node instanceof Node\Stmt\TraitUse
-					&& !$node instanceof Node\Stmt\TraitUseAdaptation
-					&& !$node instanceof Node\Stmt\InlineHTML
-					&& !($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Include_)
-					&& !array_key_exists($nameScopeKey, $nameScopeMap)
+					(
+						$node instanceof Node\PropertyHook
+						|| (
+							$node instanceof Node\Stmt
+							&& !$node instanceof Node\Stmt\Namespace_
+							&& !$node instanceof Node\Stmt\Declare_
+							&& !$node instanceof Node\Stmt\Use_
+							&& !$node instanceof Node\Stmt\GroupUse
+							&& !$node instanceof Node\Stmt\TraitUse
+							&& !$node instanceof Node\Stmt\TraitUseAdaptation
+							&& !$node instanceof Node\Stmt\InlineHTML
+							&& !($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Include_)
+						)
+					) && !array_key_exists($nameScopeKey, $nameScopeMap)
 				) {
 					$nameScopeMap[$nameScopeKey] = static fn (): NameScope => new NameScope(
 						$namespace,
@@ -537,6 +573,7 @@ final class FileTypeMapper
 				}
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+					// property hook skipped on purpose, it does not support @template
 					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
 						return self::POP_TYPE_MAP_STACK;
 					}
@@ -704,6 +741,15 @@ final class FileTypeMapper
 					}
 
 					array_pop($functionStack);
+				} elseif ($node instanceof Node\PropertyHook) {
+					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					if ($propertyName !== null) {
+						if (count($functionStack) === 0) {
+							throw new ShouldNotHappenException();
+						}
+
+						array_pop($functionStack);
+					}
 				}
 				if ($callbackResult !== self::POP_TYPE_MAP_STACK) {
 					return;

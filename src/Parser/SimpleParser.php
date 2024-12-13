@@ -17,6 +17,7 @@ final class SimpleParser implements Parser
 		private NameResolver $nameResolver,
 		private VariadicMethodsVisitor $variadicMethodsVisitor,
 		private VariadicFunctionsVisitor $variadicFunctionsVisitor,
+		private PropertyHookNameVisitor $propertyHookNameVisitor,
 	)
 	{
 	}
@@ -52,6 +53,7 @@ final class SimpleParser implements Parser
 		$nodeTraverser->addVisitor($this->nameResolver);
 		$nodeTraverser->addVisitor($this->variadicMethodsVisitor);
 		$nodeTraverser->addVisitor($this->variadicFunctionsVisitor);
+		$nodeTraverser->addVisitor($this->propertyHookNameVisitor);
 
 		/** @var array<Node\Stmt> */
 		return $nodeTraverser->traverse($nodes);

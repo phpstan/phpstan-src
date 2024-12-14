@@ -905,8 +905,8 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testInternalClassesWithOverloadedOffsetAccess84(): void
 	{
-		if (version_compare(PHP_VERSION, '8.4.0', '<')) {
-			$this->markTestSkipped('Test requires PHP version 8.4.');
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-php84.php'], []);
 	}
@@ -918,8 +918,8 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testInternalClassesWithOverloadedOffsetAccessInvalid84(): void
 	{
-		if (version_compare(PHP_VERSION, '8.4.0', '<')) {
-			$this->markTestSkipped('Test requires PHP version 8.4.');
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid-php84.php'], []);
 	}

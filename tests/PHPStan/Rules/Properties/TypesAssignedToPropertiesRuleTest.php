@@ -688,4 +688,38 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testShortBodySetHook(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/short-set-property-hook-assign.php'], [
+			[
+				'Property ShortSetPropertyHookAssign\Foo::$i (int) does not accept string.',
+				9,
+			],
+			[
+				'Property ShortSetPropertyHookAssign\Foo::$s (non-empty-string) does not accept \'\'.',
+				18,
+			],
+			[
+				'Property ShortSetPropertyHookAssign\GenericFoo<T of ShortSetPropertyHookAssign\Foo>::$a (T of ShortSetPropertyHookAssign\Foo) does not accept ShortSetPropertyHookAssign\Foo.',
+				36,
+				'Type ShortSetPropertyHookAssign\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Property ShortSetPropertyHookAssign\GenericFoo<T of ShortSetPropertyHookAssign\Foo>::$b (T of ShortSetPropertyHookAssign\Foo) does not accept ShortSetPropertyHookAssign\Foo.',
+				50,
+				'Type ShortSetPropertyHookAssign\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Property ShortSetPropertyHookAssign\GenericFoo<T of ShortSetPropertyHookAssign\Foo>::$c (T of ShortSetPropertyHookAssign\Foo) does not accept ShortSetPropertyHookAssign\Foo.',
+				59,
+				'Type ShortSetPropertyHookAssign\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

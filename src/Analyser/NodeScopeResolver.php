@@ -4698,6 +4698,7 @@ final class NodeScopeResolver
 
 			if ($hook->body instanceof Expr) {
 				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
+				$nodeCallback(new PropertyAssignNode(new PropertyFetch(new Variable('this'), $propertyName, $hook->body->getAttributes()), $hook->body, false), $hookScope);
 			} elseif (is_array($hook->body)) {
 				$this->processStmtNodes($stmt, $hook->body, $hookScope, $nodeCallback, StatementContext::createTopLevel());
 			}

@@ -164,6 +164,38 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		return sprintf('$%s::%s', $this->hookForProperty, $function->name->toString());
 	}
 
+	/**
+	 * @phpstan-assert-if-true !null $this->getHookedPropertyName()
+	 * @phpstan-assert-if-true !null $this->getPropertyHookName()
+	 */
+	public function isPropertyHook(): bool
+	{
+		return $this->hookForProperty !== null;
+	}
+
+	public function getHookedPropertyName(): ?string
+	{
+		return $this->hookForProperty;
+	}
+
+	/**
+	 * @return 'get'|'set'|null
+	 */
+	public function getPropertyHookName(): ?string
+	{
+		$function = $this->getFunctionLike();
+		if (!$function instanceof Node\PropertyHook) {
+			return null;
+		}
+
+		$name = $function->name->toLowerString();
+		if (!in_array($name, ['get', 'set'], true)) {
+			throw new ShouldNotHappenException(sprintf('Unknown property hook: %s', $name));
+		}
+
+		return $name;
+	}
+
 	public function isStatic(): bool
 	{
 		$method = $this->getClassMethod();

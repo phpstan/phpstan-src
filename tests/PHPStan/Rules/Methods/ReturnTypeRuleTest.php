@@ -1101,4 +1101,41 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12223.php'], []);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			self::markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/property-hooks-return.php'], [
+			[
+				'Get hook for property PropertyHooksReturn\Foo::$i should return int but returns string.',
+				11,
+			],
+			[
+				'Set hook for property PropertyHooksReturn\Foo::$i with return type void returns int but should not return anything.',
+				21,
+			],
+			[
+				'Get hook for property PropertyHooksReturn\Foo::$s should return non-empty-string but returns \'\'.',
+				29,
+			],
+			[
+				'Get hook for property PropertyHooksReturn\GenericFoo::$a should return T of PropertyHooksReturn\Foo but returns PropertyHooksReturn\Foo.',
+				48,
+				'Type PropertyHooksReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Get hook for property PropertyHooksReturn\GenericFoo::$b should return T of PropertyHooksReturn\Foo but returns PropertyHooksReturn\Foo.',
+				63,
+				'Type PropertyHooksReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Get hook for property PropertyHooksReturn\GenericFoo::$c should return T of PropertyHooksReturn\Foo but returns PropertyHooksReturn\Foo.',
+				73,
+				'Type PropertyHooksReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

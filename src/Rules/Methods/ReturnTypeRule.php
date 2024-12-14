@@ -21,6 +21,7 @@ use PHPStan\Type\ObjectType;
 use function count;
 use function sprintf;
 use function strtolower;
+use function ucfirst;
 
 /**
  * @implements Rule<Node\Stmt\Return_>
@@ -52,6 +53,17 @@ final class ReturnTypeRule implements Rule
 			return [];
 		}
 
+		if ($method->isPropertyHook()) {
+			$methodDescription = sprintf(
+				'%s hook for property %s::$%s',
+				ucfirst($method->getPropertyHookName()),
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getHookedPropertyName(),
+			);
+		} else {
+			$methodDescription = sprintf('Method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName());
+		}
+
 		$returnType = $method->getReturnType();
 		$errors = $this->returnTypeCheck->checkReturnType(
 			$scope,
@@ -59,24 +71,20 @@ final class ReturnTypeRule implements Rule
 			$node->expr,
 			$node,
 			sprintf(
-				'Method %s::%s() should return %%s but empty return statement found.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
+				'%s should return %%s but empty return statement found.',
+				$methodDescription,
 			),
 			sprintf(
-				'Method %s::%s() with return type void returns %%s but should not return anything.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
+				'%s with return type void returns %%s but should not return anything.',
+				$methodDescription,
 			),
 			sprintf(
-				'Method %s::%s() should return %%s but returns %%s.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
+				'%s should return %%s but returns %%s.',
+				$methodDescription,
 			),
 			sprintf(
-				'Method %s::%s() should never return but return statement found.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
+				'%s should never return but return statement found.',
+				$methodDescription,
 			),
 			$method->isGenerator(),
 		);

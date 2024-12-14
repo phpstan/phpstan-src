@@ -27,7 +27,7 @@ final class InPropertyHookNode extends NodeAbstract implements VirtualNode
 		return $this->classReflection;
 	}
 
-	public function getMethodReflection(): PhpMethodFromParserNodeReflection
+	public function getHookReflection(): PhpMethodFromParserNodeReflection
 	{
 		return $this->hookReflection;
 	}

@@ -6,7 +6,7 @@ use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ExecutionEndNode;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -19,6 +19,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function sprintf;
+use function ucfirst;
 
 /**
  * @implements Rule<ExecutionEndNode>
@@ -55,8 +56,12 @@ final class MissingReturnRule implements Rule
 			}
 		} elseif ($scopeFunction !== null) {
 			$returnType = $scopeFunction->getReturnType();
-			if ($scopeFunction instanceof MethodReflection) {
-				$description = sprintf('Method %s::%s()', $scopeFunction->getDeclaringClass()->getDisplayName(), $scopeFunction->getName());
+			if ($scopeFunction instanceof PhpMethodFromParserNodeReflection) {
+				if (!$scopeFunction->isPropertyHook()) {
+					$description = sprintf('Method %s::%s()', $scopeFunction->getDeclaringClass()->getDisplayName(), $scopeFunction->getName());
+				} else {
+					$description = sprintf('%s hook for property %s::$%s', ucfirst($scopeFunction->getPropertyHookName()), $scopeFunction->getDeclaringClass()->getDisplayName(), $scopeFunction->getHookedPropertyName());
+				}
 			} else {
 				$description = sprintf('Function %s()', $scopeFunction->getName());
 			}

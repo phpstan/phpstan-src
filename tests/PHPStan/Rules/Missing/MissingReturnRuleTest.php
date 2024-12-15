@@ -351,4 +351,23 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9374.php'], []);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/property-hooks-missing-return.php'], [
+			[
+				'Get hook for property PropertyHooksMissingReturn\Foo::$i should return int but return statement is missing.',
+				10,
+			],
+			[
+				'Get hook for property PropertyHooksMissingReturn\Foo::$j should return int but return statement is missing.',
+				23,
+			],
+		]);
+	}
+
 }

@@ -114,6 +114,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
@@ -343,6 +344,7 @@ final class NodeScopeResolver
 		$stmtCount = count($stmts);
 		$shouldCheckLastStatement = $parentNode instanceof Node\Stmt\Function_
 			|| $parentNode instanceof Node\Stmt\ClassMethod
+			|| $parentNode instanceof PropertyHookStatementNode
 			|| $parentNode instanceof Expr\Closure;
 		foreach ($stmts as $i => $stmt) {
 			if ($alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike)) {
@@ -360,7 +362,7 @@ final class NodeScopeResolver
 			$hasYield = $hasYield || $statementResult->hasYield();
 
 			if ($shouldCheckLastStatement && $isLast) {
-				/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|Expr\Closure $parentNode */
+				/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|PropertyHookStatementNode|Expr\Closure $parentNode */
 				$parentNode = $parentNode;
 
 				$endStatements = $statementResult->getEndStatements();
@@ -377,7 +379,7 @@ final class NodeScopeResolver
 								$endStatementResult->getThrowPoints(),
 								$endStatementResult->getImpurePoints(),
 							),
-							$parentNode->returnType !== null,
+							$parentNode->getReturnType() !== null,
 						), $endStatementResult->getScope());
 					}
 				} else {
@@ -391,7 +393,7 @@ final class NodeScopeResolver
 							$statementResult->getThrowPoints(),
 							$statementResult->getImpurePoints(),
 						),
-						$parentNode->returnType !== null,
+						$parentNode->getReturnType() !== null,
 					), $scope);
 				}
 			}
@@ -414,9 +416,9 @@ final class NodeScopeResolver
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
-			/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|Expr\Closure $parentNode */
+			/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|PropertyHookStatementNode|Expr\Closure $parentNode */
 			$parentNode = $parentNode;
-			$returnTypeNode = $parentNode->returnType;
+			$returnTypeNode = $parentNode->getReturnType();
 			if ($parentNode instanceof Expr\Closure) {
 				$parentNode = new Node\Stmt\Expression($parentNode, $parentNode->getAttributes());
 			}
@@ -4700,7 +4702,7 @@ final class NodeScopeResolver
 				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
 				$nodeCallback(new PropertyAssignNode(new PropertyFetch(new Variable('this'), $propertyName, $hook->body->getAttributes()), $hook->body, false), $hookScope);
 			} elseif (is_array($hook->body)) {
-				$this->processStmtNodes($stmt, $hook->body, $hookScope, $nodeCallback, StatementContext::createTopLevel());
+				$this->processStmtNodes(new PropertyHookStatementNode($hook), $hook->body, $hookScope, $nodeCallback, StatementContext::createTopLevel());
 			}
 
 		}

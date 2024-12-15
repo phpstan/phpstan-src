@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
@@ -83,6 +84,31 @@ final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 	public function getOriginalReflection(): ExtendedPropertyReflection
 	{
 		return $this->reflection;
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		return $this->reflection->isAbstract();
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return $this->reflection->isFinal();
+	}
+
+	public function isVirtual(): TrinaryLogic
+	{
+		return $this->reflection->isVirtual();
+	}
+
+	public function hasHook(string $hookType): bool
+	{
+		return $this->reflection->hasHook($hookType);
+	}
+
+	public function getHook(string $hookType): ExtendedMethodReflection
+	{
+		return $this->reflection->getHook($hookType);
 	}
 
 }

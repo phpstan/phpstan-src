@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\TrinaryLogic;
+
 /**
  * The purpose of this interface is to be able to
  * answer more questions about properties
@@ -18,5 +20,25 @@ namespace PHPStan\Reflection;
  */
 interface ExtendedPropertyReflection extends PropertyReflection
 {
+
+	public const HOOK_GET = 'get';
+
+	public const HOOK_SET = 'set';
+
+	public function isAbstract(): TrinaryLogic;
+
+	public function isFinal(): TrinaryLogic;
+
+	public function isVirtual(): TrinaryLogic;
+
+	/**
+	 * @param self::HOOK_* $hookType
+	 */
+	public function hasHook(string $hookType): bool;
+
+	/**
+	 * @param self::HOOK_* $hookType
+	 */
+	public function getHook(string $hookType): ExtendedMethodReflection;
 
 }

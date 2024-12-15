@@ -42,6 +42,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -212,7 +213,7 @@ final class PhpClassReflectionExtension
 					$types[] = $value;
 				}
 
-				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false, false, false);
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, null, null, false, false, false, false);
 			}
 		}
 
@@ -353,12 +354,72 @@ final class PhpClassReflectionExtension
 			$declaringTrait = $reflectionProvider->getClass($declaringTraitName);
 		}
 
+		$getHook = null;
+		$setHook = null;
+
+		$betterReflection = $propertyReflection->getBetterReflection();
+		if ($betterReflection->hasHook('get')) {
+			$betterReflectionGetHook = $betterReflection->getHook('get');
+			if ($betterReflectionGetHook === null) {
+				throw new ShouldNotHappenException();
+			}
+			$getHook = $this->createUserlandMethodReflection(
+				$declaringClassReflection,
+				$declaringClassReflection,
+				new ReflectionMethod($betterReflectionGetHook),
+				$declaringTraitName,
+			);
+
+			if ($phpDocType !== null) {
+				$getHookMethodReflectionVariant = $getHook->getOnlyVariant();
+				$getHookMethodReflectionVariantPhpDocReturnType = $getHookMethodReflectionVariant->getPhpDocReturnType();
+				if (
+					$getHookMethodReflectionVariantPhpDocReturnType instanceof MixedType
+					&& !$getHookMethodReflectionVariantPhpDocReturnType instanceof TemplateMixedType
+					&& !$getHookMethodReflectionVariantPhpDocReturnType->isExplicitMixed()
+				) {
+					$getHook = $getHook->changePropertyGetHookPhpDocType($phpDocType);
+				}
+			}
+		}
+
+		if ($betterReflection->hasHook('set')) {
+			$betterReflectionSetHook = $betterReflection->getHook('set');
+			if ($betterReflectionSetHook === null) {
+				throw new ShouldNotHappenException();
+			}
+			$setHook = $this->createUserlandMethodReflection(
+				$declaringClassReflection,
+				$declaringClassReflection,
+				new ReflectionMethod($betterReflectionSetHook),
+				$declaringTraitName,
+			);
+
+			if ($phpDocType !== null) {
+				$setHookMethodReflectionVariant = $setHook->getOnlyVariant();
+				$setHookMethodReflectionParameters = $setHookMethodReflectionVariant->getParameters();
+				if (isset($setHookMethodReflectionParameters[0])) {
+					$setHookMethodReflectionParameter = $setHookMethodReflectionParameters[0];
+					$setHookMethodReflectionParameterPhpDocType = $setHookMethodReflectionParameter->getPhpDocType();
+					if (
+						$setHookMethodReflectionParameterPhpDocType instanceof MixedType
+						&& !$setHookMethodReflectionParameterPhpDocType instanceof TemplateMixedType
+						&& !$setHookMethodReflectionParameterPhpDocType->isExplicitMixed()
+					) {
+						$setHook = $setHook->changePropertySetHookPhpDocType($setHookMethodReflectionParameter->getName(), $phpDocType);
+					}
+				}
+			}
+		}
+
 		return new PhpPropertyReflection(
 			$declaringClassReflection,
 			$declaringTrait,
 			$nativeType,
 			$phpDocType,
 			$propertyReflection,
+			$getHook,
+			$setHook,
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,

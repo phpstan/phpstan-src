@@ -13,6 +13,9 @@ class Foo
 		set {
 			assertType('int', $value);
 		}
+		get {
+			return 1;
+		}
 	}
 
 	public int $j {
@@ -31,6 +34,9 @@ class Foo
 	public array $l {
 		set {
 			assertType('array<string>', $value);
+		}
+		get {
+			return [];
 		}
 	}
 
@@ -106,6 +112,9 @@ class FooConstructor
 			set {
 				assertType('array<string>', $value);
 			}
+			get {
+				return [];
+			}
 		},
 		/** @var array<string> */
 		public array $m {
@@ -137,6 +146,9 @@ class FooConstructorWithParam
 			set {
 				assertType('array<string>', $value);
 			}
+			get {
+				return [];
+			}
 		},
 		public array $m {
 			set (array $val) {
@@ -160,12 +172,18 @@ class FooGenerics
 		set (array $val) {
 			assertType('array<T of stdClass (class PropertyHooksTypes\FooGenerics, argument)>', $val);
 		}
+		get {
+
+		}
 	}
 
 	public int $n {
 		/** @param int|array<T> $val */
 		set (int|array $val) {
 			assertType('array<T of stdClass (class PropertyHooksTypes\FooGenerics, argument)>|int', $val);
+		}
+		get {
+
 		}
 	}
 
@@ -183,17 +201,26 @@ class FooGenericsConstructor
 			set {
 				assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $value);
 			}
+			get {
+
+			}
 		},
 		/** @var array<T> */
 		public array $m {
 			set (array $val) {
 				assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $val);
 			}
+			get {
+
+			}
 		},
 		public int $n {
 			/** @param int|array<T> $val */
 			set (int|array $val) {
 				assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>|int', $val);
+			}
+			get {
+
 			}
 		},
 	) {

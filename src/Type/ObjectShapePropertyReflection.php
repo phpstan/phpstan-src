@@ -3,8 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use stdClass;
 
@@ -80,6 +82,31 @@ final class ObjectShapePropertyReflection implements ExtendedPropertyReflection
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isVirtual(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function hasHook(string $hookType): bool
+	{
+		return false;
+	}
+
+	public function getHook(string $hookType): ExtendedMethodReflection
+	{
+		throw new ShouldNotHappenException();
 	}
 
 }

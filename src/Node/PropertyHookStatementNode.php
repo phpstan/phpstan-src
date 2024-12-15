@@ -48,5 +48,4 @@ final class PropertyHookStatementNode extends Stmt implements VirtualNode
 		return [];
 	}
 
-
 }

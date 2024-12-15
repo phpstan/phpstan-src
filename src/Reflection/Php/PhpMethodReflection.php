@@ -450,4 +450,63 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createFromBoolean($this->isPure);
 	}
 
+	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
+	{
+		return new self(
+			$this->initializerExprTypeResolver,
+			$this->declaringClass,
+			$this->declaringTrait,
+			$this->reflection,
+			$this->reflectionProvider,
+			$this->parser,
+			$this->templateTypeMap,
+			$this->phpDocParameterTypes,
+			$phpDocType,
+			$this->phpDocThrowType,
+			$this->deprecatedDescription,
+			$this->isDeprecated,
+			$this->isInternal,
+			$this->isFinal,
+			$this->isPure,
+			$this->asserts,
+			$this->acceptsNamedArguments,
+			$this->selfOutType,
+			$this->phpDocComment,
+			$this->phpDocParameterOutTypes,
+			$this->immediatelyInvokedCallableParameters,
+			$this->phpDocClosureThisTypeParameters,
+		);
+	}
+
+	public function changePropertySetHookPhpDocType(string $parameterName, Type $phpDocType): self
+	{
+		$phpDocParameterTypes = $this->phpDocParameterTypes;
+		$phpDocParameterTypes[$parameterName] = $phpDocType;
+
+		return new self(
+			$this->initializerExprTypeResolver,
+			$this->declaringClass,
+			$this->declaringTrait,
+			$this->reflection,
+			$this->reflectionProvider,
+			$this->parser,
+			$this->templateTypeMap,
+			$phpDocParameterTypes,
+			$this->phpDocReturnType,
+			$this->phpDocThrowType,
+			$this->deprecatedDescription,
+			$this->isDeprecated,
+			$this->isInternal,
+			$this->isFinal,
+			$this->isPure,
+			$this->asserts,
+			$this->acceptsNamedArguments,
+			$this->selfOutType,
+			$this->phpDocComment,
+			$this->phpDocParameterOutTypes,
+			$this->immediatelyInvokedCallableParameters,
+			$this->phpDocClosureThisTypeParameters,
+		);
+	}
+
 }

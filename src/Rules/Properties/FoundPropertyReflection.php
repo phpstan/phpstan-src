@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
@@ -125,6 +126,31 @@ final class FoundPropertyReflection implements ExtendedPropertyReflection
 		}
 
 		return $reflection;
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		return $this->originalPropertyReflection->isAbstract();
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return $this->originalPropertyReflection->isFinal();
+	}
+
+	public function isVirtual(): TrinaryLogic
+	{
+		return $this->originalPropertyReflection->isVirtual();
+	}
+
+	public function hasHook(string $hookType): bool
+	{
+		return $this->originalPropertyReflection->hasHook($hookType);
+	}
+
+	public function getHook(string $hookType): ExtendedMethodReflection
+	{
+		return $this->originalPropertyReflection->getHook($hookType);
 	}
 
 }

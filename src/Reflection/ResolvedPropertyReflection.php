@@ -144,4 +144,33 @@ final class ResolvedPropertyReflection implements WrapperPropertyReflection
 		return $this->reflection->isInternal();
 	}
 
+	public function isAbstract(): TrinaryLogic
+	{
+		return $this->reflection->isAbstract();
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return $this->reflection->isFinal();
+	}
+
+	public function isVirtual(): TrinaryLogic
+	{
+		return $this->reflection->isVirtual();
+	}
+
+	public function hasHook(string $hookType): bool
+	{
+		return $this->reflection->hasHook($hookType);
+	}
+
+	public function getHook(string $hookType): ExtendedMethodReflection
+	{
+		return new ResolvedMethodReflection(
+			$this->reflection->getHook($hookType),
+			$this->templateTypeMap,
+			$this->callSiteVarianceMap,
+		);
+	}
+
 }

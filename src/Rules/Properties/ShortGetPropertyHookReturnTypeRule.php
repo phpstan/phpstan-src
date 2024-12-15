@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
  * @implements Rule<InPropertyHookNode>

@@ -7,11 +7,14 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use function sprintf;
 
 /**
  * @api
@@ -29,6 +32,8 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		private ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $nativeType,
 		private ?Type $phpDocType,
 		private ReflectionProperty $reflection,
+		private ?ExtendedMethodReflection $getHook,
+		private ?ExtendedMethodReflection $setHook,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
@@ -180,6 +185,47 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 	public function getNativeReflection(): ReflectionProperty
 	{
 		return $this->reflection;
+	}
+
+	public function isAbstract(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->isAbstract());
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
+	}
+
+	public function isVirtual(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->isVirtual());
+	}
+
+	public function hasHook(string $hookType): bool
+	{
+		if ($hookType === 'get') {
+			return $this->getHook !== null;
+		}
+
+		return $this->setHook !== null;
+	}
+
+	public function getHook(string $hookType): ExtendedMethodReflection
+	{
+		if ($hookType === 'get') {
+			if ($this->getHook === null) {
+				throw new MissingMethodFromReflectionException($this->declaringClass->getName(), sprintf('$%s::get', $this->reflection->getName()));
+			}
+
+			return $this->getHook;
+		}
+
+		if ($this->setHook === null) {
+			throw new MissingMethodFromReflectionException($this->declaringClass->getName(), sprintf('$%s::set', $this->reflection->getName()));
+		}
+
+		return $this->setHook;
 	}
 
 }

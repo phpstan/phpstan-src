@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function is_string;
 use function sprintf;
 use function str_contains;
 
@@ -113,11 +115,29 @@ final class UnusedPrivatePropertyRule implements Rule
 		}
 
 		foreach ($node->getPropertyUsages() as $usage) {
+			$usageScope = $usage->getScope();
 			$fetch = $usage->getFetch();
 			if ($fetch->name instanceof Node\Identifier) {
-				$propertyNames = [$fetch->name->toString()];
+				$propertyName = $fetch->name->toString();
+				$propertyNames = [$propertyName];
+				if (
+					$usageScope->getFunction() !== null
+					&& $fetch instanceof Node\Expr\PropertyFetch
+					&& $fetch->var instanceof Node\Expr\Variable
+					&& is_string($fetch->var->name)
+					&& $fetch->var->name === 'this'
+				) {
+					$methodReflection = $usageScope->getFunction();
+					if (
+						$methodReflection instanceof PhpMethodFromParserNodeReflection
+						&& $methodReflection->isPropertyHook()
+						&& $methodReflection->getHookedPropertyName() === $propertyName
+					) {
+						continue;
+					}
+				}
 			} else {
-				$propertyNameType = $usage->getScope()->getType($fetch->name);
+				$propertyNameType = $usageScope->getType($fetch->name);
 				$strings = $propertyNameType->getConstantStrings();
 				if (count($strings) === 0) {
 					// handle subtractions of a dynamic property fetch
@@ -134,13 +154,14 @@ final class UnusedPrivatePropertyRule implements Rule
 
 				$propertyNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
 			}
+
 			if ($fetch instanceof Node\Expr\PropertyFetch) {
-				$fetchedOnType = $usage->getScope()->getType($fetch->var);
+				$fetchedOnType = $usageScope->getType($fetch->var);
 			} else {
 				if ($fetch->class instanceof Node\Name) {
-					$fetchedOnType = $usage->getScope()->resolveTypeByName($fetch->class);
+					$fetchedOnType = $usageScope->resolveTypeByName($fetch->class);
 				} else {
-					$fetchedOnType = $usage->getScope()->getType($fetch->class);
+					$fetchedOnType = $usageScope->getType($fetch->class);
 				}
 			}
 
@@ -148,7 +169,7 @@ final class UnusedPrivatePropertyRule implements Rule
 				if (!array_key_exists($propertyName, $properties)) {
 					continue;
 				}
-				$propertyReflection = $usage->getScope()->getPropertyReflection($fetchedOnType, $propertyName);
+				$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
 				if ($propertyReflection === null) {
 					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
 						if ($usage instanceof PropertyRead) {

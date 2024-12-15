@@ -22,6 +22,8 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	/** @var string[] */
 	private array $alwaysReadTags;
 
+	private bool $checkUninitializedProperties = false;
+
 	protected function getRule(): Rule
 	{
 		return new UnusedPrivatePropertyRule(
@@ -55,7 +57,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 			]),
 			$this->alwaysWrittenTags,
 			$this->alwaysReadTags,
-			true,
+			$this->checkUninitializedProperties,
 		);
 	}
 
@@ -63,6 +65,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	{
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
+		$this->checkUninitializedProperties = true;
 
 		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
 
@@ -236,6 +239,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	{
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
+		$this->checkUninitializedProperties = true;
 		$this->analyse([__DIR__ . '/data/bug-5337.php'], []);
 	}
 

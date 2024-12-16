@@ -90,6 +90,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/bug-12281.php \
 		--exclude tests/PHPStan/Rules/Traits/data/bug-12281.php \
 		--exclude tests/PHPStan/Rules/Classes/data/invalid-hooked-properties.php \
+		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-before.php \
+		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-after.php \
 		src tests
 
 cs:

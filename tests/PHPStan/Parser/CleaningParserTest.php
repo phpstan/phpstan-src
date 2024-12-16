@@ -4,7 +4,7 @@ namespace PHPStan\Parser;
 
 use PhpParser\Lexer\Emulative;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\Parser\Php7;
+use PhpParser\Parser\Php8;
 use PHPStan\File\FileReader;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
@@ -52,6 +52,11 @@ class CleaningParserTest extends PHPStanTestCase
 				__DIR__ . '/data/cleaning-php-version-after-74.php',
 				70400,
 			],
+			[
+				__DIR__ . '/data/cleaning-property-hooks-before.php',
+				__DIR__ . '/data/cleaning-property-hooks-after.php',
+				80400,
+			],
 		];
 	}
 
@@ -66,7 +71,7 @@ class CleaningParserTest extends PHPStanTestCase
 	{
 		$parser = new CleaningParser(
 			new SimpleParser(
-				new Php7(new Emulative()),
+				new Php8(new Emulative()),
 				new NameResolver(),
 				new VariadicMethodsVisitor(),
 				new VariadicFunctionsVisitor(),

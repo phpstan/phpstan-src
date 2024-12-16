@@ -179,7 +179,15 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function isWritable(): bool
 	{
-		return true;
+		if ($this->isStatic()) {
+			return true;
+		}
+
+		if (!$this->isVirtual()->yes()) {
+			return true;
+		}
+
+		return $this->hasHook('set');
 	}
 
 	public function getDeprecatedDescription(): ?string

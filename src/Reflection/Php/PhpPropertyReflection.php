@@ -103,6 +103,14 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function getWritableType(): Type
 	{
+		if ($this->hasHook('set')) {
+			$setHookVariant = $this->getHook('set')->getOnlyVariant();
+			$parameters = $setHookVariant->getParameters();
+			if (isset($parameters[0])) {
+				return $parameters[0]->getType();
+			}
+		}
+
 		return $this->getReadableType();
 	}
 

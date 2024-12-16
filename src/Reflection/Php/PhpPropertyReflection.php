@@ -174,7 +174,15 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function isReadable(): bool
 	{
-		return true;
+		if ($this->isStatic()) {
+			return true;
+		}
+
+		if (!$this->isVirtual()->yes()) {
+			return true;
+		}
+
+		return $this->hasHook('get');
 	}
 
 	public function isWritable(): bool

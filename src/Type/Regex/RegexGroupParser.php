@@ -23,6 +23,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function is_int;
+use function preg_replace;
 use function rtrim;
 use function sscanf;
 use function str_contains;
@@ -64,18 +65,26 @@ final class RegexGroupParser
 			return null;
 		}
 
-		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
-		try {
-			$ast = self::$parser->parse($rawRegex);
-		} catch (Exception) {
-			return null;
-		}
-
 		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
 		foreach (self::NOT_SUPPORTED_MODIFIERS as $notSupportedModifier) {
 			if (str_contains($modifiers, $notSupportedModifier)) {
 				return null;
 			}
+		}
+
+		// The regex engine ignores everything after the (?# until the first closing parenthesis
+		$regex = preg_replace('/\(\?#[^)]*\)/', '', $regex) ?? '';
+
+		if (str_contains($modifiers, 'x')) {
+			// in freespacing mode the # character starts a comment and runs until the end of the line
+			$regex = preg_replace('/#.*/', '', $regex) ?? '';
+		}
+
+		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
+		try {
+			$ast = self::$parser->parse($rawRegex);
+		} catch (Exception) {
+			return null;
 		}
 
 		$captureOnlyNamed = false;

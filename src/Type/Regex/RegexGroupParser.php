@@ -72,12 +72,9 @@ final class RegexGroupParser
 			}
 		}
 
-		// The regex engine ignores everything after the (?# until the first closing parenthesis
-		$regex = preg_replace('/\(\?#[^)]*\)/', '', $regex) ?? '';
-
 		if (str_contains($modifiers, 'x')) {
 			// in freespacing mode the # character starts a comment and runs until the end of the line
-			$regex = preg_replace('/#.*/', '', $regex) ?? '';
+			$regex = preg_replace('/[^?]#.*/', '', $regex) ?? '';
 		}
 
 		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);

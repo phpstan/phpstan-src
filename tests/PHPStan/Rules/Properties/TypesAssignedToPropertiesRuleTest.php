@@ -741,6 +741,23 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property AssignHookedProperties\Foo::$i (array<string>|int) does not accept array<int, int>.',
 				27,
 			],
+			[
+				'Property AssignHookedProperties\FooGenerics<int>::$a (int) does not accept string.',
+				52,
+			],
+			[
+				'Property AssignHookedProperties\FooGenerics<T>::$a (T) does not accept int.',
+				61,
+				'Type int is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Property AssignHookedProperties\FooGenericsParam<T>::$a (array<T>) does not accept array<T>|int.',
+				76,
+			],
+			[
+				'Property AssignHookedProperties\FooGenericsParam<int>::$a (array<int>|int) does not accept array<int, string>.',
+				91,
+			],
 		]);
 	}
 

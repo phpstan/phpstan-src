@@ -311,3 +311,49 @@ class FooGenericsConstructorWithT2
 	}
 
 }
+
+class CanChangeTypeAfterAssignment
+{
+
+	public int $i;
+
+	public function doFoo(): void
+	{
+		assertType('int', $this->i);
+		$this->i = 1;
+		assertType('1', $this->i);
+	}
+
+	public int $virtual {
+		get {
+			return 1;
+		}
+		set {
+			$this->i = 1;
+		}
+	}
+
+	public function doFoo2(): void
+	{
+		assertType('int', $this->virtual);
+		$this->virtual = 1;
+		assertType('int', $this->virtual);
+	}
+
+	public int $backedWithHook {
+		get {
+			return $this->backedWithHook + 100;
+		}
+		set {
+			$this->backedWithHook = $this->backedWithHook - 200;
+		}
+	}
+
+	public function doFoo3(): void
+	{
+		assertType('int', $this->backedWithHook);
+		$this->backedWithHook = 1;
+		assertType('int', $this->backedWithHook);
+	}
+
+}

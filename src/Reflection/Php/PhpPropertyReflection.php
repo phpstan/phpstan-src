@@ -116,6 +116,22 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function canChangeTypeAfterAssignment(): bool
 	{
+		if ($this->isStatic()) {
+			return true;
+		}
+
+		if ($this->isVirtual()->yes()) {
+			return false;
+		}
+
+		if ($this->hasHook('get')) {
+			return false;
+		}
+
+		if ($this->hasHook('set')) {
+			return false;
+		}
+
 		return true;
 	}
 

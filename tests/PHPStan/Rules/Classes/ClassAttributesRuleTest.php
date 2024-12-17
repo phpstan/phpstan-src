@@ -167,4 +167,28 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12281(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12281.php'], [
+			[
+				'Attribute class AllowDynamicProperties cannot be used with readonly class.',
+				05,
+			],
+			[
+				'Attribute class AllowDynamicProperties cannot be used with enum.',
+				12,
+			],
+			[
+				'Attribute class AllowDynamicProperties cannot be used with interface.',
+				15,
+			],
+		]);
+	}
+
 }

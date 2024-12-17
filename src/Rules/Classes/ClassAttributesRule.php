@@ -8,6 +8,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use function count;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -28,12 +31,39 @@ final class ClassAttributesRule implements Rule
 	{
 		$classLikeNode = $node->getOriginalNode();
 
-		return $this->attributesCheck->check(
+		$errors = $this->attributesCheck->check(
 			$scope,
 			$classLikeNode->attrGroups,
 			Attribute::TARGET_CLASS,
 			'class',
 		);
+
+		$classReflection = $node->getClassReflection();
+		if (
+			$classReflection->isReadOnly()
+			|| $classReflection->isEnum()
+			|| $classReflection->isInterface()
+		) {
+			$typeName = 'readonly class';
+			$identifier = 'class.allowDynamicPropertiesReadonly';
+			if ($classReflection->isEnum()) {
+				$typeName = 'enum';
+				$identifier = 'enum.allowDynamicProperties';
+			}
+			if ($classReflection->isInterface()) {
+				$typeName = 'interface';
+				$identifier = 'interface.allowDynamicProperties';
+			}
+
+			if (count($classReflection->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Attribute class AllowDynamicProperties cannot be used with %s.', $typeName))
+					->identifier($identifier)
+					->nonIgnorable()
+					->build();
+			}
+		}
+
+		return $errors;
 	}
 
 }

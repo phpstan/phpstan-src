@@ -710,15 +710,16 @@ final class MutatingScope implements Scope
 	{
 		$key = $this->exprPrinter->printExpr($node);
 
+		$attributes = $node->getAttributes();
 		if (
 			$node instanceof Node\FunctionLike
-			&& $node->hasAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME)
-			&& $node->hasAttribute('startFilePos')
+			&& (($attributes[ArrayMapArgVisitor::ATTRIBUTE_NAME] ?? null) !== null)
+			&& (($attributes['startFilePos'] ?? null) !== null)
 		) {
-			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
+			$key .= '/*' . $attributes['startFilePos'] . '*/';
 		}
 
-		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
+		if (($attributes[self::KEEP_VOID_ATTRIBUTE_NAME] ?? null) === true) {
 			$key .= '/*' . self::KEEP_VOID_ATTRIBUTE_NAME . '*/';
 		}
 

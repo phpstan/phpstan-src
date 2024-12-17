@@ -30,3 +30,14 @@ function bar(string $str): void
 		assertType('array{string, non-empty-string, string, string}', $matches);
 	}
 }
+
+function foobar(string $str): void
+{
+	$regexp = '/
+		# (
+		([\d,]*)# a comment immediately behind with a closing parenthesis )
+	/x';
+	if (preg_match($regexp, $str, $match)) {
+		assertType('array{string, string}', $match);
+	}
+}

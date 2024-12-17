@@ -74,7 +74,7 @@ final class RegexGroupParser
 
 		if (str_contains($modifiers, 'x')) {
 			// in freespacing mode the # character starts a comment and runs until the end of the line
-			$regex = preg_replace('/[^?]#.*/', '', $regex) ?? '';
+			$regex = preg_replace('/(?<!\?)#.*/', '', $regex) ?? '';
 		}
 
 		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);

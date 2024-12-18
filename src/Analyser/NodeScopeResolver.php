@@ -114,6 +114,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
@@ -4702,7 +4703,47 @@ final class NodeScopeResolver
 				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
 				$nodeCallback(new PropertyAssignNode(new PropertyFetch(new Variable('this'), $propertyName, $hook->body->getAttributes()), $hook->body, false), $hookScope);
 			} elseif (is_array($hook->body)) {
-				$this->processStmtNodes(new PropertyHookStatementNode($hook), $hook->body, $hookScope, $nodeCallback, StatementContext::createTopLevel());
+				$gatheredReturnStatements = [];
+				$executionEnds = [];
+				$methodImpurePoints = [];
+				$statementResult = $this->processStmtNodes(new PropertyHookStatementNode($hook), $hook->body, $hookScope, static function (Node $node, Scope $scope) use ($nodeCallback, $hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
+					$nodeCallback($node, $scope);
+					if ($scope->getFunction() !== $hookScope->getFunction()) {
+						return;
+					}
+					if ($scope->isInAnonymousFunction()) {
+						return;
+					}
+					if ($node instanceof PropertyAssignNode) {
+						$hookImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
+						return;
+					}
+					if ($node instanceof ExecutionEndNode) {
+						$executionEnds[] = $node;
+						return;
+					}
+					if (!$node instanceof Return_) {
+						return;
+					}
+
+					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				}, StatementContext::createTopLevel());
+
+				$nodeCallback(new PropertyHookReturnStatementsNode(
+					$hook,
+					$gatheredReturnStatements,
+					$statementResult,
+					$executionEnds,
+					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+					$classReflection,
+					$hookReflection,
+				), $hookScope);
 			}
 
 		}

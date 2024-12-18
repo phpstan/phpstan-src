@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -37,6 +38,18 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 	{
 		$propertyFetch = $node->getPropertyFetch();
 		if (!$propertyFetch instanceof Node\Expr\PropertyFetch) {
+			return [];
+		}
+
+		$inFunction = $scope->getFunction();
+		if (
+			$inFunction instanceof PhpMethodFromParserNodeReflection
+			&& $inFunction->isPropertyHook()
+			&& $propertyFetch->var instanceof Node\Expr\Variable
+			&& $propertyFetch->var->name === 'this'
+			&& $propertyFetch->name instanceof Node\Identifier
+			&& $inFunction->getHookedPropertyName() === $propertyFetch->name->toString()
+		) {
 			return [];
 		}
 

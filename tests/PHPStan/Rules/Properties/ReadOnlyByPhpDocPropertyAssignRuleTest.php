@@ -178,4 +178,22 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/property-hooks-readonly-by-phpdoc-assign.php'], [
+			[
+				'@readonly property PropertyHooksReadonlyByPhpDocAssign\Foo::$i is assigned outside of the constructor.',
+				15,
+			],
+			[
+				'@readonly property PropertyHooksReadonlyByPhpDocAssign\Foo::$j is assigned outside of the constructor.',
+				17,
+			],
+		]);
+	}
+
 }

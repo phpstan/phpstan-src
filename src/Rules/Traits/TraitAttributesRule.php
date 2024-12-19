@@ -50,7 +50,7 @@ final class TraitAttributesRule implements Rule
 		$classReflection = $this->reflectionProvider->getClass($traitName->toString());
 		if (count($classReflection->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {
 			$errors[] = RuleErrorBuilder::message('Attribute class AllowDynamicProperties cannot be used with trait.')
-				->identifier('class.allowDynamicPropertiesTrait')
+				->identifier('trait.allowDynamicProperties')
 				->nonIgnorable()
 				->build();
 		}

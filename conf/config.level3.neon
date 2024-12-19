@@ -16,6 +16,7 @@ rules:
 	- PHPStan\Rules\Generators\YieldTypeRule
 	- PHPStan\Rules\Methods\ReturnTypeRule
 	- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
+	- PHPStan\Rules\Properties\GetNonVirtualPropertyHookReadRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule

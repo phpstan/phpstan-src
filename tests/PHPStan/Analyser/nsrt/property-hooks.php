@@ -357,3 +357,21 @@ class CanChangeTypeAfterAssignment
 	}
 
 }
+
+class MagicConstants
+{
+
+	public int $i {
+		get {
+			assertType("'\$i::get'", __FUNCTION__);
+			assertType("'PropertyHooksTypes\\\\MagicConstants::\$i::get'", __METHOD__);
+			assertType("'i'", __PROPERTY__);
+		}
+		set {
+			assertType("'\$i::set'", __FUNCTION__);
+			assertType("'PropertyHooksTypes\\\\MagicConstants::\$i::set'", __METHOD__);
+			assertType("'i'", __PROPERTY__);
+		}
+	}
+
+}

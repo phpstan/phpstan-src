@@ -9,6 +9,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\Parser\PropertyHookNameVisitor;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
 use function array_slice;
 use function count;
@@ -32,21 +34,25 @@ final class InitializerExprContext implements NamespaceAnswerer
 		private ?string $traitName,
 		private ?string $function,
 		private ?string $method,
+		private ?string $property,
 	)
 	{
 	}
 
 	public static function fromScope(Scope $scope): self
 	{
+		$function = $scope->getFunction();
+
 		return new self(
 			$scope->getFile(),
 			$scope->getNamespace(),
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$scope->isInAnonymousFunction() ? '{closure}' : ($scope->getFunction() !== null ? $scope->getFunction()->getName() : null),
-			$scope->isInAnonymousFunction() ? '{closure}' : ($scope->getFunction() instanceof MethodReflection
-				? sprintf('%s::%s', $scope->getFunction()->getDeclaringClass()->getName(), $scope->getFunction()->getName())
-				: ($scope->getFunction() instanceof FunctionReflection ? $scope->getFunction()->getName() : null)),
+			$scope->isInAnonymousFunction() ? '{closure}' : ($function !== null ? $function->getName() : null),
+			$scope->isInAnonymousFunction() ? '{closure}' : ($function instanceof MethodReflection
+				? sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName())
+				: ($function instanceof FunctionReflection ? $function->getName() : null)),
+			$function instanceof PhpMethodFromParserNodeReflection && $function->isPropertyHook() ? $function->getHookedPropertyName() : null,
 		);
 	}
 
@@ -81,6 +87,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 			null,
 			null,
 			null,
+			null,
 		);
 	}
 
@@ -96,6 +103,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 				null,
 				$declaringFunction->getName(),
 				$declaringFunction->getName(),
+				null, // Property hook parameter cannot have a default value. fromReflectionParameter is only used for that
 			);
 		}
 
@@ -110,6 +118,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 			$betterReflection->getDeclaringClass()->isTrait() ? $betterReflection->getDeclaringClass()->getName() : null,
 			$declaringFunction->getName(),
 			sprintf('%s::%s', $declaringFunction->getDeclaringClass()->getName(), $declaringFunction->getName()),
+			null, // Property hook parameter cannot have a default value. fromReflectionParameter is only used for that
 		);
 	}
 
@@ -127,15 +136,36 @@ final class InitializerExprContext implements NamespaceAnswerer
 				$namespace = self::parseNamespace($function->namespacedName->toString());
 			}
 		}
+
+		$functionName = null;
+		$propertyName = null;
+		if ($function instanceof Function_ && $function->namespacedName !== null) {
+			$functionName = $function->namespacedName->toString();
+		} elseif ($function instanceof ClassMethod) {
+			$functionName = $function->name->toString();
+		} elseif ($function instanceof PropertyHook) {
+			$propertyName = $function->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$functionName = sprintf('$%s::%s', $propertyName, $function->name->toString());
+		}
+
+		$methodName = null;
+		if ($function instanceof ClassMethod && $className !== null) {
+			$methodName = sprintf('%s::%s', $className, $function->name->toString());
+		} elseif ($function instanceof PropertyHook) {
+			$propertyName = $function->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$methodName = sprintf('%s::$%s::%s', $className, $propertyName, $function->name->toString());
+		} elseif ($function instanceof Function_ && $function->namespacedName !== null) {
+			$methodName = $function->namespacedName->toString();
+		}
+
 		return new self(
 			$stubFile,
 			$namespace,
 			$className,
 			null,
-			$function instanceof Function_ && $function->namespacedName !== null ? $function->namespacedName->toString() : ($function instanceof ClassMethod ? $function->name->toString() : null),
-			$function instanceof ClassMethod && $className !== null
-				? sprintf('%s::%s', $className, $function->name->toString())
-				: ($function instanceof Function_ && $function->namespacedName !== null ? $function->namespacedName->toString() : null),
+			$functionName,
+			$methodName,
+			$propertyName,
 		);
 	}
 
@@ -148,12 +178,13 @@ final class InitializerExprContext implements NamespaceAnswerer
 			null,
 			null,
 			null,
+			null,
 		);
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self(null, null, null, null, null, null);
+		return new self(null, null, null, null, null, null, null);
 	}
 
 	public function getFile(): ?string
@@ -184,6 +215,11 @@ final class InitializerExprContext implements NamespaceAnswerer
 	public function getMethod(): ?string
 	{
 		return $this->method;
+	}
+
+	public function getProperty(): ?string
+	{
+		return $this->property;
 	}
 
 }

@@ -34,4 +34,11 @@ class Foo
 		}
 	}
 
+	public int $m {
+		#[Deprecated(message: __FUNCTION__ . '+' . __METHOD__ . '+' . __PROPERTY__)]
+		get {
+			return 1;
+		}
+	}
+
 }

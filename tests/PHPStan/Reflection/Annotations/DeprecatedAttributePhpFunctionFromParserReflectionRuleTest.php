@@ -135,6 +135,10 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 				'Deprecated: msg2',
 				31,
 			],
+			[
+				'Deprecated: $m::get+DeprecatedAttributePropertyHooks\Foo::$m::get+m',
+				38,
+			],
 		]);
 	}
 

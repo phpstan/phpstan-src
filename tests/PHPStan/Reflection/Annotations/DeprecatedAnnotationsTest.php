@@ -372,6 +372,13 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 			TrinaryLogic::createYes(),
 			'msg2',
 		];
+		yield [
+			'DeprecatedAttributePropertyHooks\\Foo',
+			'm',
+			'get',
+			TrinaryLogic::createYes(),
+			'$m::get+DeprecatedAttributePropertyHooks\Foo::$m::get+m',
+		];
 	}
 
 	/**

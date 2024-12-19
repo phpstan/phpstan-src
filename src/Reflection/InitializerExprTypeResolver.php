@@ -392,6 +392,15 @@ final class InitializerExprTypeResolver
 			return new ConstantStringType($context->getTraitName(), true);
 		}
 
+		if ($expr instanceof MagicConst\Property) {
+			$contextProperty = $context->getProperty();
+			if ($contextProperty === null) {
+				return new ConstantStringType('');
+			}
+
+			return new ConstantStringType($contextProperty);
+		}
+
 		if ($expr instanceof PropertyFetch && $expr->name instanceof Identifier) {
 			$fetchedOnType = $this->getType($expr->var, $context);
 			if (!$fetchedOnType->hasProperty($expr->name->name)->yes()) {

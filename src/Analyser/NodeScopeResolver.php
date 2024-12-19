@@ -1988,7 +1988,7 @@ final class NodeScopeResolver
 	private function getDeprecatedAttribute(Scope $scope, Node\Stmt\Function_|Node\Stmt\ClassMethod|Node\PropertyHook $stmt): array
 	{
 		$initializerExprContext = InitializerExprContext::fromStubParameter(
-			null,
+			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->getFile(),
 			$stmt,
 		);

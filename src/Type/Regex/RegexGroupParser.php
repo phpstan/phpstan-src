@@ -527,7 +527,7 @@ final class RegexGroupParser
 			if ($literal !== '' && $literal !== '0') {
 				$isNonFalsy = true;
 			}
-			return false;
+			return $literal === '';
 		}
 
 		foreach ($node->getChildren() as $child) {

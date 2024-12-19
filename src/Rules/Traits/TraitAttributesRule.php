@@ -4,11 +4,13 @@ namespace PHPStan\Rules\Traits;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function count;
 
 /**
@@ -39,6 +41,12 @@ final class TraitAttributesRule implements Rule
 		if (!$this->reflectionProvider->hasClass($traitName->toString())) {
 			return [];
 		}
+		$classReflection = $this->reflectionProvider->getClass($traitName->toString());
+
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+		$scope = $scope->enterTrait($classReflection);
 
 		$errors = $this->attributesCheck->check(
 			$scope,
@@ -47,7 +55,6 @@ final class TraitAttributesRule implements Rule
 			'class',
 		);
 
-		$classReflection = $this->reflectionProvider->getClass($traitName->toString());
 		if (count($classReflection->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {
 			$errors[] = RuleErrorBuilder::message('Attribute class AllowDynamicProperties cannot be used with trait.')
 				->identifier('trait.allowDynamicProperties')

@@ -1985,7 +1985,7 @@ final class NodeScopeResolver
 	/**
 	 * @return array{bool, string|null}
 	 */
-	private function getDeprecatedAttribute(Scope $scope, Node\Stmt\Function_|Node\Stmt\ClassMethod $stmt): array
+	private function getDeprecatedAttribute(Scope $scope, Node\Stmt\Function_|Node\Stmt\ClassMethod|Node\PropertyHook $stmt): array
 	{
 		$initializerExprContext = InitializerExprContext::fromStubParameter(
 			null,
@@ -4684,6 +4684,8 @@ final class NodeScopeResolver
 				$this->processParamNode($stmt, $param, $scope, $nodeCallback);
 			}
 
+			[$isDeprecated, $deprecatedDescription] = $this->getDeprecatedAttribute($scope, $hook);
+
 			$hookScope = $scope->enterPropertyHook(
 				$hook,
 				$propertyName,
@@ -4691,6 +4693,8 @@ final class NodeScopeResolver
 				$phpDocType,
 				$phpDocParameterTypes,
 				$phpDocThrowType,
+				$deprecatedDescription,
+				$isDeprecated,
 				$phpDocComment,
 			);
 			$hookReflection = $hookScope->getFunction();

@@ -6,10 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<Rule>
@@ -18,15 +20,15 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 {
 
 	/**
-	 * @return Rule<Node\Stmt>
+	 * @return Rule<Node>
 	 */
 	protected function getRule(): Rule
 	{
-		return new /** @implements Rule<Node\Stmt> */ class implements Rule {
+		return new /** @implements Rule<Node> */ class implements Rule {
 
 			public function getNodeType(): string
 			{
-				return Node\Stmt::class;
+				return Node::class;
 			}
 
 			public function processNode(Node $node, Scope $scope): array
@@ -35,6 +37,8 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 					$reflection = $node->getFunctionReflection();
 				} elseif ($node instanceof InClassMethodNode) {
 					$reflection = $node->getMethodReflection();
+				} elseif ($node instanceof InPropertyHookNode) {
+					$reflection = $node->getHookReflection();
 				} else {
 					return [];
 				}
@@ -104,6 +108,32 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 			[
 				'Deprecated: msg2',
 				27,
+			],
+		]);
+	}
+
+	public function testPropertyHookRule(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/deprecated-attribute-property-hooks.php'], [
+			[
+				'Not deprecated',
+				11,
+			],
+			[
+				'Deprecated',
+				17,
+			],
+			[
+				'Deprecated: msg',
+				24,
+			],
+			[
+				'Deprecated: msg2',
+				31,
 			],
 		]);
 	}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node\PropertyHook;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
@@ -115,7 +116,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 	public static function fromStubParameter(
 		?string $className,
 		string $stubFile,
-		ClassMethod|Function_ $function,
+		ClassMethod|Function_|PropertyHook $function,
 	): self
 	{
 		$namespace = null;

@@ -342,4 +342,54 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertSame($deprecatedDescription, $case->getDeprecatedDescription());
 	}
 
+	public function dataDeprecatedAttributeAbovePropertyHook(): iterable
+	{
+		yield [
+			'DeprecatedAttributePropertyHooks\\Foo',
+			'i',
+			'get',
+			TrinaryLogic::createNo(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributePropertyHooks\\Foo',
+			'j',
+			'get',
+			TrinaryLogic::createYes(),
+			null,
+		];
+		yield [
+			'DeprecatedAttributePropertyHooks\\Foo',
+			'k',
+			'get',
+			TrinaryLogic::createYes(),
+			'msg',
+		];
+		yield [
+			'DeprecatedAttributePropertyHooks\\Foo',
+			'l',
+			'get',
+			TrinaryLogic::createYes(),
+			'msg2',
+		];
+	}
+
+	/**
+	 * @dataProvider dataDeprecatedAttributeAbovePropertyHook
+	 * @param 'get'|'set' $hookName
+	 */
+	public function testDeprecatedAttributeAbovePropertyHook(string $className, string $propertyName, string $hookName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$property = $class->getNativeProperty($propertyName);
+		$hook = $property->getHook($hookName);
+		$this->assertSame($isDeprecated->describe(), $hook->isDeprecated()->describe());
+		$this->assertSame($deprecatedDescription, $hook->getDeprecatedDescription());
+	}
+
 }

@@ -2999,6 +2999,8 @@ final class MutatingScope implements Scope
 		?Type $phpDocPropertyType,
 		array $phpDocParameterTypes,
 		?Type $throwType,
+		?string $deprecatedDescription,
+		bool $isDeprecated,
 		?string $phpDocComment,
 	): self
 	{
@@ -3054,8 +3056,8 @@ final class MutatingScope implements Scope
 				$realReturnType,
 				$phpDocReturnType,
 				$throwType,
-				null,
-				false,
+				$deprecatedDescription,
+				$isDeprecated,
 				false,
 				false,
 				false,

@@ -52,8 +52,6 @@ final class ConstantResolver
 		private array $dynamicConstantNames,
 		private int|array|null $phpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
-		private ?PhpVersion $composerMinPhpVersion,
-		private ?PhpVersion $composerMaxPhpVersion,
 		private ?Container $container,
 	)
 	{

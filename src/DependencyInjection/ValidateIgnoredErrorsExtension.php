@@ -69,7 +69,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
 		PhpVersionStaticAccessor::registerInstance(new PhpVersion(PHP_VERSION_ID));
 		$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, $composerPhpVersionFactory, null, null, null);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, $composerPhpVersionFactory, null);
 
 		$phpDocParserConfig = new ParserConfig([]);
 		$ignoredRegexValidator = new IgnoredRegexValidator(

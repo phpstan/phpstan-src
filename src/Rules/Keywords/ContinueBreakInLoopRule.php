@@ -39,11 +39,7 @@ final class ContinueBreakInLoopRule implements Rule
 			if ($parentStmtType === Stmt\Case_::class) {
 				continue;
 			}
-			if (
-				$parentStmtType === Stmt\Function_::class
-				|| $parentStmtType === Stmt\ClassMethod::class
-				|| $parentStmtType === Node\Expr\Closure::class
-			) {
+			if ($parentStmtType === Node\Expr\Closure::class) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Keyword %s used outside of a loop or a switch statement.',

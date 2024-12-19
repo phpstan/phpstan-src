@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Traits;
 
 use Attribute;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
@@ -41,12 +42,15 @@ final class TraitAttributesRule implements Rule
 		if (!$this->reflectionProvider->hasClass($traitName->toString())) {
 			return [];
 		}
-		$classReflection = $this->reflectionProvider->getClass($traitName->toString());
+		$traitClassReflection = $this->reflectionProvider->getClass($traitName->toString());
 
 		if (!$scope instanceof MutatingScope) {
 			throw new ShouldNotHappenException();
 		}
-		$scope = $scope->enterTrait($classReflection);
+		$fakeClass = new Class_(null, [new Node\Stmt\TraitUse([$traitName])], ['startLine' => 1, 'endLine' => 1]);
+		$fakeClassReflection = $this->reflectionProvider->getAnonymousClassReflection($fakeClass, $scope);
+		$scope = $scope->enterClass($fakeClassReflection);
+		$scope = $scope->enterTrait($traitClassReflection);
 
 		$errors = $this->attributesCheck->check(
 			$scope,
@@ -55,7 +59,7 @@ final class TraitAttributesRule implements Rule
 			'class',
 		);
 
-		if (count($classReflection->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {
+		if (count($traitClassReflection->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {
 			$errors[] = RuleErrorBuilder::message('Attribute class AllowDynamicProperties cannot be used with trait.')
 				->identifier('trait.allowDynamicProperties')
 				->nonIgnorable()

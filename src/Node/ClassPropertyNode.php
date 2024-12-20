@@ -129,6 +129,11 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return $this->originalNode->type;
 	}
 
+	public function getOriginalNode(): Node\Stmt\Property|Node\Param
+	{
+		return $this->originalNode;
+	}
+
 	public function getClassReflection(): ClassReflection
 	{
 		return $this->classReflection;

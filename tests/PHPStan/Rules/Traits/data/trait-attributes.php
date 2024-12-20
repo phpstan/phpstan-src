@@ -19,3 +19,12 @@ class MyTargettedAttribute {}
 
 #[MyTargettedAttribute]
 trait MyTrait3 {}
+
+class Uses
+{
+
+	use MyTrait;
+	use MyTrait2;
+	use MyTrait3;
+
+}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Traits;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
-use PHPStan\Rules\Classes\ClassAttributesRule;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -14,7 +13,6 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Rules\Traits\TraitAttributesRule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
@@ -51,7 +49,6 @@ class TraitAttributesRuleTest extends RuleTestCase
 				),
 				true,
 			),
-			$reflectionProvider,
 		);
 	}
 

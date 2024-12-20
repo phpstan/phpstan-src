@@ -10,3 +10,10 @@ interface BlogDataInterface { /* … */ } // reported by ClassAttributesRule
 
 #[\AllowDynamicProperties]
 trait BlogDataTrait { /* … */ }
+
+class Uses
+{
+
+	use BlogDataTrait;
+
+}

@@ -209,6 +209,8 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
 	PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule:
 		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
+	PHPStan\Rules\Exceptions\MissingCheckedExceptionInPropertyHookThrowsRule:
+		phpstan.rules.rule: %exceptions.check.missingCheckedExceptionInThrows%
 
 services:
 	-
@@ -905,6 +907,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInPropertyHookThrowsRule
 
 	-
 		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck

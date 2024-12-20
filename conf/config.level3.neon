@@ -70,6 +70,14 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Exceptions\ThrowsVoidPropertyHookWithExplicitThrowPointRule
+		arguments:
+			exceptionTypeResolver: @exceptionTypeResolver
+			missingCheckedExceptionInThrows: %exceptions.check.missingCheckedExceptionInThrows%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Generators\YieldFromTypeRule
 		arguments:
 			reportMaybes: %reportMaybes%

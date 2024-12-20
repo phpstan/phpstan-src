@@ -8,7 +8,7 @@ use Attribute;
 #[Table(self::TABLE_NAME)]
 trait MyTrait
 {
-	private const int TABLE_NAME = 'table';
+	private const int TABLE_NAME = 1;
 }
 
 class X {

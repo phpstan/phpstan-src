@@ -618,7 +618,7 @@ final class FunctionCallParametersCheck
 				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
 				if ($nonUnpackAfterUnpacked) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $argumentName))
+					$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $parameter->getName()))
 						->identifier('argument.namedOverwriteAfterUnpacked')
 						->line($argumentLine)
 						->nonIgnorable()

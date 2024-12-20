@@ -2,7 +2,7 @@
 
 namespace Bug6791;
 
-class Foo {
+final class Foo {
 	/** @var int[]  */
 	public array $intArray;
 	/** @var \Ds\Set<int> */

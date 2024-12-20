@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace UnionTypeError;
 
-class Foo {
+final class Foo {
 	public string|int $stringOrInt;
 	public string|array $stringOrArray;
 

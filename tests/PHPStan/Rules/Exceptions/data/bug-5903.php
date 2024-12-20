@@ -2,7 +2,7 @@
 
 namespace Bug5903;
 
-class Test
+final class Test
 {
 	/** @var \Traversable<string> */
 	protected $traversable;

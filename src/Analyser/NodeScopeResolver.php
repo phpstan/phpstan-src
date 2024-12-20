@@ -151,6 +151,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -2973,6 +2974,7 @@ final class NodeScopeResolver
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 		} elseif ($expr instanceof PropertyFetch) {
+			$scopeBeforeVar = $scope;
 			$result = $this->processExprNode($stmt, $expr->var, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -2984,6 +2986,20 @@ final class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$scope = $result->getScope();
+				if ($this->phpVersion->supportsPropertyHooks()) {
+					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
+				}
+			} else {
+				$propertyName = $expr->name->toString();
+				$propertyHolderType = $scopeBeforeVar->getType($expr->var);
+				$propertyReflection = $scopeBeforeVar->getPropertyReflection($propertyHolderType, $propertyName);
+				if ($propertyReflection !== null) {
+					$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
+					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
+						$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
+						$throwPoints = array_merge($throwPoints, $this->getPropertyReadThrowPointsFromGetHook($scopeBeforeVar, $expr, $nativeProperty));
+					}
+				}
 			}
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
@@ -4225,6 +4241,83 @@ final class NodeScopeResolver
 	}
 
 	/**
+	 * @return ThrowPoint[]
+	 */
+	private function getPropertyReadThrowPointsFromGetHook(
+		MutatingScope $scope,
+		PropertyFetch $propertyFetch,
+		PhpPropertyReflection $propertyReflection,
+	): array
+	{
+		return $this->getThrowPointsFromPropertyHook($scope, $propertyFetch, $propertyReflection, 'get');
+	}
+
+	/**
+	 * @return ThrowPoint[]
+	 */
+	private function getPropertyAssignThrowPointsFromSetHook(
+		MutatingScope $scope,
+		PropertyFetch $propertyFetch,
+		PhpPropertyReflection $propertyReflection,
+	): array
+	{
+		return $this->getThrowPointsFromPropertyHook($scope, $propertyFetch, $propertyReflection, 'set');
+	}
+
+	/**
+	 * @param 'get'|'set' $hookName
+	 * @return ThrowPoint[]
+	 */
+	private function getThrowPointsFromPropertyHook(
+		MutatingScope $scope,
+		PropertyFetch $propertyFetch,
+		PhpPropertyReflection $propertyReflection,
+		string $hookName,
+	): array
+	{
+		$scopeFunction = $scope->getFunction();
+		if (
+			$scopeFunction instanceof PhpMethodFromParserNodeReflection
+			&& $scopeFunction->isPropertyHook()
+			&& $propertyFetch->var instanceof Variable
+			&& $propertyFetch->var->name === 'this'
+			&& $propertyFetch->name instanceof Identifier
+			&& $propertyFetch->name->toString() === $scopeFunction->getHookedPropertyName()
+		) {
+			return [];
+		}
+		$declaringClass = $propertyReflection->getDeclaringClass();
+		if (!$propertyReflection->hasHook($hookName)) {
+			if (
+				$propertyReflection->isPrivate()
+				|| $propertyReflection->isFinal()->yes()
+				|| $declaringClass->isFinal()
+			) {
+				return [];
+			}
+
+			if ($this->implicitThrows) {
+				return [ThrowPoint::createImplicit($scope, $propertyFetch)];
+			}
+
+			return [];
+		}
+
+		$getHook = $propertyReflection->getHook($hookName);
+		$throwType = $getHook->getThrowType();
+
+		if ($throwType !== null) {
+			if (!$throwType->isVoid()->yes()) {
+				return [ThrowPoint::createExplicit($scope, $throwType, $propertyFetch, true)];
+			}
+		} elseif ($this->implicitThrows) {
+			return [ThrowPoint::createImplicit($scope, $propertyFetch)];
+		}
+
+		return [];
+	}
+
+	/**
 	 * @return string[]
 	 */
 	private function getAssignedVariables(Expr $expr): array
@@ -5408,6 +5501,10 @@ final class NodeScopeResolver
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$scope = $result->getScope();
 
+			if ($var->name instanceof Expr && $this->phpVersion->supportsPropertyHooks()) {
+				$throwPoints[] = ThrowPoint::createImplicit($scope, $var);
+			}
+
 			$propertyHolderType = $scope->getType($var->var);
 			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
@@ -5423,6 +5520,9 @@ final class NodeScopeResolver
 						!$nativeProperty->getNativeType()->accepts($assignedExprType, true)->yes()
 					) {
 						$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
+					}
+					if ($this->phpVersion->supportsPropertyHooks()) {
+						$throwPoints = array_merge($throwPoints, $this->getPropertyAssignThrowPointsFromSetHook($scope, $var, $nativeProperty));
 					}
 					if ($enterExpressionAssign) {
 						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);

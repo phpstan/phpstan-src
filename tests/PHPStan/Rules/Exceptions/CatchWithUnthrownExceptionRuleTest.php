@@ -612,4 +612,46 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9568.php'], []);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			self::markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/unthrown-exception-property-hooks.php'], [
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\SomeException is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				53,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\SomeException is never thrown in the try block.',
+				65,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				107,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				128,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				154,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooks\MyCustomException is never thrown in the try block.',
+				175,
+			],
+		]);
+	}
+
 }

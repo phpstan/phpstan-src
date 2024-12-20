@@ -27,7 +27,6 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
-use function array_slice;
 use function count;
 use function implode;
 use function in_array;
@@ -82,22 +81,19 @@ final class FunctionCallParametersCheck
 	{
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
-		$functionParameterNames = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
 
 			$functionParametersMaxCount++;
-
-			$functionParameterNames[] = $parameter->getName();
 		}
 
 		if ($parametersAcceptor->isVariadic()) {
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type|null, bool, string|null, int}> $arguments */
+		/** @var array<int, array{Expr, Type|null, bool, string|null, int, bool}> $arguments */
 		$arguments = [];
 		/** @var array<int, Node\Arg> $args */
 		$args = $funcCall->getArgs();
@@ -111,6 +107,8 @@ final class FunctionCallParametersCheck
 				$argumentName = $arg->name->toString();
 			}
 
+			$nonUnpackAfterUnpacked = false;
+
 			if ($hasNamedArguments && $arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')
 					->identifier('argument.unpackAfterNamed')
@@ -119,15 +117,9 @@ final class FunctionCallParametersCheck
 					->build();
 			}
 			if ($hasUnpackedArgument && !$arg->unpack) {
-				if ($argumentName !== null && $scope->getPhpVersion()->supportsNamedArgumentAfterUnpackedArgument()->yes()) {
-					if (in_array($argumentName, array_slice($functionParameterNames, 0, count($arguments)), true)) {
-						$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $argumentName))
-							->identifier('argument.namedOverwriteAfterUnpacked')
-							->line($arg->getStartLine())
-							->nonIgnorable()
-							->build();
-					}
-				} else {
+				$nonUnpackAfterUnpacked = true;
+
+				if ($argumentName === null || !$scope->getPhpVersion()->supportsNamedArgumentAfterUnpackedArgument()->yes()) {
 					$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
 						->identifier('argument.nonUnpackAfterUnpacked')
 						->line($arg->getStartLine())
@@ -191,6 +183,7 @@ final class FunctionCallParametersCheck
 							false,
 							$keyArgumentName,
 							$arg->getStartLine(),
+							$nonUnpackAfterUnpacked,
 						];
 					}
 				} else {
@@ -200,6 +193,7 @@ final class FunctionCallParametersCheck
 						true,
 						null,
 						$arg->getStartLine(),
+						$nonUnpackAfterUnpacked,
 					];
 				}
 				continue;
@@ -211,6 +205,7 @@ final class FunctionCallParametersCheck
 				false,
 				$argumentName,
 				$arg->getStartLine(),
+				$nonUnpackAfterUnpacked,
 			];
 		}
 
@@ -562,7 +557,7 @@ final class FunctionCallParametersCheck
 		$newArguments = [];
 
 		$namedArgumentAlreadyOccurred = false;
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $nonUnpackAfterUnpacked]) {
 			if ($argumentName === null) {
 				if (!isset($parameters[$i])) {
 					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
@@ -622,10 +617,19 @@ final class FunctionCallParametersCheck
 				&& !$parameter->isVariadic()
 				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))
-					->identifier('argument.duplicate')
-					->line($argumentLine)
-					->build();
+				if ($nonUnpackAfterUnpacked) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $argumentName))
+						->identifier('argument.namedOverwriteAfterUnpacked')
+						->line($argumentLine)
+						->nonIgnorable()
+						->build();
+				} else {
+					$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))
+						->identifier('argument.duplicate')
+						->line($argumentLine)
+						->build();
+				}
+
 				continue;
 			}
 

@@ -510,10 +510,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Named parameter cannot overwrite already unpacked argument $b.',
 				14,
 			],
-			[
-				'Argument for parameter $b has already been passed.',
-				14,
-			],
 		]);
 	}
 

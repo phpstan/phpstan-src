@@ -31,6 +31,8 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
+	PHPStan\Rules\Exceptions\TooWidePropertyHookThrowTypeRule:
+		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 
 parameters:
 	checkAdvancedIsset: true
@@ -240,6 +242,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule
+
+	-
+		class: PHPStan\Rules\Exceptions\TooWidePropertyHookThrowTypeRule
 
 	-
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule

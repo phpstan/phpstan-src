@@ -616,6 +616,7 @@ class HelloWorld
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
+	 * @param int<10, 20> $intRange
 	 */
 	public function sayInt(
 		$true,
@@ -631,6 +632,7 @@ class HelloWorld
 		$emptyArr,
 		array $array,
 		int $int,
+		int $intRange,
 	): void
 	{
 		assertType('bool', $int == $true);
@@ -645,6 +647,10 @@ class HelloWorld
 		assertType('bool', $int == $null);
 		assertType('false', $int == $emptyArr);
 		assertType('false', $int == $array);
+
+		assertType('false', $intRange == $emptyArr);
+		assertType('false', $intRange == $array);
+
 	}
 
 }

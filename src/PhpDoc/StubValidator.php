@@ -80,6 +80,7 @@ use PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule;
 use PHPStan\Rules\PhpDoc\GenericCallableRuleHelper;
 use PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule;
+use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeCheck;
 use PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule;
 use PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule;
@@ -225,7 +226,7 @@ final class StubValidator
 			new MethodTagTemplateTypeRule($methodTagTemplateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
-			new IncompatiblePhpDocTypeRule($fileTypeMapper, $genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper),
+			new IncompatiblePhpDocTypeRule($fileTypeMapper, new IncompatiblePhpDocTypeCheck($genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper)),
 			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper, $genericCallableRuleHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),

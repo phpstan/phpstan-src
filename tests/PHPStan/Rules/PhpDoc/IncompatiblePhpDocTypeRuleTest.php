@@ -25,18 +25,20 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new GenericObjectTypeCheck(),
-			new UnresolvableTypeHelper(),
-			new GenericCallableRuleHelper(
-				new TemplateTypeCheck(
-					$reflectionProvider,
-					new ClassNameCheck(
-						new ClassCaseSensitivityCheck($reflectionProvider, true),
-						new ClassForbiddenNameCheck(self::getContainer()),
+			new IncompatiblePhpDocTypeCheck(
+				new GenericObjectTypeCheck(),
+				new UnresolvableTypeHelper(),
+				new GenericCallableRuleHelper(
+					new TemplateTypeCheck(
+						$reflectionProvider,
+						new ClassNameCheck(
+							new ClassCaseSensitivityCheck($reflectionProvider, true),
+							new ClassForbiddenNameCheck(self::getContainer()),
+						),
+						new GenericObjectTypeCheck(),
+						$typeAliasResolver,
+						true,
 					),
-					new GenericObjectTypeCheck(),
-					$typeAliasResolver,
-					true,
 				),
 			),
 		);

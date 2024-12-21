@@ -1022,6 +1022,9 @@ services:
 		class: PHPStan\Rules\PhpDoc\GenericCallableRuleHelper
 
 	-
+		class: PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeCheck
+
+	-
 		class: PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper
 		arguments:
 			checkTypeAgainstPhpDocType: %reportWrongPhpDocTypeInVarTag%

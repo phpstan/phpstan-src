@@ -1914,7 +1914,7 @@ parameters:
 		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
-			count: 5
+			count: 1
 			path: tests/PHPStan/Analyser/AnalyserTest.php
 
 		-

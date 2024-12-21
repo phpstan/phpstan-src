@@ -1,5 +1,7 @@
 <?php
 
+namespace MultipleUnreachable;
+
 /**
  * @param 'foo' $foo
  */

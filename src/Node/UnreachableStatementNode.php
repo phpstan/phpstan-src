@@ -10,12 +10,12 @@ use PhpParser\Node\Stmt;
 final class UnreachableStatementNode extends Stmt implements VirtualNode
 {
 
-	/** @var Stmt[] */
-	private array $nextStatements = [];
-
-	public function __construct(private Stmt $originalStatement)
+	/** @param Stmt[] $nextStatements */
+	public function __construct(private Stmt $originalStatement, private array $nextStatements = [])
 	{
 		parent::__construct($originalStatement->getAttributes());
+
+		$this->nextStatements = $nextStatements;
 	}
 
 	public function getOriginalStatement(): Stmt
@@ -34,11 +34,6 @@ final class UnreachableStatementNode extends Stmt implements VirtualNode
 	public function getSubNodeNames(): array
 	{
 		return [];
-	}
-
-	public function addNextStatement(Stmt $stmt): void
-	{
-		$this->nextStatements[] = $stmt;
 	}
 
 	/**

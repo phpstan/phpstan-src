@@ -322,17 +322,19 @@ final class NodeScopeResolver
 				continue;
 			}
 
-			$unreachableStatementNode = null;
-			foreach ($nextStmts as $nextStmt) {
-				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
-					$unreachableStatementNode->addNextStatement($nextStmt);
+			$unreachableStatement = null;
+			$nextStatements = [];
+
+			foreach ($nextStmts as $key => $nextStmt) {
+				if ($key === 0) {
+					$unreachableStatement = $nextStmt;
 					continue;
 				}
 
-				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
+				$nextStatements[] = $nextStmt;
 			}
 
-			$nodeCallback($unreachableStatementNode, $scope);
+			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
 		}
 	}
 
@@ -426,17 +428,19 @@ final class NodeScopeResolver
 				continue;
 			}
 
-			$unreachableStatementNode = null;
-			foreach ($nextStmts as $nextStmt) {
-				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
-					$unreachableStatementNode->addNextStatement($nextStmt);
+			$unreachableStatement = null;
+			$nextStatements = [];
+
+			foreach ($nextStmts as $key => $nextStmt) {
+				if ($key === 0) {
+					$unreachableStatement = $nextStmt;
 					continue;
 				}
 
-				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
+				$nextStatements[] = $nextStmt;
 			}
 
-			$nodeCallback($unreachableStatementNode, $scope);
+			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);

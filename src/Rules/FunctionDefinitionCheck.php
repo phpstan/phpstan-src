@@ -245,7 +245,7 @@ final class FunctionDefinitionCheck
 	 */
 	public function checkClassMethod(
 		PhpMethodFromParserNodeReflection $methodReflection,
-		ClassMethod $methodNode,
+		ClassMethod|Node\PropertyHook $methodNode,
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,

@@ -93,6 +93,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/invalid-hooked-properties.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-before.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-after.php \
+		--exclude tests/PHPStan/Rules/Properties/data/existing-classes-property-hooks.php \
 		src tests
 
 cs:

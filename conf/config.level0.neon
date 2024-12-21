@@ -92,6 +92,7 @@ rules:
 	- PHPStan\Rules\Operators\InvalidIncDecOperationRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
+	- PHPStan\Rules\Properties\ExistingClassesInPropertyHookTypehintsRule
 	- PHPStan\Rules\Properties\InvalidCallablePropertyTypeRule
 	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule

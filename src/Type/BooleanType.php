@@ -133,6 +133,10 @@ class BooleanType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($type->isTrue()->yes() || $type->isFalse()->yes()) {
+			return $type->toBoolean();
+		}
+
 		return new BooleanType();
 	}
 

@@ -601,4 +601,52 @@ class HelloWorld
 		assertType('false', $emptyStr == $phpStr);
 		assertType('true', $emptyStr == $emptyStr);
 	}
+
+	/**
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 */
+	public function sayBool(
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$plusOneStr,
+		$null,
+		$emptyArr,
+		$phpStr,
+		$emptyStr,
+		bool $bool
+	): void
+	{
+		assertType('true', $bool == $true);
+		assertType('false', $bool == $false);
+		assertType('bool', $bool == $one);
+		assertType('bool', $bool == $zero);
+		assertType('bool', $bool == $minusOne);
+		assertType('bool', $bool == $oneStr);
+		assertType('bool', $bool == $zeroStr);
+		assertType('bool', $bool == $minusOneStr);
+		assertType('bool', $bool == $plusOneStr);
+		assertType('bool', $bool == $null);
+		assertType('bool', $bool == $emptyArr);
+		assertType('bool', $bool == $phpStr);
+		assertType('bool', $bool == $emptyStr);
+	}
+
 }

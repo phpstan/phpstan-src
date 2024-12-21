@@ -236,7 +236,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/multiple_unreachable.php'], [
 			[
 				'Unreachable statement - code above always terminates.',
-				12,
+				14,
 			],
 		]);
 	}

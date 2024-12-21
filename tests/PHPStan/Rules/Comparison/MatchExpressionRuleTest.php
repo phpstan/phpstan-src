@@ -503,4 +503,18 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11852.php'], []);
 	}
 
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/match-expr-property-hooks.php'], [
+			[
+				'Match expression does not handle remaining value: 3',
+				13,
+			],
+		]);
+	}
+
 }

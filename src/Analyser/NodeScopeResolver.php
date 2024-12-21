@@ -334,9 +334,11 @@ final class NodeScopeResolver
 				$nextStatements[] = $nextStmt;
 			}
 
-			if ($unreachableStatement instanceof Node\Stmt) {
-				$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
+			if (!$unreachableStatement instanceof Node\Stmt) {
+				continue;
 			}
+
+			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
 		}
 	}
 
@@ -442,9 +444,11 @@ final class NodeScopeResolver
 				$nextStatements[] = $nextStmt;
 			}
 
-			if ($unreachableStatement instanceof Node\Stmt) {
-				$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
+			if (!$unreachableStatement instanceof Node\Stmt) {
+				continue;
 			}
+
+			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);

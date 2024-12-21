@@ -317,6 +317,11 @@ final class NodeScopeResolver
 
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $i + 1), true);
+
+			if ($nextStmts === []) {
+				continue;
+			}
+
 			$unreachableStatementNode = null;
 			foreach ($nextStmts as $nextStmt) {
 				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
@@ -325,8 +330,9 @@ final class NodeScopeResolver
 				}
 
 				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
-				$nodeCallback($unreachableStatementNode, $scope);
 			}
+
+			$nodeCallback($unreachableStatementNode, $scope);
 		}
 	}
 
@@ -416,6 +422,10 @@ final class NodeScopeResolver
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
 
+			if ($nextStmts === []) {
+				continue;
+			}
+
 			$unreachableStatementNode = null;
 			foreach ($nextStmts as $nextStmt) {
 				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
@@ -424,8 +434,9 @@ final class NodeScopeResolver
 				}
 
 				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
-				$nodeCallback($unreachableStatementNode, $scope);
 			}
+
+			$nodeCallback($unreachableStatementNode, $scope);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
@@ -6528,7 +6539,7 @@ final class NodeScopeResolver
 	/**
 	 * @template T of Node
 	 * @param array<T> $nodes
-	 * @return Node\Stmt[]
+	 * @return list<Node\Stmt>
 	 */
 	private function getNextUnreachableStatements(array $nodes, bool $earlyBinding): array
 	{
@@ -6540,7 +6551,7 @@ final class NodeScopeResolver
 			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
 				continue;
 			}
-			if (! $node instanceof Node\Stmt) {
+			if (!$node instanceof Node\Stmt) {
 				continue;
 			}
 			$stmts[] = $node;

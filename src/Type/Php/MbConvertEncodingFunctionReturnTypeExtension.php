@@ -5,10 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\ArrayType;
+use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
 final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -25,18 +24,14 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 		Scope $scope,
 	): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isString = $argType->isString();
-		$isArray = $argType->isArray();
-		$compare = $isString->compareTo($isArray);
-		if ($compare === $isString) {
-			return new StringType();
-		} elseif ($compare === $isArray) {
-			return new ArrayType(new IntegerType(), new StringType());
+		$argType = $scope->getType($args[0]->value);
+		if ($argType->isString()->yes() || $argType->isArray()->yes()) {
+			return new BenevolentUnionType([$argType, new ConstantBooleanType(false)]);
 		}
 
 		return null;

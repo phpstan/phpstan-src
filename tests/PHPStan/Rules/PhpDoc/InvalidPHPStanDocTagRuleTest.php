@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidPHPStanDocTagRule>
@@ -50,6 +51,20 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 	public function testBug8697(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8697.php'], []);
+	}
+
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-phpstan-tag-property-hooks.php'], [
+			[
+				'Unknown PHPDoc tag: @phpstan-what',
+				9,
+			],
+		]);
 	}
 
 }

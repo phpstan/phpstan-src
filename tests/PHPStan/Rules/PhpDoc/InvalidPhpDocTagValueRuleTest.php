@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidPhpDocTagValueRule>
@@ -140,6 +141,20 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @return has invalid value ($this<string>): Unexpected token "<", expected TOKEN_HORIZONTAL_WS at offset 21 on line 2',
 				11,
+			],
+		]);
+	}
+
+	public function testPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-phpdoc-property-hooks.php'], [
+			[
+				'PHPDoc tag @return has invalid value (Test(): Unexpected token "(", expected TOKEN_HORIZONTAL_WS at offset 16 on line 1',
+				9,
 			],
 		]);
 	}

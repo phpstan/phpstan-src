@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
+use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
@@ -17,7 +18,7 @@ use function sprintf;
 use function str_starts_with;
 
 /**
- * @implements Rule<Node\Stmt>
+ * @implements Rule<NodeAbstract>
  */
 final class InvalidPhpDocTagValueRule implements Rule
 {
@@ -31,13 +32,16 @@ final class InvalidPhpDocTagValueRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt::class;
+		return NodeAbstract::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		// mirrored with InvalidPHPStanDocTagRule
 		if ($node instanceof VirtualNode) {
+			return [];
+		}
+		if (!$node instanceof Node\Stmt && !$node instanceof Node\PropertyHook) {
 			return [];
 		}
 		if ($node instanceof Node\Stmt\Expression) {

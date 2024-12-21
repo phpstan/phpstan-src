@@ -9,9 +9,8 @@ use PhpParser\Node\Stmt;
  */
 final class UnreachableStatementNode extends Stmt implements VirtualNode
 {
-	/**
-	 * @var Stmt[]
-	 */
+
+	/** @var Stmt[] */
 	private array $nextStatements = [];
 
 	public function __construct(private Stmt $originalStatement)

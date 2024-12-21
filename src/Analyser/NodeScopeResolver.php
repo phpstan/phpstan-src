@@ -317,29 +317,37 @@ final class NodeScopeResolver
 
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $i + 1), true);
-
-			if ($nextStmts === []) {
-				continue;
-			}
-
-			$unreachableStatement = null;
-			$nextStatements = [];
-
-			foreach ($nextStmts as $key => $nextStmt) {
-				if ($key === 0) {
-					$unreachableStatement = $nextStmt;
-					continue;
-				}
-
-				$nextStatements[] = $nextStmt;
-			}
-
-			if (!$unreachableStatement instanceof Node\Stmt) {
-				continue;
-			}
-
-			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
+			$this->processUnreachableStatement($nextStmts, $scope, $nodeCallback);
 		}
+	}
+
+	/**
+	 * @param Node\Stmt[] $nextStmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processUnreachableStatement(array $nextStmts, MutatingScope $scope, callable $nodeCallback): void
+	{
+		if ($nextStmts === []) {
+			return;
+		}
+
+		$unreachableStatement = null;
+		$nextStatements = [];
+
+		foreach ($nextStmts as $key => $nextStmt) {
+			if ($key === 0) {
+				$unreachableStatement = $nextStmt;
+				continue;
+			}
+
+			$nextStatements[] = $nextStmt;
+		}
+
+		if (!$unreachableStatement instanceof Node\Stmt) {
+			return;
+		}
+
+		$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
 	}
 
 	/**
@@ -427,28 +435,7 @@ final class NodeScopeResolver
 
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
-
-			if ($nextStmts === []) {
-				continue;
-			}
-
-			$unreachableStatement = null;
-			$nextStatements = [];
-
-			foreach ($nextStmts as $key => $nextStmt) {
-				if ($key === 0) {
-					$unreachableStatement = $nextStmt;
-					continue;
-				}
-
-				$nextStatements[] = $nextStmt;
-			}
-
-			if (!$unreachableStatement instanceof Node\Stmt) {
-				continue;
-			}
-
-			$nodeCallback(new UnreachableStatementNode($unreachableStatement, $nextStatements), $scope);
+			$this->processUnreachableStatement($nextStmts, $scope, $nodeCallback);
 		}
 
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);

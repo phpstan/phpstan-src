@@ -317,8 +317,15 @@ final class NodeScopeResolver
 
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $i + 1), true);
+			$unreachableStatementNode = null;
 			foreach ($nextStmts as $nextStmt) {
-				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
+				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
+					$unreachableStatementNode->addNextStatement($nextStmt);
+					continue;
+				}
+
+				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
+				$nodeCallback($unreachableStatementNode, $scope);
 			}
 		}
 	}
@@ -408,8 +415,16 @@ final class NodeScopeResolver
 
 			$alreadyTerminated = true;
 			$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
+
+			$unreachableStatementNode = null;
 			foreach ($nextStmts as $nextStmt) {
-				$nodeCallback(new UnreachableStatementNode($nextStmt), $scope);
+				if ($unreachableStatementNode instanceof UnreachableStatementNode) {
+					$unreachableStatementNode->addNextStatement($nextStmt);
+					continue;
+				}
+
+				$unreachableStatementNode = new UnreachableStatementNode($nextStmt);
+				$nodeCallback($unreachableStatementNode, $scope);
 			}
 		}
 

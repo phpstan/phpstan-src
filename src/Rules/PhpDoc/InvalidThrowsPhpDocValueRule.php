@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
+use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
@@ -16,7 +18,7 @@ use Throwable;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Stmt>
+ * @implements Rule<NodeAbstract>
  */
 final class InvalidThrowsPhpDocValueRule implements Rule
 {
@@ -27,13 +29,17 @@ final class InvalidThrowsPhpDocValueRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt::class;
+		return NodeAbstract::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
-			return []; // is handled by virtual nodes
+		if ($node instanceof Node\Stmt) {
+			if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+				return []; // is handled by virtual nodes
+			}
+		} elseif (!$node instanceof InPropertyHookNode) {
+			return [];
 		}
 
 		$docComment = $node->getDocComment();

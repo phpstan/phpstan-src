@@ -52,6 +52,7 @@ rules:
 	- PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+	- PHPStan\Rules\PhpDoc\IncompatiblePropertyHookPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
 	- PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule

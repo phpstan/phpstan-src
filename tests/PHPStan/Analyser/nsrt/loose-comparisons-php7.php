@@ -46,4 +46,19 @@ class HelloWorld
 	{
 		assertType('true', $emptyStr == $zero);
 	}
+
+	/**
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 */
+	public function sayInt(
+		$emptyStr,
+		$phpStr,
+		int $int
+	): void
+	{
+		assertType('bool', $int == $emptyStr);
+		assertType('bool', $int == $phpStr);
+		assertType('bool', $int == 'a');
+	}
 }

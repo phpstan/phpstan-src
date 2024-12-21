@@ -58,7 +58,7 @@ trait ConstantScalarTypeTrait
 		}
 
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
-			// @phpstan-ignore equal.notAllowed, equal.invalid
+			// @phpstan-ignore equal.notAllowed, equal.invalid, equal.alwaysFalse
 			return new ConstantBooleanType($this->getValue() == []); // phpcs:ignore
 		}
 

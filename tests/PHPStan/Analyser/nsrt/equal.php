@@ -135,7 +135,7 @@ class Bar
 class Baz
 {
 
-	public function doFoo(string $a, int $b, float $c): void
+	public function doFoo(string $a, float $c): void
 	{
 		$nullableA = $a;
 		if (rand(0, 1)) {
@@ -152,7 +152,6 @@ class Baz
 		assertType('false', 'a' != 'a');
 		assertType('true', 'a' != 'b');
 
-		assertType('bool', $b == 'a');
 		assertType('bool', $a == 1);
 		assertType('true', 1 == 1);
 		assertType('false', 1 == 0);

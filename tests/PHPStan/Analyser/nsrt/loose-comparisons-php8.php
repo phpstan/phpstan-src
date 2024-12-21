@@ -46,4 +46,20 @@ class HelloWorld
 	{
 		assertType('false', $emptyStr == $zero); // PHP8+ only
 	}
+
+	/**
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 */
+	public function sayInt(
+		$emptyStr,
+		$phpStr,
+		int $int
+	): void
+	{
+		assertType('false', $int == $emptyStr);
+		assertType('false', $int == $phpStr);
+		assertType('false', $int == 'a');
+	}
+
 }

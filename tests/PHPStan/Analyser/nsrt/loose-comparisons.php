@@ -698,4 +698,40 @@ class HelloWorld
 		assertType('bool', $constMix == $looseZero);
 	}
 
+	/**
+	 * @param uppercase-string $upper
+	 * @param lowercase-string $lower
+	 */
+	public function sayIntersection(
+		string $upper,
+		string $lower,
+		string $s,
+	): void
+	{
+		assertType('bool', '' == $upper);
+		if ($upper != '') {
+			assertType('false', '' == $upper);
+		}
+		assertType('bool', '0' == $upper);
+		assertType('bool', 'a' == $upper); // should be false
+		assertType('bool', 'abc' == $upper); // should be false
+		assertType('bool', 'aBc' == $upper);
+		assertType('bool', strtoupper($s) == $upper);
+		assertType('bool', strtolower($s) == $upper); // should be false
+		assertType('bool', $upper == $lower); // should be false
+
+		assertType('bool', '' == $lower);
+		if ($lower != '') {
+			assertType('false', '' == $lower);
+		}
+		assertType('bool', '0' == $lower);
+		assertType('bool', 'A' == $lower); // should be false
+		assertType('bool', 'ABC' == $lower); // should be false
+		assertType('bool', 'AbC' == $lower);
+		assertType('bool', strtoupper($s) == $lower); // should be false
+		assertType('bool', strtolower($s) == $lower);
+		assertType('bool', $lower == $upper); // should be false
+	}
+
+
 }

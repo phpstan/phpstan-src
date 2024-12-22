@@ -6545,7 +6545,7 @@ final class NodeScopeResolver
 		$stmts = [];
 		$isPassedUnreachableStatement = false;
 		foreach ($nodes as $node) {
-			if ($isPassedUnreachableStatement) {
+			if ($isPassedUnreachableStatement && $node instanceof Node\Stmt) {
 				$stmts[] = $node;
 				continue;
 			}

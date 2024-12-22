@@ -653,4 +653,49 @@ class HelloWorld
 
 	}
 
+	/**
+	 * @param true|1|"1" $looseOne
+	 * @param false|0|"0" $looseZero
+	 * @param false|1 $constMix
+	 */
+	public function sayConstUnion(
+		$looseOne,
+		$looseZero,
+		$constMix
+	): void
+	{
+		assertType('true', $looseOne == 1);
+		assertType('false', $looseOne == 0);
+		assertType('true', $looseOne == true);
+		assertType('false', $looseOne == false);
+		assertType('true', $looseOne == "1");
+		assertType('false', $looseOne == "0");
+		assertType('false', $looseOne == []);
+
+		assertType('false', $looseZero == 1);
+		assertType('true', $looseZero == 0);
+		assertType('false', $looseZero == true);
+		assertType('true', $looseZero == false);
+		assertType('false', $looseZero == "1");
+		assertType('true', $looseZero == "0");
+		assertType('bool', $looseZero == []);
+
+		assertType('bool', $constMix == 0);
+		assertType('bool', $constMix == 1);
+		assertType('bool', $constMix == true);
+		assertType('bool', $constMix == false);
+		assertType('bool', $constMix == "1");
+		assertType('bool', $constMix == "0");
+		assertType('bool', $constMix == []);
+
+		assertType('true', $looseOne == $looseOne);
+		assertType('true', $looseZero == $looseZero);
+		assertType('false', $looseOne == $looseZero);
+		assertType('false', $looseZero == $looseOne);
+		assertType('bool', $looseOne == $constMix);
+		assertType('bool', $constMix == $looseOne);
+		assertType('bool', $looseZero == $constMix);
+		assertType('bool', $constMix == $looseZero);
+	}
+
 }

@@ -181,12 +181,10 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				[
 					"Loose comparison using == between '13foo' and int<10, 20> will always evaluate to false.",
 					29,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					"Loose comparison using == between int<10, 20> and '13foo' will always evaluate to false.",
 					30,
-					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 			]);
 		}

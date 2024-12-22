@@ -701,11 +701,19 @@ class HelloWorld
 	/**
 	 * @param uppercase-string $upper
 	 * @param lowercase-string $lower
+	 * @param array{} $emptyArr
+	 * @param non-empty-array $nonEmptyArr
+	 * @param int<10, 20> $intRange
 	 */
 	public function sayIntersection(
 		string $upper,
 		string $lower,
 		string $s,
+		array $emptyArr,
+		array $nonEmptyArr,
+		array $arr,
+		int $i,
+		int $intRange,
 	): void
 	{
 		assertType('bool', '' == $upper);
@@ -731,7 +739,15 @@ class HelloWorld
 		assertType('bool', strtoupper($s) == $lower); // should be false
 		assertType('bool', strtolower($s) == $lower);
 		assertType('bool', $lower == $upper); // should be false
-	}
 
+		assertType('false', $arr == $i);
+		assertType('false', $nonEmptyArr == $i);
+		assertType('false', $arr == $intRange);
+		assertType('false', $nonEmptyArr == $intRange);
+		assertType('bool', $emptyArr == $nonEmptyArr); // should be false
+		assertType('false', $nonEmptyArr == $emptyArr);
+		assertType('bool', $arr == $nonEmptyArr);
+		assertType('bool', $nonEmptyArr == $arr);
+	}
 
 }

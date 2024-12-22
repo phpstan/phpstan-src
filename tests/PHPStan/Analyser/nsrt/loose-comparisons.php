@@ -717,28 +717,21 @@ class HelloWorld
 	): void
 	{
 		assertType('bool', '' == $upper);
-		if ($upper != '') {
-			assertType('false', '' == $upper);
-		}
 		assertType('bool', '0' == $upper);
-		assertType('bool', 'a' == $upper); // should be false
-		assertType('bool', 'abc' == $upper); // should be false
-		assertType('bool', 'aBc' == $upper);
+		assertType('false', 'a' == $upper);
+		assertType('false', 'abc' == $upper);
+		assertType('false', 'aBc' == $upper);
 		assertType('bool', strtoupper($s) == $upper);
-		assertType('bool', strtolower($s) == $upper); // should be false
-		assertType('bool', $upper == $lower); // should be false
+		assertType('bool', strtolower($s) == $upper);
+		assertType('bool', $upper == $lower);
 
-		assertType('bool', '' == $lower);
-		if ($lower != '') {
-			assertType('false', '' == $lower);
-		}
 		assertType('bool', '0' == $lower);
-		assertType('bool', 'A' == $lower); // should be false
-		assertType('bool', 'ABC' == $lower); // should be false
-		assertType('bool', 'AbC' == $lower);
-		assertType('bool', strtoupper($s) == $lower); // should be false
+		assertType('false', 'A' == $lower);
+		assertType('false', 'ABC' == $lower);
+		assertType('false', 'AbC' == $lower);
+		assertType('bool', strtoupper($s) == $lower);
 		assertType('bool', strtolower($s) == $lower);
-		assertType('bool', $lower == $upper); // should be false
+		assertType('bool', $lower == $upper);
 
 		assertType('false', $arr == $i);
 		assertType('false', $nonEmptyArr == $i);
@@ -748,6 +741,14 @@ class HelloWorld
 		assertType('false', $nonEmptyArr == $emptyArr);
 		assertType('bool', $arr == $nonEmptyArr);
 		assertType('bool', $nonEmptyArr == $arr);
+
+		assertType('bool', '' == $lower);
+		if ($lower != '') {
+			assertType('false', '' == $lower);
+		}
+		if ($upper != '') {
+			assertType('false', '' == $upper);
+		}
 	}
 
 }

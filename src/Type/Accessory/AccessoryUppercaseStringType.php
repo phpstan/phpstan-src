@@ -327,7 +327,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isString()->yes() && $type->isUppercaseString()->no()) {
+		if (
+			$type->isString()->yes()
+			&& $type->isUppercaseString()->no()
+			&& ($type->isNumericString()->no() || $this->isNumericString()->no())
+		) {
 			return new ConstantBooleanType(false);
 		}
 

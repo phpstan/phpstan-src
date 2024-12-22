@@ -327,7 +327,11 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($type->isString()->yes() && $type->isLowercaseString()->no()) {
+		if (
+			$type->isString()->yes()
+			&& $type->isLowercaseString()->no()
+			&& ($type->isNumericString()->no() || $this->isNumericString()->no())
+		) {
 			return new ConstantBooleanType(false);
 		}
 

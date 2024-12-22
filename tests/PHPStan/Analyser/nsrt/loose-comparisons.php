@@ -716,11 +716,16 @@ class HelloWorld
 		int $intRange,
 	): void
 	{
+		// https://3v4l.org/q8OP2
+		assertType('true', '1e2' == '1E2');
+		assertType('false', '1e2' === '1E2');
+
 		assertType('bool', '' == $upper);
 		assertType('bool', '0' == $upper);
 		assertType('false', 'a' == $upper);
 		assertType('false', 'abc' == $upper);
 		assertType('false', 'aBc' == $upper);
+		assertType('bool', '1e2' == $upper);
 		assertType('bool', strtoupper($s) == $upper);
 		assertType('bool', strtolower($s) == $upper);
 		assertType('bool', $upper == $lower);
@@ -729,6 +734,7 @@ class HelloWorld
 		assertType('false', 'A' == $lower);
 		assertType('false', 'ABC' == $lower);
 		assertType('false', 'AbC' == $lower);
+		assertType('bool', '1E2' == $lower);
 		assertType('bool', strtoupper($s) == $lower);
 		assertType('bool', strtolower($s) == $lower);
 		assertType('bool', $lower == $upper);

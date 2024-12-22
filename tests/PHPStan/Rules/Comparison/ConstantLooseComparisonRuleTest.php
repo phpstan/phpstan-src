@@ -225,4 +225,15 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11694.php'], $expectedErrors);
 	}
 
+	public function testBug8800(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8800.php'], [
+			[
+				'Loose comparison using == between 0|1|false and 2 will always evaluate to false.',
+				9,
+			],
+		]);
+	}
+
 }

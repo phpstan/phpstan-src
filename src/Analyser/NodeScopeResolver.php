@@ -6543,7 +6543,12 @@ final class NodeScopeResolver
 	private function getNextUnreachableStatements(array $nodes, bool $earlyBinding): array
 	{
 		$stmts = [];
+		$isPassedUnreachableStatement = false;
 		foreach ($nodes as $node) {
+			if ($isPassedUnreachableStatement) {
+				$stmts[] = $node;
+				continue;
+			}
 			if ($node instanceof Node\Stmt\Nop) {
 				continue;
 			}
@@ -6554,6 +6559,7 @@ final class NodeScopeResolver
 				continue;
 			}
 			$stmts[] = $node;
+			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
 	}

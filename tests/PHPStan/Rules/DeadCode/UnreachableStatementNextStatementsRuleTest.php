@@ -37,7 +37,7 @@ class UnreachableStatementNextStatementsRuleTest extends RuleTestCase
 				$totalNextStatements = count($node->getNextStatements());
 
 				return [
-					RuleErrorBuilder::message(sprintf('It has %d over first unreachable statements', $totalNextStatements))
+					RuleErrorBuilder::message(sprintf('It has %d stmts over first unreachable statements', $totalNextStatements))
 						->identifier('tests.total.next.unreachable.statement')
 						->build(),
 				];
@@ -50,7 +50,7 @@ class UnreachableStatementNextStatementsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/multiple_unreachable.php'], [
 			[
-				'It has 2 over first unreachable statements',
+				'It has 3 stmts over first unreachable statements',
 				14,
 			],
 		]);

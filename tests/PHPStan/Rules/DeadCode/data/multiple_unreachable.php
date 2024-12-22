@@ -13,5 +13,11 @@ function foo($foo)
 
     echo 'statement 1';
     echo 'statement 2';
-    echo 'statement 3';
+
+    function innerFunction()
+    {
+        echo 'statement 3';
+    }
+
+    echo innerFunction();
 }

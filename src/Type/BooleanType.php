@@ -163,4 +163,16 @@ class BooleanType implements Type
 		return new IdentifierTypeNode('bool');
 	}
 
+	public function toTrinaryLogic(): TrinaryLogic
+	{
+		if ($this->isTrue()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+		if ($this->isFalse()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 }

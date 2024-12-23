@@ -47,18 +47,6 @@ final class TrinaryLogic
 		return self::$registry[$yesNo] ??= new self($yesNo);
 	}
 
-	public static function createFromBooleanType(BooleanType $type): self
-	{
-		if ($type->isTrue()->yes()) {
-			return self::createYes();
-		}
-		if ($type->isFalse()->yes()) {
-			return self::createNo();
-		}
-
-		return self::createMaybe();
-	}
-
 	private static function create(int $value): self
 	{
 		self::$registry[$value] ??= new self($value);

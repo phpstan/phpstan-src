@@ -4794,7 +4794,19 @@ final class NodeScopeResolver
 			if (!$hookReflection instanceof PhpMethodFromParserNodeReflection) {
 				throw new ShouldNotHappenException();
 			}
-			$nodeCallback(new InPropertyHookNode($classReflection, $hookReflection, $hook), $hookScope);
+
+			if (!$classReflection->hasNativeProperty($propertyName)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$propertyReflection = $classReflection->getNativeProperty($propertyName);
+
+			$nodeCallback(new InPropertyHookNode(
+				$classReflection,
+				$hookReflection,
+				$propertyReflection,
+				$hook,
+			), $hookScope);
 
 			if ($hook->body instanceof Expr) {
 				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
@@ -4840,6 +4852,7 @@ final class NodeScopeResolver
 					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
 					$classReflection,
 					$hookReflection,
+					$propertyReflection,
 				), $hookScope);
 			}
 

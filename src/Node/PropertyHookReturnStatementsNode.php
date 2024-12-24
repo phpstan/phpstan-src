@@ -8,6 +8,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Reflection\Php\PhpPropertyReflection;
 
 /**
  * @api
@@ -28,6 +29,7 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 		private array $impurePoints,
 		private ClassReflection $classReflection,
 		private PhpMethodFromParserNodeReflection $hookReflection,
+		private PhpPropertyReflection $propertyReflection,
 	)
 	{
 		parent::__construct($hook->getAttributes());
@@ -86,6 +88,11 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 	public function getHookReflection(): PhpMethodFromParserNodeReflection
 	{
 		return $this->hookReflection;
+	}
+
+	public function getPropertyReflection(): PhpPropertyReflection
+	{
+		return $this->propertyReflection;
 	}
 
 	public function getType(): string

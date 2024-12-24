@@ -37,11 +37,7 @@ final class SetNonVirtualPropertyHookAssignRule implements Rule
 
 		$propertyName = $hookReflection->getHookedPropertyName();
 		$classReflection = $node->getClassReflection();
-		if (!$classReflection->hasNativeProperty($propertyName)) {
-			throw new ShouldNotHappenException();
-		}
-
-		$propertyReflection = $classReflection->getNativeProperty($propertyName);
+		$propertyReflection = $node->getPropertyReflection();
 		if ($propertyReflection->isVirtual()->yes()) {
 			return [];
 		}

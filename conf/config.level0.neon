@@ -213,6 +213,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Properties\SetPropertyHookParameterRule
+		arguments:
+			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule
 
 	-

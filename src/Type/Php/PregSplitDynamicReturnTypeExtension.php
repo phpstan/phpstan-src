@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -92,29 +93,49 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				$stringType = new StringType();
 			}
 
-			if ($flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE')->yes()) {
-				$type = new ArrayType(
-					new IntegerType(),
-					new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [$stringType, IntegerRangeType::fromInterval(0, null)], [2], [], TrinaryLogic::createYes()),
-				);
-				return TypeUtils::toBenevolentUnion(
-					TypeCombinator::union(
-						TypeCombinator::intersect($type, new AccessoryArrayListType()),
-						new ConstantBooleanType(false)
-					)
+			$capturedArrayType = new ConstantArrayType(
+				[
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1)], [$stringType, IntegerRangeType::fromInterval(0, null)
+				],
+				[2],
+				[],
+				TrinaryLogic::createYes()
+			);
+			$valueType = $stringType;
+			if ($flagArg !== null) {
+				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
+				if ($flagState->yes()) {
+					return TypeUtils::toBenevolentUnion(
+						TypeCombinator::union(
+							TypeCombinator::intersect(
+								new ArrayType(new IntegerType(), $capturedArrayType),
+								new AccessoryArrayListType()
+							),
+							new ConstantBooleanType(false)
+						)
+					);
+				}
+				if ($flagState->maybe()) {
+					$valueType = TypeCombinator::union(new StringType(), $capturedArrayType);
+				}
+			}
+
+			$arrayType = TypeCombinator::intersect(new ArrayType(new MixedType(), $valueType), new AccessoryArrayListType());
+			if ($subjectType->isNonEmptyString()->yes()) {
+				$arrayType = TypeCombinator::intersect(
+					$arrayType,
+					new NonEmptyArrayType(),
+					new AccessoryArrayListType(),
 				);
 			}
 
-			if ($flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes()) {
-				return TypeUtils::toBenevolentUnion(
-					TypeCombinator::union(
-						TypeCombinator::intersect(new ArrayType(new MixedType(), $stringType), new AccessoryArrayListType()),
-						new ConstantBooleanType(false)
-					)
-				);
-			}
-
-			return null;
+			return TypeUtils::toBenevolentUnion(
+				TypeCombinator::union(
+					$arrayType,
+					new ConstantBooleanType(false)
+				)
+			);
 		}
 
 		$resultTypes = [];

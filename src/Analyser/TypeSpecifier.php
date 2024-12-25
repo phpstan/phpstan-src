@@ -1071,10 +1071,10 @@ final class TypeSpecifier
 			}
 
 			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($type->getArraySize());
-			if ($context->truthy() && $isSizeSuperTypeOfArraySize->no()) {
+			if ($isSizeSuperTypeOfArraySize->no()) {
 				return new NeverType();
 			}
-			if ($context->falsey() && !$isSizeSuperTypeOfArraySize->yes()) {
+			if ($context->falsey() && $isSizeSuperTypeOfArraySize->maybe()) {
 				return new NeverType();
 			}
 
@@ -1123,10 +1123,10 @@ final class TypeSpecifier
 					return $valueTypesBuilder->getArray();
 				}
 
-				return $type;
+				return $context->truthy() ? $type : new NeverType();
 			}
 
-			return TypeCombinator::intersect($type, new NonEmptyArrayType());
+			return $context->truthy() ? TypeCombinator::intersect($type, new NonEmptyArrayType()) : new NeverType();
 		});
 
 		return $this->create($countFuncCall->getArgs()[0]->value, $resultType, $context, $scope)->setRootExpr($rootExpr);

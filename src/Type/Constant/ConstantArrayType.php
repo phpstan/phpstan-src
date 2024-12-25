@@ -418,9 +418,25 @@ class ConstantArrayType implements Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($this->isIterableAtLeastOnce()->no() && count($type->getConstantScalarValues()) === 1) {
-			// @phpstan-ignore equal.invalid, equal.notAllowed
-			return new ConstantBooleanType($type->getConstantScalarValues()[0] == []); // phpcs:ignore
+		if ($type->isInteger()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
+		if ($this->isIterableAtLeastOnce()->no()) {
+			if ($type->isIterableAtLeastOnce()->yes()) {
+				return new ConstantBooleanType(false);
+			}
+
+			$constantScalarValues = $type->getConstantScalarValues();
+			if (count($constantScalarValues) > 0) {
+				$results = [];
+				foreach ($constantScalarValues as $constantScalarValue) {
+					// @phpstan-ignore equal.invalid, equal.notAllowed
+					$results[] = TrinaryLogic::createFromBoolean($constantScalarValue == []); // phpcs:ignore
+				}
+
+				return TrinaryLogic::extremeIdentity(...$results)->toBooleanType();
+			}
 		}
 
 		return new BooleanType();

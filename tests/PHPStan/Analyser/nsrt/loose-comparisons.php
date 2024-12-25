@@ -729,6 +729,8 @@ class HelloWorld
 		array $array,
 		int $int,
 		int $intRange,
+		string $emptyStr,
+		string $phpStr,
 	): void
 	{
 		assertType('bool', $int == $true);
@@ -747,6 +749,20 @@ class HelloWorld
 		assertType('false', $intRange == $emptyArr);
 		assertType('false', $intRange == $array);
 
+		assertType('false', 5 == $emptyArr);
+		assertType('false', $emptyArr == 5);
+		assertType('false', 5 == $array);
+		assertType('false', $array == 5);
+		assertType('false', [] == 5);
+		assertType('false', 5 == []);
+
+		assertType('false', 5 == $emptyStr);
+		assertType('false', 5 == $phpStr);
+		assertType('false', 5 == 'a');
+
+		assertType('false', $emptyStr == 5);
+		assertType('false', $phpStr == 5);
+		assertType('false', 'a' == 5);
 	}
 
 	/**
@@ -754,12 +770,16 @@ class HelloWorld
 	 * @param false|0|"0" $looseZero
 	 * @param false|1 $constMix
 	 * @param "abc"|"def" $constNonFalsy
+	 * @param array{abc: string, num?: int, nullable: ?string} $arrShape
+	 * @param array{} $emptyArr
 	 */
 	public function sayConstUnion(
 		$looseOne,
 		$looseZero,
 		$constMix,
 		$constNonFalsy,
+		array $arrShape,
+		array $emptyArr
 	): void
 	{
 		assertType('true', $looseOne == 1);
@@ -802,6 +822,14 @@ class HelloWorld
 		assertType('false', $constNonFalsy == "1");
 		assertType('false', $constNonFalsy == "0");
 		assertType('false', $constNonFalsy == []);
+
+		assertType('false', $emptyArr == $looseOne);
+		assertType('bool', $emptyArr == $constMix);
+		assertType('bool', $emptyArr == $looseZero);
+
+		assertType('bool', $arrShape == $looseOne);
+		assertType('bool', $arrShape == $constMix);
+		assertType('bool', $arrShape == $looseZero);
 	}
 
 	/**
@@ -809,6 +837,7 @@ class HelloWorld
 	 * @param lowercase-string $lower
 	 * @param array{} $emptyArr
 	 * @param non-empty-array $nonEmptyArr
+	 * @param array{abc: string, num?: int, nullable: ?string} $arrShape
 	 * @param int<10, 20> $intRange
 	 */
 	public function sayIntersection(
@@ -818,6 +847,7 @@ class HelloWorld
 		array $emptyArr,
 		array $nonEmptyArr,
 		array $arr,
+		array $arrShape,
 		int $i,
 		int $intRange,
 	): void
@@ -849,10 +879,23 @@ class HelloWorld
 		assertType('false', $nonEmptyArr == $i);
 		assertType('false', $arr == $intRange);
 		assertType('false', $nonEmptyArr == $intRange);
-		assertType('bool', $emptyArr == $nonEmptyArr); // should be false
+		assertType('false', $emptyArr == $nonEmptyArr);
 		assertType('false', $nonEmptyArr == $emptyArr);
 		assertType('bool', $arr == $nonEmptyArr);
 		assertType('bool', $nonEmptyArr == $arr);
+
+		assertType('false', 5 == $arr);
+		assertType('false', $arr == 5);
+		assertType('false', 5 == $emptyArr);
+		assertType('false', $emptyArr == 5);
+		assertType('false', 5 == $nonEmptyArr);
+		assertType('false', $nonEmptyArr == 5);
+		assertType('false', 5 == $arrShape);
+		assertType('false', $arrShape == 5);
+		if (count($arr) > 0) {
+			assertType('false', 5 == $arr);
+			assertType('false', $arr == 5);
+		}
 
 		assertType('bool', '' == $lower);
 		if ($lower != '') {

@@ -9081,7 +9081,7 @@ return [
 'preg_replace' => ['string|array|null', 'regex'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
-'preg_split' => ['list<string>|false', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'?int', 'flags='=>'int'],
+'preg_split' => ['__benevolent<list<string>|list<array{string, int<0, max>}>|false>', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'?int', 'flags='=>'int'],
 'prev' => ['mixed', '&rw_array_arg'=>'array|object'],
 'print_r' => ['string|true', 'var'=>'mixed', 'return='=>'bool'],
 'printf' => ['int', 'format'=>'string', '...values='=>'__stringAndStringable|int|float|null|bool'],

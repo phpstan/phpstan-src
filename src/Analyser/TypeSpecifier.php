@@ -272,7 +272,6 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				$sizeType = null;
 				if ($leftType instanceof ConstantIntegerType) {
 					if ($orEqual) {
 						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
@@ -281,6 +280,8 @@ final class TypeSpecifier
 					}
 				} elseif ($leftType instanceof IntegerRangeType) {
 					$sizeType = $leftType->shift($offset);
+				} else {
+					$sizeType = $leftType;
 				}
 
 				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
@@ -1044,103 +1045,91 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
-	private function specifyTypesForCountFuncCall(FuncCall $countFuncCall, Type $type, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function specifyTypesForCountFuncCall(
+		FuncCall $countFuncCall,
+		Type $type,
+		Type $sizeType,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
 	{
-		if ($sizeType === null) {
+		if (count($countFuncCall->getArgs()) === 1) {
+			$isNormalCount = TrinaryLogic::createYes();
+		} else {
+			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($type->getIterableValueType()->isArray()->negate());
+		}
+
+		if (!$isNormalCount->yes() || (!$type->isConstantArray()->yes() && !$type->isList()->yes())) {
 			return null;
 		}
 
-		if (
-			$this->isFuncCallWithNormalCount($countFuncCall, $scope)->yes()
-			&& $type->isConstantArray()->yes()
-		) {
-			$resultType = TypeTraverser::map($type, function (Type $type, callable $traverse) use ($sizeType, $context) {
-				if ($type instanceof UnionType) {
-					return $traverse($type);
-				}
-
-				$arraySize = $type->getArraySize();
-				$isSize = $sizeType->isSuperTypeOf($arraySize);
-				if ($context->truthy() && $isSize->no()) {
-					return new NeverType();
-				}
-				if ($context->falsey() && !$isSize->yes()) {
-					return new NeverType();
-				}
-
-				return $this->turnListIntoConstantArray($type, $sizeType) ?? $type;
-			});
-
-			return $this->create($countFuncCall->getArgs()[0]->value, $resultType, $context, $scope)->setRootExpr($rootExpr);
-		}
-
-		return null;
-	}
-
-	private function turnListIntoConstantArray(Type $type, Type $sizeType): ?Type
-	{
-		if (
-			$type->isList()->yes()
-			&& $sizeType instanceof ConstantIntegerType
-			&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-		) {
-			// turn optional offsets non-optional
-			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-			for ($i = 0; $i < $sizeType->getValue(); $i++) {
-				$offsetType = new ConstantIntegerType($i);
-				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+		$resultType = TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($sizeType, $context) {
+			if ($type instanceof UnionType) {
+				return $traverse($type);
 			}
-			return $valueTypesBuilder->getArray();
-		}
 
-		if (
-			$type->isList()->yes()
-			&& $sizeType instanceof IntegerRangeType
-			&& $sizeType->getMin() !== null
-		) {
-			// turn optional offsets non-optional
-			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-			for ($i = 0; $i < $sizeType->getMin(); $i++) {
-				$offsetType = new ConstantIntegerType($i);
-				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($type->getArraySize());
+			if ($context->truthy() && $isSizeSuperTypeOfArraySize->no()) {
+				return new NeverType();
 			}
-			if ($sizeType->getMax() !== null) {
-				for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
-					$offsetType = new ConstantIntegerType($i);
-					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
-				}
-			} elseif ($type->isConstantArray()->yes()) {
-				for ($i = $sizeType->getMin();; $i++) {
-					$offsetType = new ConstantIntegerType($i);
-					$hasOffset = $type->hasOffsetValueType($offsetType);
-					if ($hasOffset->no()) {
-						break;
+			if ($context->falsey() && !$isSizeSuperTypeOfArraySize->yes()) {
+				return new NeverType();
+			}
+
+			if ($type->isList()->yes()) {
+				if (
+					$sizeType instanceof ConstantIntegerType
+					&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				) {
+					// turn optional offsets non-optional
+					$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+					for ($i = 0; $i < $sizeType->getValue(); $i++) {
+						$offsetType = new ConstantIntegerType($i);
+						$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
 					}
-					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
+					return $valueTypesBuilder->getArray();
 				}
-			} else {
-				return null;
+
+				if (
+					$sizeType instanceof IntegerRangeType
+					&& $sizeType->getMin() !== null
+				) {
+					// turn optional offsets non-optional
+					$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+					for ($i = 0; $i < $sizeType->getMin(); $i++) {
+						$offsetType = new ConstantIntegerType($i);
+						$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+					}
+					if ($sizeType->getMax() !== null) {
+						for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
+							$offsetType = new ConstantIntegerType($i);
+							$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
+						}
+					} elseif ($type->isConstantArray()->yes()) {
+						for ($i = $sizeType->getMin();; $i++) {
+							$offsetType = new ConstantIntegerType($i);
+							$hasOffset = $type->hasOffsetValueType($offsetType);
+							if ($hasOffset->no()) {
+								break;
+							}
+							$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
+						}
+					} else {
+						return TypeCombinator::intersect($type, new NonEmptyArrayType());
+					}
+
+					return $valueTypesBuilder->getArray();
+				}
+
+				return $type;
 			}
 
-			$arrayType = $valueTypesBuilder->getArray();
-			if ($arrayType->isIterableAtLeastOnce()->yes()) {
-				return $arrayType;
-			}
-		}
+			return TypeCombinator::intersect($type, new NonEmptyArrayType());
+		});
 
-		return null;
-	}
-
-	private function isFuncCallWithNormalCount(FuncCall $countFuncCall, Scope $scope): TrinaryLogic
-	{
-		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
-
-		if (count($countFuncCall->getArgs()) === 1) {
-			return TrinaryLogic::createYes();
-		}
-		$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-
-		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
+		return $this->create($countFuncCall->getArgs()[0]->value, $resultType, $context, $scope)->setRootExpr($rootExpr);
 	}
 
 	private function specifyTypesForConstantBinaryExpression(
@@ -2177,30 +2166,15 @@ final class TypeSpecifier
 				return $specifiedTypes;
 			}
 
-			if ($context->truthy()) {
-				if ($argType->isArray()->yes()) {
-					if (
-						$argType->isConstantArray()->yes()
-						&& $rightType->isSuperTypeOf($argType->getArraySize())->no()
-					) {
-						return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, $scope)->setRootExpr($expr);
-					}
-
-					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
-					$isNormalCount = $this->isFuncCallWithNormalCount($unwrappedLeftExpr, $scope);
-					$constArray = $isNormalCount->yes() ? $this->turnListIntoConstantArray($argType, $rightType) : null;
-					if ($constArray !== null) {
-						return $funcTypes->unionWith(
-							$this->create($unwrappedLeftExpr->getArgs()[0]->value, $constArray, $context, $scope)->setRootExpr($expr),
-						);
-					} elseif (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
-						return $funcTypes->unionWith(
-							$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
-						);
-					}
-
-					return $funcTypes;
+			if ($context->truthy() && $argType->isArray()->yes()) {
+				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
+					return $funcTypes->unionWith(
+						$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
+					);
 				}
+
+				return $funcTypes;
 			}
 		}
 

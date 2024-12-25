@@ -11,6 +11,7 @@ class HelloWorld
 		assertType('*ERROR*', preg_split('/[0-9a]', '1-2-3'));
 		assertType("array{''}", preg_split('/-/', ''));
 		assertType("array{}", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY));
+		assertType("array{'1', '-', '2', '-', '3'}", preg_split('/ *(-) */', '1- 2-3', -1, PREG_SPLIT_DELIM_CAPTURE));
 		assertType("array{array{'', 0}}", preg_split('/-/', '', -1, PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("array{}", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3'));
@@ -39,6 +40,8 @@ class HelloWorld
 		assertType('(list<array{string, int<0, max>}|string>|false)', preg_split($pattern, $subject, -1, $flags));
 		assertType('(list<non-empty-string>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_NO_EMPTY));
 		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("(list<string>|false)", preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE));
+		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
 	}
 
 	/**

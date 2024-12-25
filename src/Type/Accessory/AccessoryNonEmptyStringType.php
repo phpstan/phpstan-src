@@ -323,9 +323,14 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($type->isNull()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+
 		if ($type->isString()->yes() && $type->isNonEmptyString()->no()) {
 			return new ConstantBooleanType(false);
 		}
+
 		return new BooleanType();
 	}
 

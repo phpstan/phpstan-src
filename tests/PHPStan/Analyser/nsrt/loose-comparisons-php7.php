@@ -61,4 +61,15 @@ class HelloWorld
 		assertType('bool', $int == $phpStr);
 		assertType('bool', $int == 'a');
 	}
+
+	/**
+	 * @param "abc"|"def" $constNonFalsy
+	 */
+	public function sayConstUnion(
+		$constNonFalsy,
+	): void
+	{
+		assertType('true', $constNonFalsy == 0);
+		assertType('true', "" == 0);
+	}
 }

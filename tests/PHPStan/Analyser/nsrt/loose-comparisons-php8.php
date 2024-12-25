@@ -68,4 +68,15 @@ class HelloWorld
 		assertType('false', $intRange == 'a');
 	}
 
+	/**
+	 * @param "abc"|"def" $constNonFalsy
+	 */
+	public function sayConstUnion(
+		$constNonFalsy,
+	): void
+	{
+		assertType('false', $constNonFalsy == 0);
+		assertType('false', "" == 0);
+	}
+
 }

@@ -526,6 +526,7 @@ class HelloWorld
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
+	 * @param non-falsy-string $nonFalsyString
 	 */
 	public function sayNonFalsyStr(
 		$true,
@@ -540,7 +541,8 @@ class HelloWorld
 		$null,
 		$emptyArr,
 		$phpStr,
-		$emptyStr
+		$emptyStr,
+		$nonFalsyString
 	): void
 	{
 		assertType('true', $phpStr == $true);
@@ -555,6 +557,100 @@ class HelloWorld
 		assertType('false', $phpStr == $emptyArr);
 		assertType('true', $phpStr == $phpStr);
 		assertType('false', $phpStr == $emptyStr);
+
+		assertType('bool', $nonFalsyString == $true);
+		assertType('false', $nonFalsyString == $false);
+		assertType('bool', $nonFalsyString == $one);
+		assertType('false', $nonFalsyString == $zero);
+		assertType('bool', $nonFalsyString == $minusOne);
+		assertType('bool', $nonFalsyString == $oneStr);
+		assertType('false', $nonFalsyString == $zeroStr);
+		assertType('bool', $nonFalsyString == $minusOneStr);
+		assertType('bool', $nonFalsyString == $plusOneStr);
+		assertType('false', $nonFalsyString == $null);
+		assertType('false', $nonFalsyString == $emptyArr);
+		assertType('bool', $nonFalsyString == $phpStr);
+		assertType('false', $nonFalsyString == $emptyStr);
+	}
+
+	/**
+	 * @param true $true
+	 * @param false $false
+	 * @param 1 $one
+	 * @param 0 $zero
+	 * @param -1 $minusOne
+	 * @param '1' $oneStr
+	 * @param '0' $zeroStr
+	 * @param '-1' $minusOneStr
+	 * @param '+1' $plusOneStr
+	 * @param null $null
+	 * @param array{} $emptyArr
+	 * @param 'php' $phpStr
+	 * @param '' $emptyStr
+	 * @param numeric-string $numericStr
+	 */
+	public function sayStr(
+		$true,
+		$false,
+		$one,
+		$zero,
+		$minusOne,
+		$oneStr,
+		$zeroStr,
+		$minusOneStr,
+		$plusOneStr,
+		$null,
+		$emptyArr,
+		string $string,
+		$phpStr,
+		$emptyStr,
+		$numericStr,
+		?string $stringOrNull,
+	): void
+	{
+		assertType('bool', $string == $true);
+		assertType('bool', $string == $false);
+		assertType('bool', $string == $one);
+		assertType('bool', $string == $zero);
+		assertType('bool', $string == $minusOne);
+		assertType('bool', $string == $oneStr);
+		assertType('bool', $string == $zeroStr);
+		assertType('bool', $string == $minusOneStr);
+		assertType('bool', $string == $plusOneStr);
+		assertType('bool', $string == $null);
+		assertType('bool', $string == $stringOrNull);
+		assertType('false', $string == $emptyArr);
+		assertType('bool', $string == $phpStr);
+		assertType('bool', $string == $emptyStr);
+		assertType('bool', $string == $numericStr);
+
+		assertType('bool', $numericStr == $true);
+		assertType('bool', $numericStr == $false);
+		assertType('bool', $numericStr == $one);
+		assertType('bool', $numericStr == $zero);
+		assertType('bool', $numericStr == $minusOne);
+		assertType('bool', $numericStr == $oneStr);
+		assertType('bool', $numericStr == $zeroStr);
+		assertType('bool', $numericStr == $minusOneStr);
+		assertType('bool', $numericStr == $plusOneStr);
+		assertType('false', $numericStr == $null);
+		assertType('bool', $numericStr == $stringOrNull);
+		assertType('false', $numericStr == $emptyArr);
+		assertType('bool', $numericStr == $string);
+		assertType('false', $numericStr == $phpStr);
+		assertType('false', $numericStr == $emptyStr);
+		if (is_numeric($string)) {
+			assertType('bool', $numericStr == $string);
+		}
+
+		assertType('false', "" == 1);
+		assertType('true', "" == null);
+		assertType('false', "" == true);
+		assertType('true', "" == false);
+		assertType('false', "" == "1");
+		assertType('false', "" == "0");
+		assertType('false', "" == "-1");
+		assertType('false', "" == []);
 	}
 
 	/**
@@ -657,11 +753,13 @@ class HelloWorld
 	 * @param true|1|"1" $looseOne
 	 * @param false|0|"0" $looseZero
 	 * @param false|1 $constMix
+	 * @param "abc"|"def" $constNonFalsy
 	 */
 	public function sayConstUnion(
 		$looseOne,
 		$looseZero,
-		$constMix
+		$constMix,
+		$constNonFalsy,
 	): void
 	{
 		assertType('true', $looseOne == 1);
@@ -696,6 +794,14 @@ class HelloWorld
 		assertType('bool', $constMix == $looseOne);
 		assertType('bool', $looseZero == $constMix);
 		assertType('bool', $constMix == $looseZero);
+
+		assertType('false', $constNonFalsy == 1);
+		assertType('false', $constNonFalsy == null);
+		assertType('true', $constNonFalsy == true);
+		assertType('false', $constNonFalsy == false);
+		assertType('false', $constNonFalsy == "1");
+		assertType('false', $constNonFalsy == "0");
+		assertType('false', $constNonFalsy == []);
 	}
 
 	/**

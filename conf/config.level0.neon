@@ -216,6 +216,7 @@ services:
 		class: PHPStan\Rules\Properties\SetPropertyHookParameterRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%
+			checkMissingTypehints: %checkMissingTypehints%
 		tags:
 			- phpstan.rules.rule
 

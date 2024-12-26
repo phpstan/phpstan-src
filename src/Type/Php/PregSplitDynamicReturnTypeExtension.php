@@ -85,55 +85,54 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		if (count($patternConstantTypes) === 0 || count($subjectConstantTypes) === 0) {
 			$returnNonEmptyStrings = $flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes();
 			if ($returnNonEmptyStrings) {
-				$stringType = TypeCombinator::intersect(
+				$returnStringType = TypeCombinator::intersect(
 					new StringType(),
 					new AccessoryNonEmptyStringType()
 				);
 			} else {
-				$stringType = new StringType();
+				$returnStringType = new StringType();
 			}
 
 			$capturedArrayType = new ConstantArrayType(
-				[new ConstantIntegerType(0), new ConstantIntegerType(1)], [$stringType, IntegerRangeType::fromInterval(0, null)],
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)], [$returnStringType, IntegerRangeType::fromInterval(0, null)],
 				[2],
 				[],
 				TrinaryLogic::createYes()
 			);
 
-			$valueType = $stringType;
+			$returnInternalValueType = $returnStringType;
 			if ($flagArg !== null) {
 				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
 				if ($flagState->yes()) {
-					$arrayType = TypeCombinator::intersect(
+					$capturedArrayListType = TypeCombinator::intersect(
 						new ArrayType(new IntegerType(), $capturedArrayType),
 						new AccessoryArrayListType(),
 					);
 
 					if ($subjectType->isNonEmptyString()->yes()) {
-						$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
 					}
 
 					return TypeUtils::toBenevolentUnion(
-						TypeCombinator::union($arrayType, new ConstantBooleanType(false))
+						TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false))
 					);
 				}
 				if ($flagState->maybe()) {
-					$valueType = TypeCombinator::union(new StringType(), $capturedArrayType);
+					$returnInternalValueType = TypeCombinator::union(new StringType(), $capturedArrayType);
 				}
 			}
 
-			$arrayType = TypeCombinator::intersect(new ArrayType(new MixedType(), $valueType), new AccessoryArrayListType());
+			$returnListType = TypeCombinator::intersect(new ArrayType(new MixedType(), $returnInternalValueType), new AccessoryArrayListType());
 			if ($subjectType->isNonEmptyString()->yes()) {
-				$arrayType = TypeCombinator::intersect(
-					$arrayType,
+				$returnListType = TypeCombinator::intersect(
+					$returnListType,
 					new NonEmptyArrayType(),
-					new AccessoryArrayListType(),
 				);
 			}
 
 			return TypeUtils::toBenevolentUnion(
 				TypeCombinator::union(
-					$arrayType,
+					$returnListType,
 					new ConstantBooleanType(false)
 				)
 			);
@@ -153,18 +152,20 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 									$valueConstantArray = ConstantArrayTypeBuilder::createEmpty();
 									$valueConstantArray->setOffsetValueType(new ConstantIntegerType(0), new ConstantStringType($value[0]));
 									$valueConstantArray->setOffsetValueType(new ConstantIntegerType(1), new ConstantIntegerType($value[1]));
-									$valueType = $valueConstantArray->getArray();
+									$returnInternalValueType = $valueConstantArray->getArray();
 								} else {
-									$valueType = new ConstantStringType($value);
+									$returnInternalValueType = new ConstantStringType($value);
 								}
-								$constantArray->setOffsetValueType(new ConstantIntegerType($key), $valueType);
+								$constantArray->setOffsetValueType(new ConstantIntegerType($key), $returnInternalValueType);
 							}
+
 							$resultTypes[] = $constantArray->getArray();
 						}
 					}
 				}
 			}
 		}
+
 		return TypeCombinator::union(...$resultTypes);
 	}
 }

@@ -63,7 +63,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		if (
 			count($patternConstantTypes) > 0
-			&& @preg_match($patternConstantTypes[0]->getValue(), "") === false
+			&& @preg_match($patternConstantTypes[0]->getValue(), '') === false
 		) {
 			return new ErrorType();
 		}

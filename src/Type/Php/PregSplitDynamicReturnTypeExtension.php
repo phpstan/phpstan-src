@@ -98,7 +98,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				[$returnStringType, IntegerRangeType::fromInterval(0, null)],
 				[2],
 				[],
-				TrinaryLogic::createYes()
+				TrinaryLogic::createYes(),
 			);
 
 			$returnInternalValueType = $returnStringType;

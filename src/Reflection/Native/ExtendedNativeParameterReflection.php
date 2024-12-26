@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Native;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 final class ExtendedNativeParameterReflection implements ExtendedParameterReflection
@@ -44,6 +45,11 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function getPhpDocType(): Type
 	{
 		return $this->phpDocType;
+	}
+
+	public function hasNativeType(): bool
+	{
+		return !$this->nativeType instanceof MixedType || $this->nativeType->isExplicitMixed();
 	}
 
 	public function getNativeType(): Type

@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 final class ExtendedDummyParameter extends DummyParameter implements ExtendedParameterReflection
@@ -30,6 +31,11 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 	public function getPhpDocType(): Type
 	{
 		return $this->phpDocType;
+	}
+
+	public function hasNativeType(): bool
+	{
+		return !$this->nativeType instanceof MixedType || $this->nativeType->isExplicitMixed();
 	}
 
 	public function getNativeType(): Type

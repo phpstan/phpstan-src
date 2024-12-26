@@ -11,6 +11,8 @@ interface ExtendedParameterReflection extends ParameterReflection
 
 	public function getPhpDocType(): Type;
 
+	public function hasNativeType(): bool;
+
 	public function getNativeType(): Type;
 
 	public function getOutType(): ?Type;

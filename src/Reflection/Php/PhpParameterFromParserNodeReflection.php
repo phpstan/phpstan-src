@@ -63,6 +63,11 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 		return $this->phpDocType ?? new MixedType();
 	}
 
+	public function hasNativeType(): bool
+	{
+		return !$this->realType instanceof MixedType || $this->realType->isExplicitMixed();
+	}
+
 	public function getNativeType(): Type
 	{
 		return $this->realType;

@@ -92,6 +92,11 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 		return new MixedType();
 	}
 
+	public function hasNativeType(): bool
+	{
+		return $this->reflection->getType() !== null;
+	}
+
 	public function getNativeType(): Type
 	{
 		if ($this->nativeType === null) {

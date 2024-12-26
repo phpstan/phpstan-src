@@ -35,6 +35,11 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 		return $this->type;
 	}
 
+	public function hasNativeType(): bool
+	{
+		return false;
+	}
+
 	public function getNativeType(): Type
 	{
 		return new MixedType();

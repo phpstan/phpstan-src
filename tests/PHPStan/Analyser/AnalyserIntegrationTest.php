@@ -13,7 +13,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function extension_loaded;
 use function restore_error_handler;
-use function sprintf;
 use const PHP_VERSION_ID;
 
 class AnalyserIntegrationTest extends PHPStanTestCase

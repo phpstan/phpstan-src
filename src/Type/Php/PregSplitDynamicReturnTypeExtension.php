@@ -68,19 +68,32 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return new ErrorType();
 		}
 
+		$limits = [];
 		if ($limitArg === null) {
 			$limits = [-1];
 		} else {
 			$limitType = $scope->getType($limitArg->value);
-			$limits = $limitType->getConstantScalarValues();
+			foreach ($limitType->getConstantScalarValues() as $limit) {
+				if (!is_int($limit)) {
+					return new ErrorType();
+				}
+				$limits[] = $limit;
+			}
 		}
 
+		$flags = [];
 		if ($flagArg === null) {
 			$flags = [0];
 		} else {
 			$flagType = $scope->getType($flagArg->value);
-			$flags = $flagType->getConstantScalarValues();
+			foreach ($flagType->getConstantScalarValues() as $flag) {
+				if (!is_int($flag)) {
+					return new ErrorType();
+				}
+				$flags[] = $flag;
+			}
 		}
+
 
 		if (count($patternConstantTypes) === 0 || count($subjectConstantTypes) === 0) {
 			$returnNonEmptyStrings = $flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes();
@@ -136,13 +149,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($patternConstantTypes as $patternConstantType) {
 			foreach ($subjectConstantTypes as $subjectConstantType) {
 				foreach ($limits as $limit) {
-					if (!is_int($limit)) {
-						return null;
-					}
 					foreach ($flags as $flag) {
-						if (!is_int($flag)) {
-							return null;
-						}
 						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), $limit, $flag);
 						if ($result === false) {
 							continue;

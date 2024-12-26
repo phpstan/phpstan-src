@@ -142,12 +142,17 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($patternConstantTypes as $patternConstantType) {
 			foreach ($subjectConstantTypes as $subjectConstantType) {
 				foreach ($limits as $limit) {
+					if (!is_int($limit)) {
+						return null;
+					}
 					foreach ($flags as $flag) {
+						if (!is_int($flag)) {
+							return null;
+						}
 						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), $limit, $flag);
 						if ($result !== false) {
 							$constantArray = ConstantArrayTypeBuilder::createEmpty();
 							foreach ($result as $key => $value) {
-								assert(is_int($key));
 								if (is_array($value)) {
 									$valueConstantArray = ConstantArrayTypeBuilder::createEmpty();
 									$valueConstantArray->setOffsetValueType(new ConstantIntegerType(0), new ConstantStringType($value[0]));

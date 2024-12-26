@@ -104,28 +104,18 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			if ($flagArg !== null) {
 				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
 				if ($flagState->yes()) {
+					$arrayType = TypeCombinator::intersect(
+						new ArrayType(new IntegerType(), $capturedArrayType),
+						new AccessoryArrayListType(),
+					);
+
 					if ($subjectType->isNonEmptyString()->yes()) {
-						return TypeUtils::toBenevolentUnion(
-							TypeCombinator::union(
-								TypeCombinator::intersect(
-									new ArrayType(new IntegerType(), $capturedArrayType),
-									new NonEmptyArrayType(),
-									new AccessoryArrayListType(),
-								),
-								new ConstantBooleanType(false)
-							)
-						);
-					} else {
-						return TypeUtils::toBenevolentUnion(
-							TypeCombinator::union(
-								TypeCombinator::intersect(
-									new ArrayType(new IntegerType(), $capturedArrayType),
-									new AccessoryArrayListType(),
-								),
-								new ConstantBooleanType(false)
-							)
-						);
+						$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 					}
+
+					return TypeUtils::toBenevolentUnion(
+						TypeCombinator::union($arrayType, new ConstantBooleanType(false))
+					);
 				}
 				if ($flagState->maybe()) {
 					$valueType = TypeCombinator::union(new StringType(), $capturedArrayType);

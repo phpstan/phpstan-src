@@ -94,27 +94,38 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 
 			$capturedArrayType = new ConstantArrayType(
-				[
-					new ConstantIntegerType(0),
-					new ConstantIntegerType(1)], [$stringType, IntegerRangeType::fromInterval(0, null)
-				],
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)], [$stringType, IntegerRangeType::fromInterval(0, null)],
 				[2],
 				[],
 				TrinaryLogic::createYes()
 			);
+
 			$valueType = $stringType;
 			if ($flagArg !== null) {
 				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
 				if ($flagState->yes()) {
-					return TypeUtils::toBenevolentUnion(
-						TypeCombinator::union(
-							TypeCombinator::intersect(
-								new ArrayType(new IntegerType(), $capturedArrayType),
-								new AccessoryArrayListType()
-							),
-							new ConstantBooleanType(false)
-						)
-					);
+					if ($subjectType->isNonEmptyString()->yes()) {
+						return TypeUtils::toBenevolentUnion(
+							TypeCombinator::union(
+								TypeCombinator::intersect(
+									new ArrayType(new IntegerType(), $capturedArrayType),
+									new NonEmptyArrayType(),
+									new AccessoryArrayListType(),
+								),
+								new ConstantBooleanType(false)
+							)
+						);
+					} else {
+						return TypeUtils::toBenevolentUnion(
+							TypeCombinator::union(
+								TypeCombinator::intersect(
+									new ArrayType(new IntegerType(), $capturedArrayType),
+									new AccessoryArrayListType(),
+								),
+								new ConstantBooleanType(false)
+							)
+						);
+					}
 				}
 				if ($flagState->maybe()) {
 					$valueType = TypeCombinator::union(new StringType(), $capturedArrayType);

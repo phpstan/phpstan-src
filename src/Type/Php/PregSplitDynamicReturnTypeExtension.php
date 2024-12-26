@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Type\Php;
 
@@ -87,14 +87,15 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			if ($returnNonEmptyStrings) {
 				$returnStringType = TypeCombinator::intersect(
 					new StringType(),
-					new AccessoryNonEmptyStringType()
+					new AccessoryNonEmptyStringType(),
 				);
 			} else {
 				$returnStringType = new StringType();
 			}
 
 			$capturedArrayType = new ConstantArrayType(
-				[new ConstantIntegerType(0), new ConstantIntegerType(1)], [$returnStringType, IntegerRangeType::fromInterval(0, null)],
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[$returnStringType, IntegerRangeType::fromInterval(0, null)],
 				[2],
 				[],
 				TrinaryLogic::createYes()
@@ -113,9 +114,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
 					}
 
-					return TypeUtils::toBenevolentUnion(
-						TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false))
-					);
+					return TypeUtils::toBenevolentUnion(TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false)));
 				}
 				if ($flagState->maybe()) {
 					$returnInternalValueType = TypeCombinator::union(new StringType(), $capturedArrayType);
@@ -130,12 +129,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				);
 			}
 
-			return TypeUtils::toBenevolentUnion(
-				TypeCombinator::union(
-					$returnListType,
-					new ConstantBooleanType(false)
-				)
-			);
+			return TypeUtils::toBenevolentUnion(TypeCombinator::union($returnListType, new ConstantBooleanType(false)));
 		}
 
 		$resultTypes = [];
@@ -150,22 +144,23 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 							return null;
 						}
 						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), $limit, $flag);
-						if ($result !== false) {
-							$constantArray = ConstantArrayTypeBuilder::createEmpty();
-							foreach ($result as $key => $value) {
-								if (is_array($value)) {
-									$valueConstantArray = ConstantArrayTypeBuilder::createEmpty();
-									$valueConstantArray->setOffsetValueType(new ConstantIntegerType(0), new ConstantStringType($value[0]));
-									$valueConstantArray->setOffsetValueType(new ConstantIntegerType(1), new ConstantIntegerType($value[1]));
-									$returnInternalValueType = $valueConstantArray->getArray();
-								} else {
-									$returnInternalValueType = new ConstantStringType($value);
-								}
-								$constantArray->setOffsetValueType(new ConstantIntegerType($key), $returnInternalValueType);
-							}
-
-							$resultTypes[] = $constantArray->getArray();
+						if ($result === false) {
+							continue;
 						}
+						$constantArray = ConstantArrayTypeBuilder::createEmpty();
+						foreach ($result as $key => $value) {
+							if (is_array($value)) {
+								$valueConstantArray = ConstantArrayTypeBuilder::createEmpty();
+								$valueConstantArray->setOffsetValueType(new ConstantIntegerType(0), new ConstantStringType($value[0]));
+								$valueConstantArray->setOffsetValueType(new ConstantIntegerType(1), new ConstantIntegerType($value[1]));
+								$returnInternalValueType = $valueConstantArray->getArray();
+							} else {
+								$returnInternalValueType = new ConstantStringType($value);
+							}
+							$constantArray->setOffsetValueType(new ConstantIntegerType($key), $returnInternalValueType);
+						}
+
+						$resultTypes[] = $constantArray->getArray();
 					}
 				}
 			}
@@ -173,4 +168,5 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		return TypeCombinator::union(...$resultTypes);
 	}
+
 }

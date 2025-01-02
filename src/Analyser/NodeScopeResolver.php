@@ -6544,14 +6544,14 @@ final class NodeScopeResolver
 		$stmts = [];
 		$isPassedUnreachableStatement = false;
 		foreach ($nodes as $node) {
+			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
+				continue;
+			}
 			if ($isPassedUnreachableStatement && $node instanceof Node\Stmt) {
 				$stmts[] = $node;
 				continue;
 			}
 			if ($node instanceof Node\Stmt\Nop) {
-				continue;
-			}
-			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
 				continue;
 			}
 			if (!$node instanceof Node\Stmt) {

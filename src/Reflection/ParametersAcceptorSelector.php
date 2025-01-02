@@ -80,6 +80,10 @@ final class ParametersAcceptorSelector
 			&& count($parametersAcceptors) > 0
 		) {
 			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+			if ($arrayMapArgs === null && isset($args[1])) {
+				// callback argument of array_map() may be the second one (named argument)
+				$arrayMapArgs = $args[1]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+			}
 			if ($arrayMapArgs !== null) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();

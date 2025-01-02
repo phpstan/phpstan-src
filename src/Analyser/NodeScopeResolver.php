@@ -6536,8 +6536,7 @@ final class NodeScopeResolver
 	}
 
 	/**
-	 * @template T of Node
-	 * @param array<T> $nodes
+	 * @param array<Node> $nodes
 	 * @return list<Node\Stmt>
 	 */
 	private function getNextUnreachableStatements(array $nodes, bool $earlyBinding): array

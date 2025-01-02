@@ -31,8 +31,10 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 		if ($args[1]->name !== null && $args[1]->name->name === 'callback') {
 			$callbackPos = 1;
 		}
-		[$callback] = array_splice($args, $callbackPos, 1);
-		$callback->value->setAttribute(self::ATTRIBUTE_NAME, $args);
+		$callbackArg = $args[$callbackPos];
+		$arrayArgs = $args;
+		array_splice($arrayArgs, $callbackPos, 1);
+		$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 
 		return null;
 	}

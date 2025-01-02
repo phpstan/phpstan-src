@@ -315,6 +315,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThan($otherType, $phpVersion);
 		}
 
+		// 0 can have different results in contrast to the interval edges, see https://3v4l.org/iGoti
+		$zeroInt = new ConstantIntegerType(0);
+		if (!$zeroInt->isSuperTypeOf($this)->no()) {
+			return TrinaryLogic::extremeIdentity(
+				$zeroInt->isSmallerThan($otherType, $phpVersion),
+				$minIsSmaller,
+				$maxIsSmaller,
+			);
+		}
+
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
@@ -330,6 +340,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			$maxIsSmaller = TrinaryLogic::createNo();
 		} else {
 			$maxIsSmaller = (new ConstantIntegerType($this->max))->isSmallerThanOrEqual($otherType, $phpVersion);
+		}
+
+		// 0 can have different results in contrast to the interval edges, see https://3v4l.org/iGoti
+		$zeroInt = new ConstantIntegerType(0);
+		if (!$zeroInt->isSuperTypeOf($this)->no()) {
+			return TrinaryLogic::extremeIdentity(
+				$zeroInt->isSmallerThanOrEqual($otherType, $phpVersion),
+				$minIsSmaller,
+				$maxIsSmaller,
+			);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
@@ -349,6 +369,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			$maxIsSmaller = $otherType->isSmallerThan((new ConstantIntegerType($this->max)), $phpVersion);
 		}
 
+		// 0 can have different results in contrast to the interval edges, see https://3v4l.org/iGoti
+		$zeroInt = new ConstantIntegerType(0);
+		if (!$zeroInt->isSuperTypeOf($this)->no()) {
+			return TrinaryLogic::extremeIdentity(
+				$otherType->isSmallerThan($zeroInt, $phpVersion),
+				$minIsSmaller,
+				$maxIsSmaller,
+			);
+		}
+
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
 	}
 
@@ -364,6 +394,16 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			$maxIsSmaller = TrinaryLogic::createYes();
 		} else {
 			$maxIsSmaller = $otherType->isSmallerThanOrEqual((new ConstantIntegerType($this->max)), $phpVersion);
+		}
+
+		// 0 can have different results in contrast to the interval edges, see https://3v4l.org/iGoti
+		$zeroInt = new ConstantIntegerType(0);
+		if (!$zeroInt->isSuperTypeOf($this)->no()) {
+			return TrinaryLogic::extremeIdentity(
+				$otherType->isSmallerThanOrEqual($zeroInt, $phpVersion),
+				$minIsSmaller,
+				$maxIsSmaller,
+			);
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
@@ -694,7 +734,20 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
-		if ($this->isSmallerThan($type, $phpVersion)->yes() || $this->isGreaterThan($type, $phpVersion)->yes()) {
+		$zeroInt = new ConstantIntegerType(0);
+		if ($zeroInt->isSuperTypeOf($this)->no()) {
+			if ($type->isTrue()->yes()) {
+				return new ConstantBooleanType(true);
+			}
+			if ($type->isFalse()->yes()) {
+				return new ConstantBooleanType(false);
+			}
+		}
+
+		if (
+			$this->isSmallerThan($type, $phpVersion)->yes()
+			|| $this->isGreaterThan($type, $phpVersion)->yes()
+		) {
 			return new ConstantBooleanType(false);
 		}
 

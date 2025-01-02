@@ -211,14 +211,20 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
+				'Loose comparison using == between true and int<10, 20> will always evaluate to true.',
+				41,
+			],
+			[
+				'Loose comparison using == between int<10, 20> and true will always evaluate to true.',
+				42,
+			],
+			[
 				'Loose comparison using == between false and int<10, 20> will always evaluate to false.',
 				44,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Loose comparison using == between int<10, 20> and false will always evaluate to false.',
 				45,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 

@@ -712,7 +712,9 @@ class HelloWorld
 	 * @param array{} $emptyArr
 	 * @param 'php' $phpStr
 	 * @param '' $emptyStr
-	 * @param int<10, 20> $intRange
+	 * @param int<10, 20> $positiveIntRange
+	 * @param int<-20, -10> $negativeIntRange
+	 * @param int<-10, 10> $minusTenToTen
 	 */
 	public function sayInt(
 		$true,
@@ -731,6 +733,9 @@ class HelloWorld
 		int $intRange,
 		string $emptyStr,
 		string $phpStr,
+		int $positiveIntRange,
+		int $negativeIntRange,
+		int $minusTenToTen,
 	): void
 	{
 		assertType('bool', $int == $true);
@@ -746,8 +751,57 @@ class HelloWorld
 		assertType('false', $int == $emptyArr);
 		assertType('false', $int == $array);
 
-		assertType('false', $intRange == $emptyArr);
-		assertType('false', $intRange == $array);
+		assertType('true', $positiveIntRange == $true);
+		assertType('false', $positiveIntRange == $false);
+		assertType('false', $positiveIntRange == $one);
+		assertType('false', $positiveIntRange == $zero);
+		assertType('false', $positiveIntRange == $minusOne);
+		assertType('false', $positiveIntRange == $oneStr);
+		assertType('false', $positiveIntRange == $zeroStr);
+		assertType('false', $positiveIntRange == $minusOneStr);
+		assertType('false', $positiveIntRange == $plusOneStr);
+		assertType('false', $positiveIntRange == $null);
+		assertType('false', $positiveIntRange == $emptyArr);
+		assertType('false', $positiveIntRange == $array);
+
+		assertType('true', $negativeIntRange == $true);
+		assertType('false', $negativeIntRange == $false);
+		assertType('false', $negativeIntRange == $one);
+		assertType('false', $negativeIntRange == $zero);
+		assertType('false', $negativeIntRange == $minusOne);
+		assertType('false', $negativeIntRange == $oneStr);
+		assertType('false', $negativeIntRange == $zeroStr);
+		assertType('false', $negativeIntRange == $minusOneStr);
+		assertType('false', $negativeIntRange == $plusOneStr);
+		assertType('false', $negativeIntRange == $null);
+		assertType('false', $negativeIntRange == $emptyArr);
+		assertType('false', $negativeIntRange == $array);
+
+		// see https://3v4l.org/VudDK
+		assertType('bool', $minusTenToTen == $true);
+		assertType('bool', $minusTenToTen == $false);
+		assertType('bool', $minusTenToTen == $one);
+		assertType('bool', $minusTenToTen == $zero);
+		assertType('bool', $minusTenToTen == $minusOne);
+		assertType('bool', $minusTenToTen == $oneStr);
+		assertType('bool', $minusTenToTen == $zeroStr);
+		assertType('bool', $minusTenToTen == $minusOneStr);
+		assertType('bool', $minusTenToTen == $plusOneStr);
+		assertType('bool', $minusTenToTen == $null);
+		assertType('false', $minusTenToTen == $emptyArr);
+		assertType('false', $minusTenToTen == $array);
+
+		// see https://3v4l.org/oJl3K
+		assertType('false', $minusTenToTen < $null);
+		assertType('bool', $minusTenToTen > $null);
+		assertType('bool', $minusTenToTen <= $null);
+		assertType('true', $minusTenToTen >= $null);
+
+		// see https://3v4l.org/oRSgU
+		assertType('bool', $null < $minusTenToTen);
+		assertType('false', $null > $minusTenToTen);
+		assertType('true', $null <= $minusTenToTen);
+		assertType('bool', $null >= $minusTenToTen);
 
 		assertType('false', 5 == $emptyArr);
 		assertType('false', $emptyArr == 5);

@@ -73,4 +73,22 @@ class UnreachableStatementNextStatementsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleTopLevel(): void
+	{
+		$this->analyse([__DIR__ . '/data/multiple_unreachable_top_level.php'], [
+			[
+				'First unreachable',
+				9,
+			],
+			[
+				'Another unreachable',
+				10,
+			],
+			[
+				'Another unreachable',
+				17,
+			],
+		]);
+	}
+
 }

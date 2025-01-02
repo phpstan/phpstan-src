@@ -8,8 +8,6 @@ use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
-use function count;
-use function sprintf;
 
 /**
  * @extends RuleTestCase<Rule>
@@ -34,13 +32,20 @@ class UnreachableStatementNextStatementsRuleTest extends RuleTestCase
 			 */
 			public function processNode(Node $node, Scope $scope): array
 			{
-				$totalNextStatements = count($node->getNextStatements());
-
-				return [
-					RuleErrorBuilder::message(sprintf('It has %d stmts over first unreachable statements', $totalNextStatements))
-						->identifier('tests.total.next.unreachable.statement')
+				$errors = [
+					RuleErrorBuilder::message('First unreachable')
+						->identifier('tests.nextUnreachableStatements')
 						->build(),
 				];
+
+				foreach ($node->getNextStatements() as $nextStatement) {
+					$errors[] = RuleErrorBuilder::message('Another unreachable')
+						->line($nextStatement->getStartLine())
+						->identifier('tests.nextUnreachableStatements')
+						->build();
+				}
+
+				return $errors;
 			}
 
 		};
@@ -50,8 +55,20 @@ class UnreachableStatementNextStatementsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/multiple_unreachable.php'], [
 			[
-				'It has 3 stmts over first unreachable statements',
+				'First unreachable',
 				14,
+			],
+			[
+				'Another unreachable',
+				15,
+			],
+			[
+				'Another unreachable',
+				17,
+			],
+			[
+				'Another unreachable',
+				22,
 			],
 		]);
 	}

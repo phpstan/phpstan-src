@@ -10,17 +10,16 @@ class Uuid {
 class HelloWorld
 {
 	/**
-	 * @param list<Uuid> $a
-	 *
-	 * @return list<string>
+	 * @param list<Uuid> $arr
 	 */
-	public function sayHello(array $a): array
+	public function sayHello(array $arr): void
 	{
-		$b = array_map(
-			array: $a,
-			callback: static fn(Uuid $c): string => (string) $c,
-		);
+		$callback = static fn(Uuid $uuid): string => (string) $uuid;
 
-		return $b;
+		array_map(array: $arr, callback: $callback);
+		array_map(callback: $callback, array: $arr);
+		array_map($callback, $arr);
+		array_map($callback, array: $arr);
+		array_map(static fn (Uuid $u1, Uuid $u2): string => (string) $u1, $arr, $arr);
 	}
 }

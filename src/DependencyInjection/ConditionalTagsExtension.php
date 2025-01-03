@@ -5,6 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette;
 use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
+use PHPStan\Analyser\ResultCache\ResultCacheMetaExtension;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
@@ -59,6 +60,7 @@ final class ConditionalTagsExtension extends CompilerExtension
 			LazyParameterOutTypeExtensionProvider::METHOD_TAG => $bool,
 			LazyParameterOutTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
 			DiagnoseExtension::EXTENSION_TAG => $bool,
+			ResultCacheMetaExtension::EXTENSION_TAG => $bool,
 		])->min(1));
 	}
 

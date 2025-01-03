@@ -5771,7 +5771,10 @@ final class NodeScopeResolver
 		foreach (array_reverse($offsetTypes) as $i => $offsetType) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
-			if (!$offsetValueType instanceof MixedType) {
+			if (
+				!$offsetValueType instanceof MixedType
+				&& !$offsetValueType->isConstantArray()->yes()
+			) {
 				$types = [
 					new ArrayType(new MixedType(), new MixedType()),
 					new ObjectType(ArrayAccess::class),

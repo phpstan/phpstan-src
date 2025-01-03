@@ -665,7 +665,29 @@ final class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 			if ($context->null()) {
-				return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+
+				if (
+					$expr->expr instanceof FuncCall
+					&& $expr->expr->name instanceof Name
+					&& $expr->expr->name->toLowerString() === 'array_key_last'
+					&& count($expr->expr->getArgs()) >= 1
+				) {
+					$arrayArg = $expr->expr->getArgs()[0]->value;
+					$arrayType = $scope->getType($arrayArg);
+					if (
+						$arrayType->isArray()->yes()
+						&& $arrayType->isIterableAtLeastOnce()->yes()
+					) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+
+						return $specifiedTypes->unionWith(
+							$this->create($dimFetch, $arrayType->getLastIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+
+				return $specifiedTypes;
 			}
 
 			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);

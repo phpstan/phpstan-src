@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace ArrayDimAfterArrayKeyFirstOrLast;
 
@@ -10,12 +12,25 @@ class HelloWorld
 	public function last(array $hellos): string
 	{
 		if ($hellos !== []) {
-			$lastHelloKey = array_key_last($hellos);
-			return $hellos[$lastHelloKey];
+			$last = array_key_last($hellos);
+			return $hellos[$last];
 		} else {
-			$lastHelloKey = array_key_last($hellos);
-			return $hellos[$lastHelloKey];
+			$last = array_key_last($hellos);
+			return $hellos[$last];
 		}
+	}
+
+	/**
+	 * @param array<string> $hellos
+	 */
+	public function lastOnArray(array $hellos): string
+	{
+		if ($hellos !== []) {
+			$last = array_key_last($hellos);
+			return $hellos[$last];
+		}
+
+		return 'nothing';
 	}
 
 	/**
@@ -24,8 +39,21 @@ class HelloWorld
 	public function first(array $hellos): string
 	{
 		if ($hellos !== []) {
-			$firstHelloKey = array_key_first($hellos);
-			return $hellos[$firstHelloKey];
+			$first = array_key_first($hellos);
+			return $hellos[$first];
+		}
+
+		return 'nothing';
+	}
+
+	/**
+	 * @param array<string> $hellos
+	 */
+	public function firstOnArray(array $hellos): string
+	{
+		if ($hellos !== []) {
+			$first = array_key_first($hellos);
+			return $hellos[$first];
 		}
 
 		return 'nothing';
@@ -36,12 +64,12 @@ class HelloWorld
 	 */
 	public function shape(array $hellos): int|bool
 	{
-		$firstHelloKey = array_key_first($hellos);
-		$lastHelloKey = array_key_last($hellos);
+		$first = array_key_first($hellos);
+		$last = array_key_last($hellos);
 
 		if (rand(0,1)) {
-			return $hellos[$firstHelloKey];
+			return $hellos[$first];
 		}
-		return $hellos[$lastHelloKey];
+		return $hellos[$last];
 	}
 }

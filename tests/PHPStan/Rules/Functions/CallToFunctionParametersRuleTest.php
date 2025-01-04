@@ -507,7 +507,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/named-arguments-after-unpacking.php'], [
 			[
-				'Named parameter cannot overwrite already unpacked argument $b.',
+				'Argument for parameter $b has already been passed.',
 				14,
 			],
 		]);

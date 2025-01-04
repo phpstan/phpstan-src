@@ -150,11 +150,11 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 				70,
 			],
 			[
-				'Assign to protected(set) property WriteAsymmetricVisibility\ReadonlyProps::$b.',
+				'Access to protected property WriteAsymmetricVisibility\ReadonlyProps::$b.',
 				71,
 			],
 			[
-				'Assign to private(set) property WriteAsymmetricVisibility\ReadonlyProps::$c.',
+				'Access to private property WriteAsymmetricVisibility\ReadonlyProps::$c.',
 				72,
 			],
 			[

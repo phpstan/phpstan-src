@@ -26,7 +26,7 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-assign-ref.php'], [
 			[
-				'Property PropertyAssignRef\Foo::$foo with private(set) visibility is assigned by reference.',
+				'Property PropertyAssignRef\Foo::$foo with private visibility is assigned by reference.',
 				25,
 			],
 			[

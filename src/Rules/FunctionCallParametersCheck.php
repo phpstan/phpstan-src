@@ -610,12 +610,10 @@ final class FunctionCallParametersCheck
 				&& !$parameter->isVariadic()
 				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $parameter->getName()))
-					->identifier('argument.namedOverwriteAfterUnpacked')
+				$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))
+					->identifier('argument.duplicate')
 					->line($argumentLine)
-					->nonIgnorable()
 					->build();
-
 				continue;
 			}
 

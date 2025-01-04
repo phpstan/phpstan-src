@@ -21,6 +21,10 @@ class Foo
 		assertType("array{foo: '1', bar: '2', lall2: '3', 0: '4', 1: '6', lall: '3', 2: '2', 3: '3'}", array_merge($array2, $array1));
 		assertType("array{foo: 3, bar: '2', lall2: '3', 0: '4', 1: '6', lall: '3', 2: '2', 3: '3'}", array_merge($array2, $array1, ['foo' => 3]));
 		assertType("array{foo: 3, bar: '2', lall2: '3', 0: '4', 1: '6', lall: '3', 2: '2', 3: '3'}", array_merge($array2, $array1, ...[['foo' => 3]]));
+		assertType("array{foo: '1', bar: '2'|'4', lall?: '3', 0: '2'|'4', 1: '3'|'6', lall2?: '3'}", array_merge(rand(0, 1) ? $array1 : $array2, []));
+		assertType("array{foo?: 3, bar?: 3}", array_merge([], ...[rand(0, 1) ? ['foo' => 3] : ['bar' => 3]]));
+		assertType("array{foo: '1', bar: '2'|'4', lall?: '3', 0: '2'|'4', 1: '3'|'6', lall2?: '3'}", array_merge([], ...[rand(0, 1) ? $array1 : $array2]));
+		assertType("array{foo: 1, bar: 2, 0: 2, 1: 3}", array_merge(['foo' => 4, 'bar' => 5], ...[['foo' => 1, 'bar' => 2], [2, 3]]));
 	}
 
 	/**

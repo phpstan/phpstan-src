@@ -319,11 +319,6 @@ final class ResultCacheManager
 			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
 		}
 
-		// Do not invalidate result cache generated before introducing support for result cache meta extensions
-		if (!isset($currentMeta['phpstanExtensions'])) {
-			$currentMeta['phpstanExtensions'] = [];
-		}
-
 		return $cachedMeta !== $currentMeta;
 	}
 

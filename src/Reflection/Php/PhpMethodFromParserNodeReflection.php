@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\Assertions;
@@ -230,7 +229,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	{
 		$method = $this->getClassMethod();
 		if ($method instanceof Node\PropertyHook) {
-			return TrinaryLogic::createFromBoolean((bool) ($method->flags & Modifiers::FINAL));
+			return TrinaryLogic::createFromBoolean($method->isFinal());
 		}
 
 		return TrinaryLogic::createFromBoolean($method->isFinal() || $this->isFinal);
@@ -238,12 +237,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 
 	public function isFinalByKeyword(): TrinaryLogic
 	{
-		$method = $this->getClassMethod();
-		if ($method instanceof Node\PropertyHook) {
-			return TrinaryLogic::createFromBoolean((bool) ($method->flags & Modifiers::FINAL));
-		}
-
-		return TrinaryLogic::createFromBoolean($method->isFinal());
+		return TrinaryLogic::createFromBoolean($this->getClassMethod()->isFinal());
 	}
 
 	public function isBuiltin(): bool

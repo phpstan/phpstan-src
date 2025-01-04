@@ -906,7 +906,7 @@ return [
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
 			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
-			'phpstanExtensions' => $this->getMetaFromPhpStanExtensions(),
+			'metaExtensions' => $this->getMetaFromPhpStanExtensions(),
 			'phpVersion' => PHP_VERSION_ID,
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,

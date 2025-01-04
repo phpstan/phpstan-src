@@ -93,7 +93,7 @@ final class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type|null, bool, string|null, int, bool}> $arguments */
+		/** @var array<int, array{Expr, Type|null, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, Node\Arg> $args */
 		$args = $funcCall->getArgs();
@@ -107,8 +107,6 @@ final class FunctionCallParametersCheck
 				$argumentName = $arg->name->toString();
 			}
 
-			$nonUnpackAfterUnpacked = false;
-
 			if ($hasNamedArguments && $arg->unpack) {
 				$errors[] = RuleErrorBuilder::message('Named argument cannot be followed by an unpacked (...) argument.')
 					->identifier('argument.unpackAfterNamed')
@@ -117,8 +115,6 @@ final class FunctionCallParametersCheck
 					->build();
 			}
 			if ($hasUnpackedArgument && !$arg->unpack) {
-				$nonUnpackAfterUnpacked = true;
-
 				if ($argumentName === null || !$scope->getPhpVersion()->supportsNamedArgumentAfterUnpackedArgument()->yes()) {
 					$errors[] = RuleErrorBuilder::message('Unpacked argument (...) cannot be followed by a non-unpacked argument.')
 						->identifier('argument.nonUnpackAfterUnpacked')
@@ -183,7 +179,6 @@ final class FunctionCallParametersCheck
 							false,
 							$keyArgumentName,
 							$arg->getStartLine(),
-							$nonUnpackAfterUnpacked,
 						];
 					}
 				} else {
@@ -193,7 +188,6 @@ final class FunctionCallParametersCheck
 						true,
 						null,
 						$arg->getStartLine(),
-						$nonUnpackAfterUnpacked,
 					];
 				}
 				continue;
@@ -205,7 +199,6 @@ final class FunctionCallParametersCheck
 				false,
 				$argumentName,
 				$arg->getStartLine(),
-				$nonUnpackAfterUnpacked,
 			];
 		}
 
@@ -557,7 +550,7 @@ final class FunctionCallParametersCheck
 		$newArguments = [];
 
 		$namedArgumentAlreadyOccurred = false;
-		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $nonUnpackAfterUnpacked]) {
+		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($argumentName === null) {
 				if (!isset($parameters[$i])) {
 					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
@@ -617,18 +610,11 @@ final class FunctionCallParametersCheck
 				&& !$parameter->isVariadic()
 				&& !array_key_exists($parameter->getName(), $unusedParametersByName)
 			) {
-				if ($nonUnpackAfterUnpacked) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $parameter->getName()))
-						->identifier('argument.namedOverwriteAfterUnpacked')
-						->line($argumentLine)
-						->nonIgnorable()
-						->build();
-				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been passed.', $parameter->getName()))
-						->identifier('argument.duplicate')
-						->line($argumentLine)
-						->build();
-				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Named parameter cannot overwrite already unpacked argument $%s.', $parameter->getName()))
+					->identifier('argument.namedOverwriteAfterUnpacked')
+					->line($argumentLine)
+					->nonIgnorable()
+					->build();
 
 				continue;
 			}

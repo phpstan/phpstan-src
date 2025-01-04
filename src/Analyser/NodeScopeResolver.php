@@ -124,6 +124,7 @@ use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\PropertyHookNameVisitor;
 use PHPStan\Php\PhpVersion;
@@ -4830,54 +4831,61 @@ final class NodeScopeResolver
 				$hook,
 			), $hookScope);
 
-			if ($hook->body instanceof Expr) {
-				$this->processExprNode($stmt, $hook->body, $hookScope, $nodeCallback, ExpressionContext::createTopLevel());
-				$nodeCallback(new PropertyAssignNode(new PropertyFetch(new Variable('this'), $propertyName, $hook->body->getAttributes()), $hook->body, false), $hookScope);
-			} elseif (is_array($hook->body)) {
-				$gatheredReturnStatements = [];
-				$executionEnds = [];
-				$methodImpurePoints = [];
-				$statementResult = $this->processStmtNodes(new PropertyHookStatementNode($hook), $hook->body, $hookScope, static function (Node $node, Scope $scope) use ($nodeCallback, $hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
-					$nodeCallback($node, $scope);
-					if ($scope->getFunction() !== $hookScope->getFunction()) {
-						return;
-					}
-					if ($scope->isInAnonymousFunction()) {
-						return;
-					}
-					if ($node instanceof PropertyAssignNode) {
-						$hookImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-						return;
-					}
-					if ($node instanceof ExecutionEndNode) {
-						$executionEnds[] = $node;
-						return;
-					}
-					if (!$node instanceof Return_) {
-						return;
-					}
-
-					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-				}, StatementContext::createTopLevel());
-
-				$nodeCallback(new PropertyHookReturnStatementsNode(
-					$hook,
-					$gatheredReturnStatements,
-					$statementResult,
-					$executionEnds,
-					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
-					$classReflection,
-					$hookReflection,
-					$propertyReflection,
-				), $hookScope);
+			$stmts = $hook->getStmts();
+			if ($stmts === null) {
+				return;
 			}
 
+			if ($hook->body instanceof Expr) {
+				// enrich attributes of nodes in short hook body statements
+				$traverser = new NodeTraverser(
+					new LineAttributesVisitor($hook->body->getStartLine(), $hook->body->getEndLine()),
+				);
+				$traverser->traverse($stmts);
+			}
+
+			$gatheredReturnStatements = [];
+			$executionEnds = [];
+			$methodImpurePoints = [];
+			$statementResult = $this->processStmtNodes(new PropertyHookStatementNode($hook), $stmts, $hookScope, static function (Node $node, Scope $scope) use ($nodeCallback, $hookScope, &$gatheredReturnStatements, &$executionEnds, &$hookImpurePoints): void {
+				$nodeCallback($node, $scope);
+				if ($scope->getFunction() !== $hookScope->getFunction()) {
+					return;
+				}
+				if ($scope->isInAnonymousFunction()) {
+					return;
+				}
+				if ($node instanceof PropertyAssignNode) {
+					$hookImpurePoints[] = new ImpurePoint(
+						$scope,
+						$node,
+						'propertyAssign',
+						'property assignment',
+						true,
+					);
+					return;
+				}
+				if ($node instanceof ExecutionEndNode) {
+					$executionEnds[] = $node;
+					return;
+				}
+				if (!$node instanceof Return_) {
+					return;
+				}
+
+				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+			}, StatementContext::createTopLevel());
+
+			$nodeCallback(new PropertyHookReturnStatementsNode(
+				$hook,
+				$gatheredReturnStatements,
+				$statementResult,
+				$executionEnds,
+				array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
+				$classReflection,
+				$hookReflection,
+				$propertyReflection,
+			), $hookScope);
 		}
 	}
 

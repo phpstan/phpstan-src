@@ -1138,4 +1138,37 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testShortGetPropertyHook(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/short-get-property-hook-return.php'], [
+			[
+				'Get hook for property ShortGetPropertyHookReturn\Foo::$i should return int but returns string.',
+				9,
+			],
+			[
+				'Get hook for property ShortGetPropertyHookReturn\Foo::$s should return non-empty-string but returns \'\'.',
+				18,
+			],
+			[
+				'Get hook for property ShortGetPropertyHookReturn\GenericFoo::$a should return T of ShortGetPropertyHookReturn\Foo but returns ShortGetPropertyHookReturn\Foo.',
+				36,
+				'Type ShortGetPropertyHookReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Get hook for property ShortGetPropertyHookReturn\GenericFoo::$b should return T of ShortGetPropertyHookReturn\Foo but returns ShortGetPropertyHookReturn\Foo.',
+				50,
+				'Type ShortGetPropertyHookReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Get hook for property ShortGetPropertyHookReturn\GenericFoo::$c should return T of ShortGetPropertyHookReturn\Foo but returns ShortGetPropertyHookReturn\Foo.',
+				59,
+				'Type ShortGetPropertyHookReturn\Foo is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

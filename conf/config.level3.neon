@@ -22,7 +22,6 @@ rules:
 	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
 	- PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
 	- PHPStan\Rules\Properties\SetNonVirtualPropertyHookAssignRule
-	- PHPStan\Rules\Properties\ShortGetPropertyHookReturnTypeRule
 	- PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
 	- PHPStan\Rules\Variables\ParameterOutAssignedTypeRule
 	- PHPStan\Rules\Variables\ParameterOutExecutionEndTypeRule

@@ -39,4 +39,8 @@ class Foo
 		}
 	}
 
+	public int $n {
+		get => throw new \InvalidArgumentException(); // error
+	}
+
 }

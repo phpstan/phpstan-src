@@ -43,6 +43,10 @@ class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 				'Get hook for property TooWideThrowsPropertyHook\Foo::$j has DomainException in PHPDoc @throws tag but it\'s not thrown.',
 				76,
 			],
+			[
+				'Get hook for property TooWideThrowsPropertyHook\Foo::$k has DomainException in PHPDoc @throws tag but it\'s not thrown.',
+				83,
+			],
 		]);
 	}
 

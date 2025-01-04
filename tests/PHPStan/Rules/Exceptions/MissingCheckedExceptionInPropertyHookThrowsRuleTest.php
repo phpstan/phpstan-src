@@ -45,6 +45,10 @@ class MissingCheckedExceptionInPropertyHookThrowsRuleTest extends RuleTestCase
 				'Get hook for property MissingExceptionPropertyHookThrows\Foo::$m throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
 				38,
 			],
+			[
+				'Get hook for property MissingExceptionPropertyHookThrows\Foo::$n throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
+				43,
+			],
 		]);
 	}
 

@@ -65,4 +65,11 @@ class Foo
 		}
 	}
 
+	public int $k5 {
+		get {
+			return $this->k4 + 1;
+		}
+		set => $value; // short body always assigns
+	}
+
 }

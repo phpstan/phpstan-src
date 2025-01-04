@@ -44,6 +44,10 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
 						18,
 					],
+					[
+						'Get hook for property ThrowsVoidPropertyHook\Foo::$j throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
+						26,
+					],
 				],
 			],
 			[
@@ -59,6 +63,10 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
 						18,
 					],
+					[
+						'Get hook for property ThrowsVoidPropertyHook\Foo::$j throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
+						26,
+					],
 				],
 			],
 			[
@@ -69,6 +77,10 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
 						18,
 					],
+					[
+						'Get hook for property ThrowsVoidPropertyHook\Foo::$j throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
+						26,
+					],
 				],
 			],
 			[
@@ -78,6 +90,10 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 					[
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
 						18,
+					],
+					[
+						'Get hook for property ThrowsVoidPropertyHook\Foo::$j throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
+						26,
 					],
 				],
 			],

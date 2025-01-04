@@ -19,4 +19,11 @@ class Foo
 		}
 	}
 
+	public int $j {
+		/**
+		 * @throws void
+		 */
+		get => throw new MyException();
+	}
+
 }

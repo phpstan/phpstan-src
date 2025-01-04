@@ -78,4 +78,9 @@ class Foo
 		}
 	}
 
+	public int $k {
+		/** @throws \DomainException */
+		get => 11; // error - DomainException unused
+	}
+
 }

@@ -1059,6 +1059,8 @@ return [
 			$meta[$extension->getKey()] = $extension->getHash();
 		}
 
+		ksort($meta);
+
 		return $meta;
 	}
 

@@ -37,7 +37,7 @@ final class CleaningVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof Node\PropertyHook && is_array($node->body)) {
-			$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$propertyName = $node->getAttribute('propertyName');
 			if ($propertyName !== null) {
 				$node->body = $this->keepVariadicsAndYields($node->body, $propertyName);
 				return $node;

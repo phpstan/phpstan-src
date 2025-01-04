@@ -9,7 +9,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
-use PHPStan\Parser\PropertyHookNameVisitor;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
 use function array_slice;
@@ -144,7 +143,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 		} elseif ($function instanceof ClassMethod) {
 			$functionName = $function->name->toString();
 		} elseif ($function instanceof PropertyHook) {
-			$propertyName = $function->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$propertyName = $function->getAttribute('propertyName');
 			$functionName = sprintf('$%s::%s', $propertyName, $function->name->toString());
 		}
 
@@ -152,7 +151,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 		if ($function instanceof ClassMethod && $className !== null) {
 			$methodName = sprintf('%s::%s', $className, $function->name->toString());
 		} elseif ($function instanceof PropertyHook) {
-			$propertyName = $function->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$propertyName = $function->getAttribute('propertyName');
 			$methodName = sprintf('%s::$%s::%s', $className, $propertyName, $function->name->toString());
 		} elseif ($function instanceof Function_ && $function->namespacedName !== null) {
 			$methodName = $function->namespacedName->toString();

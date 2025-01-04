@@ -9,7 +9,6 @@ use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
-use PHPStan\Parser\PropertyHookNameVisitor;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -281,7 +280,7 @@ final class FileTypeMapper
 				} elseif ($node instanceof Node\Stmt\Function_) {
 					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 				} elseif ($node instanceof Node\PropertyHook) {
-					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
 						$functionStack[] = sprintf('$%s::%s', $propertyName, $node->name->toString());
 					}
@@ -299,7 +298,7 @@ final class FileTypeMapper
 
 					return null;
 				} elseif ($node instanceof Node\PropertyHook) {
-					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
 						$docComment = GetLastDocComment::forNode($node);
 						if ($docComment !== null) {
@@ -394,7 +393,7 @@ final class FileTypeMapper
 
 					array_pop($functionStack);
 				} elseif ($node instanceof Node\PropertyHook) {
-					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
 						if (count($functionStack) === 0) {
 							throw new ShouldNotHappenException();
@@ -503,7 +502,7 @@ final class FileTypeMapper
 				} elseif ($node instanceof Node\Stmt\Function_) {
 					$functionStack[] = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 				} elseif ($node instanceof Node\PropertyHook) {
-					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
 						$functionStack[] = sprintf('$%s::%s', $propertyName, $node->name->toString());
 					}
@@ -742,7 +741,7 @@ final class FileTypeMapper
 
 					array_pop($functionStack);
 				} elseif ($node instanceof Node\PropertyHook) {
-					$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+					$propertyName = $node->getAttribute('propertyName');
 					if ($propertyName !== null) {
 						if (count($functionStack) === 0) {
 							throw new ShouldNotHappenException();

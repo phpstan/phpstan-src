@@ -321,11 +321,6 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
-		class: PHPStan\Parser\PropertyHookNameVisitor
-		tags:
-			- phpstan.parser.richParserNodeVisitor
-
-	-
 		class: PHPStan\Node\Printer\ExprPrinter
 
 	-

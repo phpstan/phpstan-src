@@ -126,7 +126,6 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
-use PHPStan\Parser\PropertyHookNameVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -6436,7 +6435,7 @@ final class NodeScopeResolver
 		} elseif ($node instanceof Node\Stmt\Function_) {
 			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
 		} elseif ($node instanceof Node\PropertyHook) {
-			$propertyName = $node->getAttribute(PropertyHookNameVisitor::ATTRIBUTE_NAME);
+			$propertyName = $node->getAttribute('propertyName');
 			if ($propertyName !== null) {
 				$functionName = sprintf('$%s::%s', $propertyName, $node->name->toString());
 			}

@@ -11,7 +11,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -152,16 +151,16 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 	{
 		$resultType = null;
 		foreach ($types as $type) {
-			if (!$type instanceof ConstantType) {
-				return TypeCombinator::union(...$types);
-			}
-
 			if ($resultType === null) {
 				$resultType = $type;
 				continue;
 			}
 
 			$compareResult = $this->compareTypes($resultType, $type);
+			if ($compareResult === null) {
+				return TypeCombinator::union(...$types);
+			}
+
 			if ($functionName === 'min') {
 				if ($compareResult === $type) {
 					$resultType = $type;
@@ -186,7 +185,7 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 	): ?Type
 	{
 		if (
-			$firstType->isConstantArray()->yes()
+			$firstType->isArray()->yes()
 			&& $secondType->isConstantScalarValue()->yes()
 		) {
 			return $secondType;
@@ -194,7 +193,7 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 		if (
 			$firstType->isConstantScalarValue()->yes()
-			&& $secondType->isConstantArray()->yes()
+			&& $secondType->isArray()->yes()
 		) {
 			return $firstType;
 		}

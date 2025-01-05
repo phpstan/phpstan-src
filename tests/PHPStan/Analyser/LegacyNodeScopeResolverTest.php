@@ -2368,8 +2368,32 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'max(array(2, 2, 2), 5, array(1, 1, 1, 1))',
 			],
 			[
+				'array{int, int, int}',
+				'max($arrayOfIntegers, 5)',
+			],
+			[
+				'array<int>',
+				'max($arrayOfUnknownIntegers, 5)',
+			],
+			[
 				'array<int>|int', // could be array<int>
 				'max($arrayOfUnknownIntegers, $integer, $arrayOfUnknownIntegers)',
+			],
+			[
+				'array<int>',
+				'max($arrayOfUnknownIntegers, $conditionalInt)',
+			],
+			[
+				'5',
+				'min($arrayOfIntegers, 5)',
+			],
+			[
+				'5',
+				'min($arrayOfUnknownIntegers, 5)',
+			],
+			[
+				'1|2',
+				'min($arrayOfUnknownIntegers, $conditionalInt)',
 			],
 			[
 				'5',

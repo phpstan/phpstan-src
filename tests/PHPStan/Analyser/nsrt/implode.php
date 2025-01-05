@@ -46,4 +46,9 @@ class Foo
 	public function constArrays5($constArr) {
 		assertType("'1a'|'1b'|'1c'|'2a'|'2b'|'2c'|'3a'|'3b'|'3c'", implode('', $constArr));
 	}
+
+	/** @param array{0: 1, 1: 'a'|'b', 3?: 'c'|'d', 4?: 'e'|'f', 5?: 'g'|'h', 6?: 'x'|'y'} $constArr */
+	public function constArrays6($constArr) {
+		assertType("string", implode('', $constArr));
+	}
 }

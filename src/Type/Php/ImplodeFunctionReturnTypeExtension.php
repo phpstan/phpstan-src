@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -126,6 +127,10 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			foreach ($combinations as $combination) {
 				$strings[] = new ConstantStringType(implode($separatorType->getValue(), $combination));
 			}
+		}
+
+		if (count($strings) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return null;
 		}
 
 		return TypeCombinator::union(...$strings);

@@ -817,4 +817,16 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayDimFetchAfterArraySearch(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/array-dim-after-array-search.php'], [
+			[
+				'Offset int|string might not exist on array.',
+				20,
+			],
+		]);
+	}
+
 }

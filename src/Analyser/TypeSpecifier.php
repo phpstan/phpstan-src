@@ -664,6 +664,7 @@ final class TypeSpecifier
 			if (!$scope instanceof MutatingScope) {
 				throw new ShouldNotHappenException();
 			}
+
 			if ($context->null()) {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
 
@@ -718,7 +719,30 @@ final class TypeSpecifier
 				return $specifiedTypes;
 			}
 
-			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
+			$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
+
+			if ($context->true()) {
+				// infer $arr[$key] after $key = array_search($needle, $arr)
+				if (
+					$expr->expr instanceof FuncCall
+					&& $expr->expr->name instanceof Name
+					&& in_array($expr->expr->name->toLowerString(), ['array_search'], true)
+					&& count($expr->expr->getArgs()) >= 2
+				) {
+					$arrayArg = $expr->expr->getArgs()[1]->value;
+					$arrayType = $scope->getType($arrayArg);
+
+					if ($arrayType->isArray()->yes()) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+						$iterableValueType = $arrayType->getIterableValueType();
+
+						return $specifiedTypes->unionWith(
+							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+			}
+			return $specifiedTypes;
 		} elseif (
 			$expr instanceof Expr\Isset_
 			&& count($expr->vars) > 0

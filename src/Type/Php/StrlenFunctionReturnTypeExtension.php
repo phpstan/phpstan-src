@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
@@ -42,16 +41,12 @@ final class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		$argType = $scope->getType($args[0]->value);
-		$constantScalars = $argType->getConstantScalarTypes();
+		$constantScalars = $argType->getConstantScalarValues();
 
 		$lengths = [];
 		foreach ($constantScalars as $constantScalar) {
-			$stringScalar = $constantScalar->toString();
-			if (!($stringScalar instanceof ConstantStringType)) {
-				$lengths = [];
-				break;
-			}
-			$length = strlen($stringScalar->getValue());
+			$stringScalar = (string) $constantScalar;
+			$length = strlen($stringScalar);
 			$lengths[] = $length;
 		}
 

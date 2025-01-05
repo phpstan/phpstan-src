@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -12,7 +13,6 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -115,13 +115,17 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 			$arrayValues = [];
 			foreach ($valueTypes as $valueType) {
-				if (!$valueType instanceof ConstantScalarType) {
+				$constScalars = $valueType->getConstantScalarValues();
+				if (count($constScalars) === 0) {
 					return null;
 				}
-				$arrayValues[] = $valueType->getValue();
+				$arrayValues[] = $constScalars;
 			}
 
-			$strings[] = new ConstantStringType(implode($separatorType->getValue(), $arrayValues));
+			$combinations = CombinationsHelper::combinations($arrayValues);
+			foreach ($combinations as $combination) {
+				$strings[] = new ConstantStringType(implode($separatorType->getValue(), $combination));
+			}
 		}
 
 		return TypeCombinator::union(...$strings);

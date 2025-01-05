@@ -21,4 +21,29 @@ class Foo
 		assertType("'x,345'", join(',', [self::X, '345']));
 		assertType("'1,345'", join(',', [self::ONE, '345']));
 	}
+
+	/** @param array{0: 1|2, 1: 'a'|'b'} $constArr */
+	public function constArrays($constArr) {
+		assertType("'1a'|'1b'|'2a'|'2b'", implode('', $constArr));
+	}
+
+	/** @param array{0: 1|2|3, 1: 'a'|'b'|'c'} $constArr */
+	public function constArrays2($constArr) {
+		assertType("'1a'|'1b'|'1c'|'2a'|'2b'|'2c'|'3a'|'3b'|'3c'", implode('', $constArr));
+	}
+
+	/** @param array{0: 1, 1: 'a'|'b', 2: 'x'|'y'} $constArr */
+	public function constArrays3($constArr) {
+		assertType("'1ax'|'1ay'|'1bx'|'1by'", implode('', $constArr));
+	}
+
+	/** @param array{0: 1, 1: 'a'|'b', 2?: 'x'|'y'} $constArr */
+	public function constArrays4($constArr) {
+		assertType("'1a'|'1ax'|'1ay'|'1b'|'1bx'|'1by'", implode('', $constArr));
+	}
+
+	/** @param array{10: 1|2|3, xy: 'a'|'b'|'c'} $constArr */
+	public function constArrays5($constArr) {
+		assertType("'1a'|'1b'|'1c'|'2a'|'2b'|'2c'|'3a'|'3b'|'3c'", implode('', $constArr));
+	}
 }

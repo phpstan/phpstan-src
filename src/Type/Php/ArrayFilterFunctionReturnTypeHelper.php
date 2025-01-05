@@ -21,7 +21,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -255,7 +254,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 		return [
 			$keyVarName !== null ? $scope->getVariableType($keyVarName) : $keyType,
 			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
-			!$booleanResult instanceof ConstantBooleanType,
+			!$booleanResult->isTrue()->yes(),
 		];
 	}
 

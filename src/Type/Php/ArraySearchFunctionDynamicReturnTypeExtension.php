@@ -43,7 +43,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		$strictArgType = $scope->getType($functionCall->getArgs()[2]->value);
-		if (!$strictArgType instanceof ConstantBooleanType || $strictArgType->getValue() === false) {
+		if (!$strictArgType->isTrue()->yes()) {
 			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
 		}
 

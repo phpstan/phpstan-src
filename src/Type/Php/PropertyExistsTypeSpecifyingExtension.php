@@ -13,7 +13,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -51,36 +50,36 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$propertyNameType = $scope->getType($node->getArgs()[1]->value);
-		if (!$propertyNameType instanceof ConstantStringType) {
+		$propertyNames = $scope->getType($node->getArgs()[1]->value)->getConstantStrings();
+		if ($propertyNames === []) {
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectType = $scope->getType($node->getArgs()[0]->value);
-		if ($objectType instanceof ConstantStringType) {
-			return new SpecifiedTypes([], []);
-		} elseif ($objectType->isObject()->yes()) {
+		$types = [new ObjectWithoutClassType()];
+		foreach ($propertyNames as $propertyNameType) {
+			$objectType = $scope->getType($node->getArgs()[0]->value);
+			if (!$objectType->isObject()->yes()) {
+				return new SpecifiedTypes([], []);
+			}
+
 			$propertyNode = new PropertyFetch(
 				$node->getArgs()[0]->value,
 				new Identifier($propertyNameType->getValue()),
 			);
-		} else {
-			return new SpecifiedTypes([], []);
-		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
-		if ($propertyReflection !== null) {
-			if (!$propertyReflection->isNative()) {
-				return new SpecifiedTypes([], []);
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
+			if ($propertyReflection !== null) {
+				if (!$propertyReflection->isNative()) {
+					return new SpecifiedTypes([], []);
+				}
 			}
+
+			$types[] = new HasPropertyType($propertyNameType->getValue());
 		}
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			new IntersectionType([
-				new ObjectWithoutClassType(),
-				new HasPropertyType($propertyNameType->getValue()),
-			]),
+			new IntersectionType($types),
 			$context,
 			false,
 			$scope,

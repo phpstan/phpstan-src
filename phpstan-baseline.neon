@@ -1451,11 +1451,6 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
 			count: 2
-			path: src/Type/Php/PropertyExistsTypeSpecifyingExtension.php
-
-		-
-			message: "#^Doing instanceof PHPStan\\\\Type\\\\Constant\\\\ConstantStringType is error\\-prone and deprecated\\. Use Type\\:\\:getConstantStrings\\(\\) instead\\.$#"
-			count: 2
 			path: src/Type/Php/RangeFunctionReturnTypeExtension.php
 
 		-

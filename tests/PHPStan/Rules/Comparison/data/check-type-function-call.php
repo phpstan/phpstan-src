@@ -976,3 +976,33 @@ function checkClosedResource($resource): void {
 
 	}
 }
+
+final class FinalClassWithPropertyExistsOfUnionStrings
+{
+	/** @var int */
+	private $fooProperty;
+	/** @var int */
+	private $foo2Property;
+
+	public function doFoo()
+	{
+		$prop = 'fooProperty';
+		if (rand(0, 1) === 0) {
+			$prop = 'foo2Property';
+		}
+
+		if (property_exists($this, $prop)) {
+		}
+	}
+
+	public function doFooBar()
+	{
+		$prop = 'fooProperty';
+		if (rand(0, 1) === 0) {
+			$prop = 'barProperty';
+		}
+
+		if (property_exists($this, $prop)) {
+		}
+	}
+}

@@ -262,6 +262,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
+				[
+					"Call to function property_exists() with \$this(CheckTypeFunctionCall\\FinalClassWithPropertyExistsOfUnionStrings) and 'foo2Property'|'fooProperty' will always evaluate to true.",
+					994,
+				],
+				[
+					"Call to function property_exists() with \$this(CheckTypeFunctionCall\\FinalClassWithPropertyExistsOfUnionStrings) and 'barProperty'|'fooProperty' will always evaluate to false.",
+					1005,
+				],
 			],
 		);
 	}
@@ -371,6 +379,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function in_array() with arguments 1, array<string> and true will always evaluate to false.',
 					927,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
+					"Call to function property_exists() with \$this(CheckTypeFunctionCall\\FinalClassWithPropertyExistsOfUnionStrings) and 'barProperty'|'fooProperty' will always evaluate to false.",
+					1005,
 				],
 			],
 		);

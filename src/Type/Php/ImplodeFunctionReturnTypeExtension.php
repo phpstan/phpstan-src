@@ -22,6 +22,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function implode;
 use function in_array;
+use const COUNT_RECURSIVE;
 
 final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -123,14 +124,14 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 				$arrayValues[] = $constScalars;
 			}
 
+			if (count($strings) + count($arrayValues, COUNT_RECURSIVE) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+				return null;
+			}
+
 			$combinations = CombinationsHelper::combinations($arrayValues);
 			foreach ($combinations as $combination) {
 				$strings[] = new ConstantStringType(implode($separatorType->getValue(), $combination));
 			}
-		}
-
-		if (count($strings) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return null;
 		}
 
 		return TypeCombinator::union(...$strings);

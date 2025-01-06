@@ -212,7 +212,7 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('non-falsy-string', implode("a", $s));
+		assertType('lowercase-string&non-falsy-string', implode("a", $s));
 	}
 
 	/**
@@ -233,7 +233,7 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('non-falsy-string', join("a", $s));
+		assertType('lowercase-string&non-falsy-string', join("a", $s));
 	}
 
 	/**

@@ -14,6 +14,16 @@ class Foo {
 	 */
 	public function strContains(string $s, string $s2, $nonES, $nonFalsy, $numS, $literalS, $nonEAndNumericS, int $i): void
 	{
+		if (str_contains($i, 0)) {
+			assertType('int', $i);
+		}
+		if (str_contains($s, 0)) {
+			assertType('non-empty-string', $s);
+		}
+		if (str_contains($s, 1)) {
+			assertType('non-falsy-string', $s);
+		}
+
 		if (str_contains($s, ':')) {
 			assertType('non-falsy-string', $s);
 		}

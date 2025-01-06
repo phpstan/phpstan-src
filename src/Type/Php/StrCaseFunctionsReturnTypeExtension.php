@@ -142,18 +142,19 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$accessoryTypes = [];
-		if ($forceLowercase || ($keepLowercase && $argType->isLowercaseString()->yes())) {
+		$argStringType = $argType->toString();
+		if ($forceLowercase || ($keepLowercase && $argStringType->isLowercaseString()->yes())) {
 			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
-		if ($forceUppercase || ($keepUppercase && $argType->isUppercaseString()->yes())) {
+		if ($forceUppercase || ($keepUppercase && $argStringType->isUppercaseString()->yes())) {
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 
-		if ($argType->isNumericString()->yes()) {
+		if ($argStringType->isNumericString()->yes()) {
 			$accessoryTypes[] = new AccessoryNumericStringType();
-		} elseif ($argType->isNonFalsyString()->yes()) {
+		} elseif ($argStringType->isNonFalsyString()->yes()) {
 			$accessoryTypes[] = new AccessoryNonFalsyStringType();
-		} elseif ($argType->isNonEmptyString()->yes()) {
+		} elseif ($argStringType->isNonEmptyString()->yes()) {
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
 

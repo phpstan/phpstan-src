@@ -84,7 +84,7 @@ class HelloWorld
 		if (count($x) >= $count) {
 			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
-			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+			assertType("array{}", $x);
 		}
 		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}

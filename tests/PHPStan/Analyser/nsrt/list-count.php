@@ -369,7 +369,7 @@ class CountWithOptionalKeys
 		if (count($row) >= $maxThree) {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
-			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 	}
 

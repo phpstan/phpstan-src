@@ -513,6 +513,10 @@ final class MutatingScope implements Scope
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
+		if ($this->isGlobalVariable($variableName)) {
+			return TrinaryLogic::createYes();
+		}
+
 		$varExprString = '$' . $variableName;
 		if (!isset($this->expressionTypes[$varExprString])) {
 			if ($this->canAnyVariableExist()) {
@@ -544,13 +548,20 @@ final class MutatingScope implements Scope
 			}
 		}
 
+		$varExprString = '$' . $variableName;
+
 		if ($this->hasVariableType($variableName)->no()) {
 			throw new UndefinedVariableException($this, $variableName);
 		}
 
-		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
-			return new MixedType();
+			if (!$this->isGlobalVariable($variableName)) {
+				return new MixedType();
+			}
+
+			$superglobalType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
+			$this->expressionTypes[$varExprString] = ExpressionTypeHolder::createYes(new Variable($variableName), $superglobalType);
+			$this->nativeExpressionTypes[$varExprString] = ExpressionTypeHolder::createYes(new Variable($variableName), $superglobalType);
 		}
 
 		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
@@ -596,6 +607,11 @@ final class MutatingScope implements Scope
 		}
 
 		return $variables;
+	}
+
+	private function isGlobalVariable(string $variableName): bool
+	{
+		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
 	}
 
 	/** @api */

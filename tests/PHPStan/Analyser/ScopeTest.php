@@ -261,7 +261,7 @@ class ScopeTest extends PHPStanTestCase
 			->assignVariable('a', new ConstantStringType('a'), new StringType(), TrinaryLogic::createYes())
 			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
 
-		$this->assertSame(['GLOBALS', '_SERVER', '_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_REQUEST', '_ENV', 'a'], $scope->getDefinedVariables());
+		$this->assertSame(['a'], $scope->getDefinedVariables());
 	}
 
 	public function testMaybeDefinedVariables(): void

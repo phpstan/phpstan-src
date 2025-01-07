@@ -1,0 +1,10 @@
+parameters:
+	level: 8
+	paths:
+		- src
+
+services:
+	-
+		class: ResultCacheE2E\MetaExtension\DummyResultCacheMetaExtension
+		tags:
+			- phpstan.resultCacheMetaExtension

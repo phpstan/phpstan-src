@@ -233,6 +233,15 @@ jobs:
               cd e2e/bug-11857
               composer install
               ../../bin/phpstan
+          - script: |
+              cd e2e/result-cache-meta-extension
+              ../../bin/phpstan -vvv
+              ../../bin/phpstan -vvv --fail-without-result-cache
+              echo 'modified-hash' > hash.txt
+              OUTPUT=$(../bashunit -a exit_code "2" "../../bin/phpstan -vvv --fail-without-result-cache")
+              echo "$OUTPUT"
+              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
+              ../bashunit -a contains 'Result cache not used because the metadata do not match: metaExtensions' "$OUTPUT"
 
     steps:
       - name: "Checkout"

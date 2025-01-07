@@ -140,6 +140,9 @@
 		"classmap": [
 			"tests/e2e",
 			"tests/PHPStan"
+		],
+		"files": [
+			"e2e/result-cache-meta-extension/src/DummyResultCacheMetaExtension.php"
 		]
 	},
 	"repositories": [

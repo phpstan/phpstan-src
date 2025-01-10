@@ -48,6 +48,12 @@ final class UnusedConstructorParametersRule implements Rule
 			return [];
 		}
 
+		foreach ($node->getClassReflection()->getInterfaces() as $interface) {
+			if ($interface->hasMethod('__construct')) {
+				return [];
+			}
+		}
+
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',
 			SprintfHelper::escapeFormatString($node->getClassReflection()->getDisplayName()),

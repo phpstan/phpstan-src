@@ -44,6 +44,9 @@ final class UnusedConstructorParametersRule implements Rule
 		if (count($originalNode->params) === 0) {
 			return [];
 		}
+		if ($node->getClassReflection()->isAttributeClass()) {
+			return [];
+		}
 
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',

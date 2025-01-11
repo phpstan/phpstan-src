@@ -1555,12 +1555,6 @@ parameters:
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1
-			path: src/Type/Php/MbStrlenFunctionReturnTypeExtension.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
 			path: src/Type/Php/MbSubstituteCharacterDynamicReturnTypeExtension.php
 
 		-

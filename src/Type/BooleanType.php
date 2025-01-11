@@ -41,9 +41,19 @@ class BooleanType implements Type
 	{
 	}
 
+	public function getConstantScalarTypes(): array
+	{
+		return [new ConstantBooleanType(true), new ConstantBooleanType(false)];
+	}
+
 	public function getConstantStrings(): array
 	{
-		return [];
+		return [new ConstantStringType('1'), new ConstantStringType('0')];
+	}
+
+	public function getConstantScalarValues(): array
+	{
+		return [true, false];
 	}
 
 	public function describe(VerbosityLevel $level): string

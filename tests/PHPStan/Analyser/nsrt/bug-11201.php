@@ -53,4 +53,4 @@ $s = sprintf('%20s', true);
 assertType("'                   1'", $s);
 
 $s = sprintf('%20s', returnsBool());
-assertType("lowercase-string&non-falsy-string", $s);
+assertType("'                    '|'                   1'", $s);

@@ -8,7 +8,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -93,16 +92,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$argType = $scope->getType($args[0]->value);
-
-		if ($argType->isSuperTypeOf(new BooleanType())->yes()) {
-			$constantScalars = TypeCombinator::remove($argType, new BooleanType())->getConstantScalarTypes();
-			if (count($constantScalars) > 0) {
-				$constantScalars[] = new ConstantBooleanType(true);
-				$constantScalars[] = new ConstantBooleanType(false);
-			}
-		} else {
-			$constantScalars = $argType->getConstantScalarTypes();
-		}
+		$constantScalars = $argType->getConstantScalarTypes();
 
 		$lengths = [];
 		foreach ($constantScalars as $constantScalar) {

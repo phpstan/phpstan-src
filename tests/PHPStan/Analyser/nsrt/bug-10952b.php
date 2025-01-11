@@ -37,5 +37,14 @@ class HelloWorld
 			mb_strlen($string) > 0 => assertType('non-empty-string', $string),
 			default => assertType("''", $string),
 		};
+
+		assertType('int<0, 1>', strlen($this->getBool()));
+		assertType('int<0, 1>', mb_strlen($this->getBool()));
 	}
+
+	public function getBool(): bool
+	{
+		return rand(0, 1) === 1;
+	}
+
 }

@@ -51,4 +51,9 @@ class Foo
 	public function constArrays6($constArr) {
 		assertType("string", implode('', $constArr));
 	}
+
+	/** @param array{10: 1|2|bool, xy: 'a'|'b'|'c'} $constArr */
+	public function constArrays7($constArr) {
+		assertType("'1a'|'1b'|'1c'|'2a'|'2b'|'2c'|'a'|'b'|'c'", implode('', $constArr));
+	}
 }

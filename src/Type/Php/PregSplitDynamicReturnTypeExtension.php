@@ -94,7 +94,6 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 		}
 
-
 		if (count($patternConstantTypes) === 0 || count($subjectConstantTypes) === 0) {
 			$returnNonEmptyStrings = $flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes();
 			if ($returnNonEmptyStrings) {
@@ -127,7 +126,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
 					}
 
-					return TypeUtils::toBenevolentUnion(TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false)));
+					return TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false));
 				}
 				if ($flagState->maybe()) {
 					$returnInternalValueType = TypeCombinator::union(new StringType(), $capturedArrayType);
@@ -142,7 +141,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				);
 			}
 
-			return TypeUtils::toBenevolentUnion(TypeCombinator::union($returnListType, new ConstantBooleanType(false)));
+			return TypeCombinator::union($returnListType, new ConstantBooleanType(false));
 		}
 
 		$resultTypes = [];

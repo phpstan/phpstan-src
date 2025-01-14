@@ -25,15 +25,15 @@ class HelloWorld
 
 	public function doWithVariables(string $pattern, string $subject, int $offset, int $flags): void
 	{
-		assertType('(list<array{string, int<0, max>}|string>|false)', preg_split($pattern, $subject, $offset, $flags));
-		assertType('(list<array{string, int<0, max>}|string>|false)', preg_split("//", $subject, $offset, $flags));
+		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, $offset, $flags));
+		assertType('list<array{string, int<0, max>}|string>|false', preg_split("//", $subject, $offset, $flags));
 
-		assertType('(non-empty-list<array{string, int<0, max>}|string>|false)', preg_split($pattern, "1-2-3", $offset, $flags));
-		assertType('(list<array{string, int<0, max>}|string>|false)', preg_split($pattern, $subject, -1, $flags));
-		assertType('(list<non-empty-string>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_NO_EMPTY));
-		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("(list<string>|false)", preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE));
-		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('non-empty-list<array{string, int<0, max>}|string>|false', preg_split($pattern, "1-2-3", $offset, $flags));
+		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, -1, $flags));
+		assertType('list<non-empty-string>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_NO_EMPTY));
+		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("list<string>|false", preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE));
+		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
 	}
 
 	/**
@@ -41,17 +41,17 @@ class HelloWorld
 	 */
 	public function doWithNonEmptySubject(string $pattern, string $nonEmptySubject, int $offset, int $flags): void
 	{
-		assertType('(non-empty-list<string>|false)', preg_split("//", $nonEmptySubject));
+		assertType('non-empty-list<string>|false', preg_split("//", $nonEmptySubject));
 
-		assertType('(non-empty-list<array{string, int<0, max>}|string>|false)', preg_split($pattern, $nonEmptySubject, $offset, $flags));
-		assertType('(non-empty-list<array{string, int<0, max>}|string>|false)', preg_split("//", $nonEmptySubject, $offset, $flags));
+		assertType('non-empty-list<array{string, int<0, max>}|string>|false', preg_split($pattern, $nonEmptySubject, $offset, $flags));
+		assertType('non-empty-list<array{string, int<0, max>}|string>|false', preg_split("//", $nonEmptySubject, $offset, $flags));
 
-		assertType('(non-empty-list<array{string, int<0, max>}>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType('(non-empty-list<non-empty-string>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY));
-		assertType('(non-empty-list<string>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_DELIM_CAPTURE));
-		assertType('(non-empty-list<array{string, int<0, max>}>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
-		assertType('(non-empty-list<array{non-empty-string, int<0, max>}>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
-		assertType('(non-empty-list<non-empty-string>|false)', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE));
+		assertType('non-empty-list<array{string, int<0, max>}>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('non-empty-list<non-empty-string>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY));
+		assertType('non-empty-list<string>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_DELIM_CAPTURE));
+		assertType('non-empty-list<array{string, int<0, max>}>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('non-empty-list<array{non-empty-string, int<0, max>}>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('non-empty-list<non-empty-string>|false', preg_split("/-/", $nonEmptySubject, $offset, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE));
 	}
 
 	/**
@@ -64,9 +64,9 @@ class HelloWorld
 	 */
 	public static function splitWithOffset($pattern, $subject, $limit = -1, $flags = 0)
 	{
-		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $limit, $flags | PREG_SPLIT_OFFSET_CAPTURE));
-		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags));
-		assertType('(list<array{non-empty-string, int<0, max>}>|false)', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags | PREG_SPLIT_NO_EMPTY));
+		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, $flags | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags));
+		assertType('list<array{non-empty-string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags | PREG_SPLIT_NO_EMPTY));
 	}
 
 	/**
@@ -82,6 +82,6 @@ class HelloWorld
 			$flags |= PREG_SPLIT_NO_EMPTY;
 		}
 
-		assertType('(list<array{string, int<0, max>}>|false)', preg_split($pattern, $subject, $limit, $flags));
+		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, $flags));
 	}
 }

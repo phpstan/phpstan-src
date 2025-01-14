@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function extension_loaded;
 use function restore_error_handler;
+use function sprintf;
 use const PHP_VERSION_ID;
 
 class AnalyserIntegrationTest extends PHPStanTestCase
@@ -885,11 +886,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7500.php');
 		$this->assertNoErrors($errors);
 	}
-
-
-	/**
-	 *
-	 */
 
 	public function testBug7554(): void
 	{

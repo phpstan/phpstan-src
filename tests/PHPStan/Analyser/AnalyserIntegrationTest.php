@@ -841,11 +841,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testUnresolvableParameter(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/unresolvable-parameter.php');
-		$this->assertCount(2, $errors);
-		$this->assertSame('Method UnresolvableParameter\Collection::pipeInto() has parameter $class with no type specified.', $errors[0]->getMessage());
-		$this->assertSame(30, $errors[0]->getLine());
-		$this->assertSame('PHPDoc tag @param for parameter $class contains unresolvable type.', $errors[1]->getMessage());
+		$this->assertCount(3, $errors);
+		$this->assertSame('Parameter #2 $array of function array_map expects array, list<string>|false given.', $errors[0]->getMessage());
+		$this->assertSame(18, $errors[0]->getLine());
+		$this->assertSame('Method UnresolvableParameter\Collection::pipeInto() has parameter $class with no type specified.', $errors[1]->getMessage());
 		$this->assertSame(30, $errors[1]->getLine());
+		$this->assertSame('PHPDoc tag @param for parameter $class contains unresolvable type.', $errors[2]->getMessage());
+		$this->assertSame(30, $errors[2]->getLine());
 	}
 
 	public function testBug7248(): void

@@ -61,8 +61,9 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 			$arrayTypes = [];
 			foreach ($constantArrays as $constantArray) {
 				$newConstantArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+				$valueTypes = $constantArray->getValueTypes();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-					$valueType = $constantArray->getOffsetValueType($keyType);
+					$valueType = $valueTypes[$i];
 
 					$constantStrings = $keyType->getConstantStrings();
 					if (count($constantStrings) > 0) {

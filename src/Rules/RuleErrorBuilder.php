@@ -207,7 +207,7 @@ final class RuleErrorBuilder
 	 */
 	public function treatPhpDocTypesAsCertainTip(): self
 	{
-		return $this->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
+		return $this->addTip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 	}
 
 	/**

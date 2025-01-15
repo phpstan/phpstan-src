@@ -61,7 +61,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $nodeTypeResult): RuleErrorBuilder {
 			$reasons = $nodeTypeResult->reasons;
 			if (count($reasons) > 0) {
-				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
+				$ruleErrorBuilder->acceptsReasonsTip($reasons);
 			}
 
 			if (!$this->treatPhpDocTypesAsCertain) {

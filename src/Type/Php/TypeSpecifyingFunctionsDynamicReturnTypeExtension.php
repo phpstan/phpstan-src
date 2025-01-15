@@ -57,7 +57,7 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 		$isAlways = $this->getHelper()->findSpecifiedType(
 			$scope,
 			$functionCall,
-		);
+		)[0];
 		if ($isAlways === null) {
 			return null;
 		}

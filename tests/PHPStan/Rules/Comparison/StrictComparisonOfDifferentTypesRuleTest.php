@@ -273,7 +273,8 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between lowercase-string|false and \'AB\' will always evaluate to false.',
 					1014,
-					$tipText,
+					"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 				],
 				[
 					'Strict comparison using === between mixed and null will always evaluate to false.',
@@ -879,27 +880,32 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				"Strict comparison using === between lowercase-string and 'AB' will always evaluate to false.",
 				10,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 			[
 				"Strict comparison using === between 'AB' and lowercase-string will always evaluate to false.",
 				11,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 			[
 				"Strict comparison using !== between 'AB' and lowercase-string will always evaluate to true.",
 				12,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 			[
 				"Strict comparison using === between lowercase-string and 'aBc' will always evaluate to false.",
 				15,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'aBc' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 			[
 				"Strict comparison using !== between lowercase-string and 'aBc' will always evaluate to true.",
 				16,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'aBc' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 		];
 
@@ -907,13 +913,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			$errors[] = [
 				"Strict comparison using === between lowercase-string|false and 'AB' will always evaluate to false.",
 				28,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			];
 		} else {
 			$errors[] = [
 				"Strict comparison using === between lowercase-string and 'AB' will always evaluate to false.",
 				28,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'AB' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			];
 		}
 
@@ -983,15 +991,18 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				"Strict comparison using === between lowercase-string&non-falsy-string and 'ABC' will always evaluate to false.",
 				9,
+				"'ABC' is not lowercase.",
 			],
 			[
 				"Strict comparison using === between (lowercase-string&non-falsy-string)|false and 'ABC' will always evaluate to false.",
 				12,
+				"'ABC' is not lowercase.",
 			],
 			[
 				"Strict comparison using === between (lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string) and 'A' will always evaluate to false.",
 				31,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• 'A' is not lowercase.
+• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
 			],
 		]);
 	}

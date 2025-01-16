@@ -253,7 +253,7 @@ final class InstantiationRule implements Rule
 				static fn (ClassReflection $classReflection): bool => !$classReflection->isAbstract() && !$classReflection->isInterface(),
 			);
 
-			if (0 < count($concretes)) {
+			if (count($concretes) > 0) {
 				return array_map(
 					static fn (ClassReflection $classReflection): array => [$classReflection->getName(), true],
 					$concretes,

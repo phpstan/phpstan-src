@@ -1155,6 +1155,9 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ArrayColumnHelper
+
+	-
 		class: PHPStan\Type\Php\ArrayColumnFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

@@ -50,32 +50,33 @@ final class ArrayColumnHelper
 		return [$returnValueType, $iterableAtLeastOnce];
 	}
 
-	public function handleAnyArray(Type $arrayType, Type $columnType, ?Type $indexType, Scope $scope): Type
+	public function getReturnIndexType(Type $arrayType, ?Type $indexType, Scope $scope): Type
 	{
-		[$returnValueType, $iterableAtLeastOnce] = $this->getReturnValueType($arrayType, $columnType, $scope);
-
-		if ($returnValueType instanceof NeverType) {
-			return new ConstantArrayType([], []);
-		}
-
 		if ($indexType !== null) {
 			$iterableValueType = $arrayType->getIterableValueType();
 
 			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
 			if ($type !== null) {
-				$returnKeyType = $type;
-			} else {
-				$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, true);
-				if ($type !== null) {
-					$returnKeyType = TypeCombinator::union($type, new IntegerType());
-				} else {
-					$returnKeyType = new IntegerType();
-				}
+				return $type;
 			}
-		} else {
-			$returnKeyType = new IntegerType();
+
+			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, true);
+			if ($type !== null) {
+				return TypeCombinator::union($type, new IntegerType());
+			}
 		}
 
+		return new IntegerType();
+	}
+
+	public function handleAnyArray(Type $arrayType, Type $columnType, ?Type $indexType, Scope $scope): Type
+	{
+		[$returnValueType, $iterableAtLeastOnce] = $this->getReturnValueType($arrayType, $columnType, $scope);
+		if ($returnValueType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
+		$returnKeyType = $this->getReturnIndexType($arrayType, $indexType, $scope);
 		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType), $returnValueType);
 
 		if ($iterableAtLeastOnce->yes()) {

@@ -3641,6 +3641,7 @@ final class NodeScopeResolver
 
 						$condNodes = [];
 						$conditionCases = [];
+						$conditionExprs = [];
 						foreach ($arm->conds as $cond) {
 							if (!$cond instanceof Expr\ClassConstFetch) {
 								continue 2;
@@ -3698,6 +3699,7 @@ final class NodeScopeResolver
 								$armConditionScope,
 								$cond->getStartLine(),
 							);
+							$conditionExprs[] = $cond;
 
 							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
 						}
@@ -3711,10 +3713,11 @@ final class NodeScopeResolver
 							$conditionCaseType = new UnionType($conditionCases);
 						}
 
+						$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs);
 						$matchArmBodyScope = $matchScope->addTypeToExpression(
 							$expr->cond,
 							$conditionCaseType,
-						);
+						)->filterByTruthyValue($filteringExpr);
 						$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
 						$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
@@ -3790,22 +3793,7 @@ final class NodeScopeResolver
 					$filteringExprs[] = $armCond;
 				}
 
-				if (count($filteringExprs) === 1) {
-					$filteringExpr = new BinaryOp\Identical($expr->cond, $filteringExprs[0]);
-				} else {
-					$items = [];
-					foreach ($filteringExprs as $filteringExpr) {
-						$items[] = new Node\ArrayItem($filteringExpr);
-					}
-					$filteringExpr = new FuncCall(
-						new Name\FullyQualified('in_array'),
-						[
-							new Arg($expr->cond),
-							new Arg(new Array_($items)),
-							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
-						],
-					);
-				}
+				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
 
 				$bodyScope = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
 				}, $deepContext)->getTruthyScope();
@@ -6596,6 +6584,30 @@ final class NodeScopeResolver
 			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
+	}
+
+	/**
+	 * @param array<Expr> $conditions
+	 */
+	public function getFilteringExprForMatchArm(Expr\Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
+	{
+		if (count($conditions) === 1) {
+			return new BinaryOp\Identical($expr->cond, $conditions[0]);
+		}
+
+		$items = [];
+		foreach ($conditions as $filteringExpr) {
+			$items[] = new Node\ArrayItem($filteringExpr);
+		}
+
+		return new FuncCall(
+			new Name\FullyQualified('in_array'),
+			[
+				new Arg($expr->cond),
+				new Arg(new Array_($items)),
+				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+			],
+		);
 	}
 
 }

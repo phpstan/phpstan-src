@@ -1572,15 +1572,8 @@ final class TypeSpecifier
 		$leftType = $scope->getType($binaryOperation->left);
 		$rightType = $scope->getType($binaryOperation->right);
 
-		$rightExpr = $binaryOperation->right;
-		if ($rightExpr instanceof AlwaysRememberedExpr) {
-			$rightExpr = $rightExpr->getExpr();
-		}
-
-		$leftExpr = $binaryOperation->left;
-		if ($leftExpr instanceof AlwaysRememberedExpr) {
-			$leftExpr = $leftExpr->getExpr();
-		}
+		$rightExpr = $this->extractExpression($binaryOperation->right);
+		$leftExpr = $this->extractExpression($binaryOperation->left);
 
 		if (
 			$leftType instanceof ConstantScalarType
@@ -1597,6 +1590,39 @@ final class TypeSpecifier
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return array{Expr, Type, Type}|null
+	 */
+	private function findEnumTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
+	{
+		$leftType = $scope->getType($binaryOperation->left);
+		$rightType = $scope->getType($binaryOperation->right);
+
+		$rightExpr = $this->extractExpression($binaryOperation->right);
+		$leftExpr = $this->extractExpression($binaryOperation->left);
+
+		if (
+			$leftType->getEnumCases() === [$leftType]
+			&& !$rightExpr instanceof ConstFetch
+			&& !$rightExpr instanceof ClassConstFetch
+		) {
+			return [$binaryOperation->right, $leftType, $rightType];
+		} elseif (
+			$rightType->getEnumCases() === [$rightType]
+			&& !$leftExpr instanceof ConstFetch
+			&& !$leftExpr instanceof ClassConstFetch
+		) {
+			return [$binaryOperation->left, $rightType, $leftType];
+		}
+
+		return null;
+	}
+
+	private function extractExpression(Expr $expr): Expr
+	{
+		return $expr instanceof AlwaysRememberedExpr ? $expr->getExpr() : $expr;
 	}
 
 	/** @api */
@@ -1894,10 +1920,10 @@ final class TypeSpecifier
 		$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
 		if ($expressions !== null) {
 			$exprNode = $expressions[0];
-			$constantType = $expressions[1];
+			$enumCaseObjectType = $expressions[1];
 			$otherType = $expressions[2];
 
-			if (!$context->null() && $constantType->getValue() === null) {
+			if (!$context->null() && $enumCaseObjectType->getValue() === null) {
 				$trueTypes = [
 					new NullType(),
 					new ConstantBooleanType(false),
@@ -1909,7 +1935,7 @@ final class TypeSpecifier
 				return $this->create($exprNode, new UnionType($trueTypes), $context, $scope)->setRootExpr($expr);
 			}
 
-			if (!$context->null() && $constantType->getValue() === false) {
+			if (!$context->null() && $enumCaseObjectType->getValue() === false) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					$exprNode,
@@ -1917,7 +1943,7 @@ final class TypeSpecifier
 				)->setRootExpr($expr);
 			}
 
-			if (!$context->null() && $constantType->getValue() === true) {
+			if (!$context->null() && $enumCaseObjectType->getValue() === true) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					$exprNode,
@@ -1925,7 +1951,7 @@ final class TypeSpecifier
 				)->setRootExpr($expr);
 			}
 
-			if (!$context->null() && $constantType->getValue() === 0 && !$otherType->isInteger()->yes() && !$otherType->isBoolean()->yes()) {
+			if (!$context->null() && $enumCaseObjectType->getValue() === 0 && !$otherType->isInteger()->yes() && !$otherType->isBoolean()->yes()) {
 				/* There is a difference between php 7.x and 8.x on the equality
 				 * behavior between zero and the empty string, so to be conservative
 				 * we leave it untouched regardless of the language version */
@@ -1949,7 +1975,7 @@ final class TypeSpecifier
 				return $this->create($exprNode, new UnionType($trueTypes), $context, $scope)->setRootExpr($expr);
 			}
 
-			if (!$context->null() && $constantType->getValue() === '') {
+			if (!$context->null() && $enumCaseObjectType->getValue() === '') {
 				/* There is a difference between php 7.x and 8.x on the equality
 				 * behavior between zero and the empty string, so to be conservative
 				 * we leave it untouched regardless of the language version */
@@ -1976,7 +2002,7 @@ final class TypeSpecifier
 				&& $exprNode->name instanceof Name
 				&& in_array(strtolower($exprNode->name->toString()), ['gettype', 'get_class', 'get_debug_type'], true)
 				&& isset($exprNode->getArgs()[0])
-				&& $constantType->isString()->yes()
+				&& $enumCaseObjectType->isString()->yes()
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context)->setRootExpr($expr);
 			}
@@ -1986,9 +2012,30 @@ final class TypeSpecifier
 				&& $exprNode instanceof FuncCall
 				&& $exprNode->name instanceof Name
 				&& $exprNode->name->toLowerString() === 'preg_match'
-				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
+				&& (new ConstantIntegerType(1))->isSuperTypeOf($enumCaseObjectType)->yes()
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context)->setRootExpr($expr);
+			}
+
+			if (!$context->null() && TypeCombinator::containsNull($otherType)) {
+				if ($enumCaseObjectType->toBoolean()->isTrue()->yes()) {
+					$otherType = TypeCombinator::remove($otherType, new NullType());
+				}
+
+				if (!$otherType->isSuperTypeOf($enumCaseObjectType)->no()) {
+					return $this->create($exprNode, TypeCombinator::intersect($enumCaseObjectType, $otherType), $context, $scope)->setRootExpr($expr);
+				}
+			}
+		}
+
+		$expressions = $this->findEnumTypeExpressionsFromBinaryOperation($scope, $expr);
+		if ($expressions !== null) {
+			$exprNode = $expressions[0];
+			$enumCaseObjectType = $expressions[1];
+			$otherType = $expressions[2];
+
+			if (!$context->null()) {
+				return $this->create($exprNode, TypeCombinator::intersect($enumCaseObjectType, $otherType), $context, $scope)->setRootExpr($expr);
 			}
 		}
 

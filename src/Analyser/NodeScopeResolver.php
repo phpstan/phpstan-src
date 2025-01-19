@@ -204,6 +204,7 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_reverse;
+use function array_shift;
 use function array_slice;
 use function array_values;
 use function base64_decode;
@@ -1513,9 +1514,11 @@ final class NodeScopeResolver
 			$exitPointsForOuterLoop = [];
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
+			$defaultCondExprs = [];
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
+					$defaultCondExprs[] = new BinaryOp\NotEqual($stmt->cond, $caseNode->cond);
 					$caseResult = $this->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $nodeCallback, ExpressionContext::createDeep());
 					$scopeForBranches = $caseResult->getScope();
 					$hasYield = $hasYield || $caseResult->hasYield();
@@ -1525,6 +1528,11 @@ final class NodeScopeResolver
 				} else {
 					$hasDefaultCase = true;
 					$branchScope = $scopeForBranches;
+					$defaultConditions = $this->createBooleanAndFromExpressions($defaultCondExprs);
+					if ($defaultConditions !== null) {
+						$branchScope = $this->processExprNode($stmt, $defaultConditions, $scope, static function (): void {
+						}, ExpressionContext::createDeep())->getTruthyScope()->filterByTruthyValue($defaultConditions);
+					}
 				}
 
 				$branchScope = $branchScope->mergeWith($prevScope);
@@ -6568,6 +6576,29 @@ final class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param list<Expr> $expressions
+	 */
+	private function createBooleanAndFromExpressions(array $expressions): ?Expr
+	{
+		if (count($expressions) === 0) {
+			return null;
+		}
+
+		if (count($expressions) === 1) {
+			return $expressions[0];
+		}
+
+		$left = array_shift($expressions);
+		$right = $this->createBooleanAndFromExpressions($expressions);
+
+		if ($right === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return new BooleanAnd($left, $right);
 	}
 
 	/**

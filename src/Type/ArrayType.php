@@ -170,7 +170,7 @@ class ArrayType implements Type
 		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		return $this->getKeysArray();
 	}

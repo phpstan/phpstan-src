@@ -1373,7 +1373,7 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		$keysArray = $this->getKeysOrValuesArray($this->keyTypes);
 

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -41,9 +42,9 @@ final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFuncti
 		if (count($functionCall->getArgs()) >= 2) {
 			$filterType = $scope->getType($functionCall->getArgs()[1]->value);
 
-			$strict = false;
+			$strict = TrinaryLogic::createNo();
 			if (count($functionCall->getArgs()) >= 3) {
-				$strict = $scope->getType($functionCall->getArgs()[2]->value)->isTrue()->yes();
+				$strict = $scope->getType($functionCall->getArgs()[2]->value)->isTrue();
 			}
 
 			return $arrayType->getKeysArrayFiltered($filterType, $strict);

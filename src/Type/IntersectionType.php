@@ -842,7 +842,7 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getKeysArrayFiltered($filterValueType, $strict));
 	}

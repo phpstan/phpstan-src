@@ -154,7 +154,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		return $this->getKeysArray();
 	}

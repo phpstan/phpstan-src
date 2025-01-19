@@ -134,7 +134,7 @@ interface Type
 
 	public function unsetOffset(Type $offsetType): Type;
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type;
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type;
 
 	public function getKeysArray(): Type;
 

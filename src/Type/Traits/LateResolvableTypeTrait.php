@@ -248,7 +248,7 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->unsetOffset($offsetType);
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		return $this->resolve()->getKeysArrayFiltered($filterValueType, $strict);
 	}

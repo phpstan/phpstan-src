@@ -180,7 +180,7 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
-	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
 		return $this->getKeysArray();
 	}

@@ -42,7 +42,7 @@ class Foo
 			assertType('int|string', $stringOrInt); // could be '1'|'2'|1|2
 		}
 		if (in_array($stringOrNull, ['1', 'a'])) {
-			assertType('string|null', $stringOrNull); // could be '1'|'a'
+			assertType("'1'|'a'", $stringOrNull);
 		}
 	}
 }

@@ -1643,15 +1643,8 @@ final class TypeSpecifier
 		$leftType = $scope->getType($binaryOperation->left);
 		$rightType = $scope->getType($binaryOperation->right);
 
-		$rightExpr = $binaryOperation->right;
-		if ($rightExpr instanceof AlwaysRememberedExpr) {
-			$rightExpr = $rightExpr->getExpr();
-		}
-
-		$leftExpr = $binaryOperation->left;
-		if ($leftExpr instanceof AlwaysRememberedExpr) {
-			$leftExpr = $leftExpr->getExpr();
-		}
+		$rightExpr = $this->extractExpression($binaryOperation->right);
+		$leftExpr = $this->extractExpression($binaryOperation->left);
 
 		if (
 			$leftType instanceof ConstantScalarType
@@ -1668,6 +1661,39 @@ final class TypeSpecifier
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return array{Expr, Type, Type}|null
+	 */
+	private function findEnumTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
+	{
+		$leftType = $scope->getType($binaryOperation->left);
+		$rightType = $scope->getType($binaryOperation->right);
+
+		$rightExpr = $this->extractExpression($binaryOperation->right);
+		$leftExpr = $this->extractExpression($binaryOperation->left);
+
+		if (
+			$leftType->getEnumCases() === [$leftType]
+			&& !$rightExpr instanceof ConstFetch
+			&& !$rightExpr instanceof ClassConstFetch
+		) {
+			return [$binaryOperation->right, $leftType, $rightType];
+		} elseif (
+			$rightType->getEnumCases() === [$rightType]
+			&& !$leftExpr instanceof ConstFetch
+			&& !$leftExpr instanceof ClassConstFetch
+		) {
+			return [$binaryOperation->left, $rightType, $leftType];
+		}
+
+		return null;
+	}
+
+	private function extractExpression(Expr $expr): Expr
+	{
+		return $expr instanceof AlwaysRememberedExpr ? $expr->getExpr() : $expr;
 	}
 
 	/** @api */
@@ -2060,6 +2086,27 @@ final class TypeSpecifier
 				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context)->setRootExpr($expr);
+			}
+
+			if (!$context->null() && TypeCombinator::containsNull($otherType)) {
+				if ($constantType->toBoolean()->isTrue()->yes()) {
+					$otherType = TypeCombinator::remove($otherType, new NullType());
+				}
+
+				if (!$otherType->isSuperTypeOf($constantType)->no()) {
+					return $this->create($exprNode, TypeCombinator::intersect($constantType, $otherType), $context, $scope)->setRootExpr($expr);
+				}
+			}
+		}
+
+		$expressions = $this->findEnumTypeExpressionsFromBinaryOperation($scope, $expr);
+		if ($expressions !== null) {
+			$exprNode = $expressions[0];
+			$enumCaseObjectType = $expressions[1];
+			$otherType = $expressions[2];
+
+			if (!$context->null()) {
+				return $this->create($exprNode, TypeCombinator::intersect($enumCaseObjectType, $otherType), $context, $scope)->setRootExpr($expr);
 			}
 		}
 

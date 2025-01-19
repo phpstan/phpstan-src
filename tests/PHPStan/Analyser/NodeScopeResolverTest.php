@@ -101,9 +101,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			define('TEST_FALSE_CONSTANT', false);
 			define('TEST_ARRAY_CONSTANT', [true, false, null]);
 			define('TEST_ENUM_CONSTANT', Foo::ONE);
+			yield __DIR__ . '/data/bug-12432-nullable-enum.php';
 			yield __DIR__ . '/data/new-in-initializers-runtime.php';
 			yield __DIR__ . '/data/scope-in-enum-match-arm-body.php';
 		}
+
+		yield __DIR__ . '/data/bug-12432-nullable-int.php';
 
 		yield __DIR__ . '/../Rules/Comparison/data/bug-6473.php';
 

@@ -15,13 +15,23 @@ function doFoo()
 	assertType('array{2, 3, 4}', $keys);
 }
 
-function doFooStrings() {
+/**
+ * @param array<1|2|3, 4|5|6> $unionKeyedArray
+ * @return void
+ */
+function doFooStrings($unionKeyedArray) {
 	$a = [2 => 'hi', 3 => '123', 'xy' => 5];
 	$keys = array_keys($a, 1);
 	assertType("list<2|3|'xy'>", $keys);
 
 	$keys = array_keys($a);
 	assertType("array{2, 3, 'xy'}", $keys);
+
+	$keys = array_keys($unionKeyedArray, 1);
+	assertType("list<1|2|3>", $keys); // could be array{}
+
+	$keys = array_keys($unionKeyedArray);
+	assertType("list<1|2|3>", $keys);
 }
 
 /**

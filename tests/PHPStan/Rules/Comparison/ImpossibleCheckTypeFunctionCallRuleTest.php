@@ -1127,4 +1127,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8954.php'], []);
 	}
 
+	public function testBugPR3404(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-pr-3404.php'], [
+			[
+				'Call to function is_a() with arguments BugPR3404\Location, \'BugPR3404\\\\Location\' and true will always evaluate to true.',
+				21,
+			],
+		]);
+	}
+
 }

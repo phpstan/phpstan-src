@@ -17,9 +17,10 @@ function doFoo()
 
 /**
  * @param array<1|2|3, 4|5|6> $unionKeyedArray
+ * @param 4|5 $fourOrFive
  * @return void
  */
-function doFooStrings($unionKeyedArray) {
+function doFooStrings($unionKeyedArray, $fourOrFive) {
 	$a = [2 => 'hi', 3 => '123', 'xy' => 5];
 	$keys = array_keys($a, 1);
 	assertType("list<2|3|'xy'>", $keys);
@@ -29,6 +30,12 @@ function doFooStrings($unionKeyedArray) {
 
 	$keys = array_keys($unionKeyedArray, 1);
 	assertType("list<1|2|3>", $keys); // could be array{}
+
+	$keys = array_keys($unionKeyedArray, 4);
+	assertType("list<1|2|3>", $keys);
+
+	$keys = array_keys($unionKeyedArray, $fourOrFive);
+	assertType("list<1|2|3>", $keys);
 
 	$keys = array_keys($unionKeyedArray);
 	assertType("list<1|2|3>", $keys);

@@ -39,7 +39,12 @@ trait NonArrayTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
-	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
+	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	{
+		return $this->getKeysArray();
+	}
+
+	public function getKeysArray(): Type
 	{
 		return new ErrorType();
 	}

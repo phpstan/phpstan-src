@@ -180,7 +180,12 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
-	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
+	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	{
+		return $this->getKeysArray();
+	}
+
+	public function getKeysArray(): Type
 	{
 		if ($this->isArray()->no()) {
 			return new ErrorType();

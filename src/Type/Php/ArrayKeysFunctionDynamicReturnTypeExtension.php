@@ -38,15 +38,18 @@ final class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFuncti
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$strict = false;
-		$filterType = null;
 		if (count($functionCall->getArgs()) >= 2) {
 			$filterType = $scope->getType($functionCall->getArgs()[1]->value);
+
+			$strict = false;
+			if (count($functionCall->getArgs()) >= 3) {
+				$strict = $scope->getType($functionCall->getArgs()[2]->value)->isTrue()->yes();
+			}
+
+			return $arrayType->getKeysArrayFiltered($filterType, $strict);
 		}
-		if (count($functionCall->getArgs()) >= 3) {
-			$strict = $scope->getType($functionCall->getArgs()[2]->value)->isTrue()->yes();
-		}
-		return $arrayType->getKeysArray($filterType, $strict);
+
+		return $arrayType->getKeysArray();
 	}
 
 }

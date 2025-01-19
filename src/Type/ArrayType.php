@@ -170,7 +170,12 @@ class ArrayType implements Type
 		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));
 	}
 
-	public function getKeysArray(?Type $filterValueType = null, bool $strict = false): Type
+	public function getKeysArrayFiltered(Type $filterValueType, bool $strict): Type
+	{
+		return $this->getKeysArray();
+	}
+
+	public function getKeysArray(): Type
 	{
 		return TypeCombinator::intersect(new self(new IntegerType(), $this->getIterableKeyType()), new AccessoryArrayListType());
 	}

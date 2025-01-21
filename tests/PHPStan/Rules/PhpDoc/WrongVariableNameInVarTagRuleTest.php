@@ -521,6 +521,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type array{numeric-string} is not subtype of type array{lowercase-string&numeric-string&uppercase-string}.',
 				13,
 			],
+			[
+				'PHPDoc tag @var with type callable(): string is not subtype of type callable(): numeric-string&lowercase-string&uppercase-string.',
+				22,
+			],
 		]);
 	}
 

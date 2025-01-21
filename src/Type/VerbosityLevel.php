@@ -91,10 +91,18 @@ final class VerbosityLevel
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
-				return $type;
+
+				// Keep checking if we need to be very verbose.
+				return $traverse($type);
 			}
 			if ($type->isConstantValue()->yes() && $type->isNull()->no()) {
 				$moreVerbose = true;
+
+				// For ConstantArrayType we need to keep checking if we need to be very verbose.
+				if (!$type->isArray()->no()) {
+					return $traverse($type);
+				}
+
 				return $type;
 			}
 			if (

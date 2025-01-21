@@ -511,4 +511,17 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], $expectedErrors);
 	}
 
+	public function testBug12457(): void
+	{
+		$this->checkTypeAgainstNativeType = true;
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+		$this->analyse([__DIR__ . '/data/bug-12457.php'], [
+			[
+				'PHPDoc tag @var with type array{numeric-string} is not subtype of type array{lowercase-string&numeric-string&uppercase-string}.',
+				13,
+			],
+		]);
+	}
+
 }

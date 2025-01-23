@@ -341,4 +341,24 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12462(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-12462.php'], [
+			[
+				'Function Bug12462\functionReturningYieldingClosure() should return int but returns Closure.',
+				7,
+			],
+			[
+				'Function Bug12462\functionReturningYieldingArrowFunction() should return int but returns Closure.',
+				12,
+			],
+			[
+				'Function Bug12462\functionRetuningYieldingAnonymousClass() should return int but returns class@anonymous/tests/PHPStan/Rules/Functions/data/bug-12462.php:17.',
+				17,
+			],
+		]);
+	}
+
 }

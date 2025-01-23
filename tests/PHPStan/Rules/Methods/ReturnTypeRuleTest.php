@@ -1232,4 +1232,22 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12462(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12462.php'], [
+			[
+				'Method Bug12462\A::methodReturningYieldingClosure() should return int but returns Closure.',
+				8,
+			],
+			[
+				'Method Bug12462\A::methodReturningYieldingArrowFunction() should return int but returns Closure.',
+				13,
+			],
+			[
+				'Method Bug12462\A::methodRetuningYieldingAnonymousClass() should return int but returns class@anonymous/tests/PHPStan/Rules/Methods/data/bug-12462.php:18.',
+				18,
+			],
+		]);
+	}
+
 }

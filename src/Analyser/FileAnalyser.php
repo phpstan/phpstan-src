@@ -51,6 +51,7 @@ final class FileAnalyser
 		private NodeScopeResolver $nodeScopeResolver,
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
+		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 	)
@@ -142,7 +143,15 @@ final class FileAnalyser
 						}
 
 						foreach ($ruleErrors as $ruleError) {
-							$temporaryFileErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+							$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+
+							foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+								if ($ignoreErrorExtension->ignore($error, $node, $scope)) {
+									continue 2;
+								}
+							}
+
+							$temporaryFileErrors[] = $error;
 						}
 					}
 
@@ -280,6 +289,17 @@ final class FileAnalyser
 
 			unset($unmatchedLineIgnores[$fileKey]);
 		}
+
+		$fileErrors = array_filter($fileErrors, function (Error $error) use ($scope) : bool {
+			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+				if ($ignoreErrorExtension->ignore($error, null, $scope)) {
+					return false;
+				}
+			}
+
+			return true;
+		});
+
 
 		return new FileAnalyserResult(
 			$fileErrors,

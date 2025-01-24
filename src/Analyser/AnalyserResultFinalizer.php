@@ -19,6 +19,7 @@ final class AnalyserResultFinalizer
 
 	public function __construct(
 		private RuleRegistry $ruleRegistry,
+		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
@@ -91,6 +92,16 @@ final class AnalyserResultFinalizer
 				$tempCollectorErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
 			}
 		}
+
+		$tempCollectorErrors = array_filter($tempCollectorErrors, function (string $error) use ($scope, $node) : bool {
+			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+				if ($ignoreErrorExtension->ignore($error, $node, $scope)) {
+					return false;
+				}
+			}
+
+			return true;
+		});
 
 		$errors = $analyserResult->getUnorderedErrors();
 		$locallyIgnoredErrors = $analyserResult->getLocallyIgnoredErrors();

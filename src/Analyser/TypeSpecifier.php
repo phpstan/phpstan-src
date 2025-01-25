@@ -726,7 +726,7 @@ final class TypeSpecifier
 				if (
 					$expr->expr instanceof FuncCall
 					&& $expr->expr->name instanceof Name
-					&& in_array($expr->expr->name->toLowerString(), ['array_search'], true)
+					&& $expr->expr->name->toLowerString() === 'array_search'
 					&& count($expr->expr->getArgs()) >= 2
 				) {
 					$arrayArg = $expr->expr->getArgs()[1]->value;

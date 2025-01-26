@@ -4,11 +4,14 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\Tag\VarTag;
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\MixedType;
@@ -24,7 +27,11 @@ use function sprintf;
 final class VarTagTypeRuleHelper
 {
 
-	public function __construct(private bool $checkTypeAgainstPhpDocType, private bool $strictWideningCheck)
+	public function __construct(
+		private TypeNodeResolver $typeNodeResolver,
+		private bool $checkTypeAgainstPhpDocType,
+		private bool $strictWideningCheck,
+	)
 	{
 	}
 
@@ -134,15 +141,15 @@ final class VarTagTypeRuleHelper
 				$type = new ArrayType(new MixedType(), new MixedType());
 			}
 
-			return $type->isSuperTypeOf($varTagType)->no();
+			return $this->isSuperTypeOfVarType($type, $varTagType)->no();
 		}
 
 		if ($expr instanceof Expr\ConstFetch) {
-			return $type->isSuperTypeOf($varTagType)->no();
+			return $this->isSuperTypeOfVarType($type, $varTagType)->no();
 		}
 
 		if ($expr instanceof Node\Scalar) {
-			return $type->isSuperTypeOf($varTagType)->no();
+			return $this->isSuperTypeOfVarType($type, $varTagType)->no();
 		}
 
 		if ($expr instanceof Expr\New_) {
@@ -157,18 +164,18 @@ final class VarTagTypeRuleHelper
 	private function checkType(Type $type, Type $varTagType, int $depth = 0): bool
 	{
 		if ($this->strictWideningCheck) {
-			return !$type->isSuperTypeOf($varTagType)->yes();
+			return !$this->isSuperTypeOfVarType($type, $varTagType)->yes();
 		}
 
 		if ($type->isConstantArray()->yes()) {
 			if ($type->isIterableAtLeastOnce()->no()) {
 				$type = new ArrayType(new MixedType(), new MixedType());
-				return $type->isSuperTypeOf($varTagType)->no();
+				return $this->isSuperTypeOfVarType($type, $varTagType)->no();
 			}
 		}
 
 		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
-			if ($type->isSuperTypeOf($varTagType)->no()) {
+			if ($this->isSuperTypeOfVarType($type, $varTagType)->no()) {
 				return true;
 			}
 
@@ -176,17 +183,24 @@ final class VarTagTypeRuleHelper
 			$innerVarTagType = $varTagType->getIterableValueType();
 
 			if ($type->equals($innerType) || $varTagType->equals($innerVarTagType)) {
-				return !$innerType->isSuperTypeOf($innerVarTagType)->yes();
+				return !$this->isSuperTypeOfVarType($innerType, $innerVarTagType)->yes();
 			}
 
 			return $this->checkType($innerType, $innerVarTagType, $depth + 1);
 		}
 
-		if ($type->isConstantValue()->yes() && $depth === 0) {
-			return $type->isSuperTypeOf($varTagType)->no();
+		if ($depth === 0 && $type->isConstantValue()->yes()) {
+			return $this->isSuperTypeOfVarType($type, $varTagType)->no();
 		}
 
-		return !$type->isSuperTypeOf($varTagType)->yes();
+		return !$this->isSuperTypeOfVarType($type, $varTagType)->yes();
+	}
+
+	private function isSuperTypeOfVarType(Type $type, Type $varTagType): TrinaryLogic
+	{
+		$type = $this->typeNodeResolver->resolve($type->toPhpDocNode(), new NameScope(null, []));
+
+		return $type->isSuperTypeOf($varTagType);
 	}
 
 }

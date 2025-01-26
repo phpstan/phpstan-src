@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -23,7 +24,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType, $this->strictWideningCheck),
+			new VarTagTypeRuleHelper(
+				self::getContainer()->getByType(TypeNodeResolver::class),
+				$this->checkTypeAgainstPhpDocType,
+				$this->strictWideningCheck,
+			),
 			$this->checkTypeAgainstNativeType,
 		);
 	}
@@ -180,6 +185,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	public function testBug4505(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4505.php'], []);
+	}
+
+	public function testBug12458(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12458.php'], []);
 	}
 
 	public function testEnums(): void

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -13,7 +14,11 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(true, true));
+		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(
+			self::getContainer()->getByType(TypeNodeResolver::class),
+			true,
+			true,
+		));
 	}
 
 	public function testRule(): void

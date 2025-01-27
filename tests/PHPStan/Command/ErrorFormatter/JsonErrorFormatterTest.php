@@ -24,7 +24,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		"errors":0,
 		"file_errors":0
 	},
-	"files":[],
+	"files":{},
 	"errors": []
 }',
 		];
@@ -67,7 +67,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		"errors":1,
 		"file_errors":0
 	},
-	"files":[],
+	"files":{},
 	"errors": [
 		"first generic error"
 	]
@@ -133,7 +133,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		"errors":2,
 		"file_errors":0
 	},
-	"files":[],
+	"files":{},
 	"errors": [
 		"first generic error",
 		"second generic<error>"

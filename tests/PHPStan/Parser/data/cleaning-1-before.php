@@ -36,6 +36,11 @@ class Baz
 		}
 	}
 
+	public function someGenerator3()
+	{
+		echo yield;
+	}
+
 	public function someVariadics()
 	{
 		if (rand(0, 1)) {
@@ -80,6 +85,11 @@ class ContainsClosure
 
 			yield;
 		};
+	}
+
+	public function doBar()
+	{
+		$fn = fn() => yield;
 	}
 
 }

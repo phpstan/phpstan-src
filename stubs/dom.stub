@@ -30,6 +30,17 @@ class DOMDocument
 class DOMNode
 {
 
+	/**
+	 * @var DOMNamedNodeMap|null
+	 */
+	public $attributes;
+
+	/**
+	 * @phpstan-assert-if-true !null $this->attributes
+	 * @return bool
+	 */
+	public function hasAttributes() {}
+
 }
 
 class DOMElement extends DOMNode

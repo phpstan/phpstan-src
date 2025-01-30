@@ -4729,7 +4729,7 @@ return [
 'Imagick::getColorspace' => ['Imagick::COLORSPACE_*'],
 'Imagick::getCompression' => ['Imagick::COMPRESSION_*'],
 'Imagick::getCompressionQuality' => ['int'],
-'Imagick::getConfigureOptions' => ['array'],
+'Imagick::getConfigureOptions' => ['array<string, string>'],
 'Imagick::getCopyright' => ['string'],
 'Imagick::getFeatures' => ['string'],
 'Imagick::getFilename' => ['string'],

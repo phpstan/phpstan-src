@@ -2829,6 +2829,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5623.php'], []);
 	}
 
+	public function testImagick(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/imagick.php'], []);
+	}
+
 	public function testImagickPixel(): void
 	{
 		$this->checkThisOnly = false;

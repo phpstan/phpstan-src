@@ -151,4 +151,26 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndReadonlyHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/readonly-property-hooks.php'], [
+			[
+				'Hooked properties cannot be readonly.',
+				7,
+			],
+			[
+				'Hooked properties cannot be readonly.',
+				12,
+			],
+			[
+				'Hooked properties cannot be readonly.',
+				14,
+			],
+		]);
+	}
+
 }

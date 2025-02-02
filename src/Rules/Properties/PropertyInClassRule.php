@@ -76,6 +76,17 @@ final class PropertyInClassRule implements Rule
 			return [];
 		}
 
+		if ($node->isReadOnly()) {
+			if ($node->hasHooks()) {
+				return [
+					RuleErrorBuilder::message('Hooked properties cannot be readonly.')
+						->nonIgnorable()
+						->identifier('property.hookReadOnly')
+						->build(),
+				];
+			}
+		}
+
 		if (!$this->doAllHooksHaveBody($node)) {
 			return [
 				RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')

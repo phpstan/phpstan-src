@@ -54,6 +54,7 @@ final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStat
 				$variant->getInvalidateExpressions(),
 				$variant->getUsedVariables(),
 				$variant->acceptsNamedArguments(),
+				$variant->isDeprecated(),
 			);
 		}
 

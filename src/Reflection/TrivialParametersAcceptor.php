@@ -72,6 +72,11 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isDeprecated(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function getImpurePoints(): array
 	{
 		return [

@@ -79,6 +79,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TrinaryLogic $acceptsNamedArguments;
 
+	private TrinaryLogic $isDeprecated;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -101,6 +103,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
 		?TrinaryLogic $acceptsNamedArguments = null,
+		?TrinaryLogic $isDeprecated = null,
 	)
 	{
 		if ($acceptsNamedArguments === null) {
@@ -116,6 +119,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->callSiteVarianceMap = $callSiteVarianceMap ?? TemplateTypeVarianceMap::createEmpty();
 		$this->impurePoints = $impurePoints ?? [new SimpleImpurePoint('functionCall', 'call to an unknown Closure', false)];
+		$this->isDeprecated = $isDeprecated ?? TrinaryLogic::createNo();
 	}
 
 	/**
@@ -148,6 +152,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		}
 
 		return $certainCount > 0 ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
+	}
+
+	public function isDeprecated(): TrinaryLogic
+	{
+		return $this->isDeprecated;
 	}
 
 	public function getClassName(): string
@@ -262,6 +271,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					$this->impurePoints,
 					$this->invalidateExpressions,
 					$this->usedVariables,
+					$this->isDeprecated,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -589,6 +599,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->invalidateExpressions,
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
+			$this->isDeprecated,
 		);
 	}
 
@@ -639,6 +650,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->invalidateExpressions,
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
+			$this->isDeprecated,
 		);
 	}
 

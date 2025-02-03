@@ -18,6 +18,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use ReflectionFunction;
 use function array_map;
 use function count;
@@ -113,7 +114,21 @@ final class ClosureTypeFactory
 
 		}, $betterReflectionFunction->getParameters());
 
-		return new ClosureType($parameters, TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($betterReflectionFunction->getReturnType())), $betterReflectionFunction->isVariadic());
+		return new ClosureType(
+			$parameters,
+			TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($betterReflectionFunction->getReturnType())),
+			$betterReflectionFunction->isVariadic(),
+			null,
+			null,
+			null,
+			[],
+			[],
+			null,
+			[],
+			[],
+			null,
+			TrinaryLogic::createFromBoolean($betterReflectionFunction->isDeprecated()),
+		);
 	}
 
 }

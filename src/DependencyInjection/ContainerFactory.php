@@ -39,14 +39,17 @@ use function array_unique;
 use function count;
 use function dirname;
 use function extension_loaded;
+use function get_cfg_var;
 use function getenv;
 use function ini_get;
 use function is_array;
 use function is_file;
 use function is_readable;
+use function is_string;
 use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
+use function strtr;
 use function substr;
 
 /**
@@ -148,6 +151,12 @@ final class ContainerFactory
 		}
 
 		$configurator->setAllConfigFiles($allConfigFiles);
+
+		if (!array_key_exists('editorUrl', $projectConfig['parameters'])) {
+			$configurator->addParameters([
+				'editorUrl' => $this->getEditorUrlFromPhpIni(),
+			]);
+		}
 
 		$container = $configurator->createContainer()->getByType(Container::class);
 		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
@@ -389,6 +398,25 @@ final class ContainerFactory
 		}
 
 		return $argument;
+	}
+
+	/**
+	 * Try to fetch an editor URL from php.ini by reading xdebug configuration.
+	 *
+	 * This works even if the xdebug extension is not loaded.
+	 */
+	private function getEditorUrlFromPhpIni(): ?string
+	{
+		$xdebugFileLinkFormat = ini_get('xdebug.file_link_format') ?: get_cfg_var('xdebug.file_link_format');
+
+		if (is_string($xdebugFileLinkFormat) && $xdebugFileLinkFormat !== '') {
+			return strtr($xdebugFileLinkFormat, [
+				'%f' => '%file%',
+				'%l' => '%line%',
+			]);
+		}
+
+		return null;
 	}
 
 }

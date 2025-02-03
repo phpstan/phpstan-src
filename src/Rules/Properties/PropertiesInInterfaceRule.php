@@ -57,6 +57,15 @@ final class PropertiesInInterfaceRule implements Rule
 			];
 		}
 
+		if ($node->isReadOnly()) {
+			return [
+				RuleErrorBuilder::message('Interfaces cannot include readonly hooked properties.')
+					->nonIgnorable()
+					->identifier('property.readOnlyInInterface')
+					->build(),
+			];
+		}
+
 		if ($this->hasAnyHookBody($node)) {
 			return [
 				RuleErrorBuilder::message('Interfaces cannot include property hooks with bodies.')

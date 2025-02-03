@@ -118,4 +118,26 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndReadonlyPropertyHooksInInterface(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/readonly-property-hooks-in-interface.php'], [
+			[
+				'Interfaces cannot include readonly hooked properties.',
+				7,
+			],
+			[
+				'Interfaces cannot include readonly hooked properties.',
+				9,
+			],
+			[
+				'Interfaces cannot include readonly hooked properties.',
+				11,
+			],
+		]);
+	}
+
 }

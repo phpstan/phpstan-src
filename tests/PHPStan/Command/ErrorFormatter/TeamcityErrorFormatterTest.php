@@ -18,6 +18,7 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			'',
+			'',
 		];
 
 		yield [
@@ -28,6 +29,9 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ',
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+',
 		];
 
 		yield [
@@ -35,6 +39,9 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			1,
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
+',
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
 ',
@@ -51,6 +58,12 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 ##teamcity[inspection typeId=\'phpstan\' message=\'Foo<Bar>\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
 ',
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'2\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo<Bar>\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
+',
 		];
 
 		yield [
@@ -58,6 +71,10 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			2,
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
+##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
+',
 			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
@@ -77,19 +94,43 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 ##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
 ##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
 ',
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'2\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo\' file=\'folder with unicode 😃/file name with "spaces" and unicode 😃.php\' line=\'4\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foo<Bar>\' file=\'foo.php\' line=\'1\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
+##teamcity[inspection typeId=\'phpstan\' message=\'first generic error\' file=\'.\' SEVERITY=\'ERROR\']
+##teamcity[inspection typeId=\'phpstan\' message=\'second generic<error>\' file=\'.\' SEVERITY=\'ERROR\']
+',
+		];
+
+		yield [
+			'One file error',
+			1,
+			[4, 2],
+			0,
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foobar\Buz\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
+',
+			'##teamcity[inspectionType id=\'phpstan\' name=\'phpstan\' category=\'phpstan\' description=\'phpstan Inspection\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Bar||nBar2\' file=\'foo.php\' line=\'\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'\']
+##teamcity[inspection typeId=\'phpstan\' message=\'Foobar\Buz (foobar.buz)\' file=\'foo.php\' line=\'5\' SEVERITY=\'ERROR\' ignorable=\'1\' tip=\'a tip\']
+',
 		];
 	}
 
 	/**
 	 * @dataProvider dataFormatterOutputProvider
-	 *
+	 * @param array{int, int}|int $numFileErrors
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
-		int $numFileErrors,
+		array|int $numFileErrors,
 		int $numGenericErrors,
 		string $expected,
+		string $expectedVerbose,
 	): void
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
@@ -103,6 +144,13 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+
+		$this->assertSame($exitCode, $formatter->formatErrors(
+			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
+			$this->getOutput(false, true),
+		), sprintf('%s: response code do not match', $message));
+
+		$this->assertEquals($expectedVerbose, $this->getOutputContent(false, true), sprintf('%s: output do not match', $message));
 	}
 
 }

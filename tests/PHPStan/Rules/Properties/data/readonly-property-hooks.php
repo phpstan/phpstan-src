@@ -13,3 +13,8 @@ class HelloWorld
 
 	public readonly string $lastName { set => $this->lastName; }
 }
+
+abstract class HiWorld
+{
+	public abstract readonly string $firstName { get { return 'jake'; } set; }
+}

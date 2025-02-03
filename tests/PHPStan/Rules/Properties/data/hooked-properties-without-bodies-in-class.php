@@ -12,7 +12,7 @@ class AbstractPerson
 class PromotedHookedPropertyWithoutVisibility
 {
 
-	public function __construct(mixed $test { get; })
+	public function __construct(public mixed $test { get; })
 	{
 
 	}

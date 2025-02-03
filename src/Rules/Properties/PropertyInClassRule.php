@@ -72,8 +72,6 @@ final class PropertyInClassRule implements Rule
 						->build(),
 				];
 			}
-
-			return [];
 		}
 
 		if ($node->isReadOnly()) {
@@ -87,13 +85,15 @@ final class PropertyInClassRule implements Rule
 			}
 		}
 
-		if (!$this->doAllHooksHaveBody($node)) {
-			return [
-				RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
-					->nonIgnorable()
-					->identifier('property.hookWithoutBody')
-					->build(),
-			];
+		if (!$node->isAbstract() && !$node->isReadOnly()) {
+			if (!$this->doAllHooksHaveBody($node)) {
+				return [
+					RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
+						->nonIgnorable()
+						->identifier('property.hookWithoutBody')
+						->build(),
+				];
+			}
 		}
 
 		return [];

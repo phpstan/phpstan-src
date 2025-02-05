@@ -107,7 +107,6 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
 use Traversable;
-use UnitEnum;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -239,7 +238,7 @@ final class TypeNodeResolver
 				return new ClassStringType();
 
 			case 'enum-string':
-				return new GenericClassStringType(new ObjectType(UnitEnum::class));
+				return new GenericClassStringType(new ObjectType('UnitEnum'));
 
 			case 'callable-string':
 				return new IntersectionType([new StringType(), new CallableType()]);
@@ -712,7 +711,7 @@ final class TypeNodeResolver
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
 				if ($genericType->isObject()->yes() || $genericType instanceof MixedType) {
-					return new GenericClassStringType(TypeCombinator::intersect($genericType, new ObjectType(UnitEnum::class)));
+					return new GenericClassStringType(TypeCombinator::intersect($genericType, new ObjectType('UnitEnum')));
 				}
 			}
 

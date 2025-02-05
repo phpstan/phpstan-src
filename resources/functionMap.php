@@ -10283,7 +10283,7 @@ return [
 'scalebarObj::set' => ['int', 'property_name'=>'string', 'new_value'=>''],
 'scalebarObj::setImageColor' => ['int', 'red'=>'int', 'green'=>'int', 'blue'=>'int'],
 'scalebarObj::updateFromString' => ['int', 'snippet'=>'string'],
-'scandir' => ['list<string>|false', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING| SCANDIR_SORT_NONE', 'context='=>'resource'],
+'scandir' => ['__benevolent<list<string>|false>', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING|SCANDIR_SORT_NONE', 'context='=>'resource'],
 'SDO_DAS_ChangeSummary::beginLogging' => [''],
 'SDO_DAS_ChangeSummary::endLogging' => [''],
 'SDO_DAS_ChangeSummary::getChangedDataObjects' => ['SDO_List'],

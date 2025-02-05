@@ -99,6 +99,7 @@ return [
 		'PhpToken::getTokenName' => ['non-falsy-string'],
 		'preg_match_all' => ['0|positive-int|false', 'pattern'=>'string', 'subject'=>'string', '&w_subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
 		'proc_get_status' => ['array{command: string, pid: int, running: bool, signaled: bool, stopped: bool, exitcode: int, termsig: int, stopsig: int}', 'process'=>'resource'],
+		'scandir' => ['__benevolent<list<string>|false>', 'dir'=>'string', 'sorting_order='=>'SCANDIR_SORT_ASCENDING|SCANDIR_SORT_DESCENDING|SCANDIR_SORT_NONE', 'context='=>'?resource'],
 		'set_error_handler' => ['?callable', 'callback'=>'null|callable(int,string,string,int):bool', 'error_types='=>'int'],
 		'socket_addrinfo_lookup' => ['AddressInfo[]', 'node'=>'string', 'service='=>'mixed', 'hints='=>'array'],
 		'socket_select' => ['int|false', '&w_read'=>'Socket[]|null', '&w_write'=>'Socket[]|null', '&w_except'=>'Socket[]|null', 'seconds'=>'int|null', 'microseconds='=>'int'],

@@ -92,6 +92,17 @@ final class PropertyInClassRule implements Rule
 			}
 		}
 
+		if ($node->isStatic()) {
+			if ($node->hasHooks()) {
+				return [
+					RuleErrorBuilder::message('Hooked properties cannot be static.')
+						->nonIgnorable()
+						->identifier('property.hookStatic')
+						->build(),
+				];
+			}
+		}
+
 		if ($node->isVirtual()) {
 			if ($node->getDefault() !== null) {
 				return [

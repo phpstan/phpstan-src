@@ -5,10 +5,10 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 
 final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -31,7 +31,7 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 
 		$argType = $scope->getType($args[0]->value);
 		if ($argType->isString()->yes() || $argType->isArray()->yes()) {
-			return new BenevolentUnionType([$argType, new ConstantBooleanType(false)]);
+			return new UnionType([$argType, new ConstantBooleanType(false)]);
 		}
 
 		return null;

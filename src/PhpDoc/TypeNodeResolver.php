@@ -710,9 +710,7 @@ final class TypeNodeResolver
 		} elseif ($mainTypeName === 'enum-string') {
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
-				if ($genericType->isObject()->yes() || $genericType instanceof MixedType) {
-					return new GenericClassStringType(TypeCombinator::intersect($genericType, new ObjectType('UnitEnum')));
-				}
+				return new GenericClassStringType(TypeCombinator::intersect($genericType, new ObjectType('UnitEnum')));
 			}
 
 			return new ErrorType();

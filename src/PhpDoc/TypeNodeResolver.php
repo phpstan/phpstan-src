@@ -107,6 +107,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
 use Traversable;
+use UnitEnum;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -238,7 +239,7 @@ final class TypeNodeResolver
 				return new ClassStringType();
 
 			case 'enum-string':
-				return new GenericClassStringType(new ObjectType('UnitEnum'));
+				return new GenericClassStringType(new ObjectType(UnitEnum::class));
 
 			case 'callable-string':
 				return new IntersectionType([new StringType(), new CallableType()]);
@@ -698,11 +699,20 @@ final class TypeNodeResolver
 			if (count($genericTypes) === 2) { // iterable<KeyType, ValueType>
 				return new IterableType($genericTypes[0], $genericTypes[1]);
 			}
-		} elseif (in_array($mainTypeName, ['class-string', 'interface-string', 'enum-string'], true)) {
+		} elseif (in_array($mainTypeName, ['class-string', 'interface-string'], true)) {
 			if (count($genericTypes) === 1) {
 				$genericType = $genericTypes[0];
 				if ($genericType->isObject()->yes() || $genericType instanceof MixedType) {
 					return new GenericClassStringType($genericType);
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'enum-string') {
+			if (count($genericTypes) === 1) {
+				$genericType = $genericTypes[0];
+				if ($genericType->isObject()->yes() || $genericType instanceof MixedType) {
+					return new GenericClassStringType(TypeCombinator::intersect($genericType, new ObjectType(UnitEnum::class)));
 				}
 			}
 

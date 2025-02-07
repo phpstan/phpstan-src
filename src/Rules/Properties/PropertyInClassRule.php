@@ -92,6 +92,17 @@ final class PropertyInClassRule implements Rule
 			}
 		}
 
+		if ($node->isVirtual()) {
+			if ($node->getDefault() !== null) {
+				return [
+					RuleErrorBuilder::message('Virtual hooked properties cannot have a default value.')
+						->nonIgnorable()
+						->identifier('property.virtualDefault')
+						->build(),
+				];
+			}
+		}
+
 		return [];
 	}
 

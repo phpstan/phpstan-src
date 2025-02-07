@@ -160,4 +160,9 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return $this->originalNode->hooks;
 	}
 
+	public function isVirtual(): bool
+	{
+		return $this->classReflection->getNativeProperty($this->name)->isVirtual()->yes();
+	}
+
 }

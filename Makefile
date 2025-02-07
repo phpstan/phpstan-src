@@ -90,6 +90,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/hooked-properties-without-bodies-in-class.php \
 		--exclude tests/PHPStan/Rules/Properties/data/readonly-property-hooks.php \
 		--exclude tests/PHPStan/Rules/Properties/data/readonly-property-hooks-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/virtual-hooked-properties.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-12281.php \
 		--exclude tests/PHPStan/Rules/Traits/data/bug-12281.php \
 		--exclude tests/PHPStan/Rules/Classes/data/invalid-hooked-properties.php \

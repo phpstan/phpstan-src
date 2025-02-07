@@ -177,4 +177,18 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndVirtualHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/virtual-hooked-properties.php'], [
+			[
+				'Virtual hooked properties cannot have a default value.',
+				17,
+			],
+		]);
+	}
+
 }

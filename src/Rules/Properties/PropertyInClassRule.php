@@ -97,7 +97,7 @@ final class PropertyInClassRule implements Rule
 				return [
 					RuleErrorBuilder::message('Hooked properties cannot be static.')
 						->nonIgnorable()
-						->identifier('property.hookStatic')
+						->identifier('property.hookedStatic')
 						->build(),
 				];
 			}

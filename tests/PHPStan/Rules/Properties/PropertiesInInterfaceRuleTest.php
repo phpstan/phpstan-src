@@ -140,4 +140,26 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndStaticHookedPropertyInInterface(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/static-hooked-property-in-interface.php'], [
+			[
+				'Hooked properties cannot be static.',
+				7,
+			],
+			[
+				'Hooked properties cannot be static.',
+				9,
+			],
+			[
+				'Hooked properties cannot be static.',
+				11,
+			],
+		]);
+	}
+
 }

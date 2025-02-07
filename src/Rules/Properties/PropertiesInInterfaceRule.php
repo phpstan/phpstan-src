@@ -66,6 +66,15 @@ final class PropertiesInInterfaceRule implements Rule
 			];
 		}
 
+		if ($node->isStatic()) {
+			return [
+				RuleErrorBuilder::message('Hooked properties cannot be static.')
+					->nonIgnorable()
+					->identifier('property.hookedStaticInInterface')
+					->build(),
+			];
+		}
+
 		if ($this->hasAnyHookBody($node)) {
 			return [
 				RuleErrorBuilder::message('Interfaces cannot include property hooks with bodies.')

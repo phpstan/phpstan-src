@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89a9535ab6639eb29e06b8e07f46c11d",
+    "content-hash": "ed330370de707366a77276c7da618015",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2187,16 +2187,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.55.0.0",
+            "version": "6.56.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "ad41e14a5a95478b7e43035b0c1d31625973f0f2"
+                "reference": "61b25baaca1ea904447f46d975a4ae7c99b722e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/ad41e14a5a95478b7e43035b0c1d31625973f0f2",
-                "reference": "ad41e14a5a95478b7e43035b0c1d31625973f0f2",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/61b25baaca1ea904447f46d975a4ae7c99b722e6",
+                "reference": "61b25baaca1ea904447f46d975a4ae7c99b722e6",
                 "shasum": ""
             },
             "require": {
@@ -2212,7 +2212,7 @@
                 "doctrine/coding-standard": "^12.0.0",
                 "phpstan/phpstan": "^1.10.60",
                 "phpstan/phpstan-phpunit": "^1.3.16",
-                "phpunit/phpunit": "^11.5.6",
+                "phpunit/phpunit": "^11.5.7",
                 "rector/rector": "1.2.10"
             },
             "suggest": {
@@ -2252,9 +2252,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.55.0.0"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.56.0.0"
             },
-            "time": "2025-02-07T13:59:27+00:00"
+            "time": "2025-02-09T11:42:32+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

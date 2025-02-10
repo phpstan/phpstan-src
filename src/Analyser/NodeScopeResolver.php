@@ -212,6 +212,7 @@ use function count;
 use function in_array;
 use function is_array;
 use function is_int;
+use function is_object;
 use function is_string;
 use function ksort;
 use function sprintf;
@@ -4967,7 +4968,7 @@ final class NodeScopeResolver
 			}
 
 			// Attempt to prevent null exception at line 4974 when calling getAttritbute
-			if(!isset($arg) && !is_object($arg)) {
+			if (!isset($arg) && !is_object($arg)) {
 				continue;
 			}
 			

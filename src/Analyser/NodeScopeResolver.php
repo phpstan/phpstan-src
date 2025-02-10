@@ -4966,7 +4966,12 @@ final class NodeScopeResolver
 				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter);
 			}
 
-			$originalArg = $arg?->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+			// Attempt to prevent null exception at line 4974 when calling getAttritbute
+			if(!isset($arg) && !is_object($arg)) {
+				continue;
+			}
+			
+			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			$nodeCallback($originalArg, $scope);
 
 			$originalScope = $scope;

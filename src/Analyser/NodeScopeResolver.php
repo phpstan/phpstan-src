@@ -4966,7 +4966,7 @@ final class NodeScopeResolver
 				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter);
 			}
 
-			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+			$originalArg = $arg?->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			$nodeCallback($originalArg, $scope);
 
 			$originalScope = $scope;

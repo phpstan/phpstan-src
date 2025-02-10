@@ -123,6 +123,11 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			];
 		}
 
+		$errors[] = [
+			'Readonly property ReadonlyPropertyAssign\ArrayAccessPropertyFetch::$storage is assigned outside of the constructor.',
+			212,
+		];
+
 		$this->analyse([__DIR__ . '/data/readonly-assign.php'], $errors);
 	}
 
@@ -166,6 +171,24 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				16,
 			],
 		]);
+	}
+
+	public function testBug8929(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-8929.php'], []);
+	}
+
+	public function testBug12537(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12537.php'], []);
 	}
 
 }

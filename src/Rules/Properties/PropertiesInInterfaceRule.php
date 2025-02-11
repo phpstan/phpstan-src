@@ -70,7 +70,7 @@ final class PropertiesInInterfaceRule implements Rule
 			return [
 				RuleErrorBuilder::message('Hooked properties cannot be static.')
 					->nonIgnorable()
-					->identifier('property.hookedStaticInInterface')
+					->identifier('property.hookedStatic')
 					->build(),
 			];
 		}

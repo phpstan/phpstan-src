@@ -92,10 +92,11 @@ final class TableErrorFormatter implements ErrorFormatter
 					if (str_contains($tip, "\n")) {
 						$lines = explode("\n", $tip);
 						foreach ($lines as $line) {
-							$message .= '💡 ' . ltrim($line, ' •') . "\n";
+							$message .= '💡  ' . ltrim($line, ' •') . "\n";
 						}
+						$message = rtrim($message, "\n");
 					} else {
-						$message .= '💡 ' . $tip;
+						$message .= '💡  ' . $tip;
 					}
 				}
 				if (is_string($this->editorUrl)) {

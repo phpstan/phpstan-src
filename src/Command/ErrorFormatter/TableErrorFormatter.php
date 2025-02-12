@@ -15,6 +15,7 @@ use function explode;
 use function getenv;
 use function is_string;
 use function ltrim;
+use function rtrim;
 use function sprintf;
 use function str_contains;
 use function str_replace;

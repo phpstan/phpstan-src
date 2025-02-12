@@ -94,14 +94,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  [ERROR] Found 4 errors
 
@@ -143,14 +143,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  -- -----------------------
      Error
@@ -195,7 +195,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ----------------
   5      Foobar\Buz
          🪪  foobar.buz
-         💡 a tip
+         💡  a tip
  ------ ----------------
 
 
@@ -216,7 +216,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  ------ ----------------
   5      Foobar\Buz
          🪪  foobar.buz
-         💡 a tip
+         💡  a tip
  ------ ----------------
 
 

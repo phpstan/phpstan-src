@@ -1,0 +1,30 @@
+services:
+	-
+		class: DynamicParameterTypeExtensionArrowFunction\FunctionDynamicParameterTypeExtension
+		tags:
+			- phpstan.functionDynamicParameterTypeExtension
+
+	-
+		class: DynamicParameterTypeExtensionArrowFunction\MethodDynamicParameterTypeExtension
+		tags:
+			- phpstan.methodDynamicParameterTypeExtension
+
+	-
+		class: DynamicParameterTypeExtensionArrowFunction\StaticMethodDynamicParameterTypeExtension
+		tags:
+			- phpstan.staticMethodDynamicParameterTypeExtension
+
+	-
+		class: DynamicParameterTypeExtensionClosure\FunctionDynamicParameterTypeExtension
+		tags:
+			- phpstan.functionDynamicParameterTypeExtension
+
+	-
+		class: DynamicParameterTypeExtensionClosure\MethodDynamicParameterTypeExtension
+		tags:
+			- phpstan.methodDynamicParameterTypeExtension
+
+	-
+		class: DynamicParameterTypeExtensionClosure\StaticMethodDynamicParameterTypeExtension
+		tags:
+			- phpstan.staticMethodDynamicParameterTypeExtension

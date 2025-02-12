@@ -17,6 +17,7 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\DynamicParameterTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
@@ -98,6 +99,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 				$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 				self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+				self::getContainer()->getByType(DynamicParameterTypeExtensionProvider::class),
 				self::createScopeFactory($reflectionProvider, $typeSpecifier),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),

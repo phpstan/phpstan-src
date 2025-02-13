@@ -4,7 +4,7 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\DependencyInjection\Container;
 
-class LazyDynamicParameterTypeExtensionProvider implements DynamicParameterTypeExtensionProvider
+final class LazyDynamicParameterTypeExtensionProvider implements DynamicParameterTypeExtensionProvider
 {
 
 	public const FUNCTION_TAG = 'phpstan.functionDynamicParameterTypeExtension';

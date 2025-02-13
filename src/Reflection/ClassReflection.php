@@ -142,6 +142,9 @@ class ClassReflection
 	/** @var array<string, true> */
 	private static array $resolvingTypeAliasImports = [];
 
+	/** @var array<string, bool> */
+	private array $hasMethodCache = [];
+
 	/**
 	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
@@ -482,15 +485,25 @@ class ClassReflection
 
 	public function hasMethod(string $methodName): bool
 	{
+		if (array_key_exists($methodName, $this->hasMethodCache)) {
+			return $this->hasMethodCache[$methodName];
+		}
+
 		foreach ($this->methodsClassReflectionExtensions as $extension) {
 			if ($extension->hasMethod($this, $methodName)) {
+				$this->hasMethodCache[$methodName] = true;
+
 				return true;
 			}
 		}
 
 		if ($this->requireExtendsMethodsClassReflectionExtension->hasMethod($this, $methodName)) {
+			$this->hasMethodCache[$methodName] = true;
+
 			return true;
 		}
+
+		$this->hasMethodCache[$methodName] = false;
 
 		return false;
 	}

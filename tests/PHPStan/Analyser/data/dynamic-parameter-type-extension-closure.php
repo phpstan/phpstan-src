@@ -12,9 +12,12 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\MixedType;
@@ -66,8 +69,8 @@ class MethodDynamicParameterTypeExtension implements \PHPStan\Type\MethodDynamic
 	public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
 	{
 		return $methodReflection->getDeclaringClass()->getName() === Foo::class &&
-			$parameter->getName() === 'bar' &&
-			$methodReflection->getName() === 'methodWithCallable';
+			$parameter->getName() === 'relations' &&
+			$methodReflection->getName() === 'with';
 	}
 
 	public function getTypeFromMethodCall(
@@ -76,12 +79,25 @@ class MethodDynamicParameterTypeExtension implements \PHPStan\Type\MethodDynamic
 		ParameterReflection $parameter,
 		Scope $scope
 	): ?Type {
-		return new ClosureType(
-			[
-				new NativeParameterReflection('bar', false, new GenericObjectType(Generic::class, [new StringType()]), PassedByReference::createNo(), false, null),
-			],
-			new MixedType(),
-		);
+		return new ConstantArrayType([
+			new ConstantStringType('user'),
+		], [
+			new ClosureType(
+				[
+					new NativeParameterReflection(
+						'callback',
+						false,
+						new GenericObjectType('Illuminate\Database\Eloquent\Builder', [
+							new ObjectType('Illuminate\Database\Eloquent\Model'),
+						]),
+						PassedByReference::createNo(),
+						false,
+						null,
+					),
+				],
+				new MixedType(),
+			),
+		]);
 	}
 }
 
@@ -130,6 +146,11 @@ class Foo
 
 	}
 
+	public function with(array $relations)
+	{
+
+	}
+
 }
 
 /**
@@ -170,9 +191,11 @@ function functionWithCallable(int $foo, callable $callback)
 function test(Foo $foo): void
 {
 
-	(new Foo)->methodWithCallable(2, function ($arg) {
-		assertType('string', $arg->getValue());
-	});
+	(new Foo)->with([
+		'users' => function ($arg) {
+			assertType('Illuminate\Database\Eloquent\Builder<Illuminate\Database\Eloquent\Model>', $arg);
+		},
+	]);
 
 	Foo::staticMethodWithCallable(function ($i) {
 		assertType('float', $i);

@@ -69,6 +69,45 @@ final class UnsetRule implements Rule
 			}
 
 			return $this->canBeUnset($node->var, $scope);
+		} elseif (
+			$node instanceof Node\Expr\PropertyFetch
+			&& $node->name instanceof Node\Identifier
+		) {
+			$type = $scope->getType($node->var);
+			foreach ($type->getObjectClassReflections() as $classReflection) {
+				if ($classReflection->isReadOnly() || $classReflection->isImmutable()) {
+					return RuleErrorBuilder::message(
+						sprintf(
+							'Cannot unset property %s of %s class %s.',
+							$node->name->name,
+							$classReflection->isReadOnly() ? 'readonly' : 'immutable',
+							$type->describe(VerbosityLevel::value()),
+						),
+					)
+						->line($node->getStartLine())
+						->identifier('unset.readonlyClass')
+						->build();
+				}
+
+				if (!$classReflection->hasProperty($node->name->name)) {
+					continue;
+				}
+
+				$propertyReflection = $classReflection->getNativeProperty($node->name->name);
+				if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
+					return RuleErrorBuilder::message(
+						sprintf(
+							'Cannot unset %s property %s of %s.',
+							$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
+							$node->name->name,
+							$type->describe(VerbosityLevel::value()),
+						),
+					)
+						->line($node->getStartLine())
+						->identifier('unset.readonlyProperty')
+						->build();
+				}
+			}
 		}
 
 		return null;

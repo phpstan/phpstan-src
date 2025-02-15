@@ -213,6 +213,7 @@ class ImplodingStrings
 		$s = array(1, $i);
 
 		assertType('lowercase-string&non-falsy-string', implode("a", $s));
+		assertType('non-falsy-string&uppercase-string', implode("A", $s));
 	}
 
 	/**

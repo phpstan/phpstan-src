@@ -91,7 +91,7 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		}
 
 		// implode is one of the four functions that can produce literal strings as blessed by the original RFC: wiki.php.net/rfc/is_literal
-		if ($valueTypeAsString->isLiteralString()->yes() && $separatorType->isLiteralString()->yes()) {
+		if ($arrayType->getIterableValueType()->isLiteralString()->yes() && $separatorType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
 		}
 		if ($valueTypeAsString->isLowercaseString()->yes() && $separatorType->isLowercaseString()->yes()) {

@@ -61,6 +61,6 @@ class Foo
 
 	/** @param array{0: 1, 1: 'a'|'b', 3?: 'c'|'d', 4?: 'e'|'f', 5?: 'g'|'h', 6?: 'x'|'y'} $constArr */
 	public function constArrays6($constArr) {
-		assertType("literal-string&lowercase-string&non-falsy-string", implode('', $constArr));
+		assertType("lowercase-string&non-falsy-string", implode('', $constArr));
 	}
 }

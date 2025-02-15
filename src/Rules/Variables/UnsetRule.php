@@ -89,7 +89,7 @@ final class UnsetRule implements Rule
 						->build();
 				}
 
-				if (!$classReflection->hasProperty($node->name->name)) {
+				if (!$classReflection->hasNativeProperty($node->name->name)) {
 					continue;
 				}
 

@@ -93,5 +93,9 @@ function doFoo() {
 	$x = new PhpdocImmutableClass();
 	unset($x->y);
 	var_dump($x->y);
+
+	$x = new \stdClass();
+	unset($x->y);
+
 }
 

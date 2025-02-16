@@ -6604,7 +6604,7 @@ return [
 'MongoCollection::insert' => ['bool|array', 'a'=>'array', 'options='=>'array'],
 'MongoCollection::parallelCollectionScan' => ['MongoCommandCursor[]', 'num_cursors'=>'int'],
 'MongoCollection::remove' => ['bool|array', 'criteria='=>'array', 'options='=>'array'],
-'MongoCollection::save' => ['mixed', 'a'=>'array', 'options='=>'array'],
+'MongoCollection::save' => ['mixed', 'a'=>'array|object', 'options='=>'array'],
 'MongoCollection::setReadPreference' => ['bool', 'read_preference'=>'string', 'tags='=>'array'],
 'MongoCollection::setSlaveOkay' => ['bool', 'ok='=>'bool'],
 'MongoCollection::setWriteConcern' => ['bool', 'w'=>'mixed', 'wtimeout='=>'int'],

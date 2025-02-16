@@ -12,6 +12,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeCombinator;
+use function array_map;
 
 /**
  * @implements Rule<InArrowFunctionNode>
@@ -37,6 +39,13 @@ final class ArrowFunctionReturnTypeRule implements Rule
 
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$generatorType = new ObjectType(Generator::class);
+		$overriddenType = $node->getOverriddenType();
+		if ($overriddenType !== null && $overriddenType->isCallable()->yes()) {
+			$returnType = TypeCombinator::union(...array_map(
+				static fn ($a) => $a->getReturnType(),
+				$overriddenType->getCallableParametersAcceptors($scope),
+			));
+		}
 
 		$originalNode = $node->getOriginalNode();
 		$isVoidSuperType = $returnType->isVoid();

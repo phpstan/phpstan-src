@@ -230,3 +230,40 @@ function testUnionCallable(): void
 	functionWithCallableReturnType(fn ($i): string => 'test');
 	functionWithCallableReturnType(function ($i): string { return 'test'; });
 }
+
+function testComplexExpressions(Foo $foo): void
+{
+	// Type narrowing inside overridden closure
+	$foo->methodWithCallable(1, function ($i) {
+		$val = $i->getValue();
+		assertType('int', $val);
+
+		if ($val > 0) {
+			assertType('int<1, max>', $val);
+		}
+	});
+
+	// Variable assignment and reuse
+	functionWithCallable(2, function ($i) {
+		$val = $i->getValue();
+		assertType('string', $val);
+
+		$upper = strtoupper($val);
+		assertType('uppercase-string', $upper);
+	});
+
+	// Nested method calls on overridden type
+	$foo->methodWithCallable(1, function ($i) {
+		assertType('DynamicParameterTypeExtensionClosures\Generic<int>', $i);
+		assertType('int', $i->getValue());
+	});
+
+	// Multiple statements in closure body
+	functionWithCallable(1, function ($i) {
+		$a = $i->getValue();
+		$b = $i->getValue();
+		assertType('int', $a);
+		assertType('int', $b);
+		assertType('int', $a + $b);
+	});
+}

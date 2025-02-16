@@ -1,0 +1,5 @@
+services:
+	-
+		class: DynamicParameterTypeExtensionClosuresErrors\ErrorTestExtension
+		tags:
+			- phpstan.dynamicMethodParameterTypeExtension

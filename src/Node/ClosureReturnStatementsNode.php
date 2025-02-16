@@ -10,6 +10,7 @@ use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Type\Type;
 use function count;
 
 /**
@@ -33,6 +34,7 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 		private StatementResult $statementResult,
 		private array $executionEnds,
 		private array $impurePoints,
+		private ?Type $overriddenType = null,
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());
@@ -82,6 +84,11 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 	public function returnsByRef(): bool
 	{
 		return $this->closureExpr->byRef;
+	}
+
+	public function getOverriddenType(): ?Type
+	{
+		return $this->overriddenType;
 	}
 
 	#[Override]

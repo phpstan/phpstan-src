@@ -1297,6 +1297,7 @@ class NodeScopeResolver
 				$publicStatementResult,
 				$executionEnds,
 				array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
+				$passedToType,
 			), $closureReturnStatementsNodeScope, $storage);
 
 			return new ProcessClosureResult(
@@ -1398,6 +1399,7 @@ class NodeScopeResolver
 			$publicStatementResult,
 			$executionEnds,
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
+			$passedToType,
 		), $closureReturnStatementsNodeScope, $storage);
 
 		return new ProcessClosureResult(
@@ -1565,7 +1567,7 @@ class NodeScopeResolver
 			false,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
-		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
+		$this->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr, $passedToType), $refinedArrowFunctionScope, $storage);
 
 		return new ProcessArrowFunctionResult(
 			$this->expressionResultFactory->create($scope, beforeScope: $scope, expr: $expr, hasYield: false, isAlwaysTerminating: $exprResult->isAlwaysTerminating(), throwPoints: $exprResult->getThrowPoints(), impurePoints: $exprResult->getImpurePoints()),

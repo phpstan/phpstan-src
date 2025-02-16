@@ -9,6 +9,7 @@ use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
 
 /**
  * @implements Rule<ClosureReturnStatementsNode>
@@ -33,6 +34,13 @@ final class ClosureReturnTypeRule implements Rule
 		}
 
 		$returnType = $scope->getAnonymousFunctionReturnType();
+		$overriddenType = $node->getOverriddenType();
+		if ($overriddenType !== null && $overriddenType->isCallable()->yes()) {
+			$returnType = TypeCombinator::union(...array_map(
+				static fn ($a) => $a->getReturnType(),
+				$overriddenType->getCallableParametersAcceptors($scope),
+			));
+		}
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;
 

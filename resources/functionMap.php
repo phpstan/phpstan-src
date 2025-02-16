@@ -7173,7 +7173,7 @@ return [
 'MongoLog::getCallback' => ['callable'],
 'MongoLog::getLevel' => ['int'],
 'MongoLog::getModule' => ['int'],
-'MongoLog::setCallback' => ['void', 'log_function'=>'callable'],
+'MongoLog::setCallback' => ['bool', 'log_function'=>'callable'],
 'MongoLog::setLevel' => ['void', 'level'=>'int'],
 'MongoLog::setModule' => ['void', 'module'=>'int'],
 'MongoPool::getSize' => ['int'],

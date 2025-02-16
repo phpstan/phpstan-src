@@ -96,23 +96,27 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12421.php'], [
 			[
 				'Cannot unset property y of readonly class Bug12421\NativeReadonlyClass.',
-				78,
+				11,
 			],
 			[
 				'Cannot unset readonly property y of Bug12421\NativeReadonlyProperty.',
-				82,
+				15,
 			],
 			[
 				'Cannot unset property y of immutable class Bug12421\PhpdocReadonlyClass.',
-				86,
+				19,
 			],
 			[
 				'Cannot unset @readonly property y of Bug12421\PhpdocReadonlyProperty.',
-				90,
+				23,
 			],
 			[
 				'Cannot unset property y of immutable class Bug12421\PhpdocImmutableClass.',
-				94,
+				27,
+			],
+			[
+				'Cannot unset readonly property y of Bug12421\NativeReadonlyPropertySubClass.',
+				34,
 			],
 		]);
 	}

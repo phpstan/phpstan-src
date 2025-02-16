@@ -2,6 +2,39 @@
 
 namespace Bug12421;
 
+function doFoo() {
+	$x = new RegularProperty();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new NativeReadonlyClass();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new NativeReadonlyProperty();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new PhpdocReadonlyClass();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new PhpdocReadonlyProperty();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new PhpdocImmutableClass();
+	unset($x->y);
+	var_dump($x->y);
+
+	$x = new \stdClass();
+	unset($x->y);
+
+	$x = new NativeReadonlyPropertySubClass();
+	unset($x->y);
+	var_dump($x->y);
+}
+
 readonly class NativeReadonlyClass
 {
 	public Y $y;
@@ -65,37 +98,11 @@ class RegularProperty
 	}
 }
 
-class Y
+class NativeReadonlyPropertySubClass extends NativeReadonlyProperty
 {
 }
 
-function doFoo() {
-	$x = new RegularProperty();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new NativeReadonlyClass();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new NativeReadonlyProperty();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new PhpdocReadonlyClass();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new PhpdocReadonlyProperty();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new PhpdocImmutableClass();
-	unset($x->y);
-	var_dump($x->y);
-
-	$x = new \stdClass();
-	unset($x->y);
-
+class Y
+{
 }
 

@@ -86,6 +86,11 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return (bool) ($this->flags & Modifiers::PRIVATE);
 	}
 
+	public function isFinal(): bool
+	{
+		return (bool) ($this->flags & Modifiers::FINAL);
+	}
+
 	public function isStatic(): bool
 	{
 		return (bool) ($this->flags & Modifiers::STATIC);

@@ -81,6 +81,32 @@ final class PropertyInClassRule implements Rule
 			];
 		}
 
+		if ($node->isPrivate()) {
+			if ($node->hasHooks()) {
+				if ($node->isFinal()) {
+					return [
+						RuleErrorBuilder::message('Hooked properties cannot be both final and private.')
+							->nonIgnorable()
+							->identifier('property.abstractPrivate')
+							->build(),
+					];
+				}
+
+				foreach ($node->getHooks() as $hook) {
+					if (!$hook->isFinal()) {
+						continue;
+					}
+
+					return [
+						RuleErrorBuilder::message('Hooked properties cannot be both final and private.')
+							->nonIgnorable()
+							->identifier('property.abstractPrivate')
+							->build(),
+					];
+				}
+			}
+		}
+
 		if ($node->isReadOnly()) {
 			if ($node->hasHooks()) {
 				return [

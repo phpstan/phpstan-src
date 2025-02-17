@@ -89,23 +89,19 @@ final class AnalyserResultFinalizer
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$tempCollectorErrors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+
+				if ( $error->canBeIgnored()) {
+					foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+						if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
+							continue 2;
+						}
+					}
+				}
+
+				$tempCollectorErrors[] = $error;
 			}
 		}
-
-		$tempCollectorErrors = array_filter($tempCollectorErrors, function (Error $error) use ($scope, $node) : bool {
-			if (! $error->canBeIgnored()) {
-				return true;
-			}
-
-			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
-				if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
-					return false;
-				}
-			}
-
-			return true;
-		});
 
 		$errors = $analyserResult->getUnorderedErrors();
 		$locallyIgnoredErrors = $analyserResult->getLocallyIgnoredErrors();

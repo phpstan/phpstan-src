@@ -1,0 +1,13 @@
+includes:
+	- phpstan-baseline.neon
+
+parameters:
+	level: 9
+	paths:
+		- src
+
+services:
+	-
+		class: App\ControllerActionReturnTypeIgnoreExtension
+		tags:
+			- phpstan.ignoreErrorExtension

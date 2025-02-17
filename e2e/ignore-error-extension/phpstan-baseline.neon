@@ -1,0 +1,20 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\HomepageController\:\:contactAction\(\) has parameter \$someUnrelatedError with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/HomepageController.php
+
+		-
+			message: '#^Method App\\HomepageController\:\:getSomething\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/HomepageController.php
+
+		-
+			message: '#^Method App\\HomepageController\:\:homeAction\(\) has parameter \$someUnrelatedError with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/HomepageController.php
+

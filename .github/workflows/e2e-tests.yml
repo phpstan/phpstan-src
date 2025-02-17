@@ -247,6 +247,10 @@ jobs:
               cd e2e/bug-12606
               export CONFIGTEST=test
               ../../bin/phpstan
+          - script: |
+              cd e2e/ignore-error-extension
+              composer install
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

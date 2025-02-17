@@ -146,7 +146,7 @@ final class FileAnalyser
 							$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
 
 							foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
-								if ($ignoreErrorExtension->ignore($error, $node, $scope)) {
+								if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 									continue 2;
 								}
 							}
@@ -292,7 +292,7 @@ final class FileAnalyser
 
 		$fileErrors = array_filter($fileErrors, function (Error $error) use ($scope) : bool {
 			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
-				if ($ignoreErrorExtension->ignore($error, null, $scope)) {
+				if ($ignoreErrorExtension->shouldIgnore($error, null, $scope)) {
 					return false;
 				}
 			}

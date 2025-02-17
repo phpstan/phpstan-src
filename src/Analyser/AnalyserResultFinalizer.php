@@ -95,7 +95,7 @@ final class AnalyserResultFinalizer
 
 		$tempCollectorErrors = array_filter($tempCollectorErrors, function (string $error) use ($scope, $node) : bool {
 			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
-				if ($ignoreErrorExtension->ignore($error, $node, $scope)) {
+				if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 					return false;
 				}
 			}

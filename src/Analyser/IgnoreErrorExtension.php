@@ -27,6 +27,6 @@ interface IgnoreErrorExtension
 
 	public const EXTENSION_TAG = 'phpstan.ignoreErrorExtension';
 
-	public function shouldIgnore(Error $error, ?Node $node, Scope $scope): bool;
+	public function shouldIgnore(Error $error, Node $node, Scope $scope): bool;
 
 }

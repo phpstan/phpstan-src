@@ -15,6 +15,7 @@ use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
+use function array_filter;
 use function array_keys;
 use function array_unique;
 use function array_values;
@@ -291,21 +292,6 @@ final class FileAnalyser
 
 			unset($unmatchedLineIgnores[$fileKey]);
 		}
-
-		$fileErrors = array_filter($fileErrors, function (Error $error) use ($scope) : bool {
-			if (! $error->canBeIgnored()) {
-				return true;
-			}
-
-			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
-				if ($ignoreErrorExtension->shouldIgnore($error, null, $scope)) {
-					return false;
-				}
-			}
-
-			return true;
-		});
-
 
 		return new FileAnalyserResult(
 			$fileErrors,

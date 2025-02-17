@@ -93,7 +93,11 @@ final class AnalyserResultFinalizer
 			}
 		}
 
-		$tempCollectorErrors = array_filter($tempCollectorErrors, function (string $error) use ($scope, $node) : bool {
+		$tempCollectorErrors = array_filter($tempCollectorErrors, function (Error $error) use ($scope, $node) : bool {
+			if (! $error->canBeIgnored()) {
+				return true;
+			}
+
 			foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
 				if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 					return false;

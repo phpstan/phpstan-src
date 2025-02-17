@@ -443,6 +443,9 @@ services:
 			parser: @defaultAnalysisParser
 
 	-
+		class: PHPStan\Analyser\IgnoreErrorExtensionProvider
+
+	-
 		class: PHPStan\Analyser\LocalIgnoresProcessor
 
 	-

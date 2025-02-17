@@ -2,7 +2,6 @@
 
 namespace PHPStan\Testing;
 
-use Nette\DI\Container;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
@@ -17,7 +16,6 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\DependencyInjection\Nette\NetteContainer;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;

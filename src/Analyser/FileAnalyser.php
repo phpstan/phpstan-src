@@ -15,7 +15,6 @@ use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
-use function array_filter;
 use function array_keys;
 use function array_unique;
 use function array_values;

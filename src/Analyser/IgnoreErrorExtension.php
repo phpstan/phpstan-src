@@ -18,7 +18,7 @@ use PhpParser\Node;
  *			- phpstan.ignoreErrorExtension
  * ```
  *
- * Learn more: https://phpstan.org
+ * Learn more: https://phpstan.org/developing-extensions/ignore-error-extensions
  *
  * @api
  */

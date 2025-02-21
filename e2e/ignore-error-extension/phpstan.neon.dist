@@ -8,6 +8,18 @@ parameters:
 
 services:
 	-
+		class: App\ClassCollector
+		tags:
+			- phpstan.collector
+	-
+		class: App\ClassRule
+		tags:
+			- phpstan.rules.rule
+	-
 		class: App\ControllerActionReturnTypeIgnoreExtension
+		tags:
+			- phpstan.ignoreErrorExtension
+	-
+		class: App\ControllerClassNameIgnoreExtension
 		tags:
 			- phpstan.ignoreErrorExtension

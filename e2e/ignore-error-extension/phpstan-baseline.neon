@@ -1,6 +1,30 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^This is an error from a rule that uses a collector$#'
+			identifier: class.name
+			count: 1
+			path: src/ClassCollector.php
+
+		-
+			message: '#^This is an error from a rule that uses a collector$#'
+			identifier: class.name
+			count: 1
+			path: src/ClassRule.php
+
+		-
+			message: '#^This is an error from a rule that uses a collector$#'
+			identifier: class.name
+			count: 1
+			path: src/ControllerActionReturnTypeIgnoreExtension.php
+
+		-
+			message: '#^This is an error from a rule that uses a collector$#'
+			identifier: class.name
+			count: 1
+			path: src/ControllerClassNameIgnoreExtension.php
+
+		-
 			message: '#^Method App\\HomepageController\:\:contactAction\(\) has parameter \$someUnrelatedError with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1

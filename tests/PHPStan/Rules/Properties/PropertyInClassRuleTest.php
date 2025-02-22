@@ -221,11 +221,11 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/private-final-property-hooks.php'], [
 			[
-				'Properties cannot be both final and private.',
+				'Property cannot be both final and private.',
 				7,
 			],
 			[
-				'Properties cannot be both final and private.',
+				'Property cannot be both final and private.',
 				11,
 			],
 		]);
@@ -239,7 +239,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
-				'Properties cannot be final.',
+				'Property cannot be both final and private.',
 				7,
 			],
 		]);
@@ -252,15 +252,15 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
-				'Properties cannot be final.',
+				'Property cannot be final.',
 				7,
 			],
 			[
-				'Properties cannot be final.',
+				'Property cannot be final.',
 				8,
 			],
 			[
-				'Properties cannot be final.',
+				'Property cannot be final.',
 				9,
 			],
 		]);

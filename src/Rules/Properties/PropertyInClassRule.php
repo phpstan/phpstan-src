@@ -83,11 +83,10 @@ final class PropertyInClassRule implements Rule
 
 		if (
 			$node->isFinal()
-			&& !$node->hasHooks()
-			&& (!$this->phpVersion->supportsNonPrivateFinalProperties() || $node->isPrivate())
+			&& !$this->phpVersion->supportsFinalProperties()
 		) {
 			return [
-				RuleErrorBuilder::message('Properties cannot be final.')
+				RuleErrorBuilder::message('Property cannot be final.')
 					->nonIgnorable()
 					->identifier('property.final')
 					->build(),
@@ -97,7 +96,7 @@ final class PropertyInClassRule implements Rule
 		if ($node->isPrivate()) {
 			if ($node->isFinal()) {
 				return [
-					RuleErrorBuilder::message('Properties cannot be both final and private.')
+					RuleErrorBuilder::message('Property cannot be both final and private.')
 						->nonIgnorable()
 						->identifier('property.finalPrivate')
 						->build(),
@@ -110,7 +109,7 @@ final class PropertyInClassRule implements Rule
 				}
 
 				return [
-					RuleErrorBuilder::message('Properties cannot be both final and private.')
+					RuleErrorBuilder::message('Property cannot be both final and private.')
 						->nonIgnorable()
 						->identifier('property.finalPrivate')
 						->build(),

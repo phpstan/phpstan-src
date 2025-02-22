@@ -357,7 +357,7 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
-	public function supportsNonPrivateFinalProperties(): bool
+	public function supportsFinalProperties(): bool
 	{
 		return $this->versionId >= 80400;
 	}

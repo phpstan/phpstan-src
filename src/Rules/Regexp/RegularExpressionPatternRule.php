@@ -133,7 +133,7 @@ final class RegularExpressionPatternRule implements Rule
 					throw new ShouldNotHappenException();
 				}
 				// strip invalid utf-8 pattern contents to keep the error message NEON parsable.
-				return substr($e->getMessage(), 0, $patternPos);
+				return substr($e->getMessage(), 0, $patternPos + strlen('pattern:') - 1);
 			}
 			return $e->getMessage();
 		}

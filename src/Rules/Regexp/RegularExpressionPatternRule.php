@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Regex\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
@@ -126,8 +127,11 @@ final class RegularExpressionPatternRule implements Rule
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
-			$lastColonPos = strrpos($e->getMessage(), ':');
-			if (str_contains($e->getMessage(), 'UTF-8 error') && $lastColonPos !== false) {
+			if (str_contains($e->getMessage(), 'UTF-8 error')) {
+				$lastColonPos = strrpos($e->getMessage(), ':');
+				if ($lastColonPos === false) {
+					throw new ShouldNotHappenException();
+				}
 				// strip invalid utf-8 pattern contents to keep the error message NEON parsable.
 				return substr($e->getMessage(), 0, $lastColonPos);
 			}

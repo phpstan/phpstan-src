@@ -332,4 +332,21 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 		];
 	}
 
+	public function testBug12629(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/data/bug-12629.php'],
+			[
+				[
+					'Regex pattern is invalid: Compilation failed: UTF-8 error: isolated byte with 0x80 bit set at offset 1 in pattern',
+					12,
+				],
+				[
+					'Regex pattern is invalid: Compilation failed: UTF-8 error: byte 2 top bits not 0x80 at offset 0 in pattern',
+					13,
+				],
+			],
+		);
+	}
+
 }

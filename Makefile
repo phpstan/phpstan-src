@@ -102,6 +102,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/set-property-hook-parameter.php \
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-final-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/private-final-property-hooks.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-properties.php \
 		src tests
 
 cs:

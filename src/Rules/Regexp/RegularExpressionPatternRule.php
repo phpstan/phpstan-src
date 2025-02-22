@@ -13,8 +13,8 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Regex\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
-use function str_contains;
 use function str_starts_with;
+use function stripos;
 use function strlen;
 use function strpos;
 use function strtolower;
@@ -128,7 +128,10 @@ final class RegularExpressionPatternRule implements Rule
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
-			if (str_contains($e->getMessage(), 'UTF-8 error')) {
+			if (
+				stripos($e->getMessage(), 'Compilation failed') !== false
+				&& stripos($e->getMessage(), 'UTF-8') !== false
+			) {
 				$patternPos = strpos($e->getMessage(), 'pattern:');
 				if ($patternPos === false) {
 					throw new ShouldNotHappenException();

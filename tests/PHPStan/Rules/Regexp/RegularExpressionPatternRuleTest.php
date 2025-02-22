@@ -334,6 +334,10 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 
 	public function testBug12629(): void
 	{
+		if (PHP_VERSION_ID < 70300) {
+			$this->markTestSkipped('This test requires PHP >= 7.3.0');
+		}
+
 		$this->analyse(
 			[__DIR__ . '/data/bug-12629.php'],
 			[

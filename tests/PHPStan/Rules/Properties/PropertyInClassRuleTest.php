@@ -258,6 +258,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 			],
 		]);
 	}
+
 	public function testBeforePhp84FinalProperties(): void
 	{
 		if (PHP_VERSION_ID >= 80400) {

@@ -15,6 +15,7 @@ use function in_array;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
+use function strlen;
 use function strpos;
 use function strtolower;
 use function substr;

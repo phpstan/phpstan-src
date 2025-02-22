@@ -12,8 +12,11 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Regex\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
+use function strrpos;
 use function strtolower;
+use function substr;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -123,9 +126,10 @@ final class RegularExpressionPatternRule implements Rule
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
-			if (str_contains($e->getMessage(), 'UTF-8 error')) {
+			$lastColonPos = strrpos($e->getMessage(), ':');
+			if (str_contains($e->getMessage(), 'UTF-8 error') && $lastColonPos !== false) {
 				// strip invalid utf-8 pattern contents to keep the error message NEON parsable.
-				return substr($e->getMessage(), 0, strrpos($e->getMessage(), ':'));
+				return substr($e->getMessage(), 0, $lastColonPos);
 			}
 			return $e->getMessage();
 		}

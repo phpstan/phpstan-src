@@ -32,6 +32,18 @@ final class PropertyInClassRule implements Rule
 			return [];
 		}
 
+		if (
+			$node->isFinal()
+			&& !$this->phpVersion->supportsFinalProperties()
+		) {
+			return [
+				RuleErrorBuilder::message('Property cannot be final.')
+					->nonIgnorable()
+					->identifier('property.final')
+					->build(),
+			];
+		}
+
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			if ($node->hasHooks()) {
 				return [
@@ -77,18 +89,6 @@ final class PropertyInClassRule implements Rule
 				RuleErrorBuilder::message('Non-abstract properties cannot include hooks without bodies.')
 					->nonIgnorable()
 					->identifier('property.hookWithoutBody')
-					->build(),
-			];
-		}
-
-		if (
-			$node->isFinal()
-			&& !$this->phpVersion->supportsFinalProperties()
-		) {
-			return [
-				RuleErrorBuilder::message('Property cannot be final.')
-					->nonIgnorable()
-					->identifier('property.final')
 					->build(),
 			];
 		}

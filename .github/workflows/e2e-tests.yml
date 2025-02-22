@@ -322,6 +322,9 @@ jobs:
           - script: |
               cd e2e/bug-11819
               ../../bin/phpstan
+          - script: |
+              cd e2e/bug-12629
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

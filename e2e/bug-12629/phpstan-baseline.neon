@@ -1,0 +1,31 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method Bug12629\\Bug12629\:\:is_macintosh_enc\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/bug-12629.php
+
+		-
+			message: '#^Method Bug12629\\Bug12629\:\:is_macintosh_enc\(\) has parameter \$s with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/bug-12629.php
+
+		-
+			message: '#^Method Bug12629\\Bug12629\:\:is_macintosh_enc\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/bug-12629.php
+
+		-
+			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: byte 2 top bits not 0x80 at offset 0 in pattern\: \!Ã\[€\-Ÿ\]\!u$#'
+			identifier: regexp.pattern
+			count: 1
+			path: src/bug-12629.php
+
+		-
+			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: isolated byte with 0x80 bit set at offset 1 in pattern\: \!\[€\-Ÿ\]\!u$#'
+			identifier: regexp.pattern
+			count: 1
+			path: src/bug-12629.php

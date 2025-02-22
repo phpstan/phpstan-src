@@ -8,8 +8,9 @@ final class User
 		get => 'private:' . $this->privatePropGet;
 	}
 
-	private string $privateSet = 'mailto: example.org' {
-		final set => 'private:' . $this->privateSet;
+	private string $private = 'mailto: example.org' {
+		final set => 'private:' . $this->private;
+		get => 'private:' . $this->private;
 	}
 
 	protected string $protected = 'mailto: example.org' {

@@ -231,6 +231,20 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndAbstractFinalHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/abstract-final-property-hook.php'], [
+			[
+				'Property cannot be both abstract and final.',
+				7,
+			],
+		]);
+	}
+
 	public function testPhp84FinalProperties(): void
 	{
 		if (PHP_VERSION_ID < 80400) {

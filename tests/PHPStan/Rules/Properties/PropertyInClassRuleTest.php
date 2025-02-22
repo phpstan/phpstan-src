@@ -221,12 +221,47 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/private-final-property-hooks.php'], [
 			[
-				'Hooked properties cannot be both final and private.',
+				'Properties cannot be both final and private.',
 				7,
 			],
 			[
-				'Hooked properties cannot be both final and private.',
+				'Properties cannot be both final and private.',
 				11,
+			],
+		]);
+	}
+
+	public function testPhp84FinalProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-properties.php'], [
+			[
+				'Properties cannot be final.',
+				7,
+			],
+		]);
+	}
+	public function testBeforePhp84FinalProperties(): void
+	{
+		if (PHP_VERSION_ID >= 80400) {
+			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-properties.php'], [
+			[
+				'Properties cannot be final.',
+				7,
+			],
+			[
+				'Properties cannot be final.',
+				8,
+			],
+			[
+				'Properties cannot be final.',
+				9,
 			],
 		]);
 	}

@@ -123,6 +123,10 @@ final class RegularExpressionPatternRule implements Rule
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
+			if (str_contains($e->getMessage(), 'UTF-8 error')) {
+				// strip invalid utf-8 pattern contents to keep the error message NEON parsable.
+				return substr($e->getMessage(), 0, strrpos($e->getMessage(), ':'));
+			}
 			return $e->getMessage();
 		}
 

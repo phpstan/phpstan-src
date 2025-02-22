@@ -19,13 +19,13 @@ parameters:
 			path: src/bug-12629.php
 
 		-
-			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: byte 2 top bits not 0x80 at offset 0 in pattern\: \!Ã\[€\-Ÿ\]\!u$#'
+			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: byte 2 top bits not 0x80 at offset 0 in pattern$#'
 			identifier: regexp.pattern
 			count: 1
 			path: src/bug-12629.php
 
 		-
-			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: isolated byte with 0x80 bit set at offset 1 in pattern\: \!\[€\-Ÿ\]\!u$#'
+			message: '#^Regex pattern is invalid\: Compilation failed\: UTF\-8 error\: isolated byte with 0x80 bit set at offset 1 in pattern$#'
 			identifier: regexp.pattern
 			count: 1
 			path: src/bug-12629.php

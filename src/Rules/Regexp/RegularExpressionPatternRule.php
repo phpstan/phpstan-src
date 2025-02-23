@@ -14,7 +14,6 @@ use PHPStan\Type\Regex\RegexExpressionHelper;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
-use function stripos;
 use function strlen;
 use function strpos;
 use function strtolower;
@@ -128,18 +127,18 @@ final class RegularExpressionPatternRule implements Rule
 		try {
 			Strings::match('', $pattern);
 		} catch (RegexpException $e) {
-			if (
-				stripos($e->getMessage(), 'Compilation failed') !== false
-				&& stripos($e->getMessage(), 'UTF-8') !== false
-			) {
-				$patternPos = strpos($e->getMessage(), 'pattern:');
+			$invalidPatternMessage = $e->getMessage();
+			try {
+				Strings::match($invalidPatternMessage, '//u');
+				return $invalidPatternMessage;
+			} catch (RegexpException) {
+				$patternPos = strpos($invalidPatternMessage, 'pattern:');
 				if ($patternPos === false) {
 					throw new ShouldNotHappenException();
 				}
 				// strip invalid utf-8 pattern contents to keep the error message NEON parsable.
-				return substr($e->getMessage(), 0, $patternPos + strlen('pattern:') - 1);
+				return substr($invalidPatternMessage, 0, $patternPos + strlen('pattern:') - 1);
 			}
-			return $e->getMessage();
 		}
 
 		return null;

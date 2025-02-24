@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-Namespace Bug12458;
+namespace Bug12458;
 
 class HelloWorld
 {
@@ -10,6 +10,18 @@ class HelloWorld
 	public function test(array $a): void
 	{
 		/** @var \Closure(): list<HelloWorld> $c */
+		$c = function () use ($a): array {
+			return $a;
+		};
+	}
+
+	/**
+	 * @template T of HelloWorld
+	 * @param list<T> $a
+	 */
+	public function testGeneric(array $a): void
+	{
+		/** @var \Closure(): list<T> $c */
 		$c = function () use ($a): array {
 			return $a;
 		};

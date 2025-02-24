@@ -40,6 +40,10 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 				'Interfaces cannot include properties.',
 				11,
 			],
+			[
+				'Interfaces cannot include properties.',
+				13,
+			],
 		]);
 	}
 
@@ -78,6 +82,10 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 			[
 				'Interfaces can only include hooked properties.',
 				11,
+			],
+			[
+				'Interfaces can only include hooked properties.',
+				13,
 			],
 		]);
 	}
@@ -135,6 +143,28 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 			],
 			[
 				'Interfaces cannot include readonly hooked properties.',
+				11,
+			],
+		]);
+	}
+
+	public function testPhp84AndFinalPropertyHooksInInterface(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-property-hooks-in-interface.php'], [
+			[
+				'Interfaces cannot include final properties.',
+				7,
+			],
+			[
+				'Interfaces cannot include final properties.',
+				9,
+			],
+			[
+				'Interfaces cannot include final properties.',
 				11,
 			],
 		]);

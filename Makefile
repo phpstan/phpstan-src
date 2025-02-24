@@ -103,6 +103,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-final-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/private-final-property-hooks.php \
 		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks.php \
 		--exclude tests/PHPStan/Rules/Properties/data/final-properties.php \
 		src tests
 

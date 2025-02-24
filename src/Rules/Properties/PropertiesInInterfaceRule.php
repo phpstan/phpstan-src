@@ -75,6 +75,15 @@ final class PropertiesInInterfaceRule implements Rule
 			];
 		}
 
+		if ($node->isFinal()) {
+			return [
+				RuleErrorBuilder::message('Interfaces cannot include final properties.')
+					->nonIgnorable()
+					->identifier('property.finalInInterface')
+					->build(),
+			];
+		}
+
 		if ($this->hasAnyHookBody($node)) {
 			return [
 				RuleErrorBuilder::message('Interfaces cannot include property hooks with bodies.')

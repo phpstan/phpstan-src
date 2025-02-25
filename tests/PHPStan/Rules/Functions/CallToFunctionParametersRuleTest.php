@@ -649,7 +649,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $arr1 of function array_udiff expects array<string>, null given.',
+				'Parameter #1 $arr1 of function array_udiff expects array<TKey of (int|string), string>, null given.',
 				20,
 			],
 			[
@@ -675,7 +675,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $arr1 of function array_uintersect expects array<string>, null given.',
+				'Parameter #1 $arr1 of function array_uintersect expects array<TKey of (int|string), string>, null given.',
 				20,
 			],
 			[

@@ -15,21 +15,21 @@ use function PHPStan\Testing\assertType;
  */
 function test(array $array1, array $array2, array $array3, array $list, array $nonEmptyArray, array $arrayShape1, array $arrayShape2): void
 {
-	assertType('array<int|string, int>', array_uintersect($array1, $array2, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($array1, $array2, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('string', $b);
 
 		return strcasecmp((string) $a, $b);
 	}));
 
-	assertType('array<int|string, string>', array_uintersect($array2, $array1, static function (mixed $a, mixed $b) {
+	assertType('array<string>', array_uintersect($array2, $array1, static function (mixed $a, mixed $b) {
 		assertType('string', $a);
 		assertType('int', $b);
 
 		return strcasecmp($a, (string) $b);
 	}));
 
-	assertType('array<int|string, int>', array_uintersect($array1, $array3, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($array1, $array3, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('int', $b);
 
@@ -43,49 +43,49 @@ function test(array $array1, array $array2, array $array3, array $list, array $n
 		return $a <=> $b;
 	}));
 
-	assertType('array<int|string, int>', array_uintersect($array1, $list, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($array1, $list, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('string', $b);
 
 		return strcasecmp((string) $a, $b);
 	}));
 
-	assertType('array<int, string>', array_uintersect($list, $array1, static function (mixed $a, mixed $b) {
+	assertType('array<int<0, max>, string>', array_uintersect($list, $array1, static function (mixed $a, mixed $b) {
 		assertType('string', $a);
 		assertType('int', $b);
 
 		return strcasecmp($a, (string) $b);
 	}));
 
-	assertType('array<int|string, int>', array_uintersect($nonEmptyArray, $array1, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($nonEmptyArray, $array1, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('int', $b);
 
 		return $a <=> $b;
 	}));
 
-	assertType('array<int|string, int>', array_uintersect($array1, $nonEmptyArray, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($array1, $nonEmptyArray, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('int', $b);
 
 		return $a <=> $b;
 	}));
 
-	assertType('array<int|string, int>', array_uintersect($array1, $arrayShape1, static function (mixed $a, mixed $b) {
+	assertType('array<int>', array_uintersect($array1, $arrayShape1, static function (mixed $a, mixed $b) {
 		assertType('int', $a);
 		assertType('int|string', $b);
 
 		return $a <=> $b;
 	}));
 
-	assertType("array<'foo'|0, int|string>", array_uintersect($arrayShape1, $array1, static function (mixed $a, mixed $b) {
+	assertType("array<0|'foo', int|string>", array_uintersect($arrayShape1, $array1, static function (mixed $a, mixed $b) {
 		assertType('int|string', $a);
 		assertType('int', $b);
 
 		return $a <=> $b;
 	}));
 
-	assertType("array<'bar'|'foo', string>", array_uintersect($arrayShape2, $array1, static function (mixed $a, mixed $b) {
+	assertType("array<'bar'|'foo', int|string>", array_uintersect($arrayShape2, $array1, static function (mixed $a, mixed $b) {
 		assertType('int|string', $a);
 		assertType('int', $b);
 

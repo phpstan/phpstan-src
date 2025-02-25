@@ -58,12 +58,13 @@ function uksort(array &$array, callable $callback): bool
 }
 
 /**
- * @template T of array
- * @template U of array
- * @param T $one
- * @param U $two
- * @param callable(value-of<T>, value-of<U>): int $three
- * @return array<key-of<T>, value-of<T>>
+ * @template TKey of array-key
+ * @template TValue
+ * @template UValue
+ * @param array<TKey, TValue> $one
+ * @param array<UValue> $two
+ * @param callable(TValue, UValue): int $three
+ * @return array<TKey, TValue>
  */
 function array_udiff(
     array $one,
@@ -72,12 +73,13 @@ function array_udiff(
 ): array {}
 
 /**
- * @template T of array
- * @template U of array
- * @param T $one
- * @param U $two
- * @param callable(value-of<T>, value-of<U>): int $three
- * @return array<key-of<T>, value-of<T>>
+ * @template TKey of array-key
+ * @template TValue
+ * @template UValue
+ * @param array<TKey, TValue> $one
+ * @param array<UValue> $two
+ * @param callable(TValue, UValue): int $three
+ * @return array<TKey, TValue>
  */
 function array_uintersect(
     array $one,

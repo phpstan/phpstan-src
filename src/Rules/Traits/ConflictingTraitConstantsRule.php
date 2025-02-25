@@ -227,18 +227,22 @@ final class ConflictingTraitConstantsRule implements Rule
 		$traitValueExpr = $traitConstant->getValueExpression();
 		$isTraitSelfReferencing = (
 			$traitValueExpr instanceof Node\Expr\ClassConstFetch
+			&& $traitValueExpr->class instanceof Node\Name
+			&& $traitValueExpr->name instanceof Node\Identifier
 			&& $traitValueExpr->class->name === 'self'
 			&& $traitValueExpr->name->name === $traitConstant->getName()
 		);
 		if ($isTraitSelfReferencing) {
 			$isValueSelfReference = (
 				$valueExpr instanceof Node\Expr\ClassConstFetch
+				&& $valueExpr->class instanceof Node\Name
+				&& $valueExpr->name instanceof Node\Identifier
 				&& $valueExpr->class->name === 'self'
 				&& $valueExpr->name->name === $traitConstant->getName()
 			);
 			if (
 				!$isValueSelfReference
-				&& isset($classConstantValueType)
+				&& isset($constantNativeTypeType)
 				&& !$classConstantValueType instanceof $constantNativeTypeType
 				&& $classConstantValueType->isSuperTypeOf($constantNativeTypeType)->no()
 			) {

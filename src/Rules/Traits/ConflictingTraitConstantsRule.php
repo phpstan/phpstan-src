@@ -224,26 +224,58 @@ final class ConflictingTraitConstantsRule implements Rule
 		}
 
 		$classConstantValueType = $this->initializerExprTypeResolver->getType($valueExpr, InitializerExprContext::fromClassReflection($classReflection));
-		$traitConstantValueType = $this->initializerExprTypeResolver->getType(
-			$traitConstant->getValueExpression(),
-			InitializerExprContext::fromClass(
-				$traitDeclaringClass->getName(),
-				$traitDeclaringClass->getFileName() !== false ? $traitDeclaringClass->getFileName() : null,
-			),
+		$traitValueExpr = $traitConstant->getValueExpression();
+		$isTraitSelfReferencing = (
+			$traitValueExpr instanceof Node\Expr\ClassConstFetch
+			&& $traitValueExpr->class->name === 'self'
+			&& $traitValueExpr->name->name === $traitConstant->getName()
 		);
-		if (!$classConstantValueType->equals($traitConstantValueType)) {
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Constant %s::%s with value %s overriding constant %s::%s with different value %s should have the same value.',
-				$classReflection->getDisplayName(),
-				$traitConstant->getName(),
-				$classConstantValueType->describe(VerbosityLevel::value()),
-				$traitConstant->getDeclaringClass()->getName(),
-				$traitConstant->getName(),
-				$traitConstantValueType->describe(VerbosityLevel::value()),
-			))
-				->nonIgnorable()
-				->identifier('classConstant.value')
-				->build();
+		if ($isTraitSelfReferencing) {
+			$isValueSelfReference = (
+				$valueExpr instanceof Node\Expr\ClassConstFetch
+				&& $valueExpr->class->name === 'self'
+				&& $valueExpr->name->name === $traitConstant->getName()
+			);
+			if (
+				!$isValueSelfReference
+				&& isset($classConstantValueType)
+				&& !$classConstantValueType instanceof $constantNativeTypeType
+				&& $classConstantValueType->isSuperTypeOf($constantNativeTypeType)->no()
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Constant %s::%s with value %s cannot override native type of constant %s::%s.',
+					$classReflection->getDisplayName(),
+					$traitConstant->getName(),
+					$classConstantValueType->describe(VerbosityLevel::value()),
+					$traitConstant->getDeclaringClass()->getName(),
+					$traitConstant->getName(),
+				))
+					->nonIgnorable()
+					->identifier('classConstant.value')
+					->build();
+			}
+		} else {
+			$traitConstantValueType = $this->initializerExprTypeResolver->getType(
+				$traitValueExpr,
+				InitializerExprContext::fromClass(
+					$traitDeclaringClass->getName(),
+					$traitDeclaringClass->getFileName() !== false ? $traitDeclaringClass->getFileName() : null,
+				),
+			);
+			if (!$classConstantValueType->equals($traitConstantValueType)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Constant %s::%s with value %s overriding constant %s::%s with different value %s should have the same value.',
+						$classReflection->getDisplayName(),
+						$traitConstant->getName(),
+						$classConstantValueType->describe(VerbosityLevel::value()),
+						$traitConstant->getDeclaringClass()->getName(),
+						$traitConstant->getName(),
+						$traitConstantValueType->describe(VerbosityLevel::value()),
+					))
+						->nonIgnorable()
+						->identifier('classConstant.value')
+						->build();
+			}
 		}
 
 		return $errors;

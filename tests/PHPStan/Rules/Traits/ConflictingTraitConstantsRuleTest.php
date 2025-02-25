@@ -78,6 +78,18 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 				'Constant ConflictingTraitConstantsTypes\Lorem::FOO_CONST overriding constant ConflictingTraitConstantsTypes\Foo::FOO_CONST (int|string) should also have native type int|string.',
 				39,
 			],
+			[
+				'Constant ConflictingTraitConstantsTypes\SelfRefWrongType::SR_CONST with value array{1} cannot override native type of constant ConflictingTraitConstantsTypes\SelfRef::SR_CONST.',
+				64,
+			],
+			[
+				'Constant ConflictingTraitConstantsTypes\SelfRefExtWrong::SR_CONST (string) overriding constant ConflictingTraitConstantsTypes\SelfRef::SR_CONST (int) should have the same native type int.',
+				82,
+			],
+			[
+				'Constant ConflictingTraitConstantsTypes\SelfRefExtOverrideExt::SR_CONST with value mixed overriding constant ConflictingTraitConstantsTypes\SelfRefExtOverride::SR_CONST with different value 1 should have the same value.',
+				100,
+			],
 		]);
 	}
 

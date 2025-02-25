@@ -39,3 +39,64 @@ class Lorem
 	public const FOO_CONST = 1;
 
 }
+
+trait SelfRef
+{
+
+	public const int SR_CONST = self::SR_CONST;
+
+}
+
+class SelfRefOverride
+{
+
+	use SelfRef;
+
+	public const int SR_CONST = 1;
+
+}
+
+class SelfRefWrongType
+{
+
+	use SelfRef;
+
+	public const int SR_CONST = [1];
+
+}
+
+class SelfRefExt
+{
+
+	use SelfRef;
+
+	public const int SR_CONST = self::SR_CONST;
+
+}
+
+class SelfRefExtWrong
+{
+
+	use SelfRef;
+
+	public const string SR_CONST = self::SR_CONST;
+
+}
+
+class SelfRefExtOverride
+{
+
+	use SelfRefExt;
+
+	public const int SR_CONST = 1;
+
+}
+
+class SelfRefExtOverrideExt
+{
+
+	use SelfRefExtOverride;
+
+	public const int SR_CONST = self::SR_CONST;
+
+}

@@ -242,6 +242,10 @@ class PropertyInClassRuleTest extends RuleTestCase
 				'Property cannot be both abstract and final.',
 				7,
 			],
+			[
+				'Property cannot be both abstract and final.',
+				11,
+			],
 		]);
 	}
 

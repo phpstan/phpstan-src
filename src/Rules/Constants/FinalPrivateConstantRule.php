@@ -37,7 +37,7 @@ final class FinalPrivateConstantRule implements Rule
 		$errors = [];
 		foreach ($node->consts as $classConstNode) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Private constant %s::%s() cannot be final as it is not visible to other classes.',
+				'Private constant %s::%s() cannot be final as it is never overridden by other classes.',
 				$classReflection->getDisplayName(),
 				$classConstNode->name->name,
 			))->identifier('classConstant.finalPrivate')->build();

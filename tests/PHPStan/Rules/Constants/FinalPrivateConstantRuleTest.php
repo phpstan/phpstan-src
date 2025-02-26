@@ -18,7 +18,7 @@ class FinalPrivateConstantRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/final-private-const.php'], [
 			[
-				'Private constant FinalPrivateConstants\User::FINAL_PRIVATE() cannot be final as it is not visible to other classes.',
+				'Private constant FinalPrivateConstants\User::FINAL_PRIVATE() cannot be final as it is never overridden by other classes.',
 				8,
 			],
 		]);

@@ -9,4 +9,12 @@ interface HelloWorld
 	public final string $middleName { get; }
 
 	public final string $lastName { set; }
+
+	public string $finalGetHook {
+		final get;
+	}
+
+	public string $finalSetHook {
+		final set;
+	}
 }

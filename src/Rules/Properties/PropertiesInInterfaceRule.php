@@ -84,6 +84,19 @@ final class PropertiesInInterfaceRule implements Rule
 			];
 		}
 
+		foreach ($node->getHooks() as $hook) {
+			if (!$hook->isFinal()) {
+				continue;
+			}
+
+			return [
+				RuleErrorBuilder::message('Property hook cannot be both abstract and final.')
+					->nonIgnorable()
+					->identifier('property.abstractFinal')
+					->build(),
+			];
+		}
+
 		if ($this->hasAnyHookBody($node)) {
 			return [
 				RuleErrorBuilder::message('Interfaces cannot include property hooks with bodies.')

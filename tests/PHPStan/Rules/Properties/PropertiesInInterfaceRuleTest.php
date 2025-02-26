@@ -167,6 +167,14 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 				'Interfaces cannot include final properties.',
 				11,
 			],
+			[
+				'Property hook cannot be both abstract and final.',
+				13,
+			],
+			[
+				'Property hook cannot be both abstract and final.',
+				17,
+			],
 		]);
 	}
 

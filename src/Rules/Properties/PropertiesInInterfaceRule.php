@@ -101,7 +101,7 @@ final class PropertiesInInterfaceRule implements Rule
 			return [
 				RuleErrorBuilder::message('Property hook cannot be both abstract and final.')
 					->nonIgnorable()
-					->identifier('property.hookedAbstractFinal')
+					->identifier('property.abstractFinalHook')
 					->build(),
 			];
 		}

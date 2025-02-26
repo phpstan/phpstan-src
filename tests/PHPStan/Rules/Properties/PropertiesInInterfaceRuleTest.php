@@ -178,6 +178,20 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndExplicitAbstractProperty(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/property-in-interface-explicit-abstract.php'], [
+			[
+				'Property in interface cannot be explicitly abstract.',
+				8,
+			],
+		]);
+	}
+
 	public function testPhp84AndStaticHookedPropertyInInterface(): void
 	{
 		if (PHP_VERSION_ID < 80400) {

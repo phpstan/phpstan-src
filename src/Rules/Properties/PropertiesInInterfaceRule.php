@@ -75,6 +75,15 @@ final class PropertiesInInterfaceRule implements Rule
 			];
 		}
 
+		if ($node->isAbstract()) {
+			return [
+				RuleErrorBuilder::message('Property in interface cannot be explicitly abstract.')
+					->nonIgnorable()
+					->identifier('property.hookedStatic')
+					->build(),
+			];
+		}
+
 		if ($node->isFinal()) {
 			return [
 				RuleErrorBuilder::message('Interfaces cannot include final properties.')

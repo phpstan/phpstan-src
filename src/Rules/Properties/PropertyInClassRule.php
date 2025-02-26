@@ -37,7 +37,7 @@ final class PropertyInClassRule implements Rule
 			&& !$this->phpVersion->supportsFinalProperties()
 		) {
 			return [
-				RuleErrorBuilder::message('Final Properties are supported only on PHP 8.4 and later.')
+				RuleErrorBuilder::message('Final properties are supported only on PHP 8.4 and later.')
 					->nonIgnorable()
 					->identifier('property.final')
 					->build(),

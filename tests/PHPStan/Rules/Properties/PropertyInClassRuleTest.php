@@ -282,15 +282,15 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
-				'Final Properties are supported only on PHP 8.4 and later.',
+				'Final properties are supported only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Final Properties are supported only on PHP 8.4 and later.',
+				'Final properties are supported only on PHP 8.4 and later.',
 				8,
 			],
 			[
-				'Final Properties are supported only on PHP 8.4 and later.',
+				'Final properties are supported only on PHP 8.4 and later.',
 				9,
 			],
 		]);

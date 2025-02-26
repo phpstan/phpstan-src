@@ -7,8 +7,4 @@ abstract class User
 	abstract public string $foo {
 		final get;
 	}
-
-	final abstract public string $bar {
-		get;
-	}
 }

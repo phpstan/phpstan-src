@@ -242,9 +242,20 @@ class PropertyInClassRuleTest extends RuleTestCase
 				'Property cannot be both abstract and final.',
 				7,
 			],
+		]);
+	}
+
+	public function testPhp84AndAbstractFinalHookedPropertiesParseError(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		// errors when parsing with php-parser, see https://github.com/nikic/PHP-Parser/issues/1071
+		$this->analyse([__DIR__ . '/data/abstract-final-property-hook-parse-error.php'], [
 			[
-				'Property cannot be both abstract and final.',
-				11,
+				'Cannot use the final modifier on an abstract class member on line 7',
+				7,
 			],
 		]);
 	}
@@ -271,15 +282,15 @@ class PropertyInClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
-				'Property cannot be final.',
+				'Final Properties are supported only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Property cannot be final.',
+				'Final Properties are supported only on PHP 8.4 and later.',
 				8,
 			],
 			[
-				'Property cannot be final.',
+				'Final Properties are supported only on PHP 8.4 and later.',
 				9,
 			],
 		]);

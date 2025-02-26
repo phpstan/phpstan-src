@@ -26,6 +26,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new VarTagTypeRuleHelper(
 				self::getContainer()->getByType(TypeNodeResolver::class),
+				self::getContainer()->getByType(FileTypeMapper::class),
 				$this->checkTypeAgainstPhpDocType,
 				$this->strictWideningCheck,
 			),

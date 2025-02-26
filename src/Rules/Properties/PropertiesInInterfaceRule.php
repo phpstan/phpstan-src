@@ -79,7 +79,7 @@ final class PropertiesInInterfaceRule implements Rule
 			return [
 				RuleErrorBuilder::message('Property in interface cannot be explicitly abstract.')
 					->nonIgnorable()
-					->identifier('property.hookedAbstract')
+					->identifier('property.abstractInInterface')
 					->build(),
 			];
 		}

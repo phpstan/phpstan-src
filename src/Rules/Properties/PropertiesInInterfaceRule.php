@@ -32,7 +32,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			return [
-				RuleErrorBuilder::message('Interfaces cannot include properties.')
+				RuleErrorBuilder::message('Interfaces can include properties only on PHP 8.4 and later.')
 					->nonIgnorable()
 					->identifier('property.inInterface')
 					->build(),

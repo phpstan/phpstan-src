@@ -109,15 +109,15 @@ final class PropertyInClassRule implements Rule
 				}
 
 				return [
-					RuleErrorBuilder::message('Property cannot be both final and private.')
+					RuleErrorBuilder::message('Private property cannot have a final hook.')
 						->nonIgnorable()
-						->identifier('property.finalPrivate')
+						->identifier('property.finalPrivateHook')
 						->build(),
 				];
 			}
 		}
 
-		if ($classReflection->isAbstract() && $node->isAbstract()) {
+		if ($node->isAbstract()) {
 			if ($node->isFinal()) {
 				return [
 					RuleErrorBuilder::message('Property cannot be both abstract and final.')

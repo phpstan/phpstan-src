@@ -225,7 +225,7 @@ class PropertyInClassRuleTest extends RuleTestCase
 				7,
 			],
 			[
-				'Property cannot be both final and private.',
+				'Private property cannot have a final hook.',
 				11,
 			],
 		]);

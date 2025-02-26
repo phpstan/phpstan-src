@@ -29,19 +29,19 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				9,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				11,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				13,
 			],
 		]);
@@ -58,11 +58,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				9,
 			],
 		]);

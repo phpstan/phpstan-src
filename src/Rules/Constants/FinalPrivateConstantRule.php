@@ -40,7 +40,7 @@ final class FinalPrivateConstantRule implements Rule
 				'Private constant %s::%s() cannot be final as it is never overridden by other classes.',
 				$classReflection->getDisplayName(),
 				$classConstNode->name->name,
-			))->identifier('classConstant.finalPrivate')->build();
+			))->identifier('classConstant.finalPrivate')->nonIgnorable()->build();
 		}
 
 		return $errors;

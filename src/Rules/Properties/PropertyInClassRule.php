@@ -128,6 +128,10 @@ final class PropertyInClassRule implements Rule
 			}
 
 			foreach ($node->getHooks() as $hook) {
+				if ($hook->body !== null) {
+					continue;
+				}
+
 				if (!$hook->isFinal()) {
 					continue;
 				}

@@ -8,3 +8,8 @@ abstract class User
 		final get;
 	}
 }
+
+abstract class Foo
+{
+	abstract public int $i { final get { return 1;} set; }
+}

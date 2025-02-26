@@ -206,6 +206,15 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11015.php'], []);
 	}
 
+	public function testBug10861(): void
+	{
+		$this->checkTypeAgainstNativeType = true;
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10861.php'], []);
+	}
+
 	public function testEnums(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

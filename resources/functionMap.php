@@ -10169,7 +10169,7 @@ return [
 'ResourceBundle::get' => ['', 'index'=>'string|int', 'fallback='=>'bool'],
 'ResourceBundle::getErrorCode' => ['int'],
 'ResourceBundle::getErrorMessage' => ['string'],
-'ResourceBundle::getLocales' => ['array', 'bundlename'=>'string'],
+'ResourceBundle::getLocales' => ['array|false', 'bundlename'=>'string'],
 'resourcebundle_count' => ['int', 'r'=>'resourcebundle'],
 'resourcebundle_create' => ['?ResourceBundle', 'locale'=>'string', 'bundlename'=>'string', 'fallback='=>'bool'],
 'resourcebundle_get' => ['', 'r'=>'resourcebundle', 'index'=>'string|int', 'fallback='=>'bool'],

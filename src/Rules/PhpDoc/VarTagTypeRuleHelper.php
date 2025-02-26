@@ -207,7 +207,7 @@ final class VarTagTypeRuleHelper
 		try {
 			$type = $this->typeNodeResolver->resolve($type->toPhpDocNode(), $this->createNameScope($scope));
 		} catch (NameScopeAlreadyBeingCreatedException) {
-			return false;
+			return true;
 		}
 
 		return $type->isSuperTypeOf($varTagType)->yes();
@@ -222,7 +222,7 @@ final class VarTagTypeRuleHelper
 		try {
 			$type = $this->typeNodeResolver->resolve($type->toPhpDocNode(), $this->createNameScope($scope));
 		} catch (NameScopeAlreadyBeingCreatedException) {
-			return false;
+			return true;
 		}
 
 		return !$type->isSuperTypeOf($varTagType)->no();

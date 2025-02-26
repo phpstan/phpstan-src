@@ -106,6 +106,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks-in-interface.php \
 		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks.php \
 		--exclude tests/PHPStan/Rules/Properties/data/final-properties.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-in-interface-explicit-abstract.php \
 		src tests
 
 cs:

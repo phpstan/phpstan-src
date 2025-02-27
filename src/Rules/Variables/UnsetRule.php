@@ -75,20 +75,6 @@ final class UnsetRule implements Rule
 		) {
 			$type = $scope->getType($node->var);
 			foreach ($type->getObjectClassReflections() as $classReflection) {
-				if ($classReflection->isReadOnly() || $classReflection->isImmutable()) {
-					return RuleErrorBuilder::message(
-						sprintf(
-							'Cannot unset property %s of %s class %s.',
-							$node->name->name,
-							$classReflection->isReadOnly() ? 'readonly' : 'immutable',
-							$type->describe(VerbosityLevel::value()),
-						),
-					)
-						->line($node->getStartLine())
-						->identifier('unset.readonlyClass')
-						->build();
-				}
-
 				if (!$classReflection->hasNativeProperty($node->name->name)) {
 					continue;
 				}
@@ -104,7 +90,7 @@ final class UnsetRule implements Rule
 						),
 					)
 						->line($node->getStartLine())
-						->identifier('unset.readonlyProperty')
+						->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
 						->build();
 				}
 			}

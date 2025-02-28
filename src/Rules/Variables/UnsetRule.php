@@ -91,14 +91,12 @@ final class UnsetRule implements Rule
 			}
 
 			if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
-				$type = $scope->getType($node->var);
-
 				return RuleErrorBuilder::message(
 					sprintf(
-						'Cannot unset %s property %s of %s.',
+						'Cannot unset %s %s::$%s property.',
 						$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
-						$node->name->name,
-						$type->describe(VerbosityLevel::value()),
+						$propertyReflection->getDeclaringClass()->getDisplayName(),
+						$foundPropertyReflection->getName(),
 					),
 				)
 					->line($node->getStartLine())

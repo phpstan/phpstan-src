@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnsetRule>
@@ -118,6 +119,32 @@ class UnsetRuleTest extends RuleTestCase
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyProperty::$y property.',
 				34,
+			],
+		]);
+	}
+
+	public function testUnsetHookedProperty(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/unset-hooked-property.php'], [
+			[
+				'Cannot unset hooked property UnsetHookedProperty\User::$name.',
+				6,
+			],
+			[
+				'Cannot unset hooked property UnsetHookedProperty\User::$fullName.',
+				7,
+			],
+			[
+				'Cannot unset hooked property UnsetHookedProperty\Foo::$ii.',
+				9,
+			],
+			[
+				'Cannot unset hooked property UnsetHookedProperty\Foo::$iii.',
+				10,
 			],
 		]);
 	}

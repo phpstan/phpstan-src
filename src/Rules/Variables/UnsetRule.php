@@ -103,6 +103,19 @@ final class UnsetRule implements Rule
 					->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
 					->build();
 			}
+
+			if ($propertyReflection->getNativeReflection()->getHooks() !== []) {
+				return RuleErrorBuilder::message(
+					sprintf(
+						'Cannot unset hooked property %s::$%s.',
+						$propertyReflection->getDeclaringClass()->getDisplayName(),
+						$foundPropertyReflection->getName(),
+					),
+				)
+					->line($node->getStartLine())
+					->identifier('unset.hookedProperty')
+					->build();
+			}
 		}
 
 		return null;

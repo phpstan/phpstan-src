@@ -104,7 +104,7 @@ final class UnsetRule implements Rule
 					->build();
 			}
 
-			if ($propertyReflection->getNativeReflection()->getHooks() !== []) {
+			if ($propertyReflection->isHooked()) {
 				return RuleErrorBuilder::message(
 					sprintf(
 						'Cannot unset hooked %s::$%s property.',

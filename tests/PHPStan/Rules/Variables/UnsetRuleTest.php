@@ -131,19 +131,19 @@ class UnsetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/unset-hooked-property.php'], [
 			[
-				'Cannot unset hooked property UnsetHookedProperty\User::$name.',
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
 				6,
 			],
 			[
-				'Cannot unset hooked property UnsetHookedProperty\User::$fullName.',
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
 				7,
 			],
 			[
-				'Cannot unset hooked property UnsetHookedProperty\Foo::$ii.',
+				'Cannot unset hooked UnsetHookedProperty\Foo::$ii property.',
 				9,
 			],
 			[
-				'Cannot unset hooked property UnsetHookedProperty\Foo::$iii.',
+				'Cannot unset hooked UnsetHookedProperty\Foo::$iii property.',
 				10,
 			],
 		]);

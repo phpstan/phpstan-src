@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -16,6 +17,12 @@ use function sprintf;
  */
 final class UnsetRule implements Rule
 {
+
+	public function __construct(
+		private PropertyReflectionFinder $propertyReflectionFinder,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -73,26 +80,30 @@ final class UnsetRule implements Rule
 			$node instanceof Node\Expr\PropertyFetch
 			&& $node->name instanceof Node\Identifier
 		) {
-			$type = $scope->getType($node->var);
-			foreach ($type->getObjectClassReflections() as $classReflection) {
-				if (!$classReflection->hasNativeProperty($node->name->name)) {
-					continue;
-				}
+			$foundPropertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $scope);
+			if ($foundPropertyReflection === null) {
+				return null;
+			}
 
-				$propertyReflection = $classReflection->getNativeProperty($node->name->name);
-				if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
-					return RuleErrorBuilder::message(
-						sprintf(
-							'Cannot unset %s property %s of %s.',
-							$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
-							$node->name->name,
-							$type->describe(VerbosityLevel::value()),
-						),
-					)
-						->line($node->getStartLine())
-						->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
-						->build();
-				}
+			$propertyReflection = $foundPropertyReflection->getNativeReflection();
+			if ($propertyReflection === null) {
+				return null;
+			}
+
+			if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
+				$type = $scope->getType($node->var);
+
+				return RuleErrorBuilder::message(
+					sprintf(
+						'Cannot unset %s property %s of %s.',
+						$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
+						$node->name->name,
+						$type->describe(VerbosityLevel::value()),
+					),
+				)
+					->line($node->getStartLine())
+					->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
+					->build();
 			}
 		}
 

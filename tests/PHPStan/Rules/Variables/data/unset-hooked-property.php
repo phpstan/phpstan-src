@@ -2,12 +2,18 @@
 
 namespace UnsetHookedProperty;
 
-function doUnset(Foo $foo, User $user): void {
+function doUnset(Foo $foo, User $user, NonFinalClass $nonFinalClass, FinalClass $finalClass): void {
 	unset($user->name);
 	unset($user->fullName);
 
 	unset($foo->ii);
 	unset($foo->iii);
+
+	unset($nonFinalClass->publicFinalProperty);
+	unset($nonFinalClass->publicProperty);
+
+	unset($finalClass->publicFinalProperty);
+	unset($finalClass->publicProperty);
 }
 
 class User
@@ -39,3 +45,22 @@ abstract class Foo
 	abstract public int $iii { get; }
 }
 
+class NonFinalClass {
+	private string $privateProperty;
+	public string $publicProperty;
+	final public string $publicFinalProperty;
+
+	function doFoo() {
+		unset($this->privateProperty);
+	}
+}
+
+final class FinalClass {
+	private string $privateProperty;
+	public string $publicProperty;
+	final public string $publicFinalProperty;
+
+	function doFoo() {
+		unset($this->privateProperty);
+	}
+}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -15,7 +16,10 @@ class UnsetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnsetRule(self::getContainer()->getByType(PropertyReflectionFinder::class));
+		return new UnsetRule(
+			self::getContainer()->getByType(PropertyReflectionFinder::class),
+			self::getContainer()->getByType(PhpVersion::class),
+		);
 	}
 
 	public function testUnsetRule(): void
@@ -56,7 +60,12 @@ class UnsetRuleTest extends RuleTestCase
 
 	public function testBug4289(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4289.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4289.php'], [
+			[
+				'Cannot unset Bug4289\BaseClass::$fields property which might get hooked in subclass.',
+				25,
+			],
+		]);
 	}
 
 	public function testBug5223(): void
@@ -96,6 +105,10 @@ class UnsetRuleTest extends RuleTestCase
 	public function testBug12421(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12421.php'], [
+			[
+				'Cannot unset Bug12421\RegularProperty::$y property which might get hooked in subclass.',
+				7,
+			],
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyClass::$y property.',
 				11,
@@ -145,6 +158,10 @@ class UnsetRuleTest extends RuleTestCase
 			[
 				'Cannot unset hooked UnsetHookedProperty\Foo::$iii property.',
 				10,
+			],
+			[
+				'Cannot unset UnsetHookedProperty\NonFinalClass::$publicProperty property which might get hooked in subclass.',
+				13,
 			],
 		]);
 	}

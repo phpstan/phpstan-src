@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
@@ -20,6 +21,7 @@ final class UnsetRule implements Rule
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -115,6 +117,23 @@ final class UnsetRule implements Rule
 					->line($node->getStartLine())
 					->identifier('unset.hookedProperty')
 					->build();
+			} elseif ($this->phpVersion->supportsPropertyHooks()) {
+				if (
+					!$propertyReflection->isPrivate()
+					&& !$propertyReflection->isFinal()->yes()
+					&& !$propertyReflection->getDeclaringClass()->isFinal()
+				) {
+					return RuleErrorBuilder::message(
+						sprintf(
+							'Cannot unset %s::$%s property which might get hooked in subclass.',
+							$propertyReflection->getDeclaringClass()->getDisplayName(),
+							$foundPropertyReflection->getName(),
+						),
+					)
+						->line($node->getStartLine())
+						->identifier('unset.maybeHookedProperty')
+						->build();
+				}
 			}
 		}
 

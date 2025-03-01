@@ -91,7 +91,7 @@ final class MissingTypehintCheck
 				}
 				if ($type instanceof IntersectionType) {
 					if ($type->isList()->yes()) {
-						return $traverse($type->getIterableValueType());
+						return $traverse($iterableValue);
 					}
 
 					return $type;

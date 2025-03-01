@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
 use const PHP_VERSION_ID;
 
 /**
@@ -60,12 +61,16 @@ class UnsetRuleTest extends RuleTestCase
 
 	public function testBug4289(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4289.php'], [
-			[
-				'Cannot unset Bug4289\BaseClass::$fields property which might get hooked in subclass.',
-				25,
-			],
-		]);
+		if (PHP_VERSION_ID < 80400) {
+			$this->analyse([__DIR__ . '/data/bug-4289.php'], []);
+		} else {
+			$this->analyse([__DIR__ . '/data/bug-4289.php'], [
+				[
+					'Cannot unset Bug4289\BaseClass::$fields property which might get hooked in subclass.',
+					25,
+				],
+			]);
+		}
 	}
 
 	public function testBug5223(): void
@@ -104,11 +109,15 @@ class UnsetRuleTest extends RuleTestCase
 
 	public function testBug12421(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-12421.php'], [
-			[
+		$errors = [];
+		if (PHP_VERSION_ID >= 80400) {
+			$errors[] = [
 				'Cannot unset Bug12421\RegularProperty::$y property which might get hooked in subclass.',
 				7,
-			],
+			];
+		}
+
+		$errors = array_merge($errors, [
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyClass::$y property.',
 				11,
@@ -134,6 +143,8 @@ class UnsetRuleTest extends RuleTestCase
 				34,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/bug-12421.php'], $errors);
 	}
 
 	public function testUnsetHookedProperty(): void

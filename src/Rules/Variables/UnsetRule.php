@@ -131,7 +131,7 @@ final class UnsetRule implements Rule
 						),
 					)
 						->line($node->getStartLine())
-						->identifier('unset.maybeHookedProperty')
+						->identifier('unset.possiblyHookedProperty')
 						->build();
 				}
 			}

@@ -284,6 +284,17 @@ function str_ireplace($search, $replace, $subject, ?int &$count = null) {}
 function stream_select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, ?int $microseconds = null) {}
 
 /**
+ * @param int $error_code
+ * @param-out int $error_code
+ * @param string $error_message
+ * @param-out string $error_message
+ * @param int-mask<1, 2, 4> $flags
+ * @param resource|null $context
+ * @return resource|false
+ */
+function stream_socket_client(string $address, &$error_code = null, &$error_message = null, ?float $timeout = null, int $flags = 4, $context = null) {}
+
+/**
  * @param resource $stream
  * @param-out 0|1 $would_block
  */

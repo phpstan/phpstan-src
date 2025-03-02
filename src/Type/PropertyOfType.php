@@ -54,11 +54,8 @@ class PropertyOfType implements CompoundType, LateResolvableType
     protected function getResult(): Type
     {
 
-        $classReflection = null;
-
-        if ($this->type instanceof TypeWithClassName) {
-            $classReflection = $this->type->getClassReflection();
-        }
+        $classReflections = $this->type->getObjectClassReflections();
+        $classReflection = $classReflections[0] ?? null;
 
         if ($classReflection !== null) {
 

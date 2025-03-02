@@ -93,6 +93,10 @@ final class GetNonVirtualPropertyHookReadRule implements Rule
 				continue;
 			}
 
+			if ($propertyReflection->isAbstract()->yes()) {
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Get hook for non-virtual property %s::$%s does not read its value.',
 				$classReflection->getDisplayName(),

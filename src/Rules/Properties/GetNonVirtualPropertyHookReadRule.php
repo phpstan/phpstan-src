@@ -76,6 +76,10 @@ final class GetNonVirtualPropertyHookReadRule implements Rule
 					continue;
 				}
 
+				if ($hook->body === null) {
+					continue;
+				}
+
 				$hasGetHook = true;
 				break;
 			}
@@ -90,10 +94,6 @@ final class GetNonVirtualPropertyHookReadRule implements Rule
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyNode->getName());
 			if ($propertyReflection->isVirtual()->yes()) {
-				continue;
-			}
-
-			if ($propertyReflection->isAbstract()->yes()) {
 				continue;
 			}
 

@@ -400,4 +400,9 @@ final class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function supportsBcMathNumberOperatorOverloading(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

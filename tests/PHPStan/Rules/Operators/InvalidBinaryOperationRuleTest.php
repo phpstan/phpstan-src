@@ -303,6 +303,528 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5309.php'], []);
 	}
 
+	public function testBcMathNumber(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			self::markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bcmath-number.php'], [
+			[
+				'Binary operation "<<" between BcMath\\Number and BcMath\\Number results in an error.',
+				19,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and BcMath\\Number results in an error.',
+				20,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and BcMath\\Number results in an error.',
+				28,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and BcMath\\Number results in an error.',
+				29,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and BcMath\\Number results in an error.',
+				30,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and int results in an error.',
+				47,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and int results in an error.',
+				48,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and int results in an error.',
+				56,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and int results in an error.',
+				57,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and int results in an error.',
+				58,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and float results in an error.',
+				68,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and float results in an error.',
+				69,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and float results in an error.',
+				70,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and float results in an error.',
+				71,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and float results in an error.',
+				72,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and float results in an error.',
+				74,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and float results in an error.',
+				75,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and float results in an error.',
+				76,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and float results in an error.',
+				84,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and float results in an error.',
+				85,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and float results in an error.',
+				86,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and numeric-string results in an error.',
+				104,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and numeric-string results in an error.',
+				105,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and numeric-string results in an error.',
+				113,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and numeric-string results in an error.',
+				114,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and numeric-string results in an error.',
+				115,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and string results in an error.',
+				125,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and string results in an error.',
+				126,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and string results in an error.',
+				127,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and string results in an error.',
+				128,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and string results in an error.',
+				129,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and string results in an error.',
+				131,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and string results in an error.',
+				132,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and string results in an error.',
+				133,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and string results in an error.',
+				141,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and string results in an error.',
+				142,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and string results in an error.',
+				143,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and bool results in an error.',
+				153,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and bool results in an error.',
+				154,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and bool results in an error.',
+				155,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and bool results in an error.',
+				156,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and bool results in an error.',
+				157,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and bool results in an error.',
+				159,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and bool results in an error.',
+				160,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and bool results in an error.',
+				161,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and bool results in an error.',
+				169,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and bool results in an error.',
+				170,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and bool results in an error.',
+				171,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and null results in an error.',
+				182,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and null results in an error.',
+				183,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and null results in an error.',
+				185,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and null results in an error.',
+				186,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and null results in an error.',
+				188,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and null results in an error.',
+				189,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and null results in an error.',
+				190,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and null results in an error.',
+				198,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and null results in an error.',
+				199,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and null results in an error.',
+				200,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and array results in an error.',
+				210,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and array results in an error.',
+				211,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and array results in an error.',
+				212,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and array results in an error.',
+				213,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and array results in an error.',
+				214,
+			],
+			[
+				'Binary operation "." between BcMath\\Number and array results in an error.',
+				215,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and array results in an error.',
+				216,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and array results in an error.',
+				217,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and array results in an error.',
+				218,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and array results in an error.',
+				226,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and array results in an error.',
+				227,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and array results in an error.',
+				228,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and object results in an error.',
+				238,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and object results in an error.',
+				239,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and object results in an error.',
+				240,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and object results in an error.',
+				241,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and object results in an error.',
+				242,
+			],
+			[
+				'Binary operation "." between BcMath\\Number and object results in an error.',
+				243,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and object results in an error.',
+				244,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and object results in an error.',
+				245,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and object results in an error.',
+				246,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and object results in an error.',
+				254,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and object results in an error.',
+				255,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and object results in an error.',
+				256,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and resource results in an error.',
+				267,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and resource results in an error.',
+				268,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and resource results in an error.',
+				269,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and resource results in an error.',
+				270,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and resource results in an error.',
+				271,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and resource results in an error.',
+				273,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and resource results in an error.',
+				274,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and resource results in an error.',
+				275,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and resource results in an error.',
+				283,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and resource results in an error.',
+				284,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and resource results in an error.',
+				285,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and callable(): mixed results in an error.',
+				295,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and callable(): mixed results in an error.',
+				296,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and callable(): mixed results in an error.',
+				297,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and callable(): mixed results in an error.',
+				298,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and callable(): mixed results in an error.',
+				299,
+			],
+			[
+				'Binary operation "." between BcMath\\Number and callable(): mixed results in an error.',
+				300,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and callable(): mixed results in an error.',
+				301,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and callable(): mixed results in an error.',
+				302,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and callable(): mixed results in an error.',
+				303,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and callable(): mixed results in an error.',
+				311,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and callable(): mixed results in an error.',
+				312,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and callable(): mixed results in an error.',
+				313,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and iterable results in an error.',
+				323,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and iterable results in an error.',
+				324,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and iterable results in an error.',
+				325,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and iterable results in an error.',
+				326,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and iterable results in an error.',
+				327,
+			],
+			[
+				'Binary operation "." between BcMath\\Number and iterable results in an error.',
+				328,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and iterable results in an error.',
+				329,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and iterable results in an error.',
+				330,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and iterable results in an error.',
+				331,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and iterable results in an error.',
+				339,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and iterable results in an error.',
+				340,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and iterable results in an error.',
+				341,
+			],
+			[
+				'Binary operation "+" between BcMath\\Number and Stringable results in an error.',
+				351,
+			],
+			[
+				'Binary operation "-" between BcMath\\Number and Stringable results in an error.',
+				352,
+			],
+			[
+				'Binary operation "*" between BcMath\\Number and Stringable results in an error.',
+				353,
+			],
+			[
+				'Binary operation "/" between BcMath\\Number and Stringable results in an error.',
+				354,
+			],
+			[
+				'Binary operation "%" between BcMath\\Number and Stringable results in an error.',
+				355,
+			],
+			[
+				'Binary operation "**" between BcMath\\Number and Stringable results in an error.',
+				357,
+			],
+			[
+				'Binary operation "<<" between BcMath\\Number and Stringable results in an error.',
+				358,
+			],
+			[
+				'Binary operation ">>" between BcMath\\Number and Stringable results in an error.',
+				359,
+			],
+			[
+				'Binary operation "&" between BcMath\\Number and Stringable results in an error.',
+				367,
+			],
+			[
+				'Binary operation "^" between BcMath\\Number and Stringable results in an error.',
+				368,
+			],
+			[
+				'Binary operation "|" between BcMath\\Number and Stringable results in an error.',
+				369,
+			],
+		]);
+	}
+
 	public function testBinaryMixed(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

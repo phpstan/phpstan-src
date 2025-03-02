@@ -31,6 +31,8 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -593,6 +595,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toString(): Type
 	{
+		if ($this->isInstanceOf('BcMath\Number')->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
+		}
+
 		$classReflection = $this->getClassReflection();
 		if ($classReflection === null) {
 			return new ErrorType();
@@ -678,7 +688,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toBoolean(): BooleanType
 	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+		if (
+			$this->isInstanceOf('SimpleXMLElement')->yes()
+			|| $this->isInstanceOf('BcMath\Number')->yes()
+		) {
 			return new BooleanType();
 		}
 

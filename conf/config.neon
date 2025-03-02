@@ -1053,6 +1053,10 @@ services:
 		arguments:
 			reportMagicProperties: %reportMagicProperties%
 			checkDynamicProperties: %checkDynamicProperties%
+	-
+		class: PHPStan\Type\Php\BcMathNumberOperatorTypeSpecifyingExtension
+		tags:
+			- phpstan.broker.operatorTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

@@ -50,12 +50,15 @@ final class IgnoredErrorHelperResult
 		bool $onlyFiles,
 		array $analysedFiles,
 		bool $hasInternalErrors,
+		bool $generateBaseline,
+		bool $ignoreNewErrors,
 	): IgnoredErrorHelperProcessedResult
 	{
-		$unmatchedIgnoredErrors = $this->ignoreErrors;
+		// if we are generating the baseline, we dont want ignore Errors configuration to affect the errors we output
+		$unmatchedIgnoredErrors = $generateBaseline ? [] : $this->ignoreErrors;
 		$stringErrors = [];
 
-		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors): bool {
+		$processIgnoreError = function (Error $error, int $i, $ignore) use ($generateBaseline, &$unmatchedIgnoredErrors, &$stringErrors): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
 				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null, null);
@@ -65,7 +68,8 @@ final class IgnoredErrorHelperResult
 			} else {
 				if (isset($ignore['path'])) {
 					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, $ignore['path']);
-					if ($shouldBeIgnored) {
+					// only ignore errors when not generating the baseline, because it need to contain all errors
+					if ($shouldBeIgnored && !$generateBaseline) {
 						if (isset($ignore['count'])) {
 							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
 							$realCount++;
@@ -115,12 +119,12 @@ final class IgnoredErrorHelperResult
 						'Error message "%s" cannot be ignored, use excludePaths instead.',
 						$error->getMessage(),
 					);
-					return true;
+					return false;
 				}
-				return false;
+				return true;
 			}
 
-			return true;
+			return false;
 		};
 
 		$ignoredErrors = [];
@@ -130,12 +134,16 @@ final class IgnoredErrorHelperResult
 				foreach ($this->ignoreErrorsByFile[$filePath] as $ignoreError) {
 					$i = $ignoreError['index'];
 					$ignore = $ignoreError['ignoreError'];
-					$result = $processIgnoreError($error, $i, $ignore);
-					if (!$result) {
+					$isIgnoreMatch = $processIgnoreError($error, $i, $ignore);
+					if (!$isIgnoreMatch) {
+						continue;
+					}
+
+					if (!$generateBaseline) {
 						unset($errors[$errorIndex]);
 						$ignoredErrors[] = [$error, $ignore];
-						continue 2;
 					}
+					continue 2;
 				}
 			}
 
@@ -146,12 +154,16 @@ final class IgnoredErrorHelperResult
 					foreach ($this->ignoreErrorsByFile[$normalizedTraitFilePath] as $ignoreError) {
 						$i = $ignoreError['index'];
 						$ignore = $ignoreError['ignoreError'];
-						$result = $processIgnoreError($error, $i, $ignore);
-						if (!$result) {
+						$isIgnoreMatch = $processIgnoreError($error, $i, $ignore);
+						if (!$isIgnoreMatch) {
+							continue;
+						}
+
+						if (!$generateBaseline) {
 							unset($errors[$errorIndex]);
 							$ignoredErrors[] = [$error, $ignore];
-							continue 2;
 						}
+						continue 2;
 					}
 				}
 			}
@@ -160,13 +172,24 @@ final class IgnoredErrorHelperResult
 				$i = $ignoreError['index'];
 				$ignore = $ignoreError['ignoreError'];
 
-				$result = $processIgnoreError($error, $i, $ignore);
-				if (!$result) {
+				$isIgnoreMatch = $processIgnoreError($error, $i, $ignore);
+				if (!$isIgnoreMatch) {
+					continue;
+				}
+
+				if (!$generateBaseline) {
 					unset($errors[$errorIndex]);
 					$ignoredErrors[] = [$error, $ignore];
-					continue 2;
 				}
+				continue 2;
 			}
+
+			if (!$ignoreNewErrors) {
+				continue;
+			}
+
+			// if the error was not ignored, it is a new error, don't return it when $ignoreNewErrors is set
+			unset($errors[$errorIndex]);
 		}
 
 		$errors = array_values($errors);

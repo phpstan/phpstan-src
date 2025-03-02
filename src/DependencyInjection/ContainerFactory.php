@@ -114,10 +114,8 @@ final class ContainerFactory
 		);
 
 		$configurator = new Configurator(new LoaderFactory(
-			$this->fileHelper,
 			$this->rootDirectory,
 			$this->currentWorkingDirectory,
-			$generateBaselineFile,
 		), $this->journalContainer);
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,

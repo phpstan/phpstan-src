@@ -225,10 +225,8 @@ final class CommandHelper
 			}
 
 			$loader = (new LoaderFactory(
-				$currentWorkingDirectoryFileHelper,
 				$containerFactory->getRootDirectory(),
 				$containerFactory->getCurrentWorkingDirectory(),
-				$generateBaselineFile,
 			))->createLoader();
 
 			try {

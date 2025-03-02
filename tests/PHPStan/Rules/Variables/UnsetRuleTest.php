@@ -61,16 +61,18 @@ class UnsetRuleTest extends RuleTestCase
 
 	public function testBug4289(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->analyse([__DIR__ . '/data/bug-4289.php'], []);
-		} else {
-			$this->analyse([__DIR__ . '/data/bug-4289.php'], [
+		$errors = [];
+
+		if (PHP_VERSION_ID >= 80400) {
+			$errors = [
 				[
-					'Cannot unset Bug4289\BaseClass::$fields property which might get hooked in subclass.',
+					'Cannot unset property Bug4289\BaseClass::$fields because it might have hooks in a subclass.',
 					25,
 				],
-			]);
+			];
 		}
+
+		$this->analyse([__DIR__ . '/data/bug-4289.php'], $errors);
 	}
 
 	public function testBug5223(): void
@@ -112,7 +114,7 @@ class UnsetRuleTest extends RuleTestCase
 		$errors = [];
 		if (PHP_VERSION_ID >= 80400) {
 			$errors[] = [
-				'Cannot unset Bug12421\RegularProperty::$y property which might get hooked in subclass.',
+				'Cannot unset property Bug12421\RegularProperty::$y because it might have hooks in a subclass.',
 				7,
 			];
 		}
@@ -171,7 +173,7 @@ class UnsetRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Cannot unset UnsetHookedProperty\NonFinalClass::$publicProperty property which might get hooked in subclass.',
+				'Cannot unset property UnsetHookedProperty\NonFinalClass::$publicProperty because it might have hooks in a subclass.',
 				13,
 			],
 		]);

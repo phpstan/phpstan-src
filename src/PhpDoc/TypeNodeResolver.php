@@ -92,6 +92,7 @@ use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OffsetAccessType;
+use PHPStan\Type\PropertyOfType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -760,7 +761,15 @@ final class TypeNodeResolver
 			}
 
 			return new ErrorType();
-		} elseif ($mainTypeName === 'int-mask-of') {
+		} elseif ($mainTypeName === 'property-of') {
+            if (count($genericTypes) === 1) { // property-of<ValueType>
+                $type = new PropertyOfType($genericTypes[0]);
+
+                return $type->isResolvable() ? $type->resolve() : $type;
+            }
+
+            return new ErrorType();
+        } elseif ($mainTypeName === 'int-mask-of') {
 			if (count($genericTypes) === 1) { // int-mask-of<Class::CONST*>
 				$maskType = $this->expandIntMaskToType($genericTypes[0]);
 				if ($maskType !== null) {

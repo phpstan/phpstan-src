@@ -125,7 +125,7 @@ final class UnsetRule implements Rule
 				) {
 					return RuleErrorBuilder::message(
 						sprintf(
-							'Cannot unset %s::$%s property which might get hooked in subclass.',
+							'Cannot unset property %s::$%s because it might have hooks in a subclass.',
 							$propertyReflection->getDeclaringClass()->getDisplayName(),
 							$foundPropertyReflection->getName(),
 						),

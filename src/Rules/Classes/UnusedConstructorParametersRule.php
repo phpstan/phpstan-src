@@ -16,7 +16,6 @@ use function array_map;
 use function array_values;
 use function count;
 use function sprintf;
-use function strtolower;
 
 /**
  * @implements Rule<InClassMethodNode>
@@ -37,7 +36,7 @@ final class UnusedConstructorParametersRule implements Rule
 	{
 		$method = $node->getMethodReflection();
 		$originalNode = $node->getOriginalNode();
-		if (strtolower($method->getName()) !== '__construct' || $originalNode->stmts === null) {
+		if (!$method->isConstructor() || $originalNode->stmts === null) {
 			return [];
 		}
 
@@ -49,7 +48,7 @@ final class UnusedConstructorParametersRule implements Rule
 		}
 
 		foreach ($node->getClassReflection()->getInterfaces() as $interface) {
-			if ($interface->hasMethod('__construct')) {
+			if ($interface->hasConstructor()) {
 				return [];
 			}
 		}

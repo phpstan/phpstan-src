@@ -409,14 +409,21 @@ final class FunctionCallParametersCheck
 					if ($nativePropertyReflection === null) {
 						continue;
 					}
-					if (!$nativePropertyReflection->isReadOnly()) {
-						continue;
-					}
 
-					if ($nativePropertyReflection->isStatic()) {
-						$propertyDescription = sprintf('static readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+					if ($nativePropertyReflection->isReadOnly()) {
+						if ($nativePropertyReflection->isStatic()) {
+							$propertyDescription = sprintf('static readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+						} else {
+							$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+						}
+					} elseif ($nativePropertyReflection->isReadOnlyByPhpDoc()) {
+						if ($nativePropertyReflection->isStatic()) {
+							$propertyDescription = sprintf('static @readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+						} else {
+							$propertyDescription = sprintf('@readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+						}
 					} else {
-						$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+						continue;
 					}
 
 					$errors[] = RuleErrorBuilder::message(sprintf(

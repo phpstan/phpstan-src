@@ -85,8 +85,6 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			null,
 			null,
 			$this->createMock(InputInterface::class),
-			false,
-			false,
 		);
 		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
 

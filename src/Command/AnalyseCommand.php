@@ -102,7 +102,6 @@ final class AnalyseCommand extends Command
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', null, InputOption::VALUE_NONE, 'Return non-zero exit code when result cache is not used'),
-				new InputOption('ignore-new-errors', null, InputOption::VALUE_NONE, 'Ignore new errors when generating the baseline.'),
 			]);
 	}
 
@@ -137,7 +136,6 @@ final class AnalyseCommand extends Command
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
-		$ignoreNewErrors = (bool) $input->getOption('ignore-new-errors');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -181,11 +179,6 @@ final class AnalyseCommand extends Command
 
 		if ($generateBaselineFile === null && $allowEmptyBaseline) {
 			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
-			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
-		}
-
-		if ($generateBaselineFile === null && $ignoreNewErrors) {
-			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --ignore-new-errors.');
 			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
@@ -297,8 +290,6 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getProjectConfigFile(),
 				$inceptionResult->getProjectConfigArray(),
 				$input,
-				$generateBaselineFile !== null,
-				$ignoreNewErrors,
 			);
 		} catch (Throwable $t) {
 			if ($debug) {

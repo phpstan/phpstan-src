@@ -302,8 +302,6 @@ final class FixerWorkerCommand extends Command
 					$isOnlyFiles,
 					$inceptionFiles,
 					$hasInternalErrors,
-					false,
-					false,
 				);
 				$ignoreFileErrors = [];
 				foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
@@ -357,14 +355,7 @@ final class FixerWorkerCommand extends Command
 	 */
 	private function filterErrors(array $errors, IgnoredErrorHelperResult $ignoredErrorHelperResult, bool $onlyFiles, array $inceptionFiles, bool $hasInternalErrors): array
 	{
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
-			$errors,
-			$onlyFiles,
-			$inceptionFiles,
-			$hasInternalErrors,
-			false,
-			false,
-		);
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $inceptionFiles, $hasInternalErrors);
 		$finalErrors = [];
 		foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
 			if ($error->getIdentifier() === null) {

@@ -52,27 +52,6 @@ class AnalyserTest extends PHPStanTestCase
 		], $result);
 	}
 
-	public function testDontReturnErrorIfIgnoredMessagesDoesNotOccurWhenGeneratingBaseline(): void
-	{
-		$result = $this->runAnalyser(['#Unknown error#'], false, __DIR__ . '/data/empty/empty.php', false, true);
-
-		$this->assertEmpty($result);
-	}
-
-	public function testDontReturnErrorOnNewErrorWhenIgnoringNewErrors(): void
-	{
-		$result = $this->runAnalyser(['#Unknown error#'], false, __DIR__ . '/data/bootstrap-error.php', false, true, true);
-
-		$this->assertEmpty($result);
-	}
-
-	public function testReturnErrorOnIgnoredErrorWhenIgnoringNewErrorsAndGeneratingBaseline(): void
-	{
-		$result = $this->runAnalyser(['#Fail\.#'], false, __DIR__ . '/data/bootstrap-error.php', false, true, true);
-
-		$this->assertNotEmpty($result);
-	}
-
 	public function testDoNotReturnErrorIfIgnoredMessagesDoesNotOccurWithReportUnmatchedIgnoredErrorsOff(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], false, __DIR__ . '/data/empty/empty.php', false);
@@ -665,8 +644,6 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
-		bool $generateBaseline = false,
-		bool $ignoreNewErrors = false,
 	): array
 	{
 		$analyser = $this->createAnalyser();
@@ -702,14 +679,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
-			$analyserResult->getErrors(),
-			$onlyFiles,
-			$normalizedFilePaths,
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$generateBaseline,
-			$ignoreNewErrors,
-		);
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {

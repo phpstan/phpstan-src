@@ -51,8 +51,6 @@ final class AnalyseApplication
 		?string $projectConfigFile,
 		?array $projectConfigArray,
 		InputInterface $input,
-		bool $generateBaseline,
-		bool $ignoreNewErrors,
 	): AnalysisResult
 	{
 		$isResultCacheUsed = false;
@@ -144,7 +142,7 @@ final class AnalyseApplication
 				}
 			}
 
-			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors, $generateBaseline, $ignoreNewErrors);
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();

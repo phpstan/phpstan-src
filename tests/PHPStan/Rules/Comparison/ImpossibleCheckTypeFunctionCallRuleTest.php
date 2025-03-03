@@ -93,6 +93,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					140,
 				],
 				[
+					'Call to function method_exists() with CheckTypeFunctionCall\Foo and \'test\' will always evaluate to false.',
+					176,
+				],
+				[
 					'Call to function method_exists() with CheckTypeFunctionCall\Foo and \'doFoo\' will always evaluate to true.',
 					179,
 				],
@@ -171,6 +175,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function method_exists() with CheckTypeFunctionCall\MethodExists and \'testWithNewObjectIn…\' will always evaluate to true.',
 					620,
+				],
+				[
+					'Call to function method_exists() with CheckTypeFunctionCall\MethodExists and \'undefinedMethod\' will always evaluate to false.',
+					623,
 				],
 				[
 					'Call to function method_exists() with CheckTypeFunctionCall\MethodExists and \'testWithNewObjectIn…\' will always evaluate to true.',

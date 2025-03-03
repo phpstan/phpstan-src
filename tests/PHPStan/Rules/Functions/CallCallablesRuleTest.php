@@ -103,7 +103,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				106,
 			],
 			[
-				'Trying to invoke CallCallables\Baz but it might not be a callable.',
+				'Trying to invoke CallCallables\Baz but it\'s not a callable.',
 				113,
 			],
 			[

@@ -33,7 +33,7 @@ function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrStr
 	assertType("'float'", get_debug_type($d));
 	assertType("'string'", get_debug_type($s));
 	assertType("'array'", get_debug_type($a));
-	assertType("string", get_debug_type($o));
+	assertType("'stdClass'", get_debug_type($o));
 	assertType("string", get_debug_type($std));
 	assertType("'GetDebugType\\\\A'", get_debug_type($A));
 	assertType("string", get_debug_type($r));

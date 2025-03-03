@@ -504,4 +504,15 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNewIsAlwaysFinalClass(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-instanceof-new-is-always-final.php'], [
+			[
+				'Instanceof between ImpossibleInstanceofNewIsAlwaysFinal\Bar and ImpossibleInstanceofNewIsAlwaysFinal\Foo will always evaluate to false.',
+				17,
+			],
+		]);
+	}
+
 }

@@ -377,21 +377,37 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ShouldNotHappenException();
 		}
 
-		if ($thatClassNames[0] === $thisClassName) {
-			return $transformResult(IsSuperTypeOfResult::createYes());
+		$thisClassReflection = $this->getClassReflection();
+		$thatClassReflections = $type->getObjectClassReflections();
+		if (count($thatClassReflections) === 1) {
+			$thatClassReflection = $thatClassReflections[0];
+		} else {
+			$thatClassReflection = null;
 		}
 
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$thisClassReflection = $this->getClassReflection();
-
-		if ($thisClassReflection === null || !$reflectionProvider->hasClass($thatClassNames[0])) {
+		if ($thisClassReflection === null || $thatClassReflection === null) {
+			if ($thatClassNames[0] === $thisClassName) {
+				return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+			}
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		$thatClassReflection = $reflectionProvider->getClass($thatClassNames[0]);
+		if ($thatClassNames[0] === $thisClassName) {
+			if ($thisClassReflection->getNativeReflection()->isFinal()) {
+				return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+			}
+
+			if ($thisClassReflection->hasFinalByKeywordOverride()) {
+				if (!$thatClassReflection->hasFinalByKeywordOverride()) {
+					return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createMaybe());
+				}
+			}
+
+			return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+		}
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {
-			return IsSuperTypeOfResult::createNo();
+			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 		}
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
@@ -406,11 +422,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		if ($thisClassReflection->isInterface() && !$thatClassReflection->getNativeReflection()->isFinal()) {
+		if ($thisClassReflection->isInterface() && !$thatClassReflection->isFinalByKeyword()) {
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		if ($thatClassReflection->isInterface() && !$thisClassReflection->getNativeReflection()->isFinal()) {
+		if ($thatClassReflection->isInterface() && !$thisClassReflection->isFinalByKeyword()) {
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
@@ -550,6 +566,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$description .= '-';
 			$description .= (string) $reflection->getNativeReflection()->getStartLine();
 			$description .= '-';
+
+			if ($reflection->hasFinalByKeywordOverride()) {
+				$description .= 'f=' . ($reflection->isFinalByKeyword() ? 't' : 'f');
+			}
 		}
 
 		return $this->cachedDescription = $description;
@@ -1331,7 +1351,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			);
 		}
 
-		if (!$classReflection->getNativeReflection()->isFinal()) {
+		if (!$classReflection->isFinalByKeyword()) {
 			return [new TrivialParametersAcceptor()];
 		}
 

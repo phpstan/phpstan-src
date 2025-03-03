@@ -57,6 +57,7 @@ use Throwable;
 use Traversable;
 use function array_map;
 use function array_reverse;
+use function get_class;
 use function implode;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -2740,6 +2741,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ObjectType::class,
 			$c->getName(),
 		];
+
+		$nonFinalClass = $reflectionProvider->getClass(\NullCoalesceIsAlwaysFinal\Foo::class);
+		$finalClass = $nonFinalClass->asFinal();
+
+		yield [
+			[
+				new ObjectType($finalClass->getName(), null, $finalClass),
+				new ObjectType($nonFinalClass->getName(), null, $nonFinalClass),
+			],
+			ObjectType::class,
+			$nonFinalClass->getDisplayName(),
+		];
 	}
 
 	/**
@@ -2760,6 +2773,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';
+			}
+		}
+		if (get_class($actualType) === ObjectType::class) {
+			$actualClassReflection = $actualType->getClassReflection();
+			if (
+				$actualClassReflection !== null
+				&& $actualClassReflection->hasFinalByKeywordOverride()
+				&& $actualClassReflection->isFinal()
+			) {
+				$actualTypeDescription .= '=final';
 			}
 		}
 
@@ -2807,6 +2830,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';
+			}
+		}
+		if (get_class($actualType) === ObjectType::class) {
+			$actualClassReflection = $actualType->getClassReflection();
+			if (
+				$actualClassReflection !== null
+				&& $actualClassReflection->hasFinalByKeywordOverride()
+				&& $actualClassReflection->isFinal()
+			) {
+				$actualTypeDescription .= '=final';
 			}
 		}
 		$this->assertSame(
@@ -4618,6 +4651,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 			GenericStaticType::class,
 			'static(PHPStan\Generics\FunctionsAssertType\C<covariant int>)',
 		];
+
+		$nonFinalClass = $reflectionProvider->getClass(\NullCoalesceIsAlwaysFinal\Foo::class);
+		$finalClass = $nonFinalClass->asFinal();
+
+		yield [
+			[
+				new ObjectType($finalClass->getName(), null, $finalClass),
+				new ObjectType($nonFinalClass->getName(), null, $nonFinalClass),
+			],
+			ObjectType::class,
+			$nonFinalClass->getDisplayName() . '=final',
+		];
 	}
 
 	/**
@@ -4647,6 +4692,18 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
+
+		if (get_class($actualType) === ObjectType::class && $actualType->isEnum()->no()) {
+			$actualClassReflection = $actualType->getClassReflection();
+			if (
+				$actualClassReflection !== null
+				&& $actualClassReflection->hasFinalByKeywordOverride()
+				&& $actualClassReflection->isFinal()
+			) {
+				$actualTypeDescription .= '=final';
+			}
+		}
+
 		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
@@ -4676,6 +4733,17 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';
+			}
+		}
+
+		if (get_class($actualType) === ObjectType::class && $actualType->isEnum()->no()) {
+			$actualClassReflection = $actualType->getClassReflection();
+			if (
+				$actualClassReflection !== null
+				&& $actualClassReflection->hasFinalByKeywordOverride()
+				&& $actualClassReflection->isFinal()
+			) {
+				$actualTypeDescription .= '=final';
 			}
 		}
 		$this->assertSame($expectedTypeDescription, $actualTypeDescription);

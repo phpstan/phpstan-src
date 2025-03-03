@@ -3052,7 +3052,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
 				14,
-				'Exception might not have property $foo.',
+				PHP_VERSION_ID >= 80200 ? 'Exception does not have property $foo.' : 'Exception might not have property $foo.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',

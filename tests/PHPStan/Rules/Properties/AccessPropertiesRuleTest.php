@@ -633,8 +633,18 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$errors = [
 			[
-				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				29,
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				14,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				15,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				16,
 				$tipText,
 			],
 		];
@@ -655,21 +665,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				11,
 				$tipText,
 			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				14,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				15,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				16,
-				$tipText,
-			],
+		], $errors);
+
+		$errors[] = [
+			'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+			29,
+			$tipText,
+		];
+
+		$errorsWithMore = array_merge($errorsWithMore, [
 			[
 				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
 				20,
@@ -685,7 +689,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				22,
 				$tipText,
 			],
-		], $errors);
+			[
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				29,
+				$tipText,
+			],
+		]);
 
 		$errorsWithMore = array_merge($errorsWithMore, [
 			[
@@ -808,12 +817,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				34,
 				$tipText,
 			];
+			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				71,
+				$tipText,
+			];
 			if ($b) {
-				$errors[] = [
-					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
-					71,
-					$tipText,
-				];
 				$errors[] = [
 					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
 					78,
@@ -995,6 +1004,24 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
 		$this->analyse([__DIR__ . '/data/read-asymmetric-visibility.php'], []);
+	}
+
+	public function testNewIsAlwaysFinalClass(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/null-coalesce-new-is-always-final.php'], [
+			[
+				'Access to an undefined property NullCoalesceIsAlwaysFinal\Foo::$bar.',
+				12,
+				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
+			],
+		]);
 	}
 
 }

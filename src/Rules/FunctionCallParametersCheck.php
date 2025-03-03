@@ -412,19 +412,21 @@ final class FunctionCallParametersCheck
 
 					if ($nativePropertyReflection->isReadOnly()) {
 						if ($nativePropertyReflection->isStatic()) {
-							$propertyDescription = sprintf('static readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+							$errorFormat = 'static readonly property %s::$%s';
 						} else {
-							$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+							$errorFormat = 'readonly property %s::$%s';
 						}
 					} elseif ($nativePropertyReflection->isReadOnlyByPhpDoc()) {
 						if ($nativePropertyReflection->isStatic()) {
-							$propertyDescription = sprintf('static @readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+							$errorFormat = 'static @readonly property %s::$%s';
 						} else {
-							$propertyDescription = sprintf('@readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+							$errorFormat = '@readonly property %s::$%s';
 						}
 					} else {
 						continue;
 					}
+
+					$propertyDescription = sprintf($errorFormat, $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
 
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'%s is passed by reference so it does not accept %s.',

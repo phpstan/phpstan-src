@@ -6593,7 +6593,7 @@ return [
 'MongoCollection::ensureIndex' => ['bool', 'keys'=>'array', 'options='=>'array'],
 'MongoCollection::find' => ['MongoCursor', 'query='=>'array', 'fields='=>'array'],
 'MongoCollection::findAndModify' => ['array', 'query'=>'array', 'update='=>'array', 'fields='=>'array', 'options='=>'array'],
-'MongoCollection::findOne' => ['array', 'query='=>'array', 'fields='=>'array'],
+'MongoCollection::findOne' => ['array|null', 'query='=>'array', 'fields='=>'array'],
 'MongoCollection::getDBRef' => ['array', 'ref'=>'array'],
 'MongoCollection::getIndexInfo' => ['array'],
 'MongoCollection::getName' => ['string'],

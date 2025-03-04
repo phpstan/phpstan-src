@@ -242,43 +242,43 @@ class ReturnTypeRuleTest extends RuleTestCase
 			],
 			[
 				'Method ReturnTypes\AssertThisInstanceOf::doBar() should return $this(ReturnTypes\AssertThisInstanceOf) but returns ReturnTypes\AssertThisInstanceOf&ReturnTypes\FooInterface.',
-				840,
+				839,
 			],
 			[
 				'Method ReturnTypes\NestedArrayCheck::doFoo() should return array<string, bool> but returns array<string, list<string>>.',
-				860,
+				859,
 			],
 			[
 				'Method ReturnTypes\NestedArrayCheck::doBar() should return array<string, bool> but returns array<string, array<string, string>>.',
-				875,
+				874,
 			],
 			[
 				'Method ReturnTypes\Foo2::returnIntFromParent() should return int but returns string.',
-				950,
+				949,
 			],
 			[
 				'Method ReturnTypes\Foo2::returnIntFromParent() should return int but returns ReturnTypes\integer.',
-				953,
+				952,
 			],
 			[
 				'Method ReturnTypes\VariableOverwrittenInForeach::doFoo() should return int but returns int|string.',
-				1011,
+				1010,
 			],
 			[
 				'Method ReturnTypes\VariableOverwrittenInForeach::doBar() should return int but returns int|string.',
-				1026,
+				1025,
 			],
 			[
 				'Method ReturnTypes\ReturnStaticGeneric::instanceReturnsStatic() should return static(ReturnTypes\ReturnStaticGeneric) but returns ReturnTypes\ReturnStaticGeneric.',
-				1066,
+				1065,
 			],
 			[
 				'Method ReturnTypes\NeverReturn::doFoo() should never return but return statement found.',
-				1241,
+				1240,
 			],
 			[
 				'Method ReturnTypes\NeverReturn::doBaz3() should never return but return statement found.',
-				1254,
+				1253,
 			],
 		]);
 	}

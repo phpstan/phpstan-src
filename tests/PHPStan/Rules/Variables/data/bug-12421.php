@@ -2,8 +2,10 @@
 
 namespace Bug12421;
 
-function doFoo() {
-	$x = new RegularProperty();
+function doFoo(RegularProperty $x) {
+	unset($x->y);
+	var_dump($x->y);
+
 	unset($x->y);
 	var_dump($x->y);
 

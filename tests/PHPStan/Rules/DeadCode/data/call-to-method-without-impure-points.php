@@ -41,6 +41,27 @@ function (): void {
 	$subSubY->myFinalBaseFunc();
 };
 
+function (y $xy, finalX $finalX): void {
+	$xy = new y();
+	if (rand(0,1)) {
+		$xy = $finalX;
+	}
+	$xy->myFunc();
+};
+
+function (Y $xy, finalX $finalX): void {
+	// case-insensitive class name
+	if (rand(0,1)) {
+		$xy = $finalX;
+	}
+	$xy->myFunc();
+};
+
+function (subY $subY): void {
+	$subY->myFunc();
+	$subY->myFinalBaseFunc();
+};
+
 class y
 {
 	function myFunc()

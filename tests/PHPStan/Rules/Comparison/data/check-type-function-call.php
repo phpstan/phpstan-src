@@ -181,6 +181,16 @@ class DefinedConstant
 		}
 	}
 
+	public function doBar(Foo $foo)
+	{
+		if (method_exists($foo, 'test')) {
+
+		}
+		if (method_exists($foo, 'doFoo')) {
+
+		}
+	}
+
 }
 
 final class FinalClassWithMethodExists
@@ -614,6 +624,21 @@ class MethodExists
 		}
 
 		if (method_exists((new MethodExists()), $string)) {
+		}
+	}
+
+	public function testWithTypehintedObject(MethodExists $methodExists): void
+	{
+		/** @var string $string */
+		$string = doFoo();
+
+		if (method_exists($methodExists, 'testWithNewObjectInFirstArgument')) {
+		}
+
+		if (method_exists($methodExists, 'undefinedMethod')) {
+		}
+
+		if (method_exists($methodExists, $string)) {
 		}
 	}
 }

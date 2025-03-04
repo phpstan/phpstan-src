@@ -634,7 +634,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$errors = [
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				23,
+				29,
 				$tipText,
 			],
 		];
@@ -670,22 +670,37 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				16,
 				$tipText,
 			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				20,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				21,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				22,
+				$tipText,
+			],
 		], $errors);
 
 		$errorsWithMore = array_merge($errorsWithMore, [
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				26,
+				32,
 				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				27,
+				33,
 				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				28,
+				34,
 				$tipText,
 			],
 		]);
@@ -693,32 +708,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$otherErrors = [
 			[
 				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				36,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				37,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				38,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
-				41,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
 				42,
 				$tipText,
 			],
 			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
 				43,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
+				44,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				47,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				48,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				49,
 				$tipText,
 			],
 		];
@@ -727,7 +742,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[false, PHP_VERSION_ID < 80200 ? [
 				[
 					'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-					23,
+					29,
 					$tipText,
 				],
 			] : array_merge($errors, $otherErrors)],
@@ -799,10 +814,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					71,
 					$tipText,
 				];
+				$errors[] = [
+					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+					78,
+					$tipText,
+				];
 			}
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
-				105,
+				112,
 				$tipText,
 			];
 		} elseif ($b) {
@@ -812,8 +832,13 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				$tipText,
 			];
 			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				78,
+				$tipText,
+			];
+			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
-				105,
+				112,
 				$tipText,
 			];
 		}

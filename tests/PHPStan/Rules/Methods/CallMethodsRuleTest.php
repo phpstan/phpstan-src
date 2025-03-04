@@ -3055,81 +3055,86 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Exception might not have property $foo.',
 			],
 			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
+				15,
+				'Exception might not have property $foo.',
+			],
+			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int} given.',
-				36,
+				37,
 				'Property ($foo) type int does not accept type string.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo?: int, bar: string} given.',
-				37,
+				38,
 				'object{foo?: int, bar: string} might not have property $foo.',
 			],
 			[
 				'Parameter #1 $std of method ObjectShapesAcceptance\Foo::requireStdClass() expects stdClass, object{foo: string, bar: int} given.',
-				40,
+				41,
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int}&stdClass given.',
-				43,
+				44,
 				'Property ($foo) type int does not accept type string.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object given.',
-				54,
+				55,
 				'• object might not have property $foo.
 • object might not have property $bar.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, stdClass given.',
-				55,
+				56,
 			],
 			[
 				'Parameter #1 $bar of method ObjectShapesAcceptance\Bar::requireBar() expects ObjectShapesAcceptance\Bar, object{a: int} given.',
-				71,
+				72,
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Bar::doBar() expects object{a: string}, ObjectShapesAcceptance\Bar given.',
-				77,
+				78,
 				'Property ($a) type string does not accept type int.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doBar() expects object{a: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				105,
+				106,
 				'Property ObjectShapesAcceptance\Baz::$a is not public.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doBaz() expects object{b: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				106,
+				107,
 				'Property ObjectShapesAcceptance\Baz::$b is static.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doLorem() expects object{c: int}, $this(ObjectShapesAcceptance\Baz) given.',
-				107,
+				108,
 				'Property ObjectShapesAcceptance\Baz::$c is not readable.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Baz::doIpsum() expects object{d: array{foo: string}}, $this(ObjectShapesAcceptance\Baz) given.',
-				108,
+				109,
 				'Property ($d) type array{foo: string} does not accept type array{foo: int}: Offset \'foo\' (string) does not accept type int.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBar() expects object{foo?: int}, object{foo?: string} given.',
-				156,
-				'Property ($foo) type int does not accept type string.',
-			],
-			[
-				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBaz() expects object{foo: int}, object{foo?: string} given.',
 				157,
 				'Property ($foo) type int does not accept type string.',
 			],
 			[
+				'Parameter #1 $o of method ObjectShapesAcceptance\OptionalProperty::doBaz() expects object{foo: int}, object{foo?: string} given.',
+				158,
+				'Property ($foo) type int does not accept type string.',
+			],
+			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\TestAcceptance::doFoo() expects object{foo: int}, Traversable given.',
-				209,
+				210,
 				'Traversable might not have property $foo.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\TestAcceptance::doFoo() expects object{foo: int}, ObjectShapesAcceptance\FinalClass given.',
-				210,
+				211,
 				PHP_VERSION_ID < 80200 ? 'ObjectShapesAcceptance\FinalClass might not have property $foo.' : 'ObjectShapesAcceptance\FinalClass does not have property $foo.',
 			],
 		]);

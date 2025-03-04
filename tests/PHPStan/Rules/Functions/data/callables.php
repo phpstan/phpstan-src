@@ -117,6 +117,15 @@ class Baz
 		}
 	}
 
+	public function doBaz(Baz $baz)
+	{
+		$baz();
+
+		if (method_exists($baz, '__invoke')) {
+			$baz();
+		}
+	}
+
 }
 
 class MethodExistsCheckFirst

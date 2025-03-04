@@ -115,34 +115,38 @@ class UnsetRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80400) {
 			$errors[] = [
 				'Cannot unset property Bug12421\RegularProperty::$y because it might have hooks in a subclass.',
-				7,
+				6,
+			];
+			$errors[] = [
+				'Cannot unset property Bug12421\RegularProperty::$y because it might have hooks in a subclass.',
+				9,
 			];
 		}
 
 		$errors = array_merge($errors, [
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyClass::$y property.',
-				11,
+				13,
 			],
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyProperty::$y property.',
-				15,
+				17,
 			],
 			[
 				'Cannot unset @readonly Bug12421\PhpdocReadonlyClass::$y property.',
-				19,
+				21,
 			],
 			[
 				'Cannot unset @readonly Bug12421\PhpdocReadonlyProperty::$y property.',
-				23,
+				25,
 			],
 			[
 				'Cannot unset @readonly Bug12421\PhpdocImmutableClass::$y property.',
-				27,
+				29,
 			],
 			[
 				'Cannot unset readonly Bug12421\NativeReadonlyProperty::$y property.',
-				34,
+				36,
 			],
 		]);
 

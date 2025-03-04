@@ -12,8 +12,7 @@ class Foo
 
 }
 
-function () {
-	$foo = new Foo();
+function (Foo $foo) {
 	$foo->doFoo()
 		->doFoo()
 		->doFoo()

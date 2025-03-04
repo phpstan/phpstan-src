@@ -19,11 +19,10 @@ abstract class BarParent
 class Foo extends BarParent
 {
 
-	public function someMethod(Expr $foo)
+	public function someMethod(Expr $foo, Foo $intersected)
 	{
 		$bar = $foo;
 		$baz = doFoo();
-		$intersected = new Foo();
 		$parent = doFoo();
 
 		if ($baz instanceof Foo) {

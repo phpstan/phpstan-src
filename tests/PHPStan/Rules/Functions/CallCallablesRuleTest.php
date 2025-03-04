@@ -107,47 +107,51 @@ class CallCallablesRuleTest extends RuleTestCase
 				113,
 			],
 			[
+				'Trying to invoke CallCallables\Baz but it might not be a callable.',
+				122,
+			],
+			[
 				'Trying to invoke array{object, \'bar\'} but it might not be a callable.',
-				131,
+				140,
 			],
 			[
 				'Closure invoked with 0 parameters, 3 required.',
-				146,
+				155,
 			],
 			[
 				'Closure invoked with 1 parameter, 3 required.',
-				147,
+				156,
 			],
 			[
 				'Closure invoked with 2 parameters, 3 required.',
-				148,
+				157,
 			],
 			[
 				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
-				163,
+				172,
 			],
 			[
 				'Trying to invoke array{object, \'yo\'} but it might not be a callable.',
-				167,
+				176,
 			],
 			[
 				'Trying to invoke array{\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\'} but it might not be a callable.',
-				179,
+				188,
 			],
 			[
 				'Trying to invoke array{\'CallCallables\\\\ConstantArrayUnionCallables\'|\'DateTimeImmutable\', \'doFoo\'} but it might not be a callable.',
-				205,
+				214,
 			],
 			[
 				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\', \'doBaz\'|\'doFoo\'} but it might not be a callable.',
-				212,
+				221,
 			],
 		];
 
 		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
 				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\'|\'CallCallables\\\ConstantArrayUnionCallablesTest\', \'doBar\'|\'doFoo\'} but it\'s not a callable.',
-				220,
+				229,
 			];
 		}
 

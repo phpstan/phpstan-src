@@ -363,11 +363,11 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4852.php'], [
 			[
 				'Dead catch - Exception is never thrown in the try block.',
-				70,
+				78,
 			],
 			[
 				'Dead catch - Exception is never thrown in the try block.',
-				77,
+				85,
 			],
 		]);
 	}

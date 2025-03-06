@@ -160,6 +160,16 @@ final class AccessPropertiesCheck
 		}
 
 		$propertyReflection = $type->getProperty($name, $scope);
+		if ($propertyReflection->isStatic()) {
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Non static access to static property %s::$%s.',
+					$propertyReflection->getDeclaringClass()->getDisplayName(),
+					$name,
+				))->identifier('property.nonStaticAccess')->build(),
+			];
+		}
+
 		if ($write) {
 			if ($scope->canWriteProperty($propertyReflection)) {
 				return [];

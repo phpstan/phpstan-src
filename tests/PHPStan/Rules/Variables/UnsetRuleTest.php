@@ -61,18 +61,7 @@ class UnsetRuleTest extends RuleTestCase
 
 	public function testBug4289(): void
 	{
-		$errors = [];
-
-		if (PHP_VERSION_ID >= 80400) {
-			$errors = [
-				[
-					'Cannot unset property Bug4289\BaseClass::$fields because it might have hooks in a subclass.',
-					25,
-				],
-			];
-		}
-
-		$this->analyse([__DIR__ . '/data/bug-4289.php'], $errors);
+		$this->analyse([__DIR__ . '/data/bug-4289.php'], []);
 	}
 
 	public function testBug5223(): void
@@ -179,6 +168,54 @@ class UnsetRuleTest extends RuleTestCase
 			[
 				'Cannot unset property UnsetHookedProperty\NonFinalClass::$publicProperty because it might have hooks in a subclass.',
 				13,
+			],
+			[
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$finalClass because it might have hooks in a subclass.',
+				83,
+			],
+			[
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$nonFinalClass because it might have hooks in a subclass.',
+				87,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\Foo::$iii property.',
+				89,
+			],
+			[
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$foo because it might have hooks in a subclass.',
+				90,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				92,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
+				93,
+			],
+			[
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$user because it might have hooks in a subclass.',
+				94,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				96,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				97,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
+				98,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
+				99,
+			],
+			[
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$arrayOfUsers because it might have hooks in a subclass.',
+				100,
 			],
 		]);
 	}

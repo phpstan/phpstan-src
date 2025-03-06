@@ -37,6 +37,67 @@ final class UnsetRule implements Rule
 		$errors = [];
 
 		foreach ($functionArguments as $argument) {
+			if (
+				$argument instanceof Node\Expr\PropertyFetch
+				&& $argument->name instanceof Node\Identifier
+			) {
+				$foundPropertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($argument, $scope);
+				if ($foundPropertyReflection === null) {
+					continue;
+				}
+
+				$propertyReflection = $foundPropertyReflection->getNativeReflection();
+				if ($propertyReflection === null) {
+					continue;
+				}
+
+				if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
+					$errors[] = RuleErrorBuilder::message(
+						sprintf(
+							'Cannot unset %s %s::$%s property.',
+							$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
+							$propertyReflection->getDeclaringClass()->getDisplayName(),
+							$foundPropertyReflection->getName(),
+						),
+					)
+						->line($argument->getStartLine())
+						->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
+						->build();
+					continue;
+				}
+
+				if ($propertyReflection->isHooked()) {
+					$errors[] = RuleErrorBuilder::message(
+						sprintf(
+							'Cannot unset hooked %s::$%s property.',
+							$propertyReflection->getDeclaringClass()->getDisplayName(),
+							$foundPropertyReflection->getName(),
+						),
+					)
+						->line($argument->getStartLine())
+						->identifier('unset.hookedProperty')
+						->build();
+					continue;
+				} elseif ($this->phpVersion->supportsPropertyHooks()) {
+					if (
+						!$propertyReflection->isPrivate()
+						&& !$propertyReflection->isFinal()->yes()
+						&& !$propertyReflection->getDeclaringClass()->isFinal()
+					) {
+						$errors[] = RuleErrorBuilder::message(
+							sprintf(
+								'Cannot unset property %s::$%s because it might have hooks in a subclass.',
+								$propertyReflection->getDeclaringClass()->getDisplayName(),
+								$foundPropertyReflection->getName(),
+							),
+						)
+							->line($argument->getStartLine())
+							->identifier('unset.possiblyHookedProperty')
+							->build();
+						continue;
+					}
+				}
+			}
 			$error = $this->canBeUnset($argument, $scope);
 			if ($error === null) {
 				continue;
@@ -78,63 +139,6 @@ final class UnsetRule implements Rule
 			}
 
 			return $this->canBeUnset($node->var, $scope);
-		} elseif (
-			$node instanceof Node\Expr\PropertyFetch
-			&& $node->name instanceof Node\Identifier
-		) {
-			$foundPropertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $scope);
-			if ($foundPropertyReflection === null) {
-				return null;
-			}
-
-			$propertyReflection = $foundPropertyReflection->getNativeReflection();
-			if ($propertyReflection === null) {
-				return null;
-			}
-
-			if ($propertyReflection->isReadOnly() || $propertyReflection->isReadOnlyByPhpDoc()) {
-				return RuleErrorBuilder::message(
-					sprintf(
-						'Cannot unset %s %s::$%s property.',
-						$propertyReflection->isReadOnly() ? 'readonly' : '@readonly',
-						$propertyReflection->getDeclaringClass()->getDisplayName(),
-						$foundPropertyReflection->getName(),
-					),
-				)
-					->line($node->getStartLine())
-					->identifier($propertyReflection->isReadOnly() ? 'unset.readOnlyProperty' : 'unset.readOnlyPropertyByPhpDoc')
-					->build();
-			}
-
-			if ($propertyReflection->isHooked()) {
-				return RuleErrorBuilder::message(
-					sprintf(
-						'Cannot unset hooked %s::$%s property.',
-						$propertyReflection->getDeclaringClass()->getDisplayName(),
-						$foundPropertyReflection->getName(),
-					),
-				)
-					->line($node->getStartLine())
-					->identifier('unset.hookedProperty')
-					->build();
-			} elseif ($this->phpVersion->supportsPropertyHooks()) {
-				if (
-					!$propertyReflection->isPrivate()
-					&& !$propertyReflection->isFinal()->yes()
-					&& !$propertyReflection->getDeclaringClass()->isFinal()
-				) {
-					return RuleErrorBuilder::message(
-						sprintf(
-							'Cannot unset property %s::$%s because it might have hooks in a subclass.',
-							$propertyReflection->getDeclaringClass()->getDisplayName(),
-							$foundPropertyReflection->getName(),
-						),
-					)
-						->line($node->getStartLine())
-						->identifier('unset.possiblyHookedProperty')
-						->build();
-				}
-			}
 		}
 
 		return null;

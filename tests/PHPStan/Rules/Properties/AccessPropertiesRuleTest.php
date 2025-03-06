@@ -344,6 +344,16 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug12692(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-12692.php'], [
+			// This should not be empty!
+		]);
+	}
+
 	public function testAccessPropertiesAfterIsNullInBooleanOr(): void
 	{
 		$this->checkThisOnly = false;

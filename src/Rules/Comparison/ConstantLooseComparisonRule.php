@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -37,7 +36,7 @@ final class ConstantLooseComparisonRule implements Rule
 		}
 
 		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
-		if (!$nodeType instanceof ConstantBooleanType) {
+		if (!$nodeType->isTrue()->yes() && !$nodeType->isFalse()->yes()) {
 			return [];
 		}
 
@@ -47,7 +46,7 @@ final class ConstantLooseComparisonRule implements Rule
 			}
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
-			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
+			if ($instanceofTypeWithoutPhpDocs->isTrue()->yes() || $instanceofTypeWithoutPhpDocs->isFalse()->yes()) {
 				return $ruleErrorBuilder;
 			}
 			if (!$this->treatPhpDocTypesAsCertainTip) {
@@ -57,7 +56,7 @@ final class ConstantLooseComparisonRule implements Rule
 			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 		};
 
-		if (!$nodeType->getValue()) {
+		if ($nodeType->isFalse()->yes()) {
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Loose comparison using %s between %s and %s will always evaluate to false.',

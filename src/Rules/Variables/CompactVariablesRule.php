@@ -6,10 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_merge;
+use function count;
 use function sprintf;
 use function strtolower;
 
@@ -66,25 +66,24 @@ final class CompactVariablesRule implements Rule
 	}
 
 	/**
-	 * @return array<int, ConstantStringType>
+	 * @return list<ConstantStringType>
 	 */
 	private function findConstantStrings(Type $type): array
 	{
-		if ($type instanceof ConstantStringType) {
-			return [$type];
+		$constantStrings = $type->getConstantStrings();
+		if (count($constantStrings) > 0) {
+			return $constantStrings;
 		}
 
-		if ($type instanceof ConstantArrayType) {
-			$result = [];
-			foreach ($type->getValueTypes() as $valueType) {
+		$result = [];
+		foreach ($type->getConstantArrays() as $constantArrayType) {
+			foreach ($constantArrayType->getValueTypes() as $valueType) {
 				$constantStrings = $this->findConstantStrings($valueType);
 				$result = array_merge($result, $constantStrings);
 			}
-
-			return $result;
 		}
 
-		return [];
+		return $result;
 	}
 
 }

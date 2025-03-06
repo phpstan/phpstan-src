@@ -69,11 +69,12 @@ final class ImpossibleCheckTypeHelper
 				if ($functionName === 'assert' && $argsCount >= 1) {
 					$arg = $node->getArgs()[0]->value;
 					$assertValue = ($this->treatPhpDocTypesAsCertain ? $scope->getType($arg) : $scope->getNativeType($arg))->toBoolean();
-					if (!$assertValue instanceof ConstantBooleanType) {
+					$assertValueIsTrue = $assertValue->isTrue()->yes();
+					if (! $assertValueIsTrue && ! $assertValue->isFalse()->yes()) {
 						return null;
 					}
 
-					return $assertValue->getValue();
+					return $assertValueIsTrue;
 				}
 				if (in_array($functionName, [
 					'class_exists',

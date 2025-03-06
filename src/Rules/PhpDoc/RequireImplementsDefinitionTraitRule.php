@@ -10,9 +10,11 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
+use function array_column;
+use function array_map;
 use function array_merge;
+use function count;
 use function sprintf;
 use function strtolower;
 
@@ -51,38 +53,42 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 		$errors = [];
 		foreach ($implementsTags as $implementsTag) {
 			$type = $implementsTag->getType();
-			if (!$type instanceof ObjectType) {
+			$classNames = $type->getObjectClassNames();
+			if (count($classNames) === 0) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains non-object type %s.', $type->describe(VerbosityLevel::typeOnly())))
 					->identifier('requireImplements.nonObject')
 					->build();
 				continue;
 			}
 
-			$class = $type->getClassName();
-			$referencedClassReflection = $type->getClassReflection();
-			if ($referencedClassReflection === null) {
-				$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
+			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $type->getObjectClassReflections());
+			$referencedClassReflectionsMap = array_column($referencedClassReflections, 0, 1);
+			foreach ($classNames as $class) {
+				$referencedClassReflection = $referencedClassReflectionsMap[$class] ?? null;
+				if ($referencedClassReflection === null) {
+					$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
 					->identifier('class.notFound');
 
-				if ($this->discoveringSymbolsTip) {
-					$errorBuilder->discoveringSymbolsTip();
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$errors[] = $errorBuilder->build();
+					continue;
 				}
 
-				$errors[] = $errorBuilder->build();
-				continue;
-			}
-
-			if (!$referencedClassReflection->isInterface()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))
-					->identifier(sprintf('requireImplements.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
-					->build();
-			} else {
-				$errors = array_merge(
-					$errors,
-					$this->classCheck->checkClassNames($scope, [
-						new ClassNameNodePair($class, $node),
-					], ClassNameUsageLocation::from(ClassNameUsageLocation::PHPDOC_TAG_REQUIRE_IMPLEMENTS), $this->checkClassCaseSensitivity),
-				);
+				if (!$referencedClassReflection->isInterface()) {
+					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))
+						->identifier(sprintf('requireImplements.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
+						->build();
+				} else {
+					$errors = array_merge(
+						$errors,
+						$this->classCheck->checkClassNames($scope, [
+							new ClassNameNodePair($class, $node),
+						], ClassNameUsageLocation::from(ClassNameUsageLocation::PHPDOC_TAG_REQUIRE_IMPLEMENTS), $this->checkClassCaseSensitivity),
+					);
+				}
 			}
 		}
 

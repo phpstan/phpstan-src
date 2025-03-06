@@ -92,4 +92,19 @@ class Foo
 		];
 	}
 
+	/**
+	 * @param 'foo'|'bar' $key
+	 */
+	public function doUnionKeys(string $key): void
+	{
+		$key2 = 'key';
+		$a = [
+			'foo' => 'foo',
+			'bar' => 'bar',
+			$key => 'foo|bar',
+			'key' => 'bar',
+			$key2 => 'foo',
+		];
+	}
+
 }

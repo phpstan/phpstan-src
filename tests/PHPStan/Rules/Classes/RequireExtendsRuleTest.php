@@ -52,6 +52,22 @@ class RequireExtendsRuleTest extends RuleTestCase
 				'Trait IncompatibleRequireExtends\ValidPsalmTrait requires using class to extend IncompatibleRequireExtends\SomeClass, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-extends.php:163 does not.',
 				163,
 			],
+			[
+				'Interface IncompatibleRequireExtends\RequireNonExisstentUnionClassinterface requires implementing class to extend IncompatibleRequireExtends\NonExistentClass|IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\RequireNonExisstentUnionClassinterface@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-extends.php:185 does not.',
+				185,
+			],
+			[
+				'Interface IncompatibleRequireExtends\RequireNonExisstentUnionClassinterface requires implementing class to extend IncompatibleRequireExtends\NonExistentClass|IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\SomeClass@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-extends.php:187 does not.',
+				187,
+			],
+			[
+				'Trait IncompatibleRequireExtends\RequireNonExisstentUnionClassTrait requires using class to extend IncompatibleRequireExtends\NonExistentClass|IncompatibleRequireExtends\SomeClass, but class@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-extends.php:194 does not.',
+				194,
+			],
+			[
+				'Trait IncompatibleRequireExtends\RequireNonExisstentUnionClassTrait requires using class to extend IncompatibleRequireExtends\NonExistentClass|IncompatibleRequireExtends\SomeClass, but IncompatibleRequireExtends\SomeClass@anonymous/tests/PHPStan/Rules/PhpDoc/data/incompatible-require-extends.php:198 does not.',
+				198,
+			],
 		];
 
 		$this->analyse([__DIR__ . '/../PhpDoc/data/incompatible-require-extends.php'], $expectedErrors);

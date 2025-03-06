@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use function array_keys;
 use function in_array;
@@ -41,37 +40,40 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		if (!isset($args[0])) {
 			return [];
 		}
-		$argType = $scope->getType($args[0]->value);
-		if (!$argType instanceof ConstantStringType) {
-			return [];
-		}
-		if (!in_array($argType->getValue(), ['parent', 'previous', 'next'], true)) {
-			return [];
-		}
-		if (!$scope->isInClass()) {
-			return [];
-		}
 
-		$classReflection = $scope->getClassReflection();
-		$hasPhpStanInterface = false;
-		foreach (array_keys($classReflection->getInterfaces()) as $interfaceName) {
-			if (!str_starts_with($interfaceName, 'PHPStan\\')) {
+		$messages = [];
+		$argType = $scope->getType($args[0]->value);
+		foreach ($argType->getConstantStrings() as $constantString) {
+			$argValue = $constantString->getValue();
+			if (!in_array($argValue, ['parent', 'previous', 'next'], true)) {
 				continue;
 			}
 
-			$hasPhpStanInterface = true;
-		}
+			if (!$scope->isInClass()) {
+				continue;
+			}
 
-		if (!$hasPhpStanInterface) {
-			return [];
-		}
+			$classReflection = $scope->getClassReflection();
+			$hasPhpStanInterface = false;
+			foreach (array_keys($classReflection->getInterfaces()) as $interfaceName) {
+				if (!str_starts_with($interfaceName, 'PHPStan\\')) {
+					continue;
+				}
 
-		return [
-			RuleErrorBuilder::message(sprintf('Node attribute \'%s\' is no longer available.', $argType->getValue()))
+				$hasPhpStanInterface = true;
+			}
+
+			if (!$hasPhpStanInterface) {
+				continue;
+			}
+
+			$messages[] = RuleErrorBuilder::message(sprintf('Node attribute \'%s\' is no longer available.', $argValue))
 				->identifier('phpParser.nodeConnectingAttribute')
 				->tip('See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules')
-				->build(),
-		];
+				->build();
+		}
+
+		return $messages;
 	}
 
 }

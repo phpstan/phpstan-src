@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
@@ -82,9 +81,9 @@ final class TooWideMethodReturnTypehintRule implements Rule
 
 		$returnType = TypeCombinator::union(...$returnTypes);
 		if (
-			!$method->isPrivate()
-			&& ($returnType->isNull()->yes() || $returnType instanceof ConstantBooleanType)
-			&& !$isFirstDeclaration
+			!$isFirstDeclaration
+			&& !$method->isPrivate()
+			&& ($returnType->isNull()->yes() || $returnType->isTrue()->yes() || $returnType->isFalse()->yes())
 		) {
 			return [];
 		}

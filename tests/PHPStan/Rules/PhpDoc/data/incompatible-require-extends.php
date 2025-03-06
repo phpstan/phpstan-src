@@ -176,3 +176,25 @@ trait TooMuchExtends {}
  * @phpstan-require-extends SomeOtherClass
  */
 interface TooMuchExtendsIface {}
+
+/**
+ * @phpstan-require-extends SomeClass|NonExistentClass
+ */
+interface RequireNonExisstentUnionClassinterface {}
+
+new class implements RequireNonExisstentUnionClassinterface {};
+
+new class extends SomeClass implements RequireNonExisstentUnionClassinterface {};
+
+/**
+ * @phpstan-require-extends SomeClass|NonExistentClass
+ */
+trait RequireNonExisstentUnionClassTrait {}
+
+new class {
+	use RequireNonExisstentUnionClassTrait;
+};
+
+new class extends SomeClass {
+	use RequireNonExisstentUnionClassTrait;
+};

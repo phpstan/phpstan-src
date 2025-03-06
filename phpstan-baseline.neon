@@ -460,28 +460,10 @@ parameters:
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Api/NodeConnectingVisitorAttributesRule.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ConstantScalarType is error\-prone and deprecated\. Use Type\:\:isConstantScalarValue\(\) or Type\:\:getConstantScalarTypes\(\) or Type\:\:getConstantScalarValues\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Arrays/DuplicateKeysInLiteralArraysRule.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Rules/Classes/ImpossibleInstanceOfRule.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Rules/Classes/RequireExtendsRule.php
 
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
@@ -511,12 +493,6 @@ parameters:
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
-			path: src/Rules/Comparison/ConstantLooseComparisonRule.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 2
 			path: src/Rules/Comparison/DoWhileLoopConstantConditionRule.php
 
 		-
@@ -540,7 +516,7 @@ parameters:
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 1
 			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
 
 		-
@@ -694,18 +670,6 @@ parameters:
 			path: src/Rules/Methods/StaticMethodCallCheck.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/PhpDoc/RequireExtendsCheck.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/PhpDoc/RequireImplementsDefinitionTraitRule.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\Generic\\GenericObjectType is error\-prone and deprecated\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -722,36 +686,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Rules/RuleLevelHelper.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Rules/RuleLevelHelper.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/TooWideTypehints/TooWideMethodReturnTypehintRule.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/UnusedFunctionParametersCheck.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantArrayType is error\-prone and deprecated\. Use Type\:\:getConstantArrays\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Variables/CompactVariablesRule.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Rules/Variables/CompactVariablesRule.php
 
 		-
 			message: '''

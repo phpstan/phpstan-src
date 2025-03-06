@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Constant\ConstantStringType;
 use function array_combine;
 use function array_map;
 use function array_merge;
@@ -92,11 +91,9 @@ final class UnusedFunctionParametersCheck
 			) {
 				foreach ($node->getArgs() as $arg) {
 					$argType = $scope->getType($arg->value);
-					if (!($argType instanceof ConstantStringType)) {
-						continue;
+					foreach ($argType->getConstantStrings() as $constantStringType) {
+						$variableNames[] = $constantStringType->getValue();
 					}
-
-					$variableNames[] = $argType->getValue();
 				}
 			}
 			foreach ($node->getSubNodeNames() as $subNodeName) {

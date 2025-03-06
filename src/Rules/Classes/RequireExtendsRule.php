@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -35,24 +34,24 @@ final class RequireExtendsRule implements Rule
 			$extendsTags = $interface->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
-				if (!$type instanceof ObjectType) {
-					continue;
-				}
+				foreach ($type->getObjectClassNames() as $className) {
+					if ($classReflection->is($className)) {
+						continue;
+					}
 
-				if ($classReflection->is($type->getClassName())) {
-					continue;
-				}
+					$errors[] = RuleErrorBuilder::message(
+						sprintf(
+							'Interface %s requires implementing class to extend %s, but %s does not.',
+							$interface->getDisplayName(),
+							$type->describe(VerbosityLevel::typeOnly()),
+							$classReflection->getDisplayName(),
+						),
+					)
+						->identifier('class.missingExtends')
+						->build();
 
-				$errors[] = RuleErrorBuilder::message(
-					sprintf(
-						'Interface %s requires implementing class to extend %s, but %s does not.',
-						$interface->getDisplayName(),
-						$type->describe(VerbosityLevel::typeOnly()),
-						$classReflection->getDisplayName(),
-					),
-				)
-					->identifier('class.missingExtends')
-					->build();
+					break;
+				}
 			}
 		}
 
@@ -60,24 +59,24 @@ final class RequireExtendsRule implements Rule
 			$extendsTags = $trait->getRequireExtendsTags();
 			foreach ($extendsTags as $extendsTag) {
 				$type = $extendsTag->getType();
-				if (!$type instanceof ObjectType) {
-					continue;
-				}
+				foreach ($type->getObjectClassNames() as $className) {
+					if ($classReflection->is($className)) {
+						continue;
+					}
 
-				if ($classReflection->is($type->getClassName())) {
-					continue;
-				}
+					$errors[] = RuleErrorBuilder::message(
+						sprintf(
+							'Trait %s requires using class to extend %s, but %s does not.',
+							$trait->getDisplayName(),
+							$type->describe(VerbosityLevel::typeOnly()),
+							$classReflection->getDisplayName(),
+						),
+					)
+						->identifier('class.missingExtends')
+						->build();
 
-				$errors[] = RuleErrorBuilder::message(
-					sprintf(
-						'Trait %s requires using class to extend %s, but %s does not.',
-						$trait->getDisplayName(),
-						$type->describe(VerbosityLevel::typeOnly()),
-						$classReflection->getDisplayName(),
-					),
-				)
-					->identifier('class.missingExtends')
-					->build();
+					break;
+				}
 			}
 		}
 

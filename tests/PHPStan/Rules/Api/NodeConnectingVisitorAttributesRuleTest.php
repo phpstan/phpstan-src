@@ -21,7 +21,12 @@ class NodeConnectingVisitorAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/node-connecting-visitor.php'], [
 			[
 				'Node attribute \'parent\' is no longer available.',
-				18,
+				22,
+				'See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules',
+			],
+			[
+				'Node attribute \'parent\' is no longer available.',
+				24,
 				'See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules',
 			],
 		]);

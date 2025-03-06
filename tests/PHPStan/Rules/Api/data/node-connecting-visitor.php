@@ -8,6 +8,10 @@ use PHPStan\Rules\Rule;
 
 class MyRule implements Rule
 {
+
+	/** @var 'parent'|'myCustomAttribute' */
+	public string $attrName;
+
 	public function getNodeType(): string
 	{
 		return Node::class;
@@ -17,6 +21,7 @@ class MyRule implements Rule
 	{
 		$parent = $node->getAttribute("parent");
 		$custom = $node->getAttribute("myCustomAttribute");
+		$parent = $node->getAttribute($this->attrName);
 
 		return [];
 	}

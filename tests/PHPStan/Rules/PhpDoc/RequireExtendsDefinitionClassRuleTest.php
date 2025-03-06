@@ -45,8 +45,9 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 				8,
 			],
 			[
-				'PHPDoc tag @phpstan-require-extends cannot contain non-class type IncompatibleRequireExtends\SomeInterface.',
+				'PHPDoc tag @phpstan-require-extends cannot contain an interface IncompatibleRequireExtends\SomeInterface, expected a class.',
 				13,
+				'If you meant an interface, use @phpstan-require-implements instead.',
 			],
 			[
 				'PHPDoc tag @phpstan-require-extends cannot contain non-class type IncompatibleRequireExtends\SomeEnum.',
@@ -74,12 +75,23 @@ class RequireExtendsDefinitionClassRuleTest extends RuleTestCase
 				121,
 			],
 			[
-				'PHPDoc tag @phpstan-require-extends contains non-object type IncompatibleRequireExtends\UnresolvableExtendsInterface&stdClass.',
+				'PHPDoc tag @phpstan-require-extends cannot contain an interface IncompatibleRequireExtends\UnresolvableExtendsInterface, expected a class.',
 				135,
+				'If you meant an interface, use @phpstan-require-implements instead.',
 			],
 			[
 				'PHPDoc tag @phpstan-require-extends can only be used once.',
 				178,
+			],
+			[
+				'PHPDoc tag @phpstan-require-extends contains unknown class IncompatibleRequireExtends\NonExistentClass.',
+				183,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'PHPDoc tag @phpstan-require-extends contains unknown class IncompatibleRequireExtends\SomeClass.',
+				183,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

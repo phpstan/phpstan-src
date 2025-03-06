@@ -8,3 +8,7 @@ ignore-hidden = false
 # Known typos
 NonRemoveableTypeTrait = "NonRemoveableTypeTrait"
 supportsLessOverridenParametersWithVariadic = "supportsLessOverridenParametersWithVariadic"
+
+[default.extend-words]
+# override false-positives
+Excluder = "Excluder"

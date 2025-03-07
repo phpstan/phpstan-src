@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -27,7 +29,6 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function is_array;
 use function is_int;
-use function preg_match;
 use function preg_split;
 use function strtolower;
 
@@ -57,23 +58,29 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$flagArg = $args[3] ?? null;
 		$patternType = $scope->getType($patternArg->value);
 		$patternConstantTypes = $patternType->getConstantStrings();
+		if (count($patternConstantTypes) > 0) {
+			foreach ($patternConstantTypes as $patternConstantType) {
+				try {
+					Strings::match('', $patternConstantType->getValue());
+				} catch (RegexpException $e) {
+					return new ErrorType();
+				}
+			}
+		}
+
 		$subjectType = $scope->getType($subjectArg->value);
 		$subjectConstantTypes = $subjectType->getConstantStrings();
-
-		if (
-			count($patternConstantTypes) > 0
-			&& @preg_match($patternConstantTypes[0]->getValue(), '') === false
-		) {
-			return new ErrorType();
-		}
 
 		$limits = [];
 		if ($limitArg === null) {
 			$limits = [-1];
 		} else {
 			$limitType = $scope->getType($limitArg->value);
+			if (!$limitType->isInteger()->yes() && !$limitType->isString()->yes()) {
+				return new ErrorType();
+			}
 			foreach ($limitType->getConstantScalarValues() as $limit) {
-				if (!is_int($limit)) {
+				if (!is_int($limit) && !is_numeric($limit)) {
 					return new ErrorType();
 				}
 				$limits[] = $limit;
@@ -85,15 +92,18 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$flags = [0];
 		} else {
 			$flagType = $scope->getType($flagArg->value);
+			if (!$flagType->isInteger()->yes() && !$flagType->isString()->yes()) {
+				return new ErrorType();
+			}
 			foreach ($flagType->getConstantScalarValues() as $flag) {
-				if (!is_int($flag)) {
+				if (!is_int($flag) && !is_numeric($flag)) {
 					return new ErrorType();
 				}
 				$flags[] = $flag;
 			}
 		}
 
-		if (count($patternConstantTypes) === 0 || count($subjectConstantTypes) === 0) {
+		if ($this->isPatternOrSubjectEmpty($patternConstantTypes, $subjectConstantTypes)) {
 			$returnNonEmptyStrings = $flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes();
 			if ($returnNonEmptyStrings) {
 				$returnStringType = TypeCombinator::intersect(
@@ -148,9 +158,9 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			foreach ($subjectConstantTypes as $subjectConstantType) {
 				foreach ($limits as $limit) {
 					foreach ($flags as $flag) {
-						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), $limit, $flag);
+						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), (int)$limit, (int)$flag);
 						if ($result === false) {
-							continue;
+							return new ErrorType();
 						}
 						$constantArray = ConstantArrayTypeBuilder::createEmpty();
 						foreach ($result as $key => $value) {
@@ -174,4 +184,12 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return TypeCombinator::union(...$resultTypes);
 	}
 
+	/**
+	 * @param ConstantStringType[] $patternConstantArray
+	 * @param ConstantStringType[] $subjectConstantArray
+	 * @return bool
+	 */
+	private function isPatternOrSubjectEmpty(array $patternConstantArray, array $subjectConstantArray): bool {
+		return count($patternConstantArray) === 0 || count($subjectConstantArray) === 0;
+	}
 }

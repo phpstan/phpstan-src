@@ -4773,6 +4773,11 @@ final class MutatingScope implements Scope
 		$intersectedVariableTypeHolders = [];
 		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (isset($theirVariableTypeHolders[$exprString])) {
+				if ($variableTypeHolder === $theirVariableTypeHolders[$exprString]) {
+					$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder;
+					continue;
+				}
+
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
 				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());

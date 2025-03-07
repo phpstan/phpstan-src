@@ -29,12 +29,12 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function is_array;
 use function is_int;
+use function is_numeric;
 use function preg_split;
 use function strtolower;
 
 final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
 	public function __construct(
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
@@ -156,7 +156,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			foreach ($subjectConstantTypes as $subjectConstantType) {
 				foreach ($limits as $limit) {
 					foreach ($flags as $flag) {
-						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), (int)$limit, (int)$flag);
+						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), (int) $limit, (int) $flag);
 						if ($result === false) {
 							return new ErrorType();
 						}
@@ -178,16 +178,16 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				}
 			}
 		}
-
 		return TypeCombinator::union(...$resultTypes);
+
 	}
 
 	/**
 	 * @param ConstantStringType[] $patternConstantArray
 	 * @param ConstantStringType[] $subjectConstantArray
-	 * @return bool
 	 */
-	private function isPatternOrSubjectEmpty(array $patternConstantArray, array $subjectConstantArray): bool {
+	private function isPatternOrSubjectEmpty(array $patternConstantArray, array $subjectConstantArray): bool
+	{
 		return count($patternConstantArray) === 0 || count($subjectConstantArray) === 0;
 	}
 
@@ -195,7 +195,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 	{
 		try {
 			Strings::match('', $pattern);
-		} catch (RegexpException $e) {
+		} catch (RegexpException) {
 			return false;
 		}
 		return true;

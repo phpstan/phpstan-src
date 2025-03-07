@@ -35,6 +35,7 @@ use function strtolower;
 
 final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	public function __construct(
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
@@ -179,7 +180,6 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 		}
 		return TypeCombinator::union(...$resultTypes);
-
 	}
 
 	/**
@@ -200,4 +200,5 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 		return true;
 	}
+
 }

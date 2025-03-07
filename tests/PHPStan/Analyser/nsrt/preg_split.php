@@ -6,9 +6,10 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
+	private const NUMERIC_STRING_1 = "1";
+	private const NUMERIC_STRING_NEGATIVE_1 = "-1";
 	public function doFoo()
 	{
-		assertType('*ERROR*', preg_split('/[0-9a]', '1-2-3'));
 		assertType("array{''}", preg_split('/-/', ''));
 		assertType("array{}", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY));
 		assertType("array{'1', '-', '2', '-', '3'}", preg_split('/ *(-) */', '1- 2-3', -1, PREG_SPLIT_DELIM_CAPTURE));
@@ -21,6 +22,19 @@ class HelloWorld
 		assertType("array{array{'1', 0}, array{'2', 2}, array{'3', 4}}", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("array{array{'1', 0}, array{'', 2}, array{'3', 3}}", preg_split('/-/', '1--3', -1, PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("array{array{'1', 0}, array{'3', 3}}", preg_split('/-/', '1--3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+
+		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3', self::NUMERIC_STRING_NEGATIVE_1));
+		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3', -1, self::NUMERIC_STRING_1));
+	}
+
+	public function doWithError() {
+		assertType('*ERROR*', preg_split('/[0-9a]', '1-2-3'));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', 'hogehoge'));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', -1, 'hogehoge'));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', [], self::NUMERIC_STRING_NEGATIVE_1));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', null, self::NUMERIC_STRING_NEGATIVE_1));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', -1, []));
+		assertType('*ERROR*', preg_split('/-/', '1-2-3', -1, null));
 	}
 
 	public function doWithVariables(string $pattern, string $subject, int $offset, int $flags): void

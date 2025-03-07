@@ -35,15 +35,15 @@ final class ExpressionTypeHolder
 
 	public function and(self $other): self
 	{
-		if ($this->getType()->equals($other->getType())) {
-			$type = $this->getType();
+		if ($this->type->equals($other->type)) {
+			$type = $this->type;
 		} else {
-			$type = TypeCombinator::union($this->getType(), $other->getType());
+			$type = TypeCombinator::union($this->type, $other->type);
 		}
 		return new self(
 			$this->expr,
 			$type,
-			$this->getCertainty()->and($other->getCertainty()),
+			$this->certainty->and($other->certainty),
 		);
 	}
 

@@ -60,9 +60,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$patternConstantTypes = $patternType->getConstantStrings();
 		if (count($patternConstantTypes) > 0) {
 			foreach ($patternConstantTypes as $patternConstantType) {
-				try {
-					Strings::match('', $patternConstantType->getValue());
-				} catch (RegexpException $e) {
+				if ($this->isValidPattern($patternConstantType->getValue()) === false) {
 					return new ErrorType();
 				}
 			}
@@ -191,5 +189,15 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 	 */
 	private function isPatternOrSubjectEmpty(array $patternConstantArray, array $subjectConstantArray): bool {
 		return count($patternConstantArray) === 0 || count($subjectConstantArray) === 0;
+	}
+
+	private function isValidPattern(string $pattern): bool
+	{
+		try {
+			Strings::match('', $pattern);
+		} catch (RegexpException $e) {
+			return false;
+		}
+		return true;
 	}
 }

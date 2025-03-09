@@ -5756,24 +5756,26 @@ final class NodeScopeResolver
 	 */
 	private function produceArrayDimFetchAssignValueToWrite(array $offsetTypes, Type $offsetValueType, Type $valueToWrite): Type
 	{
-		$offsetValueTypeStack = [$offsetValueType];
+		$offsetValueTypeStack = [[$offsetValueType, TrinaryLogic::createYes()]];
 		foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
 			if ($offsetType === null) {
+				$has = TrinaryLogic::createYes();
 				$offsetValueType = new ConstantArrayType([], []);
 
 			} else {
+				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 				if ($offsetValueType instanceof ErrorType) {
 					$offsetValueType = new ConstantArrayType([], []);
 				}
 			}
 
-			$offsetValueTypeStack[] = $offsetValueType;
+			$offsetValueTypeStack[] = [$offsetValueType, $has];
 		}
 
 		foreach (array_reverse($offsetTypes) as $i => $offsetType) {
 			/** @var Type $offsetValueType */
-			$offsetValueType = array_pop($offsetValueTypeStack);
+			[$offsetValueType, $has] = array_pop($offsetValueTypeStack);
 			if (
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isConstantArray()->yes()
@@ -5788,7 +5790,10 @@ final class NodeScopeResolver
 				}
 				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
 			}
-			$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			if (!$has->yes()) {
+				$offsetValueType = TypeCombinator::union($offsetValueType, new ConstantArrayType([], []));
+			}
+			$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite);
 		}
 
 		return $valueToWrite;

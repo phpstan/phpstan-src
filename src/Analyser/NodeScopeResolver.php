@@ -5489,6 +5489,26 @@ final class NodeScopeResolver
 						);
 					}
 				}
+
+				$arrayDimFetchVar = $originalVar;
+				while ($arrayDimFetchVar instanceof ArrayDimFetch) {
+					$dimExpr = $arrayDimFetchVar->dim;
+					if ($dimExpr === null) {
+						$arrayDimFetchVar = $arrayDimFetchVar->var;
+						continue;
+					}
+
+					$dimVar = $arrayDimFetchVar->var;
+					$dimVarType = $scope->getType($dimVar);
+					$dimDimType = $scope->getType($dimExpr);
+					if ($dimVarType->hasOffsetValueType($dimDimType)->yes()) {
+						$arrayDimFetchVar = $arrayDimFetchVar->var;
+						continue;
+					}
+
+					$scope = $scope->specifyExpressionType($arrayDimFetchVar, $scope->getType($arrayDimFetchVar), $scope->getNativeType($arrayDimFetchVar), TrinaryLogic::createYes());
+					$arrayDimFetchVar = $arrayDimFetchVar->var;
+				}
 			} else {
 				if ($var instanceof Variable) {
 					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);

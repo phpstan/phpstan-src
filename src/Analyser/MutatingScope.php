@@ -166,6 +166,7 @@ use function substr;
 use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
+use const PHP_VERSION_ID;
 
 final class MutatingScope implements Scope
 {
@@ -5138,7 +5139,10 @@ final class MutatingScope implements Scope
 			} else {
 				$constantArraysA = TypeCombinator::union(...$constantArrays['a']);
 				$constantArraysB = TypeCombinator::union(...$constantArrays['b']);
-				if ($constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())) {
+				if (
+					$constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())
+					&& $constantArraysA->getArraySize()->equals($constantArraysB->getArraySize())
+				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
 						$resultArrayBuilder->setOffsetValueType(
@@ -5158,7 +5162,11 @@ final class MutatingScope implements Scope
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1)),
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1)),
 					);
-					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
+					if (
+						$constantArraysA->isIterableAtLeastOnce()->yes()
+						&& $constantArraysB->isIterableAtLeastOnce()->yes()
+						&& $constantArraysA->getArraySize()->getGreaterOrEqualType(new PhpVersion(PHP_VERSION_ID))->isSuperTypeOf($constantArraysB->getArraySize())->yes()
+					) {
 						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 					}
 					if ($constantArraysA->isList()->yes() && $constantArraysB->isList()->yes()) {

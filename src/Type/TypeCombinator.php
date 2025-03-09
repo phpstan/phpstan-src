@@ -897,6 +897,10 @@ final class TypeCombinator
 			$keyType = self::union(...$keyTypes);
 			$valueType = self::union(...$valueTypes);
 
+			if ($valueType instanceof UnionType && count($valueType->getTypes()) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
+			}
+
 			$arrayType = new ArrayType($keyType, $valueType);
 			if ($eachIsList) {
 				$arrayType = self::intersect($arrayType, new AccessoryArrayListType());

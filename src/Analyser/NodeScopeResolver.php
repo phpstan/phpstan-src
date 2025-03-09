@@ -5384,12 +5384,12 @@ final class NodeScopeResolver
 				}
 
 				if ($dimExpr === null) {
-					$offsetTypes[] = null;
-					$offsetNativeTypes[] = null;
+					$offsetTypes[] = [null, TrinaryLogic::createYes()];
+					$offsetNativeTypes[] = [null, TrinaryLogic::createYes()];
 
 				} else {
-					$offsetTypes[] = $scope->getType($dimExpr);
-					$offsetNativeTypes[] = $scope->getNativeType($dimExpr);
+					$offsetTypes[] = [$scope->getType($dimExpr), $scope->getType($dimFetch->var)->hasOffsetValueType($scope->getType($dimExpr))->or($scope->hasExpressionType($dimFetch))];
+					$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $scope->getNativeType($dimFetch->var)->hasOffsetValueType($scope->getNativeType($dimExpr))->or($scope->hasExpressionType($dimFetch))];
 
 					if ($enterExpressionAssign) {
 						$scope->enterExpressionAssign($dimExpr);
@@ -5436,8 +5436,8 @@ final class NodeScopeResolver
 				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite);
 			} else {
 				$rewritten = false;
-				foreach ($offsetTypes as $i => $offsetType) {
-					$offsetNativeType = $offsetNativeTypes[$i];
+				foreach ($offsetTypes as $i => [$offsetType]) {
+					[$offsetNativeType] = $offsetNativeTypes[$i];
 					if ($offsetType === null) {
 						if ($offsetNativeType !== null) {
 							throw new ShouldNotHappenException();
@@ -5752,18 +5752,16 @@ final class NodeScopeResolver
 	}
 
 	/**
-	 * @param list<Type|null> $offsetTypes
+	 * @param list<array{Type|null, TrinaryLogic}> $offsetTypes
 	 */
 	private function produceArrayDimFetchAssignValueToWrite(array $offsetTypes, Type $offsetValueType, Type $valueToWrite): Type
 	{
 		$offsetValueTypeStack = [[$offsetValueType, TrinaryLogic::createYes()]];
-		foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $has]) {
 			if ($offsetType === null) {
-				$has = TrinaryLogic::createYes();
 				$offsetValueType = new ConstantArrayType([], []);
 
 			} else {
-				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 				if ($offsetValueType instanceof ErrorType) {
 					$offsetValueType = new ConstantArrayType([], []);
@@ -5773,7 +5771,7 @@ final class NodeScopeResolver
 			$offsetValueTypeStack[] = [$offsetValueType, $has];
 		}
 
-		foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			[$offsetValueType, $has] = array_pop($offsetValueTypeStack);
 			if (

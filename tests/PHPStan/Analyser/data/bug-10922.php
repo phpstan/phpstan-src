@@ -12,7 +12,7 @@ class HelloWorld
 		foreach ($array as $key => $item) {
 			$array[$key]['bar'] = '';
 		}
-		assertType("array<string, array{foo: string, bar: ''}>", $array);
+		assertType("array<string, array{foo: string, bar?: ''}>", $array);
 	}
 
 	/** @param array<string, array{foo: string}> $array */

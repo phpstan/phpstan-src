@@ -163,10 +163,10 @@ final class AccessPropertiesCheck
 		if ($propertyReflection->isStatic()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Non static access to static property %s::$%s.',
+					'Non-static access to static property %s::$%s.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
 					$name,
-				))->identifier('property.nonStaticAccess')->build(),
+				))->identifier('staticProperty.nonStaticAccess')->build(),
 			];
 		}
 

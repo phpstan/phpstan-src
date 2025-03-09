@@ -350,7 +350,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = false;
 		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-12692.php'], [[
-			'Non static access to static property Bug12692\Foo::$static.',
+			'Non-static access to static property Bug12692\Foo::$static.',
 			14,
 		]]);
 	}

@@ -5771,9 +5771,10 @@ final class NodeScopeResolver
 			$offsetValueTypeStack[] = [$offsetValueType, $has];
 		}
 
-		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
-			/** @var Type $offsetValueType */
-			[$offsetValueType, $has] = array_pop($offsetValueTypeStack);
+		foreach (array_reverse($offsetTypes) as [$offsetType]) {
+			/** @var array{Type, TrinaryLogic} $stackItem */
+			$stackItem = array_pop($offsetValueTypeStack);
+			[$offsetValueType, $has] = $stackItem;
 			if (
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isConstantArray()->yes()

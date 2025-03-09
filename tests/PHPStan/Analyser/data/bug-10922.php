@@ -38,6 +38,6 @@ class HelloWorld
 		foreach ($array as $key => $item) {
 			$array[$key]['bar'] = '';
 		}
-		assertType("non-empty-array<string, array{foo: string, bar: ''}>", $array);
+		assertType("non-empty-array<string, array{foo: string, bar?: ''}>", $array);
 	}
 }

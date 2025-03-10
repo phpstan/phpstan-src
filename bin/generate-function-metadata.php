@@ -86,6 +86,7 @@ use Symfony\Component\Finder\Finder;
 					'connection_aborted',
 					'connection_status',
 					'file_get_contents',
+					'ob_get_contents',
 				], true)) {
 					continue;
 				}

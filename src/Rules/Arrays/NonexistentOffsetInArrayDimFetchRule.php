@@ -14,6 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function in_array;
+use function is_string;
 use function sprintf;
 
 /**
@@ -106,7 +107,11 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$arrayType->isArray()->yes()
+				$arrayArg instanceof Node\Expr\Variable
+				&& $node->var instanceof Node\Expr\Variable
+				&& is_string($arrayArg->name)
+				&& $arrayArg->name === $node->var->name
+				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {
 				return [];
@@ -125,7 +130,11 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->left->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$arrayType->isList()->yes()
+				$arrayArg instanceof Node\Expr\Variable
+				&& $node->var instanceof Node\Expr\Variable
+				&& is_string($arrayArg->name)
+				&& $arrayArg->name === $node->var->name
+				&& $arrayType->isList()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {
 				return [];

@@ -838,6 +838,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset 0|null might not exist on list<string>.',
 				12,
 			],
+			[
+				'Offset (int|string) might not exist on non-empty-list<string>.',
+				16,
+			],
+			[
+				'Offset int<-1, max> might not exist on non-empty-list<string>.',
+				45,
+			],
 		]);
 	}
 

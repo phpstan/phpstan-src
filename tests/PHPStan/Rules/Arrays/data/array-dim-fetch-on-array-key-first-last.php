@@ -6,12 +6,16 @@ class Hello {
 	/**
 	 * @param list<string> $hellos
 	 */
-	public function first(array $hellos): string
+	public function first(array $hellos, array $anotherArray): string
 	{
 		if (rand(0,1)) {
 			return $hellos[array_key_first($hellos)];
 		}
 		if ($hellos !== []) {
+			if ($anotherArray !== []) {
+				return $hellos[array_key_first($anotherArray)];
+			}
+
 			return $hellos[array_key_first($hellos)];
 		}
 		return '';
@@ -31,10 +35,14 @@ class Hello {
 	/**
 	 * @param list<string> $hellos
 	 */
-	public function works(array $hellos): string
+	public function countOnArray(array $hellos, array $anotherArray): string
 	{
 		if ($hellos === []) {
 			return 'nothing';
+		}
+
+		if (rand(0,1)) {
+			return $hellos[count($anotherArray) - 1];
 		}
 
 		return $hellos[count($hellos) - 1];

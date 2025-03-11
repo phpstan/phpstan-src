@@ -87,6 +87,16 @@ class Foo
 		assertType('1|2', count($arr));
 	}
 
+	public function constantArrayWhichCanBecomeList(string $h): void
+	{
+		preg_match('#^([a-z0-9-]+)\..+$#', $h, $matches);
+		if (count($matches) !== 2) {
+			return;
+		}
+
+		assertType('array{string, non-empty-string}', $matches);
+	}
+
 }
 
 /**

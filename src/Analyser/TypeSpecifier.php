@@ -1061,10 +1061,11 @@ final class TypeSpecifier
 			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($type->getIterableValueType()->isArray()->negate());
 		}
 
+		$isConstantArray = $type->isConstantArray();
 		$isList = $type->isList();
 		if (
 			!$isNormalCount->yes()
-			|| (!$type->isConstantArray()->yes() && !$isList->yes())
+			|| (!$isConstantArray->yes() && !$isList->yes())
 			|| $type->isIterableAtLeastOnce()->no() // array{} cannot be used for further narrowing
 		) {
 			return null;
@@ -1082,9 +1083,12 @@ final class TypeSpecifier
 			}
 
 			if (
-				$isList->yes()
-				&& $sizeType instanceof ConstantIntegerType
+				$sizeType instanceof ConstantIntegerType
 				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& (
+					$isList->yes()
+					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
+				)
 			) {
 				// turn optional offsets non-optional
 				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
@@ -1097,9 +1101,12 @@ final class TypeSpecifier
 			}
 
 			if (
-				$isList->yes()
-				&& $sizeType instanceof IntegerRangeType
+				$sizeType instanceof IntegerRangeType
 				&& $sizeType->getMin() !== null
+				&& (
+					$isList->yes()
+					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getMin() - 1))->yes()
+				)
 			) {
 				// turn optional offsets non-optional
 				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();

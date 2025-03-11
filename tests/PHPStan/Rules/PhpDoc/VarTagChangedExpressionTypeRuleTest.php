@@ -99,4 +99,5 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 			],
 		]);
 	}
+
 }

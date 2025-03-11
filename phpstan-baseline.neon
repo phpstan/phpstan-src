@@ -933,13 +933,7 @@ parameters:
 		-
 			message: '#^PHPDoc tag @var with type float\|int is not subtype of native type int\.$#'
 			identifier: varTag.nativeType
-			count: 1
-			path: src/Type/Constant/ConstantArrayTypeBuilder.php
-
-		-
-			message: '#^PHPDoc tag @var with type float\|int is not subtype of native type int\<1, max\>\.$#'
-			identifier: varTag.nativeType
-			count: 1
+			count: 2
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
 		-

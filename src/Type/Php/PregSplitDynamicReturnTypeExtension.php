@@ -205,4 +205,5 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 	{
 		return $type->isInteger()->yes() || $type->isString()->yes() || $type->isConstantScalarValue()->yes();
 	}
+
 }

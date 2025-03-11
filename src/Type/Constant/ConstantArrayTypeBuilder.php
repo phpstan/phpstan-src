@@ -55,6 +55,11 @@ final class ConstantArrayTypeBuilder
 		return new self([], [], [0], [], TrinaryLogic::createYes());
 	}
 
+	public static function createEmptyIndeterminate(): self
+	{
+		return new self([], [], [0], [], TrinaryLogic::createMaybe());
+	}
+
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
 	{
 		$builder = new self(

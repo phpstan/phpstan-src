@@ -1043,6 +1043,13 @@ final class TypeNodeResolver
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
+		foreach ($typeNode->items as $itemNode) {
+			if ($itemNode->keyName !== null) {
+				$builder = ConstantArrayTypeBuilder::createEmptyIndeterminate();
+				break;
+			}
+		}
+
 		if (count($typeNode->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 			$builder->degradeToGeneralArray(true);
 		}

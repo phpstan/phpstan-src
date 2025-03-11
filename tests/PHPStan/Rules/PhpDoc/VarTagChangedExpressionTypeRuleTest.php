@@ -78,4 +78,25 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12708(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12708.php'], [
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{1: 'b', 2: 'c'}.",
+				12,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{0: 'a', 2: 'c'}.",
+				18,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{-1: 'z', 0: 'a', 1: 'b', 2: 'c'}.",
+				24,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{0: 'a', -1: 'z', 1: 'b', 2: 'c'}.",
+				30,
+			],
+		]);
+	}
 }

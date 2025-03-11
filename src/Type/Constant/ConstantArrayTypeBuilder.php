@@ -162,7 +162,7 @@ final class ConstantArrayTypeBuilder
 				$this->keyTypes[] = $offsetType;
 				$this->valueTypes[] = $valueType;
 
-				if ($offsetType instanceof ConstantIntegerType) {
+				if ($offsetType instanceof ConstantIntegerType && $offsetType->getValue() >= 0) {
 					$min = min($this->nextAutoIndexes);
 					$max = max($this->nextAutoIndexes);
 					if ($offsetType->getValue() > $min) {

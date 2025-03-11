@@ -1042,11 +1042,18 @@ final class TypeNodeResolver
 
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
+		$isListShape = in_array($typeNode->kind, [
+			ArrayShapeNode::KIND_LIST,
+			ArrayShapeNode::KIND_NON_EMPTY_LIST,
+		], true);
+
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		foreach ($typeNode->items as $itemNode) {
-			if ($itemNode->keyName !== null) {
-				$builder = ConstantArrayTypeBuilder::createEmptyIndeterminate();
-				break;
+		if (!$isListShape) {
+			foreach ($typeNode->items as $itemNode) {
+				if ($itemNode->keyName !== null) {
+					$builder = ConstantArrayTypeBuilder::createEmptyIndeterminate();
+					break;
+				}
 			}
 		}
 
@@ -1069,10 +1076,7 @@ final class TypeNodeResolver
 		}
 
 		$arrayType = $builder->getArray();
-		if (in_array($typeNode->kind, [
-			ArrayShapeNode::KIND_LIST,
-			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true)) {
+		if ($isListShape) {
 			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 

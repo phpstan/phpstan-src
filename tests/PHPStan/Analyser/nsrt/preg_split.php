@@ -8,6 +8,7 @@ class HelloWorld
 {
 	private const NUMERIC_STRING_1 = "1";
 	private const NUMERIC_STRING_NEGATIVE_1 = "-1";
+
 	public function doFoo()
 	{
 		assertType("array{''}", preg_split('/-/', ''));
@@ -39,6 +40,9 @@ class HelloWorld
 
 	public function doWithVariables(string $pattern, string $subject, int $offset, int $flags): void
 	{
+		assertType("array{'1', '2', '3'}|array{'1-2-3'}", preg_split('/-/', '1-2-3', $this->generate()));
+		assertType("array{'1', '2', '3'}|array{'1-2-3'}", preg_split('/-/', '1-2-3', $this->generate(), $this->generate()));
+
 		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, $offset, $flags));
 		assertType('list<array{string, int<0, max>}|string>|false', preg_split("//", $subject, $offset, $flags));
 
@@ -48,6 +52,13 @@ class HelloWorld
 		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_OFFSET_CAPTURE));
 		assertType("list<string>|false", preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE));
 		assertType('list<array{string, int<0, max>}>|false', preg_split($pattern, $subject, $offset, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE));
+	}
+
+	/**
+	 * @return 1|'17'
+	 */
+	private function generate(): int|string {
+		return (rand() % 2 === 0) ? 1 : "17";
 	}
 
 	/**

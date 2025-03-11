@@ -870,6 +870,13 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8649.php'], []);
 	}
 
+	public function testBug11447(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11447.php'], []);
+	}
+
 	public function testNarrowSuperglobals(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;

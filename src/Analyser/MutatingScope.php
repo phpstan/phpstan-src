@@ -548,7 +548,12 @@ final class MutatingScope implements Scope
 			}
 		}
 
+		$varExprString = '$' . $variableName;
 		if ($this->isGlobalVariable($variableName)) {
+			if (array_key_exists($varExprString, $this->expressionTypes)) {
+				return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+			}
+
 			return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
 		}
 
@@ -556,7 +561,6 @@ final class MutatingScope implements Scope
 			throw new UndefinedVariableException($this, $variableName);
 		}
 
-		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
 			return new MixedType();
 		}

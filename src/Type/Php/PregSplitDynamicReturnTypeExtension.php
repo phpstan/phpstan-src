@@ -37,7 +37,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 {
 
 	public function __construct(
-		private BitwiseFlagHelper $bitwiseFlagAnalyser,
+		private readonly BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
 	{
 	}
@@ -56,7 +56,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$patternArg = $args[0];
 		$subjectArg = $args[1];
 		$limitArg = $args[2] ?? null;
-		$flagArg = $args[3] ?? null;
+		$capturesOffset = $args[3] ?? null;
 		$patternType = $scope->getType($patternArg->value);
 		$patternConstantTypes = $patternType->getConstantStrings();
 		if (count($patternConstantTypes) > 0) {
@@ -75,7 +75,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$limits = [-1];
 		} else {
 			$limitType = $scope->getType($limitArg->value);
-			if (!$limitType->isInteger()->yes() && !$limitType->isString()->yes()) {
+			if (!$this->isIntOrStringValue($limitType)) {
 				return new ErrorType();
 			}
 			foreach ($limitType->getConstantScalarValues() as $limit) {
@@ -87,11 +87,11 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$flags = [];
-		if ($flagArg === null) {
+		if ($capturesOffset === null) {
 			$flags = [0];
 		} else {
-			$flagType = $scope->getType($flagArg->value);
-			if (!$flagType->isInteger()->yes() && !$flagType->isString()->yes()) {
+			$flagType = $scope->getType($capturesOffset->value);
+			if (!$this->isIntOrStringValue($flagType)) {
 				return new ErrorType();
 			}
 			foreach ($flagType->getConstantScalarValues() as $flag) {
@@ -103,8 +103,8 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if ($this->isPatternOrSubjectEmpty($patternConstantTypes, $subjectConstantTypes)) {
-			$returnNonEmptyStrings = $flagArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes();
-			if ($returnNonEmptyStrings) {
+			if ($capturesOffset !== null
+				&& $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($capturesOffset->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes()) {
 				$returnStringType = TypeCombinator::intersect(
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
@@ -122,8 +122,8 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			);
 
 			$returnInternalValueType = $returnStringType;
-			if ($flagArg !== null) {
-				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
+			if ($capturesOffset !== null) {
+				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($capturesOffset->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
 				if ($flagState->yes()) {
 					$capturedArrayListType = TypeCombinator::intersect(
 						new ArrayType(new IntegerType(), $capturedArrayType),
@@ -133,7 +133,6 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 					if ($subjectType->isNonEmptyString()->yes()) {
 						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
 					}
-
 					return TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false));
 				}
 				if ($flagState->maybe()) {
@@ -179,6 +178,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				}
 			}
 		}
+
 		return TypeCombinator::union(...$resultTypes);
 	}
 
@@ -201,4 +201,8 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		return true;
 	}
 
+	private function isIntOrStringValue(Type $type): bool
+	{
+		return $type->isInteger()->yes() || $type->isString()->yes() || $type->isConstantScalarValue()->yes();
+	}
 }

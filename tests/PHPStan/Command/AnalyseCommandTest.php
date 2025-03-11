@@ -6,11 +6,14 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Throwable;
+use function array_merge;
 use function chdir;
 use function getcwd;
 use function microtime;
 use function realpath;
+use function rename;
 use function sprintf;
+use function unlink;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
@@ -71,6 +74,74 @@ class AnalyseCommandTest extends PHPStanTestCase
 		}
 	}
 
+	public function testGenerateBaselineIgnoreNewErrorsRemoveFile(): void
+	{
+		$baselineFile = __DIR__ . '/data-ignore-new-errors/baseline.neon';
+		$this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/A.php', __DIR__ . '/data-ignore-new-errors/B.php'],
+			'--configuration' => __DIR__ . '/data-ignore-new-errors/empty.neon',
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+		]);
+
+		$output = $this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/B.php', __DIR__ . '/data-ignore-new-errors/C.php'],
+			'--configuration' => $baselineFile,
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+			'--ignore-new-errors' => true,
+		]);
+		@unlink($baselineFile);
+
+		$this->assertStringContainsString('[OK] Baseline generated with 1 error', $output);
+	}
+
+	public function testGenerateBaselineIgnoreNewErrorsChangeFile(): void
+	{
+		$baselineFile = __DIR__ . '/data-ignore-new-errors-baseline/baseline.neon';
+		$baselineFileSecondRun = __DIR__ . '/data-ignore-new-errors/baseline.neon';
+		$this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors-baseline/A.php'],
+			'--configuration' => __DIR__ . '/data-ignore-new-errors-baseline/empty.neon',
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+		]);
+
+		rename($baselineFile, $baselineFileSecondRun);
+		$output = $this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/A.php'],
+			'--configuration' => $baselineFileSecondRun,
+			'--level' => '9',
+			'--generate-baseline' => $baselineFileSecondRun,
+			'--ignore-new-errors' => true,
+		]);
+		@unlink($baselineFileSecondRun);
+
+		$this->assertStringContainsString('[OK] Baseline generated with 2 errors', $output);
+	}
+
+	public function testGenerateBaselineIgnoreNewErrorsEmptyBaseline(): void
+	{
+		$baselineFile = __DIR__ . '/data-ignore-new-errors/baseline.neon';
+		$this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/A.php', __DIR__ . '/data-ignore-new-errors/B.php'],
+			'--configuration' => __DIR__ . '/data-ignore-new-errors/empty.neon',
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+		]);
+
+		$output = $this->runCommand(1, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/C.php'],
+			'--configuration' => $baselineFile,
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+			'--ignore-new-errors' => true,
+		]);
+		@unlink($baselineFile);
+
+		$this->assertStringContainsString('[ERROR] No errors were found during the analysis. Baseline could not be generated.', $output);
+	}
+
 	/**
 	 * @return string[][]
 	 */
@@ -117,16 +188,16 @@ class AnalyseCommandTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param array<string, string> $parameters
+	 * @param array<string, string|string[]|bool> $parameters
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
 		$commandTester = new CommandTester(new AnalyseCommand([], microtime(true)));
 
-		$commandTester->execute([
+		$commandTester->execute(array_merge([
 			'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],
 			'--debug' => true,
-		] + $parameters, ['debug' => true]);
+		], $parameters), ['debug' => true]);
 
 		$this->assertSame($expectedStatusCode, $commandTester->getStatusCode(), $commandTester->getDisplay());
 

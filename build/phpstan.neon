@@ -24,6 +24,7 @@ parameters:
 	checkMissingCallableSignature: true
 	excludePaths:
 		- ../tests/*/data/*
+		- ../tests/*/data-*/*
 		- ../tests/tmp/*
 		- ../tests/PHPStan/Analyser/nsrt/*
 		- ../tests/PHPStan/Analyser/traits/*

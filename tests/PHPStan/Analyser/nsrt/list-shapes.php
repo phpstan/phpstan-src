@@ -15,12 +15,11 @@ class Foo
 	 */
 	public function bar($l1, $l2, $l3, $l4, $l5, $l6): void
 	{
-		// TODO: list{}
-		assertType('array{}', $l1);
-		assertType("array{'a'}", $l2);
-		assertType("array{'a'}", $l3);
-		assertType("array{'a', 'b'}", $l4);
-		assertType("array{0: 'a', 1?: 'b'}", $l5);
-		assertType("array{'a', 'b'}", $l6);
+		assertType('list{}', $l1);
+		assertType("list{'a'}", $l2);
+		assertType("list{'a'}", $l3);
+		assertType("list{'a', 'b'}", $l4);
+		assertType("list{0: 'a', 1?: 'b'}", $l5);
+		assertType("list{'a', 'b'}", $l6);
 	}
 }

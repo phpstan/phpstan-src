@@ -552,14 +552,12 @@ final class MutatingScope implements Scope
 			throw new UndefinedVariableException($this, $variableName);
 		}
 
-		$defaultType = new MixedType();
-		if ($this->isGlobalVariable($variableName)) {
-			$defaultType = new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
-		}
-
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
-			return $defaultType;
+			if ($this->isGlobalVariable($variableName)) {
+				return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
+			}
+			return new MixedType();
 		}
 
 		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());

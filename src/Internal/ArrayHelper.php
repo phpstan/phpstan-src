@@ -18,7 +18,8 @@ final class ArrayHelper
 
 		if (count($tail) === 0) {
 			unset($array[$head]);
-		} else {
+
+		} elseif (isset($array[$head])) {
 			self::unsetKeyAtPath($array[$head], $tail);
 		}
 	}

@@ -6,6 +6,7 @@ use Nette\DI\Config\Loader;
 use Nette\FileNotFoundException;
 use Nette\InvalidStateException;
 use OndraM\CiDetector\CiDetector;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\Ignore\IgnoredError;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
@@ -603,7 +604,9 @@ final class AnalyseCommand extends Command
 		$baselineFileDirectory = dirname($generateBaselineFile);
 		$fileHelper = $container->getByType(FileHelper::class);
 		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
-		$analysisResult = $this->processFileSpecificErrorsFromAnalysisResult($analysisResult, $ignoreNewErrors, $generateBaselineFile, $inceptionResult, $fileHelper, $baselinePathHelper);
+		if ($ignoreNewErrors) {
+			$analysisResult = $this->filterAnalysisResultForExistingErrors($analysisResult, $generateBaselineFile, $inceptionResult, $fileHelper, $baselinePathHelper);
+		}
 
 		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
@@ -689,39 +692,26 @@ final class AnalyseCommand extends Command
 		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 	}
 
-	private function processFileSpecificErrorsFromAnalysisResult(AnalysisResult $analysisResult, bool $ignoreNewErrors, string $generateBaselineFile, InceptionResult $inceptionResult, FileHelper $fileHelper, RelativePathHelper $baselinePathHelper): AnalysisResult
+	private function filterAnalysisResultForExistingErrors(AnalysisResult $analysisResult, string $generateBaselineFile, InceptionResult $inceptionResult, FileHelper $fileHelper, RelativePathHelper $baselinePathHelper): AnalysisResult
 	{
 		$fileSpecificErrors = $analysisResult->getFileSpecificErrors();
-		if (!$ignoreNewErrors) {
-			return $analysisResult;
-		}
 
 		$baselineIgnoreErrors = $this->getCurrentBaselineIgnoreErrors($generateBaselineFile, $inceptionResult);
 		$ignoreErrorsByFile = $this->mapIgnoredErrors($baselineIgnoreErrors, $fileHelper);
 
+		$ignoreUseCount = [];
+
 		foreach ($fileSpecificErrors as $errorIndex => $error) {
-			$filePath = $baselinePathHelper->getRelativePath($error->getFilePath());
-			if (isset($ignoreErrorsByFile[$filePath])) {
-				foreach ($ignoreErrorsByFile[$filePath] as $ignoreError) {
-					$ignore = $ignoreError['ignoreError'];
-					$shouldIgnore = IgnoredError::shouldIgnore($fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, null);
-					if ($shouldIgnore) {
-						continue 2;
-					}
-				}
+			$hasMatchingIgnore = $this->checkIgnoreErrorByPath($error->getFilePath(), $ignoreErrorsByFile, $fileHelper, $error, $ignoreUseCount, $baselinePathHelper);
+			if ($hasMatchingIgnore) {
+				continue;
 			}
 
 			$traitFilePath = $error->getTraitFilePath();
 			if ($traitFilePath !== null) {
-				$normalizedTraitFilePath = $baselinePathHelper->getRelativePath($traitFilePath);
-				if (isset($ignoreErrorsByFile[$normalizedTraitFilePath])) {
-					foreach ($ignoreErrorsByFile[$normalizedTraitFilePath] as $ignoreError) {
-						$ignore = $ignoreError['ignoreError'];
-						$shouldIgnore = IgnoredError::shouldIgnore($fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, null);
-						if ($shouldIgnore) {
-							continue 2;
-						}
-					}
+				$hasMatchingIgnore = $this->checkIgnoreErrorByPath($traitFilePath, $ignoreErrorsByFile, $fileHelper, $error, $ignoreUseCount, $baselinePathHelper);
+				if ($hasMatchingIgnore) {
+					continue;
 				}
 			}
 
@@ -744,6 +734,36 @@ final class AnalyseCommand extends Command
 			$analysisResult->isResultCacheUsed(),
 			$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
 		);
+	}
+
+	/**
+	 * @param mixed[][] $ignoreErrorsByFile
+	 * @param int[]  $ignoreUseCount map of indexes of ignores and how often they have been "used" to ignore an error
+	 */
+	private function checkIgnoreErrorByPath(string $filePath, array $ignoreErrorsByFile, FileHelper $fileHelper, Error $error, array &$ignoreUseCount, RelativePathHelper $baselinePathHelper): bool
+	{
+		$relativePath = $baselinePathHelper->getRelativePath($filePath);
+		if (!isset($ignoreErrorsByFile[$relativePath])) {
+			return false;
+		}
+
+		foreach ($ignoreErrorsByFile[$relativePath] as $ignoreError) {
+			$ignore = $ignoreError['ignoreError'];
+			$shouldIgnore = IgnoredError::shouldIgnore($fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, null);
+			if (!$shouldIgnore) {
+				continue;
+			}
+
+			$realCount = $ignoreUseCount[$ignoreError['index']] ?? 0;
+			$realCount++;
+			$ignoreUseCount[$ignoreError['index']] = $realCount;
+
+			if ($realCount <= $ignore['count']) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -805,89 +825,21 @@ final class AnalyseCommand extends Command
 	}
 
 	/**
-	 * @param (string|mixed[])[] $baselineIgnoreErrors
+	 * @param mixed[][] $baselineIgnoreErrors
 	 * @return mixed[][]
-	 * @throws ShouldNotHappenException
 	 */
 	private function mapIgnoredErrors(array $baselineIgnoreErrors, FileHelper $fileHelper): array
 	{
 		$ignoreErrorsByFile = [];
 
-		$expandedIgnoreErrors = [];
-		foreach ($baselineIgnoreErrors as $ignoreError) {
-			if (!is_array($ignoreError)) {
-				throw new ShouldNotHappenException('Baseline should not have ignore error strings');
-			}
-
-			if (!isset($ignoreError['message']) && !isset($ignoreError['messages']) && !isset($ignoreError['identifier'])) {
-				continue;
-			}
-			if (isset($ignoreError['messages'])) {
-				foreach ($ignoreError['messages'] as $message) {
-					$expandedIgnoreError = $ignoreError;
-					unset($expandedIgnoreError['messages']);
-					$expandedIgnoreError['message'] = $message;
-					$expandedIgnoreErrors[] = $expandedIgnoreError;
-				}
-			} else {
-				$expandedIgnoreErrors[] = $ignoreError;
-			}
-		}
-		$uniquedExpandedIgnoreErrors = [];
-		foreach ($expandedIgnoreErrors as $ignoreError) {
-			if (!isset($ignoreError['message']) && !isset($ignoreError['identifier'])) {
-				$uniquedExpandedIgnoreErrors[] = $ignoreError;
-				continue;
-			}
-			if (!isset($ignoreError['path'])) {
-				$uniquedExpandedIgnoreErrors[] = $ignoreError;
-				continue;
-			}
-
-			$key = $ignoreError['path'];
-			if (isset($ignoreError['message'])) {
-				$key = sprintf("%s\n%s", $key, $ignoreError['message']);
-			}
-			if (isset($ignoreError['identifier'])) {
-				$key = sprintf("%s\n%s", $key, $ignoreError['identifier']);
-			}
-			if ($key === '') {
-				throw new ShouldNotHappenException();
-			}
-
-			if (!array_key_exists($key, $uniquedExpandedIgnoreErrors)) {
-				$uniquedExpandedIgnoreErrors[$key] = $ignoreError;
-				continue;
-			}
-
-			$uniquedExpandedIgnoreErrors[$key] = [
-				'message' => $ignoreError['message'] ?? null,
-				'path' => $ignoreError['path'],
-				'identifier' => $ignoreError['identifier'] ?? null,
-				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
-				'reportUnmatched' => false,
-			];
-		}
-		$expandedIgnoreErrors = array_values($uniquedExpandedIgnoreErrors);
-
-		foreach ($expandedIgnoreErrors as $i => $ignoreError) {
+		foreach ($baselineIgnoreErrors as $i => $ignoreError) {
 			$ignoreErrorEntry = [
 				'index' => $i,
 				'ignoreError' => $ignoreError,
 			];
 
-			if (!isset($ignoreError['message']) && !isset($ignoreError['identifier'])) {
-				continue;
-			}
-			if (!isset($ignoreError['path'])) {
-				throw new ShouldNotHappenException('Baseline should not have ignore errors without path');
-			}
-
 			$normalizedPath = $fileHelper->normalizePath($ignoreError['path']);
-			$ignoreError['path'] = $normalizedPath;
 			$ignoreErrorsByFile[$normalizedPath][] = $ignoreErrorEntry;
-			$ignoreError['realPath'] = $normalizedPath;
-			$expandedIgnoreErrors[$i] = $ignoreError;
 		}
 
 		return $ignoreErrorsByFile;

@@ -157,9 +157,6 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				foreach ($limits as $limit) {
 					foreach ($flags as $flag) {
 						$result = @preg_split($patternConstantType->getValue(), $subjectConstantType->getValue(), (int) $limit, (int) $flag);
-						if ($result === false) {
-							return new ErrorType();
-						}
 						$constantArray = ConstantArrayTypeBuilder::createEmpty();
 						foreach ($result as $key => $value) {
 							if (is_array($value)) {
@@ -178,7 +175,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				}
 			}
 		}
-
+		$resultTypes[] = new ConstantBooleanType(false);
 		return TypeCombinator::union(...$resultTypes);
 	}
 

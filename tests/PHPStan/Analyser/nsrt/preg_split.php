@@ -11,21 +11,21 @@ class HelloWorld
 
 	public function doFoo()
 	{
-		assertType("array{''}", preg_split('/-/', ''));
-		assertType("array{}", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY));
-		assertType("array{'1', '-', '2', '-', '3'}", preg_split('/ *(-) */', '1- 2-3', -1, PREG_SPLIT_DELIM_CAPTURE));
-		assertType("array{array{'', 0}}", preg_split('/-/', '', -1, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("array{}", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3'));
-		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY));
-		assertType("array{'1', '3'}", preg_split('/-/', '1--3', -1, PREG_SPLIT_NO_EMPTY));
-		assertType("array{array{'1', 0}, array{'2', 2}, array{'3', 4}}", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("array{array{'1', 0}, array{'2', 2}, array{'3', 4}}", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("array{array{'1', 0}, array{'', 2}, array{'3', 3}}", preg_split('/-/', '1--3', -1, PREG_SPLIT_OFFSET_CAPTURE));
-		assertType("array{array{'1', 0}, array{'3', 3}}", preg_split('/-/', '1--3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{''}|false", preg_split('/-/', ''));
+		assertType("array{}|false", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY));
+		assertType("array{'1', '-', '2', '-', '3'}|false", preg_split('/ *(-) */', '1- 2-3', -1, PREG_SPLIT_DELIM_CAPTURE));
+		assertType("array{array{'', 0}}|false", preg_split('/-/', '', -1, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{}|false", preg_split('/-/', '', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{'1', '2', '3'}|false", preg_split('/-/', '1-2-3'));
+		assertType("array{'1', '2', '3'}|false", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY));
+		assertType("array{'1', '3'}|false", preg_split('/-/', '1--3', -1, PREG_SPLIT_NO_EMPTY));
+		assertType("array{array{'1', 0}, array{'2', 2}, array{'3', 4}}|false", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{array{'1', 0}, array{'2', 2}, array{'3', 4}}|false", preg_split('/-/', '1-2-3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{array{'1', 0}, array{'', 2}, array{'3', 3}}|false", preg_split('/-/', '1--3', -1, PREG_SPLIT_OFFSET_CAPTURE));
+		assertType("array{array{'1', 0}, array{'3', 3}}|false", preg_split('/-/', '1--3', -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_OFFSET_CAPTURE));
 
-		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3', self::NUMERIC_STRING_NEGATIVE_1));
-		assertType("array{'1', '2', '3'}", preg_split('/-/', '1-2-3', -1, self::NUMERIC_STRING_1));
+		assertType("array{'1', '2', '3'}|false", preg_split('/-/', '1-2-3', self::NUMERIC_STRING_NEGATIVE_1));
+		assertType("array{'1', '2', '3'}|false", preg_split('/-/', '1-2-3', -1, self::NUMERIC_STRING_1));
 	}
 
 	public function doWithError() {
@@ -40,8 +40,8 @@ class HelloWorld
 
 	public function doWithVariables(string $pattern, string $subject, int $offset, int $flags): void
 	{
-		assertType("array{'1', '2', '3'}|array{'1-2-3'}", preg_split('/-/', '1-2-3', $this->generate()));
-		assertType("array{'1', '2', '3'}|array{'1-2-3'}", preg_split('/-/', '1-2-3', $this->generate(), $this->generate()));
+		assertType("array{'1', '2', '3'}|array{'1-2-3'}|false", preg_split('/-/', '1-2-3', $this->generate()));
+		assertType("array{'1', '2', '3'}|array{'1-2-3'}|false", preg_split('/-/', '1-2-3', $this->generate(), $this->generate()));
 
 		assertType('list<array{string, int<0, max>}|string>|false', preg_split($pattern, $subject, $offset, $flags));
 		assertType('list<array{string, int<0, max>}|string>|false', preg_split("//", $subject, $offset, $flags));

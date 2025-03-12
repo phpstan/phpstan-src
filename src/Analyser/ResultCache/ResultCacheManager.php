@@ -16,6 +16,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\ReflectionProvider;
@@ -29,6 +30,7 @@ use function array_keys;
 use function array_unique;
 use function array_values;
 use function count;
+use function explode;
 use function get_loaded_extensions;
 use function implode;
 use function is_array;
@@ -65,6 +67,7 @@ final class ResultCacheManager
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
+	 * @param list<string> $parametersNotInvalidatingCache
 	 */
 	public function __construct(
 		private Container $container,
@@ -82,6 +85,7 @@ final class ResultCacheManager
 		private array $scanFiles,
 		private array $scanDirectories,
 		private bool $checkDependenciesOfProjectExtensionFiles,
+		private array $parametersNotInvalidatingCache,
 	)
 	{
 	}
@@ -887,18 +891,9 @@ return [
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {
-			unset($projectConfigArray['parameters']['editorUrl']);
-			unset($projectConfigArray['parameters']['editorUrlTitle']);
-			unset($projectConfigArray['parameters']['errorFormat']);
-			unset($projectConfigArray['parameters']['ignoreErrors']);
-			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
-			unset($projectConfigArray['parameters']['tipsOfTheDay']);
-			unset($projectConfigArray['parameters']['parallel']);
-			unset($projectConfigArray['parameters']['internalErrorsCountLimit']);
-			unset($projectConfigArray['parameters']['cache']);
-			unset($projectConfigArray['parameters']['memoryLimitFile']);
-			unset($projectConfigArray['parameters']['pro']);
-			unset($projectConfigArray['parametersSchema']);
+			foreach ($this->parametersNotInvalidatingCache as $parameterPath) {
+				ArrayHelper::unsetKeyAtPath($projectConfigArray, explode('.', $parameterPath));
+			}
 
 			ksort($projectConfigArray);
 		}

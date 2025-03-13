@@ -25,16 +25,27 @@ use Symfony\Component\Finder\Finder;
 		/** @var string[] */
 		public array $functions = [];
 
+		/** @var list<string> */
+		public array $impureFunctions = [];
+
 		/** @var string[] */
 		public array $methods = [];
 
 		public function enterNode(Node $node)
 		{
 			if ($node instanceof Node\Stmt\Function_) {
+				assert(isset($node->namespacedName));
+				$functionName = $node->namespacedName->toLowerString();
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
 						if ($attr->name->toString() === Pure::class) {
-							$this->functions[] = $node->namespacedName->toLowerString();
+							// PhpStorm stub's #[Pure(true)] mean sthe function has side effects but its return value is important.
+							// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
+							if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
+								$this->impureFunctions[] = $functionName;
+							} else {
+								$this->functions[] = $functionName;
+							}
 							break 2;
 						}
 					}
@@ -74,25 +85,23 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
+	/** @var array<string, array{hasSideEffects: bool}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
 			if ($metadata[$functionName]['hasSideEffects']) {
-				if (in_array($functionName, [
-					'mt_rand',
-					'rand',
-					'random_bytes',
-					'random_int',
-					'connection_aborted',
-					'connection_status',
-					'file_get_contents',
-				], true)) {
-					continue;
-				}
 				throw new ShouldNotHappenException($functionName);
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
+	}
+	foreach ($visitor->impureFunctions as $functionName) {
+		if (array_key_exists($functionName, $metadata)) {
+			if ($metadata[$functionName]['hasSideEffects']) {
+				throw new ShouldNotHappenException($functionName);
+			}
+		}
+		$metadata[$functionName] = ['hasSideEffects' => true];
 	}
 
 	foreach ($visitor->methods as $methodName) {

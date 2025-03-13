@@ -147,7 +147,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 				$node->getArgs()[1]->value,
 				new ArrayType(new MixedType(), $arrayValueType),
-				TypeSpecifierContext::createTrue(),
+				TypeSpecifierContext::createTrue($context->getReturnType()),
 				$scope,
 			));
 		}

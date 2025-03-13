@@ -1176,7 +1176,7 @@ final class TypeSpecifier
 			return $types->unionWith($this->specifyTypesInCondition(
 				$scope,
 				$exprNode,
-				$context->true() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createTrue()->negate(),
+				$context->true() ? TypeSpecifierContext::createTrue($context->getReturnType()) : TypeSpecifierContext::createTrue($context->getReturnType())->negate(),
 			)->setRootExpr($rootExpr));
 		}
 
@@ -1976,7 +1976,7 @@ final class TypeSpecifier
 				return $this->specifyTypesInCondition(
 					$scope,
 					$exprNode,
-					$context->true() ? TypeSpecifierContext::createFalsey() : TypeSpecifierContext::createFalsey()->negate(),
+					$context->true() ? TypeSpecifierContext::createFalsey($context->getReturnType()) : TypeSpecifierContext::createFalsey($context->getReturnType())->negate(),
 				)->setRootExpr($expr);
 			}
 

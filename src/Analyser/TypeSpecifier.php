@@ -457,7 +457,7 @@ final class TypeSpecifier
 			) {
 				$newScope = $scope->filterBySpecifiedTypes($result);
 				$callType = $newScope->getType($expr->right);
-				$newContext = $this->createSpecifierContextReturnType($callType, $context);
+				$newContext = TypeSpecifierContext::createTrue($callType);
 
 				return $this->specifyTypesInCondition(
 					$scope,
@@ -1947,21 +1947,6 @@ final class TypeSpecifier
 		}
 
 		return array_merge(...$extensionsForClass);
-	}
-
-	private function createSpecifierContextReturnType(
-		Type $contextReturnType,
-		TypeSpecifierContext $context,
-	): TypeSpecifierContext
-	{
-		if (!$context->null()) {
-			return TypeSpecifierContext::createTrue($contextReturnType);
-		}
-		//} elseif ($context->false()) {
-		//	return TypeSpecifierContext::createFalse($contextReturnType);
-		//}
-
-		//return $context;
 	}
 
 	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

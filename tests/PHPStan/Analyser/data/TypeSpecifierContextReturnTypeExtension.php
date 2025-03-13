@@ -44,6 +44,10 @@ class TypeSpecifierContextReturnTypeExtension implements MethodTypeSpecifyingExt
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
+        if ($context->null()) {
+            return new SpecifiedTypes();
+        }
+
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
 			$context->getReturnType(),

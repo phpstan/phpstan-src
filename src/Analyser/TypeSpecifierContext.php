@@ -45,9 +45,9 @@ final class TypeSpecifierContext
 		return self::create(self::CONTEXT_TRUE, $returnType);
 	}
 
-	public static function createTruthy(): self
+	public static function createTruthy(?Type $returnType = null): self
 	{
-		return self::create(self::CONTEXT_TRUTHY);
+		return self::create(self::CONTEXT_TRUTHY, $returnType);
 	}
 
 	public static function createFalse(?Type $returnType = null): self
@@ -55,9 +55,9 @@ final class TypeSpecifierContext
 		return self::create(self::CONTEXT_FALSE, $returnType);
 	}
 
-	public static function createFalsey(): self
+	public static function createFalsey(?Type $returnType = null): self
 	{
-		return self::create(self::CONTEXT_FALSEY);
+		return self::create(self::CONTEXT_FALSEY, $returnType);
 	}
 
 	public static function createNull(): self

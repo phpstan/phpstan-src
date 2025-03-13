@@ -32,7 +32,7 @@ final class TypeSpecifierContext
 	private static function create(?int $value, ?Type $returnType = null): self
 	{
 		if ($returnType !== null) {
-			// return type bound context is unique for each context and therefore not cachable
+			// return type bound context is unique for each context and therefore not cacheable
 			return new self($value, $returnType);
 		}
 

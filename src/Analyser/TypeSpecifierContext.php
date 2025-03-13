@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\MixedType;
 
 /**
  * @api
@@ -87,6 +88,10 @@ final class TypeSpecifierContext
 	public function null(): bool
 	{
 		return $this->value === null;
+	}
+
+	public function getReturnType(): Type {
+		return new MixedType();
 	}
 
 }

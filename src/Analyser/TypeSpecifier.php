@@ -453,7 +453,7 @@ final class TypeSpecifier
 
 			if (
 				!$context->null()
-				&& $expr->right instanceof FuncCall
+				&& $expr->right instanceof Expr\CallLike
 			) {
 				$newScope = $scope->filterBySpecifiedTypes($result);
 				$callType = $newScope->getType($expr->right);
@@ -1954,13 +1954,13 @@ final class TypeSpecifier
 		TypeSpecifierContext $context,
 	): TypeSpecifierContext
 	{
-		if ($context->true()) {
+		//if ($context->true()) {
 			return TypeSpecifierContext::createTrue($contextReturnType);
-		} elseif ($context->false()) {
-			return TypeSpecifierContext::createFalse($contextReturnType);
-		}
+		//} elseif ($context->false()) {
+		//	return TypeSpecifierContext::createFalse($contextReturnType);
+		//}
 
-		return $context;
+		//return $context;
 	}
 
 	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

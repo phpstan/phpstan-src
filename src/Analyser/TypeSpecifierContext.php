@@ -73,8 +73,13 @@ final class TypeSpecifierContext
 			throw new ShouldNotHappenException();
 		}
 
-		$baseType = $this->returnType->generalize(GeneralizePrecision::lessSpecific());
-		return self::create(~$this->value & self::CONTEXT_BITMASK, TypeCombinator::remove($baseType, $this->returnType));
+		$negatedReturnType = null;
+		if ($this->returnType !== null) {
+			$baseType = $this->returnType->generalize(GeneralizePrecision::lessSpecific());
+			$negatedReturnType = TypeCombinator::remove($baseType, $this->returnType);
+		}
+
+		return self::create(~$this->value & self::CONTEXT_BITMASK, $negatedReturnType);
 	}
 
 	public function true(): bool

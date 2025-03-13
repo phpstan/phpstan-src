@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 /**
@@ -23,19 +22,27 @@ final class TypeSpecifierContext
 	/** @var self[] */
 	private static array $registry;
 
-	private function __construct(private ?int $value)
+	private function __construct(
+		private ?int $value,
+		private ?Type $returnType,
+	)
 	{
 	}
 
-	private static function create(?int $value): self
+	private static function create(?int $value, ?Type $returnType = null): self
 	{
-		self::$registry[$value] ??= new self($value);
+		if ($returnType !== null) {
+			// return type bound context is unique for each context and therefore not cachable
+			return new self($value, $returnType);
+		}
+
+		self::$registry[$value] ??= new self($value, null);
 		return self::$registry[$value];
 	}
 
-	public static function createTrue(): self
+	public static function createTrue(?Type $returnType = null): self
 	{
-		return self::create(self::CONTEXT_TRUE);
+		return self::create(self::CONTEXT_TRUE, $returnType);
 	}
 
 	public static function createTruthy(): self
@@ -43,9 +50,9 @@ final class TypeSpecifierContext
 		return self::create(self::CONTEXT_TRUTHY);
 	}
 
-	public static function createFalse(): self
+	public static function createFalse(?Type $returnType = null): self
 	{
-		return self::create(self::CONTEXT_FALSE);
+		return self::create(self::CONTEXT_FALSE, $returnType);
 	}
 
 	public static function createFalsey(): self
@@ -91,9 +98,9 @@ final class TypeSpecifierContext
 		return $this->value === null;
 	}
 
-	public function getReturnType(): Type
+	public function getReturnType(): ?Type
 	{
-		return new MixedType();
+		return $this->returnType;
 	}
 
 }

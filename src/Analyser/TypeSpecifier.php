@@ -334,21 +334,6 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) >= 3
-				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
-				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\NotIdentical($expr->right, new ConstFetch(new Name('false'))),
-					$context,
-				)->setRootExpr($expr);
-			}
-
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
@@ -464,6 +449,21 @@ final class TypeSpecifier
 						)->setRootExpr($expr),
 					);
 				}
+			}
+
+			if (
+				!$context->null()
+				&& $expr->right instanceof FuncCall
+			) {
+				$newScope = $scope->filterBySpecifiedTypes($result);
+				$callType = $newScope->getType($expr->right);
+				$newContext = $this->createSpecifierContextReturnType($callType, $context);
+
+				return $this->specifyTypesInCondition(
+					$scope,
+					$expr->right,
+					$newContext,
+				)->setRootExpr($expr);
 			}
 
 			return $result;
@@ -1947,6 +1947,20 @@ final class TypeSpecifier
 		}
 
 		return array_merge(...$extensionsForClass);
+	}
+
+	private function createSpecifierContextReturnType(
+		Type $contextReturnType,
+		TypeSpecifierContext $context,
+	): TypeSpecifierContext
+	{
+			if ($context->true()) {
+				return TypeSpecifierContext::createTrue($contextReturnType);
+			} elseif ($context->false()) {
+				return TypeSpecifierContext::createFalse($contextReturnType);
+			}
+
+		return $context;
 	}
 
 	public function resolveEqual(Expr\BinaryOp\Equal $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

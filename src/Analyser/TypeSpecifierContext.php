@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * @api
@@ -70,7 +72,9 @@ final class TypeSpecifierContext
 		if ($this->value === null) {
 			throw new ShouldNotHappenException();
 		}
-		return self::create(~$this->value & self::CONTEXT_BITMASK);
+
+		$baseType = $this->returnType->generalize(GeneralizePrecision::lessSpecific());
+		return self::create(~$this->value & self::CONTEXT_BITMASK, TypeCombinator::remove($baseType, $this->returnType));
 	}
 
 	public function true(): bool

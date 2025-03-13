@@ -38,16 +38,18 @@ use Symfony\Component\Finder\Finder;
 				$functionName = $node->namespacedName->toLowerString();
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
-							// PhpStorm stub's #[Pure(true)] mean sthe function has side effects but its return value is important.
-							// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
-							if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
-								$this->impureFunctions[] = $functionName;
-							} else {
-								$this->functions[] = $functionName;
-							}
-							break 2;
+						if ($attr->name->toString() !== Pure::class) {
+							continue;
 						}
+
+						// PhpStorm stub's #[Pure(true)] mean sthe function has side effects but its return value is important.
+						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
+						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
+							$this->impureFunctions[] = $functionName;
+						} else {
+							$this->functions[] = $functionName;
+						}
+						break 2;
 					}
 				}
 			}

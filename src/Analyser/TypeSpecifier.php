@@ -460,7 +460,7 @@ final class TypeSpecifier
 				}
 				$newScope = $scope->filterBySpecifiedTypes($result);
 				$callType = $newScope->getType($expr->right);
-				$newContext = TypeSpecifierContext::createTruthy($callType);
+				$newContext = $context->true() ? TypeSpecifierContext::createTrue($callType) : TypeSpecifierContext::createTrue($callType)->negate();
 
 				$result = $result->unionWith($this->specifyTypesInCondition(
 					$scope,

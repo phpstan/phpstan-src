@@ -1954,11 +1954,11 @@ final class TypeSpecifier
 		TypeSpecifierContext $context,
 	): TypeSpecifierContext
 	{
-			if ($context->true()) {
-				return TypeSpecifierContext::createTrue($contextReturnType);
-			} elseif ($context->false()) {
-				return TypeSpecifierContext::createFalse($contextReturnType);
-			}
+		if ($context->true()) {
+			return TypeSpecifierContext::createTrue($contextReturnType);
+		} elseif ($context->false()) {
+			return TypeSpecifierContext::createFalse($contextReturnType);
+		}
 
 		return $context;
 	}

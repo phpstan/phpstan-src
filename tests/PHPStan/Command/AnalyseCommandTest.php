@@ -96,13 +96,13 @@ class AnalyseCommandTest extends PHPStanTestCase
 		$this->assertStringContainsString('[OK] Baseline generated with 1 error', $output);
 	}
 
-	public function testGenerateBaselineIgnoreNewErrorsChangeFile(): void
+	public function testGenerateBaselineIgnoreNewErrorsReducedErrorCount(): void
 	{
-		$baselineFile = __DIR__ . '/data-ignore-new-errors-baseline/baseline.neon';
+		$baselineFile = __DIR__ . '/data-ignore-new-errors-compare/baseline.neon';
 		$baselineFileSecondRun = __DIR__ . '/data-ignore-new-errors/baseline.neon';
 		$this->runCommand(0, [
-			'paths' => [__DIR__ . '/data-ignore-new-errors-baseline/A.php'],
-			'--configuration' => __DIR__ . '/data-ignore-new-errors-baseline/empty.neon',
+			'paths' => [__DIR__ . '/data-ignore-new-errors-compare/A.php'],
+			'--configuration' => __DIR__ . '/data-ignore-new-errors-compare/empty.neon',
 			'--level' => '9',
 			'--generate-baseline' => $baselineFile,
 		]);
@@ -110,6 +110,30 @@ class AnalyseCommandTest extends PHPStanTestCase
 		rename($baselineFile, $baselineFileSecondRun);
 		$output = $this->runCommand(0, [
 			'paths' => [__DIR__ . '/data-ignore-new-errors/A.php'],
+			'--configuration' => $baselineFileSecondRun,
+			'--level' => '9',
+			'--generate-baseline' => $baselineFileSecondRun,
+			'--ignore-new-errors' => true,
+		]);
+		@unlink($baselineFileSecondRun);
+
+		$this->assertStringContainsString('[OK] Baseline generated with 2 errors', $output);
+	}
+
+	public function testGenerateBaselineIgnoreNewErrorsIncreasedErrorCount(): void
+	{
+		$baselineFile = __DIR__ . '/data-ignore-new-errors/baseline.neon';
+		$baselineFileSecondRun = __DIR__ . '/data-ignore-new-errors-compare/baseline.neon';
+		$this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors/A.php'],
+			'--configuration' => __DIR__ . '/data-ignore-new-errors/empty.neon',
+			'--level' => '9',
+			'--generate-baseline' => $baselineFile,
+		]);
+
+		rename($baselineFile, $baselineFileSecondRun);
+		$output = $this->runCommand(0, [
+			'paths' => [__DIR__ . '/data-ignore-new-errors-compare/A.php'],
 			'--configuration' => $baselineFileSecondRun,
 			'--level' => '9',
 			'--generate-baseline' => $baselineFileSecondRun,

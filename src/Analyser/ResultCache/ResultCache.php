@@ -2,9 +2,10 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
-use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Collector;
 use PHPStan\Dependency\RootExportedNode;
 
 /**
@@ -20,7 +21,7 @@ final class ResultCache
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param array<string, array<CollectedData>> $collectedData
+	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
@@ -101,7 +102,7 @@ final class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<CollectedData>>
+	 * @return array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>>
 	 */
 	public function getCollectedData(): array
 	{

@@ -2,10 +2,13 @@
 
 namespace PHPStan\Command;
 
+use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Collector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -150,7 +153,7 @@ final class AnalyseApplication
 			$notFileSpecificErrors,
 			$internalErrors,
 			[],
-			$collectedData,
+			$this->mapCollectedData($collectedData),
 			$defaultLevelUsed,
 			$projectConfigFile,
 			$savedResultCache,
@@ -158,6 +161,22 @@ final class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		);
+	}
+
+	/**
+	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
+	 *
+	 * @return list<CollectedData>
+	 */
+	private function mapCollectedData(array $collectedData): array
+	{
+		$result = [];
+		foreach ($collectedData as $file => $dataPerCollector) {
+			foreach ($dataPerCollector as $collectorType => $rawData) {
+				$result[] = new CollectedData($rawData, $file, $collectorType);
+			}
+		}
+		return $result;
 	}
 
 	/**

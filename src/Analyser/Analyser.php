@@ -3,7 +3,8 @@
 namespace PHPStan\Analyser;
 
 use Closure;
-use PHPStan\Collectors\CollectedData;
+use PhpParser\Node;
+use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
@@ -59,7 +60,7 @@ final class Analyser
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
 
-		/** @var list<CollectedData> $collectedData */
+		/** @var array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData */
 		$collectedData = [];
 
 		$internalErrorsCount = 0;

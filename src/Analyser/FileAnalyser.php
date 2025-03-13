@@ -7,7 +7,7 @@ use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
@@ -76,7 +76,7 @@ final class FileAnalyser
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
 
-		/** @var list<CollectedData> $fileCollectedData */
+		/** @var array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $fileCollectedData */
 		$fileCollectedData = [];
 
 		$fileDependencies = [];
@@ -195,11 +195,7 @@ final class FileAnalyser
 							continue;
 						}
 
-						$fileCollectedData[] = new CollectedData(
-							$collectedData,
-							$scope->getFile(),
-							get_class($collector),
-						);
+						$fileCollectedData[$scope->getFile()][get_class($collector)][] = $collectedData;
 					}
 
 					try {

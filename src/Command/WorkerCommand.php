@@ -226,8 +226,12 @@ final class WorkerCommand extends Command
 					foreach ($fileAnalyserResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
 						$locallyIgnoredErrors[] = $locallyIgnoredError;
 					}
-					foreach ($fileAnalyserResult->getCollectedData() as $data) {
-						$collectedData[] = $data;
+					foreach ($fileAnalyserResult->getCollectedData() as $collectedFile => $dataPerCollector) {
+						foreach ($dataPerCollector as $collectorType => $collectorData) {
+							foreach ($collectorData as $data) {
+								$collectedData[$collectedFile][$collectorType][] = $data;
+							}
+						}
 					}
 				} catch (Throwable $t) {
 					$internalErrorsCount++;

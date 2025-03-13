@@ -2,7 +2,8 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Collectors\CollectedData;
+use PhpParser\Node;
+use PHPStan\Collectors\Collector;
 use PHPStan\Dependency\RootExportedNode;
 use function usort;
 
@@ -22,7 +23,7 @@ final class AnalyserResult
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param list<CollectedData> $collectedData
+	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
@@ -125,7 +126,7 @@ final class AnalyserResult
 	}
 
 	/**
-	 * @return list<CollectedData>
+	 * @return array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>>
 	 */
 	public function getCollectedData(): array
 	{

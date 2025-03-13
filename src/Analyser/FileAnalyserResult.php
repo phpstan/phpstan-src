@@ -2,7 +2,8 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Collectors\CollectedData;
+use PhpParser\Node;
+use PHPStan\Collectors\Collector;
 use PHPStan\Dependency\RootExportedNode;
 
 /**
@@ -16,7 +17,7 @@ final class FileAnalyserResult
 	 * @param list<Error> $filteredPhpErrors
 	 * @param list<Error> $allPhpErrors
 	 * @param list<Error> $locallyIgnoredErrors
-	 * @param list<CollectedData> $collectedData
+	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
 	 * @param LinesToIgnore $linesToIgnore
@@ -69,7 +70,7 @@ final class FileAnalyserResult
 	}
 
 	/**
-	 * @return list<CollectedData>
+	 * @return array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>>
 	 */
 	public function getCollectedData(): array
 	{

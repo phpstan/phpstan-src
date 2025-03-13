@@ -15,6 +15,9 @@
 		"../tests/PHPStan/Rules/Functions/data/define-bug-3349.php",
 		"../tests/PHPStan/Levels/data/stubs/function.php",
 		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
-		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php"
-    ]
+		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
+		"../tests/PHPStan/Levels/data/stubs/function.php",
+		"../tests/PHPStan/Command/data-ignore-new-errors/A.php",
+		"../tests/PHPStan/Command/data-ignore-new-errors-compare/A.php"
+	]
 }

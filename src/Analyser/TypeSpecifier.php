@@ -455,6 +455,9 @@ final class TypeSpecifier
 				!$context->null()
 				&& $expr->right instanceof Expr\CallLike
 			) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
 				$newScope = $scope->filterBySpecifiedTypes($result);
 				$callType = $newScope->getType($expr->right);
 				$newContext = TypeSpecifierContext::createTruthy($callType);

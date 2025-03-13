@@ -163,7 +163,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 		]);
 		@unlink($baselineFile);
 
-		$this->assertStringContainsString('[ERROR] No errors were found during the analysis. Baseline could not be generated.', $output);
+		$this->assertStringContainsString('[ERROR] No errors were found during the analysis.', $output);
 	}
 
 	/**

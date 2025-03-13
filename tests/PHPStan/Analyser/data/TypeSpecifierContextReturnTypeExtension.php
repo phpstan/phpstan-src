@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Analyser;
+namespace PHPStan\Tests;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
@@ -9,12 +9,9 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Rules\Properties\PropertyReflectionFinder;
-use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StringType;
+use TypeSpecifierContextReturnTypeTest\ContextReturnType;
+use function str_starts_with;
 
 class TypeSpecifierContextReturnTypeExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -28,7 +25,7 @@ class TypeSpecifierContextReturnTypeExtension implements MethodTypeSpecifyingExt
 
 	public function getClass(): string
 	{
-		return \TypeSpecifierContextReturnTypeTest\ContextReturnType::class;
+		return ContextReturnType::class;
 	}
 
 	public function isMethodSupported(

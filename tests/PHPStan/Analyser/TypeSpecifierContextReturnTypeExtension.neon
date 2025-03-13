@@ -1,5 +1,5 @@
 services:
 	-
-		class: PHPStan\Analyser\TypeSpecifierContextReturnTypeExtension
+		class: PHPStan\Tests\TypeSpecifierContextReturnTypeExtension
 		tags:
 			- phpstan.typeSpecifier.methodTypeSpecifyingExtension

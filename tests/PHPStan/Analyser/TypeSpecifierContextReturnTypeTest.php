@@ -2,12 +2,11 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\ShouldNotHappenException;
-use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\TypeInferenceTestCase;
 
 class TypeSpecifierContextReturnTypeTest extends TypeInferenceTestCase
 {
+
 	public function dataContextReturnType(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifier-context-return-type.php');
@@ -20,7 +19,7 @@ class TypeSpecifierContextReturnTypeTest extends TypeInferenceTestCase
 	public function testContextReturnType(
 		string $assertType,
 		string $file,
-			   ...$args,
+		...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);
@@ -29,7 +28,7 @@ class TypeSpecifierContextReturnTypeTest extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__.'/TypeSpecifierContextReturnTypeExtension.neon'
+			__DIR__ . '/TypeSpecifierContextReturnTypeExtension.neon',
 		];
 	}
 

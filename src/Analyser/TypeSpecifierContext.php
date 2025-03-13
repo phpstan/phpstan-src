@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 
 /**
  * @api
@@ -90,7 +91,8 @@ final class TypeSpecifierContext
 		return $this->value === null;
 	}
 
-	public function getReturnType(): Type {
+	public function getReturnType(): Type
+	{
 		return new MixedType();
 	}
 

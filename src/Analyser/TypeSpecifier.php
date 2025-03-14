@@ -333,31 +333,6 @@ final class TypeSpecifier
 				}
 			}
 
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) === 1
-				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
-				&& $leftType->isInteger()->yes()
-			) {
-				if (
-					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-				) {
-					$argType = $scope->getType($expr->right->getArgs()[0]->value);
-					if ($argType->isString()->yes()) {
-						$accessory = new AccessoryNonEmptyStringType();
-
-						if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
-							$accessory = new AccessoryNonFalsyStringType();
-						}
-
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
-					}
-				}
-			}
-
 			if ($leftType instanceof ConstantIntegerType) {
 				if ($expr->right instanceof Expr\PostInc) {
 					$result = $result->unionWith($this->createRangeTypes(
@@ -455,10 +430,9 @@ final class TypeSpecifier
 
 			if (
 				!$context->null()
-				&& $expr->left instanceof Node\Scalar
 				&& $expr->right instanceof Expr\FuncCall
 				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+				&& in_array(strtolower((string) $expr->right->name), ['preg_match', 'strlen', 'mb_strlen'], true)
 			) {
 				if (!$scope instanceof MutatingScope) {
 					throw new ShouldNotHappenException();

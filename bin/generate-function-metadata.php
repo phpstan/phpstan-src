@@ -42,7 +42,7 @@ use Symfony\Component\Finder\Finder;
 							continue;
 						}
 
-						// PhpStorm stub's #[Pure(true)] mean sthe function has side effects but its return value is important.
+						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
 						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
 						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
 							$this->impureFunctions[] = $functionName;

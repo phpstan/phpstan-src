@@ -519,18 +519,27 @@ final class TypeSpecifier
 			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
 			if ($methodReflection !== null) {
 				$referencedClasses = $methodCalledOnType->getObjectClassNames();
-				if (
-					count($referencedClasses) === 1
-					&& $this->reflectionProvider->hasClass($referencedClasses[0])
-				) {
-					$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
+				$specifiedTypes = null;
+				foreach ($referencedClasses as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+
+					$methodClassReflection = $this->reflectionProvider->getClass($referencedClass);
 					foreach ($this->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
 						if (!$extension->isMethodSupported($methodReflection, $expr, $context)) {
 							continue;
 						}
 
-						return $extension->specifyTypes($methodReflection, $expr, $scope, $context);
+						if ($specifiedTypes !== null) {
+							$specifiedTypes = $specifiedTypes->unionWith($extension->specifyTypes($methodReflection, $expr, $scope, $context));
+						} else {
+							$specifiedTypes = $extension->specifyTypes($methodReflection, $expr, $scope, $context);
+						}
 					}
+				}
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
 				}
 
 				// lazy create parametersAcceptor, as creation can be expensive
@@ -572,18 +581,27 @@ final class TypeSpecifier
 			$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
 			if ($staticMethodReflection !== null) {
 				$referencedClasses = $calleeType->getObjectClassNames();
-				if (
-					count($referencedClasses) === 1
-					&& $this->reflectionProvider->hasClass($referencedClasses[0])
-				) {
-					$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
+				$specifiedTypes = null;
+				foreach ($referencedClasses as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+
+					$staticMethodClassReflection = $this->reflectionProvider->getClass($referencedClass);
 					foreach ($this->getStaticMethodTypeSpecifyingExtensionsForClass($staticMethodClassReflection->getName()) as $extension) {
 						if (!$extension->isStaticMethodSupported($staticMethodReflection, $expr, $context)) {
 							continue;
 						}
 
-						return $extension->specifyTypes($staticMethodReflection, $expr, $scope, $context);
+						if ($specifiedTypes !== null) {
+							$specifiedTypes = $specifiedTypes->unionWith($extension->specifyTypes($staticMethodReflection, $expr, $scope, $context));
+						} else {
+							$specifiedTypes = $extension->specifyTypes($staticMethodReflection, $expr, $scope, $context);
+						}
 					}
+				}
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
 				}
 
 				// lazy create parametersAcceptor, as creation can be expensive

@@ -336,21 +336,6 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) >= 3
-				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
-				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\NotIdentical($expr->right, new ConstFetch(new Name('false'))),
-					$context,
-				)->setRootExpr($expr);
-			}
-
-			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
@@ -466,6 +451,27 @@ final class TypeSpecifier
 						)->setRootExpr($expr),
 					);
 				}
+			}
+
+			if (
+				!$context->null()
+				&& $expr->left instanceof Node\Scalar
+				&& $expr->right instanceof Expr\FuncCall
+				&& $expr->right->name instanceof Name
+				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+			) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
+				$newScope = $scope->filterBySpecifiedTypes($result);
+				$callType = $newScope->getType($expr->right);
+				$newContext = $context->newWithReturnType($callType);
+
+				$result = $result->unionWith($this->specifyTypesInCondition(
+					$scope,
+					$expr->right,
+					$newContext,
+				)->setRootExpr($expr));
 			}
 
 			return $result;

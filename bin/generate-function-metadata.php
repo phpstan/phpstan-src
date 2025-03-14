@@ -36,10 +36,40 @@ use Symfony\Component\Finder\Finder;
 			if ($node instanceof Node\Stmt\Function_) {
 				assert(isset($node->namespacedName));
 				$functionName = $node->namespacedName->toLowerString();
+
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
 						if ($attr->name->toString() !== Pure::class) {
 							continue;
+						}
+
+						// The following functions have side effects, but their state is managed within the PHPStan scope:
+						if (in_array($functionName, [
+							'stat',
+							'lstat',
+							'file_exists',
+							'is_writable',
+							'is_writeable',
+							'is_readable',
+							'is_executable',
+							'is_file',
+							'is_dir',
+							'is_link',
+							'filectime',
+							'fileatime',
+							'filemtime',
+							'fileinode',
+							'filegroup',
+							'fileowner',
+							'filesize',
+							'filetype',
+							'fileperms',
+							'function_exists',
+							'json_last_error',
+							'json_last_error_msg',
+						], true)) {
+							$this->functions[] = $functionName;
+							break 2;
 						}
 
 						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
@@ -99,6 +129,11 @@ use Symfony\Component\Finder\Finder;
 	}
 	foreach ($visitor->impureFunctions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
+			if (in_array($functionName, [
+				'ob_get_contents',
+			], true)) {
+				continue;
+			}
 			if ($metadata[$functionName]['hasSideEffects']) {
 				throw new ShouldNotHappenException($functionName);
 			}

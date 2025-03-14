@@ -19,9 +19,6 @@ final class TypeSpecifierContext
 	public const CONTEXT_FALSEY = self::CONTEXT_FALSE | self::CONTEXT_FALSEY_BUT_NOT_FALSE;
 	public const CONTEXT_BITMASK = 0b1111;
 
-	/** @var self[] */
-	private static array $registry;
-
 	private ?Type $returnType = null;
 
 	private function __construct(private ?int $value)
@@ -30,8 +27,7 @@ final class TypeSpecifierContext
 
 	private static function create(?int $value): self
 	{
-		self::$registry[$value] ??= new self($value);
-		return self::$registry[$value];
+		return new self($value);
 	}
 
 	public static function createTrue(): self

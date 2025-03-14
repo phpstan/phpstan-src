@@ -7,9 +7,9 @@ use function PHPStan\Testing\assertType;
 /** @param array<mixed> $arr */
 function doFoo(string $x, array $arr): void {
 	if ((bool) strlen($x)) {
-		assertType('non-empty-string', $x);
+		assertType('string', $x); // could be non-empty-string
 	} else {
-		assertType("''", $x);
+		assertType('string', $x);
 	}
 	assertType('string', $x);
 

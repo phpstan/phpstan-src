@@ -64,6 +64,8 @@ use Symfony\Component\Finder\Finder;
 							'filesize',
 							'filetype',
 							'fileperms',
+							'ftell',
+							'ini_get',
 							'function_exists',
 							'json_last_error',
 							'json_last_error_msg',

@@ -14,6 +14,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\NeverType;
 use function count;
 use function in_array;
 use function strtolower;
@@ -49,6 +50,10 @@ final class StrlenTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		}
 
 		$returnType = $context->getReturnType();
+		if ($returnType instanceof NeverType) {
+			return $this->typeSpecifier->create($args[0]->value, $returnType, $context->negate(), $scope);
+		}
+
 		if (
 			$context->true() && IntegerRangeType::createAllGreaterThanOrEqualTo(1)->isSuperTypeOf($returnType)->yes()
 			|| ($context->false() && (new ConstantIntegerType(0))->isSuperTypeOf($returnType)->yes())

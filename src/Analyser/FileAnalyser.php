@@ -7,7 +7,7 @@ use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\Collectors\Collector;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
@@ -37,6 +37,9 @@ use const E_USER_NOTICE;
 use const E_USER_WARNING;
 use const E_WARNING;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 final class FileAnalyser
 {
 
@@ -76,7 +79,7 @@ final class FileAnalyser
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
 
-		/** @var array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $fileCollectedData */
+		/** @var CollectorData $fileCollectedData */
 		$fileCollectedData = [];
 
 		$fileDependencies = [];

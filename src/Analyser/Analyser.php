@@ -3,8 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Closure;
-use PhpParser\Node;
-use PHPStan\Collectors\Collector;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
@@ -13,6 +12,9 @@ use function array_merge;
 use function count;
 use function memory_get_peak_usage;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 final class Analyser
 {
 
@@ -60,7 +62,7 @@ final class Analyser
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
 
-		/** @var array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData */
+		/** @var CollectorData $collectedData */
 		$collectedData = [];
 
 		$internalErrorsCount = 0;

@@ -3,12 +3,10 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use Nette\Neon\Neon;
-use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Collectors\Collector;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\Dependency\RootExportedNode;
@@ -51,6 +49,7 @@ use const PHP_VERSION_ID;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class ResultCacheManager
 {
@@ -576,8 +575,8 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $freshCollectedDataByFile
-	 * @return array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>>
+	 * @param CollectorData $freshCollectedDataByFile
+	 * @return CollectorData
 	 */
 	private function mergeCollectedData(ResultCache $resultCache, array $freshCollectedDataByFile): array
 	{

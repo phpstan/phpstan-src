@@ -2,13 +2,11 @@
 
 namespace PHPStan\Command;
 
-use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Collectors\Collector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -22,6 +20,9 @@ use function microtime;
 use function sha1_file;
 use function sprintf;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 final class AnalyseApplication
 {
 
@@ -164,7 +165,7 @@ final class AnalyseApplication
 	}
 
 	/**
-	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
+	 * @param CollectorData $collectedData
 	 *
 	 * @return list<CollectedData>
 	 */

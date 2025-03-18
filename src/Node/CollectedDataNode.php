@@ -4,16 +4,18 @@ namespace PHPStan\Node;
 
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Collector;
 
 /**
  * @api
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class CollectedDataNode extends NodeAbstract implements VirtualNode
 {
 
 	/**
-	 * @param array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>> $collectedData
+	 * @param CollectorData $collectedData
 	 */
 	public function __construct(private array $collectedData, private bool $onlyFiles)
 	{

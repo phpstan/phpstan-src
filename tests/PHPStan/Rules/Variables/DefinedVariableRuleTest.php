@@ -971,6 +971,32 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9474.php'], []);
 	}
 
+	public function testBug9475(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot access variable with a non-stringable type $this(Bug9475\Variables).',
+				12,
+			],
+			[
+				'Cannot access variable with a non-stringable type $this(Bug9475\Variables).',
+				13,
+			],
+			[
+				'Cannot access variable with a non-stringable type object.',
+				14,
+			],
+			[
+				'Cannot access variable with a non-stringable type array.',
+				15,
+			],
+		]);
+	}
+
 	public function testEnum(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

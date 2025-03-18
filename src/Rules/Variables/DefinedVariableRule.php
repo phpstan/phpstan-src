@@ -3,13 +3,13 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Constant\ConstantStringType;
-use function array_map;
 use function array_merge;
 use function in_array;
 use function is_string;
@@ -37,14 +37,18 @@ final class DefinedVariableRule implements Rule
 	{
 		$errors = [];
 		if (is_string($node->name)) {
-			$variableNames = [$node->name];
+			$variableNameScopes = [$node->name => $scope];
 		} else {
-			$fetchType = $scope->getType($node->name);
-			$variableNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $fetchType->getConstantStrings());
+			$nameType = $scope->getType($node->name);
+			$variableNameScopes = [];
+			foreach ($nameType->getConstantStrings() as $constantString) {
+				$name = $constantString->getValue();
+				$variableNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
 		}
 
-		foreach ($variableNames as $name) {
-			$errors = array_merge($errors, $this->processSingleVariable($scope, $node, $name));
+		foreach ($variableNameScopes as $name => $variableScope) {
+			$errors = array_merge($errors, $this->processSingleVariable($variableScope, $node, $name));
 		}
 
 		return $errors;

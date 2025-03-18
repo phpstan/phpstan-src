@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -11,6 +13,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_column;
 use function array_map;
 use function array_merge;
 use function sprintf;
@@ -37,14 +40,20 @@ final class CallStaticMethodsRule implements Rule
 	{
 		$errors = [];
 		if ($node->name instanceof Node\Identifier) {
-			$methodNames = [$node->name->name];
+			$methodNameScopes = [$node->name->name => $scope];
 		} else {
-			$callType = $scope->getType($node->name);
-			$methodNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $callType->getConstantStrings());
+			$nameType = $scope->getType($node->name);
+			$methodNameScopes = array_column(array_map(
+				static fn (ConstantStringType $constantString) => [
+					$name = $constantString->getValue(),
+					$scope->filterByTruthyValue(new Identical($node->name, new String_($name))),
+				],
+				$nameType->getConstantStrings(),
+			), 1, 0);
 		}
 
-		foreach ($methodNames as $methodName) {
-			$errors = array_merge($errors, $this->processSingleMethodCall($scope, $node, $methodName));
+		foreach ($methodNameScopes as $methodName => $methodScope) {
+			$errors = array_merge($errors, $this->processSingleMethodCall($methodScope, $node, $methodName));
 		}
 
 		return $errors;

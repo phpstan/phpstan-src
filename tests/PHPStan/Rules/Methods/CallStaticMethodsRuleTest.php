@@ -874,12 +874,24 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				33,
 			],
 			[
-				'Call to an undefined static method MethodsDynamicCall\Foo::bar().',
+				'Call to an undefined static method MethodsDynamicCall\Foo::doBar().',
 				36,
 			],
 			[
-				'Call to an undefined static method MethodsDynamicCall\Foo::buz().',
+				'Call to an undefined static method MethodsDynamicCall\Foo::doBuz().',
 				36,
+			],
+			[
+				'Parameter #1 $n of method MethodsDynamicCall\Foo::doFoo() expects int, int|string given.',
+				58,
+			],
+			[
+				'Parameter #1 $s of static method MethodsDynamicCall\Foo::doQux() expects string, int given.',
+				59,
+			],
+			[
+				'Parameter #1 $n of method MethodsDynamicCall\Foo::doFoo() expects int, string given.',
+				60,
 			],
 		]);
 	}

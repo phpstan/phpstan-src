@@ -312,17 +312,26 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * @param mixed[]|null $projectConfig
+	 */
+	private function normalizeMetaProjectConfig(?array $projectConfig): ?string
+	{
+		if ($projectConfig !== null) {
+			ksort($projectConfig);
+
+			return Neon::encode($projectConfig);
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param mixed[] $cachedMeta
 	 * @param mixed[] $currentMeta
 	 */
 	private function isMetaDifferent(array $cachedMeta, array $currentMeta): bool
 	{
-		$projectConfig = $currentMeta['projectConfig'];
-		if ($projectConfig !== null) {
-			ksort($currentMeta['projectConfig']);
-
-			$currentMeta['projectConfig'] = Neon::encode($currentMeta['projectConfig']);
-		}
+		$currentMeta['projectConfig'] = $this->normalizeMetaProjectConfig($currentMeta['projectConfig']);
 
 		return $cachedMeta !== $currentMeta;
 	}
@@ -337,6 +346,10 @@ final class ResultCacheManager
 	{
 		$diffs = [];
 		foreach ($cachedMeta as $key => $value) {
+			if ($key === 'projectConfig') {
+				$value = $this->normalizeMetaProjectConfig($value);
+			}
+
 			if (!array_key_exists($key, $currentMeta)) {
 				$diffs[] = $key;
 				continue;

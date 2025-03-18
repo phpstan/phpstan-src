@@ -7,7 +7,6 @@ use PHPStan\DependencyInjection\Neon\OptionalPath;
 use PHPStan\File\FileExcluder;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
 use function count;
 use function is_dir;
 use function is_file;
@@ -27,41 +26,42 @@ final class ValidateExcludePathsExtension extends CompilerExtension
 			return;
 		}
 
-		$errors = [];
-		if ($builder->parameters['__validate']) {
-			$paths = [];
-			if (array_key_exists('analyse', $excludePaths)) {
-				$paths = $excludePaths['analyse'];
-			}
-			if (array_key_exists('analyseAndScan', $excludePaths)) {
-				$paths = array_merge($paths, $excludePaths['analyseAndScan']);
-			}
-			foreach ($paths as $path) {
-				if ($path instanceof OptionalPath) {
-					continue;
-				}
-				if (FileExcluder::isAbsolutePath($path)) {
-					if (is_dir($path)) {
-						continue;
-					}
-					if (is_file($path)) {
-						continue;
-					}
-				}
-				if (FileExcluder::isFnmatchPattern($path)) {
-					continue;
-				}
-
-				$errors[] = sprintf('Path %s is neither a directory, nor a file path, nor a fnmatch pattern.', $path);
-			}
-		}
-
 		$newExcludePaths = [];
 		if (array_key_exists('analyseAndScan', $excludePaths)) {
 			$newExcludePaths['analyseAndScan'] = $excludePaths['analyseAndScan'];
 		}
 		if (array_key_exists('analyse', $excludePaths)) {
 			$newExcludePaths['analyse'] = $excludePaths['analyse'];
+		}
+
+		$errors = [];
+		$suggestOptional = [];
+		if ($builder->parameters['__validate']) {
+			foreach ($newExcludePaths as $key => $paths) {
+				foreach ($paths as $path) {
+					if ($path instanceof OptionalPath) {
+						continue;
+					}
+					if (FileExcluder::isAbsolutePath($path)) {
+						if (is_dir($path)) {
+							continue;
+						}
+						if (is_file($path)) {
+							continue;
+						}
+					}
+					if (FileExcluder::isFnmatchPattern($path)) {
+						continue;
+					}
+
+					$suggestOptional[$key][] = $path;
+					$errors[] = sprintf('Path "%s" is neither a directory, nor a file path, nor a fnmatch pattern.', $path);
+				}
+			}
+		}
+
+		if (count($errors) !== 0) {
+			throw new InvalidExcludePathsException($errors, $suggestOptional);
 		}
 
 		foreach ($newExcludePaths as $key => $p) {
@@ -72,12 +72,6 @@ final class ValidateExcludePathsExtension extends CompilerExtension
 		}
 
 		$builder->parameters['excludePaths'] = $newExcludePaths;
-
-		if (count($errors) === 0) {
-			return;
-		}
-
-		throw new InvalidExcludePathsException($errors);
 	}
 
 }

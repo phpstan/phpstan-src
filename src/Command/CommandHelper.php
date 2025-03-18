@@ -379,10 +379,19 @@ final class CommandHelper
 				$errorOutput->writeLineFormatted('');
 			}
 
-			$errorOutput->writeLineFormatted('If the excluded path can sometimes exist, append <fg=cyan>(?)</>');
-			$errorOutput->writeLineFormatted('to its config entry to mark it as optional. Example:');
-			$errorOutput->writeLineFormatted(' <fg=cyan>- path/something (?)</>');
-			$errorOutput->writeLineFormatted('');
+			$suggestOptional = $e->getSuggestOptional();
+			if (count($suggestOptional) > 0) {
+				$errorOutput->writeLineFormatted('If the excluded path can sometimes exist, append <fg=cyan>(?)</>');
+				$errorOutput->writeLineFormatted('to its config entry to mark it as optional. Example:');
+				$errorOutput->writeLineFormatted('<fg=cyan>excludePaths:</>');
+				foreach ($suggestOptional as $key => $suggestOptionalPaths) {
+					$errorOutput->writeLineFormatted(sprintf('  <fg=cyan>%s:</>', $key));
+					foreach ($suggestOptionalPaths as $suggestOptionalPath) {
+						$errorOutput->writeLineFormatted(sprintf('    - <fg=cyan>%s (?)</>', $suggestOptionalPath));
+					}
+				}
+				$errorOutput->writeLineFormatted('');
+			}
 
 			throw new InceptionNotSuccessfulException();
 		} catch (ValidationException $e) {

@@ -452,6 +452,30 @@ class ClassConstantRuleTest extends RuleTestCase
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
 				20,
 			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				37,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				39,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
+				41,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
+				44,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				44,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				44,
+			],
 		]);
 	}
 

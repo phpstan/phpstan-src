@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
@@ -21,7 +23,6 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
-use function array_map;
 use function array_merge;
 use function in_array;
 use function sprintf;
@@ -51,14 +52,18 @@ final class ClassConstantRule implements Rule
 	{
 		$errors = [];
 		if ($node->name instanceof Node\Identifier) {
-			$constantNames = [$node->name->name];
+			$constantNameScopes = [$node->name->name => $scope];
 		} else {
-			$fetchType = $scope->getType($node->name);
-			$constantNames = array_map(static fn ($type): string => $type->getValue(), $fetchType->getConstantStrings());
+			$nameType = $scope->getType($node->name);
+			$constantNameScopes = [];
+			foreach ($nameType->getConstantStrings() as $constantString) {
+				$name = $constantString->getValue();
+				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
 		}
 
-		foreach ($constantNames as $constantName) {
-			$errors = array_merge($errors, $this->processSingleClassConstFetch($scope, $node, $constantName));
+		foreach ($constantNameScopes as $constantName => $constantScope) {
+			$errors = array_merge($errors, $this->processSingleClassConstFetch($constantScope, $node, $constantName));
 		}
 
 		return $errors;

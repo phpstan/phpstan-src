@@ -862,4 +862,29 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12015.php'], []);
 	}
 
+	public function testBug9475(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot call static method name with a non-stringable type $this(Bug9475\Methods).',
+				23,
+			],
+			[
+				'Cannot call static method name with a non-stringable type $this(Bug9475\Methods).',
+				24,
+			],
+			[
+				'Cannot call static method name with a non-stringable type object.',
+				25,
+			],
+			[
+				'Cannot call static method name with a non-stringable type array.',
+				26,
+			],
+		]);
+	}
+
 }

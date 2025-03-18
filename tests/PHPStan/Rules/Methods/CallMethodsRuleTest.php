@@ -3552,4 +3552,30 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6828.php'], []);
 	}
 
+	public function testBug9475(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot call method name with a non-stringable type $this(Bug9475\Methods).',
+				12,
+			],
+			[
+				'Cannot call method name with a non-stringable type $this(Bug9475\Methods).',
+				13,
+			],
+			[
+				'Cannot call method name with a non-stringable type object.',
+				14,
+			],
+			[
+				'Cannot call method name with a non-stringable type array.',
+				15,
+			],
+		]);
+	}
+
 }

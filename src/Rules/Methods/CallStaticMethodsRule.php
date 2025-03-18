@@ -8,7 +8,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VerbosityLevel;
+use function array_map;
 use function array_merge;
 use function sprintf;
 
@@ -32,11 +36,32 @@ final class CallStaticMethodsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
+		$errors = [];
+		if ($node->name instanceof Node\Identifier) {
+			$methodNames = [$node->name->name];
+		} else {
+			$callType = $scope->getType($node->name);
+			$methodNames = array_map(static fn ($type): string => $type->getValue(), $callType->getConstantStrings());
+			$callStringType = $callType->toString();
+			if (!$callStringType->isString()->yes()) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot call static method name with a non-stringable type %s.', $callType->describe(VerbosityLevel::typeOnly())))
+					->identifier('staticMethod.callNameInvalidExpression')
+					->build();
+			}
 		}
-		$methodName = $node->name->name;
 
+		foreach ($methodNames as $methodName) {
+			$errors = array_merge($errors, $this->processSingleMethodCall($scope, $node, $methodName));
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processSingleMethodCall(Scope $scope, StaticCall $node, string $methodName): array
+	{
 		[$errors, $method] = $this->methodCallCheck->check($scope, $methodName, $node->class);
 		if ($method === null) {
 			return $errors;

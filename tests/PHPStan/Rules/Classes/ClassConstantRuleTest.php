@@ -435,4 +435,28 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9475(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->phpVersion = PHP_VERSION_ID;
+
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot fetch class constant with a non-stringable type $this(Bug9475\Classes).',
+				12,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type object.',
+				13,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type array.',
+				14,
+			],
+		]);
+	}
+
 }

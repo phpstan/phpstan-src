@@ -10421,7 +10421,7 @@ return [
 'SessionHandlerInterface::destroy' => ['bool', 'session_id'=>'string'],
 'SessionHandlerInterface::gc' => ['int|false', 'maxlifetime'=>'int'],
 'SessionHandlerInterface::open' => ['bool', 'save_path'=>'string', 'name'=>'string'],
-'SessionHandlerInterface::read' => ['string', 'session_id'=>'string'],
+'SessionHandlerInterface::read' => ['string|false', 'session_id'=>'string'],
 'SessionHandlerInterface::write' => ['bool', 'session_id'=>'string', 'session_data'=>'string'],
 'SessionIdInterface::create_sid' => ['string'],
 'SessionUpdateTimestampHandler::updateTimestamp' => ['bool', 'id'=>'string', 'data'=>'string'],

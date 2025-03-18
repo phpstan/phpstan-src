@@ -11,6 +11,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -20,6 +21,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
 use function array_merge;
 use function in_array;
 use function sprintf;
@@ -47,11 +49,26 @@ final class ClassConstantRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
+		$errors = [];
+		if ($node->name instanceof Node\Identifier) {
+			$constantNames = [$node->name->name];
+		} else {
+			$fetchType = $scope->getType($node->name);
+			$constantNames = array_map(static fn ($type): string => $type->getValue(), $fetchType->getConstantStrings());
 		}
-		$constantName = $node->name->name;
 
+		foreach ($constantNames as $constantName) {
+			$errors = array_merge($errors, $this->processSingleClassConstFetch($scope, $node, $constantName));
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processSingleClassConstFetch(Scope $scope, ClassConstFetch $node, string $constantName): array
+	{
 		$class = $node->class;
 		$messages = [];
 		if ($class instanceof Node\Name) {

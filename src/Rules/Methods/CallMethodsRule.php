@@ -8,7 +8,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\Constant\ConstantStringType;
+use function array_map;
 use function array_merge;
 
 /**
@@ -31,12 +34,26 @@ final class CallMethodsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
+		$errors = [];
+		if ($node->name instanceof Node\Identifier) {
+			$methodNames = [$node->name->name];
+		} else {
+			$callType = $scope->getType($node->name);
+			$methodNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $callType->getConstantStrings());
 		}
 
-		$methodName = $node->name->name;
+		foreach ($methodNames as $methodName) {
+			$errors = array_merge($errors, $this->processSingleMethodCall($scope, $node, $methodName));
+		}
 
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processSingleMethodCall(Scope $scope, MethodCall $node, string $methodName): array
+	{
 		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodName, $node->var);
 		if ($methodReflection === null) {
 			return $errors;

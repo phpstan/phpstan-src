@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_map;
+use function count;
 
 final class PropertyReflectionFinder
 {
@@ -86,11 +87,18 @@ final class PropertyReflectionFinder
 	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
-			if (!$propertyFetch->name instanceof Node\Identifier) {
-				return null;
-			}
 			$propertyHolderType = $scope->getType($propertyFetch->var);
-			return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+			if ($propertyFetch->name instanceof Node\Identifier) {
+				return $this->findPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+			}
+
+			$nameType = $scope->getType($propertyFetch->name);
+			$nameTypeConstantStrings = $nameType->getConstantStrings();
+			if (count($nameTypeConstantStrings) === 1) {
+				return $this->findPropertyReflection($propertyHolderType, $nameTypeConstantStrings[0]->getValue(), $scope);
+			}
+
+			return null;
 		}
 
 		if (!$propertyFetch->name instanceof Node\Identifier) {

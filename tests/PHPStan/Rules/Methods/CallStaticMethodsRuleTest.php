@@ -862,4 +862,26 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12015.php'], []);
 	}
 
+	public function testDynamicCall(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/dynamic-call.php'], [
+			[
+				'Call to an undefined static method MethodsDynamicCall\Foo::bar().',
+				33,
+			],
+			[
+				'Call to an undefined static method MethodsDynamicCall\Foo::bar().',
+				36,
+			],
+			[
+				'Call to an undefined static method MethodsDynamicCall\Foo::buz().',
+				36,
+			],
+		]);
+	}
+
 }

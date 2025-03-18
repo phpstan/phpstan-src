@@ -1098,4 +1098,26 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDynamicAccess(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/dynamic-access.php'], [
+			[
+				'Undefined variable: $bar',
+				15,
+			],
+			[
+				'Undefined variable: $bar',
+				18,
+			],
+			[
+				'Undefined variable: $buz',
+				18,
+			],
+		]);
+	}
+
 }

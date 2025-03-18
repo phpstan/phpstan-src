@@ -435,4 +435,24 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDynamicAccess(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->phpVersion = PHP_VERSION_ID;
+
+		$this->analyse([__DIR__ . '/data/dynamic-constant-access.php'], [
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				20,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				20,
+			],
+		]);
+	}
+
 }

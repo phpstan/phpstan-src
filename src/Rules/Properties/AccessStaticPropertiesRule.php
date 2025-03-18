@@ -51,13 +51,20 @@ final class AccessStaticPropertiesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$errors = [];
 		if ($node->name instanceof Node\VarLikeIdentifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
+			$fetchType = $scope->getType($node->name);
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $fetchType->getConstantStrings());
+			$fetchStringType = $fetchType->toString();
+			if (!$fetchStringType->isString()->yes()) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot access static property with a non-stringable type %s.', $fetchType->describe(VerbosityLevel::typeOnly())))
+					->identifier('property.fetchInvalidExpression')
+					->build();
+			}
 		}
 
-		$errors = [];
 		foreach ($names as $name) {
 			$errors = array_merge($errors, $this->processSingleProperty($scope, $node, $name));
 		}

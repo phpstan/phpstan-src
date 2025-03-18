@@ -344,6 +344,31 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug9475(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot access property with a non-stringable type $this(Bug9475\Properties).',
+				12,
+			],
+			[
+				'Cannot access property with a non-stringable type $this(Bug9475\Properties).',
+				13,
+			],
+			[
+				'Cannot access property with a non-stringable type object.',
+				14,
+			],
+			[
+				'Cannot access property with a non-stringable type array.',
+				15,
+			],
+		]);
+	}
+
 	public function testBug12692(): void
 	{
 		$this->checkThisOnly = false;

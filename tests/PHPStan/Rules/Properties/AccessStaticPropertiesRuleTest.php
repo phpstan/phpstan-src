@@ -309,4 +309,26 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9475(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9475.php'], [
+			[
+				'Cannot access static property with a non-stringable type $this(Bug9475\Properties).',
+				23,
+			],
+			[
+				'Cannot access static property with a non-stringable type $this(Bug9475\Properties).',
+				24,
+			],
+			[
+				'Cannot access static property with a non-stringable type object.',
+				25,
+			],
+			[
+				'Cannot access static property with a non-stringable type array.',
+				26,
+			],
+		]);
+	}
+
 }

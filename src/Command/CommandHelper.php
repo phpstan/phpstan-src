@@ -380,7 +380,8 @@ final class CommandHelper
 			}
 
 			$errorOutput->writeLineFormatted('If the excluded path can sometimes exist, append <fg=cyan>(?)</>');
-			$errorOutput->writeLineFormatted('to its config entry to mark it as optional.');
+			$errorOutput->writeLineFormatted('to its config entry to mark it as optional. Example:');
+			$errorOutput->writeLineFormatted(' <fg=cyan>- path/something (?)</>');
 			$errorOutput->writeLineFormatted('');
 
 			throw new InceptionNotSuccessfulException();

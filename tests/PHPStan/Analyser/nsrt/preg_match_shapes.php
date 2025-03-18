@@ -960,3 +960,11 @@ function bug11744(string $string): void
 	}
 	assertType('array{0: string, 1: non-empty-string, 2?: non-falsy-string}', $matches);
 }
+
+/** @return non-empty-string|null */
+function bug12749(string $str): void
+{
+	if (preg_match('/[A-Z]/', $str, $match)) {
+		assertType('string', $match);
+	}
+}

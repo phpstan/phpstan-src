@@ -114,6 +114,15 @@ final class RegexArrayShapeMatcher
 		}
 		[$groupList, $markVerbs] = $parseResult;
 
+		if ($groupList === [] && $markVerbs === []) {
+			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
+			$type = $this->matchRegex('{('.$rawRegex.')}', $flags, $wasMatched, $matchesAll);
+			if ($type === null) {
+				return null;
+			}
+			return $type->shiftArray();
+		}
+
 		$regexGroupList = new RegexGroupList($groupList);
 		$trailingOptionals = $regexGroupList->countTrailingOptionals();
 		$onlyOptionalTopLevelGroup = $regexGroupList->getOnlyOptionalTopLevelGroup();

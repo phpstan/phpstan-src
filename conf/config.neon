@@ -471,6 +471,9 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
+		class: PHPStan\Analyser\Ignore\BaselineIgnoredErrorHelper
+
+	-
 		class: PHPStan\Analyser\Ignore\IgnoreLexer
 
 	-

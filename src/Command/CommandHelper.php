@@ -383,11 +383,13 @@ final class CommandHelper
 			if (count($suggestOptional) > 0) {
 				$errorOutput->writeLineFormatted('If the excluded path can sometimes exist, append <fg=cyan>(?)</>');
 				$errorOutput->writeLineFormatted('to its config entry to mark it as optional. Example:');
-				$errorOutput->writeLineFormatted('<fg=cyan>excludePaths:</>');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('<fg=cyan>parameters:</>');
+				$errorOutput->writeLineFormatted("\t<fg=cyan>excludePaths:</>");
 				foreach ($suggestOptional as $key => $suggestOptionalPaths) {
-					$errorOutput->writeLineFormatted(sprintf('  <fg=cyan>%s:</>', $key));
+					$errorOutput->writeLineFormatted(sprintf("\t\t<fg=cyan>%s:</>", $key));
 					foreach ($suggestOptionalPaths as $suggestOptionalPath) {
-						$errorOutput->writeLineFormatted(sprintf('    - <fg=cyan>%s (?)</>', $suggestOptionalPath));
+						$errorOutput->writeLineFormatted(sprintf("\t\t\t- <fg=cyan>%s (?)</>", $suggestOptionalPath));
 					}
 				}
 				$errorOutput->writeLineFormatted('');

@@ -107,7 +107,7 @@ final class AnalyseCommand extends Command
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', null, InputOption::VALUE_NONE, 'Return non-zero exit code when result cache is not used'),
-				new InputOption('ignore-new-errors', null, InputOption::VALUE_NONE, 'Ignore new errors when generating the baseline.'),
+				new InputOption('only-remove-errors', null, InputOption::VALUE_NONE, 'Only remove existing errors from the baseline. Do not add new ones.'),
 			]);
 	}
 
@@ -142,7 +142,7 @@ final class AnalyseCommand extends Command
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
-		$ignoreNewErrors = (bool) $input->getOption('ignore-new-errors');
+		$onlyRemoveErrors = (bool) $input->getOption('only-remove-errors');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -189,8 +189,8 @@ final class AnalyseCommand extends Command
 			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
-		if ($generateBaselineFile === null && $ignoreNewErrors) {
-			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --ignore-new-errors.');
+		if ($generateBaselineFile === null && $onlyRemoveErrors) {
+			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --only-remove-errors.');
 			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
@@ -423,7 +423,7 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 			}
 
-			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache, $ignoreNewErrors, $container);
+			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache, $onlyRemoveErrors, $container);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
@@ -599,12 +599,12 @@ final class AnalyseCommand extends Command
 		return $message;
 	}
 
-	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache, bool $ignoreNewErrors, Container $container): int
+	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache, bool $onlyRemoveErrors, Container $container): int
 	{
 		$baselineFileDirectory = dirname($generateBaselineFile);
 		$fileHelper = $container->getByType(FileHelper::class);
 		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
-		if ($ignoreNewErrors) {
+		if ($onlyRemoveErrors) {
 			$analysisResult = $this->filterAnalysisResultForExistingErrors($analysisResult, $generateBaselineFile, $inceptionResult, $fileHelper, $baselinePathHelper);
 		}
 

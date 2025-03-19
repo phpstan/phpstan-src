@@ -89,7 +89,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 			'--configuration' => $baselineFile,
 			'--level' => '9',
 			'--generate-baseline' => $baselineFile,
-			'--ignore-new-errors' => true,
+			'--only-remove-errors' => true,
 		]);
 		@unlink($baselineFile);
 
@@ -113,7 +113,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 			'--configuration' => $baselineFileSecondRun,
 			'--level' => '9',
 			'--generate-baseline' => $baselineFileSecondRun,
-			'--ignore-new-errors' => true,
+			'--only-remove-errors' => true,
 		]);
 		@unlink($baselineFileSecondRun);
 
@@ -137,7 +137,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 			'--configuration' => $baselineFileSecondRun,
 			'--level' => '9',
 			'--generate-baseline' => $baselineFileSecondRun,
-			'--ignore-new-errors' => true,
+			'--only-remove-errors' => true,
 		]);
 		@unlink($baselineFileSecondRun);
 
@@ -159,7 +159,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 			'--configuration' => $baselineFile,
 			'--level' => '9',
 			'--generate-baseline' => $baselineFile,
-			'--ignore-new-errors' => true,
+			'--only-remove-errors' => true,
 		]);
 		@unlink($baselineFile);
 

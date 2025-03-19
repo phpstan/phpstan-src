@@ -12,9 +12,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\Constant\ConstantStringType;
-use function array_column;
-use function array_map;
 use function array_merge;
 use function sprintf;
 
@@ -43,13 +40,11 @@ final class CallStaticMethodsRule implements Rule
 			$methodNameScopes = [$node->name->name => $scope];
 		} else {
 			$nameType = $scope->getType($node->name);
-			$methodNameScopes = array_column(array_map(
-				static fn (ConstantStringType $constantString) => [
-					$name = $constantString->getValue(),
-					$scope->filterByTruthyValue(new Identical($node->name, new String_($name))),
-				],
-				$nameType->getConstantStrings(),
-			), 1, 0);
+			$methodNameScopes = [];
+			foreach ($nameType->getConstantStrings() as $constantString) {
+				$name = $constantString->getValue();
+				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
 		}
 
 		foreach ($methodNameScopes as $methodName => $methodScope) {

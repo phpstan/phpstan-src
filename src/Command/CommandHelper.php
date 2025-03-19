@@ -25,6 +25,7 @@ use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
@@ -381,6 +382,10 @@ final class CommandHelper
 
 			$suggestOptional = $e->getSuggestOptional();
 			if (count($suggestOptional) > 0) {
+				$baselinePathHelper = null;
+				if ($projectConfigFile !== null) {
+					$baselinePathHelper = new ParentDirectoryRelativePathHelper(dirname($projectConfigFile));
+				}
 				$errorOutput->writeLineFormatted('If the excluded path can sometimes exist, append <fg=cyan>(?)</>');
 				$errorOutput->writeLineFormatted('to its config entry to mark it as optional. Example:');
 				$errorOutput->writeLineFormatted('');
@@ -389,7 +394,12 @@ final class CommandHelper
 				foreach ($suggestOptional as $key => $suggestOptionalPaths) {
 					$errorOutput->writeLineFormatted(sprintf("\t\t<fg=cyan>%s:</>", $key));
 					foreach ($suggestOptionalPaths as $suggestOptionalPath) {
-						$errorOutput->writeLineFormatted(sprintf("\t\t\t- <fg=cyan>%s (?)</>", $suggestOptionalPath));
+						if ($baselinePathHelper === null) {
+							$errorOutput->writeLineFormatted(sprintf("\t\t\t- <fg=cyan>%s (?)</>", $suggestOptionalPath));
+							continue;
+						}
+
+						$errorOutput->writeLineFormatted(sprintf("\t\t\t- <fg=cyan>%s (?)</>", $baselinePathHelper->getRelativePath($suggestOptionalPath)));
 					}
 				}
 				$errorOutput->writeLineFormatted('');

@@ -689,6 +689,30 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6398(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6398.php'], []);
+	}
+
+	public function testBug6571(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6571.php'], []);
+	}
+
+	public function testBug7880(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7880.php'], []);
+	}
+
+	public function testBug12565(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12565.php'], []);
+	}
+
 	public function testShortBodySetHook(): void
 	{
 		if (PHP_VERSION_ID < 80400) {

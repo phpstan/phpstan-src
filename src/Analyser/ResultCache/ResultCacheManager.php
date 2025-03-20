@@ -37,7 +37,6 @@ use function is_array;
 use function is_file;
 use function ksort;
 use function microtime;
-use function round;
 use function sha1_file;
 use function sort;
 use function sprintf;

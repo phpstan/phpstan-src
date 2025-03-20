@@ -406,3 +406,26 @@ class FooBug
 		assertType('list<stdClass>', $this->importedDaySummaryRows);
 	}
 }
+
+class FooBugPositiveInt
+{
+	/**
+	 * @var positive-int
+	 */
+	public int $totalExpectedRows = 1;
+
+	/** @var list<\stdClass> */
+	public array $importedDaySummaryRows = [];
+
+	public function sayHello(): void
+	{
+		assertType('int<1, max>', $this->totalExpectedRows);
+		assertType('list<stdClass>', $this->importedDaySummaryRows);
+		if ($this->totalExpectedRows !== count($this->importedDaySummaryRows)) {
+			assertType('int<1, max>', $this->totalExpectedRows);
+			assertType('list<stdClass>', $this->importedDaySummaryRows);
+		}
+		assertType('int<1, max>', $this->totalExpectedRows);
+		assertType('list<stdClass>', $this->importedDaySummaryRows);
+	}
+}

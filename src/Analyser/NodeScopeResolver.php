@@ -5344,9 +5344,17 @@ final class NodeScopeResolver
 			$originalVar = $var;
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
-				$varForSetOffsetValue = $var->var;
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				if (
+					$var->var instanceof PropertyFetch
+					|| $var->var instanceof StaticPropertyFetch
+				) {
+					if (((new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($var->var))->yes())) {
+						$varForSetOffsetValue = $var->var;
+					} else {
+						$varForSetOffsetValue = new OriginalPropertyTypeExpr($var->var);
+					}
+				} else {
+					$varForSetOffsetValue = $var->var;
 				}
 				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
 					$varForSetOffsetValue,
@@ -5682,9 +5690,17 @@ final class NodeScopeResolver
 			$dimFetchStack = [];
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ExistingArrayDimFetch) {
-				$varForSetOffsetValue = $var->getVar();
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				if (
+					$var->getVar() instanceof PropertyFetch
+					|| $var->getVar() instanceof StaticPropertyFetch
+				) {
+					if (((new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($var->getVar()))->yes())) {
+						$varForSetOffsetValue = $var->getVar();
+					} else {
+						$varForSetOffsetValue = new OriginalPropertyTypeExpr($var->getVar());
+					}
+				} else {
+					$varForSetOffsetValue = $var->getVar();
 				}
 				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
 					$varForSetOffsetValue,

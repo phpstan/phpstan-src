@@ -153,11 +153,7 @@ final class ImpossibleCheckTypeHelper
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								if ($haystackArrayType instanceof ConstantArrayType) {
 									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
-										if ($haystackArrayValueType instanceof UnionType) {
-											continue;
-										}
-
-										if ($haystackArrayType->isOptionalKey($i)) {
+										if ($haystackArrayValueType instanceof UnionType || $haystackArrayType->isOptionalKey($i)) {
 											continue;
 										}
 

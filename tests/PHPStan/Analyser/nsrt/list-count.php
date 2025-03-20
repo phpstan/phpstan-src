@@ -369,7 +369,7 @@ class CountWithOptionalKeys
 		if (count($row) >= $maxThree) {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
-			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		}
 	}
 
@@ -384,5 +384,25 @@ class CountWithOptionalKeys
 		} else {
 			assertType('array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}|array{string}', $row);
 		}
+	}
+}
+
+class FooBug
+{
+	public int $totalExpectedRows = 0;
+
+	/** @var list<\stdClass> */
+	public array $importedDaySummaryRows = [];
+
+	public function sayHello(): void
+	{
+		assertType('int', $this->totalExpectedRows);
+		assertType('list<stdClass>', $this->importedDaySummaryRows);
+		if ($this->totalExpectedRows !== count($this->importedDaySummaryRows)) {
+			assertType('int', $this->totalExpectedRows);
+			assertType('list<stdClass>', $this->importedDaySummaryRows);
+		}
+		assertType('int', $this->totalExpectedRows);
+		assertType('list<stdClass>', $this->importedDaySummaryRows);
 	}
 }

@@ -27,20 +27,18 @@ final class RegexCapturingGroup
 		return $this->id;
 	}
 
-	public function forceNonOptional(): void
+	public function forceNonOptional(): self
 	{
-		$this->forceNonOptional = true;
+		$new = clone $this;
+		$new->forceNonOptional = true;
+		return $new;
 	}
 
-	public function forceType(Type $type): void
+	public function forceType(Type $type): self
 	{
-		$this->forceType = $type;
-	}
-
-	public function clearOverrides(): void
-	{
-		$this->forceNonOptional = false;
-		$this->forceType = null;
+		$new = clone $this;
+		$new->forceType = $type;
+		return $new;
 	}
 
 	public function resetsGroupCounter(): bool

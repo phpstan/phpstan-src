@@ -123,19 +123,18 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
+		$onlyOptionalTopLevelGroupIndex = $this->getOnlyOptionalTopLevelGroupIndex($groupList);
 		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
 		$flags ??= 0;
 
 		if (
 			!$matchesAll
 			&& $wasMatched->yes()
-			&& $onlyOptionalTopLevelGroup !== null
+			&& $onlyOptionalTopLevelGroupIndex !== null
 		) {
 			// if only one top level capturing optional group exists
 			// we build a more precise tagged union of a empty-match and a match with the group
-
-			$onlyOptionalTopLevelGroup->forceNonOptional();
+			$groupList[$onlyOptionalTopLevelGroupIndex] = $groupList[$onlyOptionalTopLevelGroupIndex]->forceNonOptional();
 
 			$combiType = $this->buildArrayType(
 				$groupList,
@@ -154,12 +153,10 @@ final class RegexArrayShapeMatcher
 				);
 			}
 
-			$onlyOptionalTopLevelGroup->clearOverrides();
-
 			return $combiType;
 		} elseif (
 			!$matchesAll
-			&& $onlyOptionalTopLevelGroup === null
+			&& $onlyOptionalTopLevelGroupIndex === null
 			&& $onlyTopLevelAlternation !== null
 			&& !$wasMatched->no()
 		) {
@@ -174,13 +171,14 @@ final class RegexArrayShapeMatcher
 				foreach ($comboList as $groupId => $group) {
 					if (in_array($groupId, $groupCombo, true)) {
 						$isOptionalAlternation = $group->inOptionalAlternation();
-						$group->forceNonOptional();
+						$forcedGroup = $group->forceNonOptional();
 						$beforeCurrentCombo = false;
+						$comboList[$groupId] = $forcedGroup;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
-						$group->forceNonOptional();
-						$group->forceType(
+						$forcedGroup = $group->forceNonOptional()->forceType(
 							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
 						);
+						$comboList[$groupId] = $forcedGroup;
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
 						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
@@ -199,11 +197,6 @@ final class RegexArrayShapeMatcher
 				);
 
 				$combiTypes[] = $combiType;
-
-				foreach ($groupCombo as $groupId) {
-					$group = $comboList[$groupId];
-					$group->clearOverrides();
-				}
 			}
 
 			if (
@@ -235,10 +228,10 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param array<int, RegexCapturingGroup> $captureGroups
 	 */
-	private function getOnlyOptionalTopLevelGroup(array $captureGroups): ?RegexCapturingGroup
+	private function getOnlyOptionalTopLevelGroupIndex(array $captureGroups): ?int
 	{
-		$group = null;
-		foreach ($captureGroups as $captureGroup) {
+		$groupIndex = null;
+		foreach ($captureGroups as $i => $captureGroup) {
 			if (!$captureGroup->isTopLevel()) {
 				continue;
 			}
@@ -247,14 +240,14 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			if ($group !== null) {
+			if ($groupIndex !== null) {
 				return null;
 			}
 
-			$group = $captureGroup;
+			$groupIndex = $i;
 		}
 
-		return $group;
+		return $groupIndex;
 	}
 
 	/**

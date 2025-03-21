@@ -16,7 +16,7 @@ final class RegexCapturingGroup
 		private readonly ?string $name,
 		private readonly ?RegexAlternation $alternation,
 		private readonly bool $inOptionalQuantification,
-		private readonly RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 		private readonly Type $type,
 	)
 	{
@@ -38,6 +38,13 @@ final class RegexCapturingGroup
 	{
 		$new = clone $this;
 		$new->forceType = $type;
+		return $new;
+	}
+
+	public function withParent(RegexCapturingGroup|RegexNonCapturingGroup $parent): self
+	{
+		$new = clone $this;
+		$new->parent = $parent;
 		return $new;
 	}
 
@@ -124,6 +131,11 @@ final class RegexCapturingGroup
 			return $this->forceType;
 		}
 		return $this->type;
+	}
+
+	public function getParent(): RegexCapturingGroup|RegexNonCapturingGroup|null
+	{
+		return $this->parent;
 	}
 
 }

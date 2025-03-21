@@ -18,11 +18,11 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Regex\RegexAlternation;
 use PHPStan\Type\Regex\RegexCapturingGroup;
 use PHPStan\Type\Regex\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexGroupList;
 use PHPStan\Type\Regex\RegexGroupParser;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_reverse;
 use function count;
 use function in_array;
 use function is_string;
@@ -115,13 +115,8 @@ final class RegexArrayShapeMatcher
 		}
 		[$groupList, $markVerbs] = $parseResult;
 
-		$trailingOptionals = 0;
-		foreach (array_reverse($groupList) as $captureGroup) {
-			if (!$captureGroup->isOptional()) {
-				break;
-			}
-			$trailingOptionals++;
-		}
+		$regexGroupList = new RegexGroupList($groupList);
+		$trailingOptionals = $regexGroupList->countTrailingOptionals();
 
 		$onlyOptionalTopLevelGroupId = $this->getOnlyOptionalTopLevelGroupId($groupList);
 		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
@@ -134,10 +129,10 @@ final class RegexArrayShapeMatcher
 		) {
 			// if only one top level capturing optional group exists
 			// we build a more precise tagged union of a empty-match and a match with the group
-			$groupList[$onlyOptionalTopLevelGroupId] = $groupList[$onlyOptionalTopLevelGroupId]->forceNonOptional();
+			$regexGroupList = $regexGroupList->forceGroupIdNonOptional($onlyOptionalTopLevelGroupId);
 
 			$combiType = $this->buildArrayType(
-				$groupList,
+				$regexGroupList,
 				$wasMatched,
 				$trailingOptionals,
 				$flags,
@@ -165,25 +160,24 @@ final class RegexArrayShapeMatcher
 			$combiTypes = [];
 			$isOptionalAlternation = false;
 			foreach ($onlyTopLevelAlternation->getGroupCombinations() as $groupCombo) {
-				$comboList = $groupList;
+				$comboList = new RegexGroupList($groupList);
 
 				$beforeCurrentCombo = true;
 				foreach ($comboList as $groupId => $group) {
 					if (in_array($groupId, $groupCombo, true)) {
 						$isOptionalAlternation = $group->inOptionalAlternation();
-						$forcedGroup = $group->forceNonOptional();
+						$comboList = $comboList->forceGroupIdNonOptional($group->getId());
 						$beforeCurrentCombo = false;
-						$comboList[$groupId] = $forcedGroup;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
-						$forcedGroup = $group->forceNonOptional()->forceType(
+						$comboList = $comboList->forceGroupIdTypeAndNonOptional(
+							$group->getId(),
 							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
 						);
-						$comboList[$groupId] = $forcedGroup;
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
 						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					) {
-						unset($comboList[$groupId]);
+						$comboList = $comboList->removeGroup($groupId);
 					}
 				}
 
@@ -216,7 +210,7 @@ final class RegexArrayShapeMatcher
 		// the general case, which should work in all cases but does not yield the most
 		// precise result possible in some cases
 		return $this->buildArrayType(
-			$groupList,
+			$regexGroupList,
 			$wasMatched,
 			$trailingOptionals,
 			$flags,
@@ -280,11 +274,10 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param array<RegexCapturingGroup> $captureGroups
 	 * @param list<string> $markVerbs
 	 */
 	private function buildArrayType(
-		array $captureGroups,
+		RegexGroupList $captureGroups,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,

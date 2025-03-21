@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\Regex\RegexAlternation;
 use PHPStan\Type\Regex\RegexCapturingGroup;
 use PHPStan\Type\Regex\RegexExpressionHelper;
 use PHPStan\Type\Regex\RegexGroupList;
@@ -117,9 +116,8 @@ final class RegexArrayShapeMatcher
 
 		$regexGroupList = new RegexGroupList($groupList);
 		$trailingOptionals = $regexGroupList->countTrailingOptionals();
-
-		$onlyOptionalTopLevelGroupId = $this->getOnlyOptionalTopLevelGroupId($groupList);
-		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
+		$onlyOptionalTopLevelGroupId = $regexGroupList->getOnlyOptionalTopLevelGroupId();
+		$onlyTopLevelAlternation = $regexGroupList->getOnlyTopLevelAlternation();
 		$flags ??= 0;
 
 		if (
@@ -217,60 +215,6 @@ final class RegexArrayShapeMatcher
 			$markVerbs,
 			$matchesAll,
 		);
-	}
-
-	/**
-	 * @param array<int, RegexCapturingGroup> $captureGroups
-	 */
-	private function getOnlyOptionalTopLevelGroupId(array $captureGroups): ?int
-	{
-		$groupIndex = null;
-		foreach ($captureGroups as $captureGroup) {
-			if (!$captureGroup->isTopLevel()) {
-				continue;
-			}
-
-			if (!$captureGroup->isOptional()) {
-				return null;
-			}
-
-			if ($groupIndex !== null) {
-				return null;
-			}
-
-			$groupIndex = $captureGroup->getId();
-		}
-
-		return $groupIndex;
-	}
-
-	/**
-	 * @param array<int, RegexCapturingGroup> $captureGroups
-	 */
-	private function getOnlyTopLevelAlternation(array $captureGroups): ?RegexAlternation
-	{
-		$alternation = null;
-		foreach ($captureGroups as $captureGroup) {
-			if (!$captureGroup->isTopLevel()) {
-				continue;
-			}
-
-			if (!$captureGroup->inAlternation()) {
-				return null;
-			}
-
-			if ($captureGroup->inOptionalQuantification()) {
-				return null;
-			}
-
-			if ($alternation === null) {
-				$alternation = $captureGroup->getAlternation();
-			} elseif ($alternation->getId() !== $captureGroup->getAlternation()->getId()) {
-				return null;
-			}
-		}
-
-		return $alternation;
 	}
 
 	/**

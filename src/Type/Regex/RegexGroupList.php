@@ -102,6 +102,54 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return new self($groups);
 	}
 
+	public function getOnlyOptionalTopLevelGroupId(): ?int
+	{
+		$groupIndex = null;
+		foreach ($this->groups as $captureGroup) {
+			if (!$captureGroup->isTopLevel()) {
+				continue;
+			}
+
+			if (!$captureGroup->isOptional()) {
+				return null;
+			}
+
+			if ($groupIndex !== null) {
+				return null;
+			}
+
+			$groupIndex = $captureGroup->getId();
+		}
+
+		return $groupIndex;
+	}
+
+	public function getOnlyTopLevelAlternation(): ?RegexAlternation
+	{
+		$alternation = null;
+		foreach ($this->groups as $captureGroup) {
+			if (!$captureGroup->isTopLevel()) {
+				continue;
+			}
+
+			if (!$captureGroup->inAlternation()) {
+				return null;
+			}
+
+			if ($captureGroup->inOptionalQuantification()) {
+				return null;
+			}
+
+			if ($alternation === null) {
+				$alternation = $captureGroup->getAlternation();
+			} elseif ($alternation->getId() !== $captureGroup->getAlternation()->getId()) {
+				return null;
+			}
+		}
+
+		return $alternation;
+	}
+
 	public function count(): int
 	{
 		return count($this->groups);

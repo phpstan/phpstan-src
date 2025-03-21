@@ -5496,7 +5496,13 @@ final class NodeScopeResolver
 				}
 
 				if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
-					if (!$scope->hasExpressionType($originalVar)->yes()) {
+					$type = $this->treatPhpDocTypesAsCertain
+						? $scope->getType($originalVar->var)
+						: $scope->getNativeType($originalVar->var);
+					$dimType = $this->treatPhpDocTypesAsCertain
+						? $scope->getType($originalVar->dim)
+						: $scope->getNativeType($originalVar->dim);
+					if (!$type->hasOffsetValueType($dimType)->yes()) {
 						$scope = $scope->assignExpression(
 							$originalVar,
 							$originalValueToWrite,

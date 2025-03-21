@@ -995,8 +995,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	public function testBug12755(): void
 	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-12755.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-12755.php'], [
+			[
+				'Call to function in_array() with arguments null, array{key1: bool|null, key2: null} and true will always evaluate to true.',
+				51,
+				$tipText,
+			],
+		]);
 	}
 
 	public function testBug12412(): void

@@ -7,17 +7,15 @@ use PHPStan\Type\Type;
 final class RegexCapturingGroup
 {
 
-	private bool $forceNonOptional = false;
-
-	private ?Type $forceType = null;
-
 	public function __construct(
 		private readonly int $id,
 		private readonly ?string $name,
 		private readonly ?RegexAlternation $alternation,
 		private readonly bool $inOptionalQuantification,
-		private RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
+		private readonly RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 		private readonly Type $type,
+		private readonly bool $forceNonOptional = false,
+		private readonly ?Type $forceType = null,
 	)
 	{
 	}
@@ -29,23 +27,44 @@ final class RegexCapturingGroup
 
 	public function forceNonOptional(): self
 	{
-		$new = clone $this;
-		$new->forceNonOptional = true;
-		return $new;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$this->parent,
+			$this->type,
+			true,
+			$this->forceType,
+		);
 	}
 
 	public function forceType(Type $type): self
 	{
-		$new = clone $this;
-		$new->forceType = $type;
-		return $new;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$this->parent,
+			$type,
+			$this->forceNonOptional,
+			$this->forceType,
+		);
 	}
 
 	public function withParent(RegexCapturingGroup|RegexNonCapturingGroup $parent): self
 	{
-		$new = clone $this;
-		$new->parent = $parent;
-		return $new;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$parent,
+			$this->type,
+			$this->forceNonOptional,
+			$this->forceType,
+		);
 	}
 
 	public function resetsGroupCounter(): bool

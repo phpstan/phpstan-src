@@ -123,18 +123,18 @@ final class RegexArrayShapeMatcher
 			$trailingOptionals++;
 		}
 
-		$onlyOptionalTopLevelGroupIndex = $this->getOnlyOptionalTopLevelGroupIndex($groupList);
+		$onlyOptionalTopLevelGroupId = $this->getOnlyOptionalTopLevelGroupId($groupList);
 		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
 		$flags ??= 0;
 
 		if (
 			!$matchesAll
 			&& $wasMatched->yes()
-			&& $onlyOptionalTopLevelGroupIndex !== null
+			&& $onlyOptionalTopLevelGroupId !== null
 		) {
 			// if only one top level capturing optional group exists
 			// we build a more precise tagged union of a empty-match and a match with the group
-			$groupList[$onlyOptionalTopLevelGroupIndex] = $groupList[$onlyOptionalTopLevelGroupIndex]->forceNonOptional();
+			$groupList[$onlyOptionalTopLevelGroupId] = $groupList[$onlyOptionalTopLevelGroupId]->forceNonOptional();
 
 			$combiType = $this->buildArrayType(
 				$groupList,
@@ -156,7 +156,7 @@ final class RegexArrayShapeMatcher
 			return $combiType;
 		} elseif (
 			!$matchesAll
-			&& $onlyOptionalTopLevelGroupIndex === null
+			&& $onlyOptionalTopLevelGroupId === null
 			&& $onlyTopLevelAlternation !== null
 			&& !$wasMatched->no()
 		) {
@@ -228,10 +228,10 @@ final class RegexArrayShapeMatcher
 	/**
 	 * @param array<int, RegexCapturingGroup> $captureGroups
 	 */
-	private function getOnlyOptionalTopLevelGroupIndex(array $captureGroups): ?int
+	private function getOnlyOptionalTopLevelGroupId(array $captureGroups): ?int
 	{
 		$groupIndex = null;
-		foreach ($captureGroups as $i => $captureGroup) {
+		foreach ($captureGroups as $captureGroup) {
 			if (!$captureGroup->isTopLevel()) {
 				continue;
 			}
@@ -244,7 +244,7 @@ final class RegexArrayShapeMatcher
 				return null;
 			}
 
-			$groupIndex = $i;
+			$groupIndex = $captureGroup->getId();
 		}
 
 		return $groupIndex;

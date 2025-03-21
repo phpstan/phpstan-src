@@ -37,22 +37,22 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return $trailingOptionals;
 	}
 
-	public function forceGroupIdNonOptional(int $id): self
+	public function forceGroupNonOptional(RegexCapturingGroup $group): self
 	{
-		return $this->cloneAndReParentList($id);
+		return $this->cloneAndReParentList($group);
 	}
 
-	public function forceGroupIdTypeAndNonOptional(int $id, Type $type): self
+	public function forceGroupTypeAndNonOptional(RegexCapturingGroup $group, Type $type): self
 	{
-		return $this->cloneAndReParentList($id, $type);
+		return $this->cloneAndReParentList($group, $type);
 	}
 
-	private function cloneAndReParentList(int $id, ?Type $type = null): self
+	private function cloneAndReParentList(RegexCapturingGroup $target, ?Type $type = null): self
 	{
 		$groups = [];
 		$forcedGroup = null;
 		foreach ($this->groups as $i => $group) {
-			if ($group->getId() === $id) {
+			if ($group->getId() === $target->getId()) {
 				$forcedGroup = $group->forceNonOptional();
 				if ($type !== null) {
 					$forcedGroup = $forcedGroup->forceType($type);
@@ -78,7 +78,7 @@ final class RegexGroupList implements Countable, IteratorAggregate
 					continue;
 				}
 
-				if ($parent->getId() === $id) {
+				if ($parent->getId() === $target->getId()) {
 					$groups[$i] = $groups[$i]->withParent($forcedGroup);
 				}
 				$parent = $parent->getParent();
@@ -88,11 +88,11 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return new self($groups);
 	}
 
-	public function removeGroup(int $id): self
+	public function removeGroup(RegexCapturingGroup $remove): self
 	{
 		$groups = [];
 		foreach ($this->groups as $i => $group) {
-			if ($group->getId() === $id) {
+			if ($group->getId() === $remove->getId()) {
 				continue;
 			}
 
@@ -102,9 +102,9 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return new self($groups);
 	}
 
-	public function getOnlyOptionalTopLevelGroupId(): ?int
+	public function getOnlyOptionalTopLevelGroup(): ?RegexCapturingGroup
 	{
-		$groupIndex = null;
+		$group = null;
 		foreach ($this->groups as $captureGroup) {
 			if (!$captureGroup->isTopLevel()) {
 				continue;
@@ -114,14 +114,14 @@ final class RegexGroupList implements Countable, IteratorAggregate
 				return null;
 			}
 
-			if ($groupIndex !== null) {
+			if ($group !== null) {
 				return null;
 			}
 
-			$groupIndex = $captureGroup->getId();
+			$group = $captureGroup;
 		}
 
-		return $groupIndex;
+		return $group;
 	}
 
 	public function getOnlyTopLevelAlternation(): ?RegexAlternation

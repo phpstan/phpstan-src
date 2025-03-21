@@ -116,18 +116,18 @@ final class RegexArrayShapeMatcher
 
 		$regexGroupList = new RegexGroupList($groupList);
 		$trailingOptionals = $regexGroupList->countTrailingOptionals();
-		$onlyOptionalTopLevelGroupId = $regexGroupList->getOnlyOptionalTopLevelGroupId();
+		$onlyOptionalTopLevelGroup = $regexGroupList->getOnlyOptionalTopLevelGroup();
 		$onlyTopLevelAlternation = $regexGroupList->getOnlyTopLevelAlternation();
 		$flags ??= 0;
 
 		if (
 			!$matchesAll
 			&& $wasMatched->yes()
-			&& $onlyOptionalTopLevelGroupId !== null
+			&& $onlyOptionalTopLevelGroup !== null
 		) {
 			// if only one top level capturing optional group exists
 			// we build a more precise tagged union of a empty-match and a match with the group
-			$regexGroupList = $regexGroupList->forceGroupIdNonOptional($onlyOptionalTopLevelGroupId);
+			$regexGroupList = $regexGroupList->forceGroupNonOptional($onlyOptionalTopLevelGroup);
 
 			$combiType = $this->buildArrayType(
 				$regexGroupList,
@@ -149,7 +149,7 @@ final class RegexArrayShapeMatcher
 			return $combiType;
 		} elseif (
 			!$matchesAll
-			&& $onlyOptionalTopLevelGroupId === null
+			&& $onlyOptionalTopLevelGroup === null
 			&& $onlyTopLevelAlternation !== null
 			&& !$wasMatched->no()
 		) {
@@ -161,21 +161,21 @@ final class RegexArrayShapeMatcher
 				$comboList = new RegexGroupList($groupList);
 
 				$beforeCurrentCombo = true;
-				foreach ($comboList as $groupId => $group) {
-					if (in_array($groupId, $groupCombo, true)) {
+				foreach ($comboList as $group) {
+					if (in_array($group->getId(), $groupCombo, true)) {
 						$isOptionalAlternation = $group->inOptionalAlternation();
-						$comboList = $comboList->forceGroupIdNonOptional($group->getId());
+						$comboList = $comboList->forceGroupNonOptional($group);
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
-						$comboList = $comboList->forceGroupIdTypeAndNonOptional(
-							$group->getId(),
+						$comboList = $comboList->forceGroupTypeAndNonOptional(
+							$group,
 							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
 						);
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
 						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					) {
-						$comboList = $comboList->removeGroup($groupId);
+						$comboList = $comboList->removeGroup($group);
 					}
 				}
 

@@ -10,7 +10,7 @@ final class HelloWorld
 	{
 		$matches = [];
 		if (preg_match('~^/xxx/([\w\-]+)/?([\w\-]+)?/?$~', $in, $matches)) {
-			assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
+			assertType('array{0: non-falsy-string, 1: non-empty-string, 2?: non-empty-string}', $matches);
 		}
 	}
 
@@ -19,7 +19,7 @@ final class HelloWorld
 		$matches = [];
 		$result = preg_match('~^/xxx/([\w\-]+)/?([\w\-]+)?/?$~', $in, $matches);
 		if ($result) {
-			assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
+			assertType('array{0: non-falsy-string, 1: non-empty-string, 2?: non-empty-string}', $matches);
 		}
 	}
 
@@ -28,7 +28,7 @@ final class HelloWorld
 		$result = preg_match('~^/xxx/([\w\-]+)/?([\w\-]+)?/?$~', $in, $matches);
 		assertType('array{0?: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
 		if ($result) {
-			assertType('array{0: string, 1: non-empty-string, 2?: non-empty-string}', $matches);
+			assertType('array{0: non-falsy-string, 1: non-empty-string, 2?: non-empty-string}', $matches);
 		}
 	}
 

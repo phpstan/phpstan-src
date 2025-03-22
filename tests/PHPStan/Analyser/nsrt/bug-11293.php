@@ -9,21 +9,21 @@ class HelloWorld
 	public function sayHello(string $s): void
 	{
 		if (preg_match('/data-(\d{6})\.json$/', $s, $matches) > 0) {
-			assertType('array{string, non-falsy-string&numeric-string}', $matches);
+			assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 		}
 	}
 
 	public function sayHello2(string $s): void
 	{
 		if (preg_match('/data-(\d{6})\.json$/', $s, $matches) === 1) {
-			assertType('array{string, non-falsy-string&numeric-string}', $matches);
+			assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 		}
 	}
 
 	public function sayHello3(string $s): void
 	{
 		if (preg_match('/data-(\d{6})\.json$/', $s, $matches) >= 1) {
-			assertType('array{string, non-falsy-string&numeric-string}', $matches);
+			assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 		}
 	}
 
@@ -35,7 +35,7 @@ class HelloWorld
 			return;
 		}
 
-		assertType('array{string, non-falsy-string&numeric-string}', $matches);
+		assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 	}
 
 	public function sayHello5(string $s): void
@@ -46,7 +46,7 @@ class HelloWorld
 			return;
 		}
 
-		assertType('array{string, non-falsy-string&numeric-string}', $matches);
+		assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 	}
 
 	public function sayHello6(string $s): void
@@ -57,6 +57,6 @@ class HelloWorld
 			return;
 		}
 
-		assertType('array{string, non-falsy-string&numeric-string}', $matches);
+		assertType('array{non-falsy-string, non-falsy-string&numeric-string}', $matches);
 	}
 }

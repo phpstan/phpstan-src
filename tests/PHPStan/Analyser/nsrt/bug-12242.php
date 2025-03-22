@@ -27,7 +27,7 @@ function bar(string $str): void
             (\w*)        # extra description (UNSIGNED, CHARACTER SET, ...) [3]
         $/x';
 	if (preg_match($regexp, $str, $matches)) {
-		assertType('array{string, non-empty-string, string, string}', $matches);
+		assertType('array{non-falsy-string, non-empty-string, string, string}', $matches);
 	}
 }
 

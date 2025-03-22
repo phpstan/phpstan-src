@@ -5496,9 +5496,11 @@ final class NodeScopeResolver
 				}
 
 				if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
-					$currentVarType = $scope->getNativeType($originalVar);
+					$currentVarType = $scope->getType($originalVar);
+					$currentVarNativeType = $scope->getNativeType($originalVar);
 					if (
-						!$originalNativeValueToWrite->isSuperTypeOf($currentVarType)->yes()
+						!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()
+						|| !$originalNativeValueToWrite->isSuperTypeOf($currentVarNativeType)->yes()
 					) {
 						$scope = $scope->assignExpression(
 							$originalVar,

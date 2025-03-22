@@ -102,6 +102,19 @@ final class RegexGroupParser
 			RegexAstWalkResult::createEmpty(),
 		);
 
+		$subjectAsGroupResult = $this->walkGroupAst(
+			$ast,
+			false,
+			false,
+			$modifiers,
+			RegexGroupWalkResult::createEmpty(),
+		);
+		if ($subjectAsGroupResult->isNonEmpty()->yes()) {
+			$astWalkResult = $astWalkResult->withSubjectBaseType(
+				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType())
+			);
+		}
+
 		return $astWalkResult;
 	}
 
@@ -259,12 +272,6 @@ final class RegexGroupParser
 				$patternModifiers,
 				$astWalkResult,
 			);
-
-			if ($alternation === null && !$inOptionalQuantification) {
-				$astWalkResult = $astWalkResult->withSubjectBaseType(
-					TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType())
-				);
-			}
 
 			if ($ast->getId() !== '#alternation') {
 				continue;

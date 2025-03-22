@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_values;
 use function count;
 use function in_array;
@@ -42,6 +43,8 @@ final class RegexGroupParser
 
 	private static ?Parser $parser = null;
 
+	private static array $resultCache = [];
+
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private RegexExpressionHelper $regexExpressionHelper,
@@ -53,6 +56,18 @@ final class RegexGroupParser
 	 * @return array{array<int, RegexCapturingGroup>, list<string>}|null
 	 */
 	public function parseGroups(string $regex): ?array
+	{
+		if (array_key_exists($regex, self::$resultCache)) {
+			return self::$resultCache[$regex];
+		}
+
+		return self::$resultCache[$regex] = $this->parse($regex);
+	}
+
+	/**
+	 * @return array{array<int, RegexCapturingGroup>, list<string>}|null
+	 */
+	private function parse(string $regex): ?array
 	{
 		if (self::$parser === null) {
 			/** @throws void */

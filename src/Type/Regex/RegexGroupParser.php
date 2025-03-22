@@ -43,6 +43,7 @@ final class RegexGroupParser
 
 	private static ?Parser $parser = null;
 
+	/** @var array<string, array{array<int, RegexCapturingGroup>, list<string>}|null> */
 	private static array $resultCache = [];
 
 	public function __construct(
@@ -261,7 +262,7 @@ final class RegexGroupParser
 			$astWalkResult = $astWalkResult->addCapturingGroup($group);
 
 			if ($alternation !== null) {
-				$alternation->pushGroup($combinationIndex, $group);
+				$alternation = $alternation->pushGroup($combinationIndex, $group);
 			}
 		}
 

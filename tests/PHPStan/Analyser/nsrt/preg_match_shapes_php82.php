@@ -8,9 +8,9 @@ use function PHPStan\Testing\assertType;
 // https://php.watch/versions/8.2/preg-n-no-capture-modifier
 function doNonAutoCapturingFlag(string $s): void {
 	if (preg_match('/(\d+)/n', $s, $matches)) {
-		assertType('array{non-falsy-string}', $matches);
+		assertType('array{non-empty-string}', $matches);
 	}
-	assertType('array{}|array{non-falsy-string}', $matches);
+	assertType('array{}|array{non-empty-string}', $matches);
 
 	if (preg_match('/(\d+)(?P<num>\d+)/n', $s, $matches)) {
 		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);

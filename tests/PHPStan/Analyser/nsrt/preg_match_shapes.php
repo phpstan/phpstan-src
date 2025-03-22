@@ -477,13 +477,13 @@ function bug11323(string $s): void {
 		assertType('array{non-falsy-string, non-falsy-string}', $matches);
 	}
 	if (preg_match('{([[:digit:]])}', $s, $matches)) {
-		assertType('array{non-falsy-string, numeric-string}', $matches);
+		assertType('array{non-empty-string, numeric-string}', $matches);
 	}
 	if (preg_match('{([\d])(\d)}', $s, $matches)) {
 		assertType('array{non-falsy-string, numeric-string, numeric-string}', $matches);
 	}
 	if (preg_match('{([0-9])}', $s, $matches)) {
-		assertType('array{non-falsy-string, numeric-string}', $matches);
+		assertType('array{non-empty-string, numeric-string}', $matches);
 	}
 	if (preg_match('{(\p{L})(\p{P})(\p{Po})}', $s, $matches)) {
 		assertType('array{non-falsy-string, non-empty-string, non-empty-string, non-empty-string}', $matches);
@@ -654,7 +654,7 @@ function (string $s): void {
 
 function (string $s): void {
 	if (preg_match('/( \d+ )/x', $s, $matches)) {
-		assertType('array{non-falsy-string, numeric-string}', $matches);
+		assertType('array{non-empty-string, numeric-string}', $matches);
 	}
 };
 
@@ -792,7 +792,7 @@ function testUnescapeBackslash (string $string): void {
 	if (preg_match(<<<'EOD'
 		~(\d)~
 		EOD, $string, $matches)) {
-		assertType("array{non-falsy-string, numeric-string}", $matches);
+		assertType("array{non-empty-string, numeric-string}", $matches);
 	}
 
 	if (preg_match(<<<'EOD'
@@ -1000,7 +1000,7 @@ function bug12749e(string $str): void
 {
 	// no ^ $ delims, therefore can be anything which contains a number
 	if (preg_match('/[0-9]/', $str, $match)) {
-		assertType('array{non-falsy-string}', $match);
+		assertType('array{non-empty-string}', $match);
 	}
 }
 

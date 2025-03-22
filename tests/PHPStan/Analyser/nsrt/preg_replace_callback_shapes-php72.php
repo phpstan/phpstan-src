@@ -8,7 +8,7 @@ function (string $s): void {
 	preg_replace_callback(
 		$s,
 		function ($matches) {
-			assertType('array{string, string}', $matches);
+			assertType('array<string>', $matches);
 			return '';
 		},
 		$s
@@ -19,7 +19,7 @@ function (string $s): void {
 	preg_replace_callback(
 		'|<p>(\s*)\w|',
 		function ($matches) {
-			assertType('array{string, string}', $matches);
+			assertType('array{non-falsy-string, string}', $matches);
 			return '';
 		},
 		$s

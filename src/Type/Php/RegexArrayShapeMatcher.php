@@ -315,8 +315,13 @@ final class RegexArrayShapeMatcher
 		$subjectValueType = TypeCombinator::removeNull($this->getValueType($baseType, $flags, $matchesAll));
 
 		if ($matchesAll) {
+			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
+
 			if ($this->containsPatternOrder($flags)) {
-				$subjectValueType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $subjectValueType), new AccessoryArrayListType());
+				$subjectValueType = TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), $subjectValueType),
+					new AccessoryArrayListType()
+				);
 			}
 		}
 

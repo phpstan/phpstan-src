@@ -166,6 +166,8 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
@@ -5496,13 +5498,10 @@ final class NodeScopeResolver
 				}
 
 				if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
-					$type = $this->treatPhpDocTypesAsCertain
-						? $scope->getType($originalVar->var)
-						: $scope->getNativeType($originalVar->var);
-					$dimType = $this->treatPhpDocTypesAsCertain
-						? $scope->getType($originalVar->dim)
-						: $scope->getNativeType($originalVar->dim);
-					if (!$type->hasOffsetValueType($dimType)->yes()) {
+					$currentVarType = $scope->getNativeType($originalVar);
+					if (
+						!$originalNativeValueToWrite->isSuperTypeOf($currentVarType)->yes()
+					) {
 						$scope = $scope->assignExpression(
 							$originalVar,
 							$originalValueToWrite,

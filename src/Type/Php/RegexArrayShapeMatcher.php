@@ -320,7 +320,7 @@ final class RegexArrayShapeMatcher
 			if ($this->containsPatternOrder($flags)) {
 				$subjectValueType = TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), $subjectValueType),
-					new AccessoryArrayListType()
+					new AccessoryArrayListType(),
 				);
 			}
 		}

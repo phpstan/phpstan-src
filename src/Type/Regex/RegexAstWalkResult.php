@@ -20,7 +20,8 @@ final class RegexAstWalkResult
 		private array $markVerbs,
 		private Type $subjectBaseType,
 	)
-	{}
+	{
+	}
 
 	public static function createEmpty(): self
 	{
@@ -30,7 +31,7 @@ final class RegexAstWalkResult
 			100,
 			[],
 			[],
-			new StringType()
+			new StringType(),
 		);
 	}
 

@@ -1063,7 +1063,7 @@ final class TypeSpecifier
 
 		$isConstantArray = $type->isConstantArray();
 		$isList = $type->isList();
-		$zeroOrMore = IntegerRangeType::fromInterval(0, null);
+		$zeroOrMore = IntegerRangeType::fromInterval(1, null);
 		if (
 			!$isNormalCount->yes()
 			|| (!$isConstantArray->yes() && !$isList->yes())

@@ -116,7 +116,7 @@ final class RegexArrayShapeMatcher
 
 		if ($groupList === [] && $markVerbs === []) {
 			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
-			$type = $this->matchRegex('{('.$rawRegex.')}', $flags, $wasMatched, $matchesAll);
+			$type = $this->matchRegex('{(' . $rawRegex . ')}', $flags, $wasMatched, $matchesAll);
 			if ($type === null) {
 				return null;
 			}

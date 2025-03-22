@@ -1067,7 +1067,6 @@ final class TypeSpecifier
 		if (
 			!$isNormalCount->yes()
 			|| (!$isConstantArray->yes() && !$isList->yes())
-			|| $type->isIterableAtLeastOnce()->no() // array{} cannot be used for further narrowing
 			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
 		) {
 			return null;

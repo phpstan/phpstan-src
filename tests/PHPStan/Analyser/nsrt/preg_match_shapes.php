@@ -964,21 +964,21 @@ function bug11744(string $string): void
 function bug12749(string $str): void
 {
 	if (preg_match('/[A-Z]/', $str, $match)) {
-		assertType('array{non-empty-string}', $match);
+		assertType('array{non-empty-string}', $match); // could be non-falsy-string
 	}
 }
 
 function bug12749a(string $str): void
 {
 	if (preg_match('/[A-Z]{2,}/', $str, $match)) {
-		assertType('array{non-falsy-string}', $match);
+		assertType('array{non-empty-string}', $match); // could be non-falsy-string
 	}
 }
 
 function bug12749b(string $str): void
 {
 	if (preg_match('/[0-9][A-Z]/', $str, $match)) {
-		assertType('array{non-falsy-string}', $match);
+		assertType('array{non-empty-string}', $match); // could be non-falsy-string
 	}
 }
 
@@ -992,7 +992,7 @@ function bug12749c(string $str): void
 function bug12749d(string $str): void
 {
 	if (preg_match('/[0-9]?[A-Z]/', $str, $match)) {
-		assertType('array{non-falsy-string}', $match);
+		assertType('array{non-empty-string}', $match); // could be non-falsy-string
 	}
 }
 

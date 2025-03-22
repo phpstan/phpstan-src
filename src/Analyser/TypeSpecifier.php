@@ -1063,12 +1063,12 @@ final class TypeSpecifier
 
 		$isConstantArray = $type->isConstantArray();
 		$isList = $type->isList();
-		$zeroOrMore = IntegerRangeType::fromInterval(1, null);
+		$oneOrMore = IntegerRangeType::fromInterval(1, null);
 		if (
 			!$isNormalCount->yes()
 			|| (!$isConstantArray->yes() && !$isList->yes())
 			|| $type->isIterableAtLeastOnce()->no() // array{} cannot be used for further narrowing
-			|| !$zeroOrMore->isSuperTypeOf($sizeType)->yes()
+			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
 		) {
 			return null;
 		}

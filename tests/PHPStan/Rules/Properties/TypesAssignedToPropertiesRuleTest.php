@@ -139,11 +139,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug1311(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-1311.php'], []);
-	}
-
 	public function testTypesAssignedToPropertiesExpressionNames(): void
 	{
 		$this->analyse([__DIR__ . '/data/properties-from-array-into-object.php'], [

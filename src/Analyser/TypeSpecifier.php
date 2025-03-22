@@ -1068,6 +1068,7 @@ final class TypeSpecifier
 			!$isNormalCount->yes()
 			|| (!$isConstantArray->yes() && !$isList->yes())
 			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
+			|| $sizeType->isSuperTypeOf($type->getArraySize())->yes()
 		) {
 			return null;
 		}

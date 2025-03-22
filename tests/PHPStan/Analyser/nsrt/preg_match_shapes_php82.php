@@ -8,39 +8,39 @@ use function PHPStan\Testing\assertType;
 // https://php.watch/versions/8.2/preg-n-no-capture-modifier
 function doNonAutoCapturingFlag(string $s): void {
 	if (preg_match('/(\d+)/n', $s, $matches)) {
-		assertType('array{non-empty-string}', $matches);
+		assertType('array{non-falsy-string}', $matches);
 	}
-	assertType('array{}|array{non-empty-string}', $matches);
+	assertType('array{}|array{non-falsy-string}', $matches);
 
 	if (preg_match('/(\d+)(?P<num>\d+)/n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
-	assertType('array{}|array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+	assertType('array{}|array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 
 	if (preg_match('/(\w)-(?P<num>\d+)-(\w)/n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
-	assertType('array{}|array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+	assertType('array{}|array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 }
 
 // delimiter variants, see https://www.php.net/manual/en/regexp.reference.delimiters.php
 function (string $s): void {
 	if (preg_match('{(\d+)(?P<num>\d+)}n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('<(\d+)(?P<num>\d+)>n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('((\d+)(?P<num>\d+))n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };
 function (string $s): void {
 	if (preg_match('[(\d+)(?P<num>\d+)]n', $s, $matches)) {
-		assertType('array{0: non-empty-string, num: numeric-string, 1: numeric-string}', $matches);
+		assertType('array{0: non-falsy-string, num: numeric-string, 1: numeric-string}', $matches);
 	}
 };

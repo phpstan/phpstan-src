@@ -109,7 +109,11 @@ final class RegexGroupParser
 			$modifiers,
 			RegexGroupWalkResult::createEmpty(),
 		);
-		if ($subjectAsGroupResult->isNonEmpty()->yes()) {
+		if ($subjectAsGroupResult->isNonFalsy()->yes() || $subjectAsGroupResult->isNumeric()->yes()) {
+			$astWalkResult = $astWalkResult->withSubjectBaseType(
+				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType())
+			);
+		} elseif ($subjectAsGroupResult->isNonEmpty()->yes()) {
 			$astWalkResult = $astWalkResult->withSubjectBaseType(
 				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType())
 			);

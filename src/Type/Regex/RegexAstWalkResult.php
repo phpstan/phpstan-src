@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Regex;
 
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+
 /** @immutable */
 final class RegexAstWalkResult
 {
@@ -15,9 +18,9 @@ final class RegexAstWalkResult
 		private int $captureGroupId,
 		private array $capturingGroups,
 		private array $markVerbs,
+		private Type $subjectBaseType,
 	)
-	{
-	}
+	{}
 
 	public static function createEmpty(): self
 	{
@@ -27,6 +30,7 @@ final class RegexAstWalkResult
 			100,
 			[],
 			[],
+			new StringType()
 		);
 	}
 
@@ -37,6 +41,7 @@ final class RegexAstWalkResult
 			$this->captureGroupId,
 			$this->capturingGroups,
 			$this->markVerbs,
+			$this->subjectBaseType,
 		);
 	}
 
@@ -47,6 +52,7 @@ final class RegexAstWalkResult
 			$this->captureGroupId + 1,
 			$this->capturingGroups,
 			$this->markVerbs,
+			$this->subjectBaseType,
 		);
 	}
 
@@ -60,6 +66,7 @@ final class RegexAstWalkResult
 			$this->captureGroupId,
 			$capturingGroups,
 			$this->markVerbs,
+			$this->subjectBaseType,
 		);
 	}
 
@@ -73,6 +80,18 @@ final class RegexAstWalkResult
 			$this->captureGroupId,
 			$this->capturingGroups,
 			$verbs,
+			$this->subjectBaseType,
+		);
+	}
+
+	public function withSubjectBaseType(Type $subjectBaseType): self
+	{
+		return new self(
+			$this->alternationId,
+			$this->captureGroupId,
+			$this->capturingGroups,
+			$this->markVerbs,
+			$subjectBaseType,
 		);
 	}
 
@@ -100,6 +119,11 @@ final class RegexAstWalkResult
 	public function getMarkVerbs(): array
 	{
 		return $this->markVerbs;
+	}
+
+	public function getSubjectBaseType(): Type
+	{
+		return $this->subjectBaseType;
 	}
 
 }

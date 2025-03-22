@@ -49,10 +49,7 @@ final class RegexGroupParser
 	{
 	}
 
-	/**
-	 * @return array{array<int, RegexCapturingGroup>, list<string>}|null
-	 */
-	public function parseGroups(string $regex): ?array
+	public function parseGroups(string $regex): ?RegexAstWalkResult
 	{
 		if (self::$parser === null) {
 			/** @throws void */
@@ -105,7 +102,7 @@ final class RegexGroupParser
 			RegexAstWalkResult::createEmpty(),
 		);
 
-		return [$astWalkResult->getCapturingGroups(), $astWalkResult->getMarkVerbs()];
+		return $astWalkResult;
 	}
 
 	private function createEmptyTokenTreeNode(TreeNode $parentAst): TreeNode
@@ -262,6 +259,12 @@ final class RegexGroupParser
 				$patternModifiers,
 				$astWalkResult,
 			);
+
+			if ($alternation === null && !$inOptionalQuantification) {
+				$astWalkResult = $astWalkResult->withSubjectBaseType(
+					TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType())
+				);
+			}
 
 			if ($ast->getId() !== '#alternation') {
 				continue;

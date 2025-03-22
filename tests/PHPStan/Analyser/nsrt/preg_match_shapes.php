@@ -7,9 +7,9 @@ use InvalidArgumentException;
 
 function doMatch(string $s): void {
 	if (preg_match('/Price: /i', $s, $matches)) {
-		assertType('array{string}', $matches);
+		assertType('array{non-falsy-string}', $matches);
 	}
-	assertType('array{}|array{string}', $matches);
+	assertType('array{}|array{non-falsy-string}', $matches);
 
 	if (preg_match('/Price: (£|€)\d+/', $s, $matches)) {
 		assertType("array{string, '£'|'€'}", $matches);
@@ -157,9 +157,9 @@ function hoaBug31(string $s): void {
 // https://github.com/phpstan/phpstan/issues/10855#issuecomment-2044323638
 function testHoaUnsupportedRegexSyntax(string $s): void {
 	if (preg_match('#\QPHPDoc type array<string> of property App\Log::$fillable is not covariant with PHPDoc type array<int, string> of overridden property Illuminate\Database\E\\\\\QEloquent\Model::$fillable.\E#', $s, $matches)) {
-		assertType('array{string}', $matches);
+		assertType('array{non-falsy-string}', $matches);
 	}
-	assertType('array{}|array{string}', $matches);
+	assertType('array{}|array{non-falsy-string}', $matches);
 }
 
 function testPregMatchSimpleCondition(string $value): void {
@@ -961,10 +961,52 @@ function bug11744(string $string): void
 	assertType('array{0: string, 1: non-empty-string, 2?: non-falsy-string}', $matches);
 }
 
-/** @return non-empty-string|null */
 function bug12749(string $str): void
 {
 	if (preg_match('/[A-Z]/', $str, $match)) {
-		assertType('string', $match);
+		assertType('array{non-empty-string}', $match);
+	}
+}
+
+function bug12749a(string $str): void
+{
+	if (preg_match('/[A-Z]{2,}/', $str, $match)) {
+		assertType('array{non-falsy-string}', $match);
+	}
+}
+
+function bug12749b(string $str): void
+{
+	if (preg_match('/[0-9][A-Z]/', $str, $match)) {
+		assertType('array{non-falsy-string}', $match);
+	}
+}
+
+function bug12749c(string $str): void
+{
+	if (preg_match('/[0-9][A-Z]?/', $str, $match)) {
+		assertType('array{non-empty-string}', $match);
+	}
+}
+
+function bug12749d(string $str): void
+{
+	if (preg_match('/[0-9]?[A-Z]/', $str, $match)) {
+		assertType('array{non-falsy-string}', $match);
+	}
+}
+
+function bug12749e(string $str): void
+{
+	// no ^ $ delims, therefore can be anything which contains a number
+	if (preg_match('/[0-9]/', $str, $match)) {
+		assertType('array{non-empty-string}', $match); // could be non-falsy-string
+	}
+}
+
+function bug12749f(string $str): void
+{
+	if (preg_match('/^[0-9]$/', $str, $match)) {
+		assertType('array{non-empty-string}', $match); // could be numeric-string
 	}
 }

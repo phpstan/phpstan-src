@@ -10,7 +10,7 @@ const REGEX = '((m.x))';
 
 function foo(string $text): void {
 	assert(preg_match(REGEX, $text, $match) === 1);
-	assertType('array{string, non-falsy-string}', $match);
+	assertType('array{non-falsy-string, non-falsy-string}', $match);
 }
 
 

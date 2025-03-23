@@ -103,7 +103,7 @@ final class RegexGroupWalkResult
 		return $this->onlyLiterals;
 	}
 
-	public function containsEmptyStringLiteral(): bool
+	public function mightContainEmptyStringLiteral(): bool
 	{
 		if ($this->onlyLiterals === null) {
 			return false;

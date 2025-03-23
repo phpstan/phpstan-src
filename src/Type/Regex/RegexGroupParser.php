@@ -110,7 +110,7 @@ final class RegexGroupParser
 			RegexGroupWalkResult::createEmpty(),
 		);
 
-		if (!$subjectAsGroupResult->containsEmptyStringLiteral()) {
+		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral()) {
 			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
 			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(

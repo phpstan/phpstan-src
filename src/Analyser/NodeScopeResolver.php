@@ -1449,9 +1449,11 @@ final class NodeScopeResolver
 			$exitPointsForOuterLoop = [];
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
+			$fullCondExpr = null;
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
+					$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
 					$caseResult = $this->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $nodeCallback, ExpressionContext::createDeep());
 					$scopeForBranches = $caseResult->getScope();
 					$hasYield = $hasYield || $caseResult->hasYield();
@@ -1460,6 +1462,7 @@ final class NodeScopeResolver
 					$branchScope = $caseResult->getTruthyScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
+					$fullCondExpr = null;
 					$branchScope = $scopeForBranches;
 				}
 
@@ -1481,8 +1484,9 @@ final class NodeScopeResolver
 				if ($branchScopeResult->isAlwaysTerminating()) {
 					$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 					$prevScope = null;
-					if (isset($condExpr)) {
-						$scopeForBranches = $scopeForBranches->filterByFalseyValue($condExpr);
+					if (isset($fullCondExpr)) {
+						$scopeForBranches = $scopeForBranches->filterByFalseyValue($fullCondExpr);
+						$fullCondExpr = null;
 					}
 					if (!$branchFinalScopeResult->isAlwaysTerminating()) {
 						$finalScope = $branchScope->mergeWith($finalScope);

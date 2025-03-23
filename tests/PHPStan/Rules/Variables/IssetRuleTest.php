@@ -277,10 +277,12 @@ class IssetRuleTest extends RuleTestCase
 				112,
 			],
 			[
-				'Variable $variableInFirstCase in isset() always exists and is not nullable.',
+				// could be Variable $variableInFirstCase in isset() always exists and is not nullable.
+				'Variable $variableInFirstCase in isset() is never defined.',
 				116,
 			],
 			[
+				// could be Variable $variableInSecondCase in isset() always exists and is not nullable.
 				'Variable $variableInSecondCase in isset() is never defined.',
 				117,
 			],

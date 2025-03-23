@@ -13,6 +13,8 @@
 		"../tests/PHPStan/Rules/Names/data/no-namespace.php",
 		"../tests/notAutoloaded",
 		"../tests/PHPStan/Rules/Functions/data/define-bug-3349.php",
-		"../tests/PHPStan/Levels/data/stubs/function.php"
+		"../tests/PHPStan/Levels/data/stubs/function.php",
+		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
+		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php"
     ]
 }

@@ -420,4 +420,63 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClassConstantAccessedOnTrait(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/class-constant-accessed-on-trait.php'], [
+			[
+				'Cannot access constant TEST on trait ClassConstantAccessedOnTrait\Foo.',
+				16,
+			],
+		]);
+	}
+
+	public function testDynamicAccess(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->phpVersion = PHP_VERSION_ID;
+
+		$this->analyse([__DIR__ . '/data/dynamic-constant-access.php'], [
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				20,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				20,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				37,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				39,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
+				41,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
+				44,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				44,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				44,
+			],
+		]);
+	}
+
 }

@@ -399,4 +399,25 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12621.php'], []);
 	}
 
+	public function testBug12702(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$this->analyse([__DIR__ . '/data/bug-12702.php'], [
+			[
+				'Readable property Bug12702\Foo2::$i is never read.',
+				43,
+			],
+			[
+				'Writable property Bug12702\Bar2::$i is never written.',
+				54,
+			],
+		]);
+	}
+
 }

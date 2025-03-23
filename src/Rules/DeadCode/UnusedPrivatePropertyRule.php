@@ -16,6 +16,7 @@ use function array_key_exists;
 use function array_map;
 use function count;
 use function is_string;
+use function lcfirst;
 use function sprintf;
 use function str_contains;
 
@@ -59,8 +60,8 @@ final class UnusedPrivatePropertyRule implements Rule
 				continue;
 			}
 
-			$alwaysRead = false;
-			$alwaysWritten = false;
+			$alwaysRead = !$property->isReadable();
+			$alwaysWritten = !$property->isWritable();
 			if ($property->getPhpDoc() !== null) {
 				$text = $property->getPhpDoc();
 				foreach ($this->alwaysReadTags as $tag) {
@@ -111,6 +112,8 @@ final class UnusedPrivatePropertyRule implements Rule
 				'read' => $read,
 				'written' => $written,
 				'node' => $property,
+				'onlyReadable' => $property->isReadable() && !$property->isWritable(),
+				'onlyWritable' => $property->isWritable() && !$property->isReadable(),
 			];
 		}
 
@@ -222,18 +225,32 @@ final class UnusedPrivatePropertyRule implements Rule
 						->identifier('property.unused')
 						->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))
+					if ($data['onlyReadable']) {
+						$errors[] = RuleErrorBuilder::message(sprintf('Readable %s is never read.', lcfirst($propertyName)))
+							->line($propertyNode->getStartLine())
+							->identifier('property.neverRead')
+							->build();
+					} else {
+						$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))
+							->line($propertyNode->getStartLine())
+							->identifier('property.onlyWritten')
+							->tip($tip)
+							->build();
+					}
+				}
+			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
+				if ($data['onlyWritable']) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Writable %s is never written.', lcfirst($propertyName)))
 						->line($propertyNode->getStartLine())
-						->identifier('property.onlyWritten')
+						->identifier('property.neverWritten')
+						->build();
+				} else {
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))
+						->line($propertyNode->getStartLine())
+						->identifier('property.onlyRead')
 						->tip($tip)
 						->build();
 				}
-			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))
-					->line($propertyNode->getStartLine())
-					->identifier('property.onlyRead')
-					->tip($tip)
-					->build();
 			}
 		}
 

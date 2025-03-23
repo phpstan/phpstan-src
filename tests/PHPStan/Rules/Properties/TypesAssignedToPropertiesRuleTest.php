@@ -159,10 +159,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				69,
 			],
 			[
-				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept (float|int).',
-				73,
-			],
-			[
 				'Property PropertiesFromArrayIntoObject\Foo::$foo (string) does not accept float.',
 				83,
 			],
@@ -330,7 +326,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 					45,
 				],
 				[
-					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<AppendedArrayItem\Baz>.',
+					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<AppendedArrayItem\Baz|AppendedArrayItem\Lorem>.',
 					79,
 				],
 			],
@@ -686,6 +682,28 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'non-empty-array<int<0, max>, int> might not be a list.',
 			],
 		]);
+	}
+
+	public function testBug6398(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6398.php'], []);
+	}
+
+	public function testBug6571(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6571.php'], []);
+	}
+
+	public function testBug12565(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12565.php'], []);
 	}
 
 	public function testShortBodySetHook(): void

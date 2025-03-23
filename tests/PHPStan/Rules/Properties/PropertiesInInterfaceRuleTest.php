@@ -29,16 +29,20 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				9,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				11,
+			],
+			[
+				'Interfaces can include properties only on PHP 8.4 and later.',
+				13,
 			],
 		]);
 	}
@@ -54,11 +58,11 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				7,
 			],
 			[
-				'Interfaces cannot include properties.',
+				'Interfaces can include properties only on PHP 8.4 and later.',
 				9,
 			],
 		]);
@@ -78,6 +82,10 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 			[
 				'Interfaces can only include hooked properties.',
 				11,
+			],
+			[
+				'Interfaces can only include hooked properties.',
+				13,
 			],
 		]);
 	}
@@ -136,6 +144,50 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 			[
 				'Interfaces cannot include readonly hooked properties.',
 				11,
+			],
+		]);
+	}
+
+	public function testPhp84AndFinalPropertyHooksInInterface(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-property-hooks-in-interface.php'], [
+			[
+				'Interfaces cannot include final properties.',
+				7,
+			],
+			[
+				'Interfaces cannot include final properties.',
+				9,
+			],
+			[
+				'Interfaces cannot include final properties.',
+				11,
+			],
+			[
+				'Property hook cannot be both abstract and final.',
+				13,
+			],
+			[
+				'Property hook cannot be both abstract and final.',
+				17,
+			],
+		]);
+	}
+
+	public function testPhp84AndExplicitAbstractProperty(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/property-in-interface-explicit-abstract.php'], [
+			[
+				'Property in interface cannot be explicitly abstract.',
+				8,
 			],
 		]);
 	}

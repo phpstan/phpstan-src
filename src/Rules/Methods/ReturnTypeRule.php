@@ -94,7 +94,7 @@ final class ReturnTypeRule implements Rule
 			&& $errors[0]->getIdentifier() === 'return.type'
 			&& !$errors[0] instanceof TipRuleError
 			&& $errors[0] instanceof LineRuleError
-			&& $method->getDeclaringClass()->isSubclassOf(Rule::class)
+			&& $method->getDeclaringClass()->is(Rule::class)
 			&& strtolower($method->getName()) === 'processnode'
 			&& $node->expr !== null
 		) {

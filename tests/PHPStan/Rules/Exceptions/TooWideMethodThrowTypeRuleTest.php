@@ -24,6 +24,10 @@ class TooWideMethodThrowTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/too-wide-throws-method.php'], [
 			[
+				'Method TooWideThrowsMethod\Foo::doFoo3() has InvalidArgumentException in PHPDoc @throws tag but it\'s not thrown.',
+				23,
+			],
+			[
 				'Method TooWideThrowsMethod\Foo::doFoo4() has DomainException in PHPDoc @throws tag but it\'s not thrown.',
 				29,
 			],

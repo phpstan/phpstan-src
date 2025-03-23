@@ -9,6 +9,7 @@ use PHPStan\Dependency\RootExportedNode;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class ResultCache
 {
@@ -20,7 +21,7 @@ final class ResultCache
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param array<string, array<CollectedData>> $collectedData
+	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
@@ -101,7 +102,7 @@ final class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<CollectedData>>
+	 * @return CollectorData
 	 */
 	public function getCollectedData(): array
 	{

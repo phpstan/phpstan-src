@@ -41,7 +41,7 @@ $s = sprintf("%s", returnsJustString());
 assertType('string', $s);
 
 $s = sprintf("%s", implode(', ', array_map('intval', returnsArray())));
-assertType('string', $s);
+assertType('lowercase-string&uppercase-string', $s);
 
 $s = sprintf('%2$s', 1234, returnsNonFalsyString());
 assertType('non-falsy-string', $s);

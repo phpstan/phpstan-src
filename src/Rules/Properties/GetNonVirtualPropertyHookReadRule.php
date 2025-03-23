@@ -76,6 +76,10 @@ final class GetNonVirtualPropertyHookReadRule implements Rule
 					continue;
 				}
 
+				if ($hook->body === null) {
+					continue;
+				}
+
 				$hasGetHook = true;
 				break;
 			}

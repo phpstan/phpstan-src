@@ -15,6 +15,12 @@ class Foo {
 		empty($bar->dynamicProperty);
 		$bar->dynamicProperty ?? 'test';
 	}
+
+	public function doBaz(Bar $bar) {
+		isset($bar->dynamicProperty);
+		empty($bar->dynamicProperty);
+		$bar->dynamicProperty ?? 'test';
+	}
 }
 
 #[\AllowDynamicProperties]

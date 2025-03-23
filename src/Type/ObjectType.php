@@ -31,6 +31,8 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -375,40 +377,56 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ShouldNotHappenException();
 		}
 
-		if ($thatClassNames[0] === $thisClassName) {
-			return $transformResult(IsSuperTypeOfResult::createYes());
+		$thisClassReflection = $this->getClassReflection();
+		$thatClassReflections = $type->getObjectClassReflections();
+		if (count($thatClassReflections) === 1) {
+			$thatClassReflection = $thatClassReflections[0];
+		} else {
+			$thatClassReflection = null;
 		}
 
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$thisClassReflection = $this->getClassReflection();
-
-		if ($thisClassReflection === null || !$reflectionProvider->hasClass($thatClassNames[0])) {
+		if ($thisClassReflection === null || $thatClassReflection === null) {
+			if ($thatClassNames[0] === $thisClassName) {
+				return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+			}
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		$thatClassReflection = $reflectionProvider->getClass($thatClassNames[0]);
+		if ($thatClassNames[0] === $thisClassName) {
+			if ($thisClassReflection->getNativeReflection()->isFinal()) {
+				return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+			}
+
+			if ($thisClassReflection->hasFinalByKeywordOverride()) {
+				if (!$thatClassReflection->hasFinalByKeywordOverride()) {
+					return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createMaybe());
+				}
+			}
+
+			return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
+		}
 
 		if ($thisClassReflection->isTrait() || $thatClassReflection->isTrait()) {
-			return IsSuperTypeOfResult::createNo();
+			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createNo();
 		}
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
 			return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
 		}
 
-		if ($thatClassReflection->isSubclassOf($thisClassName)) {
+		if ($thatClassReflection->isSubclassOfClass($thisClassReflection)) {
 			return self::$superTypes[$thisDescription][$description] = $transformResult(IsSuperTypeOfResult::createYes());
 		}
 
-		if ($thisClassReflection->isSubclassOf($thatClassNames[0])) {
+		if ($thisClassReflection->isSubclassOfClass($thatClassReflection)) {
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		if ($thisClassReflection->isInterface() && !$thatClassReflection->getNativeReflection()->isFinal()) {
+		if ($thisClassReflection->isInterface() && !$thatClassReflection->isFinalByKeyword()) {
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
-		if ($thatClassReflection->isInterface() && !$thisClassReflection->getNativeReflection()->isFinal()) {
+		if ($thatClassReflection->isInterface() && !$thisClassReflection->isFinalByKeyword()) {
 			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createMaybe();
 		}
 
@@ -467,7 +485,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return AcceptsResult::createFromBoolean(
-			$thatReflection->isSubclassOf($thisReflection->getName()),
+			$thatReflection->isSubclassOfClass($thisReflection),
 		);
 	}
 
@@ -548,6 +566,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$description .= '-';
 			$description .= (string) $reflection->getNativeReflection()->getStartLine();
 			$description .= '-';
+
+			if ($reflection->hasFinalByKeywordOverride()) {
+				$description .= 'f=' . ($reflection->isFinalByKeyword() ? 't' : 'f');
+			}
 		}
 
 		return $this->cachedDescription = $description;
@@ -593,6 +615,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toString(): Type
 	{
+		if ($this->isInstanceOf('BcMath\Number')->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
+		}
+
 		$classReflection = $this->getClassReflection();
 		if ($classReflection === null) {
 			return new ErrorType();
@@ -678,7 +708,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toBoolean(): BooleanType
 	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+		if (
+			$this->isInstanceOf('SimpleXMLElement')->yes()
+			|| $this->isInstanceOf('BcMath\Number')->yes()
+		) {
 			return new BooleanType();
 		}
 
@@ -1094,10 +1127,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		foreach (self::EXTRA_OFFSET_CLASSES as $extraOffsetClass) {
-			if ($classReflection->getName() === $extraOffsetClass) {
-				return TrinaryLogic::createYes();
-			}
-			if ($classReflection->isSubclassOf($extraOffsetClass)) {
+			if ($classReflection->is($extraOffsetClass)) {
 				return TrinaryLogic::createYes();
 			}
 		}
@@ -1318,7 +1348,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			);
 		}
 
-		if (!$classReflection->getNativeReflection()->isFinal()) {
+		if (!$classReflection->isFinalByKeyword()) {
 			return [new TrivialParametersAcceptor()];
 		}
 
@@ -1337,7 +1367,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($classReflection->getName() === $className || $classReflection->isSubclassOf($className)) {
+		if ($classReflection->is($className)) {
 			return TrinaryLogic::createYes();
 		}
 

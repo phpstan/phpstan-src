@@ -37,6 +37,8 @@ use function is_int;
 use function md5;
 use function sprintf;
 use function usort;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /**
  * @api
@@ -185,6 +187,7 @@ final class TypeCombinator
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		$enumCaseTypes = [];
+		$integerRangeTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
@@ -212,6 +215,13 @@ final class TypeCombinator
 				continue;
 			}
 
+			if ($types[$i] instanceof IntegerRangeType) {
+				$integerRangeTypes[] = $types[$i];
+				unset($types[$i]);
+
+				continue;
+			}
+
 			if (!$types[$i]->isArray()->yes()) {
 				continue;
 			}
@@ -225,6 +235,12 @@ final class TypeCombinator
 		}
 
 		$enumCaseTypes = array_values($enumCaseTypes);
+		usort(
+			$integerRangeTypes,
+			static fn (IntegerRangeType $a, IntegerRangeType $b): int => ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN)
+				?: ($a->getMax() ?? PHP_INT_MAX) <=> ($b->getMax() ?? PHP_INT_MAX)
+		);
+		$types = array_merge($types, $integerRangeTypes);
 		$types = array_values($types);
 		$typesCount = count($types);
 
@@ -842,6 +858,10 @@ final class TypeCombinator
 							return TypeCombinator::intersect($type, new OversizedArrayType());
 						}
 
+						if ($type instanceof ConstantScalarType) {
+							return $type->generalize(GeneralizePrecision::moreSpecific());
+						}
+
 						return $traverse($type);
 					});
 					$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
@@ -880,6 +900,10 @@ final class TypeCombinator
 
 			$keyType = self::union(...$keyTypes);
 			$valueType = self::union(...$valueTypes);
+
+			if ($valueType instanceof UnionType && count($valueType->getTypes()) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
+			}
 
 			$arrayType = new ArrayType($keyType, $valueType);
 			if ($eachIsList) {

@@ -61,8 +61,16 @@ $buz = new MaybeThrows2();
 try {
 	$buz[] = 'value';
 } catch (Exception $e) {
-	// not dead
+	// dead because $buz cannot be a subclass
 }
+
+function (MaybeThrows2 $buz): void {
+	try {
+		$buz[] = 'value';
+	} catch (Exception $e) {
+		// not dead
+	}
+};
 
 $baz = new DefinitelyNoThrows();
 try {

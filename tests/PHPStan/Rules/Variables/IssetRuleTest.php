@@ -268,10 +268,12 @@ class IssetRuleTest extends RuleTestCase
 				112,
 			],
 			[
-				'Variable $variableInFirstCase in isset() always exists and is not nullable.',
+				// could be Variable $variableInFirstCase in isset() always exists and is not nullable.
+				'Variable $variableInFirstCase in isset() is never defined.',
 				116,
 			],
 			[
+				// could be Variable $variableInSecondCase in isset() always exists and is not nullable.
 				'Variable $variableInSecondCase in isset() is never defined.',
 				117,
 			],
@@ -354,7 +356,7 @@ class IssetRuleTest extends RuleTestCase
 				67,
 			],
 			[
-				'Using nullsafe property access "?->(Expression)" in isset() is unnecessary. Use -> instead.',
+				'Expression in isset() is not nullable.',
 				74,
 			],
 		]);
@@ -462,6 +464,13 @@ class IssetRuleTest extends RuleTestCase
 				16,
 			],
 		]);
+	}
+
+	public function testBug9328(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9328.php'], []);
 	}
 
 }

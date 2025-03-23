@@ -293,7 +293,17 @@ class ArrayType implements Type
 			if ($isKeyTypeInteger->no()) {
 				$offsetType = new IntegerType();
 			} elseif ($isKeyTypeInteger->yes()) {
-				$offsetType = $this->keyType;
+				/** @var list<ConstantIntegerType> $constantScalars */
+				$constantScalars = $this->keyType->getConstantScalarTypes();
+				if (count($constantScalars) > 0) {
+					foreach ($constantScalars as $constantScalar) {
+						$constantScalars[] = ConstantTypeHelper::getTypeFromValue($constantScalar->getValue() + 1);
+					}
+
+					$offsetType = TypeCombinator::union(...$constantScalars);
+				} else {
+					$offsetType = $this->keyType;
+				}
 			} else {
 				$integerTypes = [];
 				TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use (&$integerTypes): Type {

@@ -6,16 +6,16 @@ use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Collector;
-use function array_key_exists;
 
 /**
  * @api
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class CollectedDataNode extends NodeAbstract implements VirtualNode
 {
 
 	/**
-	 * @param CollectedData[] $collectedData
+	 * @param CollectorData $collectedData
 	 */
 	public function __construct(private array $collectedData, private bool $onlyFiles)
 	{
@@ -31,17 +31,14 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	public function get(string $collectorType): array
 	{
 		$result = [];
-		foreach ($this->collectedData as $collectedData) {
-			if ($collectedData->getCollectorType() !== $collectorType) {
+		foreach ($this->collectedData as $filePath => $collectedDataPerCollector) {
+			if (!isset($collectedDataPerCollector[$collectorType])) {
 				continue;
 			}
 
-			$filePath = $collectedData->getFilePath();
-			if (!array_key_exists($filePath, $result)) {
-				$result[$filePath] = [];
+			foreach ($collectedDataPerCollector[$collectorType] as $rawData) {
+				$result[$filePath][] = $rawData;
 			}
-
-			$result[$filePath][] = $collectedData->getData();
 		}
 
 		return $result;

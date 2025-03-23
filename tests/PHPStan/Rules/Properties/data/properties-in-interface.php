@@ -9,4 +9,6 @@ interface HelloWorld
     public \DateTimeInterface $dateTime;
 
     public static \Closure $callable;
+
+    public final \DateTime $finalProperty;
 }

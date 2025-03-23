@@ -71,4 +71,9 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10865.php'], []);
 	}
 
+	public function testBug11454(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11454.php'], []);
+	}
+
 }

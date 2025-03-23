@@ -15,14 +15,13 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\Regex\RegexAlternation;
 use PHPStan\Type\Regex\RegexCapturingGroup;
 use PHPStan\Type\Regex\RegexExpressionHelper;
+use PHPStan\Type\Regex\RegexGroupList;
 use PHPStan\Type\Regex\RegexGroupParser;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_reverse;
 use function count;
 use function in_array;
 use function is_string;
@@ -115,16 +114,10 @@ final class RegexArrayShapeMatcher
 		}
 		[$groupList, $markVerbs] = $parseResult;
 
-		$trailingOptionals = 0;
-		foreach (array_reverse($groupList) as $captureGroup) {
-			if (!$captureGroup->isOptional()) {
-				break;
-			}
-			$trailingOptionals++;
-		}
-
-		$onlyOptionalTopLevelGroup = $this->getOnlyOptionalTopLevelGroup($groupList);
-		$onlyTopLevelAlternation = $this->getOnlyTopLevelAlternation($groupList);
+		$regexGroupList = new RegexGroupList($groupList);
+		$trailingOptionals = $regexGroupList->countTrailingOptionals();
+		$onlyOptionalTopLevelGroup = $regexGroupList->getOnlyOptionalTopLevelGroup();
+		$onlyTopLevelAlternation = $regexGroupList->getOnlyTopLevelAlternation();
 		$flags ??= 0;
 
 		if (
@@ -134,11 +127,10 @@ final class RegexArrayShapeMatcher
 		) {
 			// if only one top level capturing optional group exists
 			// we build a more precise tagged union of a empty-match and a match with the group
-
-			$onlyOptionalTopLevelGroup->forceNonOptional();
+			$regexGroupList = $regexGroupList->forceGroupNonOptional($onlyOptionalTopLevelGroup);
 
 			$combiType = $this->buildArrayType(
-				$groupList,
+				$regexGroupList,
 				$wasMatched,
 				$trailingOptionals,
 				$flags,
@@ -154,8 +146,6 @@ final class RegexArrayShapeMatcher
 				);
 			}
 
-			$onlyOptionalTopLevelGroup->clearOverrides();
-
 			return $combiType;
 		} elseif (
 			!$matchesAll
@@ -168,24 +158,24 @@ final class RegexArrayShapeMatcher
 			$combiTypes = [];
 			$isOptionalAlternation = false;
 			foreach ($onlyTopLevelAlternation->getGroupCombinations() as $groupCombo) {
-				$comboList = $groupList;
+				$comboList = new RegexGroupList($groupList);
 
 				$beforeCurrentCombo = true;
-				foreach ($comboList as $groupId => $group) {
-					if (in_array($groupId, $groupCombo, true)) {
+				foreach ($comboList as $group) {
+					if (in_array($group->getId(), $groupCombo, true)) {
 						$isOptionalAlternation = $group->inOptionalAlternation();
-						$group->forceNonOptional();
+						$comboList = $comboList->forceGroupNonOptional($group);
 						$beforeCurrentCombo = false;
 					} elseif ($beforeCurrentCombo && !$group->resetsGroupCounter()) {
-						$group->forceNonOptional();
-						$group->forceType(
+						$comboList = $comboList->forceGroupTypeAndNonOptional(
+							$group,
 							$this->containsUnmatchedAsNull($flags, $matchesAll) ? new NullType() : new ConstantStringType(''),
 						);
 					} elseif (
 						$group->getAlternationId() === $onlyTopLevelAlternation->getId()
 						&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					) {
-						unset($comboList[$groupId]);
+						$comboList = $comboList->removeGroup($group);
 					}
 				}
 
@@ -199,11 +189,6 @@ final class RegexArrayShapeMatcher
 				);
 
 				$combiTypes[] = $combiType;
-
-				foreach ($groupCombo as $groupId) {
-					$group = $comboList[$groupId];
-					$group->clearOverrides();
-				}
 			}
 
 			if (
@@ -223,7 +208,7 @@ final class RegexArrayShapeMatcher
 		// the general case, which should work in all cases but does not yield the most
 		// precise result possible in some cases
 		return $this->buildArrayType(
-			$groupList,
+			$regexGroupList,
 			$wasMatched,
 			$trailingOptionals,
 			$flags,
@@ -233,65 +218,10 @@ final class RegexArrayShapeMatcher
 	}
 
 	/**
-	 * @param array<int, RegexCapturingGroup> $captureGroups
-	 */
-	private function getOnlyOptionalTopLevelGroup(array $captureGroups): ?RegexCapturingGroup
-	{
-		$group = null;
-		foreach ($captureGroups as $captureGroup) {
-			if (!$captureGroup->isTopLevel()) {
-				continue;
-			}
-
-			if (!$captureGroup->isOptional()) {
-				return null;
-			}
-
-			if ($group !== null) {
-				return null;
-			}
-
-			$group = $captureGroup;
-		}
-
-		return $group;
-	}
-
-	/**
-	 * @param array<int, RegexCapturingGroup> $captureGroups
-	 */
-	private function getOnlyTopLevelAlternation(array $captureGroups): ?RegexAlternation
-	{
-		$alternation = null;
-		foreach ($captureGroups as $captureGroup) {
-			if (!$captureGroup->isTopLevel()) {
-				continue;
-			}
-
-			if (!$captureGroup->inAlternation()) {
-				return null;
-			}
-
-			if ($captureGroup->inOptionalQuantification()) {
-				return null;
-			}
-
-			if ($alternation === null) {
-				$alternation = $captureGroup->getAlternation();
-			} elseif ($alternation->getId() !== $captureGroup->getAlternation()->getId()) {
-				return null;
-			}
-		}
-
-		return $alternation;
-	}
-
-	/**
-	 * @param array<RegexCapturingGroup> $captureGroups
 	 * @param list<string> $markVerbs
 	 */
 	private function buildArrayType(
-		array $captureGroups,
+		RegexGroupList $captureGroups,
 		TrinaryLogic $wasMatched,
 		int $trailingOptionals,
 		int $flags,

@@ -64,6 +64,39 @@ class Foo
 		}
 	}
 
+	/** @param array{0: string, 1?: string} $arr */
+	public function doBar(array $arr): void
+	{
+		if (count($arr) <= 1) {
+			assertType('1', count($arr));
+			return;
+		}
+
+		assertType('2', count($arr));
+		assertType('array{string, string}', $arr);
+	}
+
+	/** @param array{0: string, 1?: string} $arr */
+	public function doBaz(array $arr): void
+	{
+		if (count($arr) > 1) {
+			assertType('2', count($arr));
+			assertType('array{string, string}', $arr);
+		}
+
+		assertType('1|2', count($arr));
+	}
+
+	public function constantArrayWhichCanBecomeList(string $h): void
+	{
+		preg_match('#^([a-z0-9-]+)\..+$#', $h, $matches);
+		if (count($matches) !== 2) {
+			return;
+		}
+
+		assertType('array{string, non-empty-string}', $matches);
+	}
+
 }
 
 /**

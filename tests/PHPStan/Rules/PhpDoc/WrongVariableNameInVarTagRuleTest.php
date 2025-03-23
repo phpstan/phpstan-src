@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -21,7 +22,13 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType, $this->strictWideningCheck),
+			new VarTagTypeRuleHelper(
+				self::getContainer()->getByType(TypeNodeResolver::class),
+				self::getContainer()->getByType(FileTypeMapper::class),
+				$this->createReflectionProvider(),
+				$this->checkTypeAgainstPhpDocType,
+				$this->strictWideningCheck,
+			),
 		);
 	}
 
@@ -189,6 +196,43 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	public function testBug4505(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4505.php'], []);
+	}
+
+	public function testBug12458(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+
+		$this->analyse([__DIR__ . '/data/bug-12458.php'], []);
+	}
+
+	public function testBug11015(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11015.php'], []);
+	}
+
+	public function testBug10861(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10861.php'], []);
+	}
+
+	public function testBug11535(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11535.php'], [
+			[
+				'PHPDoc tag @var with type Closure(string): array<int> is not subtype of native type Closure(string): array{1, 2, 3}.',
+				6,
+			],
+		]);
 	}
 
 	public function testEnums(): void
@@ -521,6 +565,13 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				22,
 			],
 		]);
+	}
+
+	public function testNewIsAlwaysFinalClass(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->strictWideningCheck = true;
+		$this->analyse([__DIR__ . '/data/new-is-always-final-var-tag-type.php'], []);
 	}
 
 }

@@ -221,7 +221,7 @@ final class StaticMethodCallCheck
 				$classType->getObjectClassNames(),
 				static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(
 					$scope->isInClass()
-					&& ($scope->getClassReflection()->getName() === $objectClassName || $scope->getClassReflection()->isSubclassOf($objectClassName)),
+					&& $scope->getClassReflection()->is($objectClassName),
 				),
 			);
 			if (

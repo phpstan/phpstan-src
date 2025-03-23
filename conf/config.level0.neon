@@ -46,6 +46,7 @@ rules:
 	- PHPStan\Rules\Constants\FinalConstantRule
 	- PHPStan\Rules\Constants\MagicConstantContextRule
 	- PHPStan\Rules\Constants\NativeTypedClassConstantRule
+	- PHPStan\Rules\Constants\FinalPrivateConstantRule
 	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
 	- PHPStan\Rules\Exceptions\NoncapturingCatchRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule

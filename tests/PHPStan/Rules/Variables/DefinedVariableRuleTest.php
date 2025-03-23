@@ -1098,4 +1098,92 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDynamicAccess(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/dynamic-access.php'], [
+			[
+				'Undefined variable: $bar',
+				15,
+			],
+			[
+				'Undefined variable: $bar',
+				18,
+			],
+			[
+				'Undefined variable: $buz',
+				18,
+			],
+			[
+				'Variable $foo might not be defined.',
+				36,
+			],
+			[
+				'Variable $foo might not be defined.',
+				37,
+			],
+			[
+				'Variable $bar might not be defined.',
+				38,
+			],
+			[
+				'Variable $bar might not be defined.',
+				40,
+			],
+			[
+				'Variable $foo might not be defined.',
+				41,
+			],
+			[
+				'Variable $bar might not be defined.',
+				42,
+			],
+			[
+				'Undefined variable: $buz',
+				44,
+			],
+			[
+				'Undefined variable: $foo',
+				45,
+			],
+			[
+				'Undefined variable: $bar',
+				46,
+			],
+			[
+				'Undefined variable: $buz',
+				49,
+			],
+			[
+				'Variable $bar might not be defined.',
+				49,
+			],
+			[
+				'Variable $foo might not be defined.',
+				49,
+			],
+			[
+				'Variable $foo might not be defined.',
+				50,
+			],
+			[
+				'Variable $bar might not be defined.',
+				51,
+			],
+		]);
+	}
+
+	public function testBug8719(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-8719.php'], []);
+	}
+
 }

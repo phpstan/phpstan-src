@@ -196,3 +196,20 @@ class TestCase
 	}
 
 }
+
+class ArrayAccessPropertyFetch
+{
+
+	private readonly \ArrayObject $storage;
+
+	public function __construct() {
+		$this->storage = new \ArrayObject();
+	}
+
+	public function set(\stdClass $class, int $value): void {
+		$this->storage[$class] = $value;
+		unset($this->storage[$class]);
+		$this->storage = new \WeakMap(); // invalid
+	}
+
+}

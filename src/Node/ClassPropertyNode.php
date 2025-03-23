@@ -86,6 +86,11 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return (bool) ($this->flags & Modifiers::PRIVATE);
 	}
 
+	public function isFinal(): bool
+	{
+		return (bool) ($this->flags & Modifiers::FINAL);
+	}
+
 	public function isStatic(): bool
 	{
 		return (bool) ($this->flags & Modifiers::STATIC);
@@ -163,6 +168,16 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function isVirtual(): bool
 	{
 		return $this->classReflection->getNativeProperty($this->name)->isVirtual()->yes();
+	}
+
+	public function isWritable(): bool
+	{
+		return $this->classReflection->getNativeProperty($this->name)->isWritable();
+	}
+
+	public function isReadable(): bool
+	{
+		return $this->classReflection->getNativeProperty($this->name)->isReadable();
 	}
 
 }

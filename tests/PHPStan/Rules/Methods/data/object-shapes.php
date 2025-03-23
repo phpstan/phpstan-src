@@ -8,10 +8,11 @@ use stdClass;
 class Foo
 {
 
-	public function doFoo(): void
+	public function doFoo(Exception $e): void
 	{
 		$this->doBar(new stdClass());
 		$this->doBar(new Exception());
+		$this->doBar($e);
 	}
 
 	/**

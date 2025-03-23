@@ -288,7 +288,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 				66,
 			],
 			[
-				'Using nullsafe property access "?->(Expression)" on left side of ?? is unnecessary. Use -> instead.',
+				'Expression on left side of ?? is not nullable.',
 				73,
 			],
 		]);

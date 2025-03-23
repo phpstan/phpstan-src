@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\Type;
 
 /**
  * @implements Rule<InArrowFunctionNode>
@@ -34,7 +33,6 @@ final class ArrowFunctionReturnTypeRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
-		/** @var Type $returnType */
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$generatorType = new ObjectType(Generator::class);
 

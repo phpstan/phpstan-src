@@ -79,9 +79,15 @@ final class TrinaryLogic
 
 	public function and(self ...$operands): self
 	{
-		$operandValues = array_column($operands, 'value');
-		$operandValues[] = $this->value;
-		return self::create(min($operandValues));
+		$min = $this->value;
+		foreach ($operands as $operand) {
+			if ($operand->value >= $min) {
+				continue;
+			}
+
+			$min = $operand->value;
+		}
+		return self::create($min);
 	}
 
 	/**

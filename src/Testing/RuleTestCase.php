@@ -206,7 +206,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
 	{
-		return false;
+		return true;
 	}
 
 	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool

@@ -20,7 +20,7 @@ class Foo
 	}
 
 	/** @throws \InvalidArgumentException */
-	public function doFoo3(): void // ok
+	public function doFoo3(): void // // new LogicException cannot be InvalidArgumentException
 	{
 		throw new \LogicException();
 	}

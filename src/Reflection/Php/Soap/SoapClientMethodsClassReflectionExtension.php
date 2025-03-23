@@ -11,7 +11,7 @@ final class SoapClientMethodsClassReflectionExtension implements MethodsClassRef
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
 	{
-		return $classReflection->getName() === 'SoapClient' || $classReflection->isSubclassOf('SoapClient');
+		return $classReflection->is('SoapClient');
 	}
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection

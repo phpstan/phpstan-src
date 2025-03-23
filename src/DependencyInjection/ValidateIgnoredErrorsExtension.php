@@ -168,7 +168,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 						continue;
 					}
 
-					$errors[] = sprintf('Path %s is neither a directory, nor a file path, nor a fnmatch pattern.', $ignorePath);
+					$errors[] = sprintf('Path "%s" is neither a directory, nor a file path, nor a fnmatch pattern.', $ignorePath);
 				}
 			}
 		}

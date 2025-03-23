@@ -25,18 +25,63 @@ use Symfony\Component\Finder\Finder;
 		/** @var string[] */
 		public array $functions = [];
 
+		/** @var list<string> */
+		public array $impureFunctions = [];
+
 		/** @var string[] */
 		public array $methods = [];
 
 		public function enterNode(Node $node)
 		{
 			if ($node instanceof Node\Stmt\Function_) {
+				assert(isset($node->namespacedName));
+				$functionName = $node->namespacedName->toLowerString();
+
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
-							$this->functions[] = $node->namespacedName->toLowerString();
+						if ($attr->name->toString() !== Pure::class) {
+							continue;
+						}
+
+						// The following functions have side effects, but their state is managed within the PHPStan scope:
+						if (in_array($functionName, [
+							'stat',
+							'lstat',
+							'file_exists',
+							'is_writable',
+							'is_writeable',
+							'is_readable',
+							'is_executable',
+							'is_file',
+							'is_dir',
+							'is_link',
+							'filectime',
+							'fileatime',
+							'filemtime',
+							'fileinode',
+							'filegroup',
+							'fileowner',
+							'filesize',
+							'filetype',
+							'fileperms',
+							'ftell',
+							'ini_get',
+							'function_exists',
+							'json_last_error',
+							'json_last_error_msg',
+						], true)) {
+							$this->functions[] = $functionName;
 							break 2;
 						}
+
+						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
+						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
+						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
+							$this->impureFunctions[] = $functionName;
+						} else {
+							$this->functions[] = $functionName;
+						}
+						break 2;
 					}
 				}
 			}
@@ -74,25 +119,28 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
+	/** @var array<string, array{hasSideEffects: bool}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
 			if ($metadata[$functionName]['hasSideEffects']) {
-				if (in_array($functionName, [
-					'mt_rand',
-					'rand',
-					'random_bytes',
-					'random_int',
-					'connection_aborted',
-					'connection_status',
-					'file_get_contents',
-				], true)) {
-					continue;
-				}
 				throw new ShouldNotHappenException($functionName);
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
+	}
+	foreach ($visitor->impureFunctions as $functionName) {
+		if (array_key_exists($functionName, $metadata)) {
+			if (in_array($functionName, [
+				'ob_get_contents',
+			], true)) {
+				continue;
+			}
+			if ($metadata[$functionName]['hasSideEffects']) {
+				throw new ShouldNotHappenException($functionName);
+			}
+		}
+		$metadata[$functionName] = ['hasSideEffects' => true];
 	}
 
 	foreach ($visitor->methods as $methodName) {

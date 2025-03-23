@@ -175,6 +175,7 @@ final class ClassReflection
 		private array $universalObjectCratesClasses,
 		private ?string $extraCacheKey = null,
 		private ?TemplateTypeVarianceMap $resolvedCallSiteVarianceMap = null,
+		private ?bool $finalByKeywordOverride = null,
 	)
 	{
 	}
@@ -304,6 +305,10 @@ final class ClassReflection
 			}
 
 			$cacheKey .= '<' . implode(',', $templateTypes) . '>';
+		}
+
+		if ($this->hasFinalByKeywordOverride()) {
+			$cacheKey .= '-f=' . ($this->isFinalByKeyword() ? 't' : 'f');
 		}
 
 		if ($this->extraCacheKey !== null) {
@@ -832,20 +837,33 @@ final class ClassReflection
 		return $this->getName() === $className || $this->isSubclassOf($className);
 	}
 
+	/**
+	 * @deprecated Use isSubclassOfClass instead.
+	 */
 	public function isSubclassOf(string $className): bool
 	{
-		if (isset($this->subclasses[$className])) {
-			return $this->subclasses[$className];
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return false;
 		}
 
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return $this->subclasses[$className] = false;
+		return $this->isSubclassOfClass($this->reflectionProvider->getClass($className));
+	}
+
+	public function isSubclassOfClass(self $class): bool
+	{
+		$cacheKey = $class->getCacheKey();
+		if (isset($this->subclasses[$cacheKey])) {
+			return $this->subclasses[$cacheKey];
+		}
+
+		if ($class->isFinalByKeyword() || $class->isAnonymous()) {
+			return $this->subclasses[$cacheKey] = false;
 		}
 
 		try {
-			return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
+			return $this->subclasses[$cacheKey] = $this->reflection->isSubclassOf($class->getName());
 		} catch (ReflectionException) {
-			return $this->subclasses[$className] = false;
+			return $this->subclasses[$cacheKey] = false;
 		}
 	}
 
@@ -1276,10 +1294,19 @@ final class ClassReflection
 		return $this->acceptsNamedArguments;
 	}
 
+	public function hasFinalByKeywordOverride(): bool
+	{
+		return $this->finalByKeywordOverride !== null;
+	}
+
 	public function isFinalByKeyword(): bool
 	{
 		if ($this->isAnonymous()) {
 			return true;
+		}
+
+		if ($this->finalByKeywordOverride !== null) {
+			return $this->finalByKeywordOverride;
 		}
 
 		return $this->reflection->isFinal();
@@ -1543,6 +1570,7 @@ final class ClassReflection
 			$this->universalObjectCratesClasses,
 			null,
 			$this->resolvedCallSiteVarianceMap,
+			$this->finalByKeywordOverride,
 		);
 	}
 
@@ -1573,6 +1601,48 @@ final class ClassReflection
 			$this->universalObjectCratesClasses,
 			null,
 			$this->varianceMapFromList($variances),
+			$this->finalByKeywordOverride,
+		);
+	}
+
+	public function asFinal(): self
+	{
+		if ($this->getNativeReflection()->isFinal()) {
+			return $this;
+		}
+		if ($this->finalByKeywordOverride === true) {
+			return $this;
+		}
+		if (!$this->isClass()) {
+			return $this;
+		}
+		if ($this->isAbstract()) {
+			return $this;
+		}
+
+		return new self(
+			$this->reflectionProvider,
+			$this->initializerExprTypeResolver,
+			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
+			$this->phpVersion,
+			$this->signatureMapProvider,
+			$this->attributeReflectionFactory,
+			$this->propertiesClassReflectionExtensions,
+			$this->methodsClassReflectionExtensions,
+			$this->allowedSubTypesClassReflectionExtensions,
+			$this->requireExtendsPropertiesClassReflectionExtension,
+			$this->requireExtendsMethodsClassReflectionExtension,
+			$this->displayName,
+			$this->reflection,
+			$this->anonymousFilename,
+			$this->resolvedTemplateTypeMap,
+			$this->stubPhpDocBlock,
+			$this->universalObjectCratesClasses,
+			null,
+			$this->resolvedCallSiteVarianceMap,
+			true,
 		);
 	}
 

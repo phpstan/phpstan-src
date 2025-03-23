@@ -256,6 +256,11 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		return $this->setHook !== null;
 	}
 
+	public function isHooked(): bool
+	{
+		return $this->getHook !== null || $this->setHook !== null;
+	}
+
 	public function getHook(string $hookType): ExtendedMethodReflection
 	{
 		if ($hookType === 'get') {

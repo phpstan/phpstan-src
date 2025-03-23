@@ -17,7 +17,7 @@ function doFoo2(): void // ok
 }
 
 /** @throws \InvalidArgumentException */
-function doFoo3(): void // ok
+function doFoo3(): void // new LogicException cannot be InvalidArgumentException
 {
 	throw new \LogicException();
 }
@@ -63,4 +63,10 @@ function doFoo8(): void // error - DomainException unused
 function doFoo9(): void // error - DomainException unused
 {
 
+}
+
+/** @throws \InvalidArgumentException */
+function doFoo10(\LogicException $e): void // ok
+{
+	throw $e;
 }

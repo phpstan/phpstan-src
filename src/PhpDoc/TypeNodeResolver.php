@@ -199,7 +199,15 @@ final class TypeNodeResolver
 	{
 		switch (strtolower($typeNode->name)) {
 			case 'int':
+				return new IntegerType();
+
 			case 'integer':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+
+				if ($type !== null) {
+					return $type;
+				}
+
 				return new IntegerType();
 
 			case 'positive-int':

@@ -66,7 +66,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			[$hackstackArg, $needleArg] = self::STR_CONTAINING_FUNCTIONS[strtolower($functionReflection->getName())];
 
 			$haystackType = $scope->getType($args[$hackstackArg]->value);
-			$needleType = $scope->getType($args[$needleArg]->value);
+			$needleType = $scope->getType($args[$needleArg]->value)->toString();
 
 			if ($needleType->isNonEmptyString()->yes() && $haystackType->isString()->yes()) {
 				$accessories = [

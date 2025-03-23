@@ -49,11 +49,7 @@ final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 
 		$classReflection = $this->reflectionProvider->getClass($className);
 		foreach ($this->uncheckedExceptionClasses as $uncheckedExceptionClass) {
-			if ($classReflection->getName() === $uncheckedExceptionClass) {
-				return false;
-			}
-
-			if (!$classReflection->isSubclassOf($uncheckedExceptionClass)) {
+			if (!$classReflection->is($uncheckedExceptionClass)) {
 				continue;
 			}
 
@@ -83,11 +79,7 @@ final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 
 		$classReflection = $this->reflectionProvider->getClass($className);
 		foreach ($this->checkedExceptionClasses as $checkedExceptionClass) {
-			if ($classReflection->getName() === $checkedExceptionClass) {
-				return true;
-			}
-
-			if (!$classReflection->isSubclassOf($checkedExceptionClass)) {
+			if (!$classReflection->is($checkedExceptionClass)) {
 				continue;
 			}
 

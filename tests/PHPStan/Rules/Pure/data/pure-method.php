@@ -375,3 +375,49 @@ class AssertingImpureVoidMethod
 	}
 
 }
+
+class StaticMethodAccessingStaticProperty
+{
+	/** @var int */
+	public static $a = 0;
+	/**
+	 * @phpstan-pure
+	 */
+	public static function getA(): int
+	{
+		return self::$a;
+	}
+
+	/**
+	 * @phpstan-impure
+	 */
+	public static function getB(): int
+	{
+		return self::$a;
+	}
+}
+
+class StaticMethodAssigningStaticProperty
+{
+	/** @var int */
+	public static $a = 0;
+	/**
+	 * @phpstan-pure
+	 */
+	public static function getA(): int
+	{
+		self::$a = 1;
+
+		return 1;
+	}
+
+	/**
+	 * @phpstan-impure
+	 */
+	public static function getB(): int
+	{
+		self::$a = 1;
+
+		return 1;
+	}
+}

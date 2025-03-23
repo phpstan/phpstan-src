@@ -165,16 +165,22 @@ final class ConstantArrayTypeBuilder
 				if ($offsetType instanceof ConstantIntegerType) {
 					$min = min($this->nextAutoIndexes);
 					$max = max($this->nextAutoIndexes);
-					if ($offsetType->getValue() > $min) {
-						if ($offsetType->getValue() <= $max) {
-							$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
-						} else {
-							$this->isList = TrinaryLogic::createNo();
+					$offsetValue = $offsetType->getValue();
+					if ($offsetValue >= 0) {
+						if ($offsetValue > $min) {
+							if ($offsetValue <= $max) {
+								$this->isList = $this->isList->and(TrinaryLogic::createMaybe());
+							} else {
+								$this->isList = TrinaryLogic::createNo();
+							}
 						}
+					} else {
+						$this->isList = TrinaryLogic::createNo();
 					}
-					if ($offsetType->getValue() >= $max) {
+
+					if ($offsetValue >= $max) {
 						/** @var int|float $newAutoIndex */
-						$newAutoIndex = $offsetType->getValue() + 1;
+						$newAutoIndex = $offsetValue + 1;
 						if (is_float($newAutoIndex)) {
 							$newAutoIndex = $max;
 						}

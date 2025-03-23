@@ -75,7 +75,7 @@ parameters:
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
-			count: 3
+			count: 4
 			path: src/Analyser/TypeSpecifier.php
 
 		-
@@ -299,6 +299,15 @@ parameters:
 			identifier: phpstanApi.runtimeReflection
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/SkipClassAliasSourceLocator.php
+
+		-
+			message: '''
+				#^Call to deprecated method isSubclassOf\(\) of class PHPStan\\Reflection\\ClassReflection\:
+				Use isSubclassOfClass instead\.$#
+			'''
+			identifier: method.deprecated
+			count: 1
+			path: src/Reflection/ClassReflection.php
 
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\Generic\\GenericObjectType is error\-prone and deprecated\.$#'
@@ -1318,12 +1327,6 @@ parameters:
 			path: src/Type/IntegerType.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\Accessory\\AccessoryType is error\-prone and deprecated\. Use methods on PHPStan\\Type\\Type instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 3
-			path: src/Type/IntersectionType.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\ArrayType is error\-prone and deprecated\. Use Type\:\:isArray\(\) or Type\:\:getArrays\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 4
@@ -1549,12 +1552,6 @@ parameters:
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1
-			path: src/Type/Php/MbStrlenFunctionReturnTypeExtension.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
 			path: src/Type/Php/MbSubstituteCharacterDynamicReturnTypeExtension.php
 
 		-
@@ -1630,12 +1627,6 @@ parameters:
 			path: src/Type/Php/StrRepeatFunctionReturnTypeExtension.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Php/StrlenFunctionReturnTypeExtension.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\ObjectType is error\-prone and deprecated\. Use Type\:\:isObject\(\) or Type\:\:getObjectClassNames\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -1658,12 +1649,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/StringType.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Accessory\\AccessoryType is error\-prone and deprecated\. Use methods on PHPStan\\Type\\Type instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeCombinator.php
 
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\ArrayType is error\-prone and deprecated\. Use Type\:\:isArray\(\) or Type\:\:getArrays\(\) instead\.$#'
@@ -1826,12 +1811,6 @@ parameters:
 			identifier: phpstanApi.varTagAssumption
 			count: 1
 			path: src/Type/UnionType.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\Accessory\\AccessoryType is error\-prone and deprecated\. Use methods on PHPStan\\Type\\Type instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 3
-			path: src/Type/UnionTypeHelper.php
 
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\CallableType is error\-prone and deprecated\. Use Type\:\:isCallable\(\) and Type\:\:getCallableParametersAcceptors\(\) instead\.$#'

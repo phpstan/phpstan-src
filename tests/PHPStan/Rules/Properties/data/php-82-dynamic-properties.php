@@ -74,6 +74,13 @@ function (): void {
 	}
 };
 
+function (HelloWorld $hello): void {
+	if(isset($hello->world))
+	{
+		echo $hello->world;
+	}
+};
+
 final class FinalHelloWorld
 {
 	public function __get(string $attribute): mixed

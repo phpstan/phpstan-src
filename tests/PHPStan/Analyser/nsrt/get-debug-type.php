@@ -15,7 +15,7 @@ class D {}
  * @param int|string $intOrString
  * @param array|A $arrayOrObject
  */
-function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrString, $arrayOrObject) {
+function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrString, $arrayOrObject, \stdClass $std) {
 	$null = null;
 	$resource = fopen('php://memory', 'r');
 	$o = new \stdClass();
@@ -33,7 +33,8 @@ function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $intOrStr
 	assertType("'float'", get_debug_type($d));
 	assertType("'string'", get_debug_type($s));
 	assertType("'array'", get_debug_type($a));
-	assertType("string", get_debug_type($o));
+	assertType("'stdClass'", get_debug_type($o));
+	assertType("string", get_debug_type($std));
 	assertType("'GetDebugType\\\\A'", get_debug_type($A));
 	assertType("string", get_debug_type($r));
 	assertType("'bool'|string", get_debug_type($resource));

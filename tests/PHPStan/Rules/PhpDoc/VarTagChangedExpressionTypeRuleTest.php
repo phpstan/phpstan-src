@@ -2,8 +2,10 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<VarTagChangedExpressionTypeRule>
@@ -13,7 +15,13 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(true, true));
+		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(
+			self::getContainer()->getByType(TypeNodeResolver::class),
+			self::getContainer()->getByType(FileTypeMapper::class),
+			$this->createReflectionProvider(),
+			true,
+			true,
+		));
 	}
 
 	public function testRule(): void
@@ -66,6 +74,28 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type array<mixed> is not subtype of type list<array{id: int}>.',
 				23,
+			],
+		]);
+	}
+
+	public function testBug12708(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12708.php'], [
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{1: 'b', 2: 'c'}.",
+				12,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{0: 'a', 2: 'c'}.",
+				18,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{-1: 'z', 0: 'a', 1: 'b', 2: 'c'}.",
+				24,
+			],
+			[
+				"PHPDoc tag @var with type list<string> is not subtype of native type array{0: 'a', -1: 'z', 1: 'b', 2: 'c'}.",
+				30,
 			],
 		]);
 	}

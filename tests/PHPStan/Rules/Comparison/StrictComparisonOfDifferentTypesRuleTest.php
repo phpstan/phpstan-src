@@ -151,7 +151,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					335,
 				],
 				[
-					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					343,
 				],
 				[
@@ -734,6 +734,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/strict-comparison-last-match-arm.php'], $expectedErrors);
+	}
+
+	public function testBug8030(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8030.php'], []);
 	}
 
 	public function testBug8776Part1(): void

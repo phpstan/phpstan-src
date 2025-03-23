@@ -872,6 +872,11 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
+		$extensionSpecified = $this->callOperatorTypeSpecifyingExtensions(new BinaryOp\Mod($left, $right), $leftType, $rightType);
+		if ($extensionSpecified !== null) {
+			return $extensionSpecified;
+		}
+
 		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
 		}
@@ -1234,14 +1239,14 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		$exponentiatedTyped = $leftType->exponentiate($rightType);
-		if (!$exponentiatedTyped instanceof ErrorType) {
-			return $exponentiatedTyped;
-		}
-
 		$extensionSpecified = $this->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
 		if ($extensionSpecified !== null) {
 			return $extensionSpecified;
+		}
+
+		$exponentiatedTyped = $leftType->exponentiate($rightType);
+		if (!$exponentiatedTyped instanceof ErrorType) {
+			return $exponentiatedTyped;
 		}
 
 		return new ErrorType();

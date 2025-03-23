@@ -8,6 +8,7 @@ use function usort;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class AnalyserResult
 {
@@ -22,7 +23,7 @@ final class AnalyserResult
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param list<CollectedData> $collectedData
+	 * @param CollectorData $collectedData
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
@@ -125,7 +126,7 @@ final class AnalyserResult
 	}
 
 	/**
-	 * @return list<CollectedData>
+	 * @return CollectorData
 	 */
 	public function getCollectedData(): array
 	{

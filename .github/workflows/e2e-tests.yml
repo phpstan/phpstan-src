@@ -190,25 +190,25 @@ jobs:
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c ignore.neon")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
-              ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit -a contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon.php")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
-              ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit -a contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c excludePaths.neon")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
-              ../bashunit -a contains 'tests is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit -a contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon2.php")
               echo "$OUTPUT"
               ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
-              ../bashunit -a contains 'src/test.php is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit -a contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
               OUTPUT=$(../../bin/phpstan analyse -c ignoreNonexistentExcludePath.neon)

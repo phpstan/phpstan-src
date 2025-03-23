@@ -44,7 +44,7 @@ final class FinalClassRule implements Rule
 		if ($classReflection->isFinal()) {
 			return [];
 		}
-		if ($classReflection->isSubclassOf(Type::class)) {
+		if ($classReflection->is(Type::class)) {
 			return [];
 		}
 

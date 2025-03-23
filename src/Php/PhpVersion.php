@@ -357,6 +357,11 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function supportsFinalProperties(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 	public function supportsAsymmetricVisibility(): bool
 	{
 		return $this->versionId >= 80400;
@@ -393,6 +398,11 @@ final class PhpVersion
 	public function substrReturnFalseInsteadOfEmptyString(): bool
 	{
 		return $this->versionId < 80000;
+	}
+
+	public function supportsBcMathNumberOperatorOverloading(): bool
+	{
+		return $this->versionId >= 80400;
 	}
 
 }

@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
+use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -99,6 +100,26 @@ final class FileTypeMapper
 			return $this->createResolvedPhpDocBlock($phpDocKey, new NameScope(null, []), $docComment, null);
 		}
 
+		try {
+			$nameScope = $this->getNameScope($fileName, $className, $traitName, $functionName);
+		} catch (NameScopeAlreadyBeingCreatedException) {
+			return ResolvedPhpDocBlock::createEmpty();
+		}
+
+		return $this->createResolvedPhpDocBlock($phpDocKey, $nameScope, $docComment, $fileName);
+	}
+
+	/**
+	 * @throws NameScopeAlreadyBeingCreatedException
+	 */
+	public function getNameScope(
+		string $fileName,
+		?string $className,
+		?string $traitName,
+		?string $functionName,
+	): NameScope
+	{
+		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
 		$nameScopeMap = [];
 
 		if (!isset($this->inProcess[$fileName])) {
@@ -106,15 +127,15 @@ final class FileTypeMapper
 		}
 
 		if (isset($nameScopeMap[$nameScopeKey])) {
-			return $this->createResolvedPhpDocBlock($phpDocKey, $nameScopeMap[$nameScopeKey], $docComment, $fileName);
+			return $nameScopeMap[$nameScopeKey];
 		}
 
 		if (!isset($this->inProcess[$fileName][$nameScopeKey])) { // wrong $fileName due to traits
-			return ResolvedPhpDocBlock::createEmpty();
+			throw new NameScopeAlreadyBeingCreatedException();
 		}
 
 		if ($this->inProcess[$fileName][$nameScopeKey] === true) { // PHPDoc has cyclic dependency
-			return ResolvedPhpDocBlock::createEmpty();
+			throw new NameScopeAlreadyBeingCreatedException();
 		}
 
 		if (is_callable($this->inProcess[$fileName][$nameScopeKey])) {
@@ -123,7 +144,7 @@ final class FileTypeMapper
 			$this->inProcess[$fileName][$nameScopeKey] = $resolveCallback();
 		}
 
-		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
+		return $this->inProcess[$fileName][$nameScopeKey];
 	}
 
 	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, ?string $fileName): ResolvedPhpDocBlock

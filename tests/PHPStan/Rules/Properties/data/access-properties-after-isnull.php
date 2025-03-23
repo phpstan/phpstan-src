@@ -33,22 +33,22 @@ class Foo
 		}
 
 		while (is_null($foo) && $foo->fooProperty) {
-
+			break;
 		}
 		while (is_null($foo) || $foo->fooProperty) {
-
+			break;
 		}
 		while (!is_null($foo) && $foo->fooProperty) {
-
+			break;
 		}
 		while (!is_null($foo) || $foo->fooProperty) {
-
+			break;
 		}
 		while (is_null($foo) || $foo->barProperty) {
-
+			break;
 		}
 		while (!is_null($foo) && $foo->barProperty) {
-
+			break;
 		}
 	}
 

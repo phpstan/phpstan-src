@@ -37,6 +37,9 @@ use const E_USER_NOTICE;
 use const E_USER_WARNING;
 use const E_WARNING;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 final class FileAnalyser
 {
 
@@ -76,7 +79,7 @@ final class FileAnalyser
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
 
-		/** @var list<CollectedData> $fileCollectedData */
+		/** @var CollectorData $fileCollectedData */
 		$fileCollectedData = [];
 
 		$fileDependencies = [];
@@ -195,11 +198,7 @@ final class FileAnalyser
 							continue;
 						}
 
-						$fileCollectedData[] = new CollectedData(
-							$collectedData,
-							$scope->getFile(),
-							get_class($collector),
-						);
+						$fileCollectedData[$scope->getFile()][get_class($collector)][] = $collectedData;
 					}
 
 					try {

@@ -1,5 +1,5 @@
 <?php
-function () {
+function (\stdClass $obj) {
     /** @var mixed $array */
     $array = getMixed();
     [$a, $b, [$c]] = $array;
@@ -51,7 +51,6 @@ function () {
 
     [$newArray['newKey']] = [new stdClass(), new stdClass()];
 
-    $obj = new stdClass();
     [$obj[0]] = ['error', 'error-error'];
 
     $constantAssocArray = [1, 'foo', 'key' => true, 'value' => '123'];

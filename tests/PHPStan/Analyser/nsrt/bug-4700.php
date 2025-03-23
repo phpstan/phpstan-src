@@ -40,10 +40,10 @@ function(array $array, int $count): void {
 	if (isset($array['d'])) $a[] = $array['d'];
 	if (isset($array['e'])) $a[] = $array['e'];
 	if (count($a) > $count) {
-		assertType('int<1, 5>', count($a));
-		assertType('array{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
+		assertType('int<2, 5>', count($a));
+		assertType('list{0: mixed~null, 1: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
 	} else {
-		assertType('0', count($a));
-		assertType('array{}', $a);
+		assertType('int<0, 5>', count($a)); // Could be int<0, 1>
+		assertType('array{}|array{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a); // Could be array{}|array{0: mixed~null}
 	}
 };

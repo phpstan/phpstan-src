@@ -6,6 +6,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -19,6 +20,9 @@ use function microtime;
 use function sha1_file;
 use function sprintf;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 final class AnalyseApplication
 {
 
@@ -150,7 +154,7 @@ final class AnalyseApplication
 			$notFileSpecificErrors,
 			$internalErrors,
 			[],
-			$collectedData,
+			$this->mapCollectedData($collectedData),
 			$defaultLevelUsed,
 			$projectConfigFile,
 			$savedResultCache,
@@ -158,6 +162,22 @@ final class AnalyseApplication
 			$isResultCacheUsed,
 			$changedProjectExtensionFilesOutsideOfAnalysedPaths,
 		);
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 *
+	 * @return list<CollectedData>
+	 */
+	private function mapCollectedData(array $collectedData): array
+	{
+		$result = [];
+		foreach ($collectedData as $file => $dataPerCollector) {
+			foreach ($dataPerCollector as $collectorType => $rawData) {
+				$result[] = new CollectedData($rawData, $file, $collectorType);
+			}
+		}
+		return $result;
 	}
 
 	/**

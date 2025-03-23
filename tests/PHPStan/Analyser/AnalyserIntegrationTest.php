@@ -896,6 +896,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug12767(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12767.php');
+		$this->assertCount(3, $errors);
+
+		$this->assertSame('Expected type int, actual: *ERROR*', $errors[0]->getMessage());
+		$this->assertSame('Undefined variable: $field1', $errors[1]->getMessage());
+		$this->assertSame('Undefined variable: $field2', $errors[2]->getMessage());
+	}
+
 	public function testBug7554(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7554.php');
@@ -921,6 +931,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$this->assertSame('Call to function is_string() with string will always evaluate to true.', $errors[2]->getMessage());
 		$this->assertSame(57, $errors[2]->getLine());
+	}
+
+	public function testBug12671(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12671.php');
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug7737(): void
@@ -1214,7 +1230,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9459.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('PHPDoc tag @var with type callable(): array<mixed> is not subtype of native type Closure(): array{}.', $errors[0]->getMessage());
-		$this->assertSame(10, $errors[0]->getLine());
 	}
 
 	public function testBug9573(): void
@@ -1508,6 +1523,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug12627(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12627.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug12159(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12159.php');
 		$this->assertNoErrors($errors);
 	}
 

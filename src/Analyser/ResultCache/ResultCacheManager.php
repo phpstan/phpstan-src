@@ -16,6 +16,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\ReflectionProvider;
@@ -29,6 +30,7 @@ use function array_keys;
 use function array_unique;
 use function array_values;
 use function count;
+use function explode;
 use function get_loaded_extensions;
 use function implode;
 use function is_array;
@@ -47,6 +49,7 @@ use const PHP_VERSION_ID;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class ResultCacheManager
 {
@@ -65,6 +68,7 @@ final class ResultCacheManager
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
+	 * @param list<string> $parametersNotInvalidatingCache
 	 */
 	public function __construct(
 		private Container $container,
@@ -82,6 +86,7 @@ final class ResultCacheManager
 		private array $scanFiles,
 		private array $scanDirectories,
 		private bool $checkDependenciesOfProjectExtensionFiles,
+		private array $parametersNotInvalidatingCache,
 	)
 	{
 	}
@@ -402,10 +407,7 @@ final class ResultCacheManager
 			$freshLocallyIgnoredErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
-		$freshCollectedDataByFile = [];
-		foreach ($analyserResult->getCollectedData() as $collectedData) {
-			$freshCollectedDataByFile[$collectedData->getFilePath()][] = $collectedData;
-		}
+		$freshCollectedDataByFile = $analyserResult->getCollectedData();
 
 		$meta = $resultCache->getMeta();
 		$projectConfigArray = $meta['projectConfig'];
@@ -520,13 +522,6 @@ final class ResultCacheManager
 			}
 		}
 
-		$flatCollectedData = [];
-		foreach ($collectedDataByFile as $fileCollectedData) {
-			foreach ($fileCollectedData as $collectedData) {
-				$flatCollectedData[] = $collectedData;
-			}
-		}
-
 		return new ResultCacheProcessResult(new AnalyserResult(
 			$flatErrors,
 			$analyserResult->getFilteredPhpErrors(),
@@ -535,7 +530,7 @@ final class ResultCacheManager
 			$linesToIgnore,
 			$unmatchedLineIgnores,
 			$internalErrors,
-			$flatCollectedData,
+			$collectedDataByFile,
 			$dependencies,
 			$exportedNodes,
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
@@ -580,8 +575,8 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * @param array<string, array<CollectedData>> $freshCollectedDataByFile
-	 * @return array<string, array<CollectedData>>
+	 * @param CollectorData $freshCollectedDataByFile
+	 * @return CollectorData
 	 */
 	private function mergeCollectedData(ResultCache $resultCache, array $freshCollectedDataByFile): array
 	{
@@ -700,7 +695,7 @@ final class ResultCacheManager
 	 * @param array<string, list<Error>> $locallyIgnoredErrors
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
-	 * @param array<string, array<CollectedData>> $collectedData
+	 * @param array<string, array<string, list<CollectedData>>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
@@ -755,6 +750,10 @@ final class ResultCacheManager
 		ksort($unmatchedLineIgnores);
 		ksort($collectedData);
 		ksort($invertedDependencies);
+
+		foreach ($collectedData as & $collectedDataPerFile) {
+			ksort($collectedDataPerFile);
+		}
 
 		foreach ($invertedDependencies as $file => $fileData) {
 			$dependentFiles = $fileData['dependentFiles'];
@@ -887,18 +886,9 @@ return [
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {
-			unset($projectConfigArray['parameters']['editorUrl']);
-			unset($projectConfigArray['parameters']['editorUrlTitle']);
-			unset($projectConfigArray['parameters']['errorFormat']);
-			unset($projectConfigArray['parameters']['ignoreErrors']);
-			unset($projectConfigArray['parameters']['reportUnmatchedIgnoredErrors']);
-			unset($projectConfigArray['parameters']['tipsOfTheDay']);
-			unset($projectConfigArray['parameters']['parallel']);
-			unset($projectConfigArray['parameters']['internalErrorsCountLimit']);
-			unset($projectConfigArray['parameters']['cache']);
-			unset($projectConfigArray['parameters']['memoryLimitFile']);
-			unset($projectConfigArray['parameters']['pro']);
-			unset($projectConfigArray['parametersSchema']);
+			foreach ($this->parametersNotInvalidatingCache as $parameterPath) {
+				ArrayHelper::unsetKeyAtPath($projectConfigArray, explode('.', $parameterPath));
+			}
 
 			ksort($projectConfigArray);
 		}

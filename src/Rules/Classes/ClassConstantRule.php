@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
@@ -11,6 +13,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -47,11 +50,30 @@ final class ClassConstantRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
+		$errors = [];
+		if ($node->name instanceof Node\Identifier) {
+			$constantNameScopes = [$node->name->name => $scope];
+		} else {
+			$nameType = $scope->getType($node->name);
+			$constantNameScopes = [];
+			foreach ($nameType->getConstantStrings() as $constantString) {
+				$name = $constantString->getValue();
+				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
 		}
-		$constantName = $node->name->name;
 
+		foreach ($constantNameScopes as $constantName => $constantScope) {
+			$errors = array_merge($errors, $this->processSingleClassConstFetch($constantScope, $node, $constantName));
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processSingleClassConstFetch(Scope $scope, ClassConstFetch $node, string $constantName): array
+	{
 		$class = $node->class;
 		$messages = [];
 		if ($class instanceof Node\Name) {
@@ -111,9 +133,24 @@ final class ClassConstantRule implements Rule
 					];
 				}
 
-				$messages = $this->classCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
-
 				$classType = $scope->resolveTypeByName($class);
+				if (strtolower($constantName) !== 'class') {
+					foreach ($classType->getObjectClassReflections() as $classTypeReflection) {
+						if (!$classTypeReflection->isTrait()) {
+							continue;
+						}
+
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Cannot access constant %s on trait %s.',
+								$constantName,
+								$classTypeReflection->getDisplayName(),
+							))->identifier('classConstant.onTrait')->build(),
+						];
+					}
+				}
+
+				$messages = $this->classCheck->checkClassNames([new ClassNameNodePair($className, $class)]);
 			}
 
 			if (strtolower($constantName) === 'class') {

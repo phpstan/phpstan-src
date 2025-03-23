@@ -833,9 +833,8 @@ class AssertThisInstanceOf
 	/**
 	 * @return $this
 	 */
-	public function doBar()
+	public function doBar(self $otherInstance)
 	{
-		$otherInstance = new self();
 		assert($otherInstance instanceof FooInterface);
 		return $otherInstance;
 	}

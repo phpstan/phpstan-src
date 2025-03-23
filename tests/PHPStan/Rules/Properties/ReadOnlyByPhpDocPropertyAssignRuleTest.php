@@ -125,6 +125,10 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				'@readonly property ReadonlyPropertyAssignPhpDoc\C::$c is assigned outside of the constructor.',
 				293,
 			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\ArrayAccessPropertyFetch::$storage is assigned outside of the constructor.',
+				311,
+			],
 		]);
 	}
 

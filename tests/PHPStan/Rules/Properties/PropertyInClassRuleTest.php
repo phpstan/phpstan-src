@@ -213,4 +213,115 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPhp84AndPrivateFinalHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/private-final-property-hooks.php'], [
+			[
+				'Property cannot be both final and private.',
+				7,
+			],
+			[
+				'Private property cannot have a final hook.',
+				11,
+			],
+		]);
+	}
+
+	public function testPhp84AndAbstractFinalHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/abstract-final-property-hook.php'], [
+			[
+				'Property cannot be both abstract and final.',
+				7,
+			],
+		]);
+	}
+
+	public function testPhp84AndAbstractPrivateHookedProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/abstract-private-property-hook.php'], [
+			[
+				'Property cannot be both abstract and private.',
+				7,
+			],
+		]);
+	}
+
+	public function testPhp84AndAbstractFinalHookedPropertiesParseError(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		// errors when parsing with php-parser, see https://github.com/nikic/PHP-Parser/issues/1071
+		$this->analyse([__DIR__ . '/data/abstract-final-property-hook-parse-error.php'], [
+			[
+				'Cannot use the final modifier on an abstract class member on line 7',
+				7,
+			],
+		]);
+	}
+
+	public function testPhp84FinalProperties(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-properties.php'], [
+			[
+				'Property cannot be both final and private.',
+				7,
+			],
+		]);
+	}
+
+	public function testBeforePhp84FinalProperties(): void
+	{
+		if (PHP_VERSION_ID >= 80400) {
+			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-properties.php'], [
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				7,
+			],
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				8,
+			],
+			[
+				'Final properties are supported only on PHP 8.4 and later.',
+				9,
+			],
+		]);
+	}
+
+	public function testPhp84FinalPropertyHooks(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		}
+
+		$this->analyse([__DIR__ . '/data/final-property-hooks.php'], [
+			[
+				'Cannot use the final modifier on an abstract class member on line 19',
+				19,
+			],
+		]);
+	}
+
 }

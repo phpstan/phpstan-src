@@ -47,11 +47,11 @@ function (): void {
 		$x = 4;
 	}
 
-	assertType('int<4, 27>|int<16, 81>', pow($range, $x));
-	assertType('int<4, 27>|int<16, 81>', $range ** $x);
+	assertType('int<4, 81>', pow($range, $x));
+	assertType('int<4, 81>', $range ** $x);
 
-	assertType('int<4, 27>|int<16, 64>', pow($x, $range));
-	assertType('int<4, 27>|int<16, 64>', $x ** $range);
+	assertType('int<4, 64>', pow($x, $range));
+	assertType('int<4, 64>', $x ** $range);
 
 	assertType('int<4, 27>', pow($range, $range));
 	assertType('int<4, 27>', $range ** $range);

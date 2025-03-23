@@ -32,6 +32,18 @@ final class PropertyInClassRule implements Rule
 			return [];
 		}
 
+		if (
+			$node->isFinal()
+			&& !$this->phpVersion->supportsFinalProperties()
+		) {
+			return [
+				RuleErrorBuilder::message('Final properties are supported only on PHP 8.4 and later.')
+					->nonIgnorable()
+					->identifier('property.final')
+					->build(),
+			];
+		}
+
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			if ($node->hasHooks()) {
 				return [
@@ -79,6 +91,67 @@ final class PropertyInClassRule implements Rule
 					->identifier('property.hookWithoutBody')
 					->build(),
 			];
+		}
+
+		if ($node->isPrivate()) {
+			if ($node->isAbstract()) {
+				return [
+					RuleErrorBuilder::message('Property cannot be both abstract and private.')
+						->nonIgnorable()
+						->identifier('property.abstractPrivate')
+						->build(),
+				];
+			}
+
+			if ($node->isFinal()) {
+				return [
+					RuleErrorBuilder::message('Property cannot be both final and private.')
+						->nonIgnorable()
+						->identifier('property.finalPrivate')
+						->build(),
+				];
+			}
+
+			foreach ($node->getHooks() as $hook) {
+				if (!$hook->isFinal()) {
+					continue;
+				}
+
+				return [
+					RuleErrorBuilder::message('Private property cannot have a final hook.')
+						->nonIgnorable()
+						->identifier('property.finalPrivateHook')
+						->build(),
+				];
+			}
+		}
+
+		if ($node->isAbstract()) {
+			if ($node->isFinal()) {
+				return [
+					RuleErrorBuilder::message('Property cannot be both abstract and final.')
+						->nonIgnorable()
+						->identifier('property.abstractFinal')
+						->build(),
+				];
+			}
+
+			foreach ($node->getHooks() as $hook) {
+				if ($hook->body !== null) {
+					continue;
+				}
+
+				if (!$hook->isFinal()) {
+					continue;
+				}
+
+				return [
+					RuleErrorBuilder::message('Property cannot be both abstract and final.')
+						->nonIgnorable()
+						->identifier('property.abstractFinal')
+						->build(),
+				];
+			}
 		}
 
 		if ($node->isReadOnly()) {

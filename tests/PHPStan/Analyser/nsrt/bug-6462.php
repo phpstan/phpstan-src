@@ -37,21 +37,19 @@ class FixedChild extends Base
 	}
 }
 
-$base = new Base();
-$child = new Child();
-$fixedChild = new FixedChild();
+function (Base $base, Child $child, FixedChild $fixedChild): void {
+	assertType('Bug6462\Base', $base->getThis());
+	assertType('Bug6462\Child', $child->getThis());
 
-assertType('Bug6462\Base', $base->getThis());
-assertType('Bug6462\Child', $child->getThis());
+	if ($base instanceof \Traversable) {
+		assertType('Bug6462\Base&Traversable', $base->getThis());
+	}
 
-if ($base instanceof \Traversable) {
-	assertType('Bug6462\Base&Traversable', $base->getThis());
-}
+	if ($child instanceof \Traversable) {
+		assertType('Bug6462\Child&Traversable', $child->getThis());
+	}
 
-if ($child instanceof \Traversable) {
-	assertType('Bug6462\Child&Traversable', $child->getThis());
-}
-
-if ($fixedChild instanceof \Traversable) {
-	assertType('Bug6462\FixedChild&Traversable', $fixedChild->getThis());
-}
+	if ($fixedChild instanceof \Traversable) {
+		assertType('Bug6462\FixedChild&Traversable', $fixedChild->getThis());
+	}
+};

@@ -7,6 +7,7 @@ use PHPStan\Dependency\RootExportedNode;
 
 /**
  * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<string>|null>>
+ * @phpstan-import-type CollectorData from CollectedData
  */
 final class FileAnalyserResult
 {
@@ -16,7 +17,7 @@ final class FileAnalyserResult
 	 * @param list<Error> $filteredPhpErrors
 	 * @param list<Error> $allPhpErrors
 	 * @param list<Error> $locallyIgnoredErrors
-	 * @param list<CollectedData> $collectedData
+	 * @param CollectorData $collectedData
 	 * @param list<string> $dependencies
 	 * @param list<RootExportedNode> $exportedNodes
 	 * @param LinesToIgnore $linesToIgnore
@@ -69,7 +70,7 @@ final class FileAnalyserResult
 	}
 
 	/**
-	 * @return list<CollectedData>
+	 * @return CollectorData
 	 */
 	public function getCollectedData(): array
 	{

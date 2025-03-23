@@ -1515,9 +1515,11 @@ final class NodeScopeResolver
 			$exitPointsForOuterLoop = [];
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
+			$fullCondExpr = null;
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
+					$fullCondExpr = $fullCondExpr === null ? $condExpr : new BooleanOr($fullCondExpr, $condExpr);
 					$caseResult = $this->processExprNode($stmt, $caseNode->cond, $scopeForBranches, $nodeCallback, ExpressionContext::createDeep());
 					$scopeForBranches = $caseResult->getScope();
 					$hasYield = $hasYield || $caseResult->hasYield();
@@ -1526,6 +1528,7 @@ final class NodeScopeResolver
 					$branchScope = $caseResult->getTruthyScope()->filterByTruthyValue($condExpr);
 				} else {
 					$hasDefaultCase = true;
+					$fullCondExpr = null;
 					$branchScope = $scopeForBranches;
 				}
 
@@ -1547,8 +1550,9 @@ final class NodeScopeResolver
 				if ($branchScopeResult->isAlwaysTerminating()) {
 					$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 					$prevScope = null;
-					if (isset($condExpr)) {
-						$scopeForBranches = $scopeForBranches->filterByFalseyValue($condExpr);
+					if (isset($fullCondExpr)) {
+						$scopeForBranches = $scopeForBranches->filterByFalseyValue($fullCondExpr);
+						$fullCondExpr = null;
 					}
 					if (!$branchFinalScopeResult->isAlwaysTerminating()) {
 						$finalScope = $branchScope->mergeWith($finalScope);
@@ -2970,10 +2974,7 @@ final class NodeScopeResolver
 				&& $scopeFunction instanceof MethodReflection
 				&& !$scopeFunction->isStatic()
 				&& $scope->isInClass()
-				&& (
-					$scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
-					|| $scope->getClassReflection()->isSubclassOf($methodReflection->getDeclaringClass()->getName())
-				)
+				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);
 			}
@@ -2985,7 +2986,7 @@ final class NodeScopeResolver
 				&& $scopeFunction instanceof MethodReflection
 				&& !$scopeFunction->isStatic()
 				&& $scope->isInClass()
-				&& $scope->getClassReflection()->isSubclassOf($methodReflection->getDeclaringClass()->getName())
+				&& $scope->getClassReflection()->isSubclassOfClass($methodReflection->getDeclaringClass())
 			) {
 				$thisType = $scope->getType(new Variable('this'));
 				$methodClassReflection = $methodReflection->getDeclaringClass();
@@ -3045,7 +3046,15 @@ final class NodeScopeResolver
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			$hasYield = false;
 			$throwPoints = [];
-			$impurePoints = [];
+			$impurePoints = [
+				new ImpurePoint(
+					$scope,
+					$expr,
+					'staticPropertyAccess',
+					'static property access',
+					true,
+				),
+			];
 			if ($expr->class instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->class, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();
@@ -3644,6 +3653,7 @@ final class NodeScopeResolver
 
 						$condNodes = [];
 						$conditionCases = [];
+						$conditionExprs = [];
 						foreach ($arm->conds as $cond) {
 							if (!$cond instanceof Expr\ClassConstFetch) {
 								continue 2;
@@ -3701,6 +3711,7 @@ final class NodeScopeResolver
 								$armConditionScope,
 								$cond->getStartLine(),
 							);
+							$conditionExprs[] = $cond;
 
 							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
 						}
@@ -3714,10 +3725,11 @@ final class NodeScopeResolver
 							$conditionCaseType = new UnionType($conditionCases);
 						}
 
+						$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs);
 						$matchArmBodyScope = $matchScope->addTypeToExpression(
 							$expr->cond,
 							$conditionCaseType,
-						);
+						)->filterByTruthyValue($filteringExpr);
 						$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
 						$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
@@ -3793,22 +3805,7 @@ final class NodeScopeResolver
 					$filteringExprs[] = $armCond;
 				}
 
-				if (count($filteringExprs) === 1) {
-					$filteringExpr = new BinaryOp\Identical($expr->cond, $filteringExprs[0]);
-				} else {
-					$items = [];
-					foreach ($filteringExprs as $filteringExpr) {
-						$items[] = new Node\ArrayItem($filteringExpr);
-					}
-					$filteringExpr = new FuncCall(
-						new Name\FullyQualified('in_array'),
-						[
-							new Arg($expr->cond),
-							new Arg(new Array_($items)),
-							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
-						],
-					);
-				}
+				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
 
 				$bodyScope = $this->processExprNode($stmt, $filteringExpr, $matchScope, static function (): void {
 				}, $deepContext)->getTruthyScope();
@@ -4227,7 +4224,7 @@ final class NodeScopeResolver
 				return ThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}
 		} elseif ($this->implicitThrows) {
-			if ($classReflection->getName() !== Throwable::class && !$classReflection->isSubclassOf(Throwable::class)) {
+			if (!$classReflection->is(Throwable::class)) {
 				return ThrowPoint::createImplicit($scope, $methodCall);
 			}
 		}
@@ -5359,9 +5356,17 @@ final class NodeScopeResolver
 			$originalVar = $var;
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
-				$varForSetOffsetValue = $var->var;
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				if (
+					$var->var instanceof PropertyFetch
+					|| $var->var instanceof StaticPropertyFetch
+				) {
+					if (((new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($var->var))->yes())) {
+						$varForSetOffsetValue = $var->var;
+					} else {
+						$varForSetOffsetValue = new OriginalPropertyTypeExpr($var->var);
+					}
+				} else {
+					$varForSetOffsetValue = $var->var;
 				}
 				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
 					$varForSetOffsetValue,
@@ -5496,7 +5501,11 @@ final class NodeScopeResolver
 
 				if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
 					$currentVarType = $scope->getType($originalVar);
-					if (!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()) {
+					$currentVarNativeType = $scope->getNativeType($originalVar);
+					if (
+						!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()
+						|| !$originalNativeValueToWrite->isSuperTypeOf($currentVarNativeType)->yes()
+					) {
 						$scope = $scope->assignExpression(
 							$originalVar,
 							$originalValueToWrite,
@@ -5698,9 +5707,17 @@ final class NodeScopeResolver
 			$dimFetchStack = [];
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ExistingArrayDimFetch) {
-				$varForSetOffsetValue = $var->getVar();
-				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
-					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				if (
+					$var->getVar() instanceof PropertyFetch
+					|| $var->getVar() instanceof StaticPropertyFetch
+				) {
+					if (((new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($var->getVar()))->yes())) {
+						$varForSetOffsetValue = $var->getVar();
+					} else {
+						$varForSetOffsetValue = new OriginalPropertyTypeExpr($var->getVar());
+					}
+				} else {
+					$varForSetOffsetValue = $var->getVar();
 				}
 				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
 					$varForSetOffsetValue,
@@ -6589,6 +6606,30 @@ final class NodeScopeResolver
 			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
+	}
+
+	/**
+	 * @param array<Expr> $conditions
+	 */
+	public function getFilteringExprForMatchArm(Expr\Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
+	{
+		if (count($conditions) === 1) {
+			return new BinaryOp\Identical($expr->cond, $conditions[0]);
+		}
+
+		$items = [];
+		foreach ($conditions as $filteringExpr) {
+			$items[] = new Node\ArrayItem($filteringExpr);
+		}
+
+		return new FuncCall(
+			new Name\FullyQualified('in_array'),
+			[
+				new Arg($expr->cond),
+				new Arg(new Array_($items)),
+				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+			],
+		);
 	}
 
 }

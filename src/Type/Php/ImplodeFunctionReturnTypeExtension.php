@@ -81,10 +81,11 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		}
 
 		$accessoryTypes = [];
+		$valueTypeAsString = $arrayType->getIterableValueType()->toString();
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			if ($arrayType->getIterableValueType()->isNonFalsyString()->yes() || $separatorType->isNonFalsyString()->yes()) {
+			if ($valueTypeAsString->isNonFalsyString()->yes() || $separatorType->isNonFalsyString()->yes()) {
 				$accessoryTypes[] = new AccessoryNonFalsyStringType();
-			} elseif ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
+			} elseif ($valueTypeAsString->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
 				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
 		}
@@ -93,10 +94,10 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		if ($arrayType->getIterableValueType()->isLiteralString()->yes() && $separatorType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
 		}
-		if ($arrayType->getIterableValueType()->isLowercaseString()->yes() && $separatorType->isLowercaseString()->yes()) {
+		if ($valueTypeAsString->isLowercaseString()->yes() && $separatorType->isLowercaseString()->yes()) {
 			$accessoryTypes[] = new AccessoryLowercaseStringType();
 		}
-		if ($arrayType->getIterableValueType()->isUppercaseString()->yes() && $separatorType->isUppercaseString()->yes()) {
+		if ($valueTypeAsString->isUppercaseString()->yes() && $separatorType->isUppercaseString()->yes()) {
 			$accessoryTypes[] = new AccessoryUppercaseStringType();
 		}
 

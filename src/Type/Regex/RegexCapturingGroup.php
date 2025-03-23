@@ -7,10 +7,6 @@ use PHPStan\Type\Type;
 final class RegexCapturingGroup
 {
 
-	private bool $forceNonOptional = false;
-
-	private ?Type $forceType = null;
-
 	public function __construct(
 		private readonly int $id,
 		private readonly ?string $name,
@@ -18,6 +14,8 @@ final class RegexCapturingGroup
 		private readonly bool $inOptionalQuantification,
 		private readonly RegexCapturingGroup|RegexNonCapturingGroup|null $parent,
 		private readonly Type $type,
+		private readonly bool $forceNonOptional = false,
+		private readonly ?Type $forceType = null,
 	)
 	{
 	}
@@ -27,20 +25,46 @@ final class RegexCapturingGroup
 		return $this->id;
 	}
 
-	public function forceNonOptional(): void
+	public function forceNonOptional(): self
 	{
-		$this->forceNonOptional = true;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$this->parent,
+			$this->type,
+			true,
+			$this->forceType,
+		);
 	}
 
-	public function forceType(Type $type): void
+	public function forceType(Type $type): self
 	{
-		$this->forceType = $type;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$this->parent,
+			$type,
+			$this->forceNonOptional,
+			$this->forceType,
+		);
 	}
 
-	public function clearOverrides(): void
+	public function withParent(RegexCapturingGroup|RegexNonCapturingGroup $parent): self
 	{
-		$this->forceNonOptional = false;
-		$this->forceType = null;
+		return new self(
+			$this->id,
+			$this->name,
+			$this->alternation,
+			$this->inOptionalQuantification,
+			$parent,
+			$this->type,
+			$this->forceNonOptional,
+			$this->forceType,
+		);
 	}
 
 	public function resetsGroupCounter(): bool
@@ -126,6 +150,11 @@ final class RegexCapturingGroup
 			return $this->forceType;
 		}
 		return $this->type;
+	}
+
+	public function getParent(): RegexCapturingGroup|RegexNonCapturingGroup|null
+	{
+		return $this->parent;
 	}
 
 }

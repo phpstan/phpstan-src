@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 /**
@@ -31,7 +30,6 @@ final class ClosureReturnTypeRule implements Rule
 			return [];
 		}
 
-		/** @var Type $returnType */
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;

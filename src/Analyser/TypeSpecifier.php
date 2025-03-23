@@ -272,22 +272,21 @@ final class TypeSpecifier
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
 
-				if ($argType instanceof UnionType) {
-					$sizeType = null;
-					if ($leftType instanceof ConstantIntegerType) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-						}
-					} elseif ($leftType instanceof IntegerRangeType) {
-						$sizeType = $leftType;
+				if ($leftType instanceof ConstantIntegerType) {
+					if ($orEqual) {
+						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+					} else {
+						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
 					}
+				} elseif ($leftType instanceof IntegerRangeType) {
+					$sizeType = $leftType->shift($offset);
+				} else {
+					$sizeType = $leftType;
+				}
 
-					$narrowed = $this->narrowUnionByArraySize($expr->right, $argType, $sizeType, $context, $scope, $expr);
-					if ($narrowed !== null) {
-						return $narrowed;
-					}
+				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
+				if ($specifiedTypes !== null) {
+					$result = $result->unionWith($specifiedTypes);
 				}
 
 				if (
@@ -664,11 +663,85 @@ final class TypeSpecifier
 			if (!$scope instanceof MutatingScope) {
 				throw new ShouldNotHappenException();
 			}
+
 			if ($context->null()) {
-				return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+
+				// infer $arr[$key] after $key = array_key_first/last($arr)
+				if (
+					$expr->expr instanceof FuncCall
+					&& $expr->expr->name instanceof Name
+					&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
+					&& count($expr->expr->getArgs()) >= 1
+				) {
+					$arrayArg = $expr->expr->getArgs()[0]->value;
+					$arrayType = $scope->getType($arrayArg);
+					if (
+						$arrayType->isArray()->yes()
+						&& $arrayType->isIterableAtLeastOnce()->yes()
+					) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+						$iterableValueType = $expr->expr->name->toLowerString() === 'array_key_first'
+							? $arrayType->getFirstIterableValueType()
+							: $arrayType->getLastIterableValueType();
+
+						return $specifiedTypes->unionWith(
+							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+
+				// infer $list[$count] after $count = count($list) - 1
+				if (
+					$expr->expr instanceof Expr\BinaryOp\Minus
+					&& $expr->expr->left instanceof FuncCall
+					&& $expr->expr->left->name instanceof Name
+					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
+					&& count($expr->expr->left->getArgs()) >= 1
+					&& $expr->expr->right instanceof Node\Scalar\Int_
+					&& $expr->expr->right->value === 1
+				) {
+					$arrayArg = $expr->expr->left->getArgs()[0]->value;
+					$arrayType = $scope->getType($arrayArg);
+					if (
+						$arrayType->isList()->yes()
+						&& $arrayType->isIterableAtLeastOnce()->yes()
+					) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+
+						return $specifiedTypes->unionWith(
+							$this->create($dimFetch, $arrayType->getLastIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+
+				return $specifiedTypes;
 			}
 
-			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
+			$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
+
+			if ($context->true()) {
+				// infer $arr[$key] after $key = array_search($needle, $arr)
+				if (
+					$expr->expr instanceof FuncCall
+					&& $expr->expr->name instanceof Name
+					&& $expr->expr->name->toLowerString() === 'array_search'
+					&& count($expr->expr->getArgs()) >= 2
+				) {
+					$arrayArg = $expr->expr->getArgs()[1]->value;
+					$arrayType = $scope->getType($arrayArg);
+
+					if ($arrayType->isArray()->yes()) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+						$iterableValueType = $arrayType->getIterableValueType();
+
+						return $specifiedTypes->unionWith(
+							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+			}
+			return $specifiedTypes;
 		} elseif (
 			$expr instanceof Expr\Isset_
 			&& count($expr->vars) > 0
@@ -972,115 +1045,104 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
-	private function narrowUnionByArraySize(FuncCall $countFuncCall, UnionType $argType, ?Type $sizeType, TypeSpecifierContext $context, Scope $scope, ?Expr $rootExpr): ?SpecifiedTypes
+	private function specifyTypesForCountFuncCall(
+		FuncCall $countFuncCall,
+		Type $type,
+		Type $sizeType,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
 	{
-		if ($sizeType === null) {
+		if (count($countFuncCall->getArgs()) === 1) {
+			$isNormalCount = TrinaryLogic::createYes();
+		} else {
+			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($type->getIterableValueType()->isArray()->negate());
+		}
+
+		$isConstantArray = $type->isConstantArray();
+		$isList = $type->isList();
+		$oneOrMore = IntegerRangeType::fromInterval(1, null);
+		if (
+			!$isNormalCount->yes()
+			|| (!$isConstantArray->yes() && !$isList->yes())
+			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
+			|| $sizeType->isSuperTypeOf($type->getArraySize())->yes()
+		) {
 			return null;
 		}
 
-		if (count($countFuncCall->getArgs()) === 1) {
-			$isNormalCount = TrinaryLogic::createYes();
-		} else {
-			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
-		}
-
-		if (
-			$isNormalCount->yes()
-			&& $argType->isConstantArray()->yes()
-		) {
-			$result = [];
-			foreach ($argType->getTypes() as $innerType) {
-				$arraySize = $innerType->getArraySize();
-				$isSize = $sizeType->isSuperTypeOf($arraySize);
-				if ($context->truthy()) {
-					if ($isSize->no()) {
-						continue;
-					}
-
-					$constArray = $this->turnListIntoConstantArray($countFuncCall, $innerType, $sizeType, $scope);
-					if ($constArray !== null) {
-						$innerType = $constArray;
-					}
-				}
-				if ($context->falsey()) {
-					if (!$isSize->yes()) {
-						continue;
-					}
-				}
-
-				$result[] = $innerType;
+		$resultTypes = [];
+		foreach ($type->getArrays() as $arrayType) {
+			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($arrayType->getArraySize());
+			if ($isSizeSuperTypeOfArraySize->no()) {
+				continue;
 			}
 
-			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$result), $context, $scope)->setRootExpr($rootExpr);
-		}
-
-		return null;
-	}
-
-	private function turnListIntoConstantArray(FuncCall $countFuncCall, Type $type, Type $sizeType, Scope $scope): ?Type
-	{
-		$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
-
-		if (count($countFuncCall->getArgs()) === 1) {
-			$isNormalCount = TrinaryLogic::createYes();
-		} else {
-			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($argType->getIterableValueType()->isArray()->negate());
-		}
-
-		if (
-			$isNormalCount->yes()
-			&& $type->isList()->yes()
-			&& $sizeType instanceof ConstantIntegerType
-			&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-		) {
-			// turn optional offsets non-optional
-			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-			for ($i = 0; $i < $sizeType->getValue(); $i++) {
-				$offsetType = new ConstantIntegerType($i);
-				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
+			if ($context->falsey() && $isSizeSuperTypeOfArraySize->maybe()) {
+				continue;
 			}
-			return $valueTypesBuilder->getArray();
-		}
 
-		if (
-			$isNormalCount->yes()
-			&& $type->isList()->yes()
-			&& $sizeType instanceof IntegerRangeType
-			&& $sizeType->getMin() !== null
-		) {
-			// turn optional offsets non-optional
-			$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
-			for ($i = 0; $i < $sizeType->getMin(); $i++) {
-				$offsetType = new ConstantIntegerType($i);
-				$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType));
-			}
-			if ($sizeType->getMax() !== null) {
-				for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
+			if (
+				$sizeType instanceof ConstantIntegerType
+				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& (
+					$isList->yes()
+					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
+				)
+			) {
+				// turn optional offsets non-optional
+				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+				for ($i = 0; $i < $sizeType->getValue(); $i++) {
 					$offsetType = new ConstantIntegerType($i);
-					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), true);
+					$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType));
 				}
-			} elseif ($type->isConstantArray()->yes()) {
-				for ($i = $sizeType->getMin();; $i++) {
-					$offsetType = new ConstantIntegerType($i);
-					$hasOffset = $type->hasOffsetValueType($offsetType);
-					if ($hasOffset->no()) {
-						break;
-					}
-					$valueTypesBuilder->setOffsetValueType($offsetType, $type->getOffsetValueType($offsetType), !$hasOffset->yes());
-				}
-			} else {
-				return null;
+				$resultTypes[] = $valueTypesBuilder->getArray();
+				continue;
 			}
 
-			$arrayType = $valueTypesBuilder->getArray();
-			if ($arrayType->isIterableAtLeastOnce()->yes()) {
-				return $arrayType;
+			if (
+				$sizeType instanceof IntegerRangeType
+				&& $sizeType->getMin() !== null
+				&& (
+					$isList->yes()
+					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getMin() - 1))->yes()
+				)
+			) {
+				// turn optional offsets non-optional
+				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+				for ($i = 0; $i < $sizeType->getMin(); $i++) {
+					$offsetType = new ConstantIntegerType($i);
+					$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType));
+				}
+				if ($sizeType->getMax() !== null) {
+					for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
+						$offsetType = new ConstantIntegerType($i);
+						$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType), true);
+					}
+				} elseif ($arrayType->isConstantArray()->yes()) {
+					for ($i = $sizeType->getMin();; $i++) {
+						$offsetType = new ConstantIntegerType($i);
+						$hasOffset = $arrayType->hasOffsetValueType($offsetType);
+						if ($hasOffset->no()) {
+							break;
+						}
+						$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType), !$hasOffset->yes());
+					}
+				} else {
+					$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+					continue;
+				}
+
+				$resultTypes[] = $valueTypesBuilder->getArray();
+				continue;
 			}
+
+			$resultTypes[] = $arrayType;
 		}
 
-		return null;
+		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);
 	}
 
 	private function specifyTypesForConstantBinaryExpression(
@@ -2112,36 +2174,20 @@ final class TypeSpecifier
 				);
 			}
 
-			if ($argType instanceof UnionType) {
-				$narrowed = $this->narrowUnionByArraySize($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
-				if ($narrowed !== null) {
-					return $narrowed;
-				}
+			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
 			}
 
-			if ($context->truthy()) {
-				if ($argType->isArray()->yes()) {
-					if (
-						$argType->isConstantArray()->yes()
-						&& $rightType->isSuperTypeOf($argType->getArraySize())->no()
-					) {
-						return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, $scope)->setRootExpr($expr);
-					}
-
-					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
-					$constArray = $this->turnListIntoConstantArray($unwrappedLeftExpr, $argType, $rightType, $scope);
-					if ($constArray !== null) {
-						return $funcTypes->unionWith(
-							$this->create($unwrappedLeftExpr->getArgs()[0]->value, $constArray, $context, $scope)->setRootExpr($expr),
-						);
-					} elseif (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
-						return $funcTypes->unionWith(
-							$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
-						);
-					}
-
-					return $funcTypes;
+			if ($context->truthy() && $argType->isArray()->yes()) {
+				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
+					return $funcTypes->unionWith(
+						$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
+					);
 				}
+
+				return $funcTypes;
 			}
 		}
 
@@ -2205,6 +2251,14 @@ final class TypeSpecifier
 			&& in_array(strtolower($unwrappedLeftExpr->name->toString()), ['get_class', 'get_debug_type'], true)
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 		) {
+			if ($rightType instanceof ConstantStringType && $this->reflectionProvider->hasClass($rightType->getValue())) {
+				return $this->create(
+					$unwrappedLeftExpr->getArgs()[0]->value,
+					new ObjectType($rightType->getValue(), null, $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					$context,
+					$scope,
+				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
+			}
 			if ($rightType->getClassStringObjectType()->isObject()->yes()) {
 				return $this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
@@ -2215,7 +2269,6 @@ final class TypeSpecifier
 			}
 		}
 
-		// get_class($a) === 'Foo'
 		if (
 			$context->truthy()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2305,6 +2358,14 @@ final class TypeSpecifier
 			$rightType->getValue() !== '' &&
 			strtolower($unwrappedLeftExpr->name->toString()) === 'class'
 		) {
+			if ($this->reflectionProvider->hasClass($rightType->getValue())) {
+				return $this->create(
+					$unwrappedLeftExpr->class,
+					new ObjectType($rightType->getValue(), null, $this->reflectionProvider->getClass($rightType->getValue())->asFinal()),
+					$context,
+					$scope,
+				)->unionWith($this->create($leftExpr, $rightType, $context, $scope))->setRootExpr($expr);
+			}
 			return $this->specifyTypesInCondition(
 				$scope,
 				new Instanceof_(
@@ -2328,6 +2389,15 @@ final class TypeSpecifier
 			$leftType->getValue() !== '' &&
 			strtolower($unwrappedRightExpr->name->toString()) === 'class'
 		) {
+			if ($this->reflectionProvider->hasClass($leftType->getValue())) {
+				return $this->create(
+					$unwrappedRightExpr->class,
+					new ObjectType($leftType->getValue(), null, $this->reflectionProvider->getClass($leftType->getValue())->asFinal()),
+					$context,
+					$scope,
+				)->unionWith($this->create($rightExpr, $leftType, $context, $scope)->setRootExpr($expr));
+			}
+
 			return $this->specifyTypesInCondition(
 				$scope,
 				new Instanceof_(

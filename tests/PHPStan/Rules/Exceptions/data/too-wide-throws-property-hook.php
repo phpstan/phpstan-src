@@ -24,7 +24,7 @@ class Foo
 	public int $c {
 		/** @throws \InvalidArgumentException */
 		get {
-			throw new \LogicException();
+			throw new \LogicException(); // new LogicException cannot be InvalidArgumentException
 		}
 	}
 
@@ -82,5 +82,14 @@ class Foo
 		/** @throws \DomainException */
 		get => 11; // error - DomainException unused
 	}
+
+	public int $l {
+		/** @throws \InvalidArgumentException */
+		get {
+			throw $this->logicException;
+		}
+	}
+
+	public \LogicException $logicException;
 
 }

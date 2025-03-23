@@ -294,3 +294,21 @@ class C extends B
 	}
 
 }
+
+class ArrayAccessPropertyFetch
+{
+
+	/** @readonly */
+	private \ArrayObject $storage;
+
+	public function __construct() {
+		$this->storage = new \ArrayObject();
+	}
+
+	public function set(\stdClass $class, int $value): void {
+		$this->storage[$class] = $value;
+		unset($this->storage[$class]);
+		$this->storage = new \WeakMap(); // invalid
+	}
+
+}

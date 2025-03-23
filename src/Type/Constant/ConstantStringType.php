@@ -223,7 +223,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				return TrinaryLogic::createYes();
 			}
 
-			if (!$classRef->getNativeReflection()->isFinal()) {
+			if (!$classRef->isFinalByKeyword()) {
 				return TrinaryLogic::createMaybe();
 			}
 
@@ -265,7 +265,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				return FunctionCallableVariant::createFromVariants($method, $method->getVariants());
 			}
 
-			if (!$classReflection->getNativeReflection()->isFinal()) {
+			if (!$classReflection->isFinalByKeyword()) {
 				return [new TrivialParametersAcceptor()];
 			}
 		}

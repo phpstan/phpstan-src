@@ -85,6 +85,10 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getIterableValueType(Type $iteratee): Type;
 
+	/**
+	 * @phpstan-assert-if-true !null $this->getAnonymousFunctionReflection()
+	 * @phpstan-assert-if-true !null $this->getAnonymousFunctionReturnType()
+	 */
 	public function isInAnonymousFunction(): bool;
 
 	public function getAnonymousFunctionReflection(): ?ParametersAcceptor;

@@ -8,6 +8,8 @@ use ReturnTypeWillChange;
 
 /**
  * @api
+ *
+ * @phpstan-type CollectorData = array<string, array<class-string<Collector<Node, mixed>>, list<mixed>>>
  */
 final class CollectedData implements JsonSerializable
 {

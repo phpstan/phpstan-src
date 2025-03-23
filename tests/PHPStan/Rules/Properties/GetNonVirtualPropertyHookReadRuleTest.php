@@ -35,4 +35,13 @@ class GetNonVirtualPropertyHookReadRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAbstractProperty(): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			$this->markTestSkipped('Test requires PHP 8.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/get-abstract-property-hook-read.php'], []);
+	}
+
 }

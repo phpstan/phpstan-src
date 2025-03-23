@@ -140,6 +140,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Possibly impure call to a callable in pure method PureMethod\MaybeCallableFromUnion::doFoo().',
 				330,
 			],
+			[
+				'Impure static property access in pure method PureMethod\StaticMethodAccessingStaticProperty::getA().',
+				388,
+			],
+			[
+				'Impure property assignment in pure method PureMethod\StaticMethodAssigningStaticProperty::getA().',
+				409,
+			],
 		]);
 	}
 
@@ -151,6 +159,10 @@ class PureMethodRuleTest extends RuleTestCase
 
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/pure-constructor.php'], [
+			[
+				'Impure static property access in pure method PureConstructor\Foo::__construct().',
+				19,
+			],
 			[
 				'Impure property assignment in pure method PureConstructor\Foo::__construct().',
 				19,

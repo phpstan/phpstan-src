@@ -59,10 +59,7 @@ final class UniversalObjectCratesClassReflectionExtension
 				continue;
 			}
 
-			if (
-				$classReflection->getName() === $className
-				|| $classReflection->isSubclassOf($className)
-			) {
+			if ($classReflection->is($className)) {
 				return true;
 			}
 		}

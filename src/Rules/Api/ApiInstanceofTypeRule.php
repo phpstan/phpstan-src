@@ -128,7 +128,7 @@ final class ApiInstanceofTypeRule implements Rule
 
 		if ($this->reflectionProvider->hasClass($className)) {
 			$classReflection = $this->reflectionProvider->getClass($className);
-			if ($classReflection->isSubclassOf(AccessoryType::class)) {
+			if ($classReflection->is(AccessoryType::class)) {
 				if ($className === $classReflection->getName()) {
 					return [];
 				}

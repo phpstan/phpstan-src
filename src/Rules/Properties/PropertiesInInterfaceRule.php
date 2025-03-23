@@ -32,7 +32,7 @@ final class PropertiesInInterfaceRule implements Rule
 
 		if (!$this->phpVersion->supportsPropertyHooks()) {
 			return [
-				RuleErrorBuilder::message('Interfaces cannot include properties.')
+				RuleErrorBuilder::message('Interfaces can include properties only on PHP 8.4 and later.')
 					->nonIgnorable()
 					->identifier('property.inInterface')
 					->build(),
@@ -71,6 +71,37 @@ final class PropertiesInInterfaceRule implements Rule
 				RuleErrorBuilder::message('Hooked properties cannot be static.')
 					->nonIgnorable()
 					->identifier('property.hookedStatic')
+					->build(),
+			];
+		}
+
+		if ($node->isAbstract()) {
+			return [
+				RuleErrorBuilder::message('Property in interface cannot be explicitly abstract.')
+					->nonIgnorable()
+					->identifier('property.abstractInInterface')
+					->build(),
+			];
+		}
+
+		if ($node->isFinal()) {
+			return [
+				RuleErrorBuilder::message('Interfaces cannot include final properties.')
+					->nonIgnorable()
+					->identifier('property.finalInInterface')
+					->build(),
+			];
+		}
+
+		foreach ($node->getHooks() as $hook) {
+			if (!$hook->isFinal()) {
+				continue;
+			}
+
+			return [
+				RuleErrorBuilder::message('Property hook cannot be both abstract and final.')
+					->nonIgnorable()
+					->identifier('property.abstractFinalHook')
 					->build(),
 			];
 		}

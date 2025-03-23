@@ -9,7 +9,6 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
-use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\LoopInterface;
@@ -211,8 +210,12 @@ final class ParallelAnalyser
 					$locallyIgnoredErrors[] = $locallyIgnoredFileError;
 				}
 
-				foreach ($json['collectedData'] as $jsonData) {
-					$collectedData[] = CollectedData::decode($jsonData);
+				foreach ($json['collectedData'] as $file => $jsonDataByCollector) {
+					foreach ($jsonDataByCollector as $collectorType => $listOfCollectedData) {
+						foreach ($listOfCollectedData as $rawCollectedData) {
+							$collectedData[$file][$collectorType][] = $rawCollectedData;
+						}
+					}
 				}
 
 				/**

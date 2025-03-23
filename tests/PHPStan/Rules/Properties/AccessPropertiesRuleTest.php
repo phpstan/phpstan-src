@@ -344,6 +344,17 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug12692(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-12692.php'], [[
+			'Non-static access to static property Bug12692\Foo::$static.',
+			14,
+		]]);
+	}
+
 	public function testAccessPropertiesAfterIsNullInBooleanOr(): void
 	{
 		$this->checkThisOnly = false;
@@ -633,8 +644,18 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$errors = [
 			[
-				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				23,
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				14,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				15,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				16,
 				$tipText,
 			],
 		];
@@ -655,37 +676,51 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				11,
 				$tipText,
 			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				14,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				15,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				16,
-				$tipText,
-			],
 		], $errors);
+
+		$errors[] = [
+			'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+			29,
+			$tipText,
+		];
+
+		$errorsWithMore = array_merge($errorsWithMore, [
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				20,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				21,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				22,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				29,
+				$tipText,
+			],
+		]);
 
 		$errorsWithMore = array_merge($errorsWithMore, [
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				26,
+				32,
 				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				27,
+				33,
 				$tipText,
 			],
 			[
 				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				28,
+				34,
 				$tipText,
 			],
 		]);
@@ -693,32 +728,32 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$otherErrors = [
 			[
 				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				36,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				37,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
-				38,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
-				41,
-				$tipText,
-			],
-			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
 				42,
 				$tipText,
 			],
 			[
-				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
 				43,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalFoo::$dynamicProperty.',
+				44,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				47,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				48,
+				$tipText,
+			],
+			[
+				'Access to an undefined property DynamicProperties\FinalBar::$dynamicProperty.',
+				49,
 				$tipText,
 			],
 		];
@@ -727,7 +762,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			[false, PHP_VERSION_ID < 80200 ? [
 				[
 					'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-					23,
+					29,
 					$tipText,
 				],
 			] : array_merge($errors, $otherErrors)],
@@ -793,16 +828,21 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				34,
 				$tipText,
 			];
+			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				71,
+				$tipText,
+			];
 			if ($b) {
 				$errors[] = [
 					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
-					71,
+					78,
 					$tipText,
 				];
 			}
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
-				105,
+				112,
 				$tipText,
 			];
 		} elseif ($b) {
@@ -812,8 +852,13 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				$tipText,
 			];
 			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				78,
+				$tipText,
+			];
+			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
-				105,
+				112,
 				$tipText,
 			];
 		}
@@ -970,6 +1015,24 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
 		$this->analyse([__DIR__ . '/data/read-asymmetric-visibility.php'], []);
+	}
+
+	public function testNewIsAlwaysFinalClass(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/null-coalesce-new-is-always-final.php'], [
+			[
+				'Access to an undefined property NullCoalesceIsAlwaysFinal\Foo::$bar.',
+				12,
+				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
+			],
+		]);
 	}
 
 }

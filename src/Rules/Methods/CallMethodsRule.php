@@ -3,11 +3,14 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use function array_merge;
 
@@ -31,12 +34,30 @@ final class CallMethodsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
+		$errors = [];
+		if ($node->name instanceof Node\Identifier) {
+			$methodNameScopes = [$node->name->name => $scope];
+		} else {
+			$nameType = $scope->getType($node->name);
+			$methodNameScopes = [];
+			foreach ($nameType->getConstantStrings() as $constantString) {
+				$name = $constantString->getValue();
+				$methodNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
 		}
 
-		$methodName = $node->name->name;
+		foreach ($methodNameScopes as $methodName => $methodScope) {
+			$errors = array_merge($errors, $this->processSingleMethodCall($methodScope, $node, $methodName));
+		}
 
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processSingleMethodCall(Scope $scope, MethodCall $node, string $methodName): array
+	{
 		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodName, $node->var);
 		if ($methodReflection === null) {
 			return $errors;

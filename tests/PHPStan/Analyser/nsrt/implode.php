@@ -6,6 +6,18 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
+	/**
+	 * @param array<int> $arr
+	 */
+	public function ints(array $arr, int $i)
+	{
+		assertType("lowercase-string&uppercase-string", implode($arr));
+		assertType("lowercase-string&non-empty-string&uppercase-string", implode([$i, $i]));
+		if ($i !== 0) {
+			assertType("lowercase-string&non-falsy-string&uppercase-string", implode([$i, $i]));
+		}
+	}
+
 	const X = 'x';
 	const ONE = 1;
 
@@ -49,7 +61,7 @@ class Foo
 
 	/** @param array{0: 1, 1: 'a'|'b', 3?: 'c'|'d', 4?: 'e'|'f', 5?: 'g'|'h', 6?: 'x'|'y'} $constArr */
 	public function constArrays6($constArr) {
-		assertType("string", implode('', $constArr));
+		assertType("lowercase-string&non-falsy-string", implode('', $constArr));
 	}
 
 	/** @param array{10: 1|2|bool, xy: 'a'|'b'|'c'} $constArr */

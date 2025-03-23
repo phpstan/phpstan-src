@@ -545,6 +545,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3608.php'], []);
 	}
 
+	public function testBug3631(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3631.php'], []);
+	}
+
 	public function testBug3920(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3920.php'], []);
@@ -1968,6 +1973,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8046.php'], []);
 	}
 
+	public function testBug11942(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11942.php'], []);
+	}
+
 	public function testBug11418(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
@@ -1977,9 +1991,55 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11418.php'], []);
 	}
 
+	public function testBug9167(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-9167.php'], []);
+	}
+
 	public function testBug3107(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3107.php'], []);
+	}
+
+	public function testBug12676(): void
+	{
+		$errors = [
+			[
+				'Parameter #1 $array is passed by reference so it does not accept @readonly property Bug12676\A::$a.',
+				15,
+			],
+			[
+				'Parameter #1 $array is passed by reference so it does not accept @readonly property Bug12676\B::$readonlyArr.',
+				25,
+			],
+			[
+				'Parameter #1 $array is passed by reference so it does not accept static @readonly property Bug12676\C::$readonlyArr.',
+				35,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80000) {
+			$errors = [
+				[
+					'Parameter #1 $array_arg is passed by reference so it does not accept @readonly property Bug12676\A::$a.',
+					15,
+				],
+				[
+					'Parameter #1 $array_arg is passed by reference so it does not accept @readonly property Bug12676\B::$readonlyArr.',
+					25,
+				],
+				[
+					'Parameter #1 $array_arg is passed by reference so it does not accept static @readonly property Bug12676\C::$readonlyArr.',
+					35,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-12676.php'], $errors);
 	}
 
 }

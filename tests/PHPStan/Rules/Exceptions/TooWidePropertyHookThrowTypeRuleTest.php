@@ -28,6 +28,10 @@ class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/too-wide-throws-property-hook.php'], [
 			[
+				'Get hook for property TooWideThrowsPropertyHook\Foo::$c has InvalidArgumentException in PHPDoc @throws tag but it\'s not thrown.',
+				26,
+			],
+			[
 				'Get hook for property TooWideThrowsPropertyHook\Foo::$d has DomainException in PHPDoc @throws tag but it\'s not thrown.',
 				33,
 			],

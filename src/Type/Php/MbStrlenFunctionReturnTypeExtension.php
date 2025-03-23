@@ -92,24 +92,20 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$argType = $scope->getType($args[0]->value);
-		$constantScalars = $argType->getConstantScalarTypes();
+		$constantScalars = $argType->getConstantScalarValues();
 
 		$lengths = [];
 		foreach ($constantScalars as $constantScalar) {
-			$stringScalar = $constantScalar->toString();
-			if (!($stringScalar instanceof ConstantStringType)) {
-				$lengths = [];
-				break;
-			}
+			$stringScalar = (string) $constantScalar;
 
 			foreach ($encodings as $encoding) {
 				if (!$this->isSupportedEncoding($encoding)) {
 					continue;
 				}
 
-				$length = @mb_strlen($stringScalar->getValue(), $encoding);
+				$length = @mb_strlen($stringScalar, $encoding);
 				if ($length === false) {
-					throw new ShouldNotHappenException(sprintf('Got false on a supported encoding %s and value %s', $encoding, var_export($stringScalar->getValue(), true)));
+					throw new ShouldNotHappenException(sprintf('Got false on a supported encoding %s and value %s', $encoding, var_export($stringScalar, true)));
 				}
 				$lengths[] = $length;
 			}

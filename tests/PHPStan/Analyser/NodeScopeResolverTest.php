@@ -102,6 +102,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			define('TEST_ARRAY_CONSTANT', [true, false, null]);
 			define('TEST_ENUM_CONSTANT', Foo::ONE);
 			yield __DIR__ . '/data/new-in-initializers-runtime.php';
+			yield __DIR__ . '/data/scope-in-enum-match-arm-body.php';
 		}
 
 		yield __DIR__ . '/../Rules/Comparison/data/bug-6473.php';
@@ -207,7 +208,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield __DIR__ . '/../Rules/Classes/data/bug-11591-property-tag.php';
 		yield __DIR__ . '/../Rules/Classes/data/mixin-trait-use.php';
 
+		yield __DIR__ . '/../Rules/Arrays/data/bug-11679.php';
 		yield __DIR__ . '/../Rules/Methods/data/bug-4801.php';
+		yield __DIR__ . '/../Rules/Arrays/data/narrow-superglobal.php';
 	}
 
 	/**

@@ -98,9 +98,18 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/invalid-hooked-properties.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-before.php \
 		--exclude tests/PHPStan/Parser/data/cleaning-property-hooks-after.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-private-property-hook.php \
 		--exclude tests/PHPStan/Rules/Properties/data/existing-classes-property-hooks.php \
 		--exclude tests/PHPStan/Rules/Properties/data/set-property-hook-parameter.php \
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-final-property.php \
+		--exclude tests/PHPStan/Rules/Properties/data/private-final-property-hooks.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks-in-interface.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-property-hooks.php \
+		--exclude tests/PHPStan/Rules/Properties/data/final-properties.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-in-interface-explicit-abstract.php \
+		--exclude tests/PHPStan/Rules/Constants/data/final-private-const.php \
+		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php \
 		src tests
 
 cs:

@@ -1010,3 +1010,8 @@ function bug12749f(string $str): void
 		assertType('array{non-empty-string}', $match); // could be numeric-string
 	}
 }
+
+function bug12397(string $string) : array {
+	$m = preg_match('#\b([A-Z]{2,})-(\d+)#', $string, $match);
+	assertType('list{0?: string, 1?: non-falsy-string, 2?: numeric-string}', $match);
+}

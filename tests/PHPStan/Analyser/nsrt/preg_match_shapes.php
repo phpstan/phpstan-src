@@ -300,7 +300,7 @@ function (string $size): void {
 	if (preg_match('~^a\.(b)?(c)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType("array{0: non-falsy-string, 1?: ''|'b', 2?: 'c'}", $matches);
+	assertType("list{0: non-falsy-string, 1?: ''|'b', 2?: 'c'}", $matches);
 };
 
 function (string $size): void {
@@ -525,7 +525,7 @@ function bug11323(string $s): void {
 
 function (string $s): void {
 	preg_match('/%a(\d*)/', $s, $matches);
-	assertType("array{0?: string, 1?: ''|numeric-string}", $matches);
+	assertType("list{0?: string, 1?: ''|numeric-string}", $matches);
 };
 
 class Bug11376
@@ -533,7 +533,7 @@ class Bug11376
 	public function test(string $str): void
 	{
 		preg_match('~^(?:(\w+)::)?(\w+)$~', $str, $matches);
-		assertType('array{0?: string, 1?: string, 2?: non-empty-string}', $matches);
+		assertType('list{0?: string, 1?: string, 2?: non-empty-string}', $matches);
 	}
 
 	public function test2(string $str): void
@@ -564,7 +564,7 @@ function (string $s): void {
 	}
 
 	if (preg_match($p, $s, $matches)) {
-		assertType("array{0: non-falsy-string, 1: 'x'|'£'|numeric-string, 2?: ''|numeric-string, 3?: 'x'}", $matches);
+		assertType("list{0: non-falsy-string, 1: 'x'|'£'|numeric-string, 2?: ''|numeric-string, 3?: 'x'}", $matches);
 	}
 };
 
@@ -730,7 +730,7 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('~a|(\d)|(\s)~', $s, $matches);
-	assertType("array{0?: string, 1?: '', 2?: non-empty-string}|array{0?: string, 1?: numeric-string}", $matches);
+	assertType("list{0?: string, 1?: '', 2?: non-empty-string}|list{0?: string, 1?: numeric-string}", $matches);
 };
 
 function bug11490 (string $expression): void {
@@ -762,13 +762,13 @@ function bug11604 (string $string): void {
 		return;
 	}
 
-	assertType("array{0: non-empty-string, 1?: ''|'XX', 2?: 'YY'}", $matches);
+	assertType("list{0: non-empty-string, 1?: ''|'XX', 2?: 'YY'}", $matches);
 	// could be array{string, '', 'YY'}|array{string, 'XX'}|array{string}
 }
 
 function bug11604b (string $string): void {
 	if (preg_match('/(XX)|(YY)?(ZZ)/', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
+		assertType("list{0: non-empty-string, 1?: ''|'XX', 2?: ''|'YY', 3?: 'ZZ'}", $matches);
 	}
 }
 
@@ -935,11 +935,11 @@ function bugEmptySubexpression (string $string): void {
 	}
 
 	if (preg_match('~((a)||(b))~', $string, $matches)) {
-		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: 'b'}", $matches);
+		assertType("list{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: 'b'}", $matches);
 	}
 
 	if (preg_match('~((a)|()|(b))~', $string, $matches)) {
-		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
+		assertType("list{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
 	}
 }
 

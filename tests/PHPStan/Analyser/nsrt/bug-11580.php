@@ -26,7 +26,7 @@ final class HelloWorld
 	public function bad3(string $in): void
 	{
 		$result = preg_match('~^/xxx/([\w\-]+)/?([\w\-]+)?/?$~', $in, $matches);
-		assertType('array{0?: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
+		assertType('list{0?: string, 1?: non-empty-string, 2?: non-empty-string}', $matches);
 		if ($result) {
 			assertType('array{0: non-falsy-string, 1: non-empty-string, 2?: non-empty-string}', $matches);
 		}

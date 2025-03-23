@@ -191,12 +191,12 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('/%a(\d*)/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
+	assertType("list{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
 };
 
 function (string $s): void {
 	preg_match('/%a(\d*)?/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
+	assertType("list{0?: string, 1?: ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
 };
 
 function (string $s): void {
@@ -222,5 +222,5 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('~a|(\d)|(\s)~', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{0?: string, 1?: numeric-string|null, 2?: non-empty-string|null}", $matches);
+	assertType("list{0?: string, 1?: numeric-string|null, 2?: non-empty-string|null}", $matches);
 };

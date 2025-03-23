@@ -243,6 +243,7 @@ final class RegexArrayShapeMatcher
 		bool $matchesAll,
 	): Type
 	{
+		$forceList = count($markVerbs) === 0;
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		// first item in matches contains the overall match.
@@ -261,6 +262,8 @@ final class RegexArrayShapeMatcher
 			$optional = $this->isGroupOptional($captureGroup, $wasMatched, $flags, $isTrailingOptional, $matchesAll);
 
 			if ($captureGroup->isNamed()) {
+				$forceList = false;
+
 				$builder->setOffsetValueType(
 					$this->getKeyType($captureGroup->getName()),
 					$groupValueType,
@@ -298,6 +301,10 @@ final class RegexArrayShapeMatcher
 				);
 			}
 			return $arrayType;
+		}
+
+		if ($forceList) {
+			return TypeCombinator::intersect($builder->getArray(), new AccessoryArrayListType());
 		}
 
 		return $builder->getArray();

@@ -8,7 +8,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -62,7 +61,7 @@ final class RegexArrayShapeMatcher
 	private function matchPatternType(Type $patternType, ?Type $flagsType, TrinaryLogic $wasMatched, bool $matchesAll): ?Type
 	{
 		if ($wasMatched->no()) {
-			return new ConstantArrayType([], []);
+			return ConstantArrayTypeBuilder::createEmpty()->getArray();
 		}
 
 		$constantStrings = $patternType->getConstantStrings();
@@ -146,8 +145,11 @@ final class RegexArrayShapeMatcher
 
 			if (!$this->containsUnmatchedAsNull($flags, $matchesAll)) {
 				// positive match has a subject but not any capturing group
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll));
+
 				$combiType = TypeCombinator::union(
-					new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll)], [1], [], TrinaryLogic::createYes()),
+					$builder->getArray(),
 					$combiType,
 				);
 			}
@@ -206,7 +208,10 @@ final class RegexArrayShapeMatcher
 				)
 			) {
 				// positive match has a subject but not any capturing group
-				$combiTypes[] = new ConstantArrayType([new ConstantIntegerType(0)], [$this->createSubjectValueType($subjectBaseType, $flags, $matchesAll)], [1], [], TrinaryLogic::createYes());
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->setOffsetValueType(new ConstantIntegerType(0), $this->createSubjectValueType($subjectBaseType, $flags, $matchesAll));
+
+				$combiTypes[] = $builder->getArray();
 			}
 
 			return TypeCombinator::union(...$combiTypes);
@@ -288,7 +293,7 @@ final class RegexArrayShapeMatcher
 			$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $builder->getArray()), new AccessoryArrayListType());
 			if (!$wasMatched->yes()) {
 				$arrayType = TypeCombinator::union(
-					new ConstantArrayType([], []),
+					ConstantArrayTypeBuilder::createEmpty()->getArray(),
 					$arrayType,
 				);
 			}

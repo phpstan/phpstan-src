@@ -103,6 +103,20 @@ final class RegexGroupWalkResult
 		return $this->onlyLiterals;
 	}
 
+	public function containsEmptyStringLiteral(): bool
+	{
+		if ($this->onlyLiterals === null) {
+			return false;
+		}
+		foreach ($this->onlyLiterals as $onlyLiteral) {
+			if ($onlyLiteral === '') {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function isNonEmpty(): TrinaryLogic
 	{
 		return $this->isNonEmpty;

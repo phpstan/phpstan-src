@@ -110,15 +110,17 @@ final class RegexGroupParser
 			RegexGroupWalkResult::createEmpty(),
 		);
 
-		// we could handle numeric-string, in case we know the regex is delimited by ^ and $
-		if ($subjectAsGroupResult->isNonFalsy()->yes()) {
-			$astWalkResult = $astWalkResult->withSubjectBaseType(
-				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
-			);
-		} elseif ($subjectAsGroupResult->isNonEmpty()->yes()) {
-			$astWalkResult = $astWalkResult->withSubjectBaseType(
-				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
-			);
+		if (!$subjectAsGroupResult->containsEmptyStringLiteral()) {
+			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
+			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
+				$astWalkResult = $astWalkResult->withSubjectBaseType(
+					TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+				);
+			} elseif ($subjectAsGroupResult->isNonEmpty()->yes()) {
+				$astWalkResult = $astWalkResult->withSubjectBaseType(
+					TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+				);
+			}
 		}
 
 		return $astWalkResult;

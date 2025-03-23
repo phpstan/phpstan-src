@@ -915,31 +915,31 @@ function bugEmptySubexpression (string $string): void {
 	}
 
 	if (preg_match('~|(a)~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1?: 'a'}", $matches);
+		assertType("array{0: string, 1?: 'a'}", $matches);
 	}
 
 	if (preg_match('~(a)|~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1?: 'a'}", $matches);
+		assertType("array{0: string, 1?: 'a'}", $matches);
 	}
 
 	if (preg_match('~(a)||(b)~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1?: 'a'}|array{non-empty-string, '', 'b'}", $matches);
+		assertType("array{0: string, 1?: 'a'}|array{string, '', 'b'}", $matches);
 	}
 
 	if (preg_match('~(|(a))~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1: ''|'a', 2?: 'a'}", $matches);
+		assertType("array{0: string, 1: ''|'a', 2?: 'a'}", $matches);
 	}
 
 	if (preg_match('~((a)|)~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1: ''|'a', 2?: 'a'}", $matches);
+		assertType("array{0: string, 1: ''|'a', 2?: 'a'}", $matches);
 	}
 
 	if (preg_match('~((a)||(b))~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1: ''|'a'|'b', 2?: ''|'a', 3?: 'b'}", $matches);
+		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: 'b'}", $matches);
 	}
 
 	if (preg_match('~((a)|()|(b))~', $string, $matches)) {
-		assertType("array{0: non-empty-string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
+		assertType("array{0: string, 1: ''|'a'|'b', 2?: ''|'a', 3?: '', 4?: 'b'}", $matches);
 	}
 }
 

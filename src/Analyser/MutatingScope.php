@@ -4833,6 +4833,8 @@ final class MutatingScope implements Scope
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
 		$intersectedVariableTypeHolders = [];
+		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name);
+		$nodeFinder = new NodeFinder();
 		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (isset($theirVariableTypeHolders[$exprString])) {
 				if ($variableTypeHolder === $theirVariableTypeHolders[$exprString]) {
@@ -4842,12 +4844,22 @@ final class MutatingScope implements Scope
 
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
+				$expr = $variableTypeHolder->getExpr();
+				if ($nodeFinder->findFirst($expr, $globalVariableCallback) !== null) {
+					continue;
+				}
+
 				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
 			}
 		}
 
 		foreach ($theirVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (isset($intersectedVariableTypeHolders[$exprString])) {
+				continue;
+			}
+
+			$expr = $variableTypeHolder->getExpr();
+			if ($nodeFinder->findFirst($expr, $globalVariableCallback) !== null) {
 				continue;
 			}
 

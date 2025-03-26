@@ -45,3 +45,14 @@ function (string $s): void {
 		PREG_OFFSET_CAPTURE|PREG_UNMATCHED_AS_NULL
 	);
 };
+
+function bug2792(string $string) : void {
+	preg_replace_callback(
+		'~\'(?:[^\']+|\'\')*+\'\K|\[(\w*)\]~',
+		function ($matches) {
+			assertType("array{0: string, 1?: string}", $matches);
+			return '';
+		},
+		$string
+	);
+}

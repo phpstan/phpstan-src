@@ -1011,7 +1011,65 @@ function bug12749f(string $str): void
 	}
 }
 
-function bug12397(string $string) : array {
+function bug12397(string $string): void {
 	$m = preg_match('#\b([A-Z]{2,})-(\d+)#', $string, $match);
 	assertType('list{0?: string, 1?: non-falsy-string, 2?: numeric-string}', $match);
+}
+
+function bug2792(string $string): void {
+	if (preg_match('~a\Kb~', $string, $match) === 1) {
+		assertType('array{\'b\'}', $match);
+	}
+
+	if (preg_match('~a\K~', $string, $match) === 1) {
+		assertType('array{\'\'}', $match);
+	}
+
+	if (preg_match('~a\K.+~', $string, $match) === 1) {
+		assertType('array{non-empty-string}', $match);
+	}
+
+	if (preg_match('~a\K.*~', $string, $match) === 1) {
+		assertType('array{string}', $match);
+	}
+
+	if (preg_match('~a\K(.+)~', $string, $match) === 1) {
+		assertType('array{non-empty-string, non-empty-string}', $match);
+	}
+
+	if (preg_match('~a\K(.*)~', $string, $match) === 1) {
+		assertType('array{string, string}', $match);
+	}
+
+	if (preg_match('~a\K(.+?)~', $string, $match) === 1) {
+		assertType('array{non-empty-string, non-empty-string}', $match);
+	}
+
+	if (preg_match('~a\K(.*?)~', $string, $match) === 1) {
+		assertType('array{string, string}', $match);
+	}
+
+	if (preg_match('~a\K(?=.+)~', $string, $match) === 1) {
+		assertType('array{\'\'}', $match);
+	}
+
+	if (preg_match('~a\K(?=.*)~', $string, $match) === 1) {
+		assertType('array{\'\'}', $match);
+	}
+
+	if (preg_match('~a(?:x\Kb|c)~', $string, $match) === 1) {
+		assertType('array{\'ac\'|\'b\'}', $match);
+	}
+
+	if (preg_match('~a(?:c|x\Kb)~', $string, $match) === 1) {
+		assertType('array{\'ac\'|\'b\'}', $match);
+	}
+
+	if (preg_match('~a(y|(?:x\Kb|c))d~', $string, $match) === 1) {
+		assertType('array{\'acd\'|\'ayd\'|\'bd\', \'c\'|\'xb\'|\'y\'}', $match);
+	}
+
+	if (preg_match('~a((?:c|x\Kb)|y)d~', $string, $match) === 1) {
+		assertType('array{\'acd\'|\'ayd\'|\'bd\', \'c\'|\'xb\'|\'y\'}', $match);
+	}
 }

@@ -58,11 +58,11 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 
 		$signatures = [$this->createSignature($functionName, $className, $reflectionFunction)];
 		$i = 1;
-		$variantFunctionName = $functionName . '\\' . $i;
+		$variantFunctionName = $functionName . '\'' . $i;
 		while ($this->hasFunctionSignature($variantFunctionName)) {
 			$signatures[] = $this->createSignature($variantFunctionName, $className, $reflectionFunction);
 			$i++;
-			$variantFunctionName = $functionName . '\\' . $i;
+			$variantFunctionName = $functionName . '\'' . $i;
 		}
 
 		return ['positional' => $signatures, 'named' => null];

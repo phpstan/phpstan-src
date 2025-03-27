@@ -1087,10 +1087,7 @@ final class TypeSpecifier
 			if (
 				$sizeType instanceof ConstantIntegerType
 				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-				&& (
-					$isList->yes()
-					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
-				)
+				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
 			) {
 				// turn optional offsets non-optional
 				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
@@ -1105,21 +1102,23 @@ final class TypeSpecifier
 			if (
 				$sizeType instanceof IntegerRangeType
 				&& $sizeType->getMin() !== null
-				&& (
-					$isList->yes()
-					|| $isConstantArray->yes() && $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getMin() - 1))->yes()
-				)
+				&& $sizeType->getMin() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($sizeType->getMax() ?? $sizeType->getMin()) - 1))->yes()
 			) {
+				$builderData = [];
 				// turn optional offsets non-optional
-				$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
 				for ($i = 0; $i < $sizeType->getMin(); $i++) {
 					$offsetType = new ConstantIntegerType($i);
-					$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType));
+					$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), false];
 				}
 				if ($sizeType->getMax() !== null) {
+					if ($sizeType->getMax() - $sizeType->getMin() > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						$resultTypes[] = $arrayType;
+						continue;
+					}
 					for ($i = $sizeType->getMin(); $i < $sizeType->getMax(); $i++) {
 						$offsetType = new ConstantIntegerType($i);
-						$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType), true);
+						$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), true];
 					}
 				} elseif ($arrayType->isConstantArray()->yes()) {
 					for ($i = $sizeType->getMin();; $i++) {
@@ -1128,14 +1127,24 @@ final class TypeSpecifier
 						if ($hasOffset->no()) {
 							break;
 						}
-						$valueTypesBuilder->setOffsetValueType($offsetType, $arrayType->getOffsetValueType($offsetType), !$hasOffset->yes());
+						$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), !$hasOffset->yes()];
 					}
 				} else {
 					$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 					continue;
 				}
 
-				$resultTypes[] = $valueTypesBuilder->getArray();
+				if (count($builderData) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					$resultTypes[] = $arrayType;
+					continue;
+				}
+
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($builderData as [$offsetType, $valueType, $optional]) {
+					$builder->setOffsetValueType($offsetType, $valueType, $optional);
+				}
+
+				$resultTypes[] = $builder->getArray();
 				continue;
 			}
 

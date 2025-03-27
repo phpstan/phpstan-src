@@ -341,12 +341,15 @@ class CountWithOptionalKeys
 
 	/**
 	 * @param array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null} $row
+	 * @param list<string> $listRow
 	 * @param int<2, 3> $twoOrThree
 	 * @param int<2, max> $twoOrMore
 	 * @param int<min, 3> $maxThree
 	 * @param int<10, 11> $tenOrEleven
+	 * @param int<3, 32> $threeOrMoreInRangeLimit
+	 * @param int<3, 512> $threeOrMoreOverRangeLimit
 	 */
-	protected function testOptionalKeysInUnionListWithIntRange($row, $twoOrThree, $twoOrMore, int $maxThree, $tenOrEleven): void
+	protected function testOptionalKeysInUnionListWithIntRange($row, $listRow, $twoOrThree, $twoOrMore, int $maxThree, $tenOrEleven, $threeOrMoreInRangeLimit, $threeOrMoreOverRangeLimit): void
 	{
 		if (count($row) >= $twoOrThree) {
 			assertType('array{0: int, 1: string|null, 2?: int|null}', $row);
@@ -370,6 +373,30 @@ class CountWithOptionalKeys
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
 			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+		}
+
+		if (count($row) >= $threeOrMoreInRangeLimit) {
+			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+		} else {
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+		}
+
+		if (count($listRow) >= $threeOrMoreInRangeLimit) {
+			assertType('list{0: string, 1: string, 2: string, 3?: string, 4?: string, 5?: string, 6?: string, 7?: string, 8?: string, 9?: string, 10?: string, 11?: string, 12?: string, 13?: string, 14?: string, 15?: string, 16?: string, 17?: string, 18?: string, 19?: string, 20?: string, 21?: string, 22?: string, 23?: string, 24?: string, 25?: string, 26?: string, 27?: string, 28?: string, 29?: string, 30?: string, 31?: string}', $listRow);
+		} else {
+			assertType('list<string>', $listRow);
+		}
+
+		if (count($row) >= $threeOrMoreOverRangeLimit) {
+			assertType('list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+		} else {
+			assertType('array{string}|list{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
+		}
+
+		if (count($listRow) >= $threeOrMoreOverRangeLimit) {
+			assertType('non-empty-list<string>', $listRow);
+		} else {
+			assertType('list<string>', $listRow);
 		}
 	}
 

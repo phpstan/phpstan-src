@@ -27,3 +27,11 @@ function doFooBar(): void {
 	}
 }
 
+function doBaz(): void {
+	$test = test();
+
+	if (array_key_exists(5, $test) && is_int($test[5])) {
+		echo $test[3];
+	}
+}
+

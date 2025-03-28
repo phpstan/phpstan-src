@@ -113,6 +113,36 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getUnresolvedPropertyPrototype($propertyName, $scope);
 	}
 
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->resolve()->hasInstanceProperty($propertyName);
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->resolve()->getInstanceProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->resolve()->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->resolve()->hasStaticProperty($propertyName);
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->resolve()->getStaticProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->resolve()->getUnresolvedPropertyPrototype($propertyName, $scope);
+	}
+
 	public function canCallMethods(): TrinaryLogic
 	{
 		return $this->resolve()->canCallMethods();

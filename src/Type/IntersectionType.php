@@ -538,6 +538,72 @@ class IntersectionType implements CompoundType
 		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
 	}
 
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasInstanceProperty($propertyName));
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$propertyPrototypes = [];
+		foreach ($this->types as $type) {
+			if (!$type->hasProperty($propertyName)->yes()) {
+				continue;
+			}
+
+			$propertyPrototypes[] = $type->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->withFechedOnType($this);
+		}
+
+		$propertiesCount = count($propertyPrototypes);
+		if ($propertiesCount === 0) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($propertiesCount === 1) {
+			return $propertyPrototypes[0];
+		}
+
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->hasStaticProperty($propertyName));
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$propertyPrototypes = [];
+		foreach ($this->types as $type) {
+			if (!$type->hasStaticProperty($propertyName)->yes()) {
+				continue;
+			}
+
+			$propertyPrototypes[] = $type->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->withFechedOnType($this);
+		}
+
+		$propertiesCount = count($propertyPrototypes);
+		if ($propertiesCount === 0) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($propertiesCount === 1) {
+			return $propertyPrototypes[0];
+		}
+
+		return new IntersectionTypeUnresolvedPropertyPrototypeReflection($propertyName, $propertyPrototypes);
+	}
+
 	public function canCallMethods(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->canCallMethods());

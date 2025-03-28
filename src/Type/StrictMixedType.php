@@ -135,6 +135,36 @@ class StrictMixedType implements CompoundType
 		throw new ShouldNotHappenException();
 	}
 
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		throw new ShouldNotHappenException();
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		throw new ShouldNotHappenException();
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		throw new ShouldNotHappenException();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		throw new ShouldNotHappenException();
+	}
+
 	public function canCallMethods(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -236,6 +236,70 @@ class StaticType implements TypeWithClassName, SubtractableType
 		);
 	}
 
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->hasInstanceProperty($propertyName);
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$staticObject = $this->getStaticObjectType();
+		$nakedProperty = $staticObject->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getNakedProperty();
+
+		$ancestor = $this->getAncestorWithClassName($nakedProperty->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $nakedProperty->getDeclaringClass();
+		}
+
+		return new CallbackUnresolvedPropertyPrototypeReflection(
+			$nakedProperty,
+			$classReflection,
+			false,
+			fn (Type $type): Type => $this->transformStaticType($type, $scope),
+		);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->hasStaticProperty($propertyName);
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$staticObject = $this->getStaticObjectType();
+		$nakedProperty = $staticObject->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getNakedProperty();
+
+		$ancestor = $this->getAncestorWithClassName($nakedProperty->getDeclaringClass()->getName());
+		$classReflection = null;
+		if ($ancestor !== null) {
+			$classReflection = $ancestor->getClassReflection();
+		}
+		if ($classReflection === null) {
+			$classReflection = $nakedProperty->getDeclaringClass();
+		}
+
+		return new CallbackUnresolvedPropertyPrototypeReflection(
+			$nakedProperty,
+			$classReflection,
+			false,
+			fn (Type $type): Type => $this->transformStaticType($type, $scope),
+		);
+	}
+
 	public function canCallMethods(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->canCallMethods();

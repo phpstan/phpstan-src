@@ -98,6 +98,36 @@ class Baz implements Type
 		// TODO: Implement getUnresolvedPropertyPrototype() method.
 	}
 
+	public function hasInstanceProperty(string $propertyName): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement hasInstanceProperty() method.
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\PropertyReflection
+	{
+		// TODO: Implement getInstanceProperty() method.
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection
+	{
+		// TODO: Implement getUnresolvedInstancePropertyPrototype() method.
+	}
+
+	public function hasStaticProperty(string $propertyName): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement hasStaticProperty() method.
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\PropertyReflection
+	{
+		// TODO: Implement getStaticProperty() method.
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection
+	{
+		// TODO: Implement getUnresolvedStaticPropertyPrototype() method.
+	}
+
 	public function canCallMethods(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement canCallMethods() method.

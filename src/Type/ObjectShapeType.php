@@ -91,6 +91,21 @@ class ObjectShapeType implements Type
 
 	public function hasProperty(string $propertyName): TrinaryLogic
 	{
+		return $this->hasInstanceProperty($propertyName);
+	}
+
+	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getInstanceProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+	}
+
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
 		if (!array_key_exists($propertyName, $this->properties)) {
 			return TrinaryLogic::createNo();
 		}
@@ -102,12 +117,12 @@ class ObjectShapeType implements Type
 		return TrinaryLogic::createYes();
 	}
 
-	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
 	{
-		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 
-	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
 		if (!array_key_exists($propertyName, $this->properties)) {
 			throw new ShouldNotHappenException();
@@ -120,6 +135,23 @@ class ObjectShapeType implements Type
 			false,
 			static fn (Type $type): Type => $type,
 		);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		// TODO Change the implementation
+		return $this->hasInstanceProperty($propertyName);
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		// TODO Change the implementation
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult

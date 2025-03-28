@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
 use PHPStan\Reflection\Php\EnumUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -128,9 +129,14 @@ class EnumCaseObjectType extends ObjectType
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection === null) {
-			return parent::getUnresolvedPropertyPrototype($propertyName, $scope);
+			return parent::getUnresolvedInstancePropertyPrototype($propertyName, $scope);
 
 		}
 		if ($propertyName === 'name') {
@@ -153,7 +159,22 @@ class EnumCaseObjectType extends ObjectType
 			}
 		}
 
-		return parent::getUnresolvedPropertyPrototype($propertyName, $scope);
+		return parent::getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		throw new ShouldNotHappenException();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		throw new ShouldNotHappenException();
 	}
 
 	public function getBackingValueType(): ?Type

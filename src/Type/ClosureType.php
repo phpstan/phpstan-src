@@ -316,6 +316,36 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->getUnresolvedPropertyPrototype($propertyName, $scope);
 	}
 
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->objectType->hasInstanceProperty($propertyName);
+	}
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->objectType->getInstanceProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->objectType->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+	}
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic
+	{
+		return $this->objectType->hasStaticProperty($propertyName);
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->objectType->getStaticProperty($propertyName, $scope);
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		return $this->objectType->getUnresolvedStaticPropertyPrototype($propertyName, $scope);
+	}
+
 	public function canCallMethods(): TrinaryLogic
 	{
 		return $this->objectType->canCallMethods();

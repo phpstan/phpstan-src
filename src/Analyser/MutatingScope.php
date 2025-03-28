@@ -6204,7 +6204,10 @@ final class MutatingScope implements Scope
 		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
-	/** @api */
+	/**
+	 * @api
+	 * @deprecated Use getInstancePropertyReflection or getStaticPropertyReflection instead
+	 */
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
 	{
 		if ($typeWithProperty instanceof UnionType) {
@@ -6215,6 +6218,32 @@ final class MutatingScope implements Scope
 		}
 
 		return $typeWithProperty->getProperty($propertyName, $this);
+	}
+
+	/** @api */
+	public function getInstancePropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
+	{
+		if ($typeWithProperty instanceof UnionType) {
+			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasInstanceProperty($propertyName)->yes());
+		}
+		if (!$typeWithProperty->hasInstanceProperty($propertyName)->yes()) {
+			return null;
+		}
+
+		return $typeWithProperty->getInstanceProperty($propertyName, $this);
+	}
+
+	/** @api */
+	public function getStaticPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection
+	{
+		if ($typeWithProperty instanceof UnionType) {
+			$typeWithProperty = $typeWithProperty->filterTypes(static fn (Type $innerType) => $innerType->hasStaticProperty($propertyName)->yes());
+		}
+		if (!$typeWithProperty->hasStaticProperty($propertyName)->yes()) {
+			return null;
+		}
+
+		return $typeWithProperty->getStaticProperty($propertyName, $this);
 	}
 
 	/**

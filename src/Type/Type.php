@@ -74,11 +74,26 @@ interface Type
 
 	public function canAccessProperties(): TrinaryLogic;
 
+	/** @deprecated Use hasInstanceProperty or hasStaticProperty instead */
 	public function hasProperty(string $propertyName): TrinaryLogic;
 
+	/** @deprecated Use getInstanceProperty or getStaticProperty instead */
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection;
 
+	/** @deprecated Use getUnresolvedInstancePropertyPrototype or getUnresolvedStaticPropertyPrototype instead */
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
+
+	public function hasInstanceProperty(string $propertyName): TrinaryLogic;
+
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection;
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
+
+	public function hasStaticProperty(string $propertyName): TrinaryLogic;
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection;
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
 
 	public function canCallMethods(): TrinaryLogic;
 

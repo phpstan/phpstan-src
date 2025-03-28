@@ -75,7 +75,12 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function hasConstant(Name $name): bool;
 
+	/** @deprecated Use getInstancePropertyReflection or getStaticPropertyReflection instead */
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
+
+	public function getInstancePropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
+
+	public function getStaticPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
 
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection;
 

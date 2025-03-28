@@ -232,6 +232,30 @@ class GenericObjectType extends ObjectType
 		return $prototype->doNotResolveTemplateTypeMapToBounds();
 	}
 
+	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$prototype = parent::getUnresolvedInstancePropertyPrototype($propertyName, $scope);
+
+		return $prototype->doNotResolveTemplateTypeMapToBounds();
+	}
+
+	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	{
+		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+	}
+
+	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
+	{
+		$prototype = parent::getUnresolvedStaticPropertyPrototype($propertyName, $scope);
+
+		return $prototype->doNotResolveTemplateTypeMapToBounds();
+	}
+
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();

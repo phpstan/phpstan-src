@@ -32,6 +32,8 @@ class InternalAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'foo',
+					],
+					'staticProperty' => [
 						'staticFoo',
 					],
 				],
@@ -49,6 +51,8 @@ class InternalAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'internalFoo',
+					],
+					'staticProperty' => [
 						'internalStaticFoo',
 					],
 				],
@@ -89,6 +93,8 @@ class InternalAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'foo',
+					],
+					'staticProperty' => [
 						'staticFoo',
 					],
 				],
@@ -103,6 +109,8 @@ class InternalAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'internalFoo',
+					],
+					'staticProperty' => [
 						'internalStaticFoo',
 					],
 				],
@@ -133,7 +141,12 @@ class InternalAnnotationsTest extends PHPStanTestCase
 		}
 
 		foreach ($internalAnnotations['property'] ?? [] as $propertyName) {
-			$propertyAnnotation = $class->getProperty($propertyName, $scope);
+			$propertyAnnotation = $class->getInstanceProperty($propertyName, $scope);
+			$this->assertSame($internal, $propertyAnnotation->isInternal()->yes());
+		}
+
+		foreach ($internalAnnotations['staticProperty'] ?? [] as $propertyName) {
+			$propertyAnnotation = $class->getStaticProperty($propertyName, $scope);
 			$this->assertSame($internal, $propertyAnnotation->isInternal()->yes());
 		}
 

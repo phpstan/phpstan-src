@@ -40,6 +40,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'foo' => null,
+					],
+					'staticProperty' => [
 						'staticFoo' => null,
 					],
 				],
@@ -58,6 +60,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 					],
 					'property' => [
 						'deprecatedFoo' => null,
+					],
+					'staticProperty' => [
 						'deprecatedStaticFoo' => null,
 					],
 				],
@@ -114,7 +118,13 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		}
 
 		foreach ($deprecatedAnnotations['property'] ?? [] as $propertyName => $deprecatedMessage) {
-			$propertyAnnotation = $class->getProperty($propertyName, $scope);
+			$propertyAnnotation = $class->getInstanceProperty($propertyName, $scope);
+			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
+			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
+		}
+
+		foreach ($deprecatedAnnotations['staticProperty'] ?? [] as $propertyName => $deprecatedMessage) {
+			$propertyAnnotation = $class->getStaticProperty($propertyName, $scope);
 			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
 			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
 		}

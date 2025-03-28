@@ -71,6 +71,9 @@ final class PhpClassReflectionExtension
 	/** @var PhpPropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
+	/** @var ExtendedPropertyReflection[][] */
+	private array $staticPropertiesIncludingAnnotations = [];
+
 	/** @var PhpPropertyReflection[][] */
 	private array $nativeProperties = [];
 
@@ -118,6 +121,17 @@ final class PhpClassReflectionExtension
 				unset($this->propertiesIncludingAnnotations[$key][$name]);
 			}
 		}
+		foreach ($this->staticPropertiesIncludingAnnotations as $key => $properties) {
+			if ($key !== $classCacheKey) {
+				continue;
+			}
+			foreach ($properties as $name => $property) {
+				if (!$property->isPrivate()) {
+					continue;
+				}
+				unset($this->staticPropertiesIncludingAnnotations[$key][$name]);
+			}
+		}
 		foreach ($this->nativeProperties as $key => $properties) {
 			if ($key !== $classCacheKey) {
 				continue;
@@ -155,7 +169,10 @@ final class PhpClassReflectionExtension
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
-		return $classReflection->getNativeReflection()->hasProperty($propertyName);
+		$nativeReflection = $classReflection->getNativeReflection();
+
+		return $nativeReflection->hasProperty($propertyName)
+			&& !$nativeReflection->getProperty($propertyName)->isStatic();
 	}
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PhpPropertyReflection
@@ -165,6 +182,28 @@ final class PhpClassReflectionExtension
 		}
 
 		return $this->propertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName];
+	}
+
+	public function hasStaticProperty(ClassReflection $classReflection, string $propertyName): bool
+	{
+		$nativeReflection = $classReflection->getNativeReflection();
+
+		return $nativeReflection->hasProperty($propertyName)
+			&& $nativeReflection->getProperty($propertyName)->isStatic();
+	}
+
+	public function getStaticProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
+	{
+		if (!isset($this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
+			$this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, true);
+		}
+
+		return $this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName];
+	}
+
+	public function hasNativeProperty(ClassReflection $classReflection, string $propertyName): bool
+	{
+		return $classReflection->getNativeReflection()->hasProperty($propertyName);
 	}
 
 	public function getNativeProperty(ClassReflection $classReflection, string $propertyName): PhpPropertyReflection
@@ -177,6 +216,7 @@ final class PhpClassReflectionExtension
 		return $this->nativeProperties[$classReflection->getCacheKey()][$propertyName];
 	}
 
+	// TODO: Find the difference between createInstanceProperty and createStaticProperty
 	private function createProperty(
 		ClassReflection $classReflection,
 		string $propertyName,

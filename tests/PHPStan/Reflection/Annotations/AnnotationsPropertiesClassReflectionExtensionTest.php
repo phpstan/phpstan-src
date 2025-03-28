@@ -288,11 +288,11 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 		$scope->method('canWriteProperty')->willReturn(true);
 		foreach ($properties as $propertyName => $expectedPropertyData) {
 			$this->assertTrue(
-				$class->hasProperty($propertyName),
+				$class->hasInstanceProperty($propertyName),
 				sprintf('Class %s does not define property %s.', $className, $propertyName),
 			);
 
-			$property = $class->getProperty($propertyName, $scope);
+			$property = $class->getInstanceProperty($propertyName, $scope);
 			$this->assertSame(
 				$expectedPropertyData['class'],
 				$property->getDeclaringClass()->getName(),

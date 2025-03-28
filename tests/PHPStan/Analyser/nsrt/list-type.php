@@ -141,7 +141,7 @@ class Foo
 		$list[3] = 21;
 		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)&hasOffsetValue(2, 21)&hasOffsetValue(3, 21)', $list);
 
-		// whole in the list -> turns it into a array
+		// hole in the list -> turns it into a array
 
 		$list[5] = 21;
 		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)&hasOffsetValue(2, 21)&hasOffsetValue(3, 21)&hasOffsetValue(5, 21)', $list);

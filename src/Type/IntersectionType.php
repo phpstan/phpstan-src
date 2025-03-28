@@ -800,8 +800,30 @@ class IntersectionType implements CompoundType
 
 		$result = $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 
-		if ($offsetType !== null && $this->isList()->yes() && $this->isIterableAtLeastOnce()->yes() && (new ConstantIntegerType(1))->isSuperTypeOf($offsetType)->yes()) {
-			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+		if (
+			$offsetType !== null
+			&& $this->isList()->yes()
+			&& !$result->isList()->yes()
+		) {
+			if ($this->isIterableAtLeastOnce()->yes() && (new ConstantIntegerType(1))->isSuperTypeOf($offsetType)->yes()) {
+				$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+			} else {
+				foreach ($this->types as $type) {
+					if (!$type instanceof HasOffsetValueType && !$type instanceof HasOffsetType) {
+						continue;
+					}
+
+					foreach ($type->getOffsetType()->getConstantScalarValues() as $constantScalarValue) {
+						if (!is_int($constantScalarValue)) {
+							continue;
+						}
+						if (IntegerRangeType::fromInterval(0, $constantScalarValue + 1)->isSuperTypeOf($offsetType)->yes()) {
+							$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
+							break 2;
+						}
+					}
+				}
+			}
 		}
 
 		return $result;

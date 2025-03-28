@@ -128,4 +128,45 @@ class Foo
 		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 17)&hasOffsetValue(2, 21)', $list);
 	}
 
+	/** @param list<int> $list */
+	function testAppendImmediatelyAfterLastElement(array $list): void
+	{
+		assertType('list<int>', $list);
+		$list[0] = 17;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)', $list);
+		$list[1] = 19;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)', $list);
+		$list[2] = 21;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)&hasOffsetValue(2, 21)', $list);
+		$list[3] = 21;
+		assertType('non-empty-list<int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)&hasOffsetValue(2, 21)&hasOffsetValue(3, 21)', $list);
+
+		// whole in the list -> turns it into a array
+
+		$list[5] = 21;
+		assertType('non-empty-array<int<0, max>, int>&hasOffsetValue(0, 17)&hasOffsetValue(1, 19)&hasOffsetValue(2, 21)&hasOffsetValue(3, 21)&hasOffsetValue(5, 21)', $list);
+	}
+
+
+	/** @param list<int> $list */
+	function testKeepListAfterLast(array $list): void
+	{
+		if (isset($list[5])) {
+			assertType('non-empty-list<int>&hasOffsetValue(5, int)', $list);
+			$list[6] = 21;
+			assertType('non-empty-list<int>&hasOffsetValue(5, int)&hasOffsetValue(6, 21)', $list);
+		}
+		assertType('list<int>', $list);
+	}
+
+	/** @param list<int> $list */
+	function testKeepListAfterLastArrayKey(array $list): void
+	{
+		if (array_key_exists(5, $list) && is_int($list[5])) {
+			assertType('non-empty-list<int>&hasOffsetValue(5, int)', $list);
+			$list[6] = 21;
+			assertType('non-empty-list<int>&hasOffsetValue(5, int)&hasOffsetValue(6, 21)', $list);
+		}
+		assertType('list<int>', $list);
+	}
 }

@@ -155,6 +155,7 @@ final class AccessStaticPropertiesRule implements Rule
 				$scope,
 				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
+				// TODO Use hasStaticProperty
 				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 			);
 			$classType = $classTypeResult->getType();
@@ -187,6 +188,7 @@ final class AccessStaticPropertiesRule implements Rule
 			]);
 		}
 
+		// TODO Use hasStaticProperty
 		$has = $classType->hasProperty($name);
 		if (!$has->no() && $scope->isUndefinedExpressionAllowed($node)) {
 			return [];
@@ -203,8 +205,8 @@ final class AccessStaticPropertiesRule implements Rule
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 
 				while ($parentClassReflection !== null) {
-					if ($parentClassReflection->hasProperty($name)) {
-						if ($scope->canReadProperty($parentClassReflection->getProperty($name, $scope))) {
+					if ($parentClassReflection->hasStaticProperty($name)) {
+						if ($scope->canReadProperty($parentClassReflection->getStaticProperty($name, $scope))) {
 							return [];
 						}
 						return [
@@ -229,6 +231,7 @@ final class AccessStaticPropertiesRule implements Rule
 			]);
 		}
 
+		// TODO Use getStaticProperty and update the if
 		$property = $classType->getProperty($name, $scope);
 		if (!$property->isStatic()) {
 			$hasPropertyTypes = TypeUtils::getHasPropertyTypes($classType);

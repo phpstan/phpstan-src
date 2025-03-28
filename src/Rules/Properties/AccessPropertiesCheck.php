@@ -101,6 +101,7 @@ final class AccessPropertiesCheck
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
+			// TODO use hasInstanceProperty
 			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 		);
 		$type = $typeResult->getType();
@@ -127,6 +128,7 @@ final class AccessPropertiesCheck
 			];
 		}
 
+		// TODO use hasInstanceProperty
 		$has = $type->hasProperty($name);
 		if ($has->maybe()) {
 			if ($scope->isUndefinedExpressionAllowed($node)) {
@@ -167,12 +169,12 @@ final class AccessPropertiesCheck
 				$propertyClassReflection = $this->reflectionProvider->getClass($classNames[0]);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 				while ($parentClassReflection !== null) {
-					if ($parentClassReflection->hasProperty($name)) {
+					if ($parentClassReflection->hasInstanceProperty($name)) {
 						if ($write) {
-							if ($scope->canWriteProperty($parentClassReflection->getProperty($name, $scope))) {
+							if ($scope->canWriteProperty($parentClassReflection->getInstanceProperty($name, $scope))) {
 								return [];
 							}
-						} elseif ($scope->canReadProperty($parentClassReflection->getProperty($name, $scope))) {
+						} elseif ($scope->canReadProperty($parentClassReflection->getInstanceProperty($name, $scope))) {
 							return [];
 						}
 
@@ -216,6 +218,7 @@ final class AccessPropertiesCheck
 			];
 		}
 
+		// TODO use getInstanceProperty
 		$propertyReflection = $type->getProperty($name, $scope);
 		if ($propertyReflection->isStatic()) {
 			return [

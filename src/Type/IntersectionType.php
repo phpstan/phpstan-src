@@ -28,6 +28,8 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -45,6 +47,7 @@ use function array_values;
 use function count;
 use function implode;
 use function in_array;
+use function is_int;
 use function ksort;
 use function md5;
 use function sprintf;
@@ -737,6 +740,21 @@ class IntersectionType implements CompoundType
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
 			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
 				return TrinaryLogic::createYes();
+			}
+
+			foreach ($this->types as $type) {
+				if (!$type instanceof HasOffsetValueType && !$type instanceof HasOffsetType) {
+					continue;
+				}
+
+				foreach ($type->getOffsetType()->getConstantScalarValues() as $constantScalarValue) {
+					if (!is_int($constantScalarValue)) {
+						continue;
+					}
+					if (IntegerRangeType::fromInterval(0, $constantScalarValue)->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+						return TrinaryLogic::createYes();
+					}
+				}
 			}
 		}
 

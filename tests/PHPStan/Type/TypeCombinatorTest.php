@@ -2264,6 +2264,36 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 		yield [
 			[
+				new ObjectType('PHPStan\Fixture\ManyCasesTestEnum', new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+				])),
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'C'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
+				]),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\ManyCasesTestEnum~(PHPStan\Fixture\ManyCasesTestEnum::A|PHPStan\Fixture\ManyCasesTestEnum::B)',
+		];
+
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\ManyCasesTestEnum', new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+				])),
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'D'),
+				]),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\ManyCasesTestEnum~PHPStan\Fixture\ManyCasesTestEnum::B',
+		];
+
+		yield [
+			[
 				new ThisType(
 					$reflectionProvider->getClass(\ThisSubtractable\Foo::class), // phpcs:ignore
 					new UnionType([new ObjectType(\ThisSubtractable\Bar::class), new ObjectType(\ThisSubtractable\Baz::class)]), // phpcs:ignore
@@ -4222,6 +4252,27 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'$this(stdClass)&stdClass::foo',
+		];
+
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+				new MixedType(false, new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A')),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				new UnionType([
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A'),
+					new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'B'),
+				]),
+				new MixedType(false, new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A')),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\ManyCasesTestEnum::B',
 		];
 
 		yield [

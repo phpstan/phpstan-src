@@ -18,6 +18,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
@@ -539,7 +540,7 @@ final class TypeCombinator
 			return $type;
 		}
 
-		if ($type instanceof SubtractableType) {
+		if ($type instanceof SubtractableType && ! $type instanceof EnumCaseObjectType) {
 			$subtractedType = $type->getSubtractedType() === null
 				? $subtractedType
 				: self::union($type->getSubtractedType(), $subtractedType);
@@ -595,7 +596,7 @@ final class TypeCombinator
 			}
 
 			$subtractedType = self::union(...$subtractedTypes);
-		} elseif ($b instanceof SubtractableType) {
+		} elseif ($b instanceof SubtractableType && ! $b instanceof EnumCaseObjectType) {
 			$subtractedType = $b->getSubtractedType();
 			if ($subtractedType === null) {
 				return $a->getTypeWithoutSubtractedType();

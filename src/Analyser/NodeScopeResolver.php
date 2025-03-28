@@ -5482,6 +5482,10 @@ final class NodeScopeResolver
 			}
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
+				if ($varType->isList()->yes() && $scope->hasExpressionType($originalVar)->yes()) {
+					$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+				}
+
 				if ($var instanceof Variable && is_string($var->name)) {
 					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());

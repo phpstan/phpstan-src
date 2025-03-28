@@ -345,4 +345,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12274(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12274.php'], [
+			[
+				'Function Bug12274\getItemsByModifiedIndex() should return non-empty-list<int> but returns non-empty-array<int<0, max>, int>.',
+				36,
+				'non-empty-array<int<0, max>, int> might not be a list.',
+			],
+		]);
+	}
+
 }

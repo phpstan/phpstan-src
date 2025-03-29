@@ -24,6 +24,7 @@ parameters:
 			tooWideThrowType: true
 	featureToggles:
 		bleedingEdge: false
+		checkNonStringableDynamicAccess: false
 		checkParameterCastableToNumberFunctions: false
 		skipCheckGenericClasses: []
 		stricterFunctionMap: false

@@ -42,6 +42,7 @@ final class ClassConstantRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
+		private bool $checkNonStringableDynamicAccess = true,
 	)
 	{
 	}
@@ -62,6 +63,23 @@ final class ClassConstantRule implements Rule
 			foreach ($nameType->getConstantStrings() as $constantString) {
 				$name = $constantString->getValue();
 				$constantNameScopes[$name] = $scope->filterByTruthyValue(new Identical($node->name, new String_($name)));
+			}
+
+			if ($this->checkNonStringableDynamicAccess) {
+				$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->name,
+					'',
+					static fn (Type $type) => $type->isString()->yes(),
+				);
+
+				$type = $typeResult->getType();
+
+				if (!$type->isString()->yes()) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Cannot fetch class constant with a non-stringable type %s.', $nameType->describe(VerbosityLevel::precise())))
+						->identifier('classConstant.fetchInvalidExpression')
+						->build();
+				}
 			}
 		}
 

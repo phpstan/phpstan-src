@@ -26,7 +26,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		return new ClassConstantRule(
 			$reflectionProvider,
-			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
+			new RuleLevelHelper($reflectionProvider, true, false, true, true, true, false, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck(self::getContainer()),
@@ -34,6 +34,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				self::getContainer(),
 			),
 			new PhpVersion($this->phpVersion),
+			true,
 		);
 	}
 
@@ -58,6 +59,10 @@ class ClassConstantRuleTest extends RuleTestCase
 				[
 					'Access to undefined constant ClassConstantNamespace\Foo::DOLOR.',
 					10,
+				],
+				[
+					'Cannot access constant LOREM on mixed.',
+					11,
 				],
 				[
 					'Access to undefined constant ClassConstantNamespace\Foo::DOLOR.',
@@ -441,6 +446,14 @@ class ClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/dynamic-constant-access.php'], [
 			[
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				17,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type object.',
+				19,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
 				20,
 			],
 			[
@@ -470,6 +483,43 @@ class ClassConstantRuleTest extends RuleTestCase
 			[
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
 				44,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.3')]
+	public function testStringableDynamicAccess(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+
+		$this->analyse([__DIR__ . '/data/dynamic-constant-stringable-access.php'], [
+			[
+				'Cannot fetch class constant with a non-stringable type mixed.',
+				13,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type string|null.',
+				14,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type Stringable|null.',
+				15,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type int.',
+				16,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type int|null.',
+				17,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type DateTime|string.',
+				18,
+			],
+			[
+				'Cannot fetch class constant with a non-stringable type 1111.',
+				19,
 			],
 		]);
 	}

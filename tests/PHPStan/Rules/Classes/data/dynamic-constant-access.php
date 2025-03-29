@@ -14,7 +14,7 @@ final class Foo
 	{
 		$bar = 'FOO';
 
-		echo self::{$foo};
+		echo self::{$bar};
 		echo self::{$string};
 		echo self::{$obj};
 		echo self::{$this->name};
@@ -43,6 +43,5 @@ final class Foo
 
 		echo self::{$name};
 	}
-
 
 }

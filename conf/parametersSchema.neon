@@ -28,6 +28,7 @@ parametersSchema:
 	])
 	featureToggles: structure([
 		bleedingEdge: bool(),
+		checkNonStringableDynamicAccess: bool(),
 		checkParameterCastableToNumberFunctions: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		stricterFunctionMap: bool()

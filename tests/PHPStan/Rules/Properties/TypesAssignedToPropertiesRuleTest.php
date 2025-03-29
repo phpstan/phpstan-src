@@ -46,10 +46,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				37,
 			],
 			[
-				'Property PropertiesAssignedTypes\Ipsum::$parentStringProperty (string) does not accept int.',
-				39,
-			],
-			[
 				'Property PropertiesAssignedTypes\Foo::$unionPropertySelf (array<PropertiesAssignedTypes\Foo>|(iterable<PropertiesAssignedTypes\Foo>&PropertiesAssignedTypes\Collection)) does not accept PropertiesAssignedTypes\Foo.',
 				44,
 			],

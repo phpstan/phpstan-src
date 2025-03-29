@@ -3216,7 +3216,7 @@ final class NodeScopeResolver
 			} else {
 				$propertyName = $expr->name->toString();
 				$propertyHolderType = $scopeBeforeVar->getType($expr->var);
-				$propertyReflection = $scopeBeforeVar->getPropertyReflection($propertyHolderType, $propertyName);
+				$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
 				if ($propertyReflection !== null && $this->phpVersion->supportsPropertyHooks()) {
 					$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
 					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
@@ -5898,8 +5898,8 @@ final class NodeScopeResolver
 			}
 
 			$propertyHolderType = $scope->getType($var->var);
-			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
-				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
+			if ($propertyName !== null && $propertyHolderType->hasInstanceProperty($propertyName)->yes()) {
+				$propertyReflection = $propertyHolderType->getInstanceProperty($propertyName, $scope);
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
@@ -5991,7 +5991,7 @@ final class NodeScopeResolver
 			$scope = $result->getScope();
 
 			if ($propertyName !== null) {
-				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
+				$propertyReflection = $scope->getStaticPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {

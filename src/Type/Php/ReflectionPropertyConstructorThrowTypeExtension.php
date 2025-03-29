@@ -42,7 +42,7 @@ final class ReflectionPropertyConstructorThrowTypeExtension implements DynamicSt
 
 			$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
 			foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
-				if (!$classReflection->hasProperty($constantPropertyString->getValue())) {
+				if (!$classReflection->hasInstanceProperty($constantPropertyString->getValue())) {
 					return $methodReflection->getThrowType();
 				}
 			}

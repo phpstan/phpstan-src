@@ -201,7 +201,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
-			$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
+			$propertyReflection = $usageScope->getInstancePropertyReflection($fetchedOnType, $propertyName);
 			if ($propertyReflection === null) {
 				continue;
 			}

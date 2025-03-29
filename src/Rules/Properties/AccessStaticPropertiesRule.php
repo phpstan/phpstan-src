@@ -246,7 +246,7 @@ final class AccessStaticPropertiesRule implements Rule
 			]);
 		}
 
-		$property = $classType->getProperty($name, $scope);
+		$property = $classType->getStaticProperty($name, $scope);
 		if (!$scope->canReadProperty($property)) {
 			return array_merge($messages, [
 				RuleErrorBuilder::message(sprintf(

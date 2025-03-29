@@ -307,7 +307,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			) {
 				$properties = [];
 				foreach ($this->getEnumCases() as $enumCase) {
-					$properties[] = $enumCase->getUnresolvedPropertyPrototype($propertyName, $scope);
+					$properties[] = $enumCase->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
 				}
 
 				if (count($properties) > 0) {
@@ -419,27 +419,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			true,
 			$this,
 		);
-	}
-
-	/**
-	 * @deprecated Not in use anymore.
-	 */
-	public function getPropertyWithoutTransformingStatic(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
-	{
-		$classReflection = $this->getNakedClassReflection();
-		if ($classReflection === null) {
-			throw new ClassNotFoundException($this->className);
-		}
-
-		if (!$classReflection->hasProperty($propertyName)) {
-			$classReflection = $this->getClassReflection();
-		}
-
-		if ($classReflection === null) {
-			throw new ClassNotFoundException($this->className);
-		}
-
-		return $classReflection->getProperty($propertyName, $scope);
 	}
 
 	public function getReferencedClasses(): array

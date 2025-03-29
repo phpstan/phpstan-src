@@ -4370,7 +4370,7 @@ final class MutatingScope implements Scope
 			return $this;
 		}
 
-		$propertyReflection = $this->getPropertyReflection($fetchedOnType, $propertyName);
+		$propertyReflection = $this->getInstancePropertyReflection($fetchedOnType, $propertyName);
 		if ($propertyReflection === null) {
 			return $this;
 		}
@@ -6251,7 +6251,12 @@ final class MutatingScope implements Scope
 	 */
 	private function propertyFetchType(Type $fetchedOnType, string $propertyName, Expr $propertyFetch): ?Type
 	{
-		$propertyReflection = $this->getPropertyReflection($fetchedOnType, $propertyName);
+		if ($propertyFetch instanceof PropertyFetch) {
+			$propertyReflection = $this->getInstancePropertyReflection($fetchedOnType, $propertyName);
+		} else {
+			$propertyReflection = $this->getStaticPropertyReflection($fetchedOnType, $propertyName);
+		}
+
 		if ($propertyReflection === null) {
 			return null;
 		}

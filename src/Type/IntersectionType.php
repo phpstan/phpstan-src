@@ -552,7 +552,7 @@ class IntersectionType implements CompoundType
 	{
 		$propertyPrototypes = [];
 		foreach ($this->types as $type) {
-			if (!$type->hasProperty($propertyName)->yes()) {
+			if (!$type->hasInstanceProperty($propertyName)->yes()) {
 				continue;
 			}
 

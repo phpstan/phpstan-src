@@ -54,12 +54,12 @@ final class MixinPropertiesClassReflectionExtension implements PropertiesClassRe
 
 			$this->inProcess[$typeDescription][$propertyName] = true;
 
-			if (!$type->hasProperty($propertyName)->yes()) {
+			if (!$type->hasInstanceProperty($propertyName)->yes()) {
 				unset($this->inProcess[$typeDescription][$propertyName]);
 				continue;
 			}
 
-			$property = $type->getProperty($propertyName, new OutOfClassScope());
+			$property = $type->getInstanceProperty($propertyName, new OutOfClassScope());
 			unset($this->inProcess[$typeDescription][$propertyName]);
 
 			return $property;

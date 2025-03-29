@@ -158,7 +158,7 @@ class ObjectShapeType implements Type
 		$result = AcceptsResult::createYes();
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {
-			$typeHasProperty = $type->hasProperty((string) $propertyName);
+			$typeHasProperty = $type->hasInstanceProperty((string) $propertyName);
 			$hasProperty = new AcceptsResult(
 				$typeHasProperty,
 				$typeHasProperty->yes() ? [] : [
@@ -189,7 +189,7 @@ class ObjectShapeType implements Type
 
 			$result = $result->and($hasProperty);
 			try {
-				$otherProperty = $type->getProperty((string) $propertyName, $scope);
+				$otherProperty = $type->getInstanceProperty((string) $propertyName, $scope);
 			} catch (MissingPropertyFromReflectionException) {
 				return AcceptsResult::createNo(
 					[
@@ -275,7 +275,7 @@ class ObjectShapeType implements Type
 		$result = IsSuperTypeOfResult::createYes();
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {
-			$hasProperty = new IsSuperTypeOfResult($type->hasProperty((string) $propertyName), []);
+			$hasProperty = new IsSuperTypeOfResult($type->hasInstanceProperty((string)$propertyName), []);
 			if ($hasProperty->no()) {
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;
@@ -294,7 +294,7 @@ class ObjectShapeType implements Type
 
 			$result = $result->and($hasProperty);
 			try {
-				$otherProperty = $type->getProperty((string) $propertyName, $scope);
+				$otherProperty = $type->getInstanceProperty((string) $propertyName, $scope);
 			} catch (MissingPropertyFromReflectionException) {
 				return IsSuperTypeOfResult::createNo(
 					[
@@ -306,6 +306,7 @@ class ObjectShapeType implements Type
 					],
 				);
 			}
+
 			if (!$otherProperty->isPublic()) {
 				return IsSuperTypeOfResult::createNo();
 			}
@@ -398,12 +399,12 @@ class ObjectShapeType implements Type
 			$typeMap = TemplateTypeMap::createEmpty();
 			$scope = new OutOfClassScope();
 			foreach ($this->properties as $name => $propertyType) {
-				if ($receivedType->hasProperty((string) $name)->no()) {
+				if ($receivedType->hasInstanceProperty((string) $name)->no()) {
 					continue;
 				}
 
 				try {
-					$receivedProperty = $receivedType->getProperty((string) $name, $scope);
+					$receivedProperty = $receivedType->getInstanceProperty((string) $name, $scope);
 				} catch (MissingPropertyFromReflectionException) {
 					continue;
 				}
@@ -489,10 +490,10 @@ class ObjectShapeType implements Type
 
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $name => $propertyType) {
-			if (!$right->hasProperty((string) $name)->yes()) {
+			if (!$right->hasInstanceProperty((string) $name)->yes()) {
 				return $this;
 			}
-			$transformed = $cb($propertyType, $right->getProperty((string) $name, $scope)->getReadableType());
+			$transformed = $cb($propertyType, $right->getInstanceProperty((string) $name, $scope)->getReadableType());
 			if ($transformed !== $propertyType) {
 				$stillOriginal = false;
 			}

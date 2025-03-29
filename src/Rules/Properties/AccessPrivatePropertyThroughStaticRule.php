@@ -38,15 +38,12 @@ final class AccessPrivatePropertyThroughStaticRule implements Rule
 		}
 
 		$classType = $scope->resolveTypeByName($className);
-		if (!$classType->hasProperty($propertyName)->yes()) {
+		if (!$classType->hasStaticProperty($propertyName)->yes()) {
 			return [];
 		}
 
-		$property = $classType->getProperty($propertyName, $scope);
+		$property = $classType->getStaticProperty($propertyName, $scope);
 		if (!$property->isPrivate()) {
-			return [];
-		}
-		if (!$property->isStatic()) {
 			return [];
 		}
 

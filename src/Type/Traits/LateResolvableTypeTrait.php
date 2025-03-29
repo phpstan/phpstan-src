@@ -140,7 +140,7 @@ trait LateResolvableTypeTrait
 
 	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		return $this->resolve()->getUnresolvedPropertyPrototype($propertyName, $scope);
+		return $this->resolve()->getUnresolvedStaticPropertyPrototype($propertyName, $scope);
 	}
 
 	public function canCallMethods(): TrinaryLogic

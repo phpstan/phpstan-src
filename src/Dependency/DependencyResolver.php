@@ -261,7 +261,7 @@ final class DependencyResolver
 			}
 
 			if ($node->name instanceof Node\Identifier) {
-				$propertyReflection = $scope->getPropertyReflection($fetchedOnType, $node->name->toString());
+				$propertyReflection = $scope->getInstancePropertyReflection($fetchedOnType, $node->name->toString());
 				if ($propertyReflection !== null) {
 					$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 				}
@@ -377,13 +377,13 @@ final class DependencyResolver
 					$className = $scope->resolveName($node->class);
 					if ($this->reflectionProvider->hasClass($className)) {
 						$propertyClassReflection = $this->reflectionProvider->getClass($className);
-						if ($propertyClassReflection->hasProperty($node->name->toString())) {
-							$propertyReflection = $propertyClassReflection->getProperty($node->name->toString(), $scope);
+						if ($propertyClassReflection->hasStaticProperty($node->name->toString())) {
+							$propertyReflection = $propertyClassReflection->getStaticProperty($node->name->toString(), $scope);
 							$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 						}
 					}
 				} else {
-					$propertyReflection = $scope->getPropertyReflection($scope->getType($node->class), $node->name->toString());
+					$propertyReflection = $scope->getStaticPropertyReflection($scope->getType($node->class), $node->name->toString());
 					if ($propertyReflection !== null) {
 						$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 					}

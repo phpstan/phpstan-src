@@ -35,3 +35,14 @@ function getItemsByModifiedIndex(array $items): array
 	assertType('non-empty-array<int<0, max>, int>', $items);
 	return $items;
 }
+
+/** @param list<int> $list */
+function testKeepListAfterIssetIndex(array $list, int $i): void
+{
+	if (isset($list[$i])) {
+		assertType('list<int>', $list);
+		$list[$i] = 21;
+		assertType('non-empty-list<int>', $list);
+	}
+	assertType('list<int>', $list);
+}

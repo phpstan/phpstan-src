@@ -43,6 +43,54 @@ function testKeepListAfterIssetIndex(array $list, int $i): void
 		assertType('list<int>', $list);
 		$list[$i] = 21;
 		assertType('non-empty-list<int>', $list);
+		$list[$i+1] = 21;
+		assertType('non-empty-list<int>', $list);
 	}
 	assertType('list<int>', $list);
+}
+
+/** @param list<int> $list */
+function testKeepListAfterIssetIndexPlusOne(array $list, int $i): void
+{
+	if (isset($list[$i])) {
+		assertType('list<int>', $list);
+		$list[$i+1] = 21;
+		assertType('non-empty-list<int>', $list);
+	}
+	assertType('list<int>', $list);
+}
+
+/** @param list<int> $list */
+function testKeepListAfterIssetIndexOnePlus(array $list, int $i): void
+{
+	if (isset($list[$i])) {
+		assertType('list<int>', $list);
+		$list[1+$i] = 21;
+		assertType('non-empty-list<int>', $list);
+	}
+	assertType('list<int>', $list);
+}
+
+/** @param list<int> $list */
+function testShouldLooseListbyAst(array $list, int $i): void
+{
+	if (isset($list[$i])) {
+		$i++;
+
+		assertType('list<int>', $list);
+		$list[1+$i] = 21;
+		assertType('non-empty-array<int, int>', $list);
+	}
+	assertType('array<int, int>', $list);
+}
+
+/** @param list<int> $list */
+function testShouldLooseListbyAst2(array $list, int $i): void
+{
+	if (isset($list[$i])) {
+		assertType('list<int>', $list);
+		$list[2+$i] = 21;
+		assertType('non-empty-array<int, int>', $list);
+	}
+	assertType('array<int, int>', $list);
 }

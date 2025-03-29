@@ -5482,8 +5482,26 @@ final class NodeScopeResolver
 			}
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
-				if ($varType->isList()->yes() && $scope->hasExpressionType($originalVar)->yes()) {
-					$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+				if ($varType->isList()->yes()) {
+					if ($scope->hasExpressionType($originalVar)->yes()) { // keep list for $list[$index] assignments
+						$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+					} elseif ($originalVar->dim instanceof BinaryOp\Plus) {
+						if ( // keep list for $list[$index + 1] assignments
+							$originalVar->dim->right instanceof Variable
+							&& $originalVar->dim->left instanceof Node\Scalar\Int_
+							&& $originalVar->dim->left->value === 1
+							&& $scope->hasExpressionType(new ArrayDimFetch($originalVar->var, $originalVar->dim->right))->yes()
+						) {
+							$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+						} elseif ( // keep list for $list[1 + $index] assignments
+							$originalVar->dim->left instanceof Variable
+							&& $originalVar->dim->right instanceof Node\Scalar\Int_
+							&& $originalVar->dim->right->value === 1
+							&& $scope->hasExpressionType(new ArrayDimFetch($originalVar->var, $originalVar->dim->left))->yes()
+						) {
+							$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+						}
+					}
 				}
 
 				if ($var instanceof Variable && is_string($var->name)) {

@@ -378,7 +378,7 @@ final class DependencyResolver
 					if ($this->reflectionProvider->hasClass($className)) {
 						$propertyClassReflection = $this->reflectionProvider->getClass($className);
 						if ($propertyClassReflection->hasStaticProperty($node->name->toString())) {
-							$propertyReflection = $propertyClassReflection->getStaticProperty($node->name->toString(), $scope);
+							$propertyReflection = $propertyClassReflection->getStaticProperty($node->name->toString());
 							$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 						}
 					}

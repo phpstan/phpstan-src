@@ -802,35 +802,24 @@ final class ClassReflection
 		return $this->instanceProperties[$key];
 	}
 
-	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
+	public function getStaticProperty(string $propertyName): ExtendedPropertyReflection
 	{
 		$key = $propertyName;
-		if ($scope->isInClass()) {
-			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
+		if (isset($this->staticProperties[$key])) {
+			return $this->staticProperties[$key];
 		}
 
-		if (!isset($this->staticProperties[$key])) {
-			if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-				$property = $this->wrapExtendedProperty($this->getPhpExtension()->getStaticProperty($this, $propertyName));
-				if ($scope->canReadProperty($property)) {
-					return $this->staticProperties[$key] = $property;
-				}
-				$this->staticProperties[$key] = $property;
-			}
+		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
+			$property = $this->wrapExtendedProperty($this->getPhpExtension()->getStaticProperty($this, $propertyName));
+			return $this->staticProperties[$key] = $property;
 		}
 
-		if (!isset($this->staticProperties[$key])) {
-			if ($this->requireExtendsPropertiesClassReflectionExtension->hasStaticProperty($this, $propertyName)) {
-				$property = $this->requireExtendsPropertiesClassReflectionExtension->getStaticProperty($this, $propertyName);
-				$this->staticProperties[$key] = $property;
-			}
+		if ($this->requireExtendsPropertiesClassReflectionExtension->hasStaticProperty($this, $propertyName)) {
+			$property = $this->requireExtendsPropertiesClassReflectionExtension->getStaticProperty($this, $propertyName);
+			return $this->staticProperties[$key] = $property;
 		}
 
-		if (!isset($this->staticProperties[$key])) {
-			throw new MissingPropertyFromReflectionException($this->getName(), $propertyName);
-		}
-
-		return $this->staticProperties[$key];
+		throw new MissingPropertyFromReflectionException($this->getName(), $propertyName);
 	}
 
 	public function hasNativeProperty(string $propertyName): bool

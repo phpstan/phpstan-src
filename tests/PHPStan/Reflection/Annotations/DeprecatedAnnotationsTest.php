@@ -124,7 +124,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		}
 
 		foreach ($deprecatedAnnotations['staticProperty'] ?? [] as $propertyName => $deprecatedMessage) {
-			$propertyAnnotation = $class->getStaticProperty($propertyName, $scope);
+			$propertyAnnotation = $class->getStaticProperty($propertyName);
 			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
 			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
 		}

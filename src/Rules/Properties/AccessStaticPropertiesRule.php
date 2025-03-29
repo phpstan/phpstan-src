@@ -204,7 +204,7 @@ final class AccessStaticPropertiesRule implements Rule
 
 				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasStaticProperty($name)) {
-						if ($scope->canReadProperty($parentClassReflection->getStaticProperty($name, $scope))) {
+						if ($scope->canReadProperty($parentClassReflection->getStaticProperty($name))) {
 							return [];
 						}
 						return [

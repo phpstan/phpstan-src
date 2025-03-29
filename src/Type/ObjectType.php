@@ -398,7 +398,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		$property = $nakedClassReflection->getStaticProperty($propertyName, $scope);
+		$property = $nakedClassReflection->getStaticProperty($propertyName);
 
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;

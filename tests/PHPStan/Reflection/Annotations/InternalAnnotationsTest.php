@@ -146,7 +146,7 @@ class InternalAnnotationsTest extends PHPStanTestCase
 		}
 
 		foreach ($internalAnnotations['staticProperty'] ?? [] as $propertyName) {
-			$propertyAnnotation = $class->getStaticProperty($propertyName, $scope);
+			$propertyAnnotation = $class->getStaticProperty($propertyName);
 			$this->assertSame($internal, $propertyAnnotation->isInternal()->yes());
 		}
 

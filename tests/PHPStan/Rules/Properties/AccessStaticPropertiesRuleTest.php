@@ -312,4 +312,9 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12775(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12775.php'], []);
+	}
+
 }

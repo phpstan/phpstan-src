@@ -18,6 +18,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
@@ -94,7 +95,7 @@ class EnumCaseObjectType extends ObjectType
 
 	public function subtract(Type $type): Type
 	{
-		return $this;
+		return $this->changeSubtractedType($type);
 	}
 
 	public function getTypeWithoutSubtractedType(): Type
@@ -104,7 +105,11 @@ class EnumCaseObjectType extends ObjectType
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return $this;
+		if ($subtractedType === null || ! $this->equals($subtractedType)) {
+			return $this;
+		}
+
+		return new NeverType();
 	}
 
 	public function getSubtractedType(): ?Type

@@ -8105,11 +8105,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array',
 			],
 			[
-				'non-empty-array&hasOffsetValue(\'key\', mixed)',
+				'non-empty-array&hasOffsetValue(\'key\', mixed~null)',
 				'$generalArray',
 			],
 			[
-				'mixed',
+				'mixed~null',
 				'$generalArray[\'key\']',
 			],
 			[

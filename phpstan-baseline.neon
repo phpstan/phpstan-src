@@ -1693,12 +1693,6 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\Enum\\EnumCaseObjectType is error\-prone and deprecated\. Use Type\:\:getEnumCases\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\FloatType is error\-prone and deprecated\. Use Type\:\:isFloat\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1

@@ -55,7 +55,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	/**
 	 * @return Iterator<int, array{BenevolentUnionType, string, TrinaryLogic}>
 	 */
-	public static function dataHasProperty(): Iterator
+	public static function dataHasInstanceProperty(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -82,10 +82,10 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	#[DataProvider('dataHasProperty')]
-	public function testHasProperty(BenevolentUnionType $type, string $propertyName, TrinaryLogic $expectedResult): void
+	#[DataProvider('dataHasInstanceProperty')]
+	public function testHasInstanceProperty(BenevolentUnionType $type, string $propertyName, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $type->hasProperty($propertyName);
+		$actualResult = $type->hasInstanceProperty($propertyName);
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),

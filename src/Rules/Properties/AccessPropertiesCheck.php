@@ -101,8 +101,7 @@ final class AccessPropertiesCheck
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-			// TODO use hasInstanceProperty
-			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
+			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasInstanceProperty($name)->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -128,8 +127,7 @@ final class AccessPropertiesCheck
 			];
 		}
 
-		// TODO use hasInstanceProperty
-		$has = $type->hasProperty($name);
+		$has = $type->hasInstanceProperty($name);
 		if ($has->maybe()) {
 			if ($scope->isUndefinedExpressionAllowed($node)) {
 				if (!$this->checkDynamicProperties) {
@@ -202,6 +200,16 @@ final class AccessPropertiesCheck
 				}
 			}
 
+			if ($type->hasStaticProperty($name)->yes()) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Non-static access to static property %s::$%s.',
+						$type->getStaticProperty($name, $scope)->getDeclaringClass()->getDisplayName(),
+						$name,
+					))->identifier('staticProperty.nonStaticAccess')->build(),
+				];
+			}
+
 			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(
 				'Access to an undefined property %s::$%s.',
 				$typeForDescribe->describe(VerbosityLevel::typeOnly()),
@@ -218,18 +226,7 @@ final class AccessPropertiesCheck
 			];
 		}
 
-		// TODO use getInstanceProperty
-		$propertyReflection = $type->getProperty($name, $scope);
-		if ($propertyReflection->isStatic()) {
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Non-static access to static property %s::$%s.',
-					$propertyReflection->getDeclaringClass()->getDisplayName(),
-					$name,
-				))->identifier('staticProperty.nonStaticAccess')->build(),
-			];
-		}
-
+		$propertyReflection = $type->getInstanceProperty($name, $scope);
 		if ($write) {
 			if ($scope->canWriteProperty($propertyReflection)) {
 				return [];

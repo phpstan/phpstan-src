@@ -79,7 +79,7 @@ trait ObjectTypeTrait
 
 	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
 	{
-		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 
 	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
@@ -100,7 +100,7 @@ trait ObjectTypeTrait
 
 	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
 	{
-		return $this->getUnresolvedPropertyPrototype($propertyName, $scope)->getTransformedProperty();
+		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
 	}
 
 	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection

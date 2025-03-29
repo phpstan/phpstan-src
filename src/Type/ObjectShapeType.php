@@ -137,23 +137,6 @@ class ObjectShapeType implements Type
 		);
 	}
 
-	public function hasStaticProperty(string $propertyName): TrinaryLogic
-	{
-		// TODO Change the implementation
-		return $this->hasInstanceProperty($propertyName);
-	}
-
-	public function getStaticProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection
-	{
-		return $this->getUnresolvedStaticPropertyPrototype($propertyName, $scope)->getTransformedProperty();
-	}
-
-	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
-	{
-		// TODO Change the implementation
-		return $this->getUnresolvedInstancePropertyPrototype($propertyName, $scope);
-	}
-
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {

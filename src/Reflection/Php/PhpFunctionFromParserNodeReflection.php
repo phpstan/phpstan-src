@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Node\AnonymousClassNode;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
@@ -287,7 +288,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 		foreach ($node->getSubNodeNames() as $nodeName) {
 			$nodeProperty = $node->$nodeName;
 
-			if ($nodeProperty instanceof Node && $this->nodeIsOrContainsYield($nodeProperty)) {
+			if ($nodeProperty instanceof Node &&
+				!$nodeProperty instanceof FunctionLike &&
+				!$nodeProperty instanceof AnonymousClassNode &&
+				$this->nodeIsOrContainsYield($nodeProperty)
+			) {
 				return true;
 			}
 

@@ -21,6 +21,10 @@ class Baz
     {
         yield from [1, 2, 3];
     }
+    public function someGenerator3()
+    {
+        yield;
+    }
     public function someVariadics()
     {
         \func_get_args();
@@ -43,9 +47,8 @@ class ContainsClosure
 {
     public function doFoo()
     {
-        static function () {
-            yield;
-        };
-        yield;
+    }
+    public function doBar()
+    {
     }
 }

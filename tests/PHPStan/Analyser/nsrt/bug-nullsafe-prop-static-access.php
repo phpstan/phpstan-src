@@ -26,5 +26,4 @@ function foo(?A $a): void
 	\PHPStan\Testing\assertType('string|null', $a?->b->get());
 
 	\PHPStan\Testing\assertType('int|null', $a?->b::$value);
-	\PHPStan\Testing\assertType('int|null', $a?->b->value);
 }

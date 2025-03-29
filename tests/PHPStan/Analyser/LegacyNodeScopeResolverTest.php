@@ -8749,10 +8749,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'UnionProperties\Bar|UnionProperties\Foo',
 				'$something->doSomething',
 			],
-			[
-				'UnionProperties\Bar|UnionProperties\Foo',
-				'$something::$doSomething',
-			],
 		];
 	}
 

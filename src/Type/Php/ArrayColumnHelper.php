@@ -139,7 +139,7 @@ final class ArrayColumnHelper
 			}
 			foreach ($propertyTypes as $propertyType) {
 				$propertyName = $propertyType->getValue();
-				$hasProperty = $type->hasProperty($propertyName);
+				$hasProperty = $type->hasInstanceProperty($propertyName);
 				if ($hasProperty->maybe()) {
 					return [new MixedType(), TrinaryLogic::createMaybe()];
 				}
@@ -147,7 +147,7 @@ final class ArrayColumnHelper
 					continue;
 				}
 
-				$returnTypes[] = $type->getProperty($propertyName, $scope)->getReadableType();
+				$returnTypes[] = $type->getInstanceProperty($propertyName, $scope)->getReadableType();
 			}
 		}
 

@@ -408,11 +408,11 @@ final class InitializerExprTypeResolver
 
 		if ($expr instanceof PropertyFetch && $expr->name instanceof Identifier) {
 			$fetchedOnType = $this->getType($expr->var, $context);
-			if (!$fetchedOnType->hasProperty($expr->name->name)->yes()) {
+			if (!$fetchedOnType->hasInstanceProperty($expr->name->name)->yes()) {
 				return new ErrorType();
 			}
 
-			return $fetchedOnType->getProperty($expr->name->name, new OutOfClassScope())->getReadableType();
+			return $fetchedOnType->getInstanceProperty($expr->name->name, new OutOfClassScope())->getReadableType();
 		}
 
 		return new MixedType();

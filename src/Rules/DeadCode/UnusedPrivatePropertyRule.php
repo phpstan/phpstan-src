@@ -182,7 +182,14 @@ final class UnusedPrivatePropertyRule implements Rule
 				if (!array_key_exists($propertyName, $properties)) {
 					continue;
 				}
-				$propertyReflection = $usageScope->getPropertyReflection($fetchedOnType, $propertyName);
+
+				$propertyNode = $properties[$propertyName]['node'];
+				if ($propertyNode->isStatic()) {
+					$propertyReflection = $usageScope->getStaticPropertyReflection($fetchedOnType, $propertyName);
+				} else {
+					$propertyReflection = $usageScope->getInstancePropertyReflection($fetchedOnType, $propertyName);
+				}
+
 				if ($propertyReflection === null) {
 					if (!$classType->isSuperTypeOf($fetchedOnType)->no()) {
 						if ($usage instanceof PropertyRead) {

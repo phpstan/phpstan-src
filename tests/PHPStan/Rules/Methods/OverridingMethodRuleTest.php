@@ -820,6 +820,17 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10153.php'], $errors);
 	}
 
+	public function testBug12471(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-12471.php'], []);
+	}
+
 	public function testBug10165(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

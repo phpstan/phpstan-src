@@ -109,6 +109,7 @@ final class OverridingMethodRule implements Rule
 		if (
 			$this->phpVersion->supportsOverrideAttribute()
 			&& $this->checkMissingOverrideMethodAttribute
+			&& !$scope->isInTrait()
 			&& !$this->hasOverrideAttribute($node->getOriginalNode())
 		) {
 			$messages[] = RuleErrorBuilder::message(sprintf(

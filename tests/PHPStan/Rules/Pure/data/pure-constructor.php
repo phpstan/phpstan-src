@@ -2,7 +2,7 @@
 
 namespace PureConstructor;
 
-class Foo
+final class Foo
 {
 
 	private string $prop;
@@ -21,7 +21,7 @@ class Foo
 
 }
 
-class Bar
+final class Bar
 {
 
 	private string $prop;
@@ -37,7 +37,7 @@ class Bar
 
 }
 
-class AssignOtherThanThis
+final class AssignOtherThanThis
 {
 	private int $i = 0;
 

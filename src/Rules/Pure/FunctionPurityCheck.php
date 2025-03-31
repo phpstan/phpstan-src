@@ -92,6 +92,11 @@ final class FunctionPurityCheck
 				count($throwPoints) === 0
 				&& count($impurePoints) === 0
 				&& count($functionReflection->getAsserts()->getAll()) === 0
+				&& (
+					!$functionReflection instanceof ExtendedMethodReflection
+					|| $functionReflection->isFinal()->yes()
+					|| $functionReflection->getDeclaringClass()->isFinal()
+				)
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'%s is marked as impure but does not have any side effects.',

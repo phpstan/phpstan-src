@@ -2,7 +2,7 @@
 
 namespace PureMethod;
 
-class Foo
+final class Foo
 {
 
 	/**
@@ -92,7 +92,7 @@ class Foo
 
 }
 
-class PureConstructor
+final class PureConstructor
 {
 
 	/**
@@ -105,7 +105,7 @@ class PureConstructor
 
 }
 
-class ImpureConstructor
+final class ImpureConstructor
 {
 
 	/**
@@ -118,7 +118,7 @@ class ImpureConstructor
 
 }
 
-class PossiblyImpureConstructor
+final class PossiblyImpureConstructor
 {
 
 	public function __construct()
@@ -128,7 +128,7 @@ class PossiblyImpureConstructor
 
 }
 
-class TestConstructors
+final class TestConstructors
 {
 
 	/**
@@ -144,7 +144,7 @@ class TestConstructors
 
 }
 
-class ActuallyPure
+final class ActuallyPure
 {
 
 	/**
@@ -157,7 +157,7 @@ class ActuallyPure
 
 }
 
-class ToBeExtended
+final class ToBeExtended
 {
 
 	/** @phpstan-pure */
@@ -175,7 +175,7 @@ class ToBeExtended
 
 }
 
-class ExtendingClass extends ToBeExtended
+final class ExtendingClass extends ToBeExtended
 {
 
 	public function pure(): int
@@ -191,7 +191,7 @@ class ExtendingClass extends ToBeExtended
 
 }
 
-class ClassWithVoidMethods
+final class ClassWithVoidMethods
 {
 
 	public function voidFunctionThatThrows(): void
@@ -235,12 +235,12 @@ class ClassWithVoidMethods
 
 }
 
-class NoMagicMethods
+final class NoMagicMethods
 {
 
 }
 
-class PureMagicMethods
+final class PureMagicMethods
 {
 
 	/**
@@ -253,7 +253,7 @@ class PureMagicMethods
 
 }
 
-class MaybePureMagicMethods
+final class MaybePureMagicMethods
 {
 
 	public function __toString(): string
@@ -263,7 +263,7 @@ class MaybePureMagicMethods
 
 }
 
-class ImpureMagicMethods
+final class ImpureMagicMethods
 {
 
 	/**
@@ -277,7 +277,7 @@ class ImpureMagicMethods
 
 }
 
-class TestMagicMethods
+final class TestMagicMethods
 {
 
 	/**
@@ -298,12 +298,12 @@ class TestMagicMethods
 
 }
 
-class NoConstructor
+final class NoConstructor
 {
 
 }
 
-class TestNoConstructor
+final class TestNoConstructor
 {
 
 	/**
@@ -318,7 +318,7 @@ class TestNoConstructor
 
 }
 
-class MaybeCallableFromUnion
+final class MaybeCallableFromUnion
 {
 
 	/**
@@ -334,7 +334,7 @@ class MaybeCallableFromUnion
 
 }
 
-class VoidMethods
+final class VoidMethods
 {
 
 	private function doFoo(): void
@@ -361,7 +361,7 @@ class VoidMethods
 
 }
 
-class AssertingImpureVoidMethod
+final class AssertingImpureVoidMethod
 {
 
 	/**
@@ -376,7 +376,7 @@ class AssertingImpureVoidMethod
 
 }
 
-class StaticMethodAccessingStaticProperty
+final class StaticMethodAccessingStaticProperty
 {
 	/** @var int */
 	public static $a = 0;
@@ -397,7 +397,7 @@ class StaticMethodAccessingStaticProperty
 	}
 }
 
-class StaticMethodAssigningStaticProperty
+final class StaticMethodAssigningStaticProperty
 {
 	/** @var int */
 	public static $a = 0;

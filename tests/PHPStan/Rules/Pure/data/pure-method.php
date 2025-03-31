@@ -157,7 +157,7 @@ final class ActuallyPure
 
 }
 
-final class ToBeExtended
+class ToBeExtended
 {
 
 	/** @phpstan-pure */

@@ -232,6 +232,14 @@ class PureMethodRuleTest extends RuleTestCase
 				'Method Bug12382\FinalHelloWorld2::dummy() is marked as impure but does not have any side effects.',
 				33,
 			],
+			[
+				'Method Bug12382\FinalHelloWorld3::dummy() is marked as impure but does not have any side effects.',
+				42,
+			],
+			[
+				'Method Bug12382\FinalHelloWorld4::dummy() is marked as impure but does not have any side effects.',
+				53,
+			],
 		]);
 	}
 

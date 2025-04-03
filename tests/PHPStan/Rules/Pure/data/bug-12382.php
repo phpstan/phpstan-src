@@ -34,3 +34,23 @@ class FinalHelloWorld2
 		return $this;
 	}
 }
+
+/** @final */
+class FinalHelloWorld3
+{
+	/** @phpstan-impure */
+	public function dummy() : self{
+		return $this;
+	}
+}
+
+class FinalHelloWorld4
+{
+	/**
+	 * @final
+	 * @phpstan-impure
+	 */
+	public function dummy() : self{
+		return $this;
+	}
+}

@@ -71,19 +71,19 @@ class ObjectTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @return array<array{0: ObjectType, 1: TrinaryLogic}>
+	 * @return iterable<array{0: ObjectType, 1: TrinaryLogic}>
 	 */
-	public function dataIsEnum(): array
+	public function dataIsEnum(): iterable
 	{
-		return [
-			[new ObjectType('UnitEnum'), PHP_VERSION_ID < 80000 ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes()],
-			[new ObjectType('BackedEnum'), PHP_VERSION_ID < 80000 ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes()],
-			[new ObjectType('Unknown'), TrinaryLogic::createMaybe()],
-			[new ObjectType('Countable'), TrinaryLogic::createMaybe()],
-			[new ObjectType('Stringable'), TrinaryLogic::createNo()],
-			[new ObjectType('Throwable'), TrinaryLogic::createNo()],
-			[new ObjectType('DateTime'), TrinaryLogic::createNo()],
-		];
+		if (PHP_VERSION_ID >= 80000) {
+			yield [new ObjectType('UnitEnum'), TrinaryLogic::createYes()];
+			yield [new ObjectType('BackedEnum'), TrinaryLogic::createYes()];
+		}
+		yield [new ObjectType('Unknown'), TrinaryLogic::createMaybe()];
+		yield [new ObjectType('Countable'), TrinaryLogic::createMaybe()];
+		yield [new ObjectType('Stringable'), TrinaryLogic::createNo()];
+		yield [new ObjectType('Throwable'), TrinaryLogic::createNo()];
+		yield [new ObjectType('DateTime'), TrinaryLogic::createNo()];
 	}
 
 	/**

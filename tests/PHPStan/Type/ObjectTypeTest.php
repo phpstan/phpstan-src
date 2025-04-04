@@ -76,8 +76,8 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function dataIsEnum(): array
 	{
 		return [
-			[new ObjectType('UnitEnum'), TrinaryLogic::createYes()],
-			[new ObjectType('BackedEnum'), TrinaryLogic::createYes()],
+			[new ObjectType('UnitEnum'), PHP_VERSION_ID < 80000 ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes()],
+			[new ObjectType('BackedEnum'), PHP_VERSION_ID < 80000 ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes()],
 			[new ObjectType('Unknown'), TrinaryLogic::createMaybe()],
 			[new ObjectType('Countable'), TrinaryLogic::createMaybe()],
 			[new ObjectType('Stringable'), TrinaryLogic::createNo()],

@@ -2237,19 +2237,16 @@ final class MutatingScope implements Scope
 					return $this->getNullsafeShortCircuitingType($node->var, $nativeType);
 				}
 
-				$typeCallback = function () use ($node): Type {
-					$returnType = $this->propertyFetchType(
-						$this->getType($node->var),
-						$node->name->name,
-						$node,
-					);
-					if ($returnType === null) {
-						return new ErrorType();
-					}
-					return $returnType;
-				};
+				$returnType = $this->propertyFetchType(
+					$this->getType($node->var),
+					$node->name->name,
+					$node,
+				);
+				if ($returnType === null) {
+					$returnType = new ErrorType();
+				}
 
-				return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
 			}
 
 			$nameType = $this->getType($node->name);
@@ -2300,25 +2297,21 @@ final class MutatingScope implements Scope
 					return $nativeType;
 				}
 
-				$typeCallback = function () use ($node): Type {
-					if ($node->class instanceof Name) {
-						$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
-					} else {
-						$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-					}
+				if ($node->class instanceof Name) {
+					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
+				} else {
+					$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+				}
 
-					$returnType = $this->propertyFetchType(
-						$staticPropertyFetchedOnType,
-						$node->name->toString(),
-						$node,
-					);
-					if ($returnType === null) {
-						return new ErrorType();
-					}
-					return $returnType;
-				};
+				$fetchType = $this->propertyFetchType(
+					$staticPropertyFetchedOnType,
+					$node->name->toString(),
+					$node,
+				);
+				if ($fetchType === null) {
+					$fetchType = new ErrorType();
+				}
 
-				$fetchType = $typeCallback();
 				if ($node->class instanceof Expr) {
 					return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
 				}

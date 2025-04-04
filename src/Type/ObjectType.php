@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use ArrayObject;
-use BackedEnum;
 use Closure;
 use Countable;
 use Iterator;
@@ -48,7 +47,6 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use Stringable;
 use Throwable;
 use Traversable;
-use UnitEnum;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -736,8 +734,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if (
 			$classReflection->isEnum()
-			|| $classReflection->is(UnitEnum::class)
-			|| $classReflection->is(BackedEnum::class)
+			|| $classReflection->is('UnitEnum')
+			|| $classReflection->is('BackedEnum')
 		) {
 			return TrinaryLogic::createYes();
 		}

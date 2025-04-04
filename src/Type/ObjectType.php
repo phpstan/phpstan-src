@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use ArrayObject;
+use BackedEnum;
 use Closure;
 use Countable;
 use Iterator;
@@ -44,7 +45,10 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use Stringable;
+use Throwable;
 use Traversable;
+use UnitEnum;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -730,7 +734,23 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		return TrinaryLogic::createFromBoolean($classReflection->isEnum());
+		if (
+			$classReflection->isEnum()
+			|| $classReflection->is(UnitEnum::class)
+			|| $classReflection->is(BackedEnum::class)
+		) {
+			return TrinaryLogic::createYes();
+		}
+
+		if (
+			$classReflection->isInterface()
+			&& !$classReflection->is(Stringable::class) // enums cannot have __toString
+			&& !$classReflection->is(Throwable::class) // enums cannot extend Exception/Error
+		) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 	public function canAccessProperties(): TrinaryLogic

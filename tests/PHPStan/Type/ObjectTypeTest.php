@@ -70,6 +70,35 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return array<array{0: ObjectType, 1: TrinaryLogic}>
+	 */
+	public function dataIsEnum(): array
+	{
+		return [
+			[new ObjectType('UnitEnum'), TrinaryLogic::createYes()],
+			[new ObjectType('BackedEnum'), TrinaryLogic::createYes()],
+			[new ObjectType('Unknown'), TrinaryLogic::createMaybe()],
+			[new ObjectType('Countable'), TrinaryLogic::createMaybe()],
+			[new ObjectType('Stringable'), TrinaryLogic::createNo()],
+			[new ObjectType('Throwable'), TrinaryLogic::createNo()],
+			[new ObjectType('DateTime'), TrinaryLogic::createNo()],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIsEnum
+	 */
+	public function testIsEnum(ObjectType $type, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $type->isEnum();
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isEnum()', $type->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public function dataIsCallable(): array
 	{
 		return [

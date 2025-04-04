@@ -2113,34 +2113,28 @@ final class MutatingScope implements Scope
 		if ($node instanceof MethodCall) {
 			if ($node->name instanceof Node\Identifier) {
 				if ($this->nativeTypesPromoted) {
-					$typeCallback = function () use ($node): Type {
-						$methodReflection = $this->getMethodReflection(
-							$this->getNativeType($node->var),
-							$node->name->name,
-						);
-						if ($methodReflection === null) {
-							return new ErrorType();
-						}
+					$methodReflection = $this->getMethodReflection(
+						$this->getNativeType($node->var),
+						$node->name->name,
+					);
+					if ($methodReflection === null) {
+						$returnType = new ErrorType();
+					} else {
+						$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+					}
 
-						return ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-					};
-
-					return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+					return $this->getNullsafeShortCircuitingType($node->var, $returnType);
 				}
 
-				$typeCallback = function () use ($node): Type {
-					$returnType = $this->methodCallReturnType(
-						$this->getType($node->var),
-						$node->name->name,
-						$node,
-					);
-					if ($returnType === null) {
-						return new ErrorType();
-					}
-					return $returnType;
-				};
-
-				return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+				$returnType = $this->methodCallReturnType(
+					$this->getType($node->var),
+					$node->name->name,
+					$node,
+				);
+				if ($returnType === null) {
+					$returnType = new ErrorType();
+				}
+				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
 			}
 
 			$nameType = $this->getType($node->name);
@@ -2172,24 +2166,21 @@ final class MutatingScope implements Scope
 		if ($node instanceof Expr\StaticCall) {
 			if ($node->name instanceof Node\Identifier) {
 				if ($this->nativeTypesPromoted) {
-					$typeCallback = function () use ($node): Type {
-						if ($node->class instanceof Name) {
-							$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-						} else {
-							$staticMethodCalledOnType = $this->getNativeType($node->class);
-						}
-						$methodReflection = $this->getMethodReflection(
-							$staticMethodCalledOnType,
-							$node->name->name,
-						);
-						if ($methodReflection === null) {
-							return new ErrorType();
-						}
+					if ($node->class instanceof Name) {
+						$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+					} else {
+						$staticMethodCalledOnType = $this->getNativeType($node->class);
+					}
+					$methodReflection = $this->getMethodReflection(
+						$staticMethodCalledOnType,
+						$node->name->name,
+					);
+					if ($methodReflection === null) {
+						$callType = new ErrorType();
+					} else {
+						$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+					}
 
-						return ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-					};
-
-					$callType = $typeCallback();
 					if ($node->class instanceof Expr) {
 						return $this->getNullsafeShortCircuitingType($node->class, $callType);
 					}
@@ -2197,25 +2188,21 @@ final class MutatingScope implements Scope
 					return $callType;
 				}
 
-				$typeCallback = function () use ($node): Type {
-					if ($node->class instanceof Name) {
-						$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-					} else {
-						$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-					}
+				if ($node->class instanceof Name) {
+					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+				} else {
+					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+				}
 
-					$returnType = $this->methodCallReturnType(
-						$staticMethodCalledOnType,
-						$node->name->toString(),
-						$node,
-					);
-					if ($returnType === null) {
-						return new ErrorType();
-					}
-					return $returnType;
-				};
+				$callType = $this->methodCallReturnType(
+					$staticMethodCalledOnType,
+					$node->name->toString(),
+					$node,
+				);
+				if ($callType === null) {
+					$callType = new ErrorType();
+				}
 
-				$callType = $typeCallback();
 				if ($node->class instanceof Expr) {
 					return $this->getNullsafeShortCircuitingType($node->class, $callType);
 				}

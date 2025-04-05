@@ -110,7 +110,7 @@ final class RegexGroupParser
 			RegexGroupWalkResult::createEmpty(),
 		);
 
-		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral()) {
+		if (!$subjectAsGroupResult->mightContainEmptyStringLiteral() && !$this->containsEscapeK($ast)) {
 			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
 			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(
@@ -169,6 +169,21 @@ final class RegexGroupParser
 		$emptyAlternationAst = new TreeNode('#alternation', null, [], $ast);
 		$emptyAlternationAst->setChildren([$this->createEmptyTokenTreeNode($emptyAlternationAst)]);
 		$ast->setChildren([$emptyAlternationAst]);
+	}
+
+	private function containsEscapeK(TreeNode $ast): bool
+	{
+		if ($ast->getId() === 'token' && $ast->getValueToken() === 'match_point_reset') {
+			return true;
+		}
+
+		foreach ($ast->getChildren() as $child) {
+			if ($this->containsEscapeK($child)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function walkRegexAst(

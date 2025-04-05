@@ -72,7 +72,7 @@ jobs:
           - "8.4"
 
     steps:
-      - uses: Wandalen/wretry.action@v3.7.0
+      - uses: Wandalen/wretry.action@v3.8.0
         with:
           action: actions/download-artifact@v4
           with: |

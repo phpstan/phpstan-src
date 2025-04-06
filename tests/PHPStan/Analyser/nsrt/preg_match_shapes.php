@@ -1016,7 +1016,7 @@ function bug12397(string $string): void {
 	assertType('list{0?: string, 1?: non-falsy-string, 2?: numeric-string}', $match);
 }
 
-function bug2792(string $string): void {
+function bug12792(string $string): void {
 	if (preg_match('~a\Kb~', $string, $match) === 1) {
 		assertType('array{string}', $match); // could be array{'b'}
 	}

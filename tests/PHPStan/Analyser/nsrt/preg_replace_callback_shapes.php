@@ -46,7 +46,7 @@ function (string $s): void {
 	);
 };
 
-function bug2792(string $string) : void {
+function bug12792(string $string) : void {
 	preg_replace_callback(
 		'~\'(?:[^\']+|\'\')*+\'\K|\[(\w*)\]~',
 		function ($matches) {

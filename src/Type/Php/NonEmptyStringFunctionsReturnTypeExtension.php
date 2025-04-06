@@ -34,6 +34,7 @@ final class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctio
 			'preg_quote',
 			'rawurlencode',
 			'rawurldecode',
+			'strrev',
 		], true);
 	}
 

@@ -110,6 +110,9 @@ class Foo {
 
 		assertType('non-falsy-string', preg_quote($nonFalsey));
 
+		assertType('string', strrev($s));
+		assertType('non-falsy-string', strrev($nonFalsey));
+
 		assertType('string', sprintf($nonFalsey));
 		assertType("'foo'", sprintf('foo'));
 		assertType("string", sprintf(...$arr));

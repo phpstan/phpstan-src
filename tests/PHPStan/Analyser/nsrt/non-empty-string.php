@@ -359,6 +359,9 @@ class MoreNonEmptyStringFunctions
 		assertType('string', preg_quote($s));
 		assertType('non-empty-string', preg_quote($nonEmpty));
 
+		assertType('string', strrev($s));
+		assertType('non-empty-string', strrev($nonEmpty));
+
 		assertType('string', sprintf($s));
 		assertType('string', sprintf($nonEmpty));
 		assertType('string', sprintf($s, $nonEmpty));

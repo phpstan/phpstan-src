@@ -6,6 +6,7 @@ use ArrayAccess;
 use ArrayObject;
 use Closure;
 use Countable;
+use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
@@ -735,7 +736,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if (
 			$classReflection->isEnum()
 			|| $classReflection->is('UnitEnum')
-			|| $classReflection->is('BackedEnum')
 		) {
 			return TrinaryLogic::createYes();
 		}
@@ -744,6 +744,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$classReflection->isInterface()
 			&& !$classReflection->is(Stringable::class) // enums cannot have __toString
 			&& !$classReflection->is(Throwable::class) // enums cannot extend Exception/Error
+			&& !$classReflection->is(DateTimeInterface::class) // userland classes cannot extend DateTimeInterface
 		) {
 			return TrinaryLogic::createMaybe();
 		}

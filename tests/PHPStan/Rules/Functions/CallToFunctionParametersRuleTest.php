@@ -2055,6 +2055,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug12847(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1); // lint >= 7.4
 
 namespace Bug12847;
 
@@ -39,6 +39,7 @@ function doExplicitMixed(mixed $mixed): void
 		doSomething($mixed);
 	}
 }
+
 /**
  * @param non-empty-array<mixed> $array
  */

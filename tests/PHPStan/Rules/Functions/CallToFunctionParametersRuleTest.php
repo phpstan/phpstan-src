@@ -2053,4 +2053,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7522.php'], []);
 	}
 
+	public function testBug12847(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-12847.php'], [
+			[
+				'Parameter #1 $array of function Bug12847\doSomething expects non-empty-array<mixed>, mixed given.',
+				32,
+				'mixed is empty.',
+			],
+			[
+				'Parameter #1 $array of function Bug12847\doSomething expects non-empty-array<mixed>, mixed given.',
+				39,
+				'mixed is empty.',
+			],
+		]);
+	}
+
 }

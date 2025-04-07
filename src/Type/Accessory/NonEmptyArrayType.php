@@ -76,6 +76,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if ($type instanceof HasOffsetType
+			|| $type instanceof HasOffsetValueType
+		) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}

@@ -714,6 +714,7 @@ final class ClassReflection
 
 	/**
 	 * @phpstan-assert-if-true ReflectionEnum $this->reflection
+	 * @phpstan-assert-if-true ReflectionEnum $this->getNativeReflection()
 	 */
 	public function isEnum(): bool
 	{

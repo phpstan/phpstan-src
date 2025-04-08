@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -118,8 +117,12 @@ final class IsSuperTypeOfResult
 			throw new ShouldNotHappenException();
 		}
 
-		$result = TrinaryLogic::extremeIdentity(...array_map(static fn (self $result) => $result->result, $operands));
+		$results = [];
+		foreach ($operands as $operand) {
+			$results[] = $operand->result;
+		}
 
+		$result = TrinaryLogic::extremeIdentity(...$results);
 		return new self($result, self::mergeReasons($operands));
 	}
 
@@ -129,8 +132,12 @@ final class IsSuperTypeOfResult
 			throw new ShouldNotHappenException();
 		}
 
-		$result = TrinaryLogic::maxMin(...array_map(static fn (self $result) => $result->result, $operands));
+		$results = [];
+		foreach ($operands as $operand) {
+			$results[] = $operand->result;
+		}
 
+		$result = TrinaryLogic::maxMin(...$results);
 		return new self($result, self::mergeReasons($operands));
 	}
 

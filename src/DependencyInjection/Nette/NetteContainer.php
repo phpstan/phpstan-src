@@ -6,7 +6,6 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ParameterNotFoundException;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 
 /**
  * @internal
@@ -89,7 +88,12 @@ final class NetteContainer implements Container
 	 */
 	private function tagsToServices(array $tags): array
 	{
-		return array_map(fn (string $serviceName) => $this->getService($serviceName), array_keys($tags));
+		$services = [];
+		foreach (array_keys($tags) as $i => $serviceName) {
+			$services[$i] = $this->getService($serviceName);
+		}
+
+		return $services;
 	}
 
 }

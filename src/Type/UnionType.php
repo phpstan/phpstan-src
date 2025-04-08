@@ -263,7 +263,11 @@ class UnionType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
-		return IsSuperTypeOfResult::extremeIdentity(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
+		$isSuperType = [];
+		foreach ($this->types as $innerType) {
+			$isSuperType[] = $otherType->isSuperTypeOf($innerType);
+		}
+		return IsSuperTypeOfResult::extremeIdentity(...$isSuperType);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

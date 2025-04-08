@@ -17,7 +17,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
-use function array_map;
 
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
@@ -70,61 +69,60 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		$parameters = $this->parameters;
 
 		if ($parameters === null) {
-			$parameters = array_map(
-				function (ExtendedParameterReflection $param): ExtendedParameterReflection {
-					$paramType = TypeUtils::resolveLateResolvableTypes(
+
+			$parameters = [];
+			foreach ($this->parametersAcceptor->getParameters() as $param) {
+				$paramType = TypeUtils::resolveLateResolvableTypes(
+					TemplateTypeHelper::resolveTemplateTypes(
+						$this->resolveConditionalTypesForParameter($param->getType()),
+						$this->resolvedTemplateTypeMap,
+						$this->callSiteVarianceMap,
+						TemplateTypeVariance::createContravariant(),
+					),
+					false,
+				);
+
+				$paramOutType = $param->getOutType();
+				if ($paramOutType !== null) {
+					$paramOutType = TypeUtils::resolveLateResolvableTypes(
 						TemplateTypeHelper::resolveTemplateTypes(
-							$this->resolveConditionalTypesForParameter($param->getType()),
+							$this->resolveConditionalTypesForParameter($paramOutType),
 							$this->resolvedTemplateTypeMap,
 							$this->callSiteVarianceMap,
-							TemplateTypeVariance::createContravariant(),
+							TemplateTypeVariance::createCovariant(),
 						),
 						false,
 					);
+				}
 
-					$paramOutType = $param->getOutType();
-					if ($paramOutType !== null) {
-						$paramOutType = TypeUtils::resolveLateResolvableTypes(
-							TemplateTypeHelper::resolveTemplateTypes(
-								$this->resolveConditionalTypesForParameter($paramOutType),
-								$this->resolvedTemplateTypeMap,
-								$this->callSiteVarianceMap,
-								TemplateTypeVariance::createCovariant(),
-							),
-							false,
-						);
-					}
-
-					$closureThisType = $param->getClosureThisType();
-					if ($closureThisType !== null) {
-						$closureThisType = TypeUtils::resolveLateResolvableTypes(
-							TemplateTypeHelper::resolveTemplateTypes(
-								$this->resolveConditionalTypesForParameter($closureThisType),
-								$this->resolvedTemplateTypeMap,
-								$this->callSiteVarianceMap,
-								TemplateTypeVariance::createCovariant(),
-							),
-							false,
-						);
-					}
-
-					return new ExtendedDummyParameter(
-						$param->getName(),
-						$paramType,
-						$param->isOptional(),
-						$param->passedByReference(),
-						$param->isVariadic(),
-						$param->getDefaultValue(),
-						$param->getNativeType(),
-						$param->getPhpDocType(),
-						$paramOutType,
-						$param->isImmediatelyInvokedCallable(),
-						$closureThisType,
-						$param->getAttributes(),
+				$closureThisType = $param->getClosureThisType();
+				if ($closureThisType !== null) {
+					$closureThisType = TypeUtils::resolveLateResolvableTypes(
+						TemplateTypeHelper::resolveTemplateTypes(
+							$this->resolveConditionalTypesForParameter($closureThisType),
+							$this->resolvedTemplateTypeMap,
+							$this->callSiteVarianceMap,
+							TemplateTypeVariance::createCovariant(),
+						),
+						false,
 					);
-				},
-				$this->parametersAcceptor->getParameters(),
-			);
+				}
+
+				$parameters[] = new ExtendedDummyParameter(
+					$param->getName(),
+					$paramType,
+					$param->isOptional(),
+					$param->passedByReference(),
+					$param->isVariadic(),
+					$param->getDefaultValue(),
+					$param->getNativeType(),
+					$param->getPhpDocType(),
+					$paramOutType,
+					$param->isImmediatelyInvokedCallable(),
+					$closureThisType,
+					$param->getAttributes(),
+				);
+			}
 
 			$this->parameters = $parameters;
 		}

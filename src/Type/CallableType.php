@@ -224,15 +224,21 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			static fn (): string => 'callable',
 			function (): string {
 				$printer = new Printer();
-				$selfWithoutParameterNames = new self(
-					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
+
+				$parameters = [];
+				foreach ($this->parameters as $p) {
+					$parameters[] = new DummyParameter(
 						'',
 						$p->getType(),
 						$p->isOptional() && !$p->isVariadic(),
 						PassedByReference::createNo(),
 						$p->isVariadic(),
 						$p->getDefaultValue(),
-					), $this->parameters),
+					);
+				}
+
+				$selfWithoutParameterNames = new self(
+					$parameters,
 					$this->returnType,
 					$this->variadic,
 					$this->templateTypeMap,

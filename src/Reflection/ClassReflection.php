@@ -1026,20 +1026,23 @@ final class ClassReflection
 			$traits = $this->getNativeReflection()->getTraits();
 		}
 
-		$traits = array_map(fn (ReflectionClass $trait): ClassReflection => $this->reflectionProvider->getClass($trait->getName()), $traits);
+		$traitClasses = [];
+		foreach ($traits as $key => $trait) {
+			$traitClasses[$key] = $this->reflectionProvider->getClass($trait->getName());
+		}
 
 		if ($recursive) {
 			$parentClass = $this->getNativeReflection()->getParentClass();
 
 			if ($parentClass !== false) {
 				return array_merge(
-					$traits,
+					$traitClasses,
 					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true),
 				);
 			}
 		}
 
-		return $traits;
+		return $traitClasses;
 	}
 
 	/**

@@ -242,7 +242,12 @@ class IntersectionType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		$result = IsSuperTypeOfResult::maxMin(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
+		$isSuperTypeOf = [];
+		foreach ($this->types as $innerType) {
+			$isSuperTypeOf[] = $otherType->isSuperTypeOf($innerType);
+		}
+
+		$result = IsSuperTypeOfResult::maxMin(...$isSuperTypeOf);
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
 				return IsSuperTypeOfResult::createYes();

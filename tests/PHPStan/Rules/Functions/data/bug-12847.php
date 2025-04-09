@@ -40,13 +40,6 @@ function doExplicitMixed(mixed $mixed): void
 	}
 }
 
-function doStdClass(\stdClass $stdClass): void
-{
-	if (isset($stdClass['def'])) {
-		doSomething($stdClass);
-	}
-}
-
 /**
  * @param non-empty-array<mixed> $array
  */

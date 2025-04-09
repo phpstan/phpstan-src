@@ -2073,6 +2073,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				39,
 				'mixed is empty.',
 			],
+			[
+				'Parameter #1 $array of function Bug12847\doSomething expects non-empty-array<mixed>, stdClass given.',
+				46,
+			],
 		]);
 	}
 

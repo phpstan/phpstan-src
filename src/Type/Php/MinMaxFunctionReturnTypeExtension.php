@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -60,15 +61,20 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$argType1 = $scope->getType($args[1]->value);
 
 			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
+				$comparisonExpr = new Smaller(
+					new AlwaysRememberedExpr($args[0]->value, $argType0, $scope->getNativeType($args[0]->value)),
+					new AlwaysRememberedExpr($args[1]->value, $argType1, $scope->getNativeType($args[1]->value)),
+				);
+
 				if ($functionName === 'min') {
 					return $scope->getType(new Ternary(
-						new Smaller($args[0]->value, $args[1]->value),
+						$comparisonExpr,
 						$args[0]->value,
 						$args[1]->value,
 					));
 				} elseif ($functionName === 'max') {
 					return $scope->getType(new Ternary(
-						new Smaller($args[0]->value, $args[1]->value),
+						$comparisonExpr,
 						$args[1]->value,
 						$args[0]->value,
 					));

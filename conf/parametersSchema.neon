@@ -63,6 +63,7 @@ parametersSchema:
 	inferPrivatePropertyTypeFromConstructor: bool()
 
 	tips: structure([
+		discoveringSymbols: bool()
 		treatPhpDocTypesAsCertain: bool()
 	])
 	tipsOfTheDay: bool()

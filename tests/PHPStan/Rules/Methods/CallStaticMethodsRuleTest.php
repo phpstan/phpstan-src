@@ -31,7 +31,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck(
 				$reflectionProvider,
@@ -40,6 +40,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck(self::getContainer()),
 				),
+				true,
 				true,
 				true,
 			),

@@ -77,11 +77,13 @@ services:
 		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\PhpDoc\RequireImplementsDefinitionTraitRule
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 		tags:
 			- phpstan.rules.rule
 
@@ -101,6 +103,7 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 		tags:
 			- phpstan.rules.rule
 	-

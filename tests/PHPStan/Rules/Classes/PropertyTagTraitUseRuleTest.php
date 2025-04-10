@@ -33,6 +33,7 @@ class PropertyTagTraitUseRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				true,
+				true,
 			),
 		);
 	}

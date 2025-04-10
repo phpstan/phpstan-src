@@ -21,7 +21,7 @@ class IterableInForeachRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false));
+		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true));
 	}
 
 	public function testCheckWithMaybes(): void

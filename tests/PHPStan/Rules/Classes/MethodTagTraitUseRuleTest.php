@@ -34,6 +34,7 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				true,
+				true,
 			),
 		);
 	}

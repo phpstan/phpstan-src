@@ -40,6 +40,7 @@ final class StaticMethodCallCheck
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
+		private bool $discoveringSymbolsTip,
 		private bool $reportMagicMethods,
 	)
 	{
@@ -119,13 +120,20 @@ final class StaticMethodCallCheck
 						return [[], null];
 					}
 
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
+						'Call to static method %s() on an unknown class %s.',
+						$methodName,
+						$className,
+					))
+						->identifier('class.notFound');
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
 					return [
 						[
-							RuleErrorBuilder::message(sprintf(
-								'Call to static method %s() on an unknown class %s.',
-								$methodName,
-								$className,
-							))->identifier('class.notFound')->discoveringSymbolsTip()->build(),
+							$errorBuilder->build(),
 						],
 						null,
 					];

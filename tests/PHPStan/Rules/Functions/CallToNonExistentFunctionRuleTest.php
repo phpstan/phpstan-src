@@ -14,7 +14,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToNonExistentFunctionRule($this->createReflectionProvider(), true);
+		return new CallToNonExistentFunctionRule($this->createReflectionProvider(), true, true);
 	}
 
 	public function testEmptyFile(): void

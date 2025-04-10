@@ -27,6 +27,7 @@ final class MixinCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkMissingTypehints,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -145,10 +146,14 @@ final class MixinCheck
 
 			foreach ($type->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))
-						->identifier('class.notFound')
-						->discoveringSymbolsTip()
-						->build();
+					$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains unknown class %s.', $class))
+						->identifier('class.notFound');
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$errors[] = $errorBuilder->build();
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @mixin contains invalid type %s.', $class))
 						->identifier('mixin.trait')

@@ -20,7 +20,7 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidUnaryOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
 		);
 	}
 

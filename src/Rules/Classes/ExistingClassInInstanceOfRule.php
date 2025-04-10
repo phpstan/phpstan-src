@@ -26,6 +26,7 @@ final class ExistingClassInInstanceOfRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -69,12 +70,16 @@ final class ExistingClassInInstanceOfRule implements Rule
 				return [];
 			}
 
+			$errorBuilder = RuleErrorBuilder::message(sprintf('Class %s not found.', $name))
+				->identifier('class.notFound')
+				->line($class->getStartLine());
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))
-					->identifier('class.notFound')
-					->line($class->getStartLine())
-					->discoveringSymbolsTip()
-					->build(),
+				$errorBuilder->build(),
 			];
 		}
 

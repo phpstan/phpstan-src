@@ -32,6 +32,7 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 			new PhpVersion($this->phpVersion),
 			true,
 			false,
+			true,
 		);
 	}
 

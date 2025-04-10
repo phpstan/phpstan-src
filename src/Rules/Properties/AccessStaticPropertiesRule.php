@@ -40,6 +40,7 @@ final class AccessStaticPropertiesRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -114,15 +115,19 @@ final class AccessStaticPropertiesRule implements Rule
 						return [];
 					}
 
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
+						'Access to static property $%s on an unknown class %s.',
+						$name,
+						$class,
+					))
+						->identifier('class.notFound');
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
 					return [
-						RuleErrorBuilder::message(sprintf(
-							'Access to static property $%s on an unknown class %s.',
-							$name,
-							$class,
-						))
-							->discoveringSymbolsTip()
-							->identifier('class.notFound')
-							->build(),
+						$errorBuilder->build(),
 					];
 				}
 

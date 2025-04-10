@@ -20,6 +20,7 @@ final class ExistingClassInClassExtendsRule implements Rule
 	public function __construct(
 		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -42,15 +43,19 @@ final class ExistingClassInClassExtendsRule implements Rule
 		}
 		if (!$this->reflectionProvider->hasClass($extendedClassName)) {
 			if (!$scope->isInClassExists($extendedClassName)) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
 					'%s extends unknown class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$extendedClassName,
 				))
 					->identifier('class.notFound')
-					->nonIgnorable()
-					->discoveringSymbolsTip()
-					->build();
+					->nonIgnorable();
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$messages[] = $errorBuilder->build();
 			}
 		} else {
 			$reflection = $this->reflectionProvider->getClass($extendedClassName);

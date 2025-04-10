@@ -35,6 +35,7 @@ final class RuleLevelHelper
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
 		private bool $checkBenevolentUnionTypes,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -222,11 +223,15 @@ final class RuleLevelHelper
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))
+				$errorBuilder = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))
 					->line($var->getStartLine())
-					->identifier('class.notFound')
-					->discoveringSymbolsTip()
-					->build();
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

@@ -14,7 +14,7 @@ class ConstantRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ConstantRule();
+		return new ConstantRule(true);
 	}
 
 	public function testConstants(): void

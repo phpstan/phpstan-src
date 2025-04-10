@@ -25,6 +25,7 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -59,10 +60,14 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 			$class = $type->getClassName();
 			$referencedClassReflection = $type->getClassReflection();
 			if ($referencedClassReflection === null) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
-					->discoveringSymbolsTip()
-					->identifier('class.notFound')
-					->build();
+				$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 				continue;
 			}
 

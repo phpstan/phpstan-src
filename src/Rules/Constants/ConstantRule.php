@@ -14,6 +14,12 @@ use function sprintf;
 final class ConstantRule implements Rule
 {
 
+	public function __construct(
+		private bool $discoveringSymbolsTip,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return Node\Expr\ConstFetch::class;
@@ -22,14 +28,18 @@ final class ConstantRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->hasConstant($node->name)) {
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				'Constant %s not found.',
+				(string) $node->name,
+			))
+				->identifier('constant.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf(
-					'Constant %s not found.',
-					(string) $node->name,
-				))
-					->identifier('constant.notFound')
-					->discoveringSymbolsTip()
-					->build(),
+				$errorBuilder->build(),
 			];
 		}
 

@@ -43,6 +43,7 @@ final class LocalTypeAliasesCheck
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private bool $checkMissingTypehints,
 		private bool $checkClassCaseSensitivity,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -254,10 +255,14 @@ final class LocalTypeAliasesCheck
 			}
 			foreach ($resolvedType->getReferencedClasses() as $class) {
 				if (!$this->reflectionProvider->hasClass($class)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains unknown class %s.', $aliasName, $class))
-						->identifier('class.notFound')
-						->discoveringSymbolsTip()
-						->build();
+					$errorBuilder = RuleErrorBuilder::message(sprintf('Type alias %s contains unknown class %s.', $aliasName, $class))
+						->identifier('class.notFound');
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$errors[] = $errorBuilder->build();
 				} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s contains invalid type %s.', $aliasName, $class))
 						->identifier('typeAlias.trait')

@@ -20,7 +20,7 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidIncDecOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
 		);
 	}
 

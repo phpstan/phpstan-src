@@ -21,6 +21,7 @@ final class ExistingClassesInClassImplementsRule implements Rule
 	public function __construct(
 		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -45,15 +46,19 @@ final class ExistingClassesInClassImplementsRule implements Rule
 			$implementedClassName = (string) $implements;
 			if (!$this->reflectionProvider->hasClass($implementedClassName)) {
 				if (!$scope->isInClassExists($implementedClassName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'%s implements unknown interface %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$implementedClassName,
 					))
 						->identifier('interface.notFound')
-						->nonIgnorable()
-						->discoveringSymbolsTip()
-						->build();
+						->nonIgnorable();
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$messages[] = $errorBuilder->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($implementedClassName);

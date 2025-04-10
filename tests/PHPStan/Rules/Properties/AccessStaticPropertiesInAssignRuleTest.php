@@ -21,11 +21,12 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		return new AccessStaticPropertiesInAssignRule(
 			new AccessStaticPropertiesRule(
 				$reflectionProvider,
-				new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false),
+				new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck(self::getContainer()),
 				),
+				true,
 			),
 		);
 	}

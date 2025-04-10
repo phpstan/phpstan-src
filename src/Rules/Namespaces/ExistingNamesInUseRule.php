@@ -25,6 +25,7 @@ final class ExistingNamesInUseRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -69,11 +70,15 @@ final class ExistingNamesInUseRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))
+			$errorBuilder = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $use->name))
 				->line($use->name->getStartLine())
-				->identifier('constant.notFound')
-				->discoveringSymbolsTip()
-				->build();
+				->identifier('constant.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
+			$errors[] = $errorBuilder->build();
 		}
 
 		return $errors;
@@ -88,11 +93,15 @@ final class ExistingNamesInUseRule implements Rule
 		$errors = [];
 		foreach ($uses as $use) {
 			if (!$this->reflectionProvider->hasFunction($use->name, null)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))
+				$errorBuilder = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $use->name))
 					->line($use->name->getStartLine())
-					->identifier('function.notFound')
-					->discoveringSymbolsTip()
-					->build();
+					->identifier('function.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 			} elseif ($this->checkFunctionNameCase) {
 				$functionReflection = $this->reflectionProvider->getFunction($use->name, null);
 				$realName = $functionReflection->getName();

@@ -31,6 +31,7 @@ final class PropertyTagCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkMissingTypehints,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -197,10 +198,14 @@ final class PropertyTagCheck
 		$errors = [];
 		foreach ($type->getReferencedClasses() as $class) {
 			if (!$this->reflectionProvider->hasClass($class)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag %s for property %s::$%s contains unknown class %s.', $tagName, $classReflection->getDisplayName(), $propertyName, $class))
-					->identifier('class.notFound')
-					->discoveringSymbolsTip()
-					->build();
+				$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag %s for property %s::$%s contains unknown class %s.', $tagName, $classReflection->getDisplayName(), $propertyName, $class))
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 			} elseif ($this->reflectionProvider->getClass($class)->isTrait()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag %s for property %s::$%s contains invalid type %s.', $tagName, $classReflection->getDisplayName(), $propertyName, $class))
 					->identifier('propertyTag.trait')

@@ -33,6 +33,7 @@ class MethodTagRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				true,
+				true,
 			),
 		);
 	}

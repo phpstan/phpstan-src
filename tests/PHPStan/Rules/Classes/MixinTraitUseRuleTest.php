@@ -33,6 +33,7 @@ class MixinTraitUseRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				true,
 				true,
+				true,
 			),
 		);
 	}

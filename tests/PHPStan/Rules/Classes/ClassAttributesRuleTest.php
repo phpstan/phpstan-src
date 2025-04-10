@@ -32,7 +32,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 			new AttributesCheck(
 				$reflectionProvider,
 				new FunctionCallParametersCheck(
-					new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false),
+					new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
 					new NullsafeCheck(),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),

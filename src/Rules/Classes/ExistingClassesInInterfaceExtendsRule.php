@@ -21,6 +21,7 @@ final class ExistingClassesInInterfaceExtendsRule implements Rule
 	public function __construct(
 		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -41,15 +42,19 @@ final class ExistingClassesInInterfaceExtendsRule implements Rule
 			$extendedInterfaceName = (string) $extends;
 			if (!$this->reflectionProvider->hasClass($extendedInterfaceName)) {
 				if (!$scope->isInClassExists($extendedInterfaceName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends unknown interface %s.',
 						$currentInterfaceName,
 						$extendedInterfaceName,
 					))
 						->identifier('interface.notFound')
-						->nonIgnorable()
-						->discoveringSymbolsTip()
-						->build();
+						->nonIgnorable();
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$messages[] = $errorBuilder->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($extendedInterfaceName);

@@ -14,7 +14,7 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DefaultValueTypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false));
+		return new DefaultValueTypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
 	public function testDefaultValueTypesAssignedToProperties(): void

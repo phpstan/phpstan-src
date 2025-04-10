@@ -24,7 +24,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		return new ClassConstantRule(
 			$reflectionProvider,
-			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false),
+			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck(self::getContainer()),

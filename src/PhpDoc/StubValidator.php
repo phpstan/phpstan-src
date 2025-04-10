@@ -194,8 +194,9 @@ final class StubValidator
 		$genericCallableRuleHelper = $container->getByType(GenericCallableRuleHelper::class);
 		$methodTagTemplateTypeCheck = $container->getByType(MethodTagTemplateTypeCheck::class);
 		$mixinCheck = $container->getByType(MixinCheck::class);
-		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
-		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true);
+		$discoveringSymbolsTip = $container->getParameter('tips')['discoveringSymbols'];
+		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true, $discoveringSymbolsTip);
+		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true, $discoveringSymbolsTip);
 		$reflector = $container->getService('stubReflector');
 		$relativePathHelper = $container->getService('simpleRelativePathHelper');
 		$assertRuleHelper = $container->getByType(AssertRuleHelper::class);
@@ -203,13 +204,13 @@ final class StubValidator
 
 		$rules = [
 			// level 0
-			new ExistingClassesInClassImplementsRule($classNameCheck, $reflectionProvider),
-			new ExistingClassesInInterfaceExtendsRule($classNameCheck, $reflectionProvider),
-			new ExistingClassInClassExtendsRule($classNameCheck, $reflectionProvider),
-			new ExistingClassInTraitUseRule($classNameCheck, $reflectionProvider),
+			new ExistingClassesInClassImplementsRule($classNameCheck, $reflectionProvider, $discoveringSymbolsTip),
+			new ExistingClassesInInterfaceExtendsRule($classNameCheck, $reflectionProvider, $discoveringSymbolsTip),
+			new ExistingClassInClassExtendsRule($classNameCheck, $reflectionProvider, $discoveringSymbolsTip),
+			new ExistingClassInTraitUseRule($classNameCheck, $reflectionProvider, $discoveringSymbolsTip),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
-			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, true, false),
+			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, true, false, $discoveringSymbolsTip),
 			new OverridingMethodRule(
 				$phpVersion,
 				new MethodSignatureRule($phpClassReflectionExtension, true, true),

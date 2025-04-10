@@ -20,6 +20,7 @@ final class CallToNonExistentFunctionRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private bool $checkFunctionNameCase,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -40,8 +41,15 @@ final class CallToNonExistentFunctionRule implements Rule
 				return [];
 			}
 
+			$errorBuilder = RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))
+				->identifier('function.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->identifier('function.notFound')->discoveringSymbolsTip()->build(),
+				$errorBuilder->build(),
 			];
 		}
 

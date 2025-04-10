@@ -16,7 +16,7 @@ class PrintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new PrintRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true),
 		);
 	}
 

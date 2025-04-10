@@ -29,6 +29,7 @@ final class ExistingClassesInPropertiesRule implements Rule
 		private PhpVersion $phpVersion,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkThisOnly,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -64,12 +65,19 @@ final class ExistingClassesInPropertiesRule implements Rule
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf(
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s has unknown class %s as its type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$referencedClass,
-			))->identifier('class.notFound')->discoveringSymbolsTip()->build();
+			))
+				->identifier('class.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
+			$errors[] = $errorBuilder->build();
 		}
 
 		$errors = array_merge(

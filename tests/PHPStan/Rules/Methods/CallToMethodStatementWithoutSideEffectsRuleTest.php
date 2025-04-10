@@ -16,7 +16,7 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToMethodStatementWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false));
+		return new CallToMethodStatementWithoutSideEffectsRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
 	public function testRule(): void

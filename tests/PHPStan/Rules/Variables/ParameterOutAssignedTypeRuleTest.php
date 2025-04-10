@@ -15,7 +15,7 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new ParameterOutAssignedTypeRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true, false, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true, false, false, true),
 		);
 	}
 

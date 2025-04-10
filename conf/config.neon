@@ -84,6 +84,7 @@ parameters:
 	usePathConstantsAsConstantString: false
 	rememberPossiblyImpureFunctionValues: true
 	tips:
+		discoveringSymbols: true
 		treatPhpDocTypesAsCertain: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
@@ -888,24 +889,28 @@ services:
 			globalTypeAliases: %typeAliases%
 			checkMissingTypehints: %checkMissingTypehints%
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\Classes\MethodTagCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingTypehints: %checkMissingTypehints%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\Classes\MixinCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingTypehints: %checkMissingTypehints%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\Classes\PropertyTagCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingTypehints: %checkMissingTypehints%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
@@ -1005,6 +1010,7 @@ services:
 		class: PHPStan\Rules\Methods\StaticMethodCallCheck
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 			reportMagicMethods: %reportMagicMethods%
 
 	-
@@ -1096,6 +1102,7 @@ services:
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
 			checkBenevolentUnionTypes: %checkBenevolentUnionTypes%
+			discoveringSymbolsTip: %tips.discoveringSymbols%
 
 	-
 		class: PHPStan\Rules\UnusedFunctionParametersCheck

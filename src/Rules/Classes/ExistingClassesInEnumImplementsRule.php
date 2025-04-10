@@ -21,6 +21,7 @@ final class ExistingClassesInEnumImplementsRule implements Rule
 	public function __construct(
 		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -42,15 +43,19 @@ final class ExistingClassesInEnumImplementsRule implements Rule
 			$implementedClassName = (string) $implements;
 			if (!$this->reflectionProvider->hasClass($implementedClassName)) {
 				if (!$scope->isInClassExists($implementedClassName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'Enum %s implements unknown interface %s.',
 						$currentEnumName,
 						$implementedClassName,
 					))
 						->identifier('interface.notFound')
-						->nonIgnorable()
-						->discoveringSymbolsTip()
-						->build();
+						->nonIgnorable();
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$messages[] = $errorBuilder->build();
 				}
 			} else {
 				$reflection = $this->reflectionProvider->getClass($implementedClassName);

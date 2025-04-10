@@ -26,6 +26,7 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			true,
+			true,
 		);
 	}
 

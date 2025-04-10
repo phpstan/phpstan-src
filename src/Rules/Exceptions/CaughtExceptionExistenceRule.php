@@ -24,6 +24,7 @@ final class CaughtExceptionExistenceRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		private bool $checkClassCaseSensitivity,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -42,11 +43,16 @@ final class CaughtExceptionExistenceRule implements Rule
 				if ($scope->isInClassExists($className)) {
 					continue;
 				}
-				$errors[] = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))
+
+				$errorBuilder = RuleErrorBuilder::message(sprintf('Caught class %s not found.', $className))
 					->line($class->getStartLine())
-					->identifier('class.notFound')
-					->discoveringSymbolsTip()
-					->build();
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 				continue;
 			}
 

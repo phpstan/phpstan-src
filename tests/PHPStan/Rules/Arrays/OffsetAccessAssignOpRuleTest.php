@@ -17,7 +17,7 @@ class OffsetAccessAssignOpRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, false, true);
 		return new OffsetAccessAssignOpRule($ruleLevelHelper);
 	}
 

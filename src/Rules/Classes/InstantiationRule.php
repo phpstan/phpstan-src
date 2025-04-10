@@ -35,6 +35,7 @@ final class InstantiationRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $check,
 		private ClassNameCheck $classCheck,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -122,11 +123,15 @@ final class InstantiationRule implements Rule
 					return [];
 				}
 
+				$errorBuilder = RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
 				return [
-					RuleErrorBuilder::message(sprintf('Instantiated class %s not found.', $class))
-						->identifier('class.notFound')
-						->discoveringSymbolsTip()
-						->build(),
+					$errorBuilder->build(),
 				];
 			}
 

@@ -26,6 +26,7 @@ final class ExistingNamesInGroupUseRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		private bool $checkFunctionNameCase,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -72,11 +73,15 @@ final class ExistingNamesInGroupUseRule implements Rule
 	private function checkConstant(Node\Name $name): ?IdentifierRuleError
 	{
 		if (!$this->reflectionProvider->hasConstant($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))
-				->discoveringSymbolsTip()
+			$errorBuilder = RuleErrorBuilder::message(sprintf('Used constant %s not found.', (string) $name))
 				->line($name->getStartLine())
-				->identifier('constant.notFound')
-				->build();
+				->identifier('constant.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
+			return $errorBuilder->build();
 		}
 
 		return null;
@@ -85,11 +90,15 @@ final class ExistingNamesInGroupUseRule implements Rule
 	private function checkFunction(Node\Name $name): ?IdentifierRuleError
 	{
 		if (!$this->reflectionProvider->hasFunction($name, null)) {
-			return RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))
-				->discoveringSymbolsTip()
+			$errorBuilder = RuleErrorBuilder::message(sprintf('Used function %s not found.', (string) $name))
 				->line($name->getStartLine())
-				->identifier('function.notFound')
-				->build();
+				->identifier('function.notFound');
+
+			if ($this->discoveringSymbolsTip) {
+				$errorBuilder->discoveringSymbolsTip();
+			}
+
+			return $errorBuilder->build();
 		}
 
 		if ($this->checkFunctionNameCase) {

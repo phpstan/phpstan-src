@@ -15,7 +15,7 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ParameterOutExecutionEndTypeRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true, false, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true, false, false, true),
 		);
 	}
 

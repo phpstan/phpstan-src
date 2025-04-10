@@ -25,6 +25,7 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 				new ClassForbiddenNameCheck(self::getContainer()),
 			),
 			$reflectionProvider,
+			true,
 		);
 	}
 

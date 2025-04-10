@@ -34,6 +34,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private bool $checkClassCaseSensitivity,
 		private bool $checkMissingVarTagTypehint,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -136,13 +137,17 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message(sprintf(
+				$errorBuilder = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
 					$referencedClass,
 				))
-					->identifier('class.notFound')
-					->discoveringSymbolsTip()
-					->build();
+					->identifier('class.notFound');
+
+				if ($this->discoveringSymbolsTip) {
+					$errorBuilder->discoveringSymbolsTip();
+				}
+
+				$errors[] = $errorBuilder->build();
 			}
 
 			$errors = array_merge(

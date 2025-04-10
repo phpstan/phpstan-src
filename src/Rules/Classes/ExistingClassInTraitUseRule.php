@@ -22,6 +22,7 @@ final class ExistingClassInTraitUseRule implements Rule
 	public function __construct(
 		private ClassNameCheck $classCheck,
 		private ReflectionProvider $reflectionProvider,
+		private bool $discoveringSymbolsTip,
 	)
 	{
 	}
@@ -64,11 +65,15 @@ final class ExistingClassInTraitUseRule implements Rule
 			foreach ($node->traits as $trait) {
 				$traitName = (string) $trait;
 				if (!$this->reflectionProvider->hasClass($traitName)) {
-					$messages[] = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))
+					$errorBuilder = RuleErrorBuilder::message(sprintf('%s uses unknown trait %s.', $currentName, $traitName))
 						->identifier('trait.notFound')
-						->nonIgnorable()
-						->discoveringSymbolsTip()
-						->build();
+						->nonIgnorable();
+
+					if ($this->discoveringSymbolsTip) {
+						$errorBuilder->discoveringSymbolsTip();
+					}
+
+					$messages[] = $errorBuilder->build();
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);
 					if ($reflection->isClass()) {

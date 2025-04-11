@@ -311,7 +311,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocThrowsTag = null;
 
 		$deprecation = $this->deprecationResolver->getFunctionDeprecation($reflectionFunction);
-		$deprecationDescription = $deprecation?->getDescription();
+		$deprecationDescription = $deprecation === null ? null : $deprecation->getDescription();
 		$isDeprecated = $deprecation !== null;
 
 		$isInternal = false;
@@ -418,7 +418,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 		$deprecation = $this->deprecationResolver->getConstantDeprecation($constantReflection);
 		$isDeprecated = $deprecation !== null;
-		$deprecatedDescription = $deprecation?->getDescription();
+		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 
 		if ($isDeprecated === false && $docComment !== null) {
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);

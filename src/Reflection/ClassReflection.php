@@ -1082,7 +1082,7 @@ final class ClassReflection
 			}
 
 			$deprecation = $this->deprecationResolver->getClassConstantDeprecation($reflectionConstant);
-			$deprecatedDescription = $deprecation?->getDescription();
+			$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 			$isDeprecated = $deprecation !== null;
 
 			$declaringClass = $this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName());

@@ -43,3 +43,11 @@ class HelloWorld
 		return REMEMBERED_FOO;
 	}
 }
+
+
+class AnotherClass {
+	public function myFoo(): string
+	{
+		return REMEMBERED_FOO; // should error, because this file cannot share the __constructor() scope with HelloWorld-class above.
+	}
+}

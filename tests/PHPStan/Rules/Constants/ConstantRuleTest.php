@@ -93,6 +93,11 @@ class ConstantRuleTest extends RuleTestCase
 				38,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'Constant REMEMBERED_FOO not found.',
+				51,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		]);
 	}
 

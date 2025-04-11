@@ -14,6 +14,7 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
+use const PHP_VERSION_ID;
 
 class DeprecationProvidersTest extends PHPStanTestCase
 {

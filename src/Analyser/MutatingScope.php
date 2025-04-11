@@ -3350,7 +3350,7 @@ final class MutatingScope implements Scope
 
 	private function enterFunctionLike(
 		PhpFunctionFromParserNodeReflection $functionReflection,
-		bool                                $preserveConstructorScope,
+		bool $preserveConstructorScope,
 	): self
 	{
 		$parametersByName = [];

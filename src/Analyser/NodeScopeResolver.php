@@ -930,9 +930,16 @@ final class NodeScopeResolver
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $classStatementsGatherer);
 
-			// analyze static methods first, constructor next and instance methods last so we can carry over the scope
+			// analyze static methods first; constructor next; instance methods and property hooks last so we can carry over the scope
 			$classLikeStatements = $stmt->stmts;
 			usort($classLikeStatements, static function ($a, $b) {
+				if ($a instanceof Node\Stmt\Property) {
+					return 1;
+				}
+				if ($b instanceof Node\Stmt\Property) {
+					return -1;
+				}
+
 				if (!$a instanceof Node\Stmt\ClassMethod || !$b instanceof Node\Stmt\ClassMethod) {
 					return 0;
 				}

@@ -1,0 +1,27 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Reflection\Deprecation;
+
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+
+/**
+ * This interface allows you to provide custom deprecation information
+ *
+ * To register it in the configuration file use the following tag:
+ *
+ * ```
+ * services:
+ * 	-
+ *		class: App\PHPStan\MyProvider
+ *		tags:
+ *			- phpstan.propertyDeprecationProvider
+ * ```
+ *
+ * @api
+ */
+interface PropertyDeprecationProvider
+{
+
+	public function getPropertyDeprecation(ReflectionProperty $reflection): ?Deprecation;
+
+}

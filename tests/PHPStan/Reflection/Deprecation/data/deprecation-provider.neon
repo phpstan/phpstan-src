@@ -1,0 +1,10 @@
+services:
+	-
+		class: PHPStan\Tests\CustomDeprecationProvider
+		tags:
+			- phpstan.propertyDeprecationProvider
+			- phpstan.methodDeprecationProvider
+			- phpstan.classConstantDeprecationProvider
+			- phpstan.classDeprecationProvider
+			- phpstan.functionDeprecationProvider
+			- phpstan.constantDeprecationProvider

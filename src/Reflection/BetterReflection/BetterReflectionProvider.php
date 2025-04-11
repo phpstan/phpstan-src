@@ -36,6 +36,7 @@ use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\ConstantReflection;
+use PHPStan\Reflection\Deprecation\DeprecationResolver;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\InitializerExprContext;
@@ -85,6 +86,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private DeprecationResolver $deprecationResolver,
 		private PhpVersion $phpVersion,
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,
@@ -148,6 +150,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
+			$this->deprecationResolver,
 			$this->attributeReflectionFactory,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -243,6 +246,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
+			$this->deprecationResolver,
 			$this->attributeReflectionFactory,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -305,8 +309,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocParameterTypes = [];
 		$phpDocReturnTag = null;
 		$phpDocThrowsTag = null;
-		$deprecatedTag = null;
-		$isDeprecated = false;
+
+		$deprecation = $this->deprecationResolver->getFunctionDeprecation($reflectionFunction);
+		$deprecationDescription = $deprecation?->getDescription();
+		$isDeprecated = $deprecation !== null;
+
 		$isInternal = false;
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
@@ -327,8 +334,10 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterTypes = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamTags());
 			$phpDocReturnTag = $resolvedPhpDoc->getReturnTag();
 			$phpDocThrowsTag = $resolvedPhpDoc->getThrowsTag();
-			$deprecatedTag = $resolvedPhpDoc->getDeprecatedTag();
-			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			if (!$isDeprecated) {
+				$deprecationDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : $deprecationDescription;
+				$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isPure = $resolvedPhpDoc->isPure();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
@@ -347,7 +356,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$phpDocParameterTypes,
 			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
 			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
-			$deprecatedTag !== null ? $deprecatedTag->getMessage() : null,
+			$deprecationDescription,
 			$isDeprecated,
 			$isInternal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
@@ -407,13 +416,15 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpression(), InitializerExprContext::fromGlobalConstant($constantReflection));
 		$docComment = $constantReflection->getDocComment();
 
-		$isDeprecated = TrinaryLogic::createNo();
-		$deprecatedDescription = null;
-		if ($docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
-			$isDeprecated = TrinaryLogic::createFromBoolean($resolvedPhpDoc->isDeprecated());
+		$deprecation = $this->deprecationResolver->getConstantDeprecation($constantReflection);
+		$isDeprecated = $deprecation !== null;
+		$deprecatedDescription = $deprecation?->getDescription();
 
-			if ($resolvedPhpDoc->isDeprecated() && $resolvedPhpDoc->getDeprecatedTag() !== null) {
+		if ($isDeprecated === false && $docComment !== null) {
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);
+			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+
+			if ($isDeprecated && $resolvedPhpDoc->getDeprecatedTag() !== null) {
 				$deprecatedMessage = $resolvedPhpDoc->getDeprecatedTag()->getMessage();
 
 				$matches = Strings::match($deprecatedMessage ?? '', '#^(\d+)\.(\d+)(?:\.(\d+))?$#');
@@ -423,7 +434,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 					$patch = $matches[3] ?? 0;
 					$versionId = sprintf('%d%02d%02d', $major, $minor, $patch);
 
-					$isDeprecated = TrinaryLogic::createFromBoolean($this->phpVersion->getVersionId() >= $versionId);
+					$isDeprecated = $this->phpVersion->getVersionId() >= $versionId;
 				} else {
 					// filter raw version number messages like in
 					// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
@@ -436,7 +447,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$constantName,
 			$constantValueType,
 			$fileName,
-			$isDeprecated,
+			TrinaryLogic::createFromBoolean($isDeprecated),
 			$deprecatedDescription,
 		);
 	}

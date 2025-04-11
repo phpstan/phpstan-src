@@ -22,6 +22,7 @@ use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Deprecation\DeprecationResolver;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -91,6 +92,7 @@ final class PhpClassReflectionExtension
 		private NodeScopeResolver $nodeScopeResolver,
 		private PhpMethodReflectionFactory $methodReflectionFactory,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private DeprecationResolver $deprecationResolver,
 		private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
 		private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
 		private SignatureMapProvider $signatureMapProvider,
@@ -220,8 +222,9 @@ final class PhpClassReflectionExtension
 			}
 		}
 
-		$deprecatedDescription = null;
-		$isDeprecated = false;
+		$deprecation = $this->deprecationResolver->getPropertyDeprecation($propertyReflection);
+		$deprecatedDescription = $deprecation?->getDescription();
+		$isDeprecated = $deprecation !== null;
 		$isInternal = false;
 		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
 		$isAllowedPrivateMutation = false;
@@ -298,8 +301,11 @@ final class PhpClassReflectionExtension
 				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
 				TemplateTypeVariance::createInvariant(),
 			) : null;
-			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+
+			if (!$isDeprecated) {
+				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+				$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
@@ -699,6 +705,10 @@ final class PhpClassReflectionExtension
 
 	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, ReflectionMethod $methodReflection, ?string $declaringTraitName): PhpMethodReflection
 	{
+		$deprecation = $this->deprecationResolver->getMethodDeprecation($methodReflection);
+		$deprecatedDescription = $deprecation?->getDescription();
+		$isDeprecated = $deprecation !== null;
+
 		$resolvedPhpDoc = null;
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $fileDeclaringClass;
@@ -821,8 +831,10 @@ final class PhpClassReflectionExtension
 		);
 		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
-		$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-		$isDeprecated = $resolvedPhpDoc->isDeprecated();
+		if (!$isDeprecated) {
+			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+		}
 		$isInternal = $resolvedPhpDoc->isInternal();
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();

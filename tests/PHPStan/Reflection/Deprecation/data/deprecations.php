@@ -8,7 +8,7 @@ class CustomDeprecated {
 	public ?string $description;
 
 	public function __construct(
-		?string $description = null,
+		?string $description = null
 	) {
 		$this->description = $description;
 	}

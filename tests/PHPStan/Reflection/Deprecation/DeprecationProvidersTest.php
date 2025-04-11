@@ -20,6 +20,10 @@ class DeprecationProvidersTest extends PHPStanTestCase
 
 	public function testCustomDeprecations(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('PHP 8.0+ is required as CustomDeprecationProvider uses unions.');
+		}
+
 		require __DIR__ . '/data/deprecations.php';
 
 		$reflectionProvider = self::createReflectionProvider();

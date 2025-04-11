@@ -51,3 +51,19 @@ class AnotherClass {
 		return REMEMBERED_FOO; // should error, because this file cannot share the __constructor() scope with HelloWorld-class above.
 	}
 }
+
+class AnotherClassWithOwnConstructor {
+	public function __construct()
+	{
+		if (!defined('ANOTHER_REMEMBERED_FOO')) {
+			throw new LogicException();
+		}
+	}
+
+	public function myFoo(): void
+	{
+		echo REMEMBERED_FOO; // should error, because this file cannot share the __constructor() scope with HelloWorld-class above.
+
+		echo ANOTHER_REMEMBERED_FOO;
+	}
+}

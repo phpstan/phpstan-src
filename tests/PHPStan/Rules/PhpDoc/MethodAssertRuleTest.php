@@ -78,11 +78,7 @@ class MethodAssertRuleTest extends RuleTestCase
 				94,
 			],
 			[
-				'PHPDoc tag @phpstan-assert for $a contains unknown class MethodAssert\Nonexistent.',
-				105,
-			],
-			[
-				'PHPDoc tag @phpstan-assert for $b contains invalid type MethodAssert\FooTrait.',
+				'Assert references unknown $this->barProp.',
 				105,
 			],
 			[
@@ -90,7 +86,11 @@ class MethodAssertRuleTest extends RuleTestCase
 				105,
 			],
 			[
-				'Assert references unknown $this->barProp.',
+				'PHPDoc tag @phpstan-assert for $a contains unknown class MethodAssert\Nonexistent.',
+				105,
+			],
+			[
+				'PHPDoc tag @phpstan-assert for $b contains invalid type MethodAssert\FooTrait.',
 				105,
 			],
 			[

@@ -81,11 +81,11 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				20,
 			],
 			[
-				'Invalid array key type Bug6315\FooEnum::B.',
+				'Invalid array key type Bug6315\FooEnum::A.',
 				21,
 			],
 			[
-				'Invalid array key type Bug6315\FooEnum::A.',
+				'Invalid array key type Bug6315\FooEnum::B.',
 				21,
 			],
 			[

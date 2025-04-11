@@ -39,11 +39,11 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'The @extends tag of class ClassAncestorsExtends\FooWrongClassExtended describes ClassAncestorsExtends\FooGeneric2 but the class extends ClassAncestorsExtends\FooGeneric.',
+				'Class ClassAncestorsExtends\FooWrongClassExtended extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				43,
 			],
 			[
-				'Class ClassAncestorsExtends\FooWrongClassExtended extends generic class ClassAncestorsExtends\FooGeneric but does not specify its types: T, U',
+				'The @extends tag of class ClassAncestorsExtends\FooWrongClassExtended describes ClassAncestorsExtends\FooGeneric2 but the class extends ClassAncestorsExtends\FooGeneric.',
 				43,
 			],
 			[
@@ -145,15 +145,15 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				44,
 			],
 			[
-				'The @implements tag of class ClassAncestorsImplements\FooWrongClassImplemented describes ClassAncestorsImplements\FooGeneric2 but the class implements: ClassAncestorsImplements\FooGeneric, ClassAncestorsImplements\FooGeneric3',
-				52,
-			],
-			[
 				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric but does not specify its types: T, U',
 				52,
 			],
 			[
 				'Class ClassAncestorsImplements\FooWrongClassImplemented implements generic interface ClassAncestorsImplements\FooGeneric3 but does not specify its types: T, W',
+				52,
+			],
+			[
+				'The @implements tag of class ClassAncestorsImplements\FooWrongClassImplemented describes ClassAncestorsImplements\FooGeneric2 but the class implements: ClassAncestorsImplements\FooGeneric, ClassAncestorsImplements\FooGeneric3',
 				52,
 			],
 			[
@@ -197,11 +197,11 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				172,
 			],
 			[
-				'Type stdClass in generic type ClassAncestorsImplements\FooGeneric<int, stdClass> in PHPDoc tag @implements is not subtype of template type U of Exception of interface ClassAncestorsImplements\FooGeneric.',
+				'Type stdClass in generic type ClassAncestorsImplements\FooGeneric2<int, stdClass> in PHPDoc tag @implements is not subtype of template type V of Exception of interface ClassAncestorsImplements\FooGeneric2.',
 				182,
 			],
 			[
-				'Type stdClass in generic type ClassAncestorsImplements\FooGeneric2<int, stdClass> in PHPDoc tag @implements is not subtype of template type V of Exception of interface ClassAncestorsImplements\FooGeneric2.',
+				'Type stdClass in generic type ClassAncestorsImplements\FooGeneric<int, stdClass> in PHPDoc tag @implements is not subtype of template type U of Exception of interface ClassAncestorsImplements\FooGeneric.',
 				182,
 			],
 			[

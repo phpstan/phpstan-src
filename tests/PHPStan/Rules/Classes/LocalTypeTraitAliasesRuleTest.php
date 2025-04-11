@@ -46,6 +46,18 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/local-type-trait-aliases.php'], [
 			[
+				'Circular definition detected in type alias CircularTypeAlias1.',
+				23,
+			],
+			[
+				'Circular definition detected in type alias CircularTypeAlias2.',
+				23,
+			],
+			[
+				'Circular definition detected in type alias RecursiveTypeAlias.',
+				23,
+			],
+			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeTraitAliases\Bar.',
 				23,
 			],
@@ -55,18 +67,6 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 			],
 			[
 				'Type alias has an invalid name: int.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias RecursiveTypeAlias.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAlias1.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAlias2.',
 				23,
 			],
 			[
@@ -82,6 +82,14 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 				39,
 			],
 			[
+				'Circular definition detected in type alias CircularTypeAliasImport2.',
+				39,
+			],
+			[
+				'Imported type alias ExportedTypeAlias has an invalid name: int.',
+				39,
+			],
+			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeTraitAliases\Baz.',
 				39,
 			],
@@ -90,15 +98,7 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 				39,
 			],
 			[
-				'Imported type alias ExportedTypeAlias has an invalid name: int.',
-				39,
-			],
-			[
 				'Type alias OverwrittenTypeAlias overwrites an imported type alias of the same name.',
-				39,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAliasImport2.',
 				39,
 			],
 			[

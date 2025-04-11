@@ -147,11 +147,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				120,
 			],
 			[
-				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
+				'Call to an undefined static method CallStaticMethods\Foo::unknownMethod().',
 				127,
 			],
 			[
-				'Call to an undefined static method CallStaticMethods\Foo::unknownMethod().',
+				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
 				127,
 			],
 			[
@@ -163,11 +163,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				128,
 			],
 			[
-				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
+				'Call to private static method dolor() of class CallStaticMethods\Foo.',
 				129,
 			],
 			[
-				'Call to private static method dolor() of class CallStaticMethods\Foo.',
+				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
 				129,
 			],
 			[
@@ -179,11 +179,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				130,
 			],
 			[
-				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
+				'Call to static method CallStaticMethods\Foo::test() with incorrect case: TEST',
 				131,
 			],
 			[
-				'Call to static method CallStaticMethods\Foo::test() with incorrect case: TEST',
+				'Class CallStaticMethods\Foo referenced with incorrect case: CallStaticMethods\FOO.',
 				131,
 			],
 			[

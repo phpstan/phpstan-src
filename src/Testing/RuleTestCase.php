@@ -241,7 +241,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		);
 
 		return [
-			$finalizer->finalize($analyserResult, false, true)->getAnalyserResult()->getUnorderedErrors(),
+			$finalizer->finalize($analyserResult, false, true)->getAnalyserResult()->getErrors(),
 			array_merge($classRule->getDelayedErrors(), $traitRule->getDelayedErrors()),
 		];
 	}

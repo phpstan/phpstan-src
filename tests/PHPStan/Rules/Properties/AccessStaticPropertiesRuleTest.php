@@ -187,11 +187,11 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				113,
 			],
 			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
+				'Access to an undefined static property FooAccessStaticProperties::$unknownProperties.',
 				119,
 			],
 			[
-				'Access to an undefined static property FooAccessStaticProperties::$unknownProperties.',
+				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
 				119,
 			],
 			[
@@ -203,11 +203,11 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				120,
 			],
 			[
-				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
+				'Access to protected property $foo of class FooAccessStaticProperties.',
 				121,
 			],
 			[
-				'Access to protected property $foo of class FooAccessStaticProperties.',
+				'Class FooAccessStaticProperties referenced with incorrect case: FOOAccessStaticPropertieS.',
 				121,
 			],
 			[

@@ -43,11 +43,11 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/arrow-function-typehints.php'], [
 			[
-				'Parameter $bar of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Bar.',
+				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
 				10,
 			],
 			[
-				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
+				'Parameter $bar of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Bar.',
 				10,
 			],
 		]);
@@ -171,11 +171,11 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 						21,
 					],
 					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						25,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
 						25,
 					],
 				],
@@ -220,7 +220,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 						23,
 					],
 					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						25,
 					],
 					[
@@ -228,7 +228,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 						25,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						25,
 					],
 				],
@@ -258,19 +258,19 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Parameter $a of anonymous function has unresolvable native type.',
-						27,
-					],
-					[
 						'Anonymous function has unresolvable native return type.',
 						27,
 					],
 					[
 						'Parameter $a of anonymous function has unresolvable native type.',
+						27,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
 						29,
 					],
 					[
-						'Anonymous function has unresolvable native return type.',
+						'Parameter $a of anonymous function has unresolvable native type.',
 						29,
 					],
 				],

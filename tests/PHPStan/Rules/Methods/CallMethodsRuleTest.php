@@ -1347,6 +1347,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				62,
 			],
 			[
+				'Parameter #10 $mixeds of method CallMethodsIterables\Foo::doFoo() expects iterable, int given.',
+				62,
+			],
+			[
 				'Parameter #2 $iterableWithIterableTypehint of method CallMethodsIterables\Foo::doFoo() expects iterable, int given.',
 				62,
 			],
@@ -1372,10 +1376,6 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #9 $integers of method CallMethodsIterables\Foo::doFoo() expects iterable<int>, int given.',
-				62,
-			],
-			[
-				'Parameter #10 $mixeds of method CallMethodsIterables\Foo::doFoo() expects iterable, int given.',
 				62,
 			],
 		]);
@@ -1845,20 +1845,20 @@ class CallMethodsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], [
 			[
-				'Named argument cannot be followed by a positional argument.',
-				21,
-			],
-			[
-				'Named argument cannot be followed by a positional argument.',
-				22,
-			],
-			[
 				'Missing parameter $j (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
 				19,
 			],
 			[
 				'Missing parameter $k (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
 				19,
+			],
+			[
+				'Named argument cannot be followed by a positional argument.',
+				21,
+			],
+			[
+				'Named argument cannot be followed by a positional argument.',
+				22,
 			],
 			[
 				'Argument for parameter $i has already been passed.',
@@ -1901,11 +1901,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				75,
 			],
 			[
-				'Named argument cannot be followed by a positional argument.',
+				'Missing parameter $j (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
 				77,
 			],
 			[
-				'Missing parameter $j (int) in call to method NamedArgumentsMethod\Foo::doFoo().',
+				'Named argument cannot be followed by a positional argument.',
 				77,
 			],
 			[
@@ -1917,11 +1917,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				90,
 			],
 			[
-				'Parameter $b of method NamedArgumentsMethod\Foo::doIpsum() expects int, string given.',
+				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
 				91,
 			],
 			[
-				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				'Parameter $b of method NamedArgumentsMethod\Foo::doIpsum() expects int, string given.',
 				91,
 			],
 			[
@@ -1937,11 +1937,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				94,
 			],
 			[
-				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				'Named argument bar for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
 				95,
 			],
 			[
-				'Named argument bar for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
+				'Named argument foo for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
 				95,
 			],
 		]);
@@ -2422,10 +2422,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				11,
 			],
 			[
-				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
-				22,
-			],
-			[
 				'Parameter #1 $countryName of method CallMethodInEnum\FooCall::hello() expects \'The Netherlands\'|\'United States\', CallMethodInEnum\CountryNo::NL given.',
 				63,
 			],
@@ -2452,6 +2448,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $one of method CallMethodInEnum\TestPassingEnums::requireOne() expects CallMethodInEnum\TestPassingEnums::ONE, $this(CallMethodInEnum\TestPassingEnums)&CallMethodInEnum\TestPassingEnums given.',
 				106,
+			],
+			[
+				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
+				22,
 			],
 		]);
 	}
@@ -3188,11 +3188,11 @@ class CallMethodsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/call-methods-named-params-multivariant.php'], [
 			[
-				'Unknown parameter $options in call to method XSLTProcessor::setParameter().',
+				'Missing parameter $name (array) in call to method XSLTProcessor::setParameter().',
 				10,
 			],
 			[
-				'Missing parameter $name (array) in call to method XSLTProcessor::setParameter().',
+				'Unknown parameter $options in call to method XSLTProcessor::setParameter().',
 				10,
 			],
 			[

@@ -50,44 +50,48 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::lorem() has invalid type TestMethodTypehints\BarMethodTypehints.',
-				28,
-			],
-			[
 				'Method TestMethodTypehints\FooMethodTypehints::lorem() has invalid return type TestMethodTypehints\BazMethodTypehints.',
 				28,
 			],
 			[
-				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::ipsum() has invalid type TestMethodTypehints\BarMethodTypehints.',
-				38,
+				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::lorem() has invalid type TestMethodTypehints\BarMethodTypehints.',
+				28,
 			],
 			[
 				'Method TestMethodTypehints\FooMethodTypehints::ipsum() has invalid return type TestMethodTypehints\BazMethodTypehints.',
 				38,
 			],
 			[
-				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::dolor() has invalid type TestMethodTypehints\BarMethodTypehints.',
-				48,
+				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::ipsum() has invalid type TestMethodTypehints\BarMethodTypehints.',
+				38,
 			],
 			[
 				'Method TestMethodTypehints\FooMethodTypehints::dolor() has invalid return type TestMethodTypehints\BazMethodTypehints.',
 				48,
 			],
 			[
-				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
-				53,
+				'Parameter $bars of method TestMethodTypehints\FooMethodTypehints::dolor() has invalid type TestMethodTypehints\BarMethodTypehints.',
+				48,
 			],
 			[
 				'Method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid return type parent.',
 				53,
 			],
 			[
-				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
-				62,
+				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::parentWithoutParent() has invalid type parent.',
+				53,
 			],
 			[
 				'Method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid return type parent.',
 				62,
+			],
+			[
+				'Parameter $parent of method TestMethodTypehints\FooMethodTypehints::phpDocParentWithoutParent() has invalid type parent.',
+				62,
+			],
+			[
+				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehintS.',
+				67,
 			],
 			[
 				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehints.',
@@ -95,7 +99,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			],
 			[
 				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehintS.',
-				67,
+				76,
 			],
 			[
 				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehints.',
@@ -103,10 +107,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			],
 			[
 				'Class stdClass referenced with incorrect case: STDClass.',
-				76,
-			],
-			[
-				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehintS.',
 				76,
 			],
 			[
@@ -152,11 +152,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/typehints-iterable.php'], [
 			[
-				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\NonexistentClass.',
+				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\AnotherNonexistentClass.',
 				11,
 			],
 			[
-				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\AnotherNonexistentClass.',
+				'Parameter $iterable of method TestMethodTypehints\IterableTypehints::doFoo() has invalid type TestMethodTypehints\NonexistentClass.',
 				11,
 			],
 		]);
@@ -290,11 +290,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						41,
 					],
 					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						49,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
 						49,
 					],
 				],
@@ -339,7 +339,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						45,
 					],
 					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						49,
 					],
 					[
@@ -347,7 +347,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						49,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						49,
 					],
 				],
@@ -387,19 +387,19 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Parameter $a of method MethodIntersectionTypes\FooClass::doBar() has unresolvable native type.',
-						33,
-					],
-					[
 						'Method MethodIntersectionTypes\FooClass::doBar() has unresolvable native return type.',
 						33,
 					],
 					[
-						'Parameter $a of method MethodIntersectionTypes\FooClass::doBaz() has unresolvable native type.',
-						38,
+						'Parameter $a of method MethodIntersectionTypes\FooClass::doBar() has unresolvable native type.',
+						33,
 					],
 					[
 						'Method MethodIntersectionTypes\FooClass::doBaz() has unresolvable native return type.',
+						38,
+					],
+					[
+						'Parameter $a of method MethodIntersectionTypes\FooClass::doBaz() has unresolvable native type.',
 						38,
 					],
 				],
@@ -532,15 +532,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/param-out-classes.php'], [
 			[
+				'Class ParamOutClassesMethods\Foo referenced with incorrect case: ParamOutClassesMethods\fOO.',
+				23,
+			],
+			[
 				'Parameter $p of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\Nonexistent.',
 				23,
 			],
 			[
 				'Parameter $q of method ParamOutClassesMethods\Bar::doFoo() has invalid type ParamOutClassesMethods\FooTrait.',
-				23,
-			],
-			[
-				'Class ParamOutClassesMethods\Foo referenced with incorrect case: ParamOutClassesMethods\fOO.',
 				23,
 			],
 		]);

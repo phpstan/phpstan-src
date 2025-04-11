@@ -97,14 +97,6 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/../Classes/data/bug-11592.php'], [
 			[
-				'Enum Bug11592\Test contains abstract method from().',
-				9,
-			],
-			[
-				'Enum Bug11592\Test contains abstract method tryFrom().',
-				11,
-			],
-			[
 				'Enum Bug11592\Test2 contains abstract method from().',
 				24,
 			],
@@ -115,6 +107,14 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 			[
 				'Enum Bug11592\EnumWithAbstractMethod contains abstract method foo().',
 				46,
+			],
+			[
+				'Enum Bug11592\Test contains abstract method from().',
+				9,
+			],
+			[
+				'Enum Bug11592\Test contains abstract method tryFrom().',
+				11,
 			],
 		]);
 	}

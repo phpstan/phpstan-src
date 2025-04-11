@@ -48,16 +48,16 @@ class UsedTraitsRuleTest extends RuleTestCase
 				46,
 			],
 			[
+				'Call-site variance annotation of covariant Throwable in generic type UsedTraits\GenericTrait<covariant Throwable> in PHPDoc tag @use is not allowed.',
+				69,
+			],
+			[
 				'The @use tag of trait UsedTraits\NestedTrait describes UsedTraits\NongenericTrait but the trait uses UsedTraits\GenericTrait.',
 				54,
 			],
 			[
 				'Trait UsedTraits\NestedTrait uses generic trait UsedTraits\GenericTrait but does not specify its types: T',
 				54,
-			],
-			[
-				'Call-site variance annotation of covariant Throwable in generic type UsedTraits\GenericTrait<covariant Throwable> in PHPDoc tag @use is not allowed.',
-				69,
 			],
 		]);
 	}

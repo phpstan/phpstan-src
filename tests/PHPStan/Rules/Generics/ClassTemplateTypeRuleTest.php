@@ -54,11 +54,11 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				41,
 			],
 			[
-				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias LocalAlias as its name.',
+				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias ImportedAlias as its name.',
 				53,
 			],
 			[
-				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias ImportedAlias as its name.',
+				'PHPDoc tag @template for class ClassTemplateType\Dolor cannot have existing type alias LocalAlias as its name.',
 				53,
 			],
 			[
@@ -78,13 +78,13 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				78,
 			],
 			[
+				'Call-site variance of contravariant int in generic type ClassTemplateType\Consecteur<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class ClassTemplateType\Consecteur.',
+				113,
+			],
+			[
 				'Call-site variance of covariant int in generic type ClassTemplateType\Consecteur<covariant int> in PHPDoc tag @template U is redundant, template type T of class ClassTemplateType\Consecteur has the same variance.',
 				113,
 				'You can safely remove the call-site variance annotation.',
-			],
-			[
-				'Call-site variance of contravariant int in generic type ClassTemplateType\Consecteur<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of class ClassTemplateType\Consecteur.',
-				113,
 			],
 			[
 				'PHPDoc tag @template T for class ClassTemplateType\Elit has invalid default type ClassTemplateType\Zazzzu.',

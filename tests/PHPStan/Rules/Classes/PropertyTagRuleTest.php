@@ -55,12 +55,12 @@ class PropertyTagRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'PHPDoc tag @property for property PropertyTag\Foo::$c contains unknown class PropertyTag\stringg.',
+				'PHPDoc tag @property for property PropertyTag\Foo::$c contains unknown class PropertyTag\intt.',
 				$fooClassLine,
 				$tipText,
 			],
 			[
-				'PHPDoc tag @property for property PropertyTag\Foo::$c contains unknown class PropertyTag\intt.',
+				'PHPDoc tag @property for property PropertyTag\Foo::$c contains unknown class PropertyTag\stringg.',
 				$fooClassLine,
 				$tipText,
 			],
@@ -70,12 +70,12 @@ class PropertyTagRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'PHPDoc tag @property for property PropertyTag\Foo::$e contains unknown class PropertyTag\stringg.',
+				'PHPDoc tag @property for property PropertyTag\Foo::$e contains unknown class PropertyTag\intt.',
 				$fooClassLine,
 				$tipText,
 			],
 			[
-				'PHPDoc tag @property for property PropertyTag\Foo::$e contains unknown class PropertyTag\intt.',
+				'PHPDoc tag @property for property PropertyTag\Foo::$e contains unknown class PropertyTag\stringg.',
 				$fooClassLine,
 				$tipText,
 			],
@@ -94,7 +94,7 @@ class PropertyTagRuleTest extends RuleTestCase
 				31,
 			],
 			[
-				'PHPDoc tag @property for property PropertyTag\TestGenerics::$a contains generic type Exception<int> but class Exception is not generic.',
+				'Generic type PropertyTag\Generic<int, string, float> in PHPDoc tag @property for property PropertyTag\TestGenerics::$c specifies 3 template types, but class PropertyTag\Generic supports only 2: T, U',
 				51,
 			],
 			[
@@ -102,7 +102,7 @@ class PropertyTagRuleTest extends RuleTestCase
 				51,
 			],
 			[
-				'Generic type PropertyTag\Generic<int, string, float> in PHPDoc tag @property for property PropertyTag\TestGenerics::$c specifies 3 template types, but class PropertyTag\Generic supports only 2: T, U',
+				'PHPDoc tag @property for property PropertyTag\TestGenerics::$a contains generic type Exception<int> but class Exception is not generic.',
 				51,
 			],
 			[
@@ -123,16 +123,16 @@ class PropertyTagRuleTest extends RuleTestCase
 				75,
 			],
 			[
+				'Class PropertyTag\Foo referenced with incorrect case: PropertyTag\fOO.',
+				85,
+			],
+			[
 				'PHPDoc tag @property for property PropertyTag\NonexistentClasses::$a contains unknown class PropertyTag\Nonexistent.',
 				85,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'PHPDoc tag @property for property PropertyTag\NonexistentClasses::$b contains invalid type PropertyTagTrait\Foo.',
-				85,
-			],
-			[
-				'Class PropertyTag\Foo referenced with incorrect case: PropertyTag\fOO.',
 				85,
 			],
 		]);

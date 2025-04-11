@@ -157,11 +157,11 @@ class MatchExpressionRuleTest extends RuleTestCase
 				104,
 			],
 			[
-				'Match arm comparison between *NEVER* and MatchEnums\Foo::ONE is always false.',
+				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
 				113,
 			],
 			[
-				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
+				'Match arm comparison between *NEVER* and MatchEnums\Foo::ONE is always false.',
 				113,
 			],
 		]);
@@ -299,12 +299,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Match arm comparison between 1 and 0 is always false.',
-				70,
-			],
-			[
 				'Match expression does not handle remaining value: 1',
 				69,
+			],
+			[
+				'Match arm comparison between 1 and 0 is always false.',
+				70,
 			],
 		]);
 	}

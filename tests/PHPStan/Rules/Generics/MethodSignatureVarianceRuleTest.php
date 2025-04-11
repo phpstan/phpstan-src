@@ -44,15 +44,15 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in invariant position in parameter e of method MethodSignatureVariance\Covariant\C::a().',
-				35,
-			],
-			[
 				'Template type X is declared as covariant, but occurs in contravariant position in parameter f of method MethodSignatureVariance\Covariant\C::a().',
 				35,
 			],
 			[
 				'Template type X is declared as covariant, but occurs in contravariant position in parameter h of method MethodSignatureVariance\Covariant\C::a().',
+				35,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in parameter e of method MethodSignatureVariance\Covariant\C::a().',
 				35,
 			],
 			[
@@ -115,11 +115,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Template type X is declared as contravariant, but occurs in invariant position in parameter e of method MethodSignatureVariance\Contravariant\C::a().',
+				'Template type X is declared as contravariant, but occurs in covariant position in parameter g of method MethodSignatureVariance\Contravariant\C::a().',
 				35,
 			],
 			[
-				'Template type X is declared as contravariant, but occurs in covariant position in parameter g of method MethodSignatureVariance\Contravariant\C::a().',
+				'Template type X is declared as contravariant, but occurs in invariant position in parameter e of method MethodSignatureVariance\Contravariant\C::a().',
 				35,
 			],
 			[

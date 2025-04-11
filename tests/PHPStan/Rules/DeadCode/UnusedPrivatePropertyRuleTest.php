@@ -111,13 +111,13 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				$tip,
 			],
 			[
-				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
-				153,
+				'Property UnusedPrivateProperty\DolorWithAnonymous::$foo is unused.',
+				148,
 				$tip,
 			],
 			[
-				'Property UnusedPrivateProperty\DolorWithAnonymous::$foo is unused.',
-				148,
+				'Property class@anonymous/tests/PHPStan/Rules/DeadCode/data/unused-private-property.php:152::$bar is unused.',
+				153,
 				$tip,
 			],
 			[

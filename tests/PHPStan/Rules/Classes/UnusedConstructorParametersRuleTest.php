@@ -27,11 +27,11 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 		$this->reportExactLine = false;
 		$this->analyse([__DIR__ . '/data/unused-constructor-parameters.php'], [
 			[
-				'Constructor of class UnusedConstructorParameters\Foo has an unused parameter $unusedParameter.',
+				'Constructor of class UnusedConstructorParameters\Foo has an unused parameter $anotherUnusedParameter.',
 				11,
 			],
 			[
-				'Constructor of class UnusedConstructorParameters\Foo has an unused parameter $anotherUnusedParameter.',
+				'Constructor of class UnusedConstructorParameters\Foo has an unused parameter $unusedParameter.',
 				11,
 			],
 		]);

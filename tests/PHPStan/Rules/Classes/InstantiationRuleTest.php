@@ -94,19 +94,19 @@ class InstantiationRuleTest extends RuleTestCase
 					57,
 				],
 				[
-					'Class TestInstantiation\FooInstantiation referenced with incorrect case: TestInstantiation\FOOInstantiation.',
-					64,
-				],
-				[
 					'Class TestInstantiation\FooInstantiation does not have a constructor and must be instantiated without any parameters.',
 					64,
 				],
 				[
-					'Class TestInstantiation\BarInstantiation referenced with incorrect case: TestInstantiation\BARInstantiation.',
-					65,
+					'Class TestInstantiation\FooInstantiation referenced with incorrect case: TestInstantiation\FOOInstantiation.',
+					64,
 				],
 				[
 					'Class TestInstantiation\BarInstantiation constructor invoked with 0 parameters, 1 required.',
+					65,
+				],
+				[
+					'Class TestInstantiation\BarInstantiation referenced with incorrect case: TestInstantiation\BARInstantiation.',
 					65,
 				],
 				[
@@ -409,20 +409,20 @@ class InstantiationRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-7048.php'], [
 			[
-				'Unknown parameter $recurrences in call to DatePeriod constructor.',
-				21,
-			],
-			[
 				'Missing parameter $end (DateTimeInterface|int) in call to DatePeriod constructor.',
 				18,
 			],
 			[
-				'Unknown parameter $isostr in call to DatePeriod constructor.',
-				25,
+				'Unknown parameter $recurrences in call to DatePeriod constructor.',
+				21,
 			],
 			[
 				'Missing parameter $start (string) in call to DatePeriod constructor.',
 				24,
+			],
+			[
+				'Unknown parameter $isostr in call to DatePeriod constructor.',
+				25,
 			],
 			[
 				'Parameter #3 $end of class DatePeriod constructor expects DateTimeInterface|int, string given.',

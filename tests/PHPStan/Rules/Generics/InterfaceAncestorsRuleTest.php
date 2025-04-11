@@ -129,15 +129,15 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				44,
 			],
 			[
-				'The @extends tag of interface InterfaceAncestorsExtends\FooWrongClassImplemented describes InterfaceAncestorsExtends\FooGeneric2 but the interface extends: InterfaceAncestorsExtends\FooGeneric, InterfaceAncestorsExtends\FooGeneric3',
-				52,
-			],
-			[
 				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric but does not specify its types: T, U',
 				52,
 			],
 			[
 				'Interface InterfaceAncestorsExtends\FooWrongClassImplemented extends generic interface InterfaceAncestorsExtends\FooGeneric3 but does not specify its types: T, W',
+				52,
+			],
+			[
+				'The @extends tag of interface InterfaceAncestorsExtends\FooWrongClassImplemented describes InterfaceAncestorsExtends\FooGeneric2 but the interface extends: InterfaceAncestorsExtends\FooGeneric, InterfaceAncestorsExtends\FooGeneric3',
 				52,
 			],
 			[
@@ -181,11 +181,11 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				172,
 			],
 			[
-				'Type stdClass in generic type InterfaceAncestorsExtends\FooGeneric<int, stdClass> in PHPDoc tag @extends is not subtype of template type U of Exception of interface InterfaceAncestorsExtends\FooGeneric.',
+				'Type stdClass in generic type InterfaceAncestorsExtends\FooGeneric2<int, stdClass> in PHPDoc tag @extends is not subtype of template type V of Exception of interface InterfaceAncestorsExtends\FooGeneric2.',
 				182,
 			],
 			[
-				'Type stdClass in generic type InterfaceAncestorsExtends\FooGeneric2<int, stdClass> in PHPDoc tag @extends is not subtype of template type V of Exception of interface InterfaceAncestorsExtends\FooGeneric2.',
+				'Type stdClass in generic type InterfaceAncestorsExtends\FooGeneric<int, stdClass> in PHPDoc tag @extends is not subtype of template type U of Exception of interface InterfaceAncestorsExtends\FooGeneric.',
 				182,
 			],
 			[

@@ -170,11 +170,11 @@ class CallCallablesRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Unknown parameter $i in call to callable callable(int, int): void.',
+				'Missing parameter $ (int) in call to callable callable(int, int): void.',
 				23,
 			],
 			[
-				'Missing parameter $ (int) in call to callable callable(int, int): void.',
+				'Unknown parameter $i in call to callable callable(int, int): void.',
 				23,
 			],
 			[

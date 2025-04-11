@@ -78,12 +78,12 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Function ipsum not found.',
+				'Function dolor not found.',
 				11,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Function dolor not found.',
+				'Function ipsum not found.',
 				11,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],

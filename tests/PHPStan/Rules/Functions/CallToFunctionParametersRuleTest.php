@@ -1603,19 +1603,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-9018.php'], [
 			[
-				'Unknown parameter $str1 in call to function levenshtein.',
-				13,
-			],
-			[
-				'Unknown parameter $str2 in call to function levenshtein.',
-				13,
-			],
-			[
 				'Missing parameter $string1 (string) in call to function levenshtein.',
 				13,
 			],
 			[
 				'Missing parameter $string2 (string) in call to function levenshtein.',
+				13,
+			],
+			[
+				'Unknown parameter $str1 in call to function levenshtein.',
+				13,
+			],
+			[
+				'Unknown parameter $str2 in call to function levenshtein.',
 				13,
 			],
 		]);

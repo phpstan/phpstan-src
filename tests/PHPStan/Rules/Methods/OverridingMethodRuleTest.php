@@ -385,10 +385,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 				70400,
 				[
 					[
-						'Parameter #1 $everything of method LessParametersVariadics\Bar::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
-						18,
-					],
-					[
 						'Method LessParametersVariadics\Bar::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #2 $parameters.',
 						18,
 					],
@@ -397,8 +393,8 @@ class OverridingMethodRuleTest extends RuleTestCase
 						18,
 					],
 					[
-						'Parameter #1 $everything of method LessParametersVariadics\Baz::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
-						28,
+						'Parameter #1 $everything of method LessParametersVariadics\Bar::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
+						18,
 					],
 					[
 						'Method LessParametersVariadics\Baz::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #2 $parameters.',
@@ -409,11 +405,15 @@ class OverridingMethodRuleTest extends RuleTestCase
 						28,
 					],
 					[
-						'Parameter #2 $everything of method LessParametersVariadics\Lorem::doFoo() is variadic but parameter #2 $parameters of method LessParametersVariadics\Foo::doFoo() is not variadic.',
-						38,
+						'Parameter #1 $everything of method LessParametersVariadics\Baz::doFoo() is variadic but parameter #1 $many of method LessParametersVariadics\Foo::doFoo() is not variadic.',
+						28,
 					],
 					[
 						'Method LessParametersVariadics\Lorem::doFoo() overrides method LessParametersVariadics\Foo::doFoo() but misses parameter #3 $here.',
+						38,
+					],
+					[
+						'Parameter #2 $everything of method LessParametersVariadics\Lorem::doFoo() is variadic but parameter #2 $parameters of method LessParametersVariadics\Foo::doFoo() is not variadic.',
 						38,
 					],
 				],

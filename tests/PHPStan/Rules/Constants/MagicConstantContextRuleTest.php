@@ -146,10 +146,6 @@ class MagicConstantContextRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				'Magic constant __NAMESPACE__ is always empty in global namespace.',
-				34,
-			],
-			[
 				'Magic constant __CLASS__ is always empty outside a class.',
 				46,
 			],
@@ -160,6 +156,10 @@ class MagicConstantContextRuleTest extends RuleTestCase
 			[
 				'Magic constant __TRAIT__ is always empty outside a trait.',
 				51,
+			],
+			[
+				'Magic constant __NAMESPACE__ is always empty in global namespace.',
+				34,
 			],
 		]);
 	}

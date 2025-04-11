@@ -51,11 +51,11 @@ class MixinRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'PHPDoc tag @mixin contains generic type Exception<MixinRule\Foo> but class Exception is not generic.',
+				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but interface Traversable supports only 2: TKey, TValue',
 				34,
 			],
 			[
-				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but interface Traversable supports only 2: TKey, TValue',
+				'PHPDoc tag @mixin contains generic type Exception<MixinRule\Foo> but class Exception is not generic.',
 				34,
 			],
 			[
@@ -67,13 +67,13 @@ class MixinRuleTest extends RuleTestCase
 				50,
 			],
 			[
+				'PHPDoc tag @mixin contains invalid type MixinRule\FooTrait.',
+				50,
+			],
+			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\UnknownestClass.',
 				50,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
-				'PHPDoc tag @mixin contains invalid type MixinRule\FooTrait.',
-				50,
 			],
 			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\U.',

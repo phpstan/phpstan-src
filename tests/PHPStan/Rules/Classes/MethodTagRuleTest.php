@@ -43,9 +43,9 @@ class MethodTagRuleTest extends RuleTestCase
 		$fooClassLine = 12;
 		$this->analyse([__DIR__ . '/data/method-tag.php'], [
 			[
-				'PHPDoc tag @method for method MethodTag\Foo::doFoo() return type contains unknown class MethodTag\intt.',
-				$fooClassLine,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				'Class MethodTag\Foo has PHPDoc tag @method for method doMissingIterablueValue() return type with no value type specified in iterable type array.',
+				12,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'PHPDoc tag @method for method MethodTag\Foo::doBar() parameter #1 $a contains unresolvable type.',
@@ -56,12 +56,12 @@ class MethodTagRuleTest extends RuleTestCase
 				12,
 			],
 			[
-				'Class MethodTag\Foo has PHPDoc tag @method for method doMissingIterablueValue() return type with no value type specified in iterable type array.',
-				12,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+				'PHPDoc tag @method for method MethodTag\Foo::doFoo() return type contains unknown class MethodTag\intt.',
+				$fooClassLine,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @method for method MethodTag\TestGenerics::doA() return type contains generic type Exception<int> but class Exception is not generic.',
+				'Generic type MethodTag\Generic<int, string, float> in PHPDoc tag @method for method MethodTag\TestGenerics::doC() return type specifies 3 template types, but class MethodTag\Generic supports only 2: T, U',
 				39,
 			],
 			[
@@ -69,7 +69,7 @@ class MethodTagRuleTest extends RuleTestCase
 				39,
 			],
 			[
-				'Generic type MethodTag\Generic<int, string, float> in PHPDoc tag @method for method MethodTag\TestGenerics::doC() return type specifies 3 template types, but class MethodTag\Generic supports only 2: T, U',
+				'PHPDoc tag @method for method MethodTag\TestGenerics::doA() return type contains generic type Exception<int> but class Exception is not generic.',
 				39,
 			],
 			[
@@ -90,16 +90,16 @@ class MethodTagRuleTest extends RuleTestCase
 				63,
 			],
 			[
+				'Class MethodTag\Foo referenced with incorrect case: MethodTag\fOO.',
+				73,
+			],
+			[
 				'PHPDoc tag @method for method MethodTag\NonexistentClasses::doA() return type contains unknown class MethodTag\Nonexistent.',
 				73,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
 				'PHPDoc tag @method for method MethodTag\NonexistentClasses::doB() return type contains invalid type PropertyTagTrait\Foo.',
-				73,
-			],
-			[
-				'Class MethodTag\Foo referenced with incorrect case: MethodTag\fOO.',
 				73,
 			],
 		]);

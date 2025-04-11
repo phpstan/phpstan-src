@@ -49,21 +49,21 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 				33,
 			],
 			[
+				'PHPDoc tag @template for interface InterfaceTemplateType\Ipsum cannot have existing type alias ImportedAlias as its name.',
+				45,
+			],
+			[
 				'PHPDoc tag @template for interface InterfaceTemplateType\Ipsum cannot have existing type alias LocalAlias as its name.',
 				45,
 			],
 			[
-				'PHPDoc tag @template for interface InterfaceTemplateType\Ipsum cannot have existing type alias ImportedAlias as its name.',
-				45,
+				'Call-site variance of contravariant int in generic type InterfaceTemplateType\Covariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of interface InterfaceTemplateType\Covariant.',
+				74,
 			],
 			[
 				'Call-site variance of covariant int in generic type InterfaceTemplateType\Covariant<covariant int> in PHPDoc tag @template U is redundant, template type T of interface InterfaceTemplateType\Covariant has the same variance.',
 				74,
 				'You can safely remove the call-site variance annotation.',
-			],
-			[
-				'Call-site variance of contravariant int in generic type InterfaceTemplateType\Covariant<contravariant int> in PHPDoc tag @template W is in conflict with covariant template type T of interface InterfaceTemplateType\Covariant.',
-				74,
 			],
 			[
 				'PHPDoc tag @template T for interface InterfaceTemplateType\InvalidDefault has invalid default type InterfaceTemplateType\Zazzzu.',

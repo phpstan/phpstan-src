@@ -50,11 +50,11 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Class TestClosureFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestClosureFunctionTypehints\fOOfUnctionTypehints.',
+				'Class TestClosureFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestClosureFunctionTypehints\FOOfUnctionTypehintS.',
 				30,
 			],
 			[
-				'Class TestClosureFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestClosureFunctionTypehints\FOOfUnctionTypehintS.',
+				'Class TestClosureFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestClosureFunctionTypehints\fOOfUnctionTypehints.',
 				30,
 			],
 			[
@@ -72,11 +72,11 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/closure-7.1-typehints.php'], [
 			[
-				'Parameter $bar of anonymous function has invalid type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
+				'Anonymous function has invalid return type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
 				35,
 			],
 			[
-				'Anonymous function has invalid return type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
+				'Parameter $bar of anonymous function has invalid type TestClosureFunctionTypehintsPhp71\NonexistentClass.',
 				35,
 			],
 		]);
@@ -215,11 +215,11 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 						37,
 					],
 					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						45,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
 						45,
 					],
 				],
@@ -264,7 +264,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 						41,
 					],
 					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						45,
 					],
 					[
@@ -272,7 +272,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 						45,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						45,
 					],
 				],
@@ -302,19 +302,19 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Parameter $a of anonymous function has unresolvable native type.',
-						30,
-					],
-					[
 						'Anonymous function has unresolvable native return type.',
 						30,
 					],
 					[
 						'Parameter $a of anonymous function has unresolvable native type.',
+						30,
+					],
+					[
+						'Anonymous function has unresolvable native return type.',
 						35,
 					],
 					[
-						'Anonymous function has unresolvable native return type.',
+						'Parameter $a of anonymous function has unresolvable native type.',
 						35,
 					],
 				],

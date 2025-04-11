@@ -42,15 +42,15 @@ class MethodTagTemplateTypeTraitRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/method-tag-trait-template.php'], [
 			[
+				'PHPDoc tag @method template T for method MethodTagTraitTemplate\HelloWorld::sayHello() shadows @template T for class MethodTagTraitTemplate\HelloWorld.',
+				11,
+			],
+			[
 				'PHPDoc tag @method template U for method MethodTagTraitTemplate\HelloWorld::sayHello() has invalid bound type MethodTagTraitTemplate\Nonexisting.',
 				11,
 			],
 			[
 				'PHPDoc tag @method template for method MethodTagTraitTemplate\HelloWorld::sayHello() cannot have existing class stdClass as its name.',
-				11,
-			],
-			[
-				'PHPDoc tag @method template T for method MethodTagTraitTemplate\HelloWorld::sayHello() shadows @template T for class MethodTagTraitTemplate\HelloWorld.',
 				11,
 			],
 			[

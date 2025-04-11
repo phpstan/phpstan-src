@@ -58,11 +58,11 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'Enum EnumImplements\FooEnum referenced with incorrect case: EnumImplements\FOOEnum.',
+				'Enum EnumImplements\Foo7 implements enum EnumImplements\FooEnum.',
 				55,
 			],
 			[
-				'Enum EnumImplements\Foo7 implements enum EnumImplements\FooEnum.',
+				'Enum EnumImplements\FooEnum referenced with incorrect case: EnumImplements\FOOEnum.',
 				55,
 			],
 		]);

@@ -44,17 +44,17 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 		$fooTraitLine = 12;
 		$this->analyse([__DIR__ . '/data/method-tag-trait.php'], [
 			[
-				'PHPDoc tag @method for method MethodTagTrait\Foo::doFoo() return type contains unknown class MethodTagTrait\intt.',
-				$fooTraitLine,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
-			[
 				'PHPDoc tag @method for method MethodTagTrait\Foo::doBar() parameter #1 $a contains unresolvable type.',
 				$fooTraitLine,
 			],
 			[
 				'PHPDoc tag @method for method MethodTagTrait\Foo::doBaz2() parameter #1 $a default value contains unresolvable type.',
 				$fooTraitLine,
+			],
+			[
+				'PHPDoc tag @method for method MethodTagTrait\Foo::doFoo() return type contains unknown class MethodTagTrait\intt.',
+				$fooTraitLine,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

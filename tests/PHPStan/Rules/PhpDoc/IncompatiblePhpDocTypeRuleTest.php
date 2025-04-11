@@ -48,15 +48,15 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-types.php'], [
 			[
-				'PHPDoc tag @param references unknown parameter: $unknown',
-				12,
-			],
-			[
 				'PHPDoc tag @param for parameter $b with type array is incompatible with native type string.',
 				12,
 			],
 			[
 				'PHPDoc tag @param for parameter $d with type float|int is not subtype of native type int.',
+				12,
+			],
+			[
+				'PHPDoc tag @param references unknown parameter: $unknown',
 				12,
 			],
 			[
@@ -107,7 +107,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				'Write @template U of DateTime to fix this.',
 			],
 			[
-				'PHPDoc tag @param for parameter $foo contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
+				'Generic type InvalidPhpDocDefinitions\FooGeneric<int, InvalidArgumentException, string> in PHPDoc tag @param for parameter $lorem specifies 3 template types, but class InvalidPhpDocDefinitions\FooGeneric supports only 2: T, U',
 				185,
 			],
 			[
@@ -115,7 +115,11 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				185,
 			],
 			[
-				'Generic type InvalidPhpDocDefinitions\FooGeneric<int, InvalidArgumentException, string> in PHPDoc tag @param for parameter $lorem specifies 3 template types, but class InvalidPhpDocDefinitions\FooGeneric supports only 2: T, U',
+				'PHPDoc tag @param for parameter $foo contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
+				185,
+			],
+			[
+				'PHPDoc tag @return contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
 				185,
 			],
 			[
@@ -124,10 +128,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			],
 			[
 				'Type stdClass in generic type InvalidPhpDocDefinitions\FooGeneric<int, stdClass> in PHPDoc tag @param for parameter $dolor is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
-				185,
-			],
-			[
-				'PHPDoc tag @return contains generic type InvalidPhpDocDefinitions\Foo<stdClass> but class InvalidPhpDocDefinitions\Foo is not generic.',
 				185,
 			],
 			[
@@ -147,11 +147,11 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				225,
 			],
 			[
-				'Type mixed in generic type InvalidPhpDocDefinitions\FooGeneric<int, mixed> in PHPDoc tag @param for parameter $t is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
+				'Type Throwable in generic type InvalidPhpDocDefinitions\FooGeneric<int, Throwable> in PHPDoc tag @param for parameter $v is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				242,
 			],
 			[
-				'Type Throwable in generic type InvalidPhpDocDefinitions\FooGeneric<int, Throwable> in PHPDoc tag @param for parameter $v is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
+				'Type mixed in generic type InvalidPhpDocDefinitions\FooGeneric<int, mixed> in PHPDoc tag @param for parameter $t is not subtype of template type U of Exception of class InvalidPhpDocDefinitions\FooGeneric.',
 				242,
 			],
 			[

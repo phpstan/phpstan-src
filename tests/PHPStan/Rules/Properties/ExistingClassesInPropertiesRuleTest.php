@@ -54,19 +54,18 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Ipsum as its type.',
-					21,
-					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-				],
-				[
 					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Dolor as its type.',
 					21,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\Fooo as its type.',
-					24,
+					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Ipsum as its type.',
+					21,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				],
+				[
+					'Class PropertiesTypes\Foo referenced with incorrect case: PropertiesTypes\FOO.',
+					24,
 				],
 				[
 					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\BAR as its type.',
@@ -74,8 +73,9 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Class PropertiesTypes\Foo referenced with incorrect case: PropertiesTypes\FOO.',
+					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\Fooo as its type.',
 					24,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$withTrait has invalid type PropertiesTypes\SomeTrait.',
@@ -86,12 +86,12 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					30,
 				],
 				[
-					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Foooo as its type.',
+					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Barrrr as its type.',
 					33,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Barrrr as its type.',
+					'Property PropertiesTypes\Foo::$nonexistentClassInGenericObjectType has unknown class PropertiesTypes\Foooo as its type.',
 					33,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],

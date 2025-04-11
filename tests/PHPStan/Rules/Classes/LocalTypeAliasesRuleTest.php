@@ -46,6 +46,18 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/local-type-aliases.php'], [
 			[
+				'Circular definition detected in type alias CircularTypeAlias1.',
+				23,
+			],
+			[
+				'Circular definition detected in type alias CircularTypeAlias2.',
+				23,
+			],
+			[
+				'Circular definition detected in type alias RecursiveTypeAlias.',
+				23,
+			],
+			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Bar.',
 				23,
 			],
@@ -55,18 +67,6 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			],
 			[
 				'Type alias has an invalid name: int.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias RecursiveTypeAlias.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAlias1.',
-				23,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAlias2.',
 				23,
 			],
 			[
@@ -82,6 +82,14 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				39,
 			],
 			[
+				'Circular definition detected in type alias CircularTypeAliasImport2.',
+				39,
+			],
+			[
+				'Imported type alias ExportedTypeAlias has an invalid name: int.',
+				39,
+			],
+			[
 				'Type alias ExistingClassAlias already exists as a class in scope of LocalTypeAliases\Baz.',
 				39,
 			],
@@ -90,15 +98,7 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				39,
 			],
 			[
-				'Imported type alias ExportedTypeAlias has an invalid name: int.',
-				39,
-			],
-			[
 				'Type alias OverwrittenTypeAlias overwrites an imported type alias of the same name.',
-				39,
-			],
-			[
-				'Circular definition detected in type alias CircularTypeAliasImport2.',
 				39,
 			],
 			[
@@ -110,17 +110,21 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 				62,
 			],
 			[
-				'Class LocalTypeAliases\MissingTypehints has type alias NoIterableValue with no value type specified in iterable type array.',
+				'Class LocalTypeAliases\MissingTypehints has type alias NoCallable with no signature specified for callable.',
 				77,
-				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
 			],
 			[
 				'Class LocalTypeAliases\MissingTypehints has type alias NoGenerics with generic class LocalTypeAliases\Generic but does not specify its types: T',
 				77,
 			],
 			[
-				'Class LocalTypeAliases\MissingTypehints has type alias NoCallable with no signature specified for callable.',
+				'Class LocalTypeAliases\MissingTypehints has type alias NoIterableValue with no value type specified in iterable type array.',
 				77,
+				'See: https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type',
+			],
+			[
+				'Class LocalTypeAliases\Foo referenced with incorrect case: LocalTypeAliases\fOO.',
+				87,
 			],
 			[
 				'Type alias A contains unknown class LocalTypeAliases\Nonexistent.',
@@ -129,10 +133,6 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			],
 			[
 				'Type alias B contains invalid type LocalTypeTraitAliases\Foo.',
-				87,
-			],
-			[
-				'Class LocalTypeAliases\Foo referenced with incorrect case: LocalTypeAliases\fOO.',
 				87,
 			],
 			[

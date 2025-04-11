@@ -55,14 +55,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				33,
 			],
 			[
-				'Class TestFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestFunctionTypehints\fOOFunctionTypehints.',
-				38,
-			],
-			[
 				'Class TestFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestFunctionTypehints\fOOFunctionTypehintS.',
 				38,
 			],
 			[
+				'Class TestFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestFunctionTypehints\fOOFunctionTypehints.',
+				38,
+			],
+			[
 				'Class TestFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestFunctionTypehints\FOOFunctionTypehints.',
 				47,
 			],
@@ -77,21 +77,21 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			[
 				'Class TestFunctionTypehints\FooFunctionTypehints referenced with incorrect case: TestFunctionTypehints\FOOFunctionTypehints.',
 				56,
-			],
-			[
-				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
-				61,
 			],
 			[
 				'Function TestFunctionTypehints\referencesTraitsInNative() has invalid return type TestFunctionTypehints\SomeTrait.',
 				61,
 			],
 			[
-				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
-				70,
+				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInNative() has invalid type TestFunctionTypehints\SomeTrait.',
+				61,
 			],
 			[
 				'Function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid return type TestFunctionTypehints\SomeTrait.',
+				70,
+			],
+			[
+				'Parameter $trait of function TestFunctionTypehints\referencesTraitsInPhpDoc() has invalid type TestFunctionTypehints\SomeTrait.',
 				70,
 			],
 			[
@@ -126,14 +126,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				31,
 			],
 			[
-				'Class FooFunctionTypehints referenced with incorrect case: fOOFunctionTypehints.',
-				36,
-			],
-			[
 				'Class FooFunctionTypehints referenced with incorrect case: fOOFunctionTypehintS.',
 				36,
 			],
 			[
+				'Class FooFunctionTypehints referenced with incorrect case: fOOFunctionTypehints.',
+				36,
+			],
+			[
 				'Class FooFunctionTypehints referenced with incorrect case: FOOFunctionTypehints.',
 				45,
 			],
@@ -148,21 +148,21 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 			[
 				'Class FooFunctionTypehints referenced with incorrect case: FOOFunctionTypehints.',
 				54,
-			],
-			[
-				'Parameter $trait of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
-				59,
 			],
 			[
 				'Function referencesTraitsInNativeWithoutNamespace() has invalid return type SomeTraitWithoutNamespace.',
 				59,
 			],
 			[
-				'Parameter $trait of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
-				68,
+				'Parameter $trait of function referencesTraitsInNativeWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
+				59,
 			],
 			[
 				'Function referencesTraitsInPhpDocWithoutNamespace() has invalid return type SomeTraitWithoutNamespace.',
+				68,
+			],
+			[
+				'Parameter $trait of function referencesTraitsInPhpDocWithoutNamespace() has invalid type SomeTraitWithoutNamespace.',
 				68,
 			],
 		]);
@@ -296,11 +296,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						42,
 					],
 					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						50,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
 						50,
 					],
 				],
@@ -345,7 +345,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						46,
 					],
 					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
 						50,
 					],
 					[
@@ -353,7 +353,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 						50,
 					],
 					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
 						50,
 					],
 				],
@@ -383,19 +383,19 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				80100,
 				[
 					[
-						'Parameter $a of function FunctionIntersectionTypes\doBar() has unresolvable native type.',
-						30,
-					],
-					[
 						'Function FunctionIntersectionTypes\doBar() has unresolvable native return type.',
 						30,
 					],
 					[
-						'Parameter $a of function FunctionIntersectionTypes\doBaz() has unresolvable native type.',
-						35,
+						'Parameter $a of function FunctionIntersectionTypes\doBar() has unresolvable native type.',
+						30,
 					],
 					[
 						'Function FunctionIntersectionTypes\doBaz() has unresolvable native return type.',
+						35,
+					],
+					[
+						'Parameter $a of function FunctionIntersectionTypes\doBaz() has unresolvable native type.',
 						35,
 					],
 				],
@@ -472,15 +472,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/param-out-classes.php'], [
 			[
+				'Class ParamOutClasses\Foo referenced with incorrect case: ParamOutClasses\fOO.',
+				20,
+			],
+			[
 				'Parameter $p of function ParamOutClasses\doFoo() has invalid type ParamOutClasses\Nonexistent.',
 				20,
 			],
 			[
 				'Parameter $q of function ParamOutClasses\doFoo() has invalid type ParamOutClasses\FooTrait.',
-				20,
-			],
-			[
-				'Class ParamOutClasses\Foo referenced with incorrect case: ParamOutClasses\fOO.',
 				20,
 			],
 		]);

@@ -47,11 +47,11 @@ class CallUserFuncRuleTest extends RuleTestCase
 				19,
 			],
 			[
-				'Unknown parameter $j in call to callable passed to call_user_func().',
+				'Missing parameter $i (int) in call to callable passed to call_user_func().',
 				22,
 			],
 			[
-				'Missing parameter $i (int) in call to callable passed to call_user_func().',
+				'Unknown parameter $j in call to callable passed to call_user_func().',
 				22,
 			],
 			[

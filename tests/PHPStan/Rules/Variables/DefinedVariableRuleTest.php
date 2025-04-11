@@ -115,19 +115,19 @@ class DefinedVariableRuleTest extends RuleTestCase
 				156,
 			],
 			[
-				'Undefined variable: $variableInIsset',
-				159,
-			],
-			[
 				'Undefined variable: $anotherVariableInIsset',
 				159,
 			],
 			[
 				'Undefined variable: $variableInIsset',
+				159,
+			],
+			[
+				'Undefined variable: $anotherVariableInIsset',
 				161,
 			],
 			[
-				'Undefined variable: $anotherVariableInIsset',
+				'Undefined variable: $variableInIsset',
 				161,
 			],
 			[
@@ -227,11 +227,11 @@ class DefinedVariableRuleTest extends RuleTestCase
 				384,
 			],
 			[
-				'Variable $undefinedArrayIndex might not be defined.',
+				'Variable $anotherUndefinedArrayIndex might not be defined.',
 				409,
 			],
 			[
-				'Variable $anotherUndefinedArrayIndex might not be defined.',
+				'Variable $undefinedArrayIndex might not be defined.',
 				409,
 			],
 			[

@@ -77,11 +77,11 @@ class ClassConstantRuleTest extends RuleTestCase
 					26,
 				],
 				[
-					'Class ClassConstantNamespace\Foo referenced with incorrect case: ClassConstantNamespace\FOO.',
+					'Access to undefined constant ClassConstantNamespace\Foo::DOLOR.',
 					27,
 				],
 				[
-					'Access to undefined constant ClassConstantNamespace\Foo::DOLOR.',
+					'Class ClassConstantNamespace\Foo referenced with incorrect case: ClassConstantNamespace\FOO.',
 					27,
 				],
 				[
@@ -155,11 +155,11 @@ class ClassConstantRuleTest extends RuleTestCase
 				129,
 			],
 			[
-				'Class ClassConstantVisibility\Foo referenced with incorrect case: ClassConstantVisibility\FOO.',
+				'Access to private constant PRIVATE_FOO of class ClassConstantVisibility\Foo.',
 				135,
 			],
 			[
-				'Access to private constant PRIVATE_FOO of class ClassConstantVisibility\Foo.',
+				'Class ClassConstantVisibility\Foo referenced with incorrect case: ClassConstantVisibility\FOO.',
 				135,
 			],
 		]);
@@ -445,11 +445,11 @@ class ClassConstantRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/dynamic-constant-access.php'], [
 			[
-				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
 				20,
 			],
 			[
-				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
 				20,
 			],
 			[
@@ -465,15 +465,15 @@ class ClassConstantRuleTest extends RuleTestCase
 				41,
 			],
 			[
-				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
-				44,
-			],
-			[
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::BUZ.',
 				44,
 			],
 			[
 				'Access to undefined constant ClassConstantDynamicAccess\Foo::FOO.',
+				44,
+			],
+			[
+				'Access to undefined constant ClassConstantDynamicAccess\Foo::QUX.',
 				44,
 			],
 		]);

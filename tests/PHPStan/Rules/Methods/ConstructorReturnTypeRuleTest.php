@@ -24,12 +24,12 @@ class ConstructorReturnTypeRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'Constructor of class ConstructorReturnType\UsesFooTrait has a return type.',
-				26,
-			],
-			[
 				'Original constructor of trait ConstructorReturnType\BarTrait has a return type.',
 				35,
+			],
+			[
+				'Constructor of class ConstructorReturnType\UsesFooTrait has a return type.',
+				26,
 			],
 		]);
 	}

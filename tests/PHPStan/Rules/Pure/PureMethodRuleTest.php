@@ -160,11 +160,11 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/pure-constructor.php'], [
 			[
-				'Impure static property access in pure method PureConstructor\Foo::__construct().',
+				'Impure property assignment in pure method PureConstructor\Foo::__construct().',
 				19,
 			],
 			[
-				'Impure property assignment in pure method PureConstructor\Foo::__construct().',
+				'Impure static property access in pure method PureConstructor\Foo::__construct().',
 				19,
 			],
 			[

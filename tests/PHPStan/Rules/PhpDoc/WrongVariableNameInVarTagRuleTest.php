@@ -112,11 +112,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				235,
 			],
 			[
-				'Variable $foo in PHPDoc tag @var does not exist.',
+				'Variable $bar in PHPDoc tag @var does not exist.',
 				249,
 			],
 			[
-				'Variable $bar in PHPDoc tag @var does not exist.',
+				'Variable $foo in PHPDoc tag @var does not exist.',
 				249,
 			],
 			[
@@ -355,11 +355,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				137,
 			],
 			[
-				'PHPDoc tag @var with type string is not subtype of type int.',
+				'PHPDoc tag @var with type int is not subtype of type string.',
 				137,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of type string.',
+				'PHPDoc tag @var with type string is not subtype of type int.',
 				137,
 			],
 			[
@@ -458,11 +458,11 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				137,
 			],
 			[
-				'PHPDoc tag @var with type string is not subtype of type int.',
+				'PHPDoc tag @var with type int is not subtype of type string.',
 				137,
 			],
 			[
-				'PHPDoc tag @var with type int is not subtype of type string.',
+				'PHPDoc tag @var with type string is not subtype of type int.',
 				137,
 			],
 			[

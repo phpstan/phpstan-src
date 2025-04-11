@@ -80,4 +80,20 @@ class ConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRememberedConstructorScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/remembered-constructor-scope.php'], [
+			[
+				'Constant REMEMBERED_FOO not found.',
+				23,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Constant REMEMBERED_FOO not found.',
+				38,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

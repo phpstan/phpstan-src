@@ -218,6 +218,7 @@ use function sprintf;
 use function str_starts_with;
 use function strtolower;
 use function trim;
+use function usort;
 use const PHP_VERSION_ID;
 use const SORT_NUMERIC;
 
@@ -791,6 +792,10 @@ final class NodeScopeResolver
 					$classReflection,
 					$methodReflection,
 				), $methodScope);
+
+				if ($isConstructor) {
+					$scope = $statementResult->getScope()->rememberConstructorScope();
+				}
 			}
 		} elseif ($stmt instanceof Echo_) {
 			$hasYield = false;
@@ -925,7 +930,17 @@ final class NodeScopeResolver
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $classStatementsGatherer);
 
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);
+			// analyze static methods first, constructor next and instance methods last so we can carry over the scope
+			$classLikeStatements = $stmt->stmts;
+			usort($classLikeStatements, static function ($a, $b) {
+				if (!$a instanceof Node\Stmt\ClassMethod || !$b instanceof Node\Stmt\ClassMethod) {
+					return 0;
+				}
+
+				return [!$a->isStatic(), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->name->toLowerString() !== '__construct'];
+			});
+
+			$this->processStmtNodes($stmt, $classLikeStatements, $classScope, $classStatementsGatherer, $context);
 			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope);

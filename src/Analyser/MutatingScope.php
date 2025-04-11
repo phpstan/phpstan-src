@@ -294,6 +294,54 @@ final class MutatingScope implements Scope
 		);
 	}
 
+	public function rememberConstructorScope(): self
+	{
+		$expressionTypes = [];
+		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
+			$expr = $expressionTypeHolder->getExpr();
+			if (!$expr instanceof ConstFetch) {
+				continue;
+			}
+			$expressionTypes[$exprString] = $expressionTypeHolder;
+		}
+
+		$nativeExpressionTypes = [];
+		foreach ($this->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
+			$expr = $expressionTypeHolder->getExpr();
+			if (!$expr instanceof ConstFetch) {
+				continue;
+			}
+
+			$nativeExpressionTypes[$exprString] = $expressionTypeHolder;
+		}
+
+		if (array_key_exists('$this', $this->expressionTypes)) {
+			$expressionTypes['$this'] = $this->expressionTypes['$this'];
+		}
+		if (array_key_exists('$this', $this->nativeExpressionTypes)) {
+			$nativeExpressionTypes['$this'] = $this->nativeExpressionTypes['$this'];
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	/** @api */
 	public function isInClass(): bool
 	{

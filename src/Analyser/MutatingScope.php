@@ -306,7 +306,7 @@ final class MutatingScope implements Scope
 			if ($expr instanceof FuncCall) {
 				if (
 					!$expr->name instanceof Name
-					|| !in_array($expr->name->name, ['class_exists'], true)
+					|| !in_array($expr->name->name, ['class_exists', 'function_exists'], true)
 				) {
 					continue;
 				}

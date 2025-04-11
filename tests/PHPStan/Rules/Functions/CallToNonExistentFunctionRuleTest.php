@@ -258,4 +258,9 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRememberFunctionExistsFromConstructor(): void
+	{
+		$this->analyse([__DIR__ . '/data/remember-function-exists-from-constructor.php'], []);
+	}
+
 }

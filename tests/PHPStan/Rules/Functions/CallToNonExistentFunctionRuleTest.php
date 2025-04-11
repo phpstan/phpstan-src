@@ -17,6 +17,11 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		return new CallToNonExistentFunctionRule($this->createReflectionProvider(), true, true);
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testEmptyFile(): void
 	{
 		$this->analyse([__DIR__ . '/data/empty.php'], []);
@@ -265,7 +270,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Function another_unknown_function not found.',
 				32,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			]
+			],
 		]);
 	}
 

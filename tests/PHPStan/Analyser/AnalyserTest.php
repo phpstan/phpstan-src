@@ -733,6 +733,7 @@ class AnalyserTest extends PHPStanTestCase
 			[stdClass::class],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			false,
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

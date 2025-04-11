@@ -272,6 +272,7 @@ final class NodeScopeResolver
 		private readonly array $universalObjectCratesClasses,
 		private readonly bool $implicitThrows,
 		private readonly bool $treatPhpDocTypesAsCertain,
+		private readonly bool $narrowMethodScopeFromConstructor,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -793,7 +794,7 @@ final class NodeScopeResolver
 					$methodReflection,
 				), $methodScope);
 
-				if ($isConstructor) {
+				if ($isConstructor && $this->narrowMethodScopeFromConstructor) {
 					$scope = $statementResult->getScope()->rememberConstructorScope();
 				}
 			}
@@ -930,22 +931,24 @@ final class NodeScopeResolver
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt, $stmt->attrGroups, $classScope, $classStatementsGatherer);
 
-			// analyze static methods first; constructor next; instance methods and property hooks last so we can carry over the scope
 			$classLikeStatements = $stmt->stmts;
-			usort($classLikeStatements, static function ($a, $b) {
-				if ($a instanceof Node\Stmt\Property) {
-					return 1;
-				}
-				if ($b instanceof Node\Stmt\Property) {
-					return -1;
-				}
+			if ($this->narrowMethodScopeFromConstructor) {
+				// analyze static methods first; constructor next; instance methods and property hooks last so we can carry over the scope
+				usort($classLikeStatements, static function ($a, $b) {
+					if ($a instanceof Node\Stmt\Property) {
+						return 1;
+					}
+					if ($b instanceof Node\Stmt\Property) {
+						return -1;
+					}
 
-				if (!$a instanceof Node\Stmt\ClassMethod || !$b instanceof Node\Stmt\ClassMethod) {
-					return 0;
-				}
+					if (!$a instanceof Node\Stmt\ClassMethod || !$b instanceof Node\Stmt\ClassMethod) {
+						return 0;
+					}
 
-				return [!$a->isStatic(), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->name->toLowerString() !== '__construct'];
-			});
+					return [!$a->isStatic(), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->name->toLowerString() !== '__construct'];
+				});
+			}
 
 			$this->processStmtNodes($stmt, $classLikeStatements, $classScope, $classStatementsGatherer, $context);
 			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope);

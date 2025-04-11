@@ -110,6 +110,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getParameter('universalObjectCratesClasses'),
 				self::getContainer()->getParameter('exceptions')['implicitThrows'],
 				$this->shouldTreatPhpDocTypesAsCertain(),
+				$this->shouldNarrowMethodScopeFromConstructor(),
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),
@@ -259,6 +260,11 @@ abstract class RuleTestCase extends PHPStanTestCase
 	protected function shouldFailOnPhpErrors(): bool
 	{
 		return true;
+	}
+
+	protected function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return false;
 	}
 
 	public static function getAdditionalConfigFiles(): array

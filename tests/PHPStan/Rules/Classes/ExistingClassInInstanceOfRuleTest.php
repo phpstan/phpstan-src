@@ -29,6 +29,11 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		);
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testClassDoesNotExist(): void
 	{
 		$this->analyse(

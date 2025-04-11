@@ -17,6 +17,11 @@ class ConstantRuleTest extends RuleTestCase
 		return new ConstantRule(true);
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testConstants(): void
 	{
 		define('FOO_CONSTANT', 'foo');

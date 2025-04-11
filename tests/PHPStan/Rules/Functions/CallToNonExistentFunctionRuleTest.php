@@ -260,7 +260,13 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 
 	public function testRememberFunctionExistsFromConstructor(): void
 	{
-		$this->analyse([__DIR__ . '/data/remember-function-exists-from-constructor.php'], []);
+		$this->analyse([__DIR__ . '/data/remember-function-exists-from-constructor.php'], [
+			[
+				'Function another_unknown_function not found.',
+				32,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			]
+		]);
 	}
 
 }

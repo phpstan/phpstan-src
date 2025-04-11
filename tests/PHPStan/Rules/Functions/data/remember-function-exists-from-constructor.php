@@ -17,3 +17,19 @@ class User
 	}
 
 }
+
+class FooUser
+{
+	public function __construct(
+	) {
+		if (!function_exists('another_unknown_function')) {
+			echo 'Function another_unknown_function does not exist';
+		}
+	}
+
+	public function doFoo(): void
+	{
+		another_unknown_function();
+	}
+
+}

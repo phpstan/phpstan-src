@@ -294,41 +294,57 @@ final class MutatingScope implements Scope
 		);
 	}
 
-	public function rememberConstructorScope(): self
+	/**
+	 * @param array<string, ExpressionTypeHolder> $currentExpressionTypes
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private function rememberConstructorExpressions(array $currentExpressionTypes): array
 	{
 		$expressionTypes = [];
-		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
+		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
-			if (!$expr instanceof ConstFetch) {
+			if ($expr instanceof PropertyFetch) {
+				if (
+					!$expr->name instanceof Node\Identifier
+					|| !$expr->var instanceof Variable
+					|| $expr->var->name !== 'this'
+					|| !$this->phpVersion->supportsReadOnlyProperties()
+				) {
+					continue;
+				}
+
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+				if ($propertyReflection === null) {
+					continue;
+				}
+
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+						continue;
+				}
+			} elseif (!$expr instanceof ConstFetch) {
 				continue;
 			}
+
 			$expressionTypes[$exprString] = $expressionTypeHolder;
 		}
 
-		$nativeExpressionTypes = [];
-		foreach ($this->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
-			$expr = $expressionTypeHolder->getExpr();
-			if (!$expr instanceof ConstFetch) {
-				continue;
-			}
-
-			$nativeExpressionTypes[$exprString] = $expressionTypeHolder;
+		if (array_key_exists('$this', $currentExpressionTypes)) {
+			$expressionTypes['$this'] = $currentExpressionTypes['$this'];
 		}
 
-		if (array_key_exists('$this', $this->expressionTypes)) {
-			$expressionTypes['$this'] = $this->expressionTypes['$this'];
-		}
-		if (array_key_exists('$this', $this->nativeExpressionTypes)) {
-			$nativeExpressionTypes['$this'] = $this->nativeExpressionTypes['$this'];
-		}
+		return $expressionTypes;
+	}
 
+	public function rememberConstructorScope(): self
+	{
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
-			$expressionTypes,
-			$nativeExpressionTypes,
+			$this->rememberConstructorExpressions($this->expressionTypes),
+			$this->rememberConstructorExpressions($this->nativeExpressionTypes),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -3334,7 +3350,7 @@ final class MutatingScope implements Scope
 
 	private function enterFunctionLike(
 		PhpFunctionFromParserNodeReflection $functionReflection,
-		bool $preserveThis,
+		bool                                $preserveConstructorScope,
 	): self
 	{
 		$parametersByName = [];
@@ -3346,6 +3362,12 @@ final class MutatingScope implements Scope
 		$expressionTypes = [];
 		$nativeExpressionTypes = [];
 		$conditionalTypes = [];
+
+		if ($preserveConstructorScope) {
+			$expressionTypes = $this->rememberConstructorExpressions($this->expressionTypes);
+			$nativeExpressionTypes = $this->rememberConstructorExpressions($this->nativeExpressionTypes);
+		}
+
 		foreach ($functionReflection->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
 
@@ -3394,13 +3416,6 @@ final class MutatingScope implements Scope
 			}
 			$nativeExpressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $nativeParameterType);
 			$nativeExpressionTypes[$parameterOriginalValueExprString] = ExpressionTypeHolder::createYes($parameterOriginalValueExpr, $nativeParameterType);
-		}
-
-		if ($preserveThis && array_key_exists('$this', $this->expressionTypes)) {
-			$expressionTypes['$this'] = $this->expressionTypes['$this'];
-		}
-		if ($preserveThis && array_key_exists('$this', $this->nativeExpressionTypes)) {
-			$nativeExpressionTypes['$this'] = $this->nativeExpressionTypes['$this'];
 		}
 
 		return $this->scopeFactory->create(

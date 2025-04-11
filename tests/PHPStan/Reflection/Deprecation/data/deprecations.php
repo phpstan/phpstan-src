@@ -5,9 +5,12 @@ namespace CustomDeprecations;
 #[\Attribute(\Attribute::TARGET_ALL)]
 class CustomDeprecated {
 
+	public ?string $description;
+
 	public function __construct(
-		public ?string $description = null,
+		?string $description = null,
 	) {
+		$this->description = $description;
 	}
 }
 

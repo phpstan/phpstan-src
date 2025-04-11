@@ -303,7 +303,14 @@ final class MutatingScope implements Scope
 		$expressionTypes = [];
 		foreach ($currentExpressionTypes as $exprString => $expressionTypeHolder) {
 			$expr = $expressionTypeHolder->getExpr();
-			if ($expr instanceof PropertyFetch) {
+			if ($expr instanceof FuncCall) {
+				if (
+					!$expr->name instanceof Name
+					|| !in_array($expr->name->name, ['class_exists'], true)
+				) {
+					continue;
+				}
+			} elseif ($expr instanceof PropertyFetch) {
 				if (
 					!$expr->name instanceof Node\Identifier
 					|| !$expr->var instanceof Variable

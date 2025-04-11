@@ -81,4 +81,9 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRememberClassExistsFromConstructor(): void
+	{
+		$this->analyse([__DIR__ . '/data/remember-class-exists-from-constructor.php'], []);
+	}
+
 }

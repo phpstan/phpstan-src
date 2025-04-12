@@ -108,6 +108,21 @@ class ConstantRuleTest extends RuleTestCase
 				65,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'Constant XYZ22 not found.',
+				87,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Constant XYZ not found.',
+				88,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Constant XYZ33 not found.',
+				98,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		]);
 	}
 

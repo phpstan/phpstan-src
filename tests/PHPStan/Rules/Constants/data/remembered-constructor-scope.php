@@ -77,3 +77,24 @@ class MyClassWithDefine {
 		echo XYZ;
 	}
 }
+
+class StaticMethodScopeNotRemembered {
+	static public function init() {
+		define('XYZ22', '123');
+	}
+
+	public function doFoo(): void {
+		echo XYZ22; // error because defined in static method
+		echo XYZ; // error, because should not mix scope of __constructor() scope of different class
+	}
+}
+
+class InstanceMethodScopeNotRemembered {
+	public function init() {
+		define('XYZ33', '123');
+	}
+
+	public function doFoo(): void {
+		echo XYZ33; // error because defined in non-constructor method
+	}
+}

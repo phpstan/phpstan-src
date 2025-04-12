@@ -48,7 +48,7 @@ class HelloWorld
 class AnotherClass {
 	public function myFoo(): string
 	{
-		return REMEMBERED_FOO; // should error, because this file cannot share the __constructor() scope with HelloWorld-class above.
+		return REMEMBERED_FOO; // should error, because this class should not share the __constructor() scope with HelloWorld-class above.
 	}
 }
 
@@ -62,7 +62,7 @@ class AnotherClassWithOwnConstructor {
 
 	public function myFoo(): void
 	{
-		echo REMEMBERED_FOO; // should error, because this file cannot share the __constructor() scope with HelloWorld-class above.
+		echo REMEMBERED_FOO; // should error, because this class should not share the __constructor() scope with HelloWorld-class above.
 
 		echo ANOTHER_REMEMBERED_FOO;
 	}

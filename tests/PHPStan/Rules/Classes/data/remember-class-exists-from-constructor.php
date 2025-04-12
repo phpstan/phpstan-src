@@ -3,8 +3,9 @@
 namespace RememberClassExistsFromConstructor;
 
 use SomeUnknownClass;
+use SomeUnknownInterface;
 
-class User
+class UserWithClass
 {
 	public function __construct(
 	) {
@@ -16,6 +17,25 @@ class User
 	public function doFoo($m): bool
 	{
 		if ($m instanceof SomeUnknownClass) {
+			return false;
+		}
+		return true;
+	}
+
+}
+
+class UserWithInterface
+{
+	public function __construct(
+	) {
+		if (!interface_exists('SomeUnknownInterface')) {
+			throw new \LogicException();
+		}
+	}
+
+	public function doFoo($m): bool
+	{
+		if ($m instanceof SomeUnknownInterface) {
 			return false;
 		}
 		return true;

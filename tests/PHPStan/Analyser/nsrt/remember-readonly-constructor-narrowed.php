@@ -23,18 +23,46 @@ class HelloWorldReadonlyProperty {
 
 readonly class HelloWorldReadonlyClass {
 	private int $i;
+	private string $class;
+	private string $interface;
+	private string $enum;
+	private string $trait;
 
-	public function __construct()
+	public function __construct(string $class, string $interface, string $enum, string $trait)
 	{
 		if (rand(0,1)) {
 			$this->i = 4;
 		} else {
 			$this->i = 10;
 		}
+
+		if (!class_exists($class)) {
+			throw new \LogicException();
+		}
+		$this->class = $class;
+
+		if (!interface_exists($interface)) {
+			throw new \LogicException();
+		}
+		$this->interface = $interface;
+
+		if (!enum_exists($enum)) {
+			throw new \LogicException();
+		}
+		$this->enum = $enum;
+
+		if (!trait_exists($trait)) {
+			throw new \LogicException();
+		}
+		$this->trait = $trait;
 	}
 
 	public function doFoo() {
 		assertType('4|10', $this->i);
+		assertType('class-string', $this->class);
+		assertType('class-string', $this->interface);
+		assertType('class-string<UnitEnum>', $this->enum);
+		assertType('class-string', $this->trait);
 	}
 }
 

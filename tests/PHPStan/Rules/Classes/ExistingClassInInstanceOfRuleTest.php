@@ -15,6 +15,8 @@ use const PHP_VERSION_ID;
 class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 {
 
+	private bool $shouldNarrowMethodScopeFromConstructor = true;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
@@ -31,7 +33,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 
 	public function shouldNarrowMethodScopeFromConstructor(): bool
 	{
-		return true;
+		return $this->shouldNarrowMethodScopeFromConstructor;
 	}
 
 	public function testClassDoesNotExist(): void
@@ -82,6 +84,24 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between mixed and trait Bug7720\FooBar will always evaluate to false.',
 				17,
+			],
+		]);
+	}
+
+	public function testRememberClassExistsFromConstructorDisabled(): void
+	{
+		$this->shouldNarrowMethodScopeFromConstructor = false;
+
+		$this->analyse([__DIR__ . '/data/remember-class-exists-from-constructor.php'], [
+			[
+				'Class SomeUnknownClass not found.',
+				19,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+			[
+				'Class SomeUnknownInterface not found.',
+				38,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
 	}

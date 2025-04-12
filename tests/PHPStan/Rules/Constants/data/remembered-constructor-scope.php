@@ -67,3 +67,13 @@ class AnotherClassWithOwnConstructor {
 		echo ANOTHER_REMEMBERED_FOO;
 	}
 }
+
+class MyClassWithDefine {
+	public function __construct() {
+		define('XYZ', '123');
+	}
+
+	public function doFoo(): void {
+		echo XYZ;
+	}
+}

@@ -1554,6 +1554,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug12800(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12800.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

@@ -1,11 +1,13 @@
 <?php
 
+namespace Bug12800;
+
 class a
 {
 	/**
 	 * @param array<mixed> $labels
 	 */
-	public function b(array $labels, stdClass $payment): bool
+	public function b(array $labels, \stdClass $payment): bool
 	{
 		$fullData = '
         {

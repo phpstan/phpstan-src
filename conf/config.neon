@@ -26,7 +26,6 @@ parameters:
 		skipCheckGenericClasses: []
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
-		narrowMethodScopeFromConstructor: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -496,7 +495,7 @@ services:
 			implicitThrows: %exceptions.implicitThrows%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
-			narrowMethodScopeFromConstructor: %featureToggles.narrowMethodScopeFromConstructor%
+			narrowMethodScopeFromConstructor: true
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

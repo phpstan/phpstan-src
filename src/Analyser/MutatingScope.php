@@ -4428,7 +4428,7 @@ final class MutatingScope implements Scope
 
 		if ($originalExprType->equals($nativeType)) {
 			$newType = TypeCombinator::intersect($type, $originalExprType);
-			if ($newType->isConstantScalarValue()->yes() && $newType->equals($nativeType)) {
+			if ($newType->isConstantScalarValue()->yes() && $newType->equals($originalExprType)) {
 				// don't add the same type over and over again to improve performance
 				return $this;
 			}

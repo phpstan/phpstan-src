@@ -329,7 +329,7 @@ final class MutatingScope implements Scope
 				if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
 						continue;
 				}
-			} elseif (!$expr instanceof ConstFetch) {
+			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
 				continue;
 			}
 

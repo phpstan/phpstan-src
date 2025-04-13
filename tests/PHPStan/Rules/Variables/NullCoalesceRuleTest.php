@@ -32,6 +32,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testCoalesceRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -354,6 +359,18 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-12553.php'], []);
+	}
+
+	public function testIssetAfterRememberedConstructor(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
+			[
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string cannot be null or uninitialized on left side of ??.',
+				48,
+			],
+		]);
 	}
 
 }

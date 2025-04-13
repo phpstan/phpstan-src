@@ -5,10 +5,12 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
@@ -143,6 +145,23 @@ final class IssetCheck
 			}
 
 			if ($propertyReflection->hasNativeType() && !$propertyReflection->isVirtual()->yes()) {
+				if (
+					$expr instanceof Node\Expr\PropertyFetch
+					&& $expr->name instanceof Node\Identifier
+					&& $expr->var instanceof Expr\Variable
+					&& $expr->var->name === 'this'
+					&& !TypeCombinator::containsNull($propertyReflection->getNativeType())
+					&& $scope->hasExpressionType(new PropertyInitializationExpr($propertyReflection->getName()))->yes()
+				) {
+					return RuleErrorBuilder::message(
+						sprintf(
+							'%s cannot be null or uninitialized %s.',
+							$this->propertyDescriptor->describeProperty($propertyReflection, $scope, $expr),
+							$operatorDescription,
+						),
+					)->identifier(sprintf('%s.neverNullOrUninitialized', $identifier))->build();
+				}
+
 				if (!$scope->hasExpressionType($expr)->yes()) {
 					if ($expr instanceof Node\Expr\PropertyFetch) {
 						return $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);

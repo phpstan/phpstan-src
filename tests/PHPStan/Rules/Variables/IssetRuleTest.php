@@ -32,6 +32,11 @@ class IssetRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -478,6 +483,18 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/bug-12771.php'], []);
+	}
+
+	public function testIssetAfterRememberedConstructor(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
+			[
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string cannot be null or uninitialized in isset().',
+				36,
+			],
+		]);
 	}
 
 }

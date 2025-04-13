@@ -32,6 +32,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -312,7 +313,11 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!in_array(get_class($type), [self::class, TemplateMixedType::class], true)) {
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		if ($type instanceof ErrorType) {
 			return false;
 		}
 

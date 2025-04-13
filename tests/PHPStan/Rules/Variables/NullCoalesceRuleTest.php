@@ -367,8 +367,8 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
 			[
-				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string cannot be null or uninitialized on left side of ??.',
-				48,
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string on left side of ?? is not nullable.',
+				46,
 			],
 		]);
 	}

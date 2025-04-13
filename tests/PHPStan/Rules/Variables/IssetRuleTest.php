@@ -491,8 +491,8 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
 			[
-				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string cannot be null or uninitialized in isset().',
-				36,
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string in isset() is not nullable.',
+				34,
 			],
 		]);
 	}

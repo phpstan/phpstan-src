@@ -32,6 +32,11 @@ class EmptyRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return true;
+	}
+
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
@@ -204,6 +209,26 @@ class EmptyRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/data/bug-12658.php'], []);
+	}
+
+	public function testIssetAfterRememberedConstructor(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
+			[
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\MoreEmptyCases::$false in empty() is always falsy.',
+				93,
+			],
+			[
+				'Property IssetOrCoalesceOnNonNullableInitializedProperty\MoreEmptyCases::$true in empty() is not falsy.',
+				95,
+			],
+		]);
 	}
 
 }

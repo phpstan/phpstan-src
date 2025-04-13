@@ -10,7 +10,6 @@ use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
@@ -150,16 +149,20 @@ final class IssetCheck
 					&& $expr->name instanceof Node\Identifier
 					&& $expr->var instanceof Expr\Variable
 					&& $expr->var->name === 'this'
-					&& !TypeCombinator::containsNull($propertyReflection->getNativeType())
+					&& $propertyReflection->getNativeType()->isNull()->no()
 					&& $scope->hasExpressionType(new PropertyInitializationExpr($propertyReflection->getName()))->yes()
 				) {
-					return RuleErrorBuilder::message(
+					return $this->generateError(
+						$propertyReflection->getNativeType(),
 						sprintf(
-							'%s cannot be null or uninitialized %s.',
+							'%s %s',
 							$this->propertyDescriptor->describeProperty($propertyReflection, $scope, $expr),
 							$operatorDescription,
 						),
-					)->identifier(sprintf('%s.neverNullOrUninitialized', $identifier))->build();
+						$typeMessageCallback,
+						$identifier,
+						'propertyNeverNullOrUninitialized',
+					);
 				}
 
 				if (!$scope->hasExpressionType($expr)->yes()) {
@@ -299,7 +302,7 @@ final class IssetCheck
 	/**
 	 * @param callable(Type): ?string $typeMessageCallback
 	 * @param ErrorIdentifier $identifier
-	 * @param 'variable'|'offset'|'property'|'expr' $identifierSecondPart
+	 * @param 'variable'|'offset'|'property'|'expr'|'propertyNeverNullOrUninitialized' $identifierSecondPart
 	 */
 	private function generateError(Type $type, string $message, callable $typeMessageCallback, string $identifier, string $identifierSecondPart): ?IdentifierRuleError
 	{

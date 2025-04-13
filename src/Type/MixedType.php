@@ -32,14 +32,11 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
-use function get_class;
-use function in_array;
 use function sprintf;
 
 /** @api */

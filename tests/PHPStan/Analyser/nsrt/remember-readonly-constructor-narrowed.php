@@ -83,3 +83,27 @@ class HelloWorldRegular {
 		assertType('int', $this->i);
 	}
 }
+
+class HelloWorldReadonlyPropertySometimesThrowing {
+	private readonly int $i;
+
+	public function __construct()
+	{
+		if (rand(0,1)) {
+			$this->i = 4;
+
+			return;
+		} elseif (rand(10,100)) {
+			$this->i = 10;
+			return;
+		} else {
+			$this->i = 20;
+		}
+
+		throw new \LogicException();
+	}
+
+	public function doFoo() {
+		assertType('4|10', $this->i);
+	}
+}

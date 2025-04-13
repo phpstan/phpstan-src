@@ -795,7 +795,35 @@ final class NodeScopeResolver
 				), $methodScope);
 
 				if ($isConstructor && $this->narrowMethodScopeFromConstructor) {
-					$scope = $statementResult->getScope()->rememberConstructorScope();
+					$finalScope = null;
+
+					foreach ($executionEnds as $executionEnd) {
+						if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
+							continue;
+						}
+
+						$endScope = $executionEnd->getStatementResult()->getScope();
+						if ($finalScope === null) {
+							$finalScope = $endScope;
+							continue;
+						}
+
+						$finalScope = $finalScope->mergeWith($endScope);
+					}
+
+					foreach ($gatheredReturnStatements as $statement) {
+						if ($finalScope === null) {
+							$finalScope = $statement->getScope();
+							continue;
+						}
+
+						$finalScope = $finalScope->mergeWith($statement->getScope());
+					}
+
+					if ($finalScope !== null) {
+						$scope = $finalScope->rememberConstructorScope();
+					}
+
 				}
 			}
 		} elseif ($stmt instanceof Echo_) {

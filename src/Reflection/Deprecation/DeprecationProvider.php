@@ -5,6 +5,8 @@ namespace PHPStan\Reflection\Deprecation;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
@@ -32,6 +34,9 @@ final class DeprecationProvider
 	/** @var array<ConstantDeprecationExtension> $constantDeprecationExtensions */
 	private array $constantDeprecationExtensions;
 
+	/** @var array<EnumCaseDeprecationExtension> $enumCaseDeprecationExtensions */
+	private array $enumCaseDeprecationExtensions;
+
 	public function __construct(
 		Container $container,
 	)
@@ -42,6 +47,7 @@ final class DeprecationProvider
 		$this->classDeprecationExtensions = $container->getServicesByTag('phpstan.classDeprecationExtension');
 		$this->functionDeprecationExtensions = $container->getServicesByTag('phpstan.functionDeprecationExtension');
 		$this->constantDeprecationExtensions = $container->getServicesByTag('phpstan.constantDeprecationExtension');
+		$this->enumCaseDeprecationExtensions = $container->getServicesByTag('phpstan.enumCaseDeprecationExtension');
 	}
 
 	public function getPropertyDeprecation(ReflectionProperty $reflectionProperty): ?Deprecation
@@ -108,6 +114,18 @@ final class DeprecationProvider
 	{
 		foreach ($this->constantDeprecationExtensions as $extension) {
 			$deprecation = $extension->getConstantDeprecation($constantReflection);
+			if ($deprecation !== null) {
+				return $deprecation;
+			}
+		}
+
+		return null;
+	}
+
+	public function getEnumCaseDeprecation(ReflectionEnumUnitCase|ReflectionEnumBackedCase $enumCaseReflection): ?Deprecation
+	{
+		foreach ($this->enumCaseDeprecationExtensions as $extension) {
+			$deprecation = $extension->getEnumCaseDeprecation($enumCaseReflection);
 			if ($deprecation !== null) {
 				return $deprecation;
 			}

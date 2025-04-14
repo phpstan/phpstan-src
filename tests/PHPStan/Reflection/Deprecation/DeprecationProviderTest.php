@@ -7,6 +7,7 @@ use CustomDeprecations\AttributeDeprecatedClassWithMessage;
 use CustomDeprecations\DoubleDeprecatedClass;
 use CustomDeprecations\DoubleDeprecatedClassOnlyAttributeMessage;
 use CustomDeprecations\DoubleDeprecatedClassOnlyPhpDocMessage;
+use CustomDeprecations\MyDeprecatedEnum;
 use CustomDeprecations\NotDeprecatedClass;
 use CustomDeprecations\PhpDocDeprecatedClass;
 use CustomDeprecations\PhpDocDeprecatedClassWithMessage;
@@ -57,6 +58,24 @@ class DeprecationProviderTest extends PHPStanTestCase
 		$scopeForDoubleDeprecatedClass = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClass));
 		$scopeForDoubleDeprecatedClassOnlyNativeMessage = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClassOnlyPhpDocMessage));
 		$scopeForDoubleDeprecatedClassOnlyCustomMessage = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClassOnlyAttributeMessage));
+
+		// enum cases
+		$myEnum = $reflectionProvider->getClass(MyDeprecatedEnum::class);
+
+		self::assertTrue($myEnum->isDeprecated());
+		self::assertNull($myEnum->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('CustomDeprecated')->isDeprecated()->yes());
+		self::assertSame('custom', $myEnum->getEnumCase('CustomDeprecated')->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('NativeDeprecated')->isDeprecated()->yes());
+		self::assertSame('native', $myEnum->getEnumCase('NativeDeprecated')->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('PhpDocDeprecated')->isDeprecated()->yes());
+		self::assertNull($myEnum->getEnumCase('PhpDocDeprecated')->getDeprecatedDescription()); // this should not be null
+
+		self::assertFalse($myEnum->getEnumCase('NotDeprecated')->isDeprecated()->yes());
+		self::assertNull($myEnum->getEnumCase('NotDeprecated')->getDeprecatedDescription());
 
 		// class
 		self::assertFalse($notDeprecatedClass->isDeprecated());

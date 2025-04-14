@@ -8,6 +8,8 @@ use CustomDeprecations\CustomDeprecated;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
@@ -16,6 +18,7 @@ use PHPStan\Reflection\Deprecation\ClassConstantDeprecationExtension;
 use PHPStan\Reflection\Deprecation\ClassDeprecationExtension;
 use PHPStan\Reflection\Deprecation\ConstantDeprecationExtension;
 use PHPStan\Reflection\Deprecation\Deprecation;
+use PHPStan\Reflection\Deprecation\EnumCaseDeprecationExtension;
 use PHPStan\Reflection\Deprecation\FunctionDeprecationExtension;
 use PHPStan\Reflection\Deprecation\MethodDeprecationExtension;
 use PHPStan\Reflection\Deprecation\PropertyDeprecationExtension;
@@ -26,7 +29,8 @@ class CustomDeprecationExtension implements
 	ClassConstantDeprecationExtension,
 	MethodDeprecationExtension,
 	PropertyDeprecationExtension,
-	FunctionDeprecationExtension
+	FunctionDeprecationExtension,
+	EnumCaseDeprecationExtension
 {
 
 	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation
@@ -59,6 +63,11 @@ class CustomDeprecationExtension implements
 		return $this->buildDeprecation($reflection);
 	}
 
+	public function getEnumCaseDeprecation(ReflectionEnumBackedCase|ReflectionEnumUnitCase $reflection): ?Deprecation
+	{
+		return $this->buildDeprecation($reflection);
+	}
+
 	private function buildDeprecation($reflection): ?Deprecation
 	{
 		foreach ($reflection->getAttributes(CustomDeprecated::class) as $attribute) {
@@ -70,5 +79,4 @@ class CustomDeprecationExtension implements
 
 		return null;
 	}
-
 }

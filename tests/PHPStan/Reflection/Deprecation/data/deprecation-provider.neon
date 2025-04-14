@@ -8,3 +8,4 @@ services:
 			- phpstan.classDeprecationExtension
 			- phpstan.functionDeprecationExtension
 			- phpstan.constantDeprecationExtension
+			- phpstan.enumCaseDeprecationExtension

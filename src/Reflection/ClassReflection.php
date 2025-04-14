@@ -162,7 +162,7 @@ final class ClassReflection
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private PhpVersion $phpVersion,
 		private SignatureMapProvider $signatureMapProvider,
-		private DeprecationProvider $deprecationResolver,
+		private DeprecationProvider $deprecationProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
@@ -795,7 +795,8 @@ final class ClassReflection
 				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
 			}
 			$caseName = $case->getName();
-			$cases[$caseName] = new EnumCaseReflection($this, $case, $valueType, $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName())));
+			$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
+			$cases[$caseName] = new EnumCaseReflection($this, $case, $valueType, $attributes, $this->deprecationProvider);
 		}
 
 		return $this->enumCases = $cases;
@@ -821,7 +822,9 @@ final class ClassReflection
 			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 
-		return new EnumCaseReflection($this, $case, $valueType, $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName())));
+		$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
+
+		return new EnumCaseReflection($this, $case, $valueType, $attributes, $this->deprecationProvider);
 	}
 
 	public function isClass(): bool
@@ -1081,7 +1084,7 @@ final class ClassReflection
 				throw new MissingConstantFromReflectionException($this->getName(), $name);
 			}
 
-			$deprecation = $this->deprecationResolver->getClassConstantDeprecation($reflectionConstant);
+			$deprecation = $this->deprecationProvider->getClassConstantDeprecation($reflectionConstant);
 			$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 			$isDeprecated = $deprecation !== null;
 
@@ -1239,7 +1242,7 @@ final class ClassReflection
 	 */
 	private function resolveDeprecation(): void
 	{
-		$deprecation = $this->deprecationResolver->isClassDeprecated($this->reflection);
+		$deprecation = $this->deprecationProvider->isClassDeprecated($this->reflection);
 		if ($deprecation !== null) {
 			$this->isDeprecated = true;
 			$this->deprecatedDescription = $deprecation->getDescription();
@@ -1587,7 +1590,7 @@ final class ClassReflection
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
-			$this->deprecationResolver,
+			$this->deprecationProvider,
 			$this->attributeReflectionFactory,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
@@ -1619,7 +1622,7 @@ final class ClassReflection
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
-			$this->deprecationResolver,
+			$this->deprecationProvider,
 			$this->attributeReflectionFactory,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
@@ -1661,7 +1664,7 @@ final class ClassReflection
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
-			$this->deprecationResolver,
+			$this->deprecationProvider,
 			$this->attributeReflectionFactory,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,

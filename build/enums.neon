@@ -13,3 +13,7 @@ parameters:
 			paths:
 				- ../tests/PHPStan/Type/ObjectTypeTest.php
 				- ../tests/PHPStan/Type/IntersectionTypeTest.php
+		-
+			message: '#^Class CustomDeprecations\\MyDeprecatedEnum not found\.$#'
+			paths:
+				- ../tests/PHPStan/Reflection/Deprecation/DeprecationProviderTest.php

@@ -2,18 +2,6 @@
 
 namespace CustomDeprecations;
 
-#[\Attribute(\Attribute::TARGET_ALL)]
-class CustomDeprecated {
-
-	public ?string $description;
-
-	public function __construct(
-		?string $description = null
-	) {
-		$this->description = $description;
-	}
-}
-
 #[CustomDeprecated]
 enum MyDeprecatedEnum: string
 {

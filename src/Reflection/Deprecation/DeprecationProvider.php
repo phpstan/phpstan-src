@@ -16,42 +16,37 @@ use PHPStan\DependencyInjection\Container;
 final class DeprecationProvider
 {
 
-	/** @var array<PropertyDeprecationExtension> $propertyDeprecationExtensions */
-	private array $propertyDeprecationExtensions;
+	/** @var ?array<PropertyDeprecationExtension> $propertyDeprecationExtensions */
+	private ?array $propertyDeprecationExtensions = null;
 
-	/** @var array<MethodDeprecationExtension> $methodDeprecationExtensions */
-	private array $methodDeprecationExtensions;
+	/** @var ?array<MethodDeprecationExtension> $methodDeprecationExtensions */
+	private ?array $methodDeprecationExtensions = null;
 
-	/** @var array<ClassConstantDeprecationExtension> $classConstantDeprecationExtensions */
-	private array $classConstantDeprecationExtensions;
+	/** @var ?array<ClassConstantDeprecationExtension> $classConstantDeprecationExtensions */
+	private ?array $classConstantDeprecationExtensions = null;
 
-	/** @var array<ClassDeprecationExtension> $classDeprecationExtensions */
-	private array $classDeprecationExtensions;
+	/** @var ?array<ClassDeprecationExtension> $classDeprecationExtensions */
+	private ?array $classDeprecationExtensions = null;
 
-	/** @var array<FunctionDeprecationExtension> $functionDeprecationExtensions */
-	private array $functionDeprecationExtensions;
+	/** @var ?array<FunctionDeprecationExtension> $functionDeprecationExtensions */
+	private ?array $functionDeprecationExtensions = null;
 
-	/** @var array<ConstantDeprecationExtension> $constantDeprecationExtensions */
-	private array $constantDeprecationExtensions;
+	/** @var ?array<ConstantDeprecationExtension> $constantDeprecationExtensions */
+	private ?array $constantDeprecationExtensions = null;
 
-	/** @var array<EnumCaseDeprecationExtension> $enumCaseDeprecationExtensions */
-	private array $enumCaseDeprecationExtensions;
+	/** @var ?array<EnumCaseDeprecationExtension> $enumCaseDeprecationExtensions */
+	private ?array $enumCaseDeprecationExtensions = null;
 
 	public function __construct(
-		Container $container,
+		private Container $container,
 	)
 	{
-		$this->propertyDeprecationExtensions = $container->getServicesByTag('phpstan.propertyDeprecationExtension');
-		$this->methodDeprecationExtensions = $container->getServicesByTag('phpstan.methodDeprecationExtension');
-		$this->classConstantDeprecationExtensions = $container->getServicesByTag('phpstan.classConstantDeprecationExtension');
-		$this->classDeprecationExtensions = $container->getServicesByTag('phpstan.classDeprecationExtension');
-		$this->functionDeprecationExtensions = $container->getServicesByTag('phpstan.functionDeprecationExtension');
-		$this->constantDeprecationExtensions = $container->getServicesByTag('phpstan.constantDeprecationExtension');
-		$this->enumCaseDeprecationExtensions = $container->getServicesByTag('phpstan.enumCaseDeprecationExtension');
 	}
 
 	public function getPropertyDeprecation(ReflectionProperty $reflectionProperty): ?Deprecation
 	{
+		$this->propertyDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.propertyDeprecationExtension');
+
 		foreach ($this->propertyDeprecationExtensions as $extension) {
 			$deprecation = $extension->getPropertyDeprecation($reflectionProperty);
 			if ($deprecation !== null) {
@@ -64,6 +59,8 @@ final class DeprecationProvider
 
 	public function getMethodDeprecation(ReflectionMethod $methodReflection): ?Deprecation
 	{
+		$this->methodDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.methodDeprecationExtension');
+
 		foreach ($this->methodDeprecationExtensions as $extension) {
 			$deprecation = $extension->getMethodDeprecation($methodReflection);
 			if ($deprecation !== null) {
@@ -76,6 +73,8 @@ final class DeprecationProvider
 
 	public function getClassConstantDeprecation(ReflectionClassConstant $reflectionConstant): ?Deprecation
 	{
+		$this->classConstantDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.classConstantDeprecationExtension');
+
 		foreach ($this->classConstantDeprecationExtensions as $extension) {
 			$deprecation = $extension->getClassConstantDeprecation($reflectionConstant);
 			if ($deprecation !== null) {
@@ -88,6 +87,8 @@ final class DeprecationProvider
 
 	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation
 	{
+		$this->classDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.classDeprecationExtension');
+
 		foreach ($this->classDeprecationExtensions as $extension) {
 			$deprecation = $extension->getClassDeprecation($reflection);
 			if ($deprecation !== null) {
@@ -100,6 +101,8 @@ final class DeprecationProvider
 
 	public function getFunctionDeprecation(ReflectionFunction $reflectionFunction): ?Deprecation
 	{
+		$this->functionDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.functionDeprecationExtension');
+
 		foreach ($this->functionDeprecationExtensions as $extension) {
 			$deprecation = $extension->getFunctionDeprecation($reflectionFunction);
 			if ($deprecation !== null) {
@@ -112,6 +115,8 @@ final class DeprecationProvider
 
 	public function getConstantDeprecation(ReflectionConstant $constantReflection): ?Deprecation
 	{
+		$this->constantDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.constantDeprecationExtension');
+
 		foreach ($this->constantDeprecationExtensions as $extension) {
 			$deprecation = $extension->getConstantDeprecation($constantReflection);
 			if ($deprecation !== null) {
@@ -124,6 +129,8 @@ final class DeprecationProvider
 
 	public function getEnumCaseDeprecation(ReflectionEnumUnitCase|ReflectionEnumBackedCase $enumCaseReflection): ?Deprecation
 	{
+		$this->enumCaseDeprecationExtensions ??= $this->container->getServicesByTag('phpstan.enumCaseDeprecationExtension');
+
 		foreach ($this->enumCaseDeprecationExtensions as $extension) {
 			$deprecation = $extension->getEnumCaseDeprecation($enumCaseReflection);
 			if ($deprecation !== null) {

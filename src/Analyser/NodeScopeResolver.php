@@ -137,7 +137,7 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\Deprecation\DeprecationResolver;
+use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -256,7 +256,7 @@ final class NodeScopeResolver
 		private readonly StubPhpDocProvider $stubPhpDocProvider,
 		private readonly PhpVersion $phpVersion,
 		private readonly SignatureMapProvider $signatureMapProvider,
-		private readonly DeprecationResolver $deprecationResolver,
+		private readonly DeprecationProvider $deprecationResolver,
 		private readonly AttributeReflectionFactory $attributeReflectionFactory,
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private readonly FileHelper $fileHelper,

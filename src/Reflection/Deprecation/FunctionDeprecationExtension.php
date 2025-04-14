@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\Deprecation;
 
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -14,14 +14,14 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
  * 	-
  *		class: App\PHPStan\MyProvider
  *		tags:
- *			- phpstan.propertyDeprecationProvider
+ *			- phpstan.functionDeprecationExtension
  * ```
  *
  * @api
  */
-interface PropertyDeprecationProvider
+interface FunctionDeprecationExtension
 {
 
-	public function getPropertyDeprecation(ReflectionProperty $reflection): ?Deprecation;
+	public function getFunctionDeprecation(ReflectionFunction $reflection): ?Deprecation;
 
 }

@@ -36,7 +36,7 @@ use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\Deprecation\DeprecationResolver;
+use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\InitializerExprContext;
@@ -86,7 +86,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		private DeprecationResolver $deprecationResolver,
+		private DeprecationProvider $deprecationResolver,
 		private PhpVersion $phpVersion,
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,

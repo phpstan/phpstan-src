@@ -2,7 +2,8 @@
 
 namespace PHPStan\Reflection\Deprecation;
 
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 
 /**
  * This interface allows you to provide custom deprecation information
@@ -14,14 +15,14 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
  * 	-
  *		class: App\PHPStan\MyProvider
  *		tags:
- *			- phpstan.classConstantDeprecationProvider
+ *			- phpstan.classDeprecationExtension
  * ```
  *
  * @api
  */
-interface ClassConstantDeprecationProvider
+interface ClassDeprecationExtension
 {
 
-	public function getClassConstantDeprecation(ReflectionClassConstant $reflection): ?Deprecation;
+	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation;
 
 }

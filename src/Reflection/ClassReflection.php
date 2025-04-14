@@ -26,7 +26,7 @@ use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
-use PHPStan\Reflection\Deprecation\DeprecationResolver;
+use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
@@ -162,7 +162,7 @@ final class ClassReflection
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private PhpVersion $phpVersion,
 		private SignatureMapProvider $signatureMapProvider,
-		private DeprecationResolver $deprecationResolver,
+		private DeprecationProvider $deprecationResolver,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,

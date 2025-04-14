@@ -24,9 +24,9 @@ final class Deprecation
 		return $this->description;
 	}
 
-	public function withDescription(?string $description): self
+	public static function createWithDescription(string $description): self
 	{
-		$clone = clone $this;
+		$clone = new self();
 		$clone->description = $description;
 
 		return $clone;

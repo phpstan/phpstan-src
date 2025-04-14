@@ -12,21 +12,21 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
-use PHPStan\Reflection\Deprecation\ClassConstantDeprecationProvider;
-use PHPStan\Reflection\Deprecation\ClassDeprecationProvider;
-use PHPStan\Reflection\Deprecation\ConstantDeprecationProvider;
+use PHPStan\Reflection\Deprecation\ClassConstantDeprecationExtension;
+use PHPStan\Reflection\Deprecation\ClassDeprecationExtension;
+use PHPStan\Reflection\Deprecation\ConstantDeprecationExtension;
 use PHPStan\Reflection\Deprecation\Deprecation;
-use PHPStan\Reflection\Deprecation\FunctionDeprecationProvider;
-use PHPStan\Reflection\Deprecation\MethodDeprecationProvider;
-use PHPStan\Reflection\Deprecation\PropertyDeprecationProvider;
+use PHPStan\Reflection\Deprecation\FunctionDeprecationExtension;
+use PHPStan\Reflection\Deprecation\MethodDeprecationExtension;
+use PHPStan\Reflection\Deprecation\PropertyDeprecationExtension;
 
-class CustomDeprecationProvider implements
-	ConstantDeprecationProvider,
-	ClassDeprecationProvider,
-	ClassConstantDeprecationProvider,
-	MethodDeprecationProvider,
-	PropertyDeprecationProvider,
-	FunctionDeprecationProvider
+class CustomDeprecationExtension implements
+	ConstantDeprecationExtension,
+	ClassDeprecationExtension,
+	ClassConstantDeprecationExtension,
+	MethodDeprecationExtension,
+	PropertyDeprecationExtension,
+	FunctionDeprecationExtension
 {
 
 	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation
@@ -62,7 +62,10 @@ class CustomDeprecationProvider implements
 	private function buildDeprecation($reflection): ?Deprecation
 	{
 		foreach ($reflection->getAttributes(CustomDeprecated::class) as $attribute) {
-			return Deprecation::create()->withDescription($attribute->getArguments()[0] ?? $attribute->getArguments()['description'] ?? null);
+			$description = $attribute->getArguments()[0] ?? $attribute->getArguments()['description'] ?? null;
+			return $description === null
+				? Deprecation::create()
+				: Deprecation::createWithDescription($description);
 		}
 
 		return null;

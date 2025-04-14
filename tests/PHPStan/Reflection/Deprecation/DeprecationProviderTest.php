@@ -16,7 +16,7 @@ use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
 use const PHP_VERSION_ID;
 
-class DeprecationProvidersTest extends PHPStanTestCase
+class DeprecationProviderTest extends PHPStanTestCase
 {
 
 	public function testCustomDeprecations(): void

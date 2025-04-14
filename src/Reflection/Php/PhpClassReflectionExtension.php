@@ -22,7 +22,7 @@ use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\Deprecation\DeprecationResolver;
+use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -92,7 +92,7 @@ final class PhpClassReflectionExtension
 		private NodeScopeResolver $nodeScopeResolver,
 		private PhpMethodReflectionFactory $methodReflectionFactory,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		private DeprecationResolver $deprecationResolver,
+		private DeprecationProvider $deprecationResolver,
 		private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
 		private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
 		private SignatureMapProvider $signatureMapProvider,

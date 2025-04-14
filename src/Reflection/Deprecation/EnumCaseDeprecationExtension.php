@@ -23,6 +23,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
 interface EnumCaseDeprecationExtension
 {
 
+	public const ENUM_CASE_EXTENSION_TAG = 'phpstan.enumCaseDeprecationExtension';
+
 	public function getEnumCaseDeprecation(ReflectionEnumUnitCase|ReflectionEnumBackedCase $reflection): ?Deprecation;
 
 }

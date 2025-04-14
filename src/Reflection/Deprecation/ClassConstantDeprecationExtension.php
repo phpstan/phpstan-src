@@ -22,6 +22,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 interface ClassConstantDeprecationExtension
 {
 
+	public const CLASS_CONSTANT_EXTENSION_TAG = 'phpstan.classConstantDeprecationExtension';
+
 	public function getClassConstantDeprecation(ReflectionClassConstant $reflection): ?Deprecation;
 
 }

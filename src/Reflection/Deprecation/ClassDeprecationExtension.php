@@ -23,6 +23,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 interface ClassDeprecationExtension
 {
 
+	public const CLASS_EXTENSION_TAG = 'phpstan.classDeprecationExtension';
+
 	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation;
 
 }

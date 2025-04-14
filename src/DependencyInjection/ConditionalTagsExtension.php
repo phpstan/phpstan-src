@@ -16,6 +16,12 @@ use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\StubFilesExtension;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
+use PHPStan\Reflection\Deprecation\ClassConstantDeprecationExtension;
+use PHPStan\Reflection\Deprecation\ClassDeprecationExtension;
+use PHPStan\Reflection\Deprecation\EnumCaseDeprecationExtension;
+use PHPStan\Reflection\Deprecation\FunctionDeprecationExtension;
+use PHPStan\Reflection\Deprecation\MethodDeprecationExtension;
+use PHPStan\Reflection\Deprecation\PropertyDeprecationExtension;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -61,6 +67,12 @@ final class ConditionalTagsExtension extends CompilerExtension
 			LazyParameterOutTypeExtensionProvider::STATIC_METHOD_TAG => $bool,
 			DiagnoseExtension::EXTENSION_TAG => $bool,
 			ResultCacheMetaExtension::EXTENSION_TAG => $bool,
+			ClassConstantDeprecationExtension::CLASS_CONSTANT_EXTENSION_TAG => $bool,
+			ClassDeprecationExtension::CLASS_EXTENSION_TAG => $bool,
+			EnumCaseDeprecationExtension::ENUM_CASE_EXTENSION_TAG => $bool,
+			FunctionDeprecationExtension::FUNCTION_EXTENSION_TAG => $bool,
+			MethodDeprecationExtension::METHOD_EXTENSION_TAG => $bool,
+			PropertyDeprecationExtension::PROPERTY_EXTENSION_TAG => $bool,
 		])->min(1));
 	}
 

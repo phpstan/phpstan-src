@@ -22,6 +22,8 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 interface PropertyDeprecationExtension
 {
 
+	public const PROPERTY_EXTENSION_TAG = 'phpstan.propertyDeprecationExtension';
+
 	public function getPropertyDeprecation(ReflectionProperty $reflection): ?Deprecation;
 
 }

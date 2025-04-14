@@ -86,7 +86,7 @@ final class DeprecationProvider
 		return null;
 	}
 
-	public function isClassDeprecated(ReflectionClass|ReflectionEnum $reflection): ?Deprecation
+	public function getClassDeprecation(ReflectionClass|ReflectionEnum $reflection): ?Deprecation
 	{
 		foreach ($this->classDeprecationExtensions as $extension) {
 			$deprecation = $extension->getClassDeprecation($reflection);

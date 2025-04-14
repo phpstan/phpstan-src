@@ -1242,7 +1242,7 @@ final class ClassReflection
 	 */
 	private function resolveDeprecation(): void
 	{
-		$deprecation = $this->deprecationProvider->isClassDeprecated($this->reflection);
+		$deprecation = $this->deprecationProvider->getClassDeprecation($this->reflection);
 		if ($deprecation !== null) {
 			$this->isDeprecated = true;
 			$this->deprecatedDescription = $deprecation->getDescription();

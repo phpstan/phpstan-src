@@ -16,6 +16,8 @@ use const PHP_VERSION_ID;
 class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 {
 
+	private bool $shouldNarrowMethodScopeFromConstructor = false;
+
 	protected function getRule(): Rule
 	{
 		return new MissingReadOnlyPropertyAssignRule(
@@ -29,6 +31,11 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				],
 			),
 		);
+	}
+
+	public function shouldNarrowMethodScopeFromConstructor(): bool
+	{
+		return $this->shouldNarrowMethodScopeFromConstructor;
 	}
 
 	protected function getReadWritePropertiesExtensions(): array
@@ -373,6 +380,16 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				28,
 			],
 		]);
+	}
+
+	public function testBug10048(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->shouldNarrowMethodScopeFromConstructor = true;
+		$this->analyse([__DIR__ . '/data/bug-10048.php'], []);
 	}
 
 	public function testBug9864(): void

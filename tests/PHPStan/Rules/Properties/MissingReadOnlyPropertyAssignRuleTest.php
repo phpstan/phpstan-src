@@ -392,6 +392,16 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10048.php'], []);
 	}
 
+	public function testBug11828(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->shouldNarrowMethodScopeFromConstructor = true;
+		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
+	}
+
 	public function testBug9864(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

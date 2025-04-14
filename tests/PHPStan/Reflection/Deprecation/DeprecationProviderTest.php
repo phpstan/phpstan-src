@@ -22,8 +22,8 @@ class DeprecationProviderTest extends PHPStanTestCase
 
 	public function testCustomDeprecations(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('PHP 8.1+ is required to test enums.');
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('PHP 8.0+ is required as CustomDeprecationProvider uses unions.');
 		}
 
 		require __DIR__ . '/data/deprecations.php';
@@ -58,24 +58,6 @@ class DeprecationProviderTest extends PHPStanTestCase
 		$scopeForDoubleDeprecatedClass = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClass));
 		$scopeForDoubleDeprecatedClassOnlyNativeMessage = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClassOnlyPhpDocMessage));
 		$scopeForDoubleDeprecatedClassOnlyCustomMessage = $scopeFactory->create(ScopeContext::create('dummy.php')->enterClass($doubleDeprecatedClassOnlyAttributeMessage));
-
-		// enum cases
-		$myEnum = $reflectionProvider->getClass(MyDeprecatedEnum::class);
-
-		self::assertTrue($myEnum->isDeprecated());
-		self::assertNull($myEnum->getDeprecatedDescription());
-
-		self::assertTrue($myEnum->getEnumCase('CustomDeprecated')->isDeprecated()->yes());
-		self::assertSame('custom', $myEnum->getEnumCase('CustomDeprecated')->getDeprecatedDescription());
-
-		self::assertTrue($myEnum->getEnumCase('NativeDeprecated')->isDeprecated()->yes());
-		self::assertSame('native', $myEnum->getEnumCase('NativeDeprecated')->getDeprecatedDescription());
-
-		self::assertTrue($myEnum->getEnumCase('PhpDocDeprecated')->isDeprecated()->yes());
-		self::assertNull($myEnum->getEnumCase('PhpDocDeprecated')->getDeprecatedDescription()); // this should not be null
-
-		self::assertFalse($myEnum->getEnumCase('NotDeprecated')->isDeprecated()->yes());
-		self::assertNull($myEnum->getEnumCase('NotDeprecated')->getDeprecatedDescription());
 
 		// class
 		self::assertFalse($notDeprecatedClass->isDeprecated());
@@ -201,6 +183,34 @@ class DeprecationProviderTest extends PHPStanTestCase
 
 		self::assertTrue($doubleDeprecatedFunctionOnlyAttributeMessage->isDeprecated()->yes());
 		self::assertSame('attribute', $doubleDeprecatedFunctionOnlyAttributeMessage->getDeprecatedDescription());
+	}
+
+	public function testCustomDeprecationsOfEnumCases(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('PHP 8.1+ is required to test enums.');
+		}
+
+		require __DIR__ . '/data/deprecations-enums.php';
+
+		$reflectionProvider = self::createReflectionProvider();
+
+		$myEnum = $reflectionProvider->getClass(MyDeprecatedEnum::class);
+
+		self::assertTrue($myEnum->isDeprecated());
+		self::assertNull($myEnum->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('CustomDeprecated')->isDeprecated()->yes());
+		self::assertSame('custom', $myEnum->getEnumCase('CustomDeprecated')->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('NativeDeprecated')->isDeprecated()->yes());
+		self::assertSame('native', $myEnum->getEnumCase('NativeDeprecated')->getDeprecatedDescription());
+
+		self::assertTrue($myEnum->getEnumCase('PhpDocDeprecated')->isDeprecated()->yes());
+		self::assertNull($myEnum->getEnumCase('PhpDocDeprecated')->getDeprecatedDescription()); // this should not be null
+
+		self::assertFalse($myEnum->getEnumCase('NotDeprecated')->isDeprecated()->yes());
+		self::assertNull($myEnum->getEnumCase('NotDeprecated')->getDeprecatedDescription());
 	}
 
 	public static function getAdditionalConfigFiles(): array

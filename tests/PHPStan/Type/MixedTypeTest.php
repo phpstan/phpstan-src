@@ -1170,6 +1170,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult,
 			$mixedType->equals($typeToCompare),
+			sprintf('%s -> equals(%s)', $mixedType->describe(VerbosityLevel::precise()), $typeToCompare->describe(VerbosityLevel::precise())),
 		);
 	}
 

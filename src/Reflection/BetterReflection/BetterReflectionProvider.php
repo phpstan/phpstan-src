@@ -86,7 +86,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		private DeprecationProvider $deprecationResolver,
+		private DeprecationProvider $deprecationProvider,
 		private PhpVersion $phpVersion,
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,
@@ -150,7 +150,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
-			$this->deprecationResolver,
+			$this->deprecationProvider,
 			$this->attributeReflectionFactory,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -246,7 +246,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->phpDocInheritanceResolver,
 			$this->phpVersion,
 			$this->signatureMapProvider,
-			$this->deprecationResolver,
+			$this->deprecationProvider,
 			$this->attributeReflectionFactory,
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
@@ -310,7 +310,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocReturnTag = null;
 		$phpDocThrowsTag = null;
 
-		$deprecation = $this->deprecationResolver->getFunctionDeprecation($reflectionFunction);
+		$deprecation = $this->deprecationProvider->getFunctionDeprecation($reflectionFunction);
 		$deprecationDescription = $deprecation === null ? null : $deprecation->getDescription();
 		$isDeprecated = $deprecation !== null;
 
@@ -416,7 +416,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpression(), InitializerExprContext::fromGlobalConstant($constantReflection));
 		$docComment = $constantReflection->getDocComment();
 
-		$deprecation = $this->deprecationResolver->getConstantDeprecation($constantReflection);
+		$deprecation = $this->deprecationProvider->getConstantDeprecation($constantReflection);
 		$isDeprecated = $deprecation !== null;
 		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 

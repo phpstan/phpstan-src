@@ -58,12 +58,12 @@ function doSomethingWithInt(array $array): void
 
 function doFooBarInt(array $array):void {
 	if (array_key_exists('foo', $array) && $array['foo'] === 17) {
-		doSomethingWithInt($array);
+		doSomethingWithInt($array); // expect error, because our array is not sealed
 	}
 }
 
 function doFooBarString(array $array):void {
 	if (array_key_exists('foo', $array) && $array['foo'] === "hello") {
-		doSomethingWithInt($array);
+		doSomethingWithInt($array); // expect error, because our array is not sealed
 	}
 }

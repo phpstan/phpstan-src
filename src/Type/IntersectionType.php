@@ -194,6 +194,16 @@ class IntersectionType implements CompoundType
 			$result = $result->and($type->accepts($otherType, $strictTypes));
 		}
 
+		if (!$result->yes()
+			&& $this->isArray()->yes()
+			&& $this->isIterableAtLeastOnce()->yes()
+			&& $otherType->isArray()->yes()
+			&& $otherType->isIterableAtLeastOnce()->yes()
+			&& $this->isSuperTypeOf($otherType)->yes()
+		) {
+			return AcceptsResult::createYes();
+		}
+
 		if (!$result->yes()) {
 			$isList = $otherType->isList();
 			$reasons = $result->reasons;

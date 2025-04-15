@@ -122,10 +122,6 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		if ($acceptingType->isArray()->yes() && $acceptingType->isIterableAtLeastOnce()->yes()) {
-			return AcceptsResult::createYes();
-		}
-
 		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 

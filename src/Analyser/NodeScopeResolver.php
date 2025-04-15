@@ -396,8 +396,6 @@ final class NodeScopeResolver
 
 			if ($shouldCheckLastStatement && $isLast) {
 				/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|PropertyHookStatementNode|Expr\Closure $parentNode */
-				$parentNode = $parentNode;
-
 				$endStatements = $statementResult->getEndStatements();
 				if (count($endStatements) > 0) {
 					foreach ($endStatements as $endStatement) {

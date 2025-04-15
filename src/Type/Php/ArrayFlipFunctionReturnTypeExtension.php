@@ -6,10 +6,12 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 
 final class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -35,7 +37,11 @@ final class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		return $arrayType->flipArray();
+		$flipped = $arrayType->flipArray();
+		if ($arrayType->isIterableAtLeastOnce()->yes()) {
+			return TypeCombinator::intersect($flipped, new NonEmptyArrayType());
+		}
+		return $flipped;
 	}
 
 }

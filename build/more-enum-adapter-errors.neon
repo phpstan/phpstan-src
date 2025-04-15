@@ -23,3 +23,6 @@ parameters:
 			message: "#^Class BackedEnum not found\\.$#"
 			count: 1
 			path: ../src/Type/Php/BackedEnumFromMethodDynamicReturnTypeExtension.php
+
+		-
+			message: "#^Call to method PHPStan\\\\Reflection\\\\ClassReflection::isEnum\\(\\) will always evaluate to false\\.$#"

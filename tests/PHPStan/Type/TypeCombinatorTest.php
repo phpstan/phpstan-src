@@ -973,6 +973,20 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new IntersectionType([
+						new ArrayType(new MixedType(), new MixedType()),
+						new HasOffsetType(new ConstantStringType('foo')),
+					]),
+					new IntersectionType([
+						new ArrayType(new MixedType(), new MixedType()),
+						new HasOffsetValueType(new ConstantIntegerType(2), new ConstantStringType('foo')),
+					]),
+				],
+				IntersectionType::class,
+				'non-empty-array',
+			],
+			[
+				[
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],

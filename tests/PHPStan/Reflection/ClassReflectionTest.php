@@ -296,7 +296,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertTrue($enum->isEnum());
-		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection()); // @phpstan-ignore-line
+		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection()); // @phpstan-ignore-line Exact error differs on PHP 7.4 and others
 		$this->assertTrue($enum->isFinal());
 		$this->assertTrue($enum->isFinalByKeyword());
 	}

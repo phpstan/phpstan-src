@@ -67,7 +67,7 @@ final class ResultCacheManager
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
-	 * @param list<string> $parametersNotInvalidatingCache
+	 * @param list<string|non-empty-list<string>> $parametersNotInvalidatingCache
 	 */
 	public function __construct(
 		private Container $container,
@@ -886,7 +886,8 @@ return [
 
 		if ($projectConfigArray !== null) {
 			foreach ($this->parametersNotInvalidatingCache as $parameterPath) {
-				ArrayHelper::unsetKeyAtPath($projectConfigArray, explode('.', $parameterPath));
+				$pathAsArray = is_array($parameterPath) ? $parameterPath : explode('.', $parameterPath);
+				ArrayHelper::unsetKeyAtPath($projectConfigArray, $pathAsArray);
 			}
 
 			ksort($projectConfigArray);

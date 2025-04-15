@@ -191,17 +191,17 @@ parameters:
 		tmpDir: %sysGetTempDir%/phpstan-fixer
 	__validate: true
 	parametersNotInvalidatingCache:
-		- parameters.editorUrl
-		- parameters.editorUrlTitle
-		- parameters.errorFormat
-		- parameters.ignoreErrors
-		- parameters.reportUnmatchedIgnoredErrors
-		- parameters.tipsOfTheDay
-		- parameters.parallel
-		- parameters.internalErrorsCountLimit
-		- parameters.cache
-		- parameters.memoryLimitFile
-		- parameters.pro
+		- [parameters, editorUrl]
+		- [parameters, editorUrlTitle]
+		- [parameters, errorFormat]
+		- [parameters, ignoreErrors]
+		- [parameters, reportUnmatchedIgnoredErrors]
+		- [parameters, tipsOfTheDay]
+		- [parameters, parallel]
+		- [parameters, internalErrorsCountLimit]
+		- [parameters, cache]
+		- [parameters, memoryLimitFile]
+		- [parameters, pro]
 		- parametersSchema
 
 extensions:

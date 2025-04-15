@@ -167,7 +167,10 @@ parametersSchema:
 	])
 	env: arrayOf(string(), anyOf(int(), string()))
 	sysGetTempDir: string()
-	parametersNotInvalidatingCache: listOf(string())
+	parametersNotInvalidatingCache: listOf(schema(anyOf(
+		string(),
+		listOf(string()),
+	)))
 
 	# playground mode
 	sourceLocatorPlaygroundMode: bool()

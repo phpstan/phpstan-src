@@ -861,7 +861,11 @@ class IntersectionType implements CompoundType
 
 	public function flipArray(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->flipArray());
+		$flipped = $this->intersectTypes(static fn (Type $type): Type => $type->flipArray());
+		if ($this->isIterableAtLeastOnce()->yes()) {
+			return TypeCombinator::intersect($flipped, new NonEmptyArrayType());
+		}
+		return $flipped;
 	}
 
 	public function intersectKeyArray(Type $otherArraysType): Type

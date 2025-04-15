@@ -10,27 +10,29 @@ class HelloWorld
 	public function conditionalVarInTernary(array $innerHits): void
 	{
 		if (array_key_exists('nearest_premise', $innerHits) || array_key_exists('matching_premises', $innerHits)) {
-			assertType('array', $innerHits);
+			assertType('non-empty-array', $innerHits);
 			$x = array_key_exists('nearest_premise', $innerHits)
 				? assertType("non-empty-array&hasOffset('nearest_premise')", $innerHits)
-				: assertType('array', $innerHits);
+				: assertType('non-empty-array', $innerHits);
 
-			assertType('array', $innerHits);
+			assertType('non-empty-array', $innerHits);
 		}
+		assertType('array', $innerHits);
 	}
 
 	/** @param array<mixed> $innerHits */
 	public function conditionalVarInIf(array $innerHits): void
 	{
 		if (array_key_exists('nearest_premise', $innerHits) || array_key_exists('matching_premises', $innerHits)) {
-			assertType('array', $innerHits);
+			assertType('non-empty-array', $innerHits);
 			if (array_key_exists('nearest_premise', $innerHits)) {
 				assertType("non-empty-array&hasOffset('nearest_premise')", $innerHits);
 			} else {
-				assertType('array', $innerHits);
+				assertType('non-empty-array', $innerHits);
 			}
 
-			assertType('array', $innerHits);
+			assertType('non-empty-array', $innerHits);
 		}
+		assertType('array', $innerHits);
 	}
 }

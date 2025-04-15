@@ -953,8 +953,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new HasOffsetType(new ConstantStringType('bar')),
 					]),
 				],
-				ArrayType::class,
-				'array',
+				IntersectionType::class,
+				'non-empty-array',
 			],
 			[
 				[

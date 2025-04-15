@@ -72,12 +72,12 @@ function foo10(array $array)
 {
 	if (array_key_exists('foo', $array)) {
 		assertType('non-empty-array<string, int>&hasOffset(\'foo\')', $array);
-		assertType('array<int, string>', array_flip($array));
+		assertType('non-empty-array<int, string>', array_flip($array));
 	}
 
 	if (array_key_exists('foo', $array) && is_int($array['foo'])) {
 		assertType("non-empty-array<string, int>&hasOffsetValue('foo', int)", $array);
-		assertType('array<int, string>', array_flip($array));
+		assertType('non-empty-array<int, string>', array_flip($array));
 	}
 
 	if (array_key_exists('foo', $array) && $array['foo'] === 17) {

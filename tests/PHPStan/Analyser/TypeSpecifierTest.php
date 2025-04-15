@@ -1034,7 +1034,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 				),
 				[
-					'$array' => 'array',
+					'$array' => 'non-empty-array',
 				],
 				[
 					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
@@ -1055,7 +1055,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
 				],
 				[
-					'$array' => 'array',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[
@@ -1082,7 +1082,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 				),
 				[
-					'$array' => 'array',
+					'$array' => 'non-empty-array',
 				],
 				[
 					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
@@ -1103,7 +1103,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
 				],
 				[
-					'$array' => 'array',
+					'$array' => 'non-empty-array',
 				],
 			],
 			[

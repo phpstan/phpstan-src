@@ -14,6 +14,6 @@ function test(array $variables) {
 		unset($attributes['href']);
 		assertType("non-empty-array<mixed~'href', mixed>&hasOffsetValue('type', 'button')", $attributes);
 	}
-	assertType('array', $attributes);
+	assertType('non-empty-array', $attributes);
 	return $attributes;
 }

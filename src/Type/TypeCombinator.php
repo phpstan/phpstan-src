@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -639,8 +640,11 @@ final class TypeCombinator
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{
+		$isIterableAtLeastOnce = [];
 		$accessoryTypes = [];
 		foreach ($arrayTypes as $i => $arrayType) {
+			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
+
 			if ($arrayType instanceof IntersectionType) {
 				foreach ($arrayType->getTypes() as $innerType) {
 					if ($innerType instanceof TemplateType) {
@@ -701,6 +705,10 @@ final class TypeCombinator
 			}
 
 			$commonAccessoryTypes[] = $accessoryType[0];
+		}
+
+		if (TrinaryLogic::createYes()->and(...$isIterableAtLeastOnce)->yes()) {
+			$commonAccessoryTypes[] = new NonEmptyArrayType();
 		}
 
 		return $commonAccessoryTypes;

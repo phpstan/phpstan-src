@@ -447,7 +447,6 @@ final class NodeScopeResolver
 		$statementResult = new StatementResult($scope, $hasYield, $alreadyTerminated, $exitPoints, $throwPoints, $impurePoints);
 		if ($stmtCount === 0 && $shouldCheckLastStatement) {
 			/** @var Node\Stmt\Function_|Node\Stmt\ClassMethod|PropertyHookStatementNode|Expr\Closure $parentNode */
-			$parentNode = $parentNode;
 			$returnTypeNode = $parentNode->getReturnType();
 			if ($parentNode instanceof Expr\Closure) {
 				$parentNode = new Node\Stmt\Expression($parentNode, $parentNode->getAttributes());

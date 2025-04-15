@@ -47,3 +47,23 @@ function doSomething(array $array): void
 {
 
 }
+
+/**
+ * @param non-empty-array<int> $array
+ */
+function doSomethingWithInt(array $array): void
+{
+
+}
+
+function doFooBarInt(array $array):void {
+	if (array_key_exists('foo', $array) && $array['foo'] === 17) {
+		doSomethingWithInt($array);
+	}
+}
+
+function doFooBarString(array $array):void {
+	if (array_key_exists('foo', $array) && $array['foo'] === "hello") {
+		doSomethingWithInt($array);
+	}
+}

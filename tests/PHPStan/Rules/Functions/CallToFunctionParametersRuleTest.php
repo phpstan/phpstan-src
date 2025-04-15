@@ -2073,6 +2073,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				39,
 				'mixed is empty.',
 			],
+			[
+				"Parameter #1 \$array of function doSomethingWithInt expects non-empty-array<int>, non-empty-array&hasOffsetValue('foo', 'hello') given.",
+				73,
+			],
 		]);
 	}
 

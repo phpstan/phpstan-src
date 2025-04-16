@@ -60,7 +60,11 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		$isStrictComparison = $isStrictComparison
 			|| $needleType->isEnum()->yes()
-			|| $arrayValueType->isEnum()->yes();
+			|| $arrayValueType->isEnum()->yes()
+			|| ($needleType->isString()->yes() && $arrayValueType->isString()->yes())
+			|| ($needleType->isInteger()->yes() && $arrayValueType->isInteger()->yes())
+			|| ($needleType->isFloat()->yes() && $arrayValueType->isFloat()->yes())
+			|| ($needleType->isBoolean()->yes() && $arrayValueType->isBoolean()->yes());
 
 		if ($arrayExpr instanceof Array_) {
 			$types = null;

@@ -148,6 +148,7 @@ parametersSchema:
 	earlyTerminatingMethodCalls: arrayOf(listOf(string()))
 	earlyTerminatingFunctionCalls: listOf(string())
 	resultCachePath: string()
+	resultCacheSkipIfOlderThanDays: int()
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	dynamicConstantNames: listOf(string())
 	customRulesetUsed: schema(bool(), nullable())

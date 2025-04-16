@@ -125,6 +125,7 @@ parameters:
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	resultCachePath: %tmpDir%/resultCache.php
+	resultCacheSkipIfOlderThanDays: 7
 	resultCacheChecksProjectExtensionFilesDependencies: false
 	dynamicConstantNames:
 		- ICONV_IMPL
@@ -518,6 +519,7 @@ services:
 			scanDirectories: %scanDirectories%
 			checkDependenciesOfProjectExtensionFiles: %resultCacheChecksProjectExtensionFilesDependencies%
 			parametersNotInvalidatingCache: %parametersNotInvalidatingCache%
+			skipResultCacheIfOlderThanDays: %resultCacheSkipIfOlderThanDays%
 
 	-
 		class: PHPStan\Analyser\ResultCache\ResultCacheClearer

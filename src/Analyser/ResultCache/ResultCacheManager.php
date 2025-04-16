@@ -86,6 +86,7 @@ final class ResultCacheManager
 		private array $scanDirectories,
 		private bool $checkDependenciesOfProjectExtensionFiles,
 		private array $parametersNotInvalidatingCache,
+		private int $skipResultCacheIfOlderThanDays,
 	)
 	{
 	}
@@ -148,11 +149,12 @@ final class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], []);
 		}
 
-		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
+		$daysOldForSkip = $this->skipResultCacheIfOlderThanDays;
+		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * $daysOldForSkip) {
 			if ($output->isVeryVerbose()) {
-				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
+				$output->writeLineFormatted(sprintf("Result cache not used because it's more than %d days since last full analysis.", $daysOldForSkip));
 			}
-			// run full analysis if the result cache is older than 7 days
+			// run full analysis if the result cache is older than X days
 			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], []);
 		}
 

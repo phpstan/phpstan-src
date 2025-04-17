@@ -29,7 +29,7 @@ class DontCoercePhpdocType {
 	}
 
 	public function doFoo(): void {
-		assertType('mixed', $this->i);
+		assertType('int', $this->i);
 		assertNativeType('mixed', $this->i);
 	}
 }
@@ -68,7 +68,7 @@ function getIntOrFloatOrNull(): null|int|float {
 }
 
 class NarrowsNativeUnion {
-	private int|float $i;
+	private readonly int|float $i;
 
 	public function __construct()
 	{

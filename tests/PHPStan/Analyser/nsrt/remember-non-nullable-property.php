@@ -1,6 +1,6 @@
 <?php // lint >= 8.1
 
-namespace PropertyNullAfterAssignmentStrictTypesDisabled;
+namespace RememberNonNullablePropertyWhenStrictTypesDisabled;
 
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
@@ -28,7 +28,7 @@ function getIntOrNull(): ?int {
 
 
 class KeepsPropertyNonNullable2 {
-	private readonly int|float $i;
+	private int|float $i;
 
 	public function __construct()
 	{

@@ -19,6 +19,21 @@ class KeepsPropertyNonNullable {
 	}
 }
 
+class DontCoercePhpdocType {
+	/** @var int */
+	private $i;
+
+	public function __construct()
+	{
+		$this->i = getIntOrNull();
+	}
+
+	public function doFoo(): void {
+		assertType('mixed', $this->i);
+		assertNativeType('mixed', $this->i);
+	}
+}
+
 function getIntOrNull(): ?int {
 	if (rand(0, 1) === 0) {
 		return null;
@@ -52,8 +67,8 @@ function getIntOrFloatOrNull(): null|int|float {
 	return 1;
 }
 
-class NarrowsUnion {
-	private readonly int|float $i;
+class NarrowsNativeUnion {
+	private int|float $i;
 
 	public function __construct()
 	{

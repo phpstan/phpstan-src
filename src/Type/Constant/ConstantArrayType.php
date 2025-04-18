@@ -939,8 +939,23 @@ class ConstantArrayType implements Type
 			return $this;
 		}
 
-		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
-		$length = $lengthType instanceof ConstantIntegerType ? $lengthType->getValue() : $keyTypesCount;
+		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : null;
+
+		if ($lengthType instanceof ConstantIntegerType) {
+			$length = $lengthType->getValue();
+		} elseif ($lengthType->isNull()->yes()) {
+			$length = $keyTypesCount;
+		} else {
+			$length = null;
+		}
+
+		if ($offset === null || $length === null) {
+			$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+			$builder->degradeToGeneralArray();
+
+			return $builder->getArray()
+				->sliceArray($offsetType, $lengthType, $preserveKeys);
+		}
 
 		if ($length < 0) {
 			// Negative lengths prevent access to the most right n elements

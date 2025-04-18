@@ -43,6 +43,7 @@ class Foo
 		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
 		assertType('array{b: \'bar\', 0: \'baz\'}', array_slice($arr, 1, 2));
 		assertType('array{b: \'bar\', 19: \'baz\'}', array_slice($arr, 1, 2, true));
+		assertType('array<17|19|\'b\', \'bar\'|\'baz\'|\'foo\'>', array_slice($arr, rand(0, 1) ? 0 : 1, rand(0, 1) ? 0 : 1));
 
 		/** @var array{17: 'foo', 19: 'bar', 21: 'baz'}|array{foo: 17, bar: 19, baz: 21} $arr */
 		assertType('array{\'bar\', \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2));

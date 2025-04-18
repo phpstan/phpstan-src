@@ -86,15 +86,15 @@ final class HandpickedWordlistProvider
 	public function arrayVariants(array $strings, $maybeZero): void
 	{
 		assertType("array<int, string>", $strings);
-		assertType("array<int, string>", array_slice($strings, 0));
-		assertType("array<int, string>", array_slice($strings, 1));
-		assertType("array<int, string>", array_slice($strings, $maybeZero));
+		assertType("list<string>", array_slice($strings, 0));
+		assertType("list<string>", array_slice($strings, 1));
+		assertType("list<string>", array_slice($strings, $maybeZero));
 
 		if (count($strings) > 0) {
 			assertType("non-empty-array<int, string>", $strings);
-			assertType("non-empty-array<int, string>", array_slice($strings, 0));
-			assertType("array<int, string>", array_slice($strings, 1));
-			assertType("array<int, string>", array_slice($strings, $maybeZero));
+			assertType("non-empty-list<string>", array_slice($strings, 0));
+			assertType("list<string>", array_slice($strings, 1));
+			assertType("list<string>", array_slice($strings, $maybeZero));
 		}
 	}
 }

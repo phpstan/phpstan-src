@@ -30,7 +30,7 @@ class Foo
 	public function normalArrays(array $arr): void
 	{
 		/** @var array<int, bool> $arr */
-		assertType('array<int, bool>', array_slice($arr, 1, 2));
+		assertType('list<bool>', array_slice($arr, 1, 2));
 		assertType('array<int, bool>', array_slice($arr, 1, 2, true));
 
 		/** @var array<string, int> $arr */

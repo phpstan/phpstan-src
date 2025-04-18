@@ -7,14 +7,14 @@ use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<InstanceMethodsParameterRule>
+ * @extends RuleTestCase<InstanceMethodsParameterScopeFunctionRule>
  */
-class InstanceMethodsParameterScopeTest extends RuleTestCase
+class InstanceMethodsParameterScopeFunctionTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new InstanceMethodsParameterRule();
+		return new InstanceMethodsParameterScopeFunctionRule();
 	}
 
 	protected function shouldNarrowMethodScopeFromConstructor(): bool

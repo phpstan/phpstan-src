@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<FullyQualified>
  */
-class InstanceMethodsParameterRule implements Rule
+class InstanceMethodsParameterScopeFunctionRule implements Rule
 {
 
 	public function getNodeType(): string

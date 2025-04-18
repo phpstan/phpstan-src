@@ -348,7 +348,7 @@ final class MutatingScope implements Scope
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
+			null,
 			$this->getNamespace(),
 			$this->rememberConstructorExpressions($this->expressionTypes),
 			$this->rememberConstructorExpressions($this->nativeExpressionTypes),

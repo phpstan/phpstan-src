@@ -27,7 +27,7 @@ class InstanceMethodsParameterScopeFunctionRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Name %s found in method null', $node->toString()))->identifier('test.instanceOfMethodsParameterRule')->build(),
+			RuleErrorBuilder::message(sprintf('Name %s found in scope-function null', $node->toString()))->identifier('test.instanceOfMethodsParameterRule')->build(),
 		];
 	}
 

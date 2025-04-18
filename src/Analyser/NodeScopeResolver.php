@@ -5630,12 +5630,9 @@ final class NodeScopeResolver
 						$propertyNativeType = $propertyReflection->getNativeType();
 
 						$newAssignedType = TypeCombinator::intersect($assignedExprType, $propertyNativeType);
-						if ($newAssignedType instanceof NeverType) {
-							$newAssignedType = TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType);
-						}
-
 						$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType, $propertyNativeType);
-						if ($newAssignedNativeType instanceof NeverType) {
+						if ($newAssignedType instanceof NeverType || $newAssignedNativeType instanceof NeverType) {
+							$newAssignedType = TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType);
 							$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType);
 						}
 

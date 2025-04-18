@@ -5628,13 +5628,17 @@ final class NodeScopeResolver
 					$assignedNativeType = $scope->getNativeType($assignedExpr);
 					$propertyNativeType = $propertyReflection->getNativeType();
 
-					if ($propertyReflection->hasNativeType() && $propertyNativeType->isNull()->no()) {
-						$assignedExprType = TypeCombinator::removeNull($assignedExprType);
-						$assignedNativeType = TypeCombinator::removeNull($assignedNativeType);
-					}
+					if ($propertyReflection->hasNativeType()) {
+						if ($propertyNativeType->isNull()->no()) {
+							$assignedExprType = TypeCombinator::removeNull($assignedExprType);
+							$assignedNativeType = TypeCombinator::removeNull($assignedNativeType);
+						}
 
-					if ($propertyReflection->hasNativeType() && $scope->isDeclareStrictTypes()) {
-						$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType));
+						if ($scope->isDeclareStrictTypes()) {
+							$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType));
+						} else {
+							$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
+						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
 					}
@@ -5705,13 +5709,17 @@ final class NodeScopeResolver
 					$assignedNativeType = $scope->getNativeType($assignedExpr);
 					$propertyNativeType = $propertyReflection->getNativeType();
 
-					if ($propertyReflection->hasNativeType() && $propertyNativeType->isNull()->no()) {
-						$assignedExprType = TypeCombinator::removeNull($assignedExprType);
-						$assignedNativeType = TypeCombinator::removeNull($assignedNativeType);
-					}
+					if ($propertyReflection->hasNativeType()) {
+						if ($propertyNativeType->isNull()->no()) {
+							$assignedExprType = TypeCombinator::removeNull($assignedExprType);
+							$assignedNativeType = TypeCombinator::removeNull($assignedNativeType);
+						}
 
-					if ($propertyReflection->hasNativeType() && $scope->isDeclareStrictTypes()) {
-						$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType));
+						if ($scope->isDeclareStrictTypes()) {
+							$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType));
+						} else {
+							$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
+						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
 					}

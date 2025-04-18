@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types = 1); // lint >= 8.1
 
 namespace Bug12902;
 
@@ -30,7 +30,7 @@ class NarrowsNativeUnion {
 		assertType('int', $this->i);
 		assertNativeType('int', $this->i);
 
-		$this->impureCall();;
+		$this->impureCall();
 		assertType('float|int', $this->i);
 		assertNativeType('float|int', $this->i);
 	}

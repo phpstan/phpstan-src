@@ -5,7 +5,7 @@ namespace Bug12902;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
-class NarrowsNativeUnion {
+class NarrowsNativeReadonlyUnion {
 	private readonly int|float $i;
 
 	public function __construct()
@@ -21,17 +21,39 @@ class NarrowsNativeUnion {
 	}
 }
 
+class NarrowsNativeUnion {
+	private int|float $i;
+
+	public function __construct()
+	{
+		$this->i = getInt();
+		assertType('int', $this->i);
+		assertNativeType('int', $this->i);
+
+		$this->impureCall();;
+		assertType('float|int', $this->i);
+		assertNativeType('float|int', $this->i);
+	}
+
+	public function doFoo(): void {
+		assertType('float|int', $this->i);
+		assertNativeType('float|int', $this->i);
+	}
+
+	/** @phpstan-impure  */
+	public function impureCall(): void {}
+}
+
 class NarrowsStaticNativeUnion {
 	private static int|float $i;
 
 	public function __construct()
 	{
 		self::$i = getInt();
-		assertType('int', self::$i);
-		assertNativeType('int', self::$i);
+		assertType('float|int', self::$i); // could be int
+		assertNativeType('float|int', self::$i); // could be int
 
 		$this->impureCall();
-
 		assertType('float|int', self::$i);
 		assertNativeType('float|int', self::$i);
 	}

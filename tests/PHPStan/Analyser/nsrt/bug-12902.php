@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug12902;
+
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 

@@ -29,12 +29,20 @@ class NarrowsStaticNativeUnion {
 		self::$i = getInt();
 		assertType('int', self::$i);
 		assertNativeType('int', self::$i);
+
+		$this->impureCall();
+
+		assertType('float|int', self::$i);
+		assertNativeType('float|int', self::$i);
 	}
 
 	public function doFoo(): void {
 		assertType('float|int', self::$i);
 		assertNativeType('float|int', self::$i);
 	}
+
+	/** @phpstan-impure  */
+	public function impureCall(): void {}
 }
 
 function getInt(): int {

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1); // lint >= 8.0
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Analyser;
 
@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 /**
@@ -21,8 +22,12 @@ class InstanceMethodsParameterRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($scope->getFunction() !== null) {
+			throw new ShouldNotHappenException('All names in the tests should not have a scope function.');
+		}
+
 		return [
-			RuleErrorBuilder::message(sprintf('Name %s found in method %s', $node->toString(), $scope->getFunction()?->getName() ?? 'null'))->identifier('test.instanceOfMethodsParameterRule')->build(),
+			RuleErrorBuilder::message(sprintf('Name %s found in method null', $node->toString()))->identifier('test.instanceOfMethodsParameterRule')->build(),
 		];
 	}
 

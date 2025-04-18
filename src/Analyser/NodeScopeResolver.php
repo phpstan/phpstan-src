@@ -5626,9 +5626,20 @@ final class NodeScopeResolver
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType() && $scope->isDeclareStrictTypes()) {
+						$assignedNativeType = $scope->getNativeType($assignedExpr);
 						$propertyNativeType = $propertyReflection->getNativeType();
 
-						$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType));
+						$newAssignedType = TypeCombinator::intersect($assignedExprType, $propertyNativeType);
+						if ($newAssignedType instanceof NeverType) {
+							$newAssignedType = TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType);
+						}
+
+						$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType, $propertyNativeType);
+						if ($newAssignedNativeType instanceof NeverType) {
+							$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType);
+						}
+
+						$scope = $scope->assignExpression($var, $newAssignedType, $newAssignedNativeType);
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 					}
@@ -5697,9 +5708,20 @@ final class NodeScopeResolver
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType() && $scope->isDeclareStrictTypes()) {
+						$assignedNativeType = $scope->getNativeType($assignedExpr);
 						$propertyNativeType = $propertyReflection->getNativeType();
 
-						$scope = $scope->assignExpression($var, TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType), TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType));
+						$newAssignedType = TypeCombinator::intersect($assignedExprType, $propertyNativeType);
+						if ($newAssignedType instanceof NeverType) {
+							$newAssignedType = TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType);
+						}
+
+						$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType, $propertyNativeType);
+						if ($newAssignedNativeType instanceof NeverType) {
+							$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType);
+						}
+
+						$scope = $scope->assignExpression($var, $newAssignedType, $newAssignedNativeType);
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 					}

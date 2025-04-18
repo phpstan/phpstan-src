@@ -23,11 +23,11 @@ class InstanceMethodsParameterScopeFunctionRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($scope->getFunction() !== null) {
-			throw new ShouldNotHappenException('All names in the tests should not have a scope function.');
+			throw new ShouldNotHappenException('All names in the tests should not have a function scope.');
 		}
 
 		return [
-			RuleErrorBuilder::message(sprintf('Name %s found in scope-function null', $node->toString()))->identifier('test.instanceOfMethodsParameterRule')->build(),
+			RuleErrorBuilder::message(sprintf('Name %s found in function scope null', $node->toString()))->identifier('test.instanceOfMethodsParameterRule')->build(),
 		];
 	}
 

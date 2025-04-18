@@ -30,11 +30,11 @@ class InstanceMethodsParameterScopeFunctionTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/instance-methods-parameter-scope.php'], [
 			[
-				'Name DateTime found in scope-function null',
+				'Name DateTime found in function scope null',
 				12,
 			],
 			[
-				'Name Baz\Waldo found in scope-function null',
+				'Name Baz\Waldo found in function scope null',
 				16,
 			],
 		]);

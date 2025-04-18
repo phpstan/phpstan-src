@@ -913,23 +913,10 @@ class ConstantArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		$valuesArray = $this->getValuesArray();
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this->getValuesArray());
+		$builder->degradeToGeneralArray();
 
-		$isIterableAtLeastOnce = $valuesArray->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $valuesArray;
-		}
-
-		$generalizedArray = new ArrayType($valuesArray->getIterableKeyType(), $valuesArray->getIterableValueType());
-
-		if ($isIterableAtLeastOnce->yes()) {
-			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
-		}
-		if ($valuesArray->isList->yes()) {
-			$generalizedArray = TypeCombinator::intersect($generalizedArray, new AccessoryArrayListType());
-		}
-
-		return $generalizedArray;
+		return $builder->getArray();
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type

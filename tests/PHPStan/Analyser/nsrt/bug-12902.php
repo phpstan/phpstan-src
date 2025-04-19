@@ -21,12 +21,6 @@ class NarrowsNativeConstantValue
 	}
 }
 
-function getInt(): int
-{
-	return 1;
-}
-
-
 class NarrowsNativeReadonlyUnion {
 	private readonly int|float $i;
 

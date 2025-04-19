@@ -248,6 +248,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

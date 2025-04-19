@@ -214,6 +214,15 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($lengthType)->yes()) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

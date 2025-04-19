@@ -2685,19 +2685,20 @@ final class NodeScopeResolver
 			if (
 				$functionReflection !== null
 				&& $functionReflection->getName() === 'array_splice'
-				&& count($expr->getArgs()) >= 1
+				&& count($expr->getArgs()) >= 2
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
 				$arrayArgType = $scope->getType($arrayArg);
-				$valueType = $arrayArgType->getIterableValueType();
-				if (count($expr->getArgs()) >= 4) {
-					$replacementType = $scope->getType($expr->getArgs()[3]->value)->toArray();
-					$valueType = TypeCombinator::union($valueType, $replacementType->getIterableValueType());
-				}
+				$arrayArgNativeType = $scope->getNativeType($arrayArg);
+
+				$offsetType = $scope->getType($expr->getArgs()[1]->value);
+				$lengthType = isset($expr->getArgs()[2]) ? $scope->getType($expr->getArgs()[2]->value) : new NullType();
+				$replacementType = isset($expr->getArgs()[3]) ? $scope->getType($expr->getArgs()[3]->value) : new ConstantArrayType([], []);
+
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
 					$arrayArg,
-					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
-					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
+					$arrayArgType->spliceArray($offsetType, $lengthType, $replacementType),
+					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
 				);
 			}
 

@@ -453,6 +453,27 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		$replacementArrayType = $replacementType->toArray();
+		$replacementArrayTypeIsIterableAtLeastOnce = $replacementArrayType->isIterableAtLeastOnce();
+
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes() && $lengthType->isNull()->yes() && $replacementArrayTypeIsIterableAtLeastOnce->no()) {
+			return new ConstantArrayType([], []);
+		}
+
+		$arrayType = new self(
+			TypeCombinator::union($this->getIterableKeyType(), $replacementArrayType->getKeysArray()->getIterableKeyType()),
+			TypeCombinator::union($this->getIterableValueType(), $replacementArrayType->getIterableValueType()),
+		);
+
+		if ($replacementArrayTypeIsIterableAtLeastOnce->yes()) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		return $arrayType;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

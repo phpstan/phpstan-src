@@ -913,6 +913,11 @@ class IntersectionType implements CompoundType
 		return $result;
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
+	}
+
 	public function getEnumCases(): array
 	{
 		$compare = [];

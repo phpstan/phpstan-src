@@ -158,6 +158,8 @@ interface Type
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type;
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type;
+
 	/**
 	 * @return list<EnumCaseObjectType>
 	 */

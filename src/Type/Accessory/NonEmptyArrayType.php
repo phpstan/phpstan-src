@@ -223,6 +223,18 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		if (
+			(new ConstantIntegerType(0))->isSuperTypeOf($lengthType)->yes()
+			|| $replacementType->toArray()->isIterableAtLeastOnce()->yes()
+		) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

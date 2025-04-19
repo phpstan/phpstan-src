@@ -791,6 +791,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->spliceArray($offsetType, $lengthType, $replacementType));
+	}
+
 	public function getEnumCases(): array
 	{
 		return $this->pickFromTypes(

@@ -99,4 +99,9 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		return new ErrorType();
+	}
+
 }

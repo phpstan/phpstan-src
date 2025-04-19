@@ -308,6 +308,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->sliceArray($offsetType, $lengthType, $preserveKeys);
 	}
 
+	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type
+	{
+		return $this->resolve()->spliceArray($offsetType, $lengthType, $replacementType);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

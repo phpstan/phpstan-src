@@ -66,12 +66,12 @@ class NarrowsStaticNativeUnion {
 	public function __construct()
 	{
 		self::$i = getInt();
-		assertType('float|int', self::$i); // could be int
-		assertNativeType('float|int', self::$i); // could be int
+		assertType('int', self::$i);
+		assertNativeType('int', self::$i);
 
 		$this->impureCall();
-		assertType('float|int', self::$i);
-		assertNativeType('float|int', self::$i);
+		assertType('int', self::$i); // should be float|int
+		assertNativeType('int', self::$i); // should be float|int
 	}
 
 	public function doFoo(): void {

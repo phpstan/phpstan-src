@@ -1,6 +1,6 @@
 <?php declare(strict_types = 0); // lint >= 8.1
 
-namespace Bug12902;
+namespace Bug12902NonStrict;
 
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;

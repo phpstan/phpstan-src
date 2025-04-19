@@ -119,7 +119,10 @@ final class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
 				}
 
-				if (in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable'], true)) {
+				if (
+					$error->getIdentifier() !== null
+					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable'], true)
+				) {
 					$message = '<info>' . $message . '</info>';
 				}
 

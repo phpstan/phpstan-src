@@ -5637,14 +5637,14 @@ final class NodeScopeResolver
 							}
 						}
 
-						if (!$assignedTypeIsCompatible && $scope->isDeclareStrictTypes()) {
+						if ($assignedTypeIsCompatible) {
+							$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
+						} elseif ($scope->isDeclareStrictTypes()) {
 							$scope = $scope->assignExpression(
 								$var,
 								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType),
 								TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType),
 							);
-						} else {
-							$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
 						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));

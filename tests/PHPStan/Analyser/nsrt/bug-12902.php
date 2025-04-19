@@ -5,6 +5,28 @@ namespace Bug12902;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
+class NarrowsNativeConstantValue
+{
+	private readonly int|float $i;
+
+	public function __construct()
+	{
+		$this->i = 1;
+	}
+
+	public function doFoo(): void
+	{
+		assertType('1', $this->i);
+		assertNativeType('1', $this->i);
+	}
+}
+
+function getInt(): int
+{
+	return 1;
+}
+
+
 class NarrowsNativeReadonlyUnion {
 	private readonly int|float $i;
 

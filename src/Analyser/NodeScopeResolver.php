@@ -5625,18 +5625,27 @@ final class NodeScopeResolver
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
-					if ($propertyReflection->hasNativeType() && $scope->isDeclareStrictTypes()) {
+					if ($propertyReflection->hasNativeType()) {
 						$assignedNativeType = $scope->getNativeType($assignedExpr);
 						$propertyNativeType = $propertyReflection->getNativeType();
 
-						$newAssignedType = TypeCombinator::intersect($assignedExprType, $propertyNativeType);
-						$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType, $propertyNativeType);
-						if ($newAssignedType instanceof NeverType || $newAssignedNativeType instanceof NeverType) {
-							$newAssignedType = TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType);
-							$newAssignedNativeType = TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType);
+						$assignedTypeIsCompatible = false;
+						foreach(TypeUtils::flattenTypes($propertyNativeType) as $type) {
+							if ($type->isSuperTypeOf($assignedNativeType)->yes()) {
+								$assignedTypeIsCompatible = true;
+								break;
+							}
 						}
 
-						$scope = $scope->assignExpression($var, $newAssignedType, $newAssignedNativeType);
+						if (!$assignedTypeIsCompatible && $scope->isDeclareStrictTypes()) {
+							$scope = $scope->assignExpression(
+								$var,
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType),
+								TypeCombinator::intersect($assignedNativeType->toCoercedArgumentType(true), $propertyNativeType)
+							);
+						} else {
+							$scope = $scope->assignExpression($var, $assignedExprType, $assignedNativeType);
+						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 					}

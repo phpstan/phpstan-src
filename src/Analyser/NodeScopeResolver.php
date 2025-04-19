@@ -2598,10 +2598,7 @@ final class NodeScopeResolver
 			}
 
 			if (
-				(
-					($functionReflection !== null && $functionReflection->hasSideEffects()->yes())
-					|| $parametersAcceptor instanceof ClosureType && $parametersAcceptor->getReturnType()->isVoid()->yes()
-				)
+				$parametersAcceptor instanceof ClosureType && $parametersAcceptor->getReturnType()->isVoid()->yes()
 				&& $scope->isInClass()
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);

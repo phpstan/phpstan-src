@@ -121,9 +121,9 @@ final class TableErrorFormatter implements ErrorFormatter
 
 				if (
 					$error->getIdentifier() !== null
-					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable'], true)
+					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
 				) {
-					$message = '<info>' . $message . '</info>';
+					$message = '<error>' . $message . '</error>';
 				}
 
 				$rows[] = [

@@ -919,10 +919,7 @@ class ConstantArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this->getValuesArray());
-		$builder->degradeToGeneralArray();
-
-		return $builder->getArray();
+		return $this->getValuesArray()->degradeToGeneralArray();
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -943,10 +940,7 @@ class ConstantArrayType implements Type
 		}
 
 		if ($offset === null || $length === null) {
-			$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
-			$builder->degradeToGeneralArray();
-
-			return $builder->getArray()
+			return $this->degradeToGeneralArray()
 				->sliceArray($offsetType, $lengthType, $preserveKeys);
 		}
 
@@ -1266,6 +1260,14 @@ class ConstantArrayType implements Type
 		}
 
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+	}
+
+	private function degradeToGeneralArray(): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+		$builder->degradeToGeneralArray();
+
+		return $builder->getArray();
 	}
 
 	public function getKeysArray(): self

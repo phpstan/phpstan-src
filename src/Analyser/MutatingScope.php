@@ -4379,6 +4379,14 @@ final class MutatingScope implements Scope
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);
 		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+			if (
+				$exprStringToInvalidate === '$this'
+				&& $node instanceof Name
+				&& in_array($node->name, ['self', 'static', 'parent'], true)
+			) {
+				return true;
+			}
+
 			if (!$node instanceof $expressionToInvalidateClass) {
 				return false;
 			}

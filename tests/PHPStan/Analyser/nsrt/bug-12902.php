@@ -72,13 +72,40 @@ class NarrowsStaticNativeUnion {
 		assertNativeType('int', self::$i);
 
 		$this->impureCall();
-		assertType('int', self::$i); // should be float|int
-		assertNativeType('int', self::$i); // should be float|int
+		assertType('float|int', self::$i);
+		assertNativeType('float|int', self::$i);
 	}
 
 	public function doFoo(): void {
 		assertType('float|int', self::$i);
 		assertNativeType('float|int', self::$i);
+	}
+
+	/** @phpstan-impure  */
+	public function impureCall(): void {}
+}
+
+class BaseClass
+{
+	static protected int|float $i;
+}
+
+class UsesBaseClass extends BaseClass
+{
+	public function __construct()
+	{
+		parent::$i = getInt();
+		assertType('int', parent::$i);
+		assertNativeType('int', parent::$i);
+
+		$this->impureCall();
+		assertType('float|int', parent::$i);
+		assertNativeType('float|int', parent::$i);
+	}
+
+	public function doFoo(): void {
+		assertType('float|int', parent::$i);
+		assertNativeType('float|int', parent::$i);
 	}
 
 	/** @phpstan-impure  */

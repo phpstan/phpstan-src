@@ -838,8 +838,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension
-		tags:
-			- phpstan.broker.methodsClassReflectionExtension
 
 	-
 		class: PHPStan\Reflection\Php\EnumAllowedSubTypesClassReflectionExtension

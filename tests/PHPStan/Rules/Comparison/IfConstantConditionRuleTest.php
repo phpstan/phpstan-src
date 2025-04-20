@@ -179,4 +179,10 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4864.php'], []);
 	}
 
+	public function testBug8926(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8926.php'], []);
+	}
+
 }

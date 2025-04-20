@@ -2640,7 +2640,7 @@ final class NodeScopeResolver
 				$hasCountExpr = $scope->hasExpressionType($countArrayExpr)->yes();
 				if ($hasCountExpr) {
 					$countType = $scope->getType(new BinaryOp\Minus($countArrayExpr, new Int_(1)));
-					$countNativeType = $scope->getType(new BinaryOp\Minus($countArrayExpr, new Int_(1)));
+					$countNativeType = $scope->getNativeType(new BinaryOp\Minus($countArrayExpr, new Int_(1)));
 				}
 
 				$isArrayPop = $functionReflection->getName() === 'array_pop';
@@ -2681,7 +2681,7 @@ final class NodeScopeResolver
 				$hasCountExpr = $scope->hasExpressionType($countArrayExpr)->yes();
 				if ($hasCountExpr && $addedElementsCount !== null) {
 					$countType = $scope->getType(new BinaryOp\Plus($countArrayExpr, new Int_($addedElementsCount)));
-					$countNativeType = $scope->getType(new BinaryOp\Plus($countArrayExpr, new Int_($addedElementsCount)));
+					$countNativeType = $scope->getNativeType(new BinaryOp\Plus($countArrayExpr, new Int_($addedElementsCount)));
 				} else {
 					$countType = IntegerRangeType::fromInterval($addedElementsCount, null);
 					$countNativeType = IntegerRangeType::fromInterval($addedElementsCount, null);

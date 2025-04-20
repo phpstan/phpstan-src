@@ -2598,7 +2598,7 @@ final class NodeScopeResolver
 			}
 
 			if (
-				$parametersAcceptor instanceof ClosureType && $parametersAcceptor->getReturnType()->isVoid()->yes()
+				$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
 				&& $scope->isInClass()
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true);

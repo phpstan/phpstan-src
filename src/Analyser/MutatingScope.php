@@ -4382,7 +4382,10 @@ final class MutatingScope implements Scope
 			if (
 				$exprStringToInvalidate === '$this'
 				&& $node instanceof Name
-				&& in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
+				&& (
+					in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
+					|| $this->getClassReflection()->is($this->resolveName($node))
+				)
 			) {
 				return true;
 			}

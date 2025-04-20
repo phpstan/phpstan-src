@@ -3031,7 +3031,10 @@ final class NodeScopeResolver
 				$methodReflection !== null
 				&& (
 					$methodReflection->hasSideEffects()->yes()
-					|| $methodReflection->getName() === '__construct'
+					|| (
+						!$methodReflection->isStatic()
+						&& $methodReflection->getName() === '__construct'
+					)
 				)
 				&& $scopeFunction instanceof MethodReflection
 				&& $scope->isInClass()

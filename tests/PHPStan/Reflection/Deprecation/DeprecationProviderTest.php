@@ -117,29 +117,29 @@ class DeprecationProviderTest extends PHPStanTestCase
 		self::assertSame('attribute', $doubleDeprecatedClassOnlyAttributeMessage->getConstant('FOO')->getDeprecatedDescription());
 
 		// properties
-		self::assertFalse($notDeprecatedClass->getProperty('foo', $scopeForNotDeprecatedClass)->isDeprecated()->yes());
-		self::assertNull($notDeprecatedClass->getProperty('foo', $scopeForNotDeprecatedClass)->getDeprecatedDescription());
+		self::assertFalse($notDeprecatedClass->getInstanceProperty('foo', $scopeForNotDeprecatedClass)->isDeprecated()->yes());
+		self::assertNull($notDeprecatedClass->getInstanceProperty('foo', $scopeForNotDeprecatedClass)->getDeprecatedDescription());
 
-		self::assertTrue($attributeDeprecatedClass->getProperty('foo', $scopeForDeprecatedClass)->isDeprecated()->yes());
-		self::assertNull($attributeDeprecatedClass->getProperty('foo', $scopeForDeprecatedClass)->getDeprecatedDescription());
+		self::assertTrue($attributeDeprecatedClass->getInstanceProperty('foo', $scopeForDeprecatedClass)->isDeprecated()->yes());
+		self::assertNull($attributeDeprecatedClass->getInstanceProperty('foo', $scopeForDeprecatedClass)->getDeprecatedDescription());
 
-		self::assertTrue($phpDocDeprecatedClass->getProperty('foo', $scopeForPhpDocDeprecatedClass)->isDeprecated()->yes());
-		self::assertNull($phpDocDeprecatedClass->getProperty('foo', $scopeForPhpDocDeprecatedClass)->getDeprecatedDescription());
+		self::assertTrue($phpDocDeprecatedClass->getInstanceProperty('foo', $scopeForPhpDocDeprecatedClass)->isDeprecated()->yes());
+		self::assertNull($phpDocDeprecatedClass->getInstanceProperty('foo', $scopeForPhpDocDeprecatedClass)->getDeprecatedDescription());
 
-		self::assertTrue($phpDocDeprecatedClassWithMessages->getProperty('foo', $scopeForPhpDocDeprecatedClassWithMessages)->isDeprecated()->yes());
-		self::assertSame('phpdoc', $phpDocDeprecatedClassWithMessages->getProperty('foo', $scopeForPhpDocDeprecatedClassWithMessages)->getDeprecatedDescription());
+		self::assertTrue($phpDocDeprecatedClassWithMessages->getInstanceProperty('foo', $scopeForPhpDocDeprecatedClassWithMessages)->isDeprecated()->yes());
+		self::assertSame('phpdoc', $phpDocDeprecatedClassWithMessages->getInstanceProperty('foo', $scopeForPhpDocDeprecatedClassWithMessages)->getDeprecatedDescription());
 
-		self::assertTrue($attributeDeprecatedClassWithMessages->getProperty('foo', $scopeForAttributeDeprecatedClassWithMessages)->isDeprecated()->yes());
-		self::assertSame('attribute', $attributeDeprecatedClassWithMessages->getProperty('foo', $scopeForAttributeDeprecatedClassWithMessages)->getDeprecatedDescription());
+		self::assertTrue($attributeDeprecatedClassWithMessages->getInstanceProperty('foo', $scopeForAttributeDeprecatedClassWithMessages)->isDeprecated()->yes());
+		self::assertSame('attribute', $attributeDeprecatedClassWithMessages->getInstanceProperty('foo', $scopeForAttributeDeprecatedClassWithMessages)->getDeprecatedDescription());
 
-		self::assertTrue($doubleDeprecatedClass->getProperty('foo', $scopeForDoubleDeprecatedClass)->isDeprecated()->yes());
-		self::assertSame('attribute', $doubleDeprecatedClass->getProperty('foo', $scopeForDoubleDeprecatedClass)->getDeprecatedDescription());
+		self::assertTrue($doubleDeprecatedClass->getInstanceProperty('foo', $scopeForDoubleDeprecatedClass)->isDeprecated()->yes());
+		self::assertSame('attribute', $doubleDeprecatedClass->getInstanceProperty('foo', $scopeForDoubleDeprecatedClass)->getDeprecatedDescription());
 
-		self::assertTrue($doubleDeprecatedClassOnlyPhpDocMessage->getProperty('foo', $scopeForDoubleDeprecatedClassOnlyNativeMessage)->isDeprecated()->yes());
-		self::assertNull($doubleDeprecatedClassOnlyPhpDocMessage->getProperty('foo', $scopeForDoubleDeprecatedClassOnlyNativeMessage)->getDeprecatedDescription());
+		self::assertTrue($doubleDeprecatedClassOnlyPhpDocMessage->getInstanceProperty('foo', $scopeForDoubleDeprecatedClassOnlyNativeMessage)->isDeprecated()->yes());
+		self::assertNull($doubleDeprecatedClassOnlyPhpDocMessage->getInstanceProperty('foo', $scopeForDoubleDeprecatedClassOnlyNativeMessage)->getDeprecatedDescription());
 
-		self::assertTrue($doubleDeprecatedClassOnlyAttributeMessage->getProperty('foo', $scopeForDoubleDeprecatedClassOnlyCustomMessage)->isDeprecated()->yes());
-		self::assertSame('attribute', $doubleDeprecatedClassOnlyAttributeMessage->getProperty('foo', $scopeForDoubleDeprecatedClassOnlyCustomMessage)->getDeprecatedDescription());
+		self::assertTrue($doubleDeprecatedClassOnlyAttributeMessage->getInstanceProperty('foo', $scopeForDoubleDeprecatedClassOnlyCustomMessage)->isDeprecated()->yes());
+		self::assertSame('attribute', $doubleDeprecatedClassOnlyAttributeMessage->getInstanceProperty('foo', $scopeForDoubleDeprecatedClassOnlyCustomMessage)->getDeprecatedDescription());
 
 		// methods
 		self::assertFalse($notDeprecatedClass->getMethod('foo', $scopeForNotDeprecatedClass)->isDeprecated()->yes());

@@ -4384,7 +4384,7 @@ final class MutatingScope implements Scope
 				&& $node instanceof Name
 				&& (
 					in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
-					|| $this->getClassReflection()->is($this->resolveName($node))
+					|| ($this->getClassReflection() !== null && $this->getClassReflection()->is($this->resolveName($node)))
 				)
 			) {
 				return true;

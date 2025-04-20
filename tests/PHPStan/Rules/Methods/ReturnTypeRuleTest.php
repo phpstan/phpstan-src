@@ -1232,4 +1232,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4443(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4443.php'], [
+			[
+				'Method Bug4443\HelloWorld::getArray() should return array<mixed> but returns array<mixed>|null.',
+				22
+			]
+		]);
+	}
+
 }

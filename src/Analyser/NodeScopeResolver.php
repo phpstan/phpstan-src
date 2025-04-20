@@ -3036,7 +3036,6 @@ final class NodeScopeResolver
 						&& $methodReflection->getName() === '__construct'
 					)
 				)
-				&& $scopeFunction instanceof MethodReflection
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {

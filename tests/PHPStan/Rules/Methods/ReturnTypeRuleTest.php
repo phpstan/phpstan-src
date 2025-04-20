@@ -1241,8 +1241,8 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4443.php'], [
 			[
 				'Method Bug4443\HelloWorld::getArray() should return array<mixed> but returns array<mixed>|null.',
-				22
-			]
+				22,
+			],
 		]);
 	}
 

@@ -38,6 +38,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Continue_;
@@ -174,6 +175,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -2628,10 +2630,18 @@ final class NodeScopeResolver
 				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)
 				&& count($expr->getArgs()) >= 1
 			) {
-				$arrayArg = $expr->getArgs()[0]->value;
+				$args = $expr->getArgs();
+				$arrayArg = $args[0]->value;
 
 				$arrayArgType = $scope->getType($arrayArg);
 				$arrayArgNativeType = $scope->getNativeType($arrayArg);
+
+				$countArrayExpr = new FuncCall(new Name('count'), [$args[0]]);
+				$hasCountExpr = $scope->hasExpressionType($countArrayExpr)->yes();
+				if ($hasCountExpr) {
+					$countType = $scope->getType(new BinaryOp\Minus($countArrayExpr, new Int_(1)));
+					$countNativeType = $scope->getType(new BinaryOp\Minus($countArrayExpr, new Int_(1)));
+				}
 
 				$isArrayPop = $functionReflection->getName() === 'array_pop';
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
@@ -2639,6 +2649,14 @@ final class NodeScopeResolver
 					$isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
 					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
 				);
+
+				if (
+					$hasCountExpr
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($countType)->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($countNativeType)->yes()
+				) {
+					$scope = $scope->assignExpression($countArrayExpr, $countType, $countNativeType);
+				}
 			}
 
 			if (
@@ -2646,11 +2664,38 @@ final class NodeScopeResolver
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
 				&& count($expr->getArgs()) >= 2
 			) {
+				$args = $expr->getArgs();
 				$arrayType = $this->getArrayFunctionAppendingType($functionReflection, $scope, $expr);
 				$arrayNativeType = $this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $expr);
 
-				$arrayArg = $expr->getArgs()[0]->value;
+				$arrayArg = $args[0]->value;
+				$addedElementsCount = count($args) - 1;
+				for ($i = 1; $i < count($args); $i++) {
+					if ($args[$i]->unpack) {
+						$addedElementsCount = null;
+						break;
+					}
+				}
+
+				$countArrayExpr = new FuncCall(new Name('count'), [$args[0]]);
+				$hasCountExpr = $scope->hasExpressionType($countArrayExpr)->yes();
+				if ($hasCountExpr && $addedElementsCount !== null) {
+					$countType = $scope->getType(new BinaryOp\Plus($countArrayExpr, new Int_($addedElementsCount)));
+					$countNativeType = $scope->getType(new BinaryOp\Plus($countArrayExpr, new Int_($addedElementsCount)));
+				} else {
+					$countType = IntegerRangeType::fromInterval($addedElementsCount, null);
+					$countNativeType = IntegerRangeType::fromInterval($addedElementsCount, null);
+				}
+
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayNativeType);
+
+				if (
+					IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($countType)->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($countNativeType)->yes()
+				) {
+					$scope = $scope->assignExpression($countArrayExpr, $countType, $countNativeType);
+				}
+
 			}
 
 			if (

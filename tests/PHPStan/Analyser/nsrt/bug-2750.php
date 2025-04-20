@@ -18,10 +18,10 @@ function (array $input) {
 	\assert(count($input) > 0);
 	assertType('int<1, max>', count($input));
 	array_unshift($input, 'test');
-	assertType('int<1, max>', count($input));
+	assertType('int<2, max>', count($input));
 
 	\assert(count($input) > 0);
-	assertType('int<1, max>', count($input));
+	assertType('int<2, max>', count($input));
 	array_push($input, 'nope');
-	assertType('int<1, max>', count($input));
+	assertType('int<3, max>', count($input));
 };

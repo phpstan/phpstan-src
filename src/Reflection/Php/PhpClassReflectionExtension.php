@@ -216,7 +216,6 @@ final class PhpClassReflectionExtension
 		return $this->nativeProperties[$classReflection->getCacheKey()][$propertyName];
 	}
 
-	// TODO: Find the difference between createInstanceProperty and createStaticProperty
 	private function createProperty(
 		ClassReflection $classReflection,
 		string $propertyName,

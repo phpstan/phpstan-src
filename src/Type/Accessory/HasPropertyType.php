@@ -72,8 +72,10 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
-		// TODO
-		return new IsSuperTypeOfResult($type->hasProperty($this->propertyName), []);
+		return new IsSuperTypeOfResult(
+			$type->hasInstanceProperty($this->propertyName)->or($type->hasStaticProperty($this->propertyName)),
+			[],
+		);
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -88,8 +90,10 @@ class HasPropertyType implements AccessoryType, CompoundType
 			$limit = IsSuperTypeOfResult::createMaybe();
 		}
 
-		// TODO
-		return $limit->and(new IsSuperTypeOfResult($otherType->hasProperty($this->propertyName), []));
+		return $limit->and(new IsSuperTypeOfResult(
+			$otherType->hasInstanceProperty($this->propertyName)->or($otherType->hasStaticProperty($this->propertyName)),
+			[],
+		));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
@@ -117,7 +121,6 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
-	// TODO
 	public function hasInstanceProperty(string $propertyName): TrinaryLogic
 	{
 		if ($this->propertyName === $propertyName) {
@@ -127,7 +130,6 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
-	// TODO
 	public function hasStaticProperty(string $propertyName): TrinaryLogic
 	{
 		if ($this->propertyName === $propertyName) {

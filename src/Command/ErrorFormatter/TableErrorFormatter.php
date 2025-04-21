@@ -123,7 +123,7 @@ final class TableErrorFormatter implements ErrorFormatter
 					$error->getIdentifier() !== null
 					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
 				) {
-					$message = '<error>' . $message . '</error>';
+					$message = '<fg=red>' . $message . '</>';
 				}
 
 				$rows[] = [

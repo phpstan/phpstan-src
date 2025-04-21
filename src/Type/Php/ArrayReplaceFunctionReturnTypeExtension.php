@@ -5,12 +5,21 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_keys;
 use function count;
+use function in_array;
 use function strtolower;
 
 final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -23,54 +32,107 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$arrayTypes = $this->collectArrayTypes($functionCall, $scope);
+		$args = $functionCall->getArgs();
 
-		if (count($arrayTypes) === 0) {
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		return $this->getResultType(...$arrayTypes);
-	}
-
-	private function getResultType(Type ...$arrayTypes): Type
-	{
-		$keyTypes = [];
-		$valueTypes = [];
-		$nonEmptyArray = false;
-		foreach ($arrayTypes as $arrayType) {
-			if (!$nonEmptyArray && $arrayType->isIterableAtLeastOnce()->yes()) {
-				$nonEmptyArray = true;
-			}
-
-			$keyTypes[] = $arrayType->getIterableKeyType();
-			$valueTypes[] = $arrayType->getIterableValueType();
-		}
-
-		$keyType = TypeCombinator::union(...$keyTypes);
-		$valueType = TypeCombinator::union(...$valueTypes);
-
-		$arrayType = new ArrayType($keyType, $valueType);
-		return $nonEmptyArray ? TypeCombinator::intersect($arrayType, new NonEmptyArrayType()) : $arrayType;
-	}
-
-	/**
-	 * @return Type[]
-	 */
-	private function collectArrayTypes(FuncCall $functionCall, Scope $scope): array
-	{
-		$args = $functionCall->getArgs();
-
-		$arrayTypes = [];
+		$argTypes = [];
+		$optionalArgTypes = [];
 		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
-			if (!$argType->isArray()->yes()) {
+
+			if ($arg->unpack) {
+				if ($argType->isConstantArray()->yes()) {
+					foreach ($argType->getConstantArrays() as $constantArray) {
+						foreach ($constantArray->getValueTypes() as $valueType) {
+							$argTypes[] = $valueType;
+						}
+					}
+				} else {
+					$argTypes[] = $argType->getIterableValueType();
+				}
+
+				if (!$argType->isIterableAtLeastOnce()->yes()) {
+					// unpacked params can be empty, making them optional
+					$optionalArgTypesOffset = count($argTypes) - 1;
+					foreach (array_keys($argTypes) as $key) {
+						$optionalArgTypes[] = $optionalArgTypesOffset + $key;
+					}
+				}
+			} else {
+				$argTypes[] = $argType;
+			}
+		}
+
+		$allConstant = TrinaryLogic::createYes()->lazyAnd(
+			$argTypes,
+			static fn (Type $argType) => $argType->isConstantArray(),
+		);
+
+		if ($allConstant->yes()) {
+			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+
+			foreach ($argTypes as $argType) {
+				/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
+				$keyTypes = [];
+				foreach ($argType->getConstantArrays() as $constantArray) {
+					foreach ($constantArray->getKeyTypes() as $keyType) {
+						$keyTypes[$keyType->getValue()] = $keyType;
+					}
+				}
+
+				foreach ($keyTypes as $keyType) {
+					$newArrayBuilder->setOffsetValueType(
+						$keyType,
+						$argType->getOffsetValueType($keyType),
+						!$argType->hasOffsetValueType($keyType)->yes(),
+					);
+				}
+			}
+
+			return $newArrayBuilder->getArray();
+		}
+
+		$keyTypes = [];
+		$valueTypes = [];
+		$nonEmpty = false;
+		$isList = true;
+		foreach ($argTypes as $key => $argType) {
+			$keyType = $argType->getIterableKeyType();
+			$keyTypes[] = $keyType;
+			$valueTypes[] = $argType->getIterableValueType();
+
+			if (!$argType->isList()->yes()) {
+				$isList = false;
+			}
+
+			if (in_array($key, $optionalArgTypes, true) || !$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
 			}
 
-			$arrayTypes[] = $arg->unpack ? $argType->getIterableValueType() : $argType;
+			$nonEmpty = true;
 		}
 
-		return $arrayTypes;
+		$keyType = TypeCombinator::union(...$keyTypes);
+		if ($keyType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
+		$arrayType = new ArrayType(
+			$keyType,
+			TypeCombinator::union(...$valueTypes),
+		);
+
+		if ($nonEmpty) {
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+		if ($isList) {
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+		}
+
+		return $arrayType;
 	}
 
 }

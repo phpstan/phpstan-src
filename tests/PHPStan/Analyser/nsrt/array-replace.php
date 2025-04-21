@@ -23,9 +23,9 @@ class Foo
 	 */
 	public function arrayReplaceArrayShapes($array1, $array2): void
 	{
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'>", array_replace($array1));
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'>", array_replace([], $array1));
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'|'4'>", array_replace($array1, $array2));
+		assertType("array{foo: '1', bar: '2'}", array_replace($array1));
+		assertType("array{foo: '1', bar: '2'}", array_replace([], $array1));
+		assertType("array{foo: '1', bar: '4'}", array_replace($array1, $array2));
 	}
 
 	/**
@@ -67,5 +67,23 @@ class Foo
 		assertType("array<int, array{bar: '2'}|array{foo: '1'}>", array_replace($array1, $array1));
 		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_replace($array1, $array2));
 		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_replace($array2, $array1));
+	}
+
+	/**
+	 * @param array{0: 1, 1: 2} $array1
+	 * @param array{1: 3, 2: 4} $array2
+	 */
+	public function arrayReplaceNumericKeys($array1, $array2): void
+	{
+		assertType("array{1, 3, 4}", array_replace($array1, $array2));
+	}
+
+	/**
+	 * @param list<int> $array1
+	 * @param list<int> $array2
+	 */
+	public function arrayReplaceLists($array1, $array2): void
+	{
+		assertType("list<int>", array_replace($array1, $array2));
 	}
 }

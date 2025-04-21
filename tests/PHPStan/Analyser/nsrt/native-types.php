@@ -372,7 +372,7 @@ class TestPhp8Stubs
 	public function doFoo(): void
 	{
 		$a = array_replace([1, 2, 3], [4, 5, 6]);
-		assertType('non-empty-array<0|1|2, 1|2|3|4|5|6>', $a);
+		assertType('array{4, 5, 6}', $a);
 		assertNativeType('array', $a);
 	}
 

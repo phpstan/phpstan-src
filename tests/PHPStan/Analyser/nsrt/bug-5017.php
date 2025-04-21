@@ -15,7 +15,7 @@ class Foo
 			assertType('non-empty-array<0|1|2|3|4, 0|1|2|3|4>', $items);
 			$batch = array_splice($items, 0, 2);
 			assertType('array<0|1|2|3|4, 0|1|2|3|4>', $items);
-			assertType('non-empty-list<0|1|2|3|4>', $batch);
+			assertType('list<0|1|2|3|4>', $batch);
 		}
 	}
 
@@ -28,7 +28,7 @@ class Foo
 			assertType('non-empty-array<int>', $items);
 			$batch = array_splice($items, 0, 2);
 			assertType('array<int>', $items);
-			assertType('non-empty-array<int>', $batch);
+			assertType('array<int>', $batch);
 		}
 	}
 

@@ -216,10 +216,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
-		if (
-			(new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()
-			&& ($lengthType->isNull()->yes() || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes())
-		) {
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes() && $lengthType->isNull()->yes()) {
 			return $this;
 		}
 

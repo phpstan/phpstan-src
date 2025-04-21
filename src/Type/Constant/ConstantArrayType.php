@@ -944,15 +944,25 @@ class ConstantArrayType implements Type
 				->sliceArray($offsetType, $lengthType, $preserveKeys);
 		}
 
+		if ($keyTypesCount + $offset <= 0) {
+			// A negative offset cannot reach left outside the array twice
+			$offset = 0;
+		}
+
+		if ($keyTypesCount + $length <= 0) {
+			// A negative length cannot reach left outside the array twice
+			$length = 0;
+		}
+
+		if ($length === 0 || ($offset < 0 && $length < 0 && $offset - $length >= 0)) {
+			// 0 / 0, 3 / 0 or e.g. -3 / -3 or -3 / -4 and so on never extract anything
+			return new self([], []);
+		}
+
 		if ($length < 0) {
 			// Negative lengths prevent access to the most right n elements
 			return $this->removeLastElements($length * -1)
 				->sliceArray($offsetType, new NullType(), $preserveKeys);
-		}
-
-		if ($keyTypesCount + $offset <= 0) {
-			// A negative offset cannot reach left outside the array
-			$offset = 0;
 		}
 
 		if ($offset < 0) {

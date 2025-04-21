@@ -896,7 +896,18 @@ class IntersectionType implements CompoundType
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->sliceArray($offsetType, $lengthType, $preserveKeys));
+
+		if (
+			$this->isList()->yes()
+			&& $this->isIterableAtLeastOnce()->yes()
+			&& (new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()
+			&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes()
+		) {
+			$result = TypeCombinator::intersect($result, new NonEmptyArrayType());
+		}
+
+		return $result;
 	}
 
 	public function getEnumCases(): array

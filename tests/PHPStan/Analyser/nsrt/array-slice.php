@@ -36,6 +36,22 @@ class Foo
 		/** @var array<string, int> $arr */
 		assertType('array<string, int>', array_slice($arr, 1, 2));
 		assertType('array<string, int>', array_slice($arr, 1, 2, true));
+
+		/** @var non-empty-array<string> $arr */
+		assertType('array{}', array_slice($arr, 0, 0));
+		assertType('array{}', array_slice($arr, 0, 0, true));
+
+		/** @var non-empty-array<string> $arr */
+		assertType('array<string>', array_slice($arr, 0, 1));
+		assertType('array<string>', array_slice($arr, 0, 1, true));
+
+		/** @var list<string> $arr */
+		assertType('list<string>', array_slice($arr, 0, 1));
+		assertType('list<string>', array_slice($arr, 0, 1, true));
+
+		/** @var non-empty-list<string> $arr */
+		assertType('non-empty-list<string>', array_slice($arr, 0, 1));
+		assertType('non-empty-list<string>', array_slice($arr, 0, 1, true));
 	}
 
 	public function constantArrays(array $arr): void
@@ -48,6 +64,14 @@ class Foo
 		/** @var array{17: 'foo', 19: 'bar', 21: 'baz'}|array{foo: 17, bar: 19, baz: 21} $arr */
 		assertType('array{\'bar\', \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2));
 		assertType('array{19: \'bar\', 21: \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2, true));
+
+		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
+		assertType('array{}', array_slice($arr, -1, -1));
+		assertType('array{}', array_slice($arr, -1, -1, true));
+
+		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
+		assertType('array{}', array_slice($arr, -1, -2));
+		assertType('array{}', array_slice($arr, -1, -2, true));
 	}
 
 	public function constantArraysWithOptionalKeys(array $arr): void

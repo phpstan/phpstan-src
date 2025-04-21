@@ -442,6 +442,10 @@ class ArrayType implements Type
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
 	{
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($lengthType)->yes()) {
+			return new ConstantArrayType([], []);
+		}
+
 		if ($preserveKeys->no() && $this->keyType->isInteger()->yes()) {
 			return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
 		}

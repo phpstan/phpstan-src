@@ -70,6 +70,22 @@ class Foo
 	}
 
 	/**
+	 * @param array{foo: '1', bar: '2'} $array1
+	 * @param array<string, int> $array2
+	 * @param array<int, string> $array3
+	 */
+	public function arrayReplaceArrayShapeAndGeneralArray($array1, $array2, $array3): void
+	{
+		assertType("non-empty-array<string, '1'|'2'|int>", array_replace($array1, $array2));
+		assertType("non-empty-array<string, '1'|'2'|int>", array_replace($array2, $array1));
+
+		assertType("non-empty-array<'bar'|'foo'|int, string>", array_replace($array1, $array3));
+		assertType("non-empty-array<'bar'|'foo'|int, string>", array_replace($array3, $array1));
+
+		assertType("array<int|string, int|string>", array_replace($array2, $array3));
+	}
+
+	/**
 	 * @param array{0: 1, 1: 2} $array1
 	 * @param array{1: 3, 2: 4} $array2
 	 */

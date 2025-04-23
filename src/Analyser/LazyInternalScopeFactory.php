@@ -17,10 +17,16 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
+	/**
+	 * @var int|array{min: int, max: int}|null
+	 */
+	private int|array|null $phpVersion;
+
 	public function __construct(
 		private Container $container,
 	)
 	{
+		$this->phpVersion = $this->container->getParameter('phpVersion');
 	}
 
 	public function create(
@@ -58,7 +64,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$context,
 			$this->container->getByType(PhpVersion::class),
 			$this->container->getByType(AttributeReflectionFactory::class),
-			$this->container->getParameter('phpVersion'),
+			$this->phpVersion,
 			$declareStrictTypes,
 			$function,
 			$namespace,

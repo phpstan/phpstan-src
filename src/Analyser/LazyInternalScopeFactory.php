@@ -17,9 +17,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
-	/**
-	 * @var int|array{min: int, max: int}|null
-	 */
+	/** @var int|array{min: int, max: int}|null */
 	private int|array|null $phpVersion;
 
 	public function __construct(

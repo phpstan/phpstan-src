@@ -89,6 +89,9 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 
 			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
 				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);
+				if ($replaceArgumentType->isArray()->yes()) {
+					$replaceArgumentType = $replaceArgumentType->getIterableValueType();
+				}
 
 				$accessories = [];
 				if ($subjectArgumentType->isNonFalsyString()->yes() && $replaceArgumentType->isNonFalsyString()->yes()) {

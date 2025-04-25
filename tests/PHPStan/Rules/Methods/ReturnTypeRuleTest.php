@@ -1246,4 +1246,14 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12928(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12928.php'], [
+			[
+				'Method Bug12928\FooBarBaz::render() should return non-empty-string but returns string.',
+				59,
+			],
+		]);
+	}
+
 }

@@ -33,7 +33,7 @@ class FooBar {
 	 *
 	 * @return non-falsy-string
 	 */
-	public function render(string $phptFile, string $code, array $replace): string
+	public function render(string $code, array $replace): string
 	{
 		return str_replace(
 			[
@@ -54,7 +54,7 @@ class FooBarBaz {
 	 *
 	 * @return non-empty-string
 	 */
-	public function render(string $phptFile, string $code, array $replace): string
+	public function render(string $code, array $replace): string
 	{
 		return str_replace(
 			[

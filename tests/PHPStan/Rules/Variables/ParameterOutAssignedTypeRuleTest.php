@@ -43,7 +43,7 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 				47,
 			],
 			[
-				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBaz3() expects list<list<int>>, array<int<0, max>, array<int<0, max>, int>> given.',
+				'Parameter &$p @param-out type of method ParameterOutAssignedType\Foo::doBaz3() expects list<list<int>>, list<array<int<0, max>, int>> given.',
 				56,
 			],
 			[

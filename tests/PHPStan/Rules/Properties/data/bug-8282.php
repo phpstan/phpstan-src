@@ -14,6 +14,12 @@ class Collection
 	{
 	}
 
+	public function updateName(int $index, string $name): void
+	{
+		assert(isset($this->list[$index]));
+		$this->list[$index]['name'] = $name;
+	}
+
 	public function updateNameById(int $id, string $name): void
 	{
 		foreach ($this->list as $index => $entry) {

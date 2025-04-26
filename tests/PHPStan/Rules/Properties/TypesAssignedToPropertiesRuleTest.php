@@ -806,4 +806,14 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11171.php'], []);
 	}
 
+	public function testBug8282(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8282.php'], []);
+	}
+
 }

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ParameterOutAssignedTypeRule>

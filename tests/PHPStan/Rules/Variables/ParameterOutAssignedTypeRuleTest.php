@@ -76,6 +76,9 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 
 	public function testBug12754(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('PHP 8.0+ is required for this test.');
+		}
 		$this->analyse([__DIR__ . '/data/bug-12754.php'], []);
 	}
 

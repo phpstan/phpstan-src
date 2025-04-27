@@ -378,11 +378,10 @@ class ArrayType implements Type
 			);
 		}
 
-
 		return TypeCombinator::intersect(
 			new self(
 				$this->keyType,
-				TypeCombinator::union($this->itemType, $valueType)
+				TypeCombinator::union($this->itemType, $valueType),
 			),
 			new NonEmptyArrayType(),
 		);

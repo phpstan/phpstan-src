@@ -5936,9 +5936,18 @@ final class NodeScopeResolver
 				}
 				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
 			}
-			$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			if (
+				$offsetType !== null
+				&& $arrayDimFetch !== null
+				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+			) {
+				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+			} else {
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			}
+
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {
 				continue;
 			}

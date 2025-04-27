@@ -184,6 +184,10 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
 	{
+		if (!$offsetType->equals($this->offsetType)) {
+			return $this;
+		}
+
 		return new self($this->offsetType, $valueType);
 	}
 

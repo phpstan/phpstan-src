@@ -695,8 +695,14 @@ class ConstantArrayType implements Type
 	{
 		$offsetType = $offsetType->toArrayKey();
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+		$unionValues = $offsetType instanceof UnionType && count($offsetType->getTypes()) > 1;
 		foreach ($this->keyTypes as $keyType) {
 			if ($offsetType->isSuperTypeOf($keyType)->no()) {
+				continue;
+			}
+
+			if ($unionValues) {
+				$builder->setOffsetValueType($keyType, TypeCombinator::union($this->getOffsetValueType($keyType), $valueType));
 				continue;
 			}
 

@@ -151,13 +151,6 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $this;
 		}
 
-		if (
-			$valueType->isArray()->yes()
-			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($offsetType)->yes()
-		) {
-			return $this;
-		}
-
 		return new ErrorType();
 	}
 

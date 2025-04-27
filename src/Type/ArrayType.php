@@ -361,9 +361,30 @@ class ArrayType implements Type
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
 	{
-		return new self(
-			$this->keyType,
-			TypeCombinator::union($this->itemType, $valueType),
+		if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
+			if ($offsetType->isSuperTypeOf($this->keyType)->yes()) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->setOffsetValueType($offsetType, $valueType);
+				return $builder->getArray();
+			}
+
+			return TypeCombinator::intersect(
+				new self(
+					TypeCombinator::union($this->keyType, $offsetType),
+					TypeCombinator::union($this->itemType, $valueType),
+				),
+				new HasOffsetValueType($offsetType, $valueType),
+				new NonEmptyArrayType(),
+			);
+		}
+
+
+		return TypeCombinator::intersect(
+			new self(
+				$this->keyType,
+				TypeCombinator::union($this->itemType, $valueType)
+			),
+			new NonEmptyArrayType(),
 		);
 	}
 

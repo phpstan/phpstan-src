@@ -56,8 +56,8 @@ function testKeepNestedListAfterIssetIndex(array $nestedList, int $i, int $j): v
 		assertType('list<list<int>>', $nestedList);
 		assertType('list<int>', $nestedList[$i]);
 		$nestedList[$i][$j] = 21;
-		assertType('non-empty-list<non-empty-list<int>>', $nestedList);
-		assertType('non-empty-list<int>', $nestedList[$i]);
+		assertType('non-empty-list<list<int>>', $nestedList);
+		assertType('list<int>', $nestedList[$i]);
 	}
 	assertType('list<list<int>>', $nestedList);
 }

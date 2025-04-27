@@ -34,7 +34,7 @@ function () {
 		];
 		assertType("non-empty-array<array<mixed>>&hasOffsetValue('Review', array{id: null, text: null, answer: null})&hasOffsetValue('SurveyInvitation', non-empty-array&hasOffsetValue('review', null))", $review);
 		unset($review['SurveyInvitation']['review']);
-		assertType("non-empty-array<array<mixed>>&hasOffsetValue('Review', array<mixed~'review', mixed>)&hasOffsetValue('SurveyInvitation', array<mixed~'review', mixed>)", $review);
+		assertType("non-empty-array<array<mixed>>&hasOffsetValue('Review', array{id: null, text: null, answer: null})&hasOffsetValue('SurveyInvitation', array<mixed~'review', mixed>)", $review);
 	}
 	assertType('array<array<mixed>>', $review);
 	if (array_key_exists('User', $review['Review'])) {
@@ -42,7 +42,7 @@ function () {
 		$review['User'] = $review['Review']['User'];
 		assertType("non-empty-array&hasOffsetValue('Review', non-empty-array&hasOffset('User'))&hasOffsetValue('User', mixed)", $review);
 		unset($review['Review']['User']);
-		assertType("non-empty-array&hasOffsetValue('Review', array<mixed~'User', mixed>)&hasOffsetValue('User', array<mixed~'User', mixed>)", $review);
+		assertType("non-empty-array&hasOffsetValue('Review', array<mixed~'User', mixed>)&hasOffsetValue('User', mixed)", $review);
 	}
 	assertType("non-empty-array&hasOffsetValue('Review', array)", $review);
 };

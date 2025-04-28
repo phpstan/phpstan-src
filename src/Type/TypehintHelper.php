@@ -12,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionType;
+use Traversable;
 use function array_map;
 use function count;
 use function get_class;
@@ -118,9 +119,24 @@ final class TypehintHelper
 				}
 			}
 
+			$resolvedPhpDocTypeToBounds = TemplateTypeHelper::resolveToBounds($phpDocType);
+			$isSuperType = $type->isSuperTypeOf($resolvedPhpDocTypeToBounds);
+			if (
+				!$isSuperType->yes()
+				&& (new ObjectType(Traversable::class))->isSuperTypeOf($phpDocType)->yes()
+				&& $type instanceof TypeWithClassName
+			) {
+				// if native type is Iterator and PHPDoc type is Traversable
+				// Allow PHPDoc type to win
+				$traversableAncestor = $type->getAncestorWithClassName(Traversable::class);
+				if ($traversableAncestor !== null) {
+					$isSuperType = $traversableAncestor->isSuperTypeOf($resolvedPhpDocTypeToBounds);
+				}
+			}
+
 			if (
 				(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
-				&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()
+				&& $isSuperType->yes()
 			) {
 				$resultType = $phpDocType;
 			} else {

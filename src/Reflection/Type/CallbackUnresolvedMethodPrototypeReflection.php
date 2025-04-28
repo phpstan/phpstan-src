@@ -86,12 +86,12 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 	{
 		$selfOutType = $method->getSelfOutType() !== null ? $this->transformStaticType($method->getSelfOutType()) : null;
 		$variantFn = function (ExtendedParametersAcceptor $acceptor) use (&$selfOutType): ExtendedParametersAcceptor {
-			$originalReturnType = $acceptor->getReturnType();
-			if ($originalReturnType instanceof ThisType && $selfOutType !== null) {
-				$returnType = TypeCombinator::intersect($selfOutType, $this->transformStaticType($originalReturnType));
-				$selfOutType = $returnType;
+			$originalPhpDocReturnType = $acceptor->getPhpDocReturnType();
+			if ($originalPhpDocReturnType instanceof ThisType && $selfOutType !== null) {
+				$phpDocReturnType = TypeCombinator::intersect($selfOutType, $this->transformStaticType($originalPhpDocReturnType));
+				$selfOutType = $phpDocReturnType;
 			} else {
-				$returnType = $this->transformStaticType($originalReturnType);
+				$phpDocReturnType = $this->transformStaticType($originalPhpDocReturnType);
 			}
 			return new ExtendedFunctionVariant(
 				$acceptor->getTemplateTypeMap(),
@@ -114,8 +114,8 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 					$acceptor->getParameters(),
 				),
 				$acceptor->isVariadic(),
-				$returnType,
-				$this->transformStaticType($acceptor->getPhpDocReturnType()),
+				null,
+				$phpDocReturnType,
 				$this->transformStaticType($acceptor->getNativeReturnType()),
 				$acceptor->getCallSiteVarianceMap(),
 			);

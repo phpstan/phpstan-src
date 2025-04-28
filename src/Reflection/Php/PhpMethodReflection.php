@@ -202,7 +202,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 					null,
 					$this->getParameters(),
 					$this->isVariadic(),
-					$this->getReturnType(),
+					null,
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
 				),
@@ -302,30 +302,9 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	private function getReturnType(): Type
 	{
 		if ($this->returnType === null) {
-			$name = strtolower($this->getName());
-			$returnType = $this->reflection->getReturnType();
-			if ($returnType === null) {
-				if (in_array($name, ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
-					return $this->returnType = TypehintHelper::decideType(new VoidType(), $this->phpDocReturnType);
-				}
-				if ($name === '__tostring') {
-					return $this->returnType = TypehintHelper::decideType(new StringType(), $this->phpDocReturnType);
-				}
-				if ($name === '__isset') {
-					return $this->returnType = TypehintHelper::decideType(new BooleanType(), $this->phpDocReturnType);
-				}
-				if ($name === '__sleep') {
-					return $this->returnType = TypehintHelper::decideType(new ArrayType(new IntegerType(), new StringType()), $this->phpDocReturnType);
-				}
-				if ($name === '__set_state') {
-					return $this->returnType = TypehintHelper::decideType(new ObjectWithoutClassType(), $this->phpDocReturnType);
-				}
-			}
-
-			$this->returnType = TypehintHelper::decideTypeFromReflection(
-				$returnType,
+			$this->returnType = TypehintHelper::decideType(
+				$this->getNativeReturnType(),
 				$this->phpDocReturnType,
-				$this->declaringClass,
 			);
 		}
 
@@ -344,8 +323,28 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	private function getNativeReturnType(): Type
 	{
 		if ($this->nativeReturnType === null) {
+			$returnType = $this->reflection->getReturnType();
+			if ($returnType === null) {
+				$name = strtolower($this->getName());
+				if (in_array($this->getName(), ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
+					return $this->nativeReturnType = new VoidType();
+				}
+				if ($name === '__tostring') {
+					return $this->nativeReturnType = new StringType();
+				}
+				if ($name === '__isset') {
+					return $this->nativeReturnType = new BooleanType();
+				}
+				if ($name === '__sleep') {
+					return $this->nativeReturnType = new ArrayType(new IntegerType(), new StringType());
+				}
+				if ($name === '__set_state') {
+					return $this->nativeReturnType = new ObjectWithoutClassType();
+				}
+			}
+
 			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
-				$this->reflection->getReturnType(),
+				$returnType,
 				null,
 				$this->declaringClass,
 			);

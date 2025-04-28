@@ -357,8 +357,12 @@ private:
 
 	/* ($type->isCallable()->yes() && $phpDocType->isCallable()->yes())
 	 * || ((!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
-	 *     && $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes())
-	 * — short-circuited as the twin evaluates it; false = pending exception */
+	 *     && $isSuperType->yes()), where $isSuperType is
+	 * $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType)),
+	 * or for a native TypeWithClassName below a Traversable PHPDoc type its
+	 * Traversable ancestor's verdict — the twin computes $isSuperType up
+	 * front, here it is computed where it decides (pure calls); false =
+	 * pending exception */
 	[[nodiscard]] static bool decidesForPhpDoc(zval *type, zval *phpDocType, bool &out)
 	{
 		zend_long typeCallable = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CALLABLE, 0, NULL);
@@ -392,6 +396,39 @@ private:
 		if (UNEXPECTED(isSuperType.isUndef())) return false;
 		zend_long trinary = pt_type_result_trinary(isSuperType.raw());
 		if (UNEXPECTED(trinary < 0)) return false;
+		if (trinary != PT_TRI_YES) {
+			/* if native type is Iterator and PHPDoc type is Traversable,
+			 * allow PHPDoc type to win:
+			 * (new ObjectType(Traversable::class))->isSuperTypeOf($phpDocType)->yes()
+			 * && $type instanceof TypeWithClassName */
+			zval traversableRaw;
+			zend_string *traversableName = zend_string_init("Traversable", sizeof("Traversable") - 1, 0);
+			bool created = pt_object_type_new(&traversableRaw, traversableName);
+			zend_string_release(traversableName);
+			if (UNEXPECTED(!created)) return false;
+			zv::Val traversableType = zv::Val::adopt(traversableRaw);
+			zv::Val phpDocTraversable = pt_type_op(Z_OBJ_P(traversableType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, phpDocType);
+			if (UNEXPECTED(phpDocTraversable.isUndef())) return false;
+			zend_long phpDocIsTraversable = pt_type_result_trinary(phpDocTraversable.raw());
+			if (UNEXPECTED(phpDocIsTraversable < 0)) return false;
+			if (phpDocIsTraversable == PT_TRI_YES) {
+				bool withClassName;
+				if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TYPE_WITH_CLASS_NAME, withClassName))) return false;
+				if (withClassName) {
+					zval className;
+					ZVAL_STRINGL(&className, "Traversable", sizeof("Traversable") - 1);
+					zv::Val ancestor = pt_type_call(Z_OBJ_P(type), PT_LC("getancestorwithclassname"), 1, &className);
+					zval_ptr_dtor(&className);
+					if (UNEXPECTED(ancestor.isUndef())) return false;
+					if (!ancestor.isNull()) {
+						zv::Val ancestorIsSuperType = pt_type_op(Z_OBJ_P(ancestor.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, bounds.raw());
+						if (UNEXPECTED(ancestorIsSuperType.isUndef())) return false;
+						trinary = pt_type_result_trinary(ancestorIsSuperType.raw());
+						if (UNEXPECTED(trinary < 0)) return false;
+					}
+				}
+			}
+		}
 		out = trinary == PT_TRI_YES;
 		return true;
 	}

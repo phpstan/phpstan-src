@@ -10,8 +10,9 @@ namespace ptdecl::ExtendedFunctionVariant {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t phpDocReturnType = 6;
-inline constexpr uint32_t nativeReturnType = 7;
+inline constexpr uint32_t returnType = 6;
+inline constexpr uint32_t phpDocReturnType = 7;
+inline constexpr uint32_t nativeReturnType = 8;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -23,6 +24,7 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
+	cls.property("returnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 	cls.property("phpDocReturnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Type");
 	cls.property("nativeReturnType", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Type");
 }
@@ -45,18 +47,20 @@ inline constexpr char strings[] =
 	"__construct\0" /* 232 */
 	"\0" /* 244 */
 	"getParameters\0" /* 245 */
-	"getPhpDocReturnType\0" /* 259 */
-	"getNativeReturnType"; /* 279 */
+	"getReturnType\0" /* 259 */
+	"getPhpDocReturnType\0" /* 273 */
+	"getNativeReturnType"; /* 293 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 16), /* __construct $templateTypeMap */
 	reg::packed(53, MAY_BE_NULL, 16), /* __construct $resolvedTemplateTypeMap */
 	reg::packed(77, MAY_BE_ARRAY), /* __construct $parameters */
 	reg::packed(88, MAY_BE_BOOL), /* __construct $isVariadic */
-	reg::packed(99, 0, 110), /* __construct $returnType */
+	reg::packed(99, MAY_BE_NULL, 110), /* __construct $returnType */
 	reg::packed(128, 0, 110), /* __construct $phpDocReturnType */
 	reg::packed(145, 0, 110), /* __construct $nativeReturnType */
 	reg::packed(162, MAY_BE_NULL, 182, false, false, 227), /* __construct $callSiteVarianceMap */
 	reg::packed(244, MAY_BE_ARRAY), /* getParameters return */
+	reg::packed(244, 0, 110), /* getReturnType return */
 	reg::packed(244, 0, 110), /* getPhpDocReturnType return */
 	reg::packed(244, 0, 110), /* getNativeReturnType return */
 };
@@ -67,8 +71,9 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 232 /* __construct */, 7, 0, 8, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getParameters = { { 245 /* getParameters */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPhpDocReturnType = { { 259 /* getPhpDocReturnType */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNativeReturnType = { { 279 /* getNativeReturnType */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReturnType = { { 259 /* getReturnType */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpDocReturnType = { { 273 /* getPhpDocReturnType */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNativeReturnType = { { 293 /* getNativeReturnType */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ExtendedFunctionVariant

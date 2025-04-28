@@ -6,6 +6,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypehintHelper;
 
 /**
  * @api
@@ -23,7 +24,7 @@ class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParamet
 		?TemplateTypeMap $resolvedTemplateTypeMap,
 		array $parameters,
 		bool $isVariadic,
-		Type $returnType,
+		private ?Type $returnType,
 		private Type $phpDocReturnType,
 		private Type $nativeReturnType,
 		?TemplateTypeVarianceMap $callSiteVarianceMap = null,
@@ -34,7 +35,10 @@ class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParamet
 			$resolvedTemplateTypeMap,
 			$parameters,
 			$isVariadic,
-			$returnType,
+			$returnType ?? TypehintHelper::decideType(
+				$nativeReturnType,
+				$phpDocReturnType,
+			),
 			$callSiteVarianceMap,
 		);
 	}
@@ -48,6 +52,18 @@ class ExtendedFunctionVariant extends FunctionVariant implements ExtendedParamet
 		$parameters = parent::getParameters();
 
 		return $parameters;
+	}
+
+	public function getReturnType(): Type
+	{
+		if ($this->returnType === null) {
+			return $this->returnType = TypehintHelper::decideType(
+				$this->nativeReturnType,
+				$this->phpDocReturnType,
+			);
+		}
+
+		return $this->returnType;
 	}
 
 	public function getPhpDocReturnType(): Type

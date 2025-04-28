@@ -10,15 +10,15 @@ namespace ptdecl::ExtendedCallableFunctionVariant {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t throwPoints = 8;
-inline constexpr uint32_t isPure = 9;
-inline constexpr uint32_t impurePoints = 10;
-inline constexpr uint32_t invalidateExpressions = 11;
-inline constexpr uint32_t usedVariables = 12;
-inline constexpr uint32_t acceptsNamedArguments = 13;
-inline constexpr uint32_t mustUseReturnValue = 14;
-inline constexpr uint32_t assertions = 15;
-inline constexpr uint32_t isStatic = 16;
+inline constexpr uint32_t throwPoints = 9;
+inline constexpr uint32_t isPure = 10;
+inline constexpr uint32_t impurePoints = 11;
+inline constexpr uint32_t invalidateExpressions = 12;
+inline constexpr uint32_t usedVariables = 13;
+inline constexpr uint32_t acceptsNamedArguments = 14;
+inline constexpr uint32_t mustUseReturnValue = 15;
+inline constexpr uint32_t assertions = 16;
+inline constexpr uint32_t isStatic = 17;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

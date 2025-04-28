@@ -5244,34 +5244,32 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
  * UNDEF = pending exception */
 zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *acceptor, zv::Val &selfOutType)
 {
-	zv::Val originalReturnType = protoAcceptorCall(acceptor, PT_PA_GET_RETURN_TYPE, "getreturntype", PROTO_OBJECT);
-	if (UNEXPECTED(originalReturnType.isUndef())) return zv::Val();
+	zv::Val originalPhpDocReturnType = protoAcceptorCall(acceptor, PT_PA_GET_PHPDOC_RETURN_TYPE, "getphpdocreturntype", PROTO_OBJECT);
+	if (UNEXPECTED(originalPhpDocReturnType.isUndef())) return zv::Val();
 	bool returnsThis;
-	pt_type_instanceof_ce(originalReturnType.raw(), pt_ce_this_type, returnsThis);
-	zv::Val returnType, transformedReturnType;
+	pt_type_instanceof_ce(originalPhpDocReturnType.raw(), pt_ce_this_type, returnsThis);
+	zv::Val phpDocReturnType, transformedPhpDocReturnType;
 	if (kind == phpstanturbo::PT_PROTOTYPE_CALLED_ON_TYPE) {
-		/* $originalReturnType instanceof ThisType && $selfOutType !== null ? $selfOutType : transform($originalReturnType) */
+		/* $originalPhpDocReturnType instanceof ThisType && $selfOutType !== null ? $selfOutType : transform($originalPhpDocReturnType) */
 		if (returnsThis && !selfOutType.isNull()) {
-			returnType = zv::Val::copyOf(zv::Ref(selfOutType.raw()));
+			phpDocReturnType = zv::Val::copyOf(zv::Ref(selfOutType.raw()));
 		} else {
-			returnType = transformer.transform(originalReturnType.raw());
-			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+			phpDocReturnType = transformer.transform(originalPhpDocReturnType.raw());
+			if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
 		}
 	} else {
-		transformedReturnType = transformer.transform(originalReturnType.raw());
-		if (UNEXPECTED(transformedReturnType.isUndef())) return zv::Val();
+		transformedPhpDocReturnType = transformer.transform(originalPhpDocReturnType.raw());
+		if (UNEXPECTED(transformedPhpDocReturnType.isUndef())) return zv::Val();
 		if (returnsThis && !selfOutType.isNull()) {
-			/* $returnType = TypeCombinator::intersect($selfOutType, $transformedReturnType); $selfOutType = $returnType; */
-			zv::Args args{selfOutType.raw(), transformedReturnType.raw()};
-			returnType = pt_type_combinator_call(PT_LC("intersect"), 2, args);
-			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
-			selfOutType = zv::Val::copyOf(zv::Ref(returnType.raw()));
+			/* $phpDocReturnType = TypeCombinator::intersect($selfOutType, $transformedPhpDocReturnType); $selfOutType = $phpDocReturnType; */
+			zv::Args args{selfOutType.raw(), transformedPhpDocReturnType.raw()};
+			phpDocReturnType = pt_type_combinator_call(PT_LC("intersect"), 2, args);
+			if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
+			selfOutType = zv::Val::copyOf(zv::Ref(phpDocReturnType.raw()));
 		} else {
-			returnType = zv::Val::copyOf(zv::Ref(transformedReturnType.raw()));
+			phpDocReturnType = zv::Val::copyOf(zv::Ref(transformedPhpDocReturnType.raw()));
 		}
 	}
-	zv::Val phpDocReturnType = protoAcceptorCall(acceptor, PT_PA_GET_PHPDOC_RETURN_TYPE, "getphpdocreturntype", PROTO_OBJECT);
-	if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
 	zv::Val nativeReturnType = protoAcceptorCall(acceptor, PT_PA_GET_NATIVE_RETURN_TYPE, "getnativereturntype", PROTO_OBJECT);
 	if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
 	zv::Val templateTypeMap = protoAcceptorCall(acceptor, PT_PA_GET_TEMPLATE_TYPE_MAP, "gettemplatetypemap", PROTO_ANY);
@@ -5284,22 +5282,22 @@ zv::Val protoVariant(PrototypeKind kind, const PrototypeTransformer &transformer
 	if (UNEXPECTED(mappedParameters.isUndef())) return zv::Val();
 	zv::Val variadic = protoAcceptorCall(acceptor, PT_PA_IS_VARIADIC, "isvariadic", PROTO_ANY);
 	if (UNEXPECTED(variadic.isUndef())) return zv::Val();
-	/* the Callback twin reuses the transformed return type for an equal
-	 * PHPDoc / native return type; the CalledOnType twin transforms both */
-	zval *transformedOriginal = kind == phpstanturbo::PT_PROTOTYPE_CALLBACK ? transformedReturnType.raw() : NULL;
-	zv::Val transformedPhpDocReturnType = protoTransformUnlessEqual(kind, transformer, originalReturnType.raw(), transformedOriginal, phpDocReturnType.raw());
-	if (UNEXPECTED(transformedPhpDocReturnType.isUndef())) return zv::Val();
-	zv::Val transformedNativeReturnType = protoTransformUnlessEqual(kind, transformer, originalReturnType.raw(), transformedOriginal, nativeReturnType.raw());
+	/* the Callback twin reuses the transformed PHPDoc return type for an
+	 * equal native return type; the CalledOnType twin transforms it */
+	zval *transformedOriginal = kind == phpstanturbo::PT_PROTOTYPE_CALLBACK ? transformedPhpDocReturnType.raw() : NULL;
+	zv::Val transformedNativeReturnType = protoTransformUnlessEqual(kind, transformer, originalPhpDocReturnType.raw(), transformedOriginal, nativeReturnType.raw());
 	if (UNEXPECTED(transformedNativeReturnType.isUndef())) return zv::Val();
 	zv::Val callSiteVarianceMap = protoAcceptorCall(acceptor, PT_PA_GET_CALL_SITE_VARIANCE_MAP, "getcallsitevariancemap", PROTO_ANY);
 	if (UNEXPECTED(callSiteVarianceMap.isUndef())) return zv::Val();
+	/* the return type is left null: the variant decides it from the
+	 * transformed PHPDoc and native return types */
 	zval args[8];
 	ZVAL_COPY_VALUE(&args[0], templateTypeMap.raw());
 	ZVAL_COPY_VALUE(&args[1], resolvedTemplateTypeMap.raw());
 	ZVAL_COPY_VALUE(&args[2], mappedParameters.raw());
 	ZVAL_COPY_VALUE(&args[3], variadic.raw());
-	ZVAL_COPY_VALUE(&args[4], returnType.raw());
-	ZVAL_COPY_VALUE(&args[5], transformedPhpDocReturnType.raw());
+	ZVAL_NULL(&args[4]);
+	ZVAL_COPY_VALUE(&args[5], phpDocReturnType.raw());
 	ZVAL_COPY_VALUE(&args[6], transformedNativeReturnType.raw());
 	ZVAL_COPY_VALUE(&args[7], callSiteVarianceMap.raw());
 	return pt_extended_function_variant_new(8, args);

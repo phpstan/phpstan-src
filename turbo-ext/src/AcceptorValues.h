@@ -46,13 +46,13 @@ inline constexpr int8_t functionVariantSlots[PT_PA_MEMBER_COUNT] = {
 };
 
 inline constexpr int8_t extendedFunctionVariantSlots[PT_PA_MEMBER_COUNT] = {
-	PT_ACC_FV(templateTypeMap), PT_ACC_NONE, PT_ACC_FV(parameters), PT_ACC_FV(isVariadic), PT_ACC_FV(returnType),
+	PT_ACC_FV(templateTypeMap), PT_ACC_NONE, PT_ACC_FV(parameters), PT_ACC_FV(isVariadic), PT_ACC_EFV(returnType),
 	PT_ACC_EFV(phpDocReturnType), PT_ACC_EFV(nativeReturnType), PT_ACC_FV(callSiteVarianceMap), PT_ACC_NONE, PT_ACC_NONE,
 	PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE, PT_ACC_NONE,
 };
 
 inline constexpr int8_t extendedCallableFunctionVariantSlots[PT_PA_MEMBER_COUNT] = {
-	PT_ACC_FV(templateTypeMap), PT_ACC_NONE, PT_ACC_FV(parameters), PT_ACC_FV(isVariadic), PT_ACC_FV(returnType),
+	PT_ACC_FV(templateTypeMap), PT_ACC_NONE, PT_ACC_FV(parameters), PT_ACC_FV(isVariadic), PT_ACC_EFV(returnType),
 	PT_ACC_EFV(phpDocReturnType), PT_ACC_EFV(nativeReturnType), PT_ACC_FV(callSiteVarianceMap), PT_ACC_NONE, PT_ACC_NONE,
 	PT_ACC_ECFV(throwPoints), PT_ACC_ECFV(isPure), PT_ACC_ECFV(impurePoints), PT_ACC_ECFV(invalidateExpressions), PT_ACC_ECFV(usedVariables),
 	PT_ACC_ECFV(acceptsNamedArguments), PT_ACC_ECFV(mustUseReturnValue), PT_ACC_NONE, PT_ACC_NONE,

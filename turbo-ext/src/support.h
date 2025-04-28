@@ -3916,6 +3916,9 @@ zv::Val pt_extended_callable_function_variant_new(uint32_t argc, zval *argv);
  * for the nullable nulls); false = pending exception */
 [[nodiscard]] bool pt_function_variant_construct(zend_object *variant, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *parameters, bool isVariadic, zval *returnType, zval *callSiteVarianceMap);
 [[nodiscard]] bool pt_extended_function_variant_construct(zend_object *variant, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *parameters, bool isVariadic, zval *returnType, zval *phpDocReturnType, zval *nativeReturnType, zval *callSiteVarianceMap);
+/* ExtendedFunctionVariant::getReturnType() of a native extended variant;
+ * UNDEF = pending exception */
+zv::Val pt_extended_function_variant_get_return_type(zend_object *variant);
 /* new ResolvedFunctionVariantWithOriginal(...) (borrowed, already of the
  * constructor's parameter types) / new TrivialParametersAcceptor($callableName)
  * (NULL for the default); UNDEF = pending exception */

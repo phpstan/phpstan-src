@@ -2038,12 +2038,14 @@ public:
 
 		zv::Val signatureReturnType = call(methodSignature, PT_LC("getreturntype"));
 		if (UNEXPECTED(signatureReturnType.isUndef())) return zv::Val();
-		zv::Val returnType;
+		/* the PHPDoc return type decided against the signature's, unless it
+		 * comes from stubs; the variant decides its return type lazily */
+		zv::Val decidedPhpDocReturnType;
 		if (phpDocFromStubs && Z_TYPE_P(phpDocReturnType) != IS_NULL) {
-			returnType = zv::Val::copyOf(zv::Ref(phpDocReturnType));
+			decidedPhpDocReturnType = zv::Val::copyOf(zv::Ref(phpDocReturnType));
 		} else {
-			returnType = decideType(signatureReturnType.raw(), phpDocReturnType);
-			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+			decidedPhpDocReturnType = decideType(signatureReturnType.raw(), phpDocReturnType);
+			if (UNEXPECTED(decidedPhpDocReturnType.isUndef())) return zv::Val();
 		}
 
 		zv::Val ownedEmptyMap = templateTypeMapEmpty();
@@ -2052,19 +2054,14 @@ public:
 		if (UNEXPECTED(!ok)) return zv::Val();
 		zv::Val nativeReturnType = call(methodSignature, PT_LC("getnativereturntype"));
 		if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
-		zv::Val mixedReturnType;
-		if (Z_TYPE_P(phpDocReturnType) == IS_NULL) {
-			mixedReturnType = mixedType();
-			if (UNEXPECTED(mixedReturnType.isUndef())) return zv::Val();
-		}
 
 		zval variantArgs[7];
 		ZVAL_COPY_VALUE(&variantArgs[0], ownedEmptyMap.raw());
 		ZVAL_NULL(&variantArgs[1]);
 		ZVAL_COPY_VALUE(&variantArgs[2], parameters.raw());
 		ZVAL_BOOL(&variantArgs[3], isVariadicSignature);
-		ZVAL_COPY_VALUE(&variantArgs[4], returnType.raw());
-		ZVAL_COPY_VALUE(&variantArgs[5], Z_TYPE_P(phpDocReturnType) == IS_NULL ? mixedReturnType.raw() : phpDocReturnType);
+		ZVAL_NULL(&variantArgs[4]);
+		ZVAL_COPY_VALUE(&variantArgs[5], decidedPhpDocReturnType.raw());
 		ZVAL_COPY_VALUE(&variantArgs[6], nativeReturnType.raw());
 		return pt_extended_function_variant_new(7, variantArgs);
 	}

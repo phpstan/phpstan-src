@@ -177,7 +177,9 @@ zv::Val pt_function_variant_call(zend_object *variant, pt_parameters_acceptor_me
 		case PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP: return FunctionVariant(variant).getResolvedTemplateTypeMap();
 		case PT_PA_GET_PARAMETERS: return FunctionVariant(variant).getParameters();
 		case PT_PA_IS_VARIADIC: return FunctionVariant(variant).isVariadic();
-		case PT_PA_GET_RETURN_TYPE: return FunctionVariant(variant).getReturnType();
+		case PT_PA_GET_RETURN_TYPE:
+			if (extended) return pt_extended_function_variant_get_return_type(variant);
+			return FunctionVariant(variant).getReturnType();
 		case PT_PA_GET_CALL_SITE_VARIANCE_MAP: return FunctionVariant(variant).getCallSiteVarianceMap();
 		case PT_PA_GET_PHPDOC_RETURN_TYPE:
 			if (!extended) break;

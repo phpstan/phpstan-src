@@ -77,7 +77,7 @@ final class TypehintHelper
 
 	public static function decideType(
 		Type $type,
-		?Type $phpDocType = null,
+		?Type $phpDocType,
 	): Type
 	{
 		if ($type instanceof BenevolentUnionType) {

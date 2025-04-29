@@ -273,3 +273,50 @@ class FooFloatString
 		assertType('string', $this->foo); // could be numeric-string
 	}
 }
+
+class FooStringToUnion
+{
+
+	public int|float $foo;
+
+	public function doFoo(string $b): void
+	{
+		$this->foo = $b;
+		assertType('float|int', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = "1.0";
+		assertType('float|int', $this->foo);
+	}
+}
+
+class FooNumericToString
+{
+
+	public string $foo;
+
+	public function doFoo(float|int $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+
+}
+
+class FooIntersectionToInt
+{
+
+	public int $foo;
+
+	/**
+	 * @param numeric-string $b
+	 */
+	public function doFoo(string $b): void
+	{
+		$this->foo = $b;
+		assertType('int', $this->foo);
+	}
+
+}

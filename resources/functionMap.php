@@ -5926,7 +5926,7 @@ return [
 'levenshtein\'1' => ['int', 'str1'=>'string', 'str2'=>'string', 'cost_ins'=>'int', 'cost_rep'=>'int', 'cost_del'=>'int'],
 'libxml_clear_errors' => ['void'],
 'libxml_disable_entity_loader' => ['bool', 'disable='=>'bool'],
-'libxml_get_errors' => ['array<int,LibXMLError>'],
+'libxml_get_errors' => ['list<LibXMLError>'],
 'libxml_get_last_error' => ['LibXMLError|false'],
 'libxml_set_external_entity_loader' => ['bool', 'resolver_function'=>'callable'],
 'libxml_set_streams_context' => ['void', 'streams_context'=>'resource'],

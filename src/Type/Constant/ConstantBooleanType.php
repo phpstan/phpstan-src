@@ -8,12 +8,16 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StaticTypeFactory;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
@@ -109,6 +113,10 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
+		if (!$strictTypes) {
+			return TypeCombinator::union(new IntegerType(), new FloatType(), new StringType(), new BooleanType());
+		}
+
 		return $this;
 	}
 

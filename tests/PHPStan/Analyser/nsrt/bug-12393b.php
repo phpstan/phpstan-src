@@ -161,3 +161,57 @@ class Foo
 		assertType('int', $this->foo);
 	}
 }
+
+class FooBool
+{
+
+	public int $foo;
+
+	public function doFoo(bool $b): void
+	{
+		$this->foo = $b;
+		assertType('int', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = true;
+		assertType('int', $this->foo);
+	}
+}
+
+class FooBoolString
+{
+
+	public string $foo;
+
+	public function doFoo(bool $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = true;
+		assertType('string', $this->foo);
+	}
+}
+
+class FooIntString
+{
+
+	public string $foo;
+
+	public function doFoo(int $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = 1;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+}

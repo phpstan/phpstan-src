@@ -5649,7 +5649,11 @@ final class NodeScopeResolver
 								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType),
 							);
 						} else {
-							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+							$scope = $scope->assignExpression(
+								$var,
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(false), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(false), $propertyNativeType),
+							);
 						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
@@ -5740,7 +5744,11 @@ final class NodeScopeResolver
 								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType),
 							);
 						} else {
-							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+							$scope = $scope->assignExpression(
+								$var,
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(false), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(false), $propertyNativeType),
+							);
 						}
 					} else {
 						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));

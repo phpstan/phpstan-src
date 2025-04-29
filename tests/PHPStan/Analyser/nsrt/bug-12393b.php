@@ -143,3 +143,21 @@ class EntryPointLookup
 	}
 
 }
+
+class Foo
+{
+
+	public int $foo;
+
+	public function doFoo(string $s): void
+	{
+		$this->foo = $s;
+		assertType('int', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = 'foo';
+		assertType('int', $this->foo);
+	}
+}

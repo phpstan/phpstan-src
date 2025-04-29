@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -14,6 +15,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
 use function sprintf;
@@ -90,6 +92,14 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function toArrayKey(): Type
 	{
 		return $this;
+	}
+
+	public function toCoercedArgumentType(bool $strictTypes): Type
+	{
+		if (!$strictTypes) {
+			return TypeCombinator::union($this, new FloatType());
+		}
+		return TypeCombinator::union($this, $this->toFloat());
 	}
 
 	public function generalize(GeneralizePrecision $precision): Type

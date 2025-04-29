@@ -238,6 +238,24 @@ class FooIntRangeString
 	}
 }
 
+class FooNullableIntString
+{
+
+	public string $foo;
+
+	public function doFoo(?int $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = null;
+		assertType('*NEVER*', $this->foo); // null cannot be coerced to string, see https://3v4l.org/5k1Dl
+	}
+}
+
 class FooFloatString
 {
 

@@ -144,7 +144,7 @@ class EntryPointLookup
 
 }
 
-class Foo
+class FooStringInt
 {
 
 	public int $foo;
@@ -194,6 +194,8 @@ class FooBoolString
 	public function doBar(): void
 	{
 		$this->foo = true;
+		assertType('string', $this->foo);
+		$this->foo = false;
 		assertType('string', $this->foo);
 	}
 }

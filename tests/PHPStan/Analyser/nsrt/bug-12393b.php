@@ -216,6 +216,28 @@ class FooIntString
 	}
 }
 
+class FooIntRangeString
+{
+
+	public string $foo;
+
+	/**
+	 * @param int<5, 10> $b
+	 */
+	public function doFoo(int $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+
+	public function doBar(): void
+	{
+		$i = rand(5, 10);
+		$this->foo = $i;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+}
+
 class FooFloatString
 {
 

@@ -172,13 +172,13 @@ class FooBool
 	public function doFoo(bool $b): void
 	{
 		$this->foo = $b;
-		assertType('int', $this->foo);
+		assertType('0|1', $this->foo);
 	}
 
 	public function doBar(): void
 	{
 		$this->foo = true;
-		assertType('int', $this->foo);
+		assertType('1', $this->foo);
 	}
 }
 
@@ -190,15 +190,15 @@ class FooBoolString
 	public function doFoo(bool $b): void
 	{
 		$this->foo = $b;
-		assertType('string', $this->foo);
+		assertType("''|'1'", $this->foo);
 	}
 
 	public function doBar(): void
 	{
 		$this->foo = true;
-		assertType('string', $this->foo);
+		assertType("'1'", $this->foo);
 		$this->foo = false;
-		assertType('string', $this->foo);
+		assertType("''", $this->foo);
 	}
 }
 

@@ -215,3 +215,21 @@ class FooIntString
 		assertType('string', $this->foo); // could be numeric-string
 	}
 }
+
+class FooFloatString
+{
+
+	public string $foo;
+
+	public function doFoo(float $b): void
+	{
+		$this->foo = $b;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = 1.0;
+		assertType('string', $this->foo); // could be numeric-string
+	}
+}

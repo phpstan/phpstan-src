@@ -160,7 +160,7 @@ class FooStringInt
 	public function doBar(): void
 	{
 		$this->foo = 'foo';
-		assertType('0', $this->foo);
+		assertType('0', $this->foo); // should be *NEVER*
 	}
 }
 

@@ -31,6 +31,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -183,7 +184,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return new IntegerType();
+		return TypeCombinator::remove(new IntegerType(), new ConstantIntegerType(0));
 	}
 
 	public function toFloat(): Type

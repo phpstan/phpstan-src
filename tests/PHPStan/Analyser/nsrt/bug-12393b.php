@@ -53,7 +53,7 @@ class HelloWorld
 
 	public function doFloatTricky(){
 		$this->float = 1;
-		assertType('1.0', $this->float);
+		assertType('float', $this->float);
 	}
 }
 

@@ -50,9 +50,9 @@ final class ArrayColumnHelper
 		return [$returnValueType, $iterableAtLeastOnce];
 	}
 
-	public function getReturnIndexType(Type $arrayType, ?Type $indexType, Scope $scope): Type
+	public function getReturnIndexType(Type $arrayType, Type $indexType, Scope $scope): Type
 	{
-		if ($indexType !== null) {
+		if (!$indexType->isNull()->yes()) {
 			$iterableValueType = $arrayType->getIterableValueType();
 
 			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
@@ -69,7 +69,7 @@ final class ArrayColumnHelper
 		return new IntegerType();
 	}
 
-	public function handleAnyArray(Type $arrayType, Type $columnType, ?Type $indexType, Scope $scope): Type
+	public function handleAnyArray(Type $arrayType, Type $columnType, Type $indexType, Scope $scope): Type
 	{
 		[$returnValueType, $iterableAtLeastOnce] = $this->getReturnValueType($arrayType, $columnType, $scope);
 		if ($returnValueType instanceof NeverType) {
@@ -82,14 +82,14 @@ final class ArrayColumnHelper
 		if ($iterableAtLeastOnce->yes()) {
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 		}
-		if ($indexType === null) {
+		if ($indexType->isNull()->yes()) {
 			$returnType = TypeCombinator::intersect($returnType, new AccessoryArrayListType());
 		}
 
 		return $returnType;
 	}
 
-	public function handleConstantArray(ConstantArrayType $arrayType, Type $columnType, ?Type $indexType, Scope $scope): ?Type
+	public function handleConstantArray(ConstantArrayType $arrayType, Type $columnType, Type $indexType, Scope $scope): ?Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
@@ -102,7 +102,7 @@ final class ArrayColumnHelper
 				continue;
 			}
 
-			if ($indexType !== null) {
+			if (!$indexType->isNull()->yes()) {
 				$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
 				if ($type !== null) {
 					$keyType = $type;

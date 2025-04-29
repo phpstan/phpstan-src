@@ -2242,4 +2242,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12954(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12954.php'], []);
+	}
+
 }

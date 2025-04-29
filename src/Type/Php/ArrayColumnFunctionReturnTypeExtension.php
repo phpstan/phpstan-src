@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use function count;
 
@@ -32,7 +33,7 @@ final class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionRet
 
 		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
 		$columnType = $scope->getType($functionCall->getArgs()[1]->value);
-		$indexType = $numArgs >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$indexType = $numArgs >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : new NullType();
 
 		$constantArrayTypes = $arrayType->getConstantArrays();
 		if (count($constantArrayTypes) === 1) {

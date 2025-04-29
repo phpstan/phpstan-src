@@ -184,6 +184,9 @@ class StringType implements Type
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
 		if (!$strictTypes) {
+			if ($this->isNumericString()->no()) {
+				return TypeCombinator::union($this, $this->toBoolean());
+			}
 			return TypeCombinator::union($this->toInteger(), $this->toFloat(), $this, $this->toBoolean());
 		}
 

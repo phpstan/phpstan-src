@@ -322,3 +322,31 @@ class FooIntersectionToInt
 	}
 
 }
+
+class FooMixedToInt
+{
+
+	public int $foo;
+
+	public function doFoo(mixed $b): void
+	{
+		$this->foo = $b;
+		assertType('int', $this->foo);
+	}
+
+}
+
+
+class FooArrayToInt
+{
+
+	public int $foo;
+
+	public function doFoo(array $arr): void
+	{
+		$this->foo = $arr;
+		assertType('*NEVER*', $this->foo);
+	}
+
+}
+

@@ -214,7 +214,7 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
 		if (!$strictTypes) {
-			return TypeCombinator::union(new IntegerType(), new FloatType(), new StringType(), new BooleanType());
+			return TypeCombinator::union($this->toInteger(), $this->toFloat(), $this, $this->toBoolean());
 		}
 
 		return $this;

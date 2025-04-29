@@ -160,7 +160,7 @@ class FooStringInt
 	public function doBar(): void
 	{
 		$this->foo = 'foo';
-		assertType('int', $this->foo);
+		assertType('0', $this->foo);
 	}
 }
 
@@ -292,7 +292,7 @@ class FooStringToUnion
 	public function doBar(): void
 	{
 		$this->foo = "1.0";
-		assertType('float|int', $this->foo);
+		assertType('1|1.0', $this->foo);
 	}
 }
 

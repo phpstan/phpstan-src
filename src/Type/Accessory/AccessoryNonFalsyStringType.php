@@ -187,6 +187,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return TypeCombinator::remove(new IntegerType(), new ConstantIntegerType(0));
 	}
 
+	public function toBoolean(): BooleanType
+	{
+		return new ConstantBooleanType(true);
+	}
+
 	public function toFloat(): Type
 	{
 		return new FloatType();

@@ -161,6 +161,31 @@ class FooStringInt
 	{
 		$this->foo = 'foo';
 		assertType('*NEVER*', $this->foo);
+		$this->foo = '123';
+		assertType('123', $this->foo);
+	}
+
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param non-falsy-string $nonFalsy
+	 * @param numeric-string $numeric
+	 * @param literal-string $literal
+	 * @param lowercase-string $lower
+	 * @param uppercase-string $upper
+	 */
+	function doStrings($nonEmpty, $nonFalsy, $numeric, $literal, $lower, $upper) {
+		$this->foo = $nonEmpty;
+		assertType('int', $this->foo);
+		$this->foo = $nonFalsy;
+		assertType('int<min, -1>|int<1, max>', $this->foo);
+		$this->foo = $numeric;
+		assertType('int', $this->foo);
+		$this->foo = $literal;
+		assertType('int', $this->foo);
+		$this->foo = $lower;
+		assertType('int', $this->foo);
+		$this->foo = $upper;
+		assertType('int', $this->foo);
 	}
 }
 
@@ -179,6 +204,8 @@ class FooBool
 	{
 		$this->foo = true;
 		assertType('1', $this->foo);
+		$this->foo = false;
+		assertType('0', $this->foo);
 	}
 }
 
@@ -215,8 +242,12 @@ class FooIntString
 
 	public function doBar(): void
 	{
+		$this->foo = -1;
+		assertType("'-1'", $this->foo);
 		$this->foo = 1;
 		assertType("'1'", $this->foo);
+		$this->foo = 0;
+		assertType("'0'", $this->foo);
 	}
 }
 
@@ -309,22 +340,6 @@ class FooNumericToString
 
 }
 
-class FooIntersectionToInt
-{
-
-	public int $foo;
-
-	/**
-	 * @param numeric-string $b
-	 */
-	public function doFoo(string $b): void
-	{
-		$this->foo = $b;
-		assertType('int', $this->foo);
-	}
-
-}
-
 class FooMixedToInt
 {
 
@@ -341,7 +356,6 @@ class FooMixedToInt
 
 class FooArrayToInt
 {
-
 	public int $foo;
 
 	public function doFoo(array $arr): void
@@ -351,4 +365,3 @@ class FooArrayToInt
 	}
 
 }
-

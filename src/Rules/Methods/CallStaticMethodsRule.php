@@ -48,7 +48,11 @@ final class CallStaticMethodsRule implements Rule
 		}
 
 		foreach ($methodNameScopes as $methodName => $methodScope) {
-			$errors = array_merge($errors, $this->processSingleMethodCall($methodScope, $node, $methodName));
+			$errors = array_merge($errors, $this->processSingleMethodCall(
+				$methodScope,
+				$node,
+				(string) $methodName, // @phpstan-ignore cast.useless
+			));
 		}
 
 		return $errors;

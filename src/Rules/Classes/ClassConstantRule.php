@@ -64,7 +64,11 @@ final class ClassConstantRule implements Rule
 		}
 
 		foreach ($constantNameScopes as $constantName => $constantScope) {
-			$errors = array_merge($errors, $this->processSingleClassConstFetch($constantScope, $node, $constantName));
+			$errors = array_merge($errors, $this->processSingleClassConstFetch(
+				$constantScope,
+				$node,
+				(string) $constantName, // @phpstan-ignore cast.useless
+			));
 		}
 
 		return $errors;

@@ -1570,6 +1570,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug12949(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12949.php');
+		$this->assertCount(3, $errors);
+		$this->assertSame('Call to an undefined method object::0().', $errors[0]->getMessage());
+		$this->assertSame('Call to an undefined static method object::0().', $errors[1]->getMessage());
+		$this->assertSame('Access to undefined constant object::0.', $errors[2]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

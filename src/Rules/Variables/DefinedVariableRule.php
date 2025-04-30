@@ -48,7 +48,11 @@ final class DefinedVariableRule implements Rule
 		}
 
 		foreach ($variableNameScopes as $name => $variableScope) {
-			$errors = array_merge($errors, $this->processSingleVariable($variableScope, $node, $name));
+			$errors = array_merge($errors, $this->processSingleVariable(
+				$variableScope,
+				$node,
+				(string) $name, // @phpstan-ignore cast.useless
+			));
 		}
 
 		return $errors;

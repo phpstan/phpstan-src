@@ -388,7 +388,7 @@ class FooIntRangeString
 	{
 		$i = rand(5, 10);
 		$this->foo = $i;
-		assertType("'10'|'5'|'6'|'7'|'8'|'9'", $this->foo); // could be numeric-string
+		assertType("'10'|'5'|'6'|'7'|'8'|'9'", $this->foo);
 	}
 }
 
@@ -400,7 +400,7 @@ class FooNullableIntString
 	public function doFoo(?int $b): void
 	{
 		$this->foo = $b;
-		assertType('lowercase-string&numeric-string&uppercase-string', $this->foo); // could be numeric-string
+		assertType('lowercase-string&numeric-string&uppercase-string', $this->foo);
 	}
 
 	public function doBar(): void

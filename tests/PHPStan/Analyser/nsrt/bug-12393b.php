@@ -277,7 +277,7 @@ class FooStringBool
 	}
 }
 
-class FooBool
+class FooBoolInt
 {
 
 	public int $foo;
@@ -336,6 +336,37 @@ class FooIntString
 		assertType("'1'", $this->foo);
 		$this->foo = 0;
 		assertType("'0'", $this->foo);
+	}
+}
+
+class FooIntBool
+{
+
+	public bool $foo;
+
+	public function doFoo(int $b): void
+	{
+		$this->foo = $b;
+		assertType('bool', $this->foo);
+
+		if ($b !== 0) {
+			$this->foo = $b;
+			assertType('true', $this->foo);
+		}
+		if ($b !== 1) {
+			$this->foo = $b;
+			assertType('bool', $this->foo);
+		}
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = -1;
+		assertType("true", $this->foo);
+		$this->foo = 1;
+		assertType("true", $this->foo);
+		$this->foo = 0;
+		assertType("false", $this->foo);
 	}
 }
 

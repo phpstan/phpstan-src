@@ -189,6 +189,94 @@ class FooStringInt
 	}
 }
 
+class FooStringFloat
+{
+
+	public float $foo;
+
+	public function doFoo(string $s): void
+	{
+		$this->foo = $s;
+		assertType('float', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = 'foo';
+		assertType('*NEVER*', $this->foo);
+		$this->foo = '123';
+		assertType('123.0', $this->foo);
+	}
+
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param non-falsy-string $nonFalsy
+	 * @param numeric-string $numeric
+	 * @param literal-string $literal
+	 * @param lowercase-string $lower
+	 * @param uppercase-string $upper
+	 */
+	function doStrings($nonEmpty, $nonFalsy, $numeric, $literal, $lower, $upper) {
+		$this->foo = $nonEmpty;
+		assertType('float', $this->foo);
+		$this->foo = $nonFalsy;
+		assertType('float', $this->foo);
+		$this->foo = $numeric;
+		assertType('float', $this->foo);
+		$this->foo = $literal;
+		assertType('float', $this->foo);
+		$this->foo = $lower;
+		assertType('float', $this->foo);
+		$this->foo = $upper;
+		assertType('float', $this->foo);
+	}
+}
+
+class FooStringBool
+{
+
+	public bool $foo;
+
+	public function doFoo(string $s): void
+	{
+		$this->foo = $s;
+		assertType('bool', $this->foo);
+	}
+
+	public function doBar(): void
+	{
+		$this->foo = '0';
+		assertType('false', $this->foo);
+		$this->foo = 'foo';
+		assertType('true', $this->foo);
+		$this->foo = '123';
+		assertType('true', $this->foo);
+	}
+
+	/**
+	 * @param non-empty-string $nonEmpty
+	 * @param non-falsy-string $nonFalsy
+	 * @param numeric-string $numeric
+	 * @param literal-string $literal
+	 * @param lowercase-string $lower
+	 * @param uppercase-string $upper
+	 */
+	function doStrings($nonEmpty, $nonFalsy, $numeric, $literal, $lower, $upper) {
+		$this->foo = $nonEmpty;
+		assertType('bool', $this->foo);
+		$this->foo = $nonFalsy;
+		assertType('true', $this->foo);
+		$this->foo = $numeric;
+		assertType('bool', $this->foo);
+		$this->foo = $literal;
+		assertType('bool', $this->foo);
+		$this->foo = $lower;
+		assertType('bool', $this->foo);
+		$this->foo = $upper;
+		assertType('bool', $this->foo);
+	}
+}
+
 class FooBool
 {
 

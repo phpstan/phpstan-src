@@ -1572,6 +1572,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug12949(): void
 	{
+		// Fetching class constants with a dynamic name is supported only on PHP 8.3 and later
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12949.php');
 		$this->assertCount(3, $errors);
 		$this->assertSame('Call to an undefined method object::0().', $errors[0]->getMessage());

@@ -5642,17 +5642,11 @@ final class NodeScopeResolver
 
 						if ($assignedTypeIsCompatible) {
 							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
-						} elseif ($scope->isDeclareStrictTypes()) {
-							$scope = $scope->assignExpression(
-								$var,
-								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType),
-								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType),
-							);
 						} else {
 							$scope = $scope->assignExpression(
 								$var,
-								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(false), $propertyNativeType),
-								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(false), $propertyNativeType),
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
 							);
 						}
 					} else {
@@ -5737,17 +5731,11 @@ final class NodeScopeResolver
 
 						if ($assignedTypeIsCompatible) {
 							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
-						} elseif ($scope->isDeclareStrictTypes()) {
-							$scope = $scope->assignExpression(
-								$var,
-								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(true), $propertyNativeType),
-								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(true), $propertyNativeType),
-							);
 						} else {
 							$scope = $scope->assignExpression(
 								$var,
-								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType(false), $propertyNativeType),
-								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType(false), $propertyNativeType),
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
 							);
 						}
 					} else {

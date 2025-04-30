@@ -19,4 +19,9 @@ class PDOStatement implements Traversable, IteratorAggregate
      * @return array{name: string, table?: string, native_type?: string, len: int, flags: array<int, string>, precision: int<0, max>, pdo_type: PDO::PARAM_* }|false
      */
     public function getColumnMeta(int $column) {}
+
+    /**
+     * @return Iterator
+     */
+    public function getIterator() {}
 }

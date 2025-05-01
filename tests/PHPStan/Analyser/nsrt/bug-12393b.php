@@ -584,7 +584,7 @@ class CallableString {
 
     public function doFoo(callable $foo): void {
         $this->foo = $foo;
-        assertType('string', $this->foo); // could be non-empty-string
+        assertType('callable-string|non-empty-string', $this->foo);
     }
 }
 

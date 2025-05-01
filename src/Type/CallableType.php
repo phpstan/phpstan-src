@@ -24,6 +24,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -331,7 +332,12 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
-		return TypeCombinator::union($this, new StringType(), new ArrayType(new MixedType(true), new MixedType(true)), new ObjectType(Closure::class));
+		return TypeCombinator::union(
+			$this,
+			TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+			new ArrayType(new MixedType(true), new MixedType(true)),
+			new ObjectType(Closure::class),
+		);
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic

@@ -21,6 +21,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 trait ObjectTypeTrait
 {
@@ -275,6 +276,10 @@ trait ObjectTypeTrait
 
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
+		if (!$strictTypes) {
+			return TypeCombinator::union($this, $this->toString());
+		}
+
 		return $this;
 	}
 

@@ -571,3 +571,17 @@ class StringableFoo {
         return 'Foo';
     }
 }
+
+class ObjectWithToStringMethod {
+    private string $foo;
+
+    public function doFoo(object $foo): void {
+        if (method_exists($foo, '__toString')) {
+            $this->foo = $foo;
+            assertType('string', $this->foo);
+        }
+    }
+    public function __toString(): string {
+        return 'Foo';
+    }
+}

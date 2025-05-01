@@ -484,3 +484,53 @@ class FooArrayToInt
 	}
 
 }
+
+class FooArray
+{
+    public array $foo;
+
+    /**
+     * @param non-empty-array $arr
+     */
+    public function doFoo(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('non-empty-array', $this->foo);
+
+        if (array_key_exists('foo', $arr)) {
+            $this->foo = $arr;
+            assertType("non-empty-array&hasOffset('foo')", $this->foo);
+        }
+
+        if (array_key_exists('foo', $arr) && $arr['foo'] === 'bar') {
+            $this->foo = $arr;
+            assertType("non-empty-array&hasOffsetValue('foo', 'bar')", $this->foo);
+        }
+    }
+
+}
+
+class FooList
+{
+    public array $foo;
+
+    /**
+     * @param non-empty-list $list
+     */
+    public function doFoo(array $list): void
+    {
+        $this->foo = $list;
+        assertType('non-empty-list', $this->foo);
+
+        if (array_key_exists(3, $list)) {
+            $this->foo = $list;
+            assertType("non-empty-list&hasOffset(3)", $this->foo);
+        }
+
+        if (array_key_exists(3, $list) && is_string($list[3])) {
+            $this->foo = $list;
+            assertType("non-empty-list&hasOffsetValue(3, string)", $this->foo);
+        }
+    }
+
+}

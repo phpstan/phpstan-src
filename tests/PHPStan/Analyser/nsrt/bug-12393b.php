@@ -304,9 +304,9 @@ class FooVoidInt {
     public function doFoo(): void {
         $this->foo = $this->returnVoid();
         assertType('null', $this->foo);
-        
+
         $this->fooNonNull = $this->returnVoid();
-        assertType('null', $this->foo); // should be *ERROR*
+        assertType('int|null', $this->foo); // should be *ERROR*
     }
 
     public function returnVoid(): void {
@@ -576,6 +576,16 @@ class FooList
         }
     }
 
+}
+
+// https://3v4l.org/LJiRB
+class CallableString {
+    private string $foo;
+
+    public function doFoo(callable $foo): void {
+        $this->foo = $foo;
+        assertType('string', $this->foo); // could be non-empty-string
+    }
 }
 
 // https://3v4l.org/VvUsp

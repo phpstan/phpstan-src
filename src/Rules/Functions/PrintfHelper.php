@@ -116,19 +116,16 @@ final class PrintfHelper
 		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
 
 		$result = [];
-		$positionToIdxMap = [];
 		$positionalPlaceholders = [];
-		$idx = $position = 0;
+		$idx = 0;
 
 		foreach ($placeholders as $placeholder) {
 			if (isset($placeholder['width']) && $placeholder['width'] !== '') {
-				$result[$idx] = ['strict-int' => 1];
-				$positionToIdxMap[$position++] = $idx++;
+				$result[$idx++] = ['strict-int' => 1];
 			}
 
 			if (isset($placeholder['precision']) && $placeholder['precision'] !== '') {
-				$result[$idx] = ['strict-int' => 1];
-				$positionToIdxMap[$position++] = $idx++;
+				$result[$idx++] = ['strict-int' => 1];
 			}
 
 			if (isset($placeholder['position']) && $placeholder['position'] !== '') {
@@ -137,8 +134,6 @@ final class PrintfHelper
 				continue;
 			}
 
-			$position++;
-			$positionToIdxMap[$position] = $idx;
 			$result[$idx++][$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? '')] = 1;
 		}
 
@@ -148,12 +143,7 @@ final class PrintfHelper
 		);
 
 		foreach ($positionalPlaceholders as $placeholder) {
-			$idx = $positionToIdxMap[$placeholder['position']] ?? null;
-
-			if ($idx === null) {
-				continue;
-			}
-
+			$idx = $placeholder['position'] - 1;
 			$result[$idx][$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? '')] = 1;
 		}
 

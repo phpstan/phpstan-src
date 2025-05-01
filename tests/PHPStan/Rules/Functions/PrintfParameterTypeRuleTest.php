@@ -84,6 +84,18 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 				'Placeholder #1 of function printf expects int, string given',
 				26,
 			],
+			[
+				'Placeholder #1 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				27,
+			],
+			[
+				'Placeholder #1 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				28,
+			],
+			[
+				'Placeholder #3 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				29,
+			],
 		]);
 	}
 

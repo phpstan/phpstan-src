@@ -507,7 +507,32 @@ class FooArray
             assertType("non-empty-array&hasOffsetValue('foo', 'bar')", $this->foo);
         }
     }
+}
 
+class FooTypedArray
+{
+    /**
+     * @var array<int>
+     */
+    public array $foo;
+
+    /**
+     * @param array<float> $arr
+     */
+    public function doFoo(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('array<float>', $this->foo);
+    }
+
+    /**
+     * @param array<string> $arr
+     */
+    public function doBar(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('array<string>', $this->foo);
+    }
 }
 
 class FooList

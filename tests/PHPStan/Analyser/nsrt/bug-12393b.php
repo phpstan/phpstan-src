@@ -306,7 +306,7 @@ class FooVoidInt {
         assertType('null', $this->foo);
 
         $this->fooNonNull = $this->returnVoid();
-        assertType('int|null', $this->foo); // should be *ERROR*
+        assertType('int|null', $this->foo); // should be *NEVER*
     }
 
     public function returnVoid(): void {
@@ -680,10 +680,23 @@ class StringableFoo {
         $this->foo = $foo;
         assertType('string', $this->foo);
     }
+
+    public function doFoo2(NotStringable $foo): void {
+        $this->foo = $foo;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    public function doFoo3(\BcMath\Number $foo): void {
+        $this->foo = $foo;
+        assertType('non-empty-string&numeric-string', $this->foo);
+    }
+
     public function __toString(): string {
         return 'Foo';
     }
 }
+
+final class NotStringable {}
 
 class ObjectWithToStringMethod {
     private string $foo;

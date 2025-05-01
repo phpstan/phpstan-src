@@ -30,6 +30,7 @@ parameters:
 			- DOMNamedNodeMap
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
+		checkPrintfParameterTypes: false
 		internalTag: false
 		newStaticInAbstractClassStaticMethod: false
 		checkExtensionsForComparisonOperators: false

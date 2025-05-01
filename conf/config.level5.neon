@@ -8,6 +8,8 @@ parameters:
 conditionalTags:
 	PHPStan\Rules\Functions\ParameterCastableToNumberRule:
 		phpstan.rules.rule: %featureToggles.checkParameterCastableToNumberFunctions%
+	PHPStan\Rules\Functions\PrintfParameterTypeRule:
+		phpstan.rules.rule: %featureToggles.checkPrintfParameterTypes%
 
 autowiredAttributeServices:
 	# registers rules with #[RegisteredRule] attribute
@@ -16,3 +18,5 @@ autowiredAttributeServices:
 services:
 	-
 		class: PHPStan\Rules\Functions\ParameterCastableToNumberRule
+	-
+		class: PHPStan\Rules\Functions\PrintfParameterTypeRule

@@ -33,6 +33,7 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		stricterFunctionMap: bool()
 		reportPreciseLineForUnusedFunctionParameter: bool()
+		checkPrintfParameterTypes: bool()
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()

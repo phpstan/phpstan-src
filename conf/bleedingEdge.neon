@@ -6,6 +6,7 @@ parameters:
 		skipCheckGenericClasses!: []
 		stricterFunctionMap: true
 		reportPreciseLineForUnusedFunctionParameter: true
+		checkPrintfParameterTypes: true
 		internalTag: true
 		newStaticInAbstractClassStaticMethod: true
 		checkExtensionsForComparisonOperators: true

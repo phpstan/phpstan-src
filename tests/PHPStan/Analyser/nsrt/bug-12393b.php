@@ -297,6 +297,24 @@ class FooBoolInt
 	}
 }
 
+class FooVoidInt {
+    private ?int $foo;
+    private int $fooNonNull;
+
+    public function doFoo(): void {
+        $this->foo = $this->returnVoid();
+        assertType('null', $this->foo);
+        
+        $this->fooNonNull = $this->returnVoid();
+        assertType('null', $this->foo); // should be *ERROR*
+    }
+
+    public function returnVoid(): void {
+        return;
+    }
+}
+
+
 class FooBoolString
 {
 

@@ -706,6 +706,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toCoercedArgumentType(bool $strictTypes): Type
 	{
+		if (!$strictTypes) {
+			return TypeCombinator::union($this, $this->toString());
+		}
+
 		return $this;
 	}
 

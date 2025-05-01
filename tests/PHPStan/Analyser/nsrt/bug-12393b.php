@@ -534,3 +534,15 @@ class FooList
     }
 
 }
+
+class StringableFoo {
+    private string $foo;
+
+    public function doFoo(StringableFoo $foo): void {
+        $this->foo = $foo;
+        assertType('string', $this->foo);
+    }
+    public function __toString(): string {
+        return 'Foo';
+    }
+}

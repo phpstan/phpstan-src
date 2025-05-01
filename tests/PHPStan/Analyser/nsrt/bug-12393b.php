@@ -501,6 +501,81 @@ class FooArrayToInt
 		assertType('*NEVER*', $this->foo);
 	}
 
+    /**
+     * @param non-empty-array $arr
+     */
+    public function doBar(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    /**
+     * @param non-empty-list $list
+     */
+    public function doBaz(array $list): void
+    {
+        $this->foo = $list;
+        assertType('*NEVER*', $this->foo);
+    }
+}
+
+class FooArrayToFloat
+{
+    public float $foo;
+
+    public function doFoo(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    /**
+     * @param non-empty-array $arr
+     */
+    public function doBar(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    /**
+     * @param non-empty-list $list
+     */
+    public function doBaz(array $list): void
+    {
+        $this->foo = $list;
+        assertType('*NEVER*', $this->foo);
+    }
+}
+
+class FooArrayToString
+{
+    public string $foo;
+
+    public function doFoo(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    /**
+     * @param non-empty-array $arr
+     */
+    public function doBar(array $arr): void
+    {
+        $this->foo = $arr;
+        assertType('*NEVER*', $this->foo);
+    }
+
+    /**
+     * @param non-empty-list $list
+     */
+    public function doBaz(array $list): void
+    {
+        $this->foo = $list;
+        assertType('*NEVER*', $this->foo);
+    }
 }
 
 class FooArray

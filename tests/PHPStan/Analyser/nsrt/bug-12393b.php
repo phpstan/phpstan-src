@@ -560,6 +560,16 @@ class FooList
 
 }
 
+// https://3v4l.org/VvUsp
+class CallableArray {
+    private array $foo;
+
+    public function doFoo(callable $foo): void {
+        $this->foo = $foo;
+        assertType('array', $this->foo); // could be non-empty-array
+    }
+}
+
 class StringableFoo {
     private string $foo;
 
@@ -585,3 +595,4 @@ class ObjectWithToStringMethod {
         return 'Foo';
     }
 }
+

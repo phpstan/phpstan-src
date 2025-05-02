@@ -163,46 +163,12 @@ final class PrintfHelper
 
 	private function getPlaceholdersCount(string $specifiersPattern, string $format): int
 	{
-		$addSpecifier = '';
-		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
-			$addSpecifier .= 'hH';
-		}
+		$paramIndices = array_keys($this->parsePlaceholders($specifiersPattern, $format));
 
-		$specifiers = sprintf($specifiersPattern, $addSpecifier);
-
-		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?(?<width>\*)?-?\d*(?:\.(?:\d+|(?<precision>\*))?)?' . $specifiers . '~';
-
-		$matches = Strings::matchAll($format, $pattern, PREG_SET_ORDER);
-
-		if (count($matches) === 0) {
-			return 0;
-		}
-
-		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
-
-		if (count($placeholders) === 0) {
-			return 0;
-		}
-
-		$maxPositionedNumber = 0;
-		$maxOrdinaryNumber = 0;
-		foreach ($placeholders as $placeholder) {
-			if (isset($placeholder['width']) && $placeholder['width'] !== '') {
-				$maxOrdinaryNumber++;
-			}
-
-			if (isset($placeholder['precision']) && $placeholder['precision'] !== '') {
-				$maxOrdinaryNumber++;
-			}
-
-			if (isset($placeholder['position']) && $placeholder['position'] !== '') {
-				$maxPositionedNumber = max((int) $placeholder['position'], $maxPositionedNumber);
-			} else {
-				$maxOrdinaryNumber++;
-			}
-		}
-
-		return max($maxPositionedNumber, $maxOrdinaryNumber);
+		return $paramIndices === []
+			? 0
+			// The indices start from 0
+			: max($paramIndices) + 1;
 	}
 
 }

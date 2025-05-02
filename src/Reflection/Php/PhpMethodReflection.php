@@ -324,7 +324,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	{
 		if ($this->nativeReturnType === null) {
 			$returnType = $this->reflection->getReturnType();
-			if ($returnType === null) {
+			if ($returnType === null && $this->declaringClass->isBuiltin()) {
 				$name = strtolower($this->getName());
 				if (in_array($this->getName(), ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
 					return $this->nativeReturnType = new VoidType();

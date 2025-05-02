@@ -26,6 +26,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	private static function findTestFiles(): iterable
 	{
 		foreach (self::findTestDataFilesFromDirectory(__DIR__ . '/nsrt') as $testFile) {
+			if (str_ends_with($testFile, 'tests/PHPStan/Analyser/nsrt/bug-2471.php') && PHP_VERSION_ID < 80000) {
+				continue;
+			}
+
 			yield $testFile;
 		}
 

@@ -329,8 +329,12 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				if (in_array($this->getName(), ['__construct', '__destruct', '__unset', '__wakeup', '__clone'], true)) {
 					return $this->nativeReturnType = new VoidType();
 				}
-				if ($name === '__tostring' && $this->declaringClass->isBuiltin()) {
-					return $this->nativeReturnType = new StringType();
+				if ($name === '__tostring') {
+					if ($this->declaringClass->isBuiltin()) {
+						return $this->nativeReturnType = new StringType();
+					} else {
+						return $this->nativeReturnType = new MixedType();
+					}
 				}
 				if ($name === '__isset') {
 					return $this->nativeReturnType = new BooleanType();

@@ -2,6 +2,7 @@
 
 namespace BugToStringType;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 class ParentClassWithToStringMixedReturn
@@ -30,5 +31,6 @@ class Consumer extends WithParentMixedReturn
 
 function test(Consumer $test): void
 {
-	assertType('mixed', $test->__toString());
+	assertType('string', $test->__toString());
+	assertNativeType('mixed', $test->__toString());
 }

@@ -332,7 +332,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 				if ($name === '__tostring') {
 					return $this->nativeReturnType = $this->declaringClass->isBuiltin()
 						? new StringType()
-						: new MixedType();
+						: TypehintHelper::decideTypeFromReflection(
+							$returnType,
+							null,
+							$this->declaringClass,
+						);
 				}
 				if ($name === '__isset') {
 					return $this->nativeReturnType = new BooleanType();

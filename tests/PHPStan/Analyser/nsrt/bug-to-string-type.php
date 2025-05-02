@@ -2,6 +2,8 @@
 
 namespace BugToStringType;
 
+use function PHPStan\Testing\assertType;
+
 class ParentClassWithToStringMixedReturn
 {
     public function __toString()

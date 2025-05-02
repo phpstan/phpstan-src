@@ -49,6 +49,10 @@ printf('%s', true);
 printf('%d', new \stdClass());
 printf('%s', []);
 
+// Error, but already reported by PrintfParametersRule
+printf('%s');
+printf('%s', 1, 2);
+
 // OK
 printf('%s', 'a');
 printf('%s', new FooStringable());

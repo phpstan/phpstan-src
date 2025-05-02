@@ -42,10 +42,7 @@ final class PrintfHelper
 	{
 		$placeholders = $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format);
 		$result = [];
-		// int can go into float, string and mixed as well.
-		// float can't go into int, but it can go to string/mixed.
-		// string can go into mixed, but not into int/float.
-		// mixed can only go into mixed.
+		// Type on the left can go to the type on the right, but not vice versa.
 		$typeSequenceMap = array_flip(['int', 'float', 'string', 'mixed']);
 
 		foreach ($placeholders as $position => $types) {
@@ -69,11 +66,10 @@ final class PrintfHelper
 					foreach ($types as $acceptingType) {
 						$subresult = match ($acceptingType) {
 							'strict-int' => (new IntegerType())->accepts($t, true)->yes(),
-							// This allows float, constant non-numeric string, ...
 							'int' => ! $t->toInteger() instanceof ErrorType,
 							'float' => ! $t->toFloat() instanceof ErrorType,
 							// The function signature already limits the parameters to stringable types, so there's
-							// no point in checking it again here.
+							// no point in checking string again here.
 							'string', 'mixed' => true,
 						};
 

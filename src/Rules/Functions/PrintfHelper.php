@@ -14,6 +14,7 @@ use function array_keys;
 use function array_map;
 use function array_reduce;
 use function count;
+use function in_array;
 use function max;
 use function sort;
 use function sprintf;
@@ -64,14 +65,24 @@ final class PrintfHelper
 				$typeName,
 				static function (Type $t) use ($types): bool {
 					foreach ($types as $acceptingType) {
-						$subresult = match ($acceptingType) {
-							'strict-int' => (new IntegerType())->accepts($t, true)->yes(),
-							'int' => ! $t->toInteger() instanceof ErrorType,
-							'float' => ! $t->toFloat() instanceof ErrorType,
+						switch ($acceptingType) {
+							case 'strict-int':
+								$subresult = (new IntegerType())->accepts($t, true)->yes();
+								break;
+							case 'int':
+								$subresult = ! $t->toInteger() instanceof ErrorType;
+								break;
+							case 'float':
+								$subresult = ! $t->toFloat() instanceof ErrorType;
+								break;
 							// The function signature already limits the parameters to stringable types, so there's
 							// no point in checking string again here.
-							'string', 'mixed' => true,
-						};
+							case 'string':
+							case 'mixed':
+							default:
+								$subresult = true;
+								break;
+						}
 
 						if (!$subresult) {
 							return false;
@@ -149,12 +160,19 @@ final class PrintfHelper
 	/** @phpstan-return 'string'|'int'|'float'|'mixed' */
 	private function getAcceptingTypeBySpecifier(string $specifier): string
 	{
-		return match ($specifier) {
-			's' => 'string',
-			'd', 'u', 'c', 'o', 'x', 'X', 'b' => 'int',
-			'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H' => 'float',
-			default => 'mixed',
-		};
+		if ($specifier === 's') {
+			return 'string';
+		}
+
+		if (in_array($specifier, ['d', 'u', 'c', 'o', 'x', 'X', 'b'], true)) {
+			return 'int';
+		}
+
+		if (in_array($specifier, ['e', 'E', 'f', 'F', 'g', 'G', 'h', 'H'], true)) {
+			return 'float';
+		}
+
+		return 'mixed';
 	}
 
 	private function getPlaceholdersCount(string $specifiersPattern, string $format): int

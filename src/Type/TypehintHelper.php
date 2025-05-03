@@ -81,7 +81,6 @@ final class TypehintHelper
 		if ($phpDocType !== null && $type->isNull()->no()) {
 			$phpDocType = TypeCombinator::removeNull($phpDocType);
 		}
-
 		if ($type instanceof BenevolentUnionType) {
 			return $type;
 		}

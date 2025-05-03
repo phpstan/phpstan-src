@@ -68,8 +68,6 @@ final class TypehintHelper
 		$type = ParserNodeTypeToPHPStanType::resolve($typeNode, $selfClass);
 		if ($reflectionType->allowsNull()) {
 			$type = TypeCombinator::addNull($type);
-		} elseif ($phpDocType !== null) {
-			$phpDocType = TypeCombinator::removeNull($phpDocType);
 		}
 
 		return self::decideType($type, $phpDocType);
@@ -80,6 +78,10 @@ final class TypehintHelper
 		?Type $phpDocType,
 	): Type
 	{
+		if ($phpDocType !== null && $type->isNull()->no()) {
+			$phpDocType = TypeCombinator::removeNull($phpDocType);
+		}
+
 		if ($type instanceof BenevolentUnionType) {
 			return $type;
 		}

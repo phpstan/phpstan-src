@@ -5,19 +5,19 @@ namespace Bug10893;
 use function PHPStan\Testing\assertType;
 
 /**
- * @param non-falsy-string&numeric-string $str
+ * @param numeric-string $str
  */
 function hasMicroseconds(\DateTimeInterface $value, string $str): bool
 {
-	assertType('non-falsy-string&numeric-string', $str);
+	assertType('numeric-string', $str);
 	assertType('int', (int)$str);
 	assertType('bool', (int)$str !== 0);
 
-	assertType('non-falsy-string&numeric-string', $value->format('u'));
+	assertType('numeric-string', $value->format('u'));
 	assertType('int', (int)$value->format('u'));
 	assertType('bool', (int)$value->format('u') !== 0);
 
-	assertType('non-falsy-string&numeric-string', $value->format('v'));
+	assertType('numeric-string', $value->format('v'));
 	assertType('int', (int)$value->format('v'));
 	assertType('bool', (int)$value->format('v') !== 0);
 

@@ -76,11 +76,11 @@ final class DateFunctionReturnTypeHelper
 				return $this->buildNumericRangeType(0, 1, false);
 			case 'u':
 				return $useMicrosec
-					? new IntersectionType([new StringType(), new AccessoryNonFalsyStringType(), new AccessoryNumericStringType()])
+					? new IntersectionType([new StringType(), new AccessoryNumericStringType()])
 					: new ConstantStringType('000000');
 			case 'v':
 				return $useMicrosec
-					? new IntersectionType([new StringType(), new AccessoryNonFalsyStringType(), new AccessoryNumericStringType()])
+					? new IntersectionType([new StringType(), new AccessoryNumericStringType()])
 					: new ConstantStringType('000');
 		}
 

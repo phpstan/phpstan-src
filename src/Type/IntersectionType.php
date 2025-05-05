@@ -1029,10 +1029,10 @@ class IntersectionType implements CompoundType
 	public function toArrayKey(): Type
 	{
 		if ($this->isNumericString()->yes()) {
-			return new UnionType([
+			return TypeCombinator::union(
 				new IntegerType(),
 				$this,
-			]);
+			);
 		}
 
 		if ($this->isString()->yes()) {

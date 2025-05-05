@@ -94,7 +94,7 @@ final class PhpFunctionReflection implements FunctionReflection
 					null,
 					$this->getParameters(),
 					$this->isVariadic(),
-					$this->getReturnType(),
+					null,
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
 				),

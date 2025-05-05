@@ -79,7 +79,6 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
-		$returnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getReturnType(), $method->getVariants())), $this->methods));
 		$phpDocReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getPhpDocReturnType(), $method->getVariants())), $this->methods));
 		$nativeReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getNativeReturnType(), $method->getVariants())), $this->methods));
 
@@ -88,7 +87,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$acceptor->getResolvedTemplateTypeMap(),
 			$acceptor->getParameters(),
 			$acceptor->isVariadic(),
-			$returnType,
+			null,
 			$phpDocReturnType,
 			$nativeReturnType,
 			$acceptor->getCallSiteVarianceMap(),

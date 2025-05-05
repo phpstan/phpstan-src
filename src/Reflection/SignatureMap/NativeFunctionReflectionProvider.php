@@ -139,7 +139,7 @@ final class NativeFunctionReflectionProvider
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),
-					TypehintHelper::decideType($functionSignature->getReturnType(), $phpDocReturnType),
+					null,
 					$phpDocReturnType ?? new MixedType(),
 					$functionSignature->getReturnType(),
 				);

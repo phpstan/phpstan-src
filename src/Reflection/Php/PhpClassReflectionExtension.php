@@ -954,10 +954,9 @@ final class PhpClassReflectionExtension
 		}
 
 		if ($stubPhpDocReturnType !== null) {
-			$returnType = $stubPhpDocReturnType;
 			$phpDocReturnType = $stubPhpDocReturnType;
 		} else {
-			$returnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
+			$phpDocReturnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
 		}
 
 		return new ExtendedFunctionVariant(
@@ -965,8 +964,8 @@ final class PhpClassReflectionExtension
 			null,
 			$parameters,
 			$methodSignature->isVariadic(),
-			$returnType,
-			$phpDocReturnType ?? new MixedType(),
+			null,
+			$phpDocReturnType,
 			$methodSignature->getNativeReturnType(),
 		);
 	}

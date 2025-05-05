@@ -202,7 +202,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 					null,
 					$this->getParameters(),
 					$this->isVariadic(),
-					$this->getReturnType(),
+					null,
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
 				),

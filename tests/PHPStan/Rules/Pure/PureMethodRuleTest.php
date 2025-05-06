@@ -215,7 +215,7 @@ class PureMethodRuleTest extends RuleTestCase
 	public function testBug12224(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__.'/data/bug-12224.php'], [
+		$this->analyse([__DIR__ . '/data/bug-12224.php'], [
 			['Method PHPStan\Rules\Pure\data\A::pureWithThrowsVoid() is marked as pure but returns void.', 47],
 		]);
 	}

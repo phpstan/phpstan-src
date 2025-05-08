@@ -5956,7 +5956,7 @@ final class NodeScopeResolver
 						$valueToWrite,
 						$hasOffsetType,
 					);
-				} else {
+				} elseif ($valueToWrite->isArray()->yes()) {
 					$valueToWrite = TypeCombinator::intersect(
 						$valueToWrite,
 						new NonEmptyArrayType(),

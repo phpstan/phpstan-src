@@ -361,11 +361,9 @@ class ArrayType implements Type
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
 	{
-		return TypeCombinator::intersect(
-			new self(
-				$this->keyType,
-				TypeCombinator::union($this->itemType, $valueType),
-			),
+		return new self(
+			$this->keyType,
+			TypeCombinator::union($this->itemType, $valueType),
 		);
 	}
 

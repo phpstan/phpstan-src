@@ -645,6 +645,9 @@ class IntersectionType implements CompoundType
 
 	public function isNonEmptyString(): TrinaryLogic
 	{
+		if ($this->isCallable()->yes() && $this->isString()->yes()) {
+			return TrinaryLogic::createYes();
+		}
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
 	}
 

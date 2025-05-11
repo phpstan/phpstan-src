@@ -1043,6 +1043,11 @@ parameters:
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
 			count: 3
+			path: src/Type/Generic/TemplateIterableType.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 3
 			path: src/Type/Generic/TemplateKeyOfType.php
 
 		-
@@ -1112,6 +1117,11 @@ parameters:
 
 		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IntersectionType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php
 

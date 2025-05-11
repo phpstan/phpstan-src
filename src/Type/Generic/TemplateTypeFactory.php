@@ -12,6 +12,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectShapeType;
@@ -105,6 +106,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof KeyOfType && ($boundClass === KeyOfType::class || $bound instanceof TemplateType)) {
 			return new TemplateKeyOfType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof IterableType && ($boundClass === IterableType::class || $bound instanceof TemplateType)) {
+			return new TemplateIterableType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
 		return new TemplateMixedType($scope, $strategy, $variance, $name, new MixedType(true), $default);

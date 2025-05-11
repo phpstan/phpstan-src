@@ -1469,6 +1469,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Access to an undefined property object::$bar.', $errors[0]->getMessage());
 	}
 
+	public function testBug12214(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12214.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug11640(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11640.php');

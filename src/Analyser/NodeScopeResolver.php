@@ -229,8 +229,7 @@ final class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	/** @var bool[] filePath(string) => bool(true) */
-	private array $analysedFiles = [];
+	private AnalysedFilesResolver $analysedFilesResolver;
 
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames;
@@ -284,6 +283,7 @@ final class NodeScopeResolver
 			}
 		}
 		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
+		$this->analysedFilesResolver = new AnalysedFilesResolver();
 	}
 
 	/**
@@ -292,7 +292,7 @@ final class NodeScopeResolver
 	 */
 	public function setAnalysedFiles(array $files): void
 	{
-		$this->analysedFiles = array_fill_keys($files, true);
+		$this->analysedFilesResolver->setAnalysedFiles($files);
 	}
 
 	/**
@@ -6275,7 +6275,7 @@ final class NodeScopeResolver
 				continue; // trait from eval or from PHP itself
 			}
 			$fileName = $this->fileHelper->normalizePath($traitFileName);
-			if (!isset($this->analysedFiles[$fileName])) {
+			if (!$this->analysedFilesResolver->isInAnalyzedFiles($fileName)) {
 				continue;
 			}
 			$adaptations = [];
@@ -6394,7 +6394,7 @@ final class NodeScopeResolver
 		$this->calledMethodStack[$stackName] = true;
 
 		$fileName = $this->fileHelper->normalizePath($declaringClass->getFileName());
-		if (!isset($this->analysedFiles[$fileName])) {
+		if (!$this->analysedFilesResolver->isInAnalyzedFiles($fileName)) {
 			return null;
 		}
 		$parserNodes = $this->parser->parseFile($fileName);

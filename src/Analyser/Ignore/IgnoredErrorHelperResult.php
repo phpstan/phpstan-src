@@ -2,11 +2,10 @@
 
 namespace PHPStan\Analyser\Ignore;
 
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\Analyser\Error;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
-use function array_fill_keys;
-use function array_key_exists;
 use function array_values;
 use function count;
 use function is_array;
@@ -43,12 +42,11 @@ final class IgnoredErrorHelperResult
 
 	/**
 	 * @param Error[] $errors
-	 * @param string[] $analysedFiles
 	 */
 	public function process(
 		array $errors,
 		bool $onlyFiles,
-		array $analysedFiles,
+		AnalysedFilesResolver $analysedFilesResolver,
 		bool $hasInternalErrors,
 	): IgnoredErrorHelperProcessedResult
 	{
@@ -190,8 +188,6 @@ final class IgnoredErrorHelperResult
 			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
 		}
 
-		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
-
 		if (!$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
 				$reportUnmatched = $unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
@@ -214,7 +210,8 @@ final class IgnoredErrorHelperResult
 						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false))->withIdentifier('ignore.count');
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
-					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {
+
+					if (!$analysedFilesResolver->isInAnalyzedFiles($unmatchedIgnoredError['realPath'])) {
 						continue;
 					}
 

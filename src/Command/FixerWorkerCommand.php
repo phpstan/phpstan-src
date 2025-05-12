@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use Clue\React\NDJson\Encoder;
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
@@ -302,7 +303,7 @@ final class FixerWorkerCommand extends Command
 				$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
 					$finalizerResult->getErrors(),
 					$isOnlyFiles,
-					$inceptionFiles,
+					new AnalysedFilesResolver($inceptionFiles),
 					$hasInternalErrors,
 				);
 				$ignoreFileErrors = [];
@@ -357,7 +358,7 @@ final class FixerWorkerCommand extends Command
 	 */
 	private function filterErrors(array $errors, IgnoredErrorHelperResult $ignoredErrorHelperResult, bool $onlyFiles, array $inceptionFiles, bool $hasInternalErrors): array
 	{
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $inceptionFiles, $hasInternalErrors);
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, new AnalysedFilesResolver($inceptionFiles), $hasInternalErrors);
 		$finalErrors = [];
 		foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
 			if ($error->getIdentifier() === null) {

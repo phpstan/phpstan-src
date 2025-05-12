@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
@@ -151,7 +152,7 @@ final class AnalyseApplication
 				}
 			}
 
-			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, new AnalysedFilesResolver($files), $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();

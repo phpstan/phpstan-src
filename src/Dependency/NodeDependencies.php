@@ -2,6 +2,7 @@
 
 namespace PHPStan\Dependency;
 
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -22,10 +23,9 @@ final class NodeDependencies
 	}
 
 	/**
-	 * @param array<string, true> $analysedFiles
 	 * @return string[]
 	 */
-	public function getFileDependencies(string $currentFile, array $analysedFiles): array
+	public function getFileDependencies(string $currentFile, AnalysedFilesResolver $analyzedFilesResolver): array
 	{
 		$dependencies = [];
 
@@ -40,7 +40,7 @@ final class NodeDependencies
 				continue;
 			}
 
-			if (!isset($analysedFiles[$dependencyFile])) {
+			if (!$analyzedFilesResolver->isInAnalyzedFiles($dependencyFile)) {
 				continue;
 			}
 

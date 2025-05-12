@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -23,7 +24,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-use function array_fill_keys;
 use function array_filter;
 use function array_merge;
 use function array_unshift;
@@ -136,17 +136,17 @@ final class WorkerCommand extends Command
 		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
 		$nodeScopeResolver->setAnalysedFiles($analysedFiles);
 
-		$analysedFiles = array_fill_keys($analysedFiles, true);
+		$analyzedFilesResolver = new AnalysedFilesResolver($analysedFiles);
 
 		$tcpConnector = new TcpConnector($loop);
-		$tcpConnector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $port))->then(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analyzedFilesResolver, $tmpFile, $insteadOfFile): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$in = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
-			$this->runWorker($container, $out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile);
+			$this->runWorker($container, $out, $in, $output, $analyzedFilesResolver, $tmpFile, $insteadOfFile);
 		});
 
 		$loop->run();
@@ -158,15 +158,12 @@ final class WorkerCommand extends Command
 		return 0;
 	}
 
-	/**
-	 * @param array<string, true> $analysedFiles
-	 */
 	private function runWorker(
 		Container $container,
 		WritableStreamInterface $out,
 		ReadableStreamInterface $in,
 		OutputInterface $output,
-		array $analysedFiles,
+		AnalysedFilesResolver $analysedFilesResolver,
 		?string $tmpFile,
 		?string $insteadOfFile,
 	): void
@@ -206,7 +203,7 @@ final class WorkerCommand extends Command
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 		$ruleRegistry = $container->getByType(RuleRegistry::class);
 		$collectorRegistry = $container->getByType(CollectorRegistry::class);
-		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$in->on('data', static function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFilesResolver, $tmpFile, $insteadOfFile): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -230,7 +227,7 @@ final class WorkerCommand extends Command
 					if ($file === $insteadOfFile) {
 						$file = $tmpFile;
 					}
-					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
+					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFilesResolver, $ruleRegistry, $collectorRegistry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
 					$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());

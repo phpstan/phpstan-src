@@ -7,7 +7,6 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
-use function array_fill_keys;
 use function array_merge;
 use function count;
 use function memory_get_peak_usage;
@@ -47,7 +46,7 @@ final class Analyser
 		}
 
 		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
-		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
+		$analyzedFilesResolver = new AnalysedFilesResolver($allAnalysedFiles);
 
 		/** @var list<Error> $errors */
 		$errors = [];
@@ -78,7 +77,7 @@ final class Analyser
 			try {
 				$fileAnalyserResult = $this->fileAnalyser->analyseFile(
 					$file,
-					$allAnalysedFiles,
+					$analyzedFilesResolver,
 					$this->ruleRegistry,
 					$this->collectorRegistry,
 					null,

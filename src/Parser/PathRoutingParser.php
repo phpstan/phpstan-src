@@ -2,8 +2,8 @@
 
 namespace PHPStan\Parser;
 
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\File\FileHelper;
-use function array_fill_keys;
 use function array_slice;
 use function count;
 use function explode;
@@ -18,8 +18,7 @@ final class PathRoutingParser implements Parser
 
 	private ?string $singleReflectionFile;
 
-	/** @var bool[] filePath(string) => bool(true) */
-	private array $analysedFiles = [];
+	private AnalysedFilesResolver $analysedFilesResolver;
 
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -30,6 +29,7 @@ final class PathRoutingParser implements Parser
 	)
 	{
 		$this->singleReflectionFile = $singleReflectionFile !== null ? $fileHelper->normalizePath($singleReflectionFile) : null;
+		$this->analysedFilesResolver = new AnalysedFilesResolver();
 	}
 
 	/**
@@ -37,7 +37,7 @@ final class PathRoutingParser implements Parser
 	 */
 	public function setAnalysedFiles(array $files): void
 	{
-		$this->analysedFiles = array_fill_keys($files, true);
+		$this->analysedFilesResolver->setAnalysedFiles($files);
 	}
 
 	public function parseFile(string $file): array
@@ -51,7 +51,7 @@ final class PathRoutingParser implements Parser
 		}
 
 		$file = $this->fileHelper->normalizePath($file);
-		if (!isset($this->analysedFiles[$file]) && $file !== $this->singleReflectionFile) {
+		if (!$this->analysedFilesResolver->isInAnalyzedFiles($file) && $file !== $this->singleReflectionFile) {
 			// check symlinked file that still might be in analysedFiles
 			$pathParts = explode(DIRECTORY_SEPARATOR, $file);
 			for ($i = count($pathParts); $i > 1; $i--) {
@@ -63,7 +63,7 @@ final class PathRoutingParser implements Parser
 				$realFilePath = realpath($file);
 				if ($realFilePath !== false) {
 					$normalizedRealFilePath = $this->fileHelper->normalizePath($realFilePath);
-					if (isset($this->analysedFiles[$normalizedRealFilePath])) {
+					if ($this->analysedFilesResolver->isInAnalyzedFiles($normalizedRealFilePath)) {
 						return $this->currentPhpVersionRichParser->parseFile($file);
 					}
 				}

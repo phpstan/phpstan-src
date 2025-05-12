@@ -63,12 +63,11 @@ final class FileAnalyser
 	}
 
 	/**
-	 * @param array<string, true> $analysedFiles
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 */
 	public function analyseFile(
 		string $file,
-		array $analysedFiles,
+		AnalysedFilesResolver $analysedFilesResolver,
 		RuleRegistry $ruleRegistry,
 		CollectorRegistry $collectorRegistry,
 		?callable $outerNodeCallback,
@@ -88,13 +87,14 @@ final class FileAnalyser
 		$exportedNodes = [];
 		$linesToIgnore = [];
 		$unmatchedLineIgnores = [];
+
 		if (is_file($file)) {
 			try {
-				$this->collectErrors($analysedFiles);
+				$this->collectErrors($analysedFilesResolver);
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors): void {
+				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFilesResolver, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors): void {
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -205,7 +205,7 @@ final class FileAnalyser
 
 					try {
 						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
-						foreach ($dependencies->getFileDependencies($scope->getFile(), $analysedFiles) as $dependentFile) {
+						foreach ($dependencies->getFileDependencies($scope->getFile(), $analysedFilesResolver) as $dependentFile) {
 							$fileDependencies[] = $dependentFile;
 						}
 						if ($dependencies->getExportedNode() !== null) {
@@ -224,7 +224,7 @@ final class FileAnalyser
 					}
 
 					$usedTraitDependencies = $this->dependencyResolver->resolveUsedTraitDependencies($node);
-					foreach ($usedTraitDependencies->getFileDependencies($scope->getFile(), $analysedFiles) as $dependentFile) {
+					foreach ($usedTraitDependencies->getFileDependencies($scope->getFile(), $analysedFilesResolver) as $dependentFile) {
 						$usedTraitFileDependencies[] = $dependentFile;
 					}
 				};
@@ -330,14 +330,11 @@ final class FileAnalyser
 		return $nodes[0]->getAttribute('linesToIgnore', []);
 	}
 
-	/**
-	 * @param array<string, true> $analysedFiles
-	 */
-	private function collectErrors(array $analysedFiles): void
+	private function collectErrors(AnalysedFilesResolver $analyzedFilesResolver): void
 	{
 		$this->filteredPhpErrors = [];
 		$this->allPhpErrors = [];
-		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
+		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analyzedFilesResolver): bool {
 			if ((error_reporting() & $errno) === 0) {
 				// silence @ operator
 				return true;
@@ -351,7 +348,7 @@ final class FileAnalyser
 				return true;
 			}
 
-			if (!isset($analysedFiles[$errfile])) {
+			if (!$analyzedFilesResolver->isInAnalyzedFiles($errfile)) {
 				return true;
 			}
 

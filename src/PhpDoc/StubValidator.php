@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\Analyser\AnalysedFilesResolver;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
@@ -97,7 +98,6 @@ use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use Throwable;
-use function array_fill_keys;
 use function count;
 use function sprintf;
 
@@ -137,14 +137,14 @@ final class StubValidator
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 		$pathRoutingParser->setAnalysedFiles($stubFiles);
 
-		$analysedFiles = array_fill_keys($stubFiles, true);
+		$analyzedFilesResolver = new AnalysedFilesResolver($stubFiles);
 
 		$errors = [];
 		foreach ($stubFiles as $stubFile) {
 			try {
 				$tmpErrors = $fileAnalyser->analyseFile(
 					$stubFile,
-					$analysedFiles,
+					$analyzedFilesResolver,
 					$ruleRegistry,
 					$collectorRegistry,
 					static function (): void {

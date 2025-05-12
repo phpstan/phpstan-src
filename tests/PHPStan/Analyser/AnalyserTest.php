@@ -680,7 +680,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, new AnalysedFilesResolver($normalizedFilePaths), $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {

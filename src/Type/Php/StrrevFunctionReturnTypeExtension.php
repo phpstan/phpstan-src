@@ -30,11 +30,11 @@ final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) < 1) {
-			return new StringType();
+			return null;
 		}
 
 		$inputType = $scope->getType($args[0]->value);
@@ -67,7 +67,7 @@ final class StrrevFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return new IntersectionType($accessoryTypes);
 		}
 
-		return new StringType();
+		return null;
 	}
 
 }

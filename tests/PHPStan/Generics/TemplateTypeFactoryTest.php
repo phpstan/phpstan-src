@@ -8,6 +8,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
@@ -65,6 +66,10 @@ class TemplateTypeFactoryTest extends PHPStanTestCase
 					new StringType(),
 					new IntegerType(),
 				]),
+			],
+			[
+				new IterableType(new IntegerType(), new StringType()),
+				new IterableType(new IntegerType(), new StringType()),
 			],
 		];
 	}

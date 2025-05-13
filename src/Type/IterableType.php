@@ -167,7 +167,7 @@ class IterableType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

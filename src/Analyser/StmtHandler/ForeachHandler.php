@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\StmtHandler;
 
+use Iterator;
 use IteratorAggregate;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -9,8 +10,10 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
+use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -127,6 +130,13 @@ final class ForeachHandler implements StmtHandler
 
 		$foreachIterateeType = $condResult->getType();
 		$foreachNativeIterateeType = $condResult->getNativeType();
+		$iteratorValidExpr = null;
+		if ((new ObjectType(Iterator::class))->isSuperTypeOf($foreachIterateeType)->yes()) {
+			$iteratorValidExpr = new BinaryOp\Identical(
+				new MethodCall($stmt->expr, 'valid'),
+				new ConstFetch(new Name\FullyQualified('true')),
+			);
+		}
 
 		if ($stmt->keyVar instanceof Variable) {
 			$keyTypeExpr = new NativeTypeExpr(
@@ -199,6 +209,9 @@ final class ForeachHandler implements StmtHandler
 			$storage = $originalStorage->duplicate();
 
 			$originalScope = $nonEmptyIterateeScope;
+			if ($iteratorValidExpr !== null) {
+				$originalScope = $originalScope->filterByTruthyValue($iteratorValidExpr);
+			}
 			// $originalScope may narrow the iteratee to a non-empty array - a genuinely
 			// different scope than its own. The narrowing is tracked by the scope
 			// (getTypeOnScope's authoritative read), so the iteratee only needs
@@ -233,6 +246,9 @@ final class ForeachHandler implements StmtHandler
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
+					if ($iteratorValidExpr !== null) {
+						$bodyScope = $bodyScope->filterByTruthyValue($iteratorValidExpr);
+					}
 					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
@@ -283,6 +299,9 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
+		if ($iteratorValidExpr !== null) {
+			$bodyScope = $bodyScope->filterByTruthyValue($iteratorValidExpr);
+		}
 		$finalEntryScope = $bodyScope;
 		$storage = $originalStorage;
 		$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
@@ -492,6 +511,10 @@ final class ForeachHandler implements StmtHandler
 		}
 		if ($context->isTopLevel() && $stmt->byRef) {
 			$finalScope = $finalScope->assignExpression(new ForeachValueByRefExpr($stmt->valueVar), new MixedType(), new MixedType());
+		}
+
+		if ($iteratorValidExpr !== null) {
+			$finalScope = $finalScope->filterByFalseyValue($iteratorValidExpr);
 		}
 
 		$bindingFlow = VariableFlow::sequence(

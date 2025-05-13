@@ -69,6 +69,8 @@ zend_string *pt_feh_identical_narrowing_helper_class = nullptr;
 zend_string *pt_feh_empty_or_object_narrowing_helper_class = nullptr;
 zend_string *pt_feh_traversable_class = nullptr;
 zend_string *pt_feh_iterator_aggregate_class = nullptr;
+zend_string *pt_feh_iterator_class = nullptr;
+zend_string *pt_feh_valid = nullptr;
 zend_string *pt_feh_get_iterator = nullptr;
 
 /* $node->getAttributes() / ->setAttributes($attributes) */
@@ -374,6 +376,8 @@ public:
 		if (UNEXPECTED(foreachIterateeType.isUndef())) return zv::Val();
 		zv::Val foreachNativeIterateeType = pt_expression_result_get_native_type(condResult.raw());
 		if (UNEXPECTED(foreachNativeIterateeType.isUndef())) return zv::Val();
+		zv::Val iteratorValidExpr = newIteratorValidExpr(iteratee, foreachIterateeType.raw());
+		if (UNEXPECTED(iteratorValidExpr.isUndef())) return zv::Val();
 
 		if (parts.keyVarIsVariable) {
 			zv::Val keyTypeExpr = newIterableTypeExpr(originalScope.raw(), foreachIterateeType.raw(), foreachNativeIterateeType.raw(), true);
@@ -458,6 +462,10 @@ public:
 			if (UNEXPECTED(storage.isUndef())) return zv::Val();
 
 			originalScope = zv::Val::copyOf(nonEmptyIterateeScope.ref());
+			if (!iteratorValidExpr.isNull()) {
+				originalScope = pt_mutating_scope_filter_by_value(Z_OBJ_P(originalScope.raw()), Z_OBJ_P(iteratorValidExpr.raw()), true);
+				if (UNEXPECTED(originalScope.isUndef())) return zv::Val();
+			}
 			// $originalScope may narrow the iteratee to a non-empty array - a genuinely
 			// different scope than its own. The narrowing is tracked by the scope
 			// (getTypeOnScope's authoritative read), so the iteratee only needs
@@ -506,6 +514,10 @@ public:
 					zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 					bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), nonEmptyIterateeScope.raw());
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+					if (!iteratorValidExpr.isNull()) {
+						bodyScope = pt_mutating_scope_filter_by_value(Z_OBJ_P(bodyScope.raw()), Z_OBJ_P(iteratorValidExpr.raw()), true);
+						if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+					}
 					if (!prevEntryScope.isNull()) {
 						bool equal;
 						if (UNEXPECTED(!ptlh::scopesEqual(bodyScope.raw(), prevEntryScope.raw(), equal))) return zv::Val();
@@ -579,6 +591,10 @@ public:
 
 		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), nonEmptyIterateeScope.raw());
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+		if (!iteratorValidExpr.isNull()) {
+			bodyScope = pt_mutating_scope_filter_by_value(Z_OBJ_P(bodyScope.raw()), Z_OBJ_P(iteratorValidExpr.raw()), true);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+		}
 		zv::Val finalEntryScope = zv::Val::copyOf(bodyScope.ref());
 		zval *lastPass = lastRecordedPass(previousPass);
 		zval *storage = originalStorage;
@@ -804,6 +820,12 @@ public:
 			zv::Val assigned = pt_mutating_scope_assign_expression(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(byRefExpr.raw()), mixed.raw(), nativeMixed.raw());
 			if (UNEXPECTED(assigned.isUndef())) return zv::Val();
 			finalScope = std::move(assigned);
+		}
+
+		if (!iteratorValidExpr.isNull()) {
+			zv::Val filtered = pt_mutating_scope_filter_by_value(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(iteratorValidExpr.raw()), false);
+			if (UNEXPECTED(filtered.isUndef())) return zv::Val();
+			finalScope = std::move(filtered);
 		}
 
 		zv::Val bindingFlow;
@@ -1777,6 +1799,35 @@ private:
 		return pt_mutating_scope_assign_variable(Z_OBJ_P(scope), name, type, nativeType, pt_trinary_singleton(PT_TRI_YES));
 	}
 
+	/* processStmt()'s `$iteratorValidExpr`: `$iteratee->valid() === true` when
+	 * the iterated type is always an Iterator, null otherwise, UNDEF = pending
+	 * exception */
+	zv::Val newIteratorValidExpr(zval *iteratee, zval *iterateeType) const
+	{
+		zv::Val iteratorType;
+		{
+			zval out;
+			if (UNEXPECTED(!pt_object_type_new(&out, pt_feh_iterator_class))) return zv::Val();
+			iteratorType = zv::Val::adopt(out);
+		}
+		zend_long superType = isSuperTypeOf(iteratorType.raw(), iterateeType);
+		if (UNEXPECTED(superType < 0)) return zv::Val();
+		if (superType != PT_TRI_YES) return zv::Val::null();
+
+		zv::Args methodCallArgv{iteratee, pt_feh_valid};
+		zv::Val methodCall = pt_type_new(PT_CLASS_METHOD_CALL, 2, methodCallArgv);
+		if (UNEXPECTED(methodCall.isUndef())) return zv::Val();
+		zval name;
+		ZVAL_STRINGL(&name, "true", 4);
+		zv::Val nameValue = zv::Val::adopt(name);
+		zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, nameValue.raw());
+		if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
+		zv::Val constFetch = pt_type_new(PT_CLASS_CONST_FETCH, 1, fullyQualified.raw());
+		if (UNEXPECTED(constFetch.isUndef())) return zv::Val();
+		zv::Args identicalArgv{methodCall.raw(), constFetch.raw()};
+		return pt_type_new(PT_CLASS_IDENTICAL_EXPR, 2, identicalArgv);
+	}
+
 	/* Mirrors the private getTraversableForeachThrowPoint(); the throw point
 	 * or null, UNDEF = pending exception */
 	zv::Val getTraversableForeachThrowPoint(zval *scope, zval *iteratee, zval *exprType) const
@@ -1994,6 +2045,8 @@ PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 	pt_feh_empty_or_object_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\ForeachEmptyOrObjectNarrowingHelper"), 1);
 	pt_feh_traversable_class = zend_string_init_interned(PT_LC("Traversable"), 1);
 	pt_feh_iterator_aggregate_class = zend_string_init_interned(PT_LC("IteratorAggregate"), 1);
+	pt_feh_iterator_class = zend_string_init_interned(PT_LC("Iterator"), 1);
+	pt_feh_valid = zend_string_init_interned(PT_LC("valid"), 1);
 	pt_feh_get_iterator = zend_string_init_interned(PT_LC("getIterator"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ForeachHandler");

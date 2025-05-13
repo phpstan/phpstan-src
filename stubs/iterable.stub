@@ -34,12 +34,21 @@ interface Iterator extends Traversable
 {
 
 	/**
-	 * @return TValue
+	 * @phpstan-assert-if-true =TValue $this->current()
+	 * @phpstan-assert-if-false =null $this->current()
+	 *
+	 * @phpstan-assert-if-true =TKey $this->key()
+	 * @phpstan-assert-if-false =null $this->key()
+	 */
+	public function valid(): bool;
+
+	/**
+	 * @return TValue|null
 	 */
 	public function current();
 
 	/**
-	 * @return TKey
+	 * @return TKey|null
 	 */
 	public function key();
 

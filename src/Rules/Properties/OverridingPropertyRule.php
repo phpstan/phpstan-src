@@ -135,7 +135,7 @@ final class OverridingPropertyRule implements Rule
 			))->identifier('property.visibility')->nonIgnorable()->build();
 		}
 
-		if ($prototype->isFinal()->yes()) {
+		if ($prototype->isFinalByKeyword()->yes()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s overrides final property %s::$%s.',
 				$classReflection->getDisplayName(),

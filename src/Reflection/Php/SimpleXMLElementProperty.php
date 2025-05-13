@@ -127,7 +127,7 @@ final class SimpleXMLElementProperty implements ExtendedPropertyReflection
 		return TrinaryLogic::createNo();
 	}
 
-	public function isFinal(): TrinaryLogic
+	public function isFinalByKeyword(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

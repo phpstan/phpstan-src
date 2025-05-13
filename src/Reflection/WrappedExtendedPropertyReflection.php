@@ -109,7 +109,7 @@ final class WrappedExtendedPropertyReflection implements ExtendedPropertyReflect
 		return TrinaryLogic::createNo();
 	}
 
-	public function isFinal(): TrinaryLogic
+	public function isFinalByKeyword(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

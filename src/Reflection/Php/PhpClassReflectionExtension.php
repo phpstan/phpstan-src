@@ -227,7 +227,7 @@ final class PhpClassReflectionExtension
 		$isDeprecated = $deprecation !== null;
 		$isInternal = false;
 		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
-		$isFinalByPhpDoc = $classReflection->isFinal();
+		$isFinal = $classReflection->isFinal() || $propertyReflection->isFinal();
 		$isAllowedPrivateMutation = false;
 
 		if (
@@ -309,7 +309,7 @@ final class PhpClassReflectionExtension
 			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
-			$isFinalByPhpDoc = $isFinalByPhpDoc || $resolvedPhpDoc->isFinal();
+			$isFinal = $isFinal || $resolvedPhpDoc->isFinal();
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 		}
 
@@ -437,7 +437,7 @@ final class PhpClassReflectionExtension
 			$isReadOnlyByPhpDoc,
 			$isAllowedPrivateMutation,
 			$this->attributeReflectionFactory->fromNativeReflection($propertyReflection->getAttributes(), InitializerExprContext::fromClass($declaringClassReflection->getName(), $declaringClassReflection->getFileName())),
-			$isFinalByPhpDoc,
+			$isFinal,
 		);
 	}
 

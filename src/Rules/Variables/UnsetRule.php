@@ -82,6 +82,7 @@ final class UnsetRule implements Rule
 					if (
 						!$propertyReflection->isPrivate()
 						&& !$propertyReflection->isFinal()->yes()
+						&& !$propertyReflection->isFinalByPhpDoc()
 						&& !$propertyReflection->getDeclaringClass()->isFinal()
 					) {
 						$errors[] = RuleErrorBuilder::message(

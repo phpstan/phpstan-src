@@ -167,34 +167,22 @@ class UnsetRuleTest extends RuleTestCase
 			],
 			[
 				'Cannot unset property UnsetHookedProperty\NonFinalClass::$publicProperty because it might have hooks in a subclass.',
-				13,
+				14,
 			],
 			[
 				'Cannot unset property UnsetHookedProperty\ContainerClass::$finalClass because it might have hooks in a subclass.',
-				83,
+				86,
 			],
 			[
 				'Cannot unset property UnsetHookedProperty\ContainerClass::$nonFinalClass because it might have hooks in a subclass.',
-				87,
+				91,
 			],
 			[
 				'Cannot unset hooked UnsetHookedProperty\Foo::$iii property.',
-				89,
-			],
-			[
-				'Cannot unset property UnsetHookedProperty\ContainerClass::$foo because it might have hooks in a subclass.',
-				90,
-			],
-			[
-				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
-				92,
-			],
-			[
-				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
 				93,
 			],
 			[
-				'Cannot unset property UnsetHookedProperty\ContainerClass::$user because it might have hooks in a subclass.',
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$foo because it might have hooks in a subclass.',
 				94,
 			],
 			[
@@ -202,20 +190,32 @@ class UnsetRuleTest extends RuleTestCase
 				96,
 			],
 			[
-				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
 				97,
 			],
 			[
-				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
+				'Cannot unset property UnsetHookedProperty\ContainerClass::$user because it might have hooks in a subclass.',
 				98,
 			],
 			[
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				100,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$name property.',
+				101,
+			],
+			[
 				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
-				99,
+				102,
+			],
+			[
+				'Cannot unset hooked UnsetHookedProperty\User::$fullName property.',
+				103,
 			],
 			[
 				'Cannot unset property UnsetHookedProperty\ContainerClass::$arrayOfUsers because it might have hooks in a subclass.',
-				100,
+				104,
 			],
 		]);
 	}

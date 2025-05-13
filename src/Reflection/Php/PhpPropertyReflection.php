@@ -44,6 +44,7 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		private bool $isReadOnlyByPhpDoc,
 		private bool $isAllowedPrivateMutation,
 		private array $attributes,
+		private bool $isFinalByPhpDoc,
 	)
 	{
 	}
@@ -96,6 +97,11 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 	public function isReadOnlyByPhpDoc(): bool
 	{
 		return $this->isReadOnlyByPhpDoc;
+	}
+
+	public function isFinalByPhpDoc(): bool
+	{
+		return $this->isFinalByPhpDoc;
 	}
 
 	public function getReadableType(): Type

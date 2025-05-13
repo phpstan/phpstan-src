@@ -218,7 +218,7 @@ final class PhpClassReflectionExtension
 					$types[] = $value;
 				}
 
-				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, null, null, false, false, false, false, []);
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, null, null, false, false, false, false, [], false);
 			}
 		}
 
@@ -227,6 +227,7 @@ final class PhpClassReflectionExtension
 		$isDeprecated = $deprecation !== null;
 		$isInternal = false;
 		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
+		$isFinalByPhpDoc = $classReflection->isFinal();
 		$isAllowedPrivateMutation = false;
 
 		if (
@@ -308,6 +309,7 @@ final class PhpClassReflectionExtension
 			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
+			$isFinalByPhpDoc = $isFinalByPhpDoc || $resolvedPhpDoc->isFinal();
 			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 		}
 
@@ -435,6 +437,7 @@ final class PhpClassReflectionExtension
 			$isReadOnlyByPhpDoc,
 			$isAllowedPrivateMutation,
 			$this->attributeReflectionFactory->fromNativeReflection($propertyReflection->getAttributes(), InitializerExprContext::fromClass($declaringClassReflection->getName(), $declaringClassReflection->getFileName())),
+			$isFinalByPhpDoc,
 		);
 	}
 

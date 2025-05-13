@@ -9,6 +9,7 @@ function doUnset(Foo $foo, User $user, NonFinalClass $nonFinalClass, FinalClass 
 	unset($foo->ii);
 	unset($foo->iii);
 
+	unset($nonFinalClass->publicAnnotatedFinalProperty);
 	unset($nonFinalClass->publicFinalProperty);
 	unset($nonFinalClass->publicProperty);
 
@@ -49,6 +50,8 @@ class NonFinalClass {
 	private string $privateProperty;
 	public string $publicProperty;
 	final public string $publicFinalProperty;
+	/** @final */
+	public string $publicAnnotatedFinalProperty;
 
 	function doFoo() {
 		unset($this->privateProperty);
@@ -82,6 +85,7 @@ function dooNestedUnset(ContainerClass $containerClass) {
 	unset($containerClass->finalClass->publicProperty);
 	unset($containerClass->finalClass);
 
+	unset($containerClass->nonFinalClass->publicAnnotatedFinalProperty);
 	unset($containerClass->nonFinalClass->publicFinalProperty);
 	unset($containerClass->nonFinalClass->publicProperty);
 	unset($containerClass->nonFinalClass);

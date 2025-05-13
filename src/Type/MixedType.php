@@ -37,6 +37,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function get_class;
 use function sprintf;
 
 /** @api */
@@ -310,11 +311,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
-			return false;
-		}
-
-		if ($type instanceof ErrorType) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

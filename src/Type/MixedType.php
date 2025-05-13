@@ -434,7 +434,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		$property = new DummyPropertyReflection();
+		$property = new DummyPropertyReflection($propertyName);
 		return new CallbackUnresolvedPropertyPrototypeReflection(
 			$property,
 			$property->getDeclaringClass(),
@@ -455,7 +455,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		$property = new DummyPropertyReflection();
+		$property = new DummyPropertyReflection($propertyName);
 		return new CallbackUnresolvedPropertyPrototypeReflection(
 			$property,
 			$property->getDeclaringClass(),

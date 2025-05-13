@@ -84,7 +84,7 @@ trait ObjectTypeTrait
 
 	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		$property = new DummyPropertyReflection();
+		$property = new DummyPropertyReflection($propertyName);
 		return new CallbackUnresolvedPropertyPrototypeReflection(
 			$property,
 			$property->getDeclaringClass(),
@@ -105,7 +105,7 @@ trait ObjectTypeTrait
 
 	public function getUnresolvedStaticPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		$property = new DummyPropertyReflection();
+		$property = new DummyPropertyReflection($propertyName);
 		return new CallbackUnresolvedPropertyPrototypeReflection(
 			$property,
 			$property->getDeclaringClass(),

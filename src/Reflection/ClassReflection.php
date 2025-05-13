@@ -738,7 +738,7 @@ final class ClassReflection
 
 		// For BC purpose
 		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			$property = $this->wrapExtendedProperty($this->getPhpExtension()->getStaticProperty($this, $propertyName));
+			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getStaticProperty($this, $propertyName));
 			if ($scope->canReadProperty($property)) {
 				return $this->properties[$key] = $property;
 			}
@@ -780,7 +780,7 @@ final class ClassReflection
 					continue;
 				}
 
-				$property = $this->wrapExtendedProperty($extension->getProperty($this, $propertyName));
+				$property = $this->wrapExtendedProperty($propertyName, $extension->getProperty($this, $propertyName));
 				if ($scope->canReadProperty($property)) {
 					return $this->instanceProperties[$key] = $property;
 				}
@@ -810,7 +810,7 @@ final class ClassReflection
 		}
 
 		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			$property = $this->wrapExtendedProperty($this->getPhpExtension()->getStaticProperty($this, $propertyName));
+			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getStaticProperty($this, $propertyName));
 			return $this->staticProperties[$key] = $property;
 		}
 

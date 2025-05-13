@@ -187,19 +187,27 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-final-property.php'], [
 			[
 				'Property OverridingFinalProperty\Bar::$a overrides final property OverridingFinalProperty\Foo::$a.',
-				21,
+				27,
 			],
 			[
 				'Property OverridingFinalProperty\Bar::$b overrides final property OverridingFinalProperty\Foo::$b.',
-				23,
+				29,
 			],
 			[
 				'Property OverridingFinalProperty\Bar::$c overrides final property OverridingFinalProperty\Foo::$c.',
-				25,
+				31,
 			],
 			[
 				'Property OverridingFinalProperty\Bar::$d overrides final property OverridingFinalProperty\Foo::$d.',
-				27,
+				33,
+			],
+			[
+				'Property OverridingFinalProperty\Bar::$e overrides @final property OverridingFinalProperty\Foo::$e.',
+				35,
+			],
+			[
+				'Property OverridingFinalProperty\Bar::$f overrides @final property OverridingFinalProperty\Foo::$f.',
+				37,
 			],
 		]);
 	}

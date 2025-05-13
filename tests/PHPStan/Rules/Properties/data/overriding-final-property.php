@@ -13,6 +13,12 @@ class Foo
 
 	protected private(set) int $d;
 
+	/** @final */
+	public $e;
+
+	/** @final */
+	protected $f;
+
 }
 
 class Bar extends Foo
@@ -25,5 +31,9 @@ class Bar extends Foo
 	public int $c;
 
 	public int $d;
+
+	public $e;
+
+	protected $f;
 
 }

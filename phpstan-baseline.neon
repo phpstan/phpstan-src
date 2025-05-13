@@ -1383,7 +1383,7 @@ parameters:
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\IterableType is error\-prone and deprecated\. Use Type\:\:isIterable\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 1
 			path: src/Type/IterableType.php
 
 		-

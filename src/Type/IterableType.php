@@ -20,6 +20,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use Traversable;
 use function array_merge;
+use function get_class;
 use function sprintf;
 
 /** @api */

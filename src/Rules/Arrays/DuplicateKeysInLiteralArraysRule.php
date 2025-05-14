@@ -9,10 +9,9 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\NeverType;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
+use function array_key_first;
 use function array_keys;
+use function array_search;
 use function count;
 use function implode;
 use function is_int;
@@ -89,15 +88,15 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			$duplicate = false;
-			$newValuesType = $keyValues;
+			$newValues = $keyValues;
 			foreach ($seenKeys as $seenKey) {
-				$offset = array_search($seenKey, $newValuesType, true);
+				$offset = array_search($seenKey, $newValues, true);
 				if ($offset !== false) {
-					unset($newValuesType[$offset]);
+					unset($newValues[$offset]);
 				}
 
 				if (
-					$newValuesType === []
+					$newValues === []
 				) {
 					$duplicate = true;
 					break;
@@ -105,25 +104,29 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			if (
-				$newValuesType !== []
+				$newValues !== []
 			) {
-				if (count($newValuesType) === 1) {
-					$newValue = $newValuesType[array_key_first($newValuesType)];
-					foreach ($seenUnions as $k => $seenKey) {
-						$offset = array_search($newValue, $seenKey, true);
-						if ($offset !== false) {
-							unset($seenUnions[$k][$offset]);
-
-							if (count($seenUnions[$k]) === 1) {
-								$ukey = array_key_first($seenUnions[$k]);
-								$seenKeys[] = $seenUnions[$k][$ukey];
-								unset($seenUnions[$k]);
-							}
+				if (count($newValues) === 1) {
+					$newValue = $newValues[array_key_first($newValues)];
+					foreach ($seenUnions as $k => $union) {
+						$offset = array_search($newValue, $union, true);
+						if ($offset === false) {
+							continue;
 						}
+
+						unset($seenUnions[$k][$offset]);
+
+						if (count($seenUnions[$k]) !== 1) {
+							continue;
+						}
+
+						$ukey = array_key_first($seenUnions[$k]);
+						$seenKeys[] = $seenUnions[$k][$ukey];
+						unset($seenUnions[$k]);
 					}
 					$seenKeys[] = $newValue;
 				} else {
-					$seenUnions[] = $newValuesType;
+					$seenUnions[] = $newValues;
 				}
 			}
 

@@ -153,6 +153,11 @@ final class UnionTypePropertyReflection implements ExtendedPropertyReflection
 		return TrinaryLogic::lazyExtremeIdentity($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isFinalByKeyword());
 	}
 
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isFinal());
+	}
+
 	public function isVirtual(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyExtremeIdentity($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isVirtual());

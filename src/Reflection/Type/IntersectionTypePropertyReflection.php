@@ -153,6 +153,11 @@ final class IntersectionTypePropertyReflection implements ExtendedPropertyReflec
 		return TrinaryLogic::lazyMaxMin($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isFinalByKeyword());
 	}
 
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyMaxMin($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isFinal());
+	}
+
 	public function isVirtual(): TrinaryLogic
 	{
 		return TrinaryLogic::lazyMaxMin($this->properties, static fn (ExtendedPropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isVirtual());

@@ -73,6 +73,11 @@ final class RewrittenDeclaringClassPropertyReflection implements ExtendedPropert
 		return $this->propertyReflection->isAbstract();
 	}
 
+	public function isFinalByKeyword(): TrinaryLogic
+	{
+		return $this->propertyReflection->isFinalByKeyword();
+	}
+
 	public function isFinal(): TrinaryLogic
 	{
 		return $this->propertyReflection->isFinal();

@@ -179,6 +179,11 @@ final class ResolvedPropertyReflection implements WrapperPropertyReflection
 		return $this->reflection->isFinalByKeyword();
 	}
 
+	public function isFinal(): TrinaryLogic
+	{
+		return $this->reflection->isFinal();
+	}
+
 	public function isVirtual(): TrinaryLogic
 	{
 		return $this->reflection->isVirtual();

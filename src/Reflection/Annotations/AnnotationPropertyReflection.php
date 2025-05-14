@@ -124,6 +124,11 @@ final class AnnotationPropertyReflection implements ExtendedPropertyReflection
 		return TrinaryLogic::createNo();
 	}
 
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isVirtual(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

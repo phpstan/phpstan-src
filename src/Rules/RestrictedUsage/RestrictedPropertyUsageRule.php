@@ -57,11 +57,11 @@ final class RestrictedPropertyUsageRule implements Rule
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($referencedClass);
-			if (!$classReflection->hasProperty($propertyName)) {
+			if (!$classReflection->hasInstanceProperty($propertyName)) {
 				continue;
 			}
 
-			$propertyReflection = $classReflection->getProperty($propertyName, $scope);
+			$propertyReflection = $classReflection->getInstanceProperty($propertyName, $scope);
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedPropertyUsage($propertyReflection, $scope);
 				if ($restrictedUsage === null) {

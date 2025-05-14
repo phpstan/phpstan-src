@@ -138,8 +138,8 @@ final class AccessStaticPropertiesRule implements Rule
 
 				$locationData = [];
 				$locationClassReflection = $this->reflectionProvider->getClass($class);
-				if ($locationClassReflection->hasProperty($name)) {
-					$locationData['property'] = $locationClassReflection->getProperty($name, $scope);
+				if ($locationClassReflection->hasStaticProperty($name)) {
+					$locationData['property'] = $locationClassReflection->getStaticProperty($name);
 				}
 
 				$messages = $this->classCheck->checkClassNames(

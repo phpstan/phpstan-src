@@ -60,7 +60,7 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 				$scope,
 				$node->class,
 				'', // We don't care about the error message
-				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($propertyName)->yes(),
+				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasInstanceProperty($propertyName)->yes(),
 			);
 
 			if ($classTypeResult->getType() instanceof ErrorType) {
@@ -77,11 +77,11 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($referencedClass);
-			if (!$classReflection->hasProperty($propertyName)) {
+			if (!$classReflection->hasStaticProperty($propertyName)) {
 				continue;
 			}
 
-			$propertyReflection = $classReflection->getProperty($propertyName, $scope);
+			$propertyReflection = $classReflection->getStaticProperty($propertyName);
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedPropertyUsage($propertyReflection, $scope);
 				if ($restrictedUsage === null) {

@@ -101,7 +101,9 @@ final class AccessPropertiesCheck
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasInstanceProperty($name)->yes(),
+			static fn (Type $type): bool => $type->canAccessProperties()->yes() && (
+				$type->hasInstanceProperty($name)->yes() || $type->hasStaticProperty($name)->yes()
+			),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

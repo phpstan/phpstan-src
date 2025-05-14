@@ -96,22 +96,20 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 				$newValuesType = TypeCombinator::remove($newValuesType, $seenKey);
 
 				if (
-					!($newValuesType instanceof NeverType)
-					&& !$newValuesType->isSuperTypeOf($seenKey)->yes()
+					$newValuesType instanceof NeverType
+					|| $newValuesType->isSuperTypeOf($seenKey)->yes()
 				) {
-					continue;
-				}
-
-				$duplicate = true;
-			}
-
-			if (!$newValuesType instanceof UnionType) {
-				foreach ($seenKeys as $k => $seenKey) {
-					$seenKeys[$k] = TypeCombinator::remove($seenKey, $newValuesType);
+					$duplicate = true;
+					break;
 				}
 			}
 
 			if (!$newValuesType instanceof NeverType) {
+				if (!$newValuesType instanceof UnionType) {
+					foreach ($seenKeys as $k => $seenKey) {
+						$seenKeys[$k] = TypeCombinator::remove($seenKey, $newValuesType);
+					}
+				}
 				$seenKeys[] = $newValuesType;
 			}
 

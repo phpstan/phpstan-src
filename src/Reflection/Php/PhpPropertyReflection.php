@@ -99,11 +99,6 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		return $this->isReadOnlyByPhpDoc;
 	}
 
-	public function isFinal(): TrinaryLogic
-	{
-		return TrinaryLogic::createFromBoolean($this->isFinal);
-	}
-
 	public function getReadableType(): Type
 	{
 		if ($this->type === null) {
@@ -251,6 +246,11 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 	public function isFinalByKeyword(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->reflection->isFinal());
+	}
+
+	public function isFinal(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->isFinal);
 	}
 
 	public function isVirtual(): TrinaryLogic

@@ -81,7 +81,7 @@ final class UnsetRule implements Rule
 				} elseif ($this->phpVersion->supportsPropertyHooks()) {
 					if (
 						!$propertyReflection->isPrivate()
-						&& !$propertyReflection->isFinal()
+						&& !$propertyReflection->isFinal()->yes()
 						&& !$propertyReflection->getDeclaringClass()->isFinal()
 					) {
 						$errors[] = RuleErrorBuilder::message(

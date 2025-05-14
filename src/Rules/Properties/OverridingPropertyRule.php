@@ -145,7 +145,7 @@ final class OverridingPropertyRule implements Rule
 			))->identifier('property.parentPropertyFinal')
 				->nonIgnorable()
 				->build();
-		} elseif ($prototype->isFinal()) {
+		} elseif ($prototype->isFinal()->yes()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s overrides @final property %s::$%s.',
 				$classReflection->getDisplayName(),

@@ -99,9 +99,9 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		return $this->isReadOnlyByPhpDoc;
 	}
 
-	public function isFinal(): bool
+	public function isFinal(): TrinaryLogic
 	{
-		return $this->isFinal;
+		return TrinaryLogic::createFromBoolean($this->isFinal);
 	}
 
 	public function getReadableType(): Type

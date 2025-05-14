@@ -152,8 +152,7 @@ final class OverridingPropertyRule implements Rule
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-			))->identifier('property.parentPropertyAnnotatedFinal')
-				->nonIgnorable()
+			))->identifier('property.parentPropertyFinalByPhpDoc')
 				->build();
 		}
 

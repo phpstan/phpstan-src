@@ -4373,7 +4373,7 @@ final class NodeScopeResolver
 		if (!$propertyReflection->hasHook($hookName)) {
 			if (
 				$propertyReflection->isPrivate()
-				|| $propertyReflection->isFinalByKeyword()->yes()
+				|| $propertyReflection->isFinal()->yes()
 				|| $declaringClass->isFinal()
 			) {
 				return [];

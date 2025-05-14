@@ -130,4 +130,28 @@ class Foo
 		];
 	}
 
+	/**
+	 * @param 'foo'|'bar' $key
+	 */
+	public function sureDuplicate2(string $key): void
+	{
+		$a = [
+			$key => 'foo|bar',
+			'foo' => 'foo',
+			'bar' => 'bar',
+		];
+	}
+
+	/**
+	 * @param 'foo'|'bar' $key
+	 */
+	public function sureDuplicate3(string $key): void
+	{
+		$a = [
+			'foo' => 'foo',
+			'bar' => 'bar',
+			$key => 'foo|bar',
+		];
+	}
+
 }

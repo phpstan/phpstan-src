@@ -162,13 +162,13 @@ class Foo
 		$a = [
 			'foo' => 'foo',
 			'bar' => 'bar',
-			$key => 'foo|bar',
+			$key => 'foo|bar|baz',
 		];
 
 		$b = [
 			'foo' => 'foo',
 			'bar' => 'bar',
-			$key => 'foo|bar',
+			$key => 'foo|bar|baz',
 			'baz' => 'baz',
 		];
 	}

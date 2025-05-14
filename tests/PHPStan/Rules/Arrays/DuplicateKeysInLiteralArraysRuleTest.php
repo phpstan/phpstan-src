@@ -73,6 +73,10 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 				'Array has 2 duplicate keys with value \'key\' (\'key\', $key2).',
 				105,
 			],
+			[
+				"Array has 2 duplicate keys with value 'bar' (\$key, 'bar').",
+				128,
+			],
 		]);
 	}
 

@@ -107,4 +107,27 @@ class Foo
 		];
 	}
 
+	/**
+	 * @param 'foo'|'bar' $key
+	 */
+	public function maybeDuplicate(string $key): void
+	{
+		$a = [
+			'foo' => 'foo',
+			$key => 'foo|bar',
+		];
+	}
+
+	/**
+	 * @param 'foo'|'bar' $key
+	 */
+	public function sureDuplicate(string $key): void
+	{
+		$a = [
+			'foo' => 'foo',
+			$key => 'foo|bar',
+			'bar' => 'bar',
+		];
+	}
+
 }

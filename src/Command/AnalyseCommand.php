@@ -2,7 +2,11 @@
 
 namespace PHPStan\Command;
 
+use Nette\DI\Config\Loader;
+use Nette\FileNotFoundException;
+use Nette\InvalidStateException;
 use OndraM\CiDetector\CiDetector;
+use PHPStan\Analyser\Ignore\BaselineIgnoredErrorHelper;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -102,6 +106,7 @@ final class AnalyseCommand extends Command
 				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', null, InputOption::VALUE_NONE, 'Return non-zero exit code when result cache is not used'),
+				new InputOption('only-remove-errors', null, InputOption::VALUE_NONE, 'Only remove existing errors from the baseline. Do not add new ones.'),
 			]);
 	}
 
@@ -136,6 +141,7 @@ final class AnalyseCommand extends Command
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
+		$onlyRemoveErrors = (bool) $input->getOption('only-remove-errors');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -179,6 +185,11 @@ final class AnalyseCommand extends Command
 
 		if ($generateBaselineFile === null && $allowEmptyBaseline) {
 			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+		}
+
+		if ($generateBaselineFile === null && $onlyRemoveErrors) {
+			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --only-remove-errors.');
 			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 		}
 
@@ -411,7 +422,7 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 			}
 
-			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
+			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache, $onlyRemoveErrors, $container);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
@@ -587,8 +598,14 @@ final class AnalyseCommand extends Command
 		return $message;
 	}
 
-	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache): int
+	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache, bool $onlyRemoveErrors, Container $container): int
 	{
+		$baselineFileDirectory = dirname($generateBaselineFile);
+		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
+		if ($onlyRemoveErrors) {
+			$analysisResult = $this->filterAnalysisResultForExistingErrors($analysisResult, $generateBaselineFile, $inceptionResult, $container, $baselinePathHelper);
+		}
+
 		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
@@ -599,8 +616,6 @@ final class AnalyseCommand extends Command
 		$streamOutput = $this->createStreamOutput();
 		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
 		$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-		$baselineFileDirectory = dirname($generateBaselineFile);
-		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
 
 		if ($baselineExtension === 'php') {
 			$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
@@ -674,6 +689,32 @@ final class AnalyseCommand extends Command
 		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime);
 	}
 
+	private function filterAnalysisResultForExistingErrors(AnalysisResult $analysisResult, string $generateBaselineFile, InceptionResult $inceptionResult, Container $container, ParentDirectoryRelativePathHelper $baselinePathHelper): AnalysisResult
+	{
+		$currentAnalysisErrors = $analysisResult->getFileSpecificErrors();
+
+		$currentBaselinedErrors = $this->getCurrentBaselinedErrors($generateBaselineFile, $inceptionResult);
+
+		/** @var BaselineIgnoredErrorHelper $baselineIgnoredErrorsHelper */
+		$baselineIgnoredErrorsHelper = $container->getByType(BaselineIgnoredErrorHelper::class);
+
+		$nextBaselinedErrors = $baselineIgnoredErrorsHelper->removeUnusedIgnoredErrors($currentBaselinedErrors, $currentAnalysisErrors, $baselinePathHelper);
+
+		return new AnalysisResult(
+			$nextBaselinedErrors,
+			$analysisResult->getNotFileSpecificErrors(),
+			$analysisResult->getInternalErrorObjects(),
+			$analysisResult->getWarnings(),
+			$analysisResult->getCollectedData(),
+			$analysisResult->isDefaultLevelUsed(),
+			$analysisResult->getProjectConfigFile(),
+			$analysisResult->isResultCacheSaved(),
+			$analysisResult->getPeakMemoryUsageBytes(),
+			$analysisResult->isResultCacheUsed(),
+			$analysisResult->getChangedProjectExtensionFilesOutsideOfAnalysedPaths(),
+		);
+	}
+
 	/**
 	 * @param string[] $files
 	 */
@@ -714,6 +755,25 @@ final class AnalyseCommand extends Command
 		foreach ($container->getServicesByTag(DiagnoseExtension::EXTENSION_TAG) as $extension) {
 			$extension->print($errorOutput);
 		}
+	}
+
+	/**
+	 * @return mixed[][]
+	 */
+	private function getCurrentBaselinedErrors(string $generateBaselineFile, InceptionResult $inceptionResult): array
+	{
+		$loader = new Loader();
+		try {
+			$currentBaselineConfig = $loader->load($generateBaselineFile);
+			$baselinedErrors = $currentBaselineConfig['parameters']['ignoreErrors'] ?? [];
+		} catch (FileNotFoundException) {
+			// currently no baseline file -> empty config
+			$baselinedErrors = [];
+		} catch (InvalidStateException $invalidStateException) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted($invalidStateException->getMessage());
+			throw $invalidStateException;
+		}
+		return $baselinedErrors;
 	}
 
 }

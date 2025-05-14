@@ -154,4 +154,22 @@ class Foo
 		];
 	}
 
+	/**
+	 * @param 'foo'|'bar'|'baz' $key
+	 */
+	public function sureDuplicate4(string $key): void
+	{
+		$a = [
+			'foo' => 'foo',
+			'bar' => 'bar',
+			$key => 'foo|bar',
+		];
+
+		$b = [
+			'foo' => 'foo',
+			'bar' => 'bar',
+			$key => 'foo|bar',
+			'baz' => 'baz',
+		];
+	}
 }

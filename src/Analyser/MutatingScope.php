@@ -4488,7 +4488,7 @@ final class MutatingScope implements Scope
 			$newType = TypeCombinator::intersect($type, $originalExprType);
 			if ($newType->isObject()->no() && $newType->equals($originalExprType)) {
 				// don't add the same type over and over again to improve performance.
-				// objects can get narrowed even though ObjectType->equal() will return true (e.g. via implicit "final" via new())
+				// objects can get narrowed even though ObjectType->equal() will return true (e.g. via implicit "final" via new Foo())
 				return $this;
 			}
 			return $this->specifyExpressionType($expr, $newType, $newType, TrinaryLogic::createYes());

@@ -26,6 +26,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 use function is_array;
 use function is_int;
@@ -113,13 +114,16 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				$returnStringType = new StringType();
 			}
 
-			$capturedArrayType = new ConstantArrayType(
-				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-				[$returnStringType, IntegerRangeType::fromInterval(0, null)],
-				[2],
-				[],
-				TrinaryLogic::createYes(),
+			$arrayTypeBuilder = ConstantArrayTypeBuilder::createEmpty();
+			$arrayTypeBuilder->setOffsetValueType(
+				new ConstantIntegerType(0),
+				$returnStringType
 			);
+			$arrayTypeBuilder->setOffsetValueType(
+				new ConstantIntegerType(1),
+				IntegerRangeType::fromInterval(0, null)
+			);
+			$capturedArrayType = $arrayTypeBuilder->getArray();
 
 			$returnInternalValueType = $returnStringType;
 			if ($capturesOffset !== null) {
@@ -203,7 +207,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 	private function isIntOrStringValue(Type $type): bool
 	{
-		return $type->isInteger()->yes() || $type->isString()->yes() || $type->isConstantScalarValue()->yes();
+		return (new UnionType([new IntegerType(), new StringType()]))->isSuperTypeOf($type)->yes();
 	}
 
 }

@@ -89,23 +89,18 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 
 			$duplicate = false;
 			$newValues = $keyValues;
-			foreach ($seenKeys as $seenKey) {
-				$offset = array_search($seenKey, $newValues, true);
-				if ($offset !== false) {
-					unset($newValues[$offset]);
+			foreach ($newValues as $k => $newValue) {
+				if (array_search($newValue, $seenKeys, true) !== false) {
+					unset($newValues[$k]);
 				}
 
-				if (
-					$newValues === []
-				) {
+				if ($newValues === []) {
 					$duplicate = true;
 					break;
 				}
 			}
 
-			if (
-				$newValues !== []
-			) {
+			if ($newValues !== []) {
 				if (count($newValues) === 1) {
 					$newValue = $newValues[array_key_first($newValues)];
 					foreach ($seenUnions as $k => $union) {
@@ -116,12 +111,12 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 
 						unset($seenUnions[$k][$offset]);
 
+						// turn a union into a seen key, when all its elements have been seen
 						if (count($seenUnions[$k]) !== 1) {
 							continue;
 						}
 
-						$ukey = array_key_first($seenUnions[$k]);
-						$seenKeys[] = $seenUnions[$k][$ukey];
+						$seenKeys[] = $seenUnions[$k][array_key_first($seenUnions[$k])];
 						unset($seenUnions[$k]);
 					}
 					$seenKeys[] = $newValue;

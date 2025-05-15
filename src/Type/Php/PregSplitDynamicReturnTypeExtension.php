@@ -7,13 +7,11 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BitwiseFlagHelper;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -117,11 +115,11 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			$arrayTypeBuilder = ConstantArrayTypeBuilder::createEmpty();
 			$arrayTypeBuilder->setOffsetValueType(
 				new ConstantIntegerType(0),
-				$returnStringType
+				$returnStringType,
 			);
 			$arrayTypeBuilder->setOffsetValueType(
 				new ConstantIntegerType(1),
-				IntegerRangeType::fromInterval(0, null)
+				IntegerRangeType::fromInterval(0, null),
 			);
 			$capturedArrayType = $arrayTypeBuilder->getArray();
 

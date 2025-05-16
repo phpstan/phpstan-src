@@ -4,7 +4,9 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
@@ -27,7 +29,7 @@ final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeS
 
 		$bcMathNumberType = new ObjectType('BcMath\Number');
 
-		return in_array($operatorSigil, ['-', '+', '*', '/', '**', '%'], true)
+		return in_array($operatorSigil, ['-', '+', '*', '/', '**', '%', '<', '<=', '>', '>=', '==', '!=', '<=>'], true)
 			&& (
 				$bcMathNumberType->isSuperTypeOf($leftSide)->yes()
 				|| $bcMathNumberType->isSuperTypeOf($rightSide)->yes()
@@ -40,6 +42,18 @@ final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeS
 		$otherSide = $bcMathNumberType->isSuperTypeOf($leftSide)->yes()
 			? $rightSide
 			: $leftSide;
+
+		if ($otherSide->isFloat()->yes()) {
+			return new ErrorType();
+		}
+
+		if (in_array($operatorSigil, ['<', '<=', '>', '>=', '==', '!='], true)) {
+			return new BooleanType();
+		}
+
+		if ($operatorSigil === '<=>') {
+			return IntegerRangeType::fromInterval(-1, 1);
+		}
 
 		if (
 			$otherSide->isInteger()->yes()

@@ -8,3 +8,4 @@ parameters:
 		reportPreciseLineForUnusedFunctionParameter: true
 		internalTag: true
 		newStaticInAbstractClassStaticMethod: true
+		checkExtensionsForComparisonOperators: true

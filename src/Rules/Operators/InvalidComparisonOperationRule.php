@@ -4,7 +4,10 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -28,7 +31,12 @@ use function sprintf;
 final class InvalidComparisonOperationRule implements Rule
 {
 
-	public function __construct(private RuleLevelHelper $ruleLevelHelper)
+	public function __construct(
+		private RuleLevelHelper $ruleLevelHelper,
+		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		#[AutowiredParameter(ref: '%featureToggles.checkExtensionsForComparisonOperators%')]
+		private bool $checkExtensionsForComparisonOperators,
+	)
 	{
 	}
 
@@ -55,6 +63,22 @@ final class InvalidComparisonOperationRule implements Rule
 			return [];
 		}
 
+		$result = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->callOperatorTypeSpecifyingExtensions(
+			$node,
+			$scope->getType($node->left),
+			$scope->getType($node->right),
+		);
+
+		if ($result !== null) {
+			if (! $result instanceof ErrorType) {
+				return [];
+			}
+
+			if ($this->checkExtensionsForComparisonOperators) {
+				return $this->createError($node, $scope);
+			}
+		}
+
 		if (
 			($this->isNumberType($scope, $node->left) && (
 				$this->isPossiblyNullableObjectType($scope, $node->right) || $this->isPossiblyNullableArrayType($scope, $node->right)
@@ -63,43 +87,7 @@ final class InvalidComparisonOperationRule implements Rule
 				$this->isPossiblyNullableObjectType($scope, $node->left) || $this->isPossiblyNullableArrayType($scope, $node->left)
 			))
 		) {
-			switch (get_class($node)) {
-				case Node\Expr\BinaryOp\Equal::class:
-					$nodeType = 'equal';
-					break;
-				case Node\Expr\BinaryOp\NotEqual::class:
-					$nodeType = 'notEqual';
-					break;
-				case Node\Expr\BinaryOp\Greater::class:
-					$nodeType = 'greater';
-					break;
-				case Node\Expr\BinaryOp\GreaterOrEqual::class:
-					$nodeType = 'greaterOrEqual';
-					break;
-				case Node\Expr\BinaryOp\Smaller::class:
-					$nodeType = 'smaller';
-					break;
-				case Node\Expr\BinaryOp\SmallerOrEqual::class:
-					$nodeType = 'smallerOrEqual';
-					break;
-				case Node\Expr\BinaryOp\Spaceship::class:
-					$nodeType = 'spaceship';
-					break;
-				default:
-					throw new ShouldNotHappenException();
-			}
-
-			return [
-				RuleErrorBuilder::message(sprintf(
-					'Comparison operation "%s" between %s and %s results in an error.',
-					$node->getOperatorSigil(),
-					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-				))
-					->line($node->left->getStartLine())
-					->identifier(sprintf('%s.invalid', $nodeType))
-					->build(),
-			];
+			return $this->createError($node, $scope);
 		}
 
 		return [];
@@ -164,6 +152,48 @@ final class InvalidComparisonOperationRule implements Rule
 		}
 
 		return !($type instanceof ErrorType) && $type->isArray()->yes();
+	}
+
+	/** @return list<IdentifierRuleError> */
+	private function createError(Node\Expr\BinaryOp $node, Scope $scope): array
+	{
+		switch (get_class($node)) {
+			case Node\Expr\BinaryOp\Equal::class:
+				$nodeType = 'equal';
+				break;
+			case Node\Expr\BinaryOp\NotEqual::class:
+				$nodeType = 'notEqual';
+				break;
+			case Node\Expr\BinaryOp\Greater::class:
+				$nodeType = 'greater';
+				break;
+			case Node\Expr\BinaryOp\GreaterOrEqual::class:
+				$nodeType = 'greaterOrEqual';
+				break;
+			case Node\Expr\BinaryOp\Smaller::class:
+				$nodeType = 'smaller';
+				break;
+			case Node\Expr\BinaryOp\SmallerOrEqual::class:
+				$nodeType = 'smallerOrEqual';
+				break;
+			case Node\Expr\BinaryOp\Spaceship::class:
+				$nodeType = 'spaceship';
+				break;
+			default:
+				throw new ShouldNotHappenException();
+		}
+
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Comparison operation "%s" between %s and %s results in an error.',
+				$node->getOperatorSigil(),
+				$scope->getType($node->left)->describe(VerbosityLevel::value()),
+				$scope->getType($node->right)->describe(VerbosityLevel::value()),
+			))
+				->line($node->left->getStartLine())
+				->identifier(sprintf('%s.invalid', $nodeType))
+				->build(),
+		];
 	}
 
 }

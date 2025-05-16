@@ -35,6 +35,7 @@ parametersSchema:
 		reportPreciseLineForUnusedFunctionParameter: bool()
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
+		checkExtensionsForComparisonOperators: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

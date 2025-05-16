@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -17,6 +18,8 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidComparisonOperationRule(
 			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
+			$this->getContainer()->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
+			true,
 		);
 	}
 
@@ -168,6 +171,20 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 	public function testBug11119(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11119.php'], []);
+	}
+
+	public function testBug13001(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13001.php'], [
+			[
+				'Comparison operation ">" between BcMath\\Number and 0.2 results in an error.',
+				10,
+			],
+			[
+				'Comparison operation "<=>" between 0.2 and BcMath\\Number results in an error.',
+				11,
+			],
+		]);
 	}
 
 }

@@ -173,6 +173,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11119.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug13001(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13001.php'], [

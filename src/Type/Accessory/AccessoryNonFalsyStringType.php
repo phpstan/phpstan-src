@@ -184,6 +184,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
+		// Do not remove `0` since `(int) '00'` is still `0`.
 		return new IntegerType();
 	}
 

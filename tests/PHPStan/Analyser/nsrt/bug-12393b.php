@@ -177,7 +177,7 @@ class FooStringInt
 		$this->foo = $nonEmpty;
 		assertType('int', $this->foo);
 		$this->foo = $nonFalsy;
-		assertType('int<min, -1>|int<1, max>', $this->foo);
+		assertType('int', $this->foo);
 		$this->foo = $numeric;
 		assertType('int', $this->foo);
 		$this->foo = $literal;
@@ -706,4 +706,3 @@ class ObjectWithToStringMethod {
         return 'Foo';
     }
 }
-

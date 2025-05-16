@@ -11,7 +11,7 @@ class Foo {
 	 * @param truthy-string $truthyString
 	 */
 	public function bar($nonFalseyString, $truthyString) {
-		assertType('int', (int) $nonFalseyString);
+		assertType('int', (int) $nonFalseyString); // Do not remove `0` since `(int) '00'` is still `0`
 		// truthy-string is an alias for non-falsy-string
 		assertType('non-falsy-string', $truthyString);
 	}

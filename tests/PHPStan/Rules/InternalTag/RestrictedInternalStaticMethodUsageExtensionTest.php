@@ -66,4 +66,14 @@ class RestrictedInternalStaticMethodUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testNoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/no-namespace.php'], [
+			[
+				'Call to internal static method ClassInternal::internalStaticMethod().',
+				39,
+			],
+		]);
+	}
+
 }

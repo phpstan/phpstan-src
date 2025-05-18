@@ -77,4 +77,14 @@ class RestrictedInternalClassConstantUsageExtensionTest extends RuleTestCase
 		]);
 	}
 
+	public function testNoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/no-namespace.php'], [
+			[
+				'Access to internal constant ClassInternal::INTERNAL_CONSTANT.',
+				41,
+			],
+		]);
+	}
+
 }

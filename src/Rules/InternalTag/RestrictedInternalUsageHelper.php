@@ -14,9 +14,12 @@ final class RestrictedInternalUsageHelper
 	{
 		$currentNamespace = $scope->getNamespace();
 		if ($currentNamespace === null) {
-			$currentClass = $scope->getClassReflection()?->getName();
+			$classReflection = $scope->getClassReflection();
+			if (null === $classReflection) {
+				return true;
+			}
 
-			return $currentClass !== $name;
+			return $classReflection->getName() !== $name;
 		}
 
 		$currentNamespace = explode('\\', $currentNamespace)[0];

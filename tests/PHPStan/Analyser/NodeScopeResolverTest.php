@@ -59,7 +59,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		} else {
 			yield __DIR__ . '/data/str-split-php74.php';
 		}
-		if (PHP_VERSION_ID >= 80000) {
+		if (PHP_VERSION_ID >= 80200) {
+			yield __DIR__ . '/data/mb-str-split-php82.php';
+		} elseif (PHP_VERSION_ID >= 80000) {
 			yield __DIR__ . '/data/mb-str-split-php80.php';
 		} elseif (PHP_VERSION_ID >= 74000) {
 			yield __DIR__ . '/data/mb-str-split-php74.php';

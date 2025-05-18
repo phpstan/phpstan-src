@@ -1,8 +1,8 @@
-<?php // lint < 8.2
+<?php // lint >= 8.2
 
 declare(strict_types = 1);
 
-namespace Bug7580Types;
+namespace Bug7580TypesPHP82;
 
 use function PHPStan\Testing\assertType;
 
@@ -17,4 +17,4 @@ assertType('array{}|array{\'x\'}', mb_str_split($v, 1));
 function x(): string { throw new \Exception(); };
 $v = x();
 assertType('string', $v);
-assertType('list<string>', mb_str_split($v, 1));
+assertType('list<non-empty-string>', mb_str_split($v, 1));

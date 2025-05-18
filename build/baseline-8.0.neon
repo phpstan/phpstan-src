@@ -24,8 +24,3 @@ parameters:
 			message: "#^Strict comparison using \\=\\=\\= between list\\<non\\-falsy\\-string\\> and false will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between list<string> and false will always evaluate to false\\.$#"
-			count: 1
-			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php

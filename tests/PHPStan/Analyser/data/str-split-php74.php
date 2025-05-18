@@ -28,13 +28,13 @@ class StrSplit {
 		assertType('false', $strSplitConstantStringWithFailureSplitLength);
 
 		$strSplitConstantStringWithInvalidSplitLengthType = str_split('abcdef', []);
-		assertType('non-empty-list<string>|false', $strSplitConstantStringWithInvalidSplitLengthType);
+		assertType('non-empty-list<non-empty-string>|false', $strSplitConstantStringWithInvalidSplitLengthType);
 
 		$strSplitConstantStringWithVariableStringAndConstantSplitLength = str_split(doFoo() ? 'abcdef' : 'ghijkl', 1);
 		assertType("array{'a', 'b', 'c', 'd', 'e', 'f'}|array{'g', 'h', 'i', 'j', 'k', 'l'}", $strSplitConstantStringWithVariableStringAndConstantSplitLength);
 
 		$strSplitConstantStringWithVariableStringAndVariableSplitLength = str_split(doFoo() ? 'abcdef' : 'ghijkl', doFoo() ? 1 : 2);
-		assertType('non-empty-list<string>|false', $strSplitConstantStringWithVariableStringAndVariableSplitLength);
+		assertType('non-empty-list<non-empty-string>', $strSplitConstantStringWithVariableStringAndVariableSplitLength);
 
 	}
 }

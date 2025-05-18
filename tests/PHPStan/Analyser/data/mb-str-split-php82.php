@@ -1,6 +1,6 @@
 <?php
 
-namespace MbStrSplitPHP80;
+namespace MbStrSplitPHP82;
 
 use function PHPStan\Testing\assertType;
 
@@ -17,7 +17,7 @@ class MbStrSplit {
 		assertType('array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}', $mbStrSplitConstantStringWithoutDefinedSplitLength);
 
 		$mbStrSplitStringWithoutDefinedSplitLength = mb_str_split($string);
-		assertType('list<string>', $mbStrSplitStringWithoutDefinedSplitLength);
+		assertType('list<non-empty-string>', $mbStrSplitStringWithoutDefinedSplitLength);
 
 		$mbStrSplitConstantStringWithOneSplitLength = mb_str_split('abcdef', 1);
 		assertType('array{\'a\', \'b\', \'c\', \'d\', \'e\', \'f\'}', $mbStrSplitConstantStringWithOneSplitLength);
@@ -100,15 +100,13 @@ class MbStrSplit {
 		string $string,
 		string $nonEmptyString,
 		string $nonFalsyString,
-		string $lowercaseString,
-		string $uppercaseString,
 		int $integer,
 	):void {
-		assertType('list<string>', mb_str_split($string));
+		assertType('list<non-empty-string>', mb_str_split($string));
 		assertType('non-empty-list<non-empty-string>', mb_str_split($nonEmptyString));
 		assertType('non-empty-list<non-empty-string>', mb_str_split($nonFalsyString));
 
-		assertType('list<string>', mb_str_split($string, $integer));
+		assertType('list<non-empty-string>', mb_str_split($string, $integer));
 		assertType('non-empty-list<non-empty-string>', mb_str_split($nonEmptyString, $integer));
 		assertType('non-empty-list<non-empty-string>', mb_str_split($nonFalsyString, $integer));
 	}

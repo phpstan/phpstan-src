@@ -15,7 +15,7 @@ final class RestrictedInternalUsageHelper
 		$currentNamespace = $scope->getNamespace();
 		if ($currentNamespace === null) {
 			$classReflection = $scope->getClassReflection();
-			if (null === $classReflection) {
+			if ($classReflection === null) {
 				return true;
 			}
 

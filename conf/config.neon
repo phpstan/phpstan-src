@@ -2262,6 +2262,13 @@ services:
 			editorUrl: %editorUrl%
 			editorUrlTitle: %editorUrlTitle%
 
+	errorFormatter.grouped:
+		class: PHPStan\Command\ErrorFormatter\GroupedErrorFormatter
+		arguments:
+			relativePathHelper: @simpleRelativePathHelper
+			editorUrl: %editorUrl%
+			editorUrlTitle: %editorUrlTitle%
+
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter
 		arguments:

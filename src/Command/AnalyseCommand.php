@@ -286,6 +286,13 @@ final class AnalyseCommand extends Command
 			}
 		}
 
+		if ($inceptionResult->getEditorModeTmpFile() !== null) {
+			if (in_array($inceptionResult->getEditorModeTmpFile(), $files, true)) {
+				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('File %s passed to --tmp-file is already in analysed project files.', $inceptionResult->getEditorModeInsteadOfFile()));
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			}
+		}
+
 		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));
 		/** @var RelativePathHelper $relativePathHelper */
 		$relativePathHelper = $container->getService('relativePathHelper');

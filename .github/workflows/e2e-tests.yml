@@ -206,8 +206,9 @@ jobs:
 
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw --tmp-file differentFoo.php --instead-of src/Foo.php")
               echo "$OUTPUT"
-              ../bashunit -a contains 'differentFoo.php:10:Method EditorModeE2E\Foo::doFoo() should return float but returns string. [identifier=return.type]' "$OUTPUT"
+              ../bashunit -a contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return float but returns string. [identifier=return.type]' "$OUTPUT"
               ../bashunit -a not_contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return int but returns string. [identifier=return.type]' "$OUTPUT"
+              ../bashunit -a not_contains 'differentFoo.php' "$OUTPUT"
               ../bashunit -a contains 'Bar.php:10:Parameter #1 $s of method EditorModeE2E\Bar::requireString() expects string, float given. [identifier=argument.type]' "$OUTPUT"
               ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
               ../bashunit -a contains 'Result cache was not saved because of --tmp-file and --instead-of CLI options passed (editor mode).' "$OUTPUT"

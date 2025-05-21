@@ -566,7 +566,10 @@ jobs:
                 echo "FAIL: tmp was created by a worker, meaning sys_temp_dir='tmp~1' was incorrectly evaluated to 'tmp'"
                 exit 1
               fi
-
+          - script: |
+              cd e2e/bug-12972b
+              composer install
+              ../../bin/phpstan analyze
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4

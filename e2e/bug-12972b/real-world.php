@@ -2,4 +2,5 @@
 
 require 'autoloader.php';
 
-new \Foo12972\MyRoot();
+$root = new \Foo12972\MyRoot();
+$root->doBar(new \other12972\MyClass());

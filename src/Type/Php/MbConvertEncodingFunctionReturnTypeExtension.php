@@ -52,12 +52,12 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 
 		$result = TypeCombinator::intersect($initialReturnType, $this->generalizeStringType($argType));
 		if ($result instanceof NeverType) {
-			return null;
+			$result = $initialReturnType;
 		}
 
 		if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			if (!isset($functionCall->getArgs()[2])) {
-				return $result;
+				return TypeCombinator::remove($result, new ConstantBooleanType(false));
 			}
 			$fromEncodingArgType = $scope->getType($functionCall->getArgs()[2]->value);
 
@@ -90,7 +90,7 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 			}
 
 			if (!$returnFalseIfCannotDetectEncoding) {
-				return $result;
+				return TypeCombinator::remove($result, new ConstantBooleanType(false));
 			}
 		}
 

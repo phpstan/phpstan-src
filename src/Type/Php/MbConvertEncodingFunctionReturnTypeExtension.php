@@ -61,35 +61,35 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 			}
 			$fromEncodingArgType = $scope->getType($functionCall->getArgs()[2]->value);
 
-			$mayNotDetectEncoding = false;
+			$returnFalseIfCannotDetectEncoding = false;
 			if (!$fromEncodingArgType->isArray()->no()) {
 				$constantArrays = $fromEncodingArgType->getConstantArrays();
 				if (count($constantArrays) > 0) {
 					foreach ($constantArrays as $constantArray) {
 						if (count($constantArray->getValueTypes()) > 1) {
-							$mayNotDetectEncoding = true;
+							$returnFalseIfCannotDetectEncoding = true;
 							break;
 						}
 					}
 				} else {
-					$mayNotDetectEncoding = true;
+					$returnFalseIfCannotDetectEncoding = true;
 				}
 			}
-			if (!$mayNotDetectEncoding && !$fromEncodingArgType->isString()->no()) {
+			if (!$returnFalseIfCannotDetectEncoding && !$fromEncodingArgType->isString()->no()) {
 				$constantStrings = $fromEncodingArgType->getConstantStrings();
 				if (count($constantStrings) > 0) {
 					foreach ($constantStrings as $constantString) {
 						if (str_contains($constantString->getValue(), ',')) {
-							$mayNotDetectEncoding = true;
+							$returnFalseIfCannotDetectEncoding = true;
 							break;
 						}
 					}
 				} else {
-					$mayNotDetectEncoding = true;
+					$returnFalseIfCannotDetectEncoding = true;
 				}
 			}
 
-			if (!$mayNotDetectEncoding) {
+			if (!$returnFalseIfCannotDetectEncoding) {
 				return $result;
 			}
 		}

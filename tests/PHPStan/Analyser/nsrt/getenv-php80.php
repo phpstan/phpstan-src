@@ -1,4 +1,4 @@
-<?php // lint >= 80
+<?php // lint >= 8.0
 
 namespace GetenvPHP80;
 

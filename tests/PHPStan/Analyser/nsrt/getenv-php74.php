@@ -1,4 +1,4 @@
-<?php // lint <= 7.4
+<?php // lint < 8.0
 
 namespace GetenvPHP74;
 
@@ -6,8 +6,11 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
-
-	public function test(string|null $stringOrNull, mixed $mixed)
+	/**
+	 * @param string|null $stringOrNull
+	 * @param mixed       $mixed
+	 */
+	public function test($stringOrNull, $mixed)
 	{
 		assertType('string|false', getenv(null));
 		assertType('array<string, string>', getenv());

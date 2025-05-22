@@ -53,6 +53,7 @@ return [
 		'forward_static_call_array' => ['mixed', 'function'=>'callable', 'parameters'=>'array<int|string,mixed>'],
 		'get_debug_type' => ['string', 'var'=>'mixed'],
 		'get_resource_id' => ['int', 'res'=>'resource'],
+		'getenv' => ['string|array<string,string>|false', 'name='=>'string|null', 'local_only='=>'bool'],
 		'gmdate' => ['string', 'format'=>'string', 'timestamp='=>'int'],
 		'gmmktime' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 		'hash' => ['non-falsy-string', 'algo'=>'string', 'data'=>'string', 'raw_output='=>'bool'],

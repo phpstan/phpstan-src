@@ -1105,7 +1105,7 @@ class ClassReflection
 			$varTags = $resolvedPhpDoc->getVarTags();
 			if (isset($varTags[0]) && count($varTags) === 1) {
 				$varTag = $varTags[0];
-				if ($varTag->isExplicit() || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
+				if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
 					$phpDocType = $varTag->getType();
 				}
 			}

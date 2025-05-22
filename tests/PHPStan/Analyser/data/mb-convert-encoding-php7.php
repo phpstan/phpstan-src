@@ -1,6 +1,6 @@
 <?php
 
-namespace MbConvertEncoding;
+namespace MbConvertEncodingPHP7;
 
 /**
  * @param 'foo'|'bar' $constantString

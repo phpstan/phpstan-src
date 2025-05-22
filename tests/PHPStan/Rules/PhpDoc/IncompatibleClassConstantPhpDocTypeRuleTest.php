@@ -50,4 +50,13 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10911(): void
+	{
+		if (PHP_VERSION_ID < 80300) {
+			$this->markTestSkipped('Test requires PHP 8.3.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-10911.php'], []);
+	}
+
 }

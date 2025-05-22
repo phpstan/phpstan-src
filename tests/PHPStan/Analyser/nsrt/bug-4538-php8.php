@@ -1,17 +1,18 @@
-<?php
+<?php // lint >= 8.0
 
 namespace Bug4538;
 
 use function PHPStan\Testing\assertType;
 
-class Foo
+class FooPhp8
 {
 	/**
 	 * @param string $index
 	 */
 	public function bar(string $index): void
 	{
-		assertType('string|false', getenv($index));
+		assertType('string|array<string,string>|false', getenv($index));
 		assertType('array<string, string>', getenv());
+		assertType('array<string, string>', getenv(null));
 	}
 }

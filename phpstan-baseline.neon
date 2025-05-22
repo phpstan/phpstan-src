@@ -245,6 +245,11 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
+			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
+			count: 3
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
 			message: "#^Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php

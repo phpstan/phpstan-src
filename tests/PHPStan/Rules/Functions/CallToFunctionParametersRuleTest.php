@@ -2102,4 +2102,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12499.php'], []);
 	}
 
+	public function testBug13065(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->analyse([__DIR__ . '/data/bug-13065.php'], [
+				[
+					'Parameter #1 $varname of function getenv expects string, null given.',
+					10,
+				],
+			]);
+		} else {
+			$this->analyse([__DIR__ . '/data/bug-13065.php'], []);
+		}
+	}
+
 }

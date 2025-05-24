@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Type\Php;
 
@@ -14,7 +14,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
-class ArrayPadDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayPadDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

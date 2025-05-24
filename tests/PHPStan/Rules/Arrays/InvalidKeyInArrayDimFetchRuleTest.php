@@ -15,6 +15,8 @@ use const PHP_VERSION_ID;
 class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 {
 
+	private bool $reportCastedArrayKey = false;
+
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, true, true, false, true);
@@ -22,6 +24,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			$ruleLevelHelper,
 			self::getContainer()->getByType(PhpVersion::class),
 			true,
+			$this->reportCastedArrayKey,
 		);
 	}
 
@@ -159,6 +162,22 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Possibly invalid array key type array<int, int|string>|int|string.',
 				41,
+			],
+		]);
+	}
+
+	public function testUnsetFalseKey(): void
+	{
+		$this->reportCastedArrayKey = true;
+
+		$this->analyse([__DIR__ . '/data/unset-false-key.php'], [
+			[
+				'Invalid array key type false.',
+				6,
+			],
+			[
+				'Invalid array key type false.',
+				13,
 			],
 		]);
 	}

@@ -210,6 +210,7 @@ parameters:
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
 	expandRelativePaths: PHPStan\DependencyInjection\ExpandRelativePathExtension
+	autowiredAttributeServices: PHPStan\DependencyInjection\AutowiredAttributeServicesExtension
 	conditionalTags: PHPStan\DependencyInjection\ConditionalTagsExtension
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
 	validateIgnoredErrors: PHPStan\DependencyInjection\ValidateIgnoredErrorsExtension
@@ -574,9 +575,6 @@ services:
 			bootstrapFiles: %bootstrapFiles%
 			editorUrl: %editorUrl%
 			usedLevel: %usedLevel%
-
-	-
-		class: PHPStan\Dependency\DependencyResolver
 
 	-
 		class: PHPStan\Dependency\ExportedNodeFetcher

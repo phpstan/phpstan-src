@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6dbfcceae1655d0051d153fcb50b2c1f",
+    "content-hash": "6421bc766815495eca7c67c0a988a455",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2255,6 +2255,71 @@
                 "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.57.0.0"
             },
             "time": "2025-02-12T21:16:38+00:00"
+        },
+        {
+            "name": "ondrejmirtes/composer-attribute-collector",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ondrejmirtes/composer-attribute-collector.git",
+                "reference": "d285f54d139d1f14b5d4ae928c9fb45bff22fda1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ondrejmirtes/composer-attribute-collector/zipball/d285f54d139d1f14b5d4ae928c9fb45bff22fda1",
+                "reference": "d285f54d139d1f14b5d4ae928c9fb45bff22fda1",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0",
+                "nikic/php-parser": "^5.4",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "composer/composer": ">=2.4",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^9.5"
+            },
+            "default-branch": true,
+            "type": "composer-plugin",
+            "extra": {
+                "class": "olvlvl\\ComposerAttributeCollector\\Plugin",
+                "composer-attribute-collector": {
+                    "exclude": [
+                        "tests/Acme/PSR4/IncompatibleSignature.php"
+                    ],
+                    "include": [
+                        "tests"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "olvlvl\\ComposerAttributeCollector\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Olivier Laviale",
+                    "email": "olivier.laviale@gmail.com",
+                    "homepage": "https://olvlvl.com/",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Ondrej Mirtes",
+                    "email": "ondrej@mirtes.cz",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A convenient and near zero-cost way to retrieve targets of PHP 8 attributes",
+            "support": {
+                "source": "https://github.com/ondrejmirtes/composer-attribute-collector/tree/main"
+            },
+            "time": "2025-05-24T23:38:56+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -6525,7 +6590,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "ondrejmirtes/composer-attribute-collector": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

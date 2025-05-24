@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 
+#[AutowiredService]
 final class DependencyResolver
 {
 

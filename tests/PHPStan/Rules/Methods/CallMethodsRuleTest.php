@@ -3262,6 +3262,22 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9009.php'], []);
 	}
 
+	public function testBug9487(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = false;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/data/bug-9487.php'], [
+			[
+				'Parameter #1 $x of method Bug9487\HelloWorld::sayHello() expects list<string>, array<int<1, max>, string> given.',
+				15,
+				'array<int<1, max>, string> is not a list.'
+			],
+		]);
+	}
+
 	public function testBuSplObjectStorageRemove(): void
 	{
 		$this->checkThisOnly = false;

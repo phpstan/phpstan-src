@@ -290,6 +290,10 @@ class ArrayType implements Type
 			return TrinaryLogic::createNo();
 		}
 
+		if ($this->getKeyType()->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

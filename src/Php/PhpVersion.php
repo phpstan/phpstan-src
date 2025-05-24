@@ -405,4 +405,9 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function hasPDOSubclasses(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

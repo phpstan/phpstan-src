@@ -15,10 +15,12 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
@@ -266,7 +268,10 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			$needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
 			&& $needleType->getValue() === $this->valueType->getValue()
 		) {
-			return $this->offsetType;
+			return new UnionType([
+				new IntegerType(),
+				new StringType(),
+			]);
 		}
 
 		return new MixedType();

@@ -29,7 +29,7 @@ class Foo
 		}
 
 		if (array_key_exists(17, $arr) && $arr[17] === 'foo') {
-			assertType('17', array_search('foo', $arr, true));
+			assertType('int', array_search('foo', $arr, true));
 			assertType('int|false', array_search('foo', $arr));
 			assertType('int|false', array_search($string, $arr, true));
 		}

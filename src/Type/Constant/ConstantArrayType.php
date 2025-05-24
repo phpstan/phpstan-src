@@ -874,22 +874,31 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
 		$matches = [];
 		$hasIdenticalValue = false;
 
 		foreach ($this->valueTypes as $index => $valueType) {
-			$isNeedleSuperType = $valueType->isSuperTypeOf($needleType);
-			if ($isNeedleSuperType->no()) {
-				continue;
+			if ($strict->yes()) {
+				$isNeedleSuperType = $valueType->isSuperTypeOf($needleType);
+				if ($isNeedleSuperType->no()) {
+					continue;
+				}
 			}
 
-			if ($needleType instanceof ConstantScalarType && $valueType instanceof ConstantScalarType
-				&& $needleType->getValue() === $valueType->getValue()
-				&& !$this->isOptionalKey($index)
-			) {
-				$hasIdenticalValue = true;
+			if ($needleType instanceof ConstantScalarType && $valueType instanceof ConstantScalarType) {
+				// @phpstan-ignore equal.notAllowed
+				$isLooseEqual = $needleType->getValue() == $valueType->getValue(); // phpcs:ignore
+				if (!$isLooseEqual) {
+					continue;
+				}
+				if (
+					($strict->no() || $needleType->getValue() === $valueType->getValue())
+					&& !$this->isOptionalKey($index)
+				) {
+					$hasIdenticalValue = true;
+				}
 			}
 
 			$matches[] = $this->keyTypes[$index];

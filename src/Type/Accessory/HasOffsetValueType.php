@@ -254,11 +254,15 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new NonEmptyArrayType();
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
 		if (
 			$needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
-			&& $needleType->getValue() === $this->valueType->getValue()
+			&& (
+				$needleType->getValue() === $this->valueType->getValue()
+				// @phpstan-ignore equal.notAllowed
+				|| ($strict->no() && $needleType->getValue() == $this->valueType->getValue()) // phpcs:ignore
+			)
 		) {
 			return new UnionType([
 				new IntegerType(),

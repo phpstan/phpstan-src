@@ -12,7 +12,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 
 #[AutowiredService]
@@ -41,20 +40,14 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		if ($argsCount < 3) {
-			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
-		}
-
-		$strictArgType = $scope->getType($functionCall->getArgs()[2]->value);
-		if (!$strictArgType->isTrue()->yes()) {
-			return TypeCombinator::union($haystackArgType->getIterableKeyType(), new ConstantBooleanType(false));
+			$strictArgType = new ConstantBooleanType(false);
+		} else {
+			$strictArgType = $scope->getType($functionCall->getArgs()[2]->value);
 		}
 
 		$needleArgType = $scope->getType($functionCall->getArgs()[0]->value);
-		if ($haystackArgType->getIterableValueType()->isSuperTypeOf($needleArgType)->no()) {
-			return new ConstantBooleanType(false);
-		}
 
-		return $haystackArgType->searchArray($needleArgType);
+		return $haystackArgType->searchArray($needleArgType, $strictArgType->isTrue());
 	}
 
 }

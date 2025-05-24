@@ -318,7 +318,7 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
 		return new NeverType();
 	}

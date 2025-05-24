@@ -30,7 +30,7 @@ class Foo
 
 		if (array_key_exists(17, $arr) && $arr[17] === 'foo') {
 			assertType('int', array_search('foo', $arr, true));
-			assertType('int|false', array_search('foo', $arr));
+			assertType('int', array_search('foo', $arr));
 			assertType('int|false', array_search($string, $arr, true));
 		}
 	}
@@ -39,25 +39,33 @@ class Foo
 	{
 		/** @var array{'a', 'b', 'c'} $arr */
 		assertType('1', array_search('b', $arr, true));
-		assertType('0|1|2|false', array_search('b', $arr));
+		assertType('1', array_search('b', $arr));
 		assertType('0|1|2|false', array_search($string, $arr, true));
+		assertType('0|1|2|false', array_search($string, $arr, false));
 
 		/** @var array{} $arr */
 		assertType('false', array_search('b', $arr, true));
 		assertType('false', array_search('b', $arr));
 		assertType('false', array_search($string, $arr, true));
+		assertType('false', array_search($string, $arr, false));
+
+		/** @var array{1, '1', '2'} $arr */
+		assertType('1', array_search('1', $arr, true));
+		assertType('0|1', array_search('1', $arr));
+		assertType('1|2|false', array_search($string, $arr, true));
+		assertType('0|1|2|false', array_search($string, $arr, false));
 	}
 
 	public function constantArraysWithOptionalKeys(array $arr, string $string): void
 	{
 		/** @var array{0: 'a', 1?: 'b', 2: 'c'} $arr */
 		assertType('1|false', array_search('b', $arr, true));
-		assertType('0|1|2|false', array_search('b', $arr));
+		assertType('1|false', array_search('b', $arr));
 		assertType('0|1|2|false', array_search($string, $arr, true));
 
 		/** @var array{0: 'a', 1?: 'b', 2: 'b'} $arr */
 		assertType('1|2', array_search('b', $arr, true));
-		assertType('0|1|2|false', array_search('b', $arr));
+		assertType('1|2', array_search('b', $arr));
 		assertType('0|1|2|false', array_search($string, $arr, true));
 	}
 

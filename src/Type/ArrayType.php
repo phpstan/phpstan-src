@@ -434,8 +434,12 @@ class ArrayType implements Type
 		return $this;
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
+		if ($strict->yes() && $this->getIterableValueType()->isSuperTypeOf($needleType)->no()) {
+			return new ConstantBooleanType(false);
+		}
+
 		return TypeCombinator::union($this->getIterableKeyType(), new ConstantBooleanType(false));
 	}
 

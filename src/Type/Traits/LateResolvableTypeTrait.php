@@ -293,9 +293,9 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->reverseArray($preserveKeys);
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
-		return $this->resolve()->searchArray($needleType);
+		return $this->resolve()->searchArray($needleType, $strict);
 	}
 
 	public function shiftArray(): Type

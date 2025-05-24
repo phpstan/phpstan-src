@@ -199,7 +199,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
 		return new MixedType();
 	}

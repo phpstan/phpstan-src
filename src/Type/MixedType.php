@@ -257,7 +257,7 @@ class MixedType implements CompoundType, SubtractableType
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
 	}
 
-	public function searchArray(Type $needleType): Type
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
 	{
 		if ($this->isArray()->no()) {
 			return new ErrorType();

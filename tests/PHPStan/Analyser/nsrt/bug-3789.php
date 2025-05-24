@@ -19,5 +19,5 @@ function doFoo(string $needle, array $haystack): void {
 	assertType('0|1|2', array_search('foo', $haystack, true));
 
 	assertType('0|1|2|false', array_search($needle, $haystack));
-	assertType('0|1|2|false', array_search('foo', $haystack));
+	assertType('0|1|2', array_search('foo', $haystack));
 }

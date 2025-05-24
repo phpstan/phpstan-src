@@ -152,7 +152,7 @@ interface Type
 
 	public function reverseArray(TrinaryLogic $preserveKeys): Type;
 
-	public function searchArray(Type $needleType): Type;
+	public function searchArray(Type $needleType, TrinaryLogic $strict): Type;
 
 	public function shiftArray(): Type;
 

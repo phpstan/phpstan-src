@@ -7,10 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
@@ -19,6 +22,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function count;
 use function in_array;
@@ -86,6 +90,12 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
+		$stringOrArray = new UnionType([new StringType(), new ArrayType(new MixedType(), new MixedType())]);
+		if (!$stringOrArray->isSuperTypeOf($subjectArgumentType)->yes()) {
+			return $defaultReturnType;
+		}
+
+		$replaceArgumentType = null;
 		if (array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
 			$replaceArgumentPosition = self::FUNCTIONS_REPLACE_POSITION[$functionReflection->getName()];
 
@@ -94,68 +104,88 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 				if ($replaceArgumentType->isArray()->yes()) {
 					$replaceArgumentType = $replaceArgumentType->getIterableValueType();
 				}
-
-				$accessories = [];
-				if ($subjectArgumentType->isNonFalsyString()->yes() && $replaceArgumentType->isNonFalsyString()->yes()) {
-					$accessories[] = new AccessoryNonFalsyStringType();
-				} elseif ($subjectArgumentType->isNonEmptyString()->yes() && $replaceArgumentType->isNonEmptyString()->yes()) {
-					$accessories[] = new AccessoryNonEmptyStringType();
-				}
-
-				if ($subjectArgumentType->isLowercaseString()->yes() && $replaceArgumentType->isLowercaseString()->yes()) {
-					$accessories[] = new AccessoryLowercaseStringType();
-				}
-
-				if ($subjectArgumentType->isUppercaseString()->yes() && $replaceArgumentType->isUppercaseString()->yes()) {
-					$accessories[] = new AccessoryUppercaseStringType();
-				}
-
-				if (count($accessories) > 0) {
-					$accessories[] = new StringType();
-					return new IntersectionType($accessories);
-				}
 			}
 		}
 
-		$isStringSuperType = $subjectArgumentType->isString();
-		$isArraySuperType = $subjectArgumentType->isArray();
-		$compareSuperTypes = $isStringSuperType->compareTo($isArraySuperType);
-		if ($compareSuperTypes === $isStringSuperType) {
-			return new StringType();
-		} elseif ($compareSuperTypes === $isArraySuperType) {
-			$subjectArrays = $subjectArgumentType->getArrays();
-			if (count($subjectArrays) > 0) {
-				$result = [];
-				foreach ($subjectArrays as $arrayType) {
-					$constantArrays = $arrayType->getConstantArrays();
+		$result = [];
 
-					if (
-						$constantArrays !== []
-						&& in_array($functionReflection->getName(), ['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'], true)
-					) {
-						foreach ($constantArrays as $constantArray) {
-							$generalizedArray = $constantArray->generalizeValues();
+		$stringArgumentType = TypeCombinator::intersect(new StringType(), $subjectArgumentType);
+		if ($stringArgumentType->isString()->yes()) {
+			$result[] = $this->getReplaceType($stringArgumentType, $replaceArgumentType);
+		}
 
-							$builder = ConstantArrayTypeBuilder::createEmpty();
-							// turn all keys optional
-							foreach ($constantArray->getKeyTypes() as $keyType) {
-								$builder->setOffsetValueType($keyType, $generalizedArray->getOffsetValueType($keyType), true);
-							}
-							$result[] = $builder->getArray();
-						}
+		$arrayArgumentType = TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), $subjectArgumentType);
+		if ($arrayArgumentType->isArray()->yes()) {
+			$keyShouldBeOptional = in_array(
+				$functionReflection->getName(),
+				['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'],
+				true,
+			);
 
-						continue;
+			$constantArrays = $arrayArgumentType->getConstantArrays();
+			if ($constantArrays !== []) {
+				foreach ($constantArrays as $constantArray) {
+					$valueTypes = $constantArray->getValueTypes();
+
+					$builder = ConstantArrayTypeBuilder::createEmpty();
+					foreach ($constantArray->getKeyTypes() as $index => $keyType) {
+						$builder->setOffsetValueType(
+							$keyType,
+							$this->getReplaceType($valueTypes[$index], $replaceArgumentType),
+							$keyShouldBeOptional || $constantArray->isOptionalKey($index),
+						);
 					}
-
-					$result[] = $arrayType->generalizeValues();
+					$result[] = $builder->getArray();
+				}
+			} else {
+				$newArrayType = new ArrayType(
+					$arrayArgumentType->getIterableKeyType(),
+					$this->getReplaceType($arrayArgumentType->getIterableValueType(), $replaceArgumentType),
+				);
+				if ($arrayArgumentType->isList()->yes()) {
+					$newArrayType = TypeCombinator::intersect($newArrayType, new AccessoryArrayListType());
+				}
+				if ($arrayArgumentType->isIterableAtLeastOnce()->yes()) {
+					$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
 				}
 
-				return TypeCombinator::union(...$result);
+				$result[] = $newArrayType;
 			}
-			return $subjectArgumentType;
 		}
 
-		return $defaultReturnType;
+		return TypeCombinator::union(...$result);
+	}
+
+	private function getReplaceType(
+		Type $subjectArgumentType,
+		?Type $replaceArgumentType,
+	): Type
+	{
+		if ($replaceArgumentType === null) {
+			return new StringType();
+		}
+
+		$accessories = [];
+		if ($subjectArgumentType->isNonFalsyString()->yes() && $replaceArgumentType->isNonFalsyString()->yes()) {
+			$accessories[] = new AccessoryNonFalsyStringType();
+		} elseif ($subjectArgumentType->isNonEmptyString()->yes() && $replaceArgumentType->isNonEmptyString()->yes()) {
+			$accessories[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($subjectArgumentType->isLowercaseString()->yes() && $replaceArgumentType->isLowercaseString()->yes()) {
+			$accessories[] = new AccessoryLowercaseStringType();
+		}
+
+		if ($subjectArgumentType->isUppercaseString()->yes() && $replaceArgumentType->isUppercaseString()->yes()) {
+			$accessories[] = new AccessoryUppercaseStringType();
+		}
+
+		if (count($accessories) > 0) {
+			$accessories[] = new StringType();
+			return new IntersectionType($accessories);
+		}
+
+		return new StringType();
 	}
 
 	private function getSubjectType(

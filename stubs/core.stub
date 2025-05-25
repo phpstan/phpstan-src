@@ -227,7 +227,7 @@ function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $off
  * @param string|array<string|int|float> $subject
  * @param int $count
  * @param-out 0|positive-int $count
- * @return ($subject is array ? list<string>|null : string|null)
+ * @return ($subject is array ? array<string>|null : string|null)
  */
 function preg_replace_callback($pattern, $callback, $subject, int $limit = -1, &$count = null, int $flags = 0) {}
 
@@ -237,7 +237,7 @@ function preg_replace_callback($pattern, $callback, $subject, int $limit = -1, &
  * @param string|array<string|int|float> $subject
  * @param int $count
  * @param-out 0|positive-int $count
- * @return ($subject is array ? list<string>|null : string|null)
+ * @return ($subject is array ? array<string>|null : string|null)
  */
 function preg_replace($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
 
@@ -256,7 +256,7 @@ function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count 
  * @param array<string>|string $replace
  * @param array<string>|string $subject
  * @param-out int $count
- * @return list<string>|string
+ * @return array<string>|string
  */
 function str_replace($search, $replace, $subject, ?int &$count = null) {}
 
@@ -265,7 +265,7 @@ function str_replace($search, $replace, $subject, ?int &$count = null) {}
  * @param array<string>|string $replace
  * @param array<string>|string $subject
  * @param-out int $count
- * @return list<string>|string
+ * @return array<string>|string
  */
 function str_ireplace($search, $replace, $subject, ?int &$count = null) {}
 

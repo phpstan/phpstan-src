@@ -7256,7 +7256,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedString',
 			],
 			[
-				'array{a: string, b: string}',
+				'array{a: lowercase-string&non-falsy-string, b: lowercase-string&non-falsy-string}',
 				'$expectedArray',
 			],
 			[
@@ -7264,23 +7264,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$expectedArray2',
 			],
 			[
-				'array{a?: string, b?: string}',
+				'array{a?: lowercase-string&non-falsy-string, b?: lowercase-string&non-falsy-string}',
 				'$anotherExpectedArray',
 			],
 			[
-				'list<string>|string',
+				'array{}|(lowercase-string&non-falsy-string)',
 				'$expectedArrayOrString',
 			],
 			[
-				'(list<string>|string)',
+				'(array<string>|string)',
 				'$expectedBenevolentArrayOrString',
 			],
 			[
-				'list<string>|string|null',
+				'array{}|string|null',
 				'$expectedArrayOrString2',
 			],
 			[
-				'list<string>|string|null',
+				'array{}|(lowercase-string&non-falsy-string)|null',
 				'$anotherExpectedArrayOrString',
 			],
 			[

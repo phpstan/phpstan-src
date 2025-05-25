@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -10,6 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
 use function sprintf;
 
+#[AutowiredService]
 final class VarianceCheck
 {
 

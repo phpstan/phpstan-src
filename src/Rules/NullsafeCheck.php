@@ -3,7 +3,9 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
+use PHPStan\DependencyInjection\AutowiredService;
 
+#[AutowiredService]
 final class NullsafeCheck
 {
 

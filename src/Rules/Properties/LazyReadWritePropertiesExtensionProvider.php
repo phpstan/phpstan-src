@@ -2,8 +2,10 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService]
 final class LazyReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
 {
 

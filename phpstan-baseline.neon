@@ -236,17 +236,12 @@ parameters:
 
 		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\Identifier\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
-			count: 3
+			count: 4
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode is never thrown in the try block\\.$#"
 			count: 1
-			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
-
-		-
-			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\InvalidIdentifierName is never thrown in the try block\\.$#"
-			count: 3
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-

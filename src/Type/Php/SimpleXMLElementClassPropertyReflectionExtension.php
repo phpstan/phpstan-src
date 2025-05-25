@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\SimpleXMLElementProperty;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
@@ -10,6 +11,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 
+#[AutowiredService]
 final class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClassReflectionExtension
 {
 

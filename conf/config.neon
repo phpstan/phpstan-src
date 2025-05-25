@@ -404,11 +404,6 @@ services:
 		class: PHPStan\PhpDoc\StubValidator
 
 	-
-		class: PHPStan\PhpDoc\SocketSelectStubFilesExtension
-		tags:
-			- phpstan.stubFilesExtension
-
-	-
 		class: PHPStan\PhpDoc\DefaultStubFilesProvider
 		arguments:
 			stubFiles: %stubFiles%
@@ -754,11 +749,6 @@ services:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
-		class: PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
@@ -792,11 +782,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension
-
-	-
-		class: PHPStan\Reflection\Php\EnumAllowedSubTypesClassReflectionExtension
-		tags:
-			- phpstan.broker.allowedSubTypesClassReflectionExtension
 
 	-
 		class: PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension
@@ -1071,10 +1056,6 @@ services:
 		arguments:
 			reportMagicProperties: %reportMagicProperties%
 			checkDynamicProperties: %checkDynamicProperties%
-	-
-		class: PHPStan\Type\Php\BcMathNumberOperatorTypeSpecifyingExtension
-		tags:
-			- phpstan.broker.operatorTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule
@@ -1257,11 +1238,6 @@ services:
 			- phpstan.dynamicFunctionThrowTypeExtension
 
 	-
-		class: PHPStan\Type\Php\OpenSslEncryptParameterOutTypeExtension
-		tags:
-			- phpstan.functionParameterOutTypeExtension
-
-	-
 		class: PHPStan\Type\Php\ParseStrParameterOutTypeExtension
 		tags:
 			- phpstan.functionParameterOutTypeExtension
@@ -1314,11 +1290,6 @@ services:
 		class: PHPStan\Type\Php\StrContainingTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension
-		tags:
-			- phpstan.broker.propertiesClassReflectionExtension
 
 	-
 		class: PHPStan\Type\Php\SimpleXMLElementConstructorThrowTypeExtension
@@ -1435,16 +1406,6 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\SimpleXMLElementAsXMLMethodReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\SimpleXMLElementXpathMethodReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\LtrimFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1496,24 +1457,9 @@ services:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\DatePeriodConstructorReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\PHPStan\ClassNameUsageLocationCreateIdentifierDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-	-
 		class: PHPStan\Type\ClosureTypeFactory
 		arguments:
 			parser: @currentPhpVersionPhpParser
-
-	-
-		class: PHPStan\Type\Constant\OversizedArrayBuilder
-
-	-
-		class: PHPStan\Rules\Functions\PrintfHelper
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

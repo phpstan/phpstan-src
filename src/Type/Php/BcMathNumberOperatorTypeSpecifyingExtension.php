@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
@@ -10,6 +11,7 @@ use PHPStan\Type\OperatorTypeSpecifyingExtension;
 use PHPStan\Type\Type;
 use function in_array;
 
+#[AutowiredService]
 final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {
 

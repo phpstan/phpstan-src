@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -17,6 +18,7 @@ use function openssl_get_cipher_methods;
 use function strtolower;
 use function substr;
 
+#[AutowiredService]
 final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
 

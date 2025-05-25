@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -11,6 +12,7 @@ use PHPStan\Type\Type;
 use Throwable;
 use function count;
 
+#[AutowiredService]
 final class AssertThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

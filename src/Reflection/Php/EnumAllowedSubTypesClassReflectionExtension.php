@@ -2,11 +2,13 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\AllowedSubTypesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use function array_keys;
 
+#[AutowiredService]
 final class EnumAllowedSubTypesClassReflectionExtension implements AllowedSubTypesClassReflectionExtension
 {
 

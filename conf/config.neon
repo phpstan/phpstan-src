@@ -1067,12 +1067,6 @@ services:
 		class: PHPStan\Rules\Properties\PropertyDescriptor
 
 	-
-		class: PHPStan\Rules\Properties\PropertyReflectionFinder
-
-	-
-		class: PHPStan\Rules\Pure\FunctionPurityCheck
-
-	-
 		class: PHPStan\Rules\RuleLevelHelper
 		arguments:
 			checkNullables: %checkNullables%
@@ -1087,9 +1081,6 @@ services:
 		class: PHPStan\Rules\UnusedFunctionParametersCheck
 		arguments:
 			reportExactLine: %featureToggles.reportPreciseLineForUnusedFunctionParameter%
-
-	-
-		class: PHPStan\Rules\TooWideTypehints\TooWideParameterOutTypeCheck
 
 	-
 		class: PHPStan\Type\FileTypeMapper
@@ -1113,75 +1104,11 @@ services:
 		factory: PHPStan\Type\LazyTypeAliasResolverProvider
 
 	-
-		class: PHPStan\Type\BitwiseFlagHelper
-
-	-
 		class: PHPStan\Type\Php\CompactFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 		arguments:
 			checkMaybeUndefinedVariables: %checkMaybeUndefinedVariables%
-
-	-
-		class: PHPStan\Type\Php\ConstantHelper
-
-	-
-		class: PHPStan\Type\Php\DateFunctionReturnTypeHelper
-
-	-
-		class: PHPStan\Type\Php\ArrayKeyExistsFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\AssertThrowTypeExtension
-		tags:
-			- phpstan.dynamicFunctionThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\ArraySearchFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\ClosureBindDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\CountFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\ClosureBindToDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\ClosureFromCallableDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\BackedEnumFromMethodDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateFormatMethodReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateIntervalConstructorThrowTypeExtension
-		tags:
-			- phpstan.dynamicStaticMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateIntervalDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\DateTimeModifyReturnTypeExtension

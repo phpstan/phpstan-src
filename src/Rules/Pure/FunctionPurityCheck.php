@@ -7,6 +7,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\ThrowPoint;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -20,6 +21,7 @@ use function in_array;
 use function lcfirst;
 use function sprintf;
 
+#[AutowiredService]
 final class FunctionPurityCheck
 {
 

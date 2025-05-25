@@ -4,12 +4,14 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 use function count;
 
+#[AutowiredService]
 final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 

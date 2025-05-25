@@ -6,6 +6,7 @@ use ArithmeticError;
 use DivisionByZeroError;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -14,6 +15,7 @@ use PHPStan\Type\Type;
 use function count;
 use const PHP_INT_MIN;
 
+#[AutowiredService]
 final class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

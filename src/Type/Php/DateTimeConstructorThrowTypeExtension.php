@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
@@ -16,6 +17,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

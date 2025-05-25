@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -11,6 +12,7 @@ use PHPStan\Type\TypeWithClassName;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

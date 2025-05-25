@@ -1198,41 +1198,6 @@ services:
 			dateTimeClass: DateTimeImmutable
 
 	-
-		class: PHPStan\Type\Php\DateTimeConstructorThrowTypeExtension
-		tags:
-			- phpstan.dynamicStaticMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateTimeModifyMethodThrowTypeExtension
-		tags:
-			- phpstan.dynamicMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateTimeSubMethodThrowTypeExtension
-		tags:
-			- phpstan.dynamicMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DateTimeZoneConstructorThrowTypeExtension
-		tags:
-			- phpstan.dynamicStaticMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DsMapDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\DsMapDynamicMethodThrowTypeExtension
-		tags:
-			- phpstan.dynamicMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\IntdivThrowTypeExtension
-		tags:
-			- phpstan.dynamicFunctionThrowTypeExtension
-
-	-
 		class: PHPStan\Type\Php\VersionCompareFunctionDynamicReturnTypeExtension
 		arguments:
 			configPhpVersion: %phpVersion%

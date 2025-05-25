@@ -3,13 +3,11 @@
 namespace PHPStan\Reflection\RequireExtension;
 
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
 
-#[AutowiredService]
 final class RequireExtendsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 

@@ -661,6 +661,9 @@ services:
 			additionalConstructors: %additionalConstructors%
 
 	-
+		class: PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension
 
 	-

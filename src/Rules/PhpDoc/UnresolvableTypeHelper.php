@@ -2,13 +2,11 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
-#[AutowiredService]
 final class UnresolvableTypeHelper
 {
 

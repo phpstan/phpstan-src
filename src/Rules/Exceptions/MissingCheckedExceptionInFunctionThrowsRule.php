@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,7 +12,6 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
-#[AutowiredService]
 final class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 {
 

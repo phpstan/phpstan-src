@@ -914,6 +914,15 @@ services:
 			- PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
 
 	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInFunctionThrowsRule
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInMethodThrowsRule
+
+	-
+		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInPropertyHookThrowsRule
+
+	-
 		class: PHPStan\Rules\Exceptions\MissingCheckedExceptionInThrowsCheck
 		arguments:
 			exceptionTypeResolver: @exceptionTypeResolver
@@ -938,15 +947,35 @@ services:
 			checkThisOnly: %checkThisOnly%
 
 	-
+		class: PHPStan\Rules\FunctionReturnTypeCheck
+	-
+		class: PHPStan\Rules\ParameterCastableToStringCheck
+
+	-
+		class: PHPStan\Rules\Generics\CrossCheckInterfacesHelper
+
+	-
 		class: PHPStan\Rules\Generics\GenericAncestorsCheck
 		arguments:
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
 			checkMissingTypehints: %checkMissingTypehints%
 
 	-
+		class: PHPStan\Rules\Generics\GenericObjectTypeCheck
+
+	-
+		class: PHPStan\Rules\Generics\MethodTagTemplateTypeCheck
+
+	-
 		class: PHPStan\Rules\Generics\TemplateTypeCheck
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
+
+	-
+		class: PHPStan\Rules\Generics\VarianceCheck
+
+	-
+		class: PHPStan\Rules\InternalTag\RestrictedInternalUsageHelper
 
 	-
 		class: PHPStan\Rules\IssetCheck
@@ -975,10 +1004,28 @@ services:
 			reportStatic: %reportStaticMethodSignatures%
 
 	-
+		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper
+
+	-
+		class: PHPStan\Rules\Methods\MethodVisibilityComparisonHelper
+
+	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%
+
+	-
+		class: PHPStan\Rules\NullsafeCheck
+
+	-
+		class: PHPStan\Rules\Constants\LazyAlwaysUsedClassConstantsExtensionProvider
+
+	-
+		class: PHPStan\Rules\Methods\LazyAlwaysUsedMethodExtensionProvider
+
+	-
+		class: PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper
 
 	-
 		class: PHPStan\Rules\PhpDoc\AssertRuleHelper
@@ -987,16 +1034,37 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 
 	-
+		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper
+
+	-
+		class: PHPStan\Rules\PhpDoc\GenericCallableRuleHelper
+
+	-
+		class: PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeCheck
+
+	-
 		class: PHPStan\Rules\PhpDoc\VarTagTypeRuleHelper
 		arguments:
 			checkTypeAgainstPhpDocType: %reportWrongPhpDocTypeInVarTag%
 			strictWideningCheck: %reportAnyTypeWideningInVarTag%
 
 	-
+		class: PHPStan\Rules\Playground\NeverRuleHelper
+
+	-
 		class: PHPStan\Rules\Properties\AccessPropertiesCheck
 		arguments:
 			reportMagicProperties: %reportMagicProperties%
 			checkDynamicProperties: %checkDynamicProperties%
+
+	-
+		class: PHPStan\Rules\Properties\UninitializedPropertyRule
+
+	-
+		class: PHPStan\Rules\Properties\LazyReadWritePropertiesExtensionProvider
+
+	-
+		class: PHPStan\Rules\Properties\PropertyDescriptor
 
 	-
 		class: PHPStan\Rules\RuleLevelHelper

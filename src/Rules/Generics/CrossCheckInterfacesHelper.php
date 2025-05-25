@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Generics;
 
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -10,7 +9,6 @@ use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function sprintf;
 
-#[AutowiredService]
 final class CrossCheckInterfacesHelper
 {
 

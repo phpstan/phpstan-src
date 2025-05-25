@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
@@ -14,7 +13,6 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
-#[AutowiredService]
 final class UninitializedPropertyRule implements Rule
 {
 

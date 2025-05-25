@@ -2,10 +2,8 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
-#[AutowiredService]
 final class LazyAlwaysUsedMethodExtensionProvider implements AlwaysUsedMethodExtensionProvider
 {
 

@@ -4,7 +4,6 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\ParamOutTag;
@@ -20,7 +19,6 @@ use function array_merge;
 use function in_array;
 use function sprintf;
 
-#[AutowiredService]
 final class IncompatiblePhpDocTypeCheck
 {
 

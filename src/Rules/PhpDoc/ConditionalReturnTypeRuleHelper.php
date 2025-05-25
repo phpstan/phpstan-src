@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,7 +17,6 @@ use function count;
 use function sprintf;
 use function substr;
 
-#[AutowiredService]
 final class ConditionalReturnTypeRuleHelper
 {
 

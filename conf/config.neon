@@ -461,9 +461,6 @@ services:
 			cacheFilePath: %resultCachePath%
 
 	-
-		class: PHPStan\Analyser\RicherScopeGetTypeHelper
-
-	-
 		class: PHPStan\Cache\Cache
 		arguments:
 			storage: @cacheStorage
@@ -471,15 +468,6 @@ services:
 	-
 		class: PHPStan\Collectors\Registry
 		factory: @PHPStan\Collectors\RegistryFactory::create
-
-	-
-		class: PHPStan\Collectors\RegistryFactory
-
-	-
-		class: PHPStan\Command\AnalyseApplication
-
-	-
-		class: PHPStan\Command\AnalyserRunner
 
 	-
 		class: PHPStan\Command\FixerApplication
@@ -499,12 +487,6 @@ services:
 		class: PHPStan\Dependency\ExportedNodeFetcher
 		arguments:
 			parser: @defaultAnalysisParser
-
-	-
-		class: PHPStan\Dependency\ExportedNodeResolver
-
-	-
-		class: PHPStan\Dependency\ExportedNodeVisitor
 
 	-
 		class: PHPStan\DependencyInjection\Container
@@ -632,12 +614,6 @@ services:
 			minimumNumberOfJobsPerProcess: %parallel.minimumNumberOfJobsPerProcess%
 		tags:
 			- phpstan.diagnoseExtension
-
-	-
-		class: PHPStan\Process\CpuCoreCounter
-
-	-
-		class: PHPStan\Reflection\AttributeReflectionFactory
 
 	-
 		implement: PHPStan\Reflection\FunctionReflectionFactory

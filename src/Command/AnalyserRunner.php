@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use Closure;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
@@ -19,6 +20,7 @@ use function function_exists;
 use function is_file;
 use function memory_get_peak_usage;
 
+#[AutowiredService]
 final class AnalyserRunner
 {
 

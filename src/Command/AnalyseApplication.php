@@ -9,6 +9,7 @@ use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -26,6 +27,7 @@ use function sprintf;
  * @phpstan-import-type CollectorData from CollectedData
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
+#[AutowiredService]
 final class AnalyseApplication
 {
 

@@ -23,6 +23,7 @@ use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedPropertyHookNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Reflection\ReflectionProvider;
@@ -32,6 +33,7 @@ use function array_map;
 use function is_string;
 use function sprintf;
 
+#[AutowiredService]
 final class ExportedNodeResolver
 {
 

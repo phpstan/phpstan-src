@@ -1323,51 +1323,11 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
-		class: PHPStan\Type\Php\ThrowableReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\VersionCompareFunctionDynamicReturnTypeExtension
 		arguments:
 			configPhpVersion: %phpVersion%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\AssertFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\ClassExistsFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\DefineConstantTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\DefinedConstantTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\FunctionExistsFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\InArrayFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\TypeSpecifyingFunctionsDynamicReturnTypeExtension

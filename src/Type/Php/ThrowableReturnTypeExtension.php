@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -18,6 +19,7 @@ use function count;
 use function in_array;
 use function strtolower;
 
+#[AutowiredService]
 final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

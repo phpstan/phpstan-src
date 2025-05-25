@@ -45,7 +45,7 @@ function validPatternWithEmptyResult(string $s, array $arr) {
 	assertType('string|null', $r);
 
 	$r = preg_replace('/(\D+)*[12]/', 'x', $arr);
-	assertType('array', $r);
+	assertType('array<string>', $r);
 }
 
 

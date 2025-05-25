@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -17,6 +18,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

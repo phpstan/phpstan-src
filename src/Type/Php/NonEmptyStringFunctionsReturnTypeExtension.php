@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -17,6 +18,7 @@ use function count;
 use function in_array;
 use const ENT_SUBSTITUTE;
 
+#[AutowiredService]
 final class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

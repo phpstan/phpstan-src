@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
@@ -18,6 +19,7 @@ use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

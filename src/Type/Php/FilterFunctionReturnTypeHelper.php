@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -33,6 +34,7 @@ use function octdec;
 use function preg_match;
 use function sprintf;
 
+#[AutowiredService]
 final class FilterFunctionReturnTypeHelper
 {
 

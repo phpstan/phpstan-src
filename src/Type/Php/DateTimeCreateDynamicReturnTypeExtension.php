@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -16,6 +17,7 @@ use function count;
 use function date_create;
 use function in_array;
 
+#[AutowiredService]
 final class DateTimeCreateDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
@@ -29,6 +30,7 @@ use function mb_internal_encoding;
 use function mb_str_split;
 use function str_split;
 
+#[AutowiredService]
 final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

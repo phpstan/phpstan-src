@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -18,6 +19,7 @@ use PHPStan\Type\UnionType;
 use function array_map;
 use function count;
 
+#[AutowiredService]
 final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

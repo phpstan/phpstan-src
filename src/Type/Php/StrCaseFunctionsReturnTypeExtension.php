@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -26,6 +27,7 @@ use function mb_check_encoding;
 use const MB_CASE_LOWER;
 use const MB_CASE_UPPER;
 
+#[AutowiredService]
 final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -26,6 +27,7 @@ use function count;
 use function in_array;
 use function strtolower;
 
+#[AutowiredService]
 final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

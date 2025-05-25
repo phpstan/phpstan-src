@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -15,6 +16,7 @@ use function array_key_first;
 use function array_map;
 use function count;
 
+#[AutowiredService]
 final class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

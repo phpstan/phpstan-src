@@ -4,11 +4,13 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use function count;
 
+#[AutowiredService]
 final class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

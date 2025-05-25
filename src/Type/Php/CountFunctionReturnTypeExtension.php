@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -12,6 +13,7 @@ use function count;
 use function in_array;
 use const COUNT_RECURSIVE;
 
+#[AutowiredService]
 final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

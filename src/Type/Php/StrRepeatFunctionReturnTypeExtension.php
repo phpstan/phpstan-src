@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -24,6 +25,7 @@ use function count;
 use function str_repeat;
 use function strlen;
 
+#[AutowiredService]
 final class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

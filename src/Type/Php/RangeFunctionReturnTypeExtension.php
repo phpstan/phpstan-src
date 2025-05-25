@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -27,6 +28,7 @@ use function count;
 use function is_array;
 use function range;
 
+#[AutowiredService]
 final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

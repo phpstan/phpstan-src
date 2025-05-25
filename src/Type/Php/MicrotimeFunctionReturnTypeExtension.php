@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -14,6 +15,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
 
+#[AutowiredService]
 final class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

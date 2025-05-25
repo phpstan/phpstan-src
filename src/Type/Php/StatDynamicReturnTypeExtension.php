@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use SplFileObject;
 use function in_array;
 
+#[AutowiredService]
 final class StatDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, DynamicMethodReturnTypeExtension
 {
 

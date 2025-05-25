@@ -1287,42 +1287,6 @@ services:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
 	-
-		class: PHPStan\Type\Php\StrContainingTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\SimpleXMLElementConstructorThrowTypeExtension
-		tags:
-			- phpstan.dynamicStaticMethodThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\StatDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\MethodExistsTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\PropertyExistsTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\ReflectionClassIsSubclassOfTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\SetTypeFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
 		class: PHPStan\Type\Php\VersionCompareFunctionDynamicReturnTypeExtension
 		arguments:
 			configPhpVersion: %phpVersion%

@@ -16,6 +16,8 @@ final class PhpVersion
 	public const SOURCE_UNKNOWN = 4;
 
 	/**
+	 * @api
+	 *
 	 * @param self::SOURCE_* $source
 	 */
 	public function __construct(private int $versionId, private int $source = self::SOURCE_UNKNOWN)

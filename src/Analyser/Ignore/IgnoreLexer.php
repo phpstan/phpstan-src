@@ -4,9 +4,11 @@ namespace PHPStan\Analyser\Ignore;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Error;
+use PHPStan\DependencyInjection\AutowiredService;
 use function implode;
 use const PREG_SET_ORDER;
 
+#[AutowiredService]
 final class IgnoreLexer
 {
 

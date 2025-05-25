@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_key_exists;
 use function array_values;
 use function count;
@@ -10,6 +11,7 @@ use function is_array;
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
+#[AutowiredService]
 final class LocalIgnoresProcessor
 {
 

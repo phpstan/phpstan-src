@@ -2,10 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 
+#[AutowiredService]
 final class ConstantResolverFactory
 {
 

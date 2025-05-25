@@ -409,30 +409,15 @@ services:
 			parser: @defaultAnalysisParser
 
 	-
-		class: PHPStan\Analyser\IgnoreErrorExtensionProvider
-
-	-
-		class: PHPStan\Analyser\LocalIgnoresProcessor
-
-	-
-		class: PHPStan\Analyser\RuleErrorTransformer
-
-	-
 		class: PHPStan\Analyser\Ignore\IgnoredErrorHelper
 		arguments:
 			ignoreErrors: %ignoreErrors%
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
-		class: PHPStan\Analyser\Ignore\IgnoreLexer
-
-	-
 		class: PHPStan\Analyser\LazyInternalScopeFactory
 		autowired:
 			- PHPStan\Analyser\InternalScopeFactory
-
-	-
-		class: PHPStan\Analyser\ScopeFactory
 
 	-
 		class: PHPStan\Analyser\NodeScopeResolver
@@ -452,9 +437,6 @@ services:
 	-
 		class: PHPStan\Analyser\ConstantResolver
 		factory: @PHPStan\Analyser\ConstantResolverFactory::create()
-
-	-
-		class: PHPStan\Analyser\ConstantResolverFactory
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

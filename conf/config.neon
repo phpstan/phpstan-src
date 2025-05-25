@@ -626,6 +626,12 @@ services:
 			usePathConstantsAsConstantString: %usePathConstantsAsConstantString%
 
 	-
+		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension
+
+	-
+		class: PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
 		arguments:
 			parser: @defaultAnalysisParser

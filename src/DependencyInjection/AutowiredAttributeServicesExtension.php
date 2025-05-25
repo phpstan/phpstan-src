@@ -21,8 +21,11 @@ use PHPStan\Reflection\Deprecation\MethodDeprecationExtension;
 use PHPStan\Reflection\Deprecation\PropertyDeprecationExtension;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
+use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\LazyRegistry;
+use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
+use PHPStan\Rules\Methods\AlwaysUsedMethodExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageExtension;
@@ -71,7 +74,8 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			TypeNodeResolverExtension::class => TypeNodeResolverExtension::EXTENSION_TAG,
 			Rule::class => LazyRegistry::RULE_TAG,
 			StubFilesExtension::class => StubFilesExtension::EXTENSION_TAG,
-			AlwaysUsedClassConstantsExtensionProvider::class => AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG,
+			AlwaysUsedClassConstantsExtension::class => AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG,
+			AlwaysUsedMethodExtension::class => AlwaysUsedMethodExtensionProvider::EXTENSION_TAG,
 			ReadWritePropertiesExtension::class => ReadWritePropertiesExtensionProvider::EXTENSION_TAG,
 			FunctionTypeSpecifyingExtension::class => TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG,
 			MethodTypeSpecifyingExtension::class => TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG,

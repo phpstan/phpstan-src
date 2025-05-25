@@ -626,21 +626,9 @@ services:
 			usePathConstantsAsConstantString: %usePathConstantsAsConstantString%
 
 	-
-		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension
-
-	-
-		class: PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
-
-	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\CachingVisitor
-
-	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher
 		arguments:
 			parser: @defaultAnalysisParser
-
-	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory
@@ -648,16 +636,10 @@ services:
 			fileFinder: @fileFinderScan
 
 	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository
-
-	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory
-
-	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository
 
 	-
 		class: PHPStan\Reflection\BetterReflection\Type\AdapterReflectionEnumCaseDynamicReturnTypeExtension
@@ -677,9 +659,6 @@ services:
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
-
-	-
-		class: PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension
 
 	-
 		class: PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension

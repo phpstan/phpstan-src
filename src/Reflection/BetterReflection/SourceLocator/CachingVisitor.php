@@ -9,9 +9,11 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantNameHelper;
 use function strtolower;
 
+#[AutowiredService]
 final class CachingVisitor extends NodeVisitorAbstract
 {
 

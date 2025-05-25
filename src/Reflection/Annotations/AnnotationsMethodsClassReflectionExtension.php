@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -15,6 +16,7 @@ use PHPStan\Type\Type;
 use function array_map;
 use function count;
 
+#[AutowiredService]
 final class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 

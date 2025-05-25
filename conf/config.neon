@@ -1370,34 +1370,6 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
-		class: PHPStan\Type\Php\IsCallableFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsIterableFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsSubclassOfFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingHelper
-
-	-
-		class: PHPStan\Type\Php\CtypeDigitFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
 		class: PHPStan\Type\Php\TypeSpecifyingFunctionsDynamicReturnTypeExtension
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
@@ -1414,12 +1386,6 @@ services:
 		class: PHPStan\Type\Php\TrimFunctionDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\XMLReaderOpenReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
@@ -1627,12 +1593,6 @@ services:
 		factory: @PHPStan\Reflection\BetterReflection\SourceStubber\ReflectionSourceStubberFactory::create()
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber
-
-	-
-		class: PHPStan\Reflection\BetterReflection\SourceStubber\ReflectionSourceStubberFactory
-
-	-
-		class: PHPStan\Reflection\Deprecation\DeprecationProvider
 
 	php8Lexer:
 		class: PhpParser\Lexer\Emulative

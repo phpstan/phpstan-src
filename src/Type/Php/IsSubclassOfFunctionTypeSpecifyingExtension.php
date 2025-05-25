@@ -8,6 +8,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -15,6 +16,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use function count;
 use function strtolower;
 
+#[AutowiredService]
 final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

@@ -3,9 +3,11 @@
 namespace PHPStan\Reflection\BetterReflection\SourceStubber;
 
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 
+#[AutowiredService]
 final class ReflectionSourceStubberFactory
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -21,6 +22,7 @@ use function array_slice;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class MethodParameterComparisonHelper
 {
 

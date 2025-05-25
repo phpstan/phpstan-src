@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\TemplateTypeCheck;
@@ -18,6 +19,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function sprintf;
 
+#[AutowiredService]
 final class GenericCallableRuleHelper
 {
 

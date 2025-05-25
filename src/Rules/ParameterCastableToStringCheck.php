@@ -5,12 +5,14 @@ namespace PHPStan\Rules;
 use PhpParser\Node\Arg;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
+#[AutowiredService]
 final class ParameterCastableToStringCheck
 {
 

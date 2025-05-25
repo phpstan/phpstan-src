@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -23,6 +24,7 @@ use function implode;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class GenericObjectTypeCheck
 {
 

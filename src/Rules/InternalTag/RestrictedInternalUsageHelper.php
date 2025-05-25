@@ -3,10 +3,12 @@
 namespace PHPStan\Rules\InternalTag;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_slice;
 use function explode;
 use function str_starts_with;
 
+#[AutowiredService]
 final class RestrictedInternalUsageHelper
 {
 

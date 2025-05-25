@@ -90,11 +90,6 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
-		$stringOrArray = new UnionType([new StringType(), new ArrayType(new MixedType(), new MixedType())]);
-		if (!$stringOrArray->isSuperTypeOf($subjectArgumentType)->yes()) {
-			return $defaultReturnType;
-		}
-
 		$replaceArgumentType = null;
 		if (array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
 			$replaceArgumentPosition = self::FUNCTIONS_REPLACE_POSITION[$functionReflection->getName()];
@@ -109,12 +104,20 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 
 		$result = [];
 
-		$stringArgumentType = TypeCombinator::intersect(new StringType(), $subjectArgumentType);
+		if ($subjectArgumentType->isString()->yes()) {
+			$stringArgumentType = $subjectArgumentType;
+		} else {
+			$stringArgumentType = TypeCombinator::intersect(new StringType(), $subjectArgumentType);
+		}
 		if ($stringArgumentType->isString()->yes()) {
 			$result[] = $this->getReplaceType($stringArgumentType, $replaceArgumentType);
 		}
 
-		$arrayArgumentType = TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), $subjectArgumentType);
+		if ($subjectArgumentType->isArray()->yes()) {
+			$arrayArgumentType = $subjectArgumentType;
+		} else {
+			$arrayArgumentType = TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), $subjectArgumentType);
+		}
 		if ($arrayArgumentType->isArray()->yes()) {
 			$keyShouldBeOptional = in_array(
 				$functionReflection->getName(),

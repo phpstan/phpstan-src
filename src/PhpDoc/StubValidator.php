@@ -7,6 +7,7 @@ use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Php\PhpVersion;
@@ -101,6 +102,7 @@ use function array_fill_keys;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class StubValidator
 {
 

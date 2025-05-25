@@ -231,9 +231,6 @@ services:
 		class: PhpParser\BuilderFactory
 
 	-
-		class: PHPStan\Parser\LexerFactory
-
-	-
 		class: PhpParser\NodeVisitor\NameResolver
 		arguments:
 			options:
@@ -385,23 +382,8 @@ services:
 		class: PHPStan\PhpDocParser\Printer\Printer
 
 	-
-		class: PHPStan\PhpDoc\PhpDocStringResolver
-
-	-
-		class: PHPStan\PhpDoc\ConstExprNodeResolver
-
-	-
-		class: PHPStan\PhpDoc\TypeNodeResolver
-
-	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider
 		factory: PHPStan\PhpDoc\LazyTypeNodeResolverExtensionRegistryProvider
-
-	-
-		class: PHPStan\PhpDoc\TypeStringResolver
-
-	-
-		class: PHPStan\PhpDoc\StubValidator
 
 	-
 		class: PHPStan\PhpDoc\DefaultStubFilesProvider
@@ -410,21 +392,6 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 		autowired:
 			- PHPStan\PhpDoc\StubFilesProvider
-
-	-
-		class: PHPStan\PhpDoc\JsonValidateStubFilesExtension
-		tags:
-			- phpstan.stubFilesExtension
-
-	-
-		class: PHPStan\PhpDoc\ReflectionClassStubFilesExtension
-		tags:
-			- phpstan.stubFilesExtension
-
-	-
-		class: PHPStan\PhpDoc\ReflectionEnumStubFilesExtension
-		tags:
-			- phpstan.stubFilesExtension
 
 	-
 		class: PHPStan\Analyser\Analyser

@@ -2,11 +2,13 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 
+#[AutowiredService]
 final class PhpDocStringResolver
 {
 

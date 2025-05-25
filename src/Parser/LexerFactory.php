@@ -3,9 +3,11 @@
 namespace PHPStan\Parser;
 
 use PhpParser\Lexer;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use const PHP_VERSION_ID;
 
+#[AutowiredService]
 final class LexerFactory
 {
 

@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
@@ -124,6 +125,7 @@ use function str_starts_with;
 use function strtolower;
 use function substr;
 
+#[AutowiredService]
 final class TypeNodeResolver
 {
 

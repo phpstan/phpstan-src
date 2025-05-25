@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
@@ -13,6 +14,7 @@ use PHPStan\Type\UnionType;
 use ReflectionClass;
 use function count;
 
+#[AutowiredService]
 final class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

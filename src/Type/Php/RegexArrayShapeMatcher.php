@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -32,6 +33,7 @@ use const PREG_UNMATCHED_AS_NULL;
 /**
  * @api
  */
+#[AutowiredService]
 final class RegexArrayShapeMatcher
 {
 

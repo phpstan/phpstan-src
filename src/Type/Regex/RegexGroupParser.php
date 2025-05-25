@@ -9,6 +9,7 @@ use Hoa\Exception\Exception;
 use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -33,6 +34,7 @@ use function strlen;
 use function substr;
 use function trim;
 
+#[AutowiredService]
 final class RegexGroupParser
 {
 

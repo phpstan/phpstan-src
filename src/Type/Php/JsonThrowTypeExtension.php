@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BitwiseFlagHelper;
@@ -13,6 +14,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function in_array;
 
+#[AutowiredService]
 final class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

@@ -3273,7 +3273,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $x of method Bug9487\HelloWorld::sayHello() expects list<string>, array<int<1, max>, string> given.',
 				15,
-				'array<int<1, max>, string> is not a list.'
+				'array<int<1, max>, string> is not a list.',
 			],
 		]);
 	}

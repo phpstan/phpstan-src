@@ -2248,6 +2248,21 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12954.php'], []);
 	}
 
+	public function testBug8922(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				'Parameter #1 $encoding_list of function mb_detect_order expects non-empty-list<non-falsy-string>|non-falsy-string, null given.',
+				15,
+				'• Type #1 from the union: null is not a list.
+• Type #1 from the union: null is empty.',
+			];
+		}
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8922.php'], $errors);
+	}
+
 	public function testBug13065(): void
 	{
 		$errors = [];

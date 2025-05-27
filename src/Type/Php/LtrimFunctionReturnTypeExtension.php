@@ -14,6 +14,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function ltrim;
 
@@ -53,12 +54,27 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
 
-		if ($trimChars instanceof ConstantStringType && $trimChars->getValue() === '\\' && $string->isClassString()->yes()) {
-			if ($string instanceof ConstantStringType) {
-				return new ConstantStringType(ltrim($string->getValue(), $trimChars->getValue()), true);
+		$trimConstantStrings = $trimChars->getConstantStrings();
+		if (count($trimConstantStrings) > 0) {
+			$result = [];
+			$stringConstantStrings = $string->getConstantStrings();
+
+			foreach ($trimConstantStrings as $trimConstantString) {
+				if (count($stringConstantStrings) > 0) {
+					foreach ($stringConstantStrings as $stringConstantString) {
+						$result[] = new ConstantStringType(
+							ltrim($stringConstantString->getValue(), $trimConstantString->getValue()),
+							true,
+						);
+					}
+				} elseif ($trimConstantString->getValue() === '\\' && $string->isClassString()->yes()) {
+					$result[] = new ClassStringType();
+				} else {
+					return $defaultType;
+				}
 			}
 
-			return new ClassStringType();
+			return TypeCombinator::union(...$result);
 		}
 
 		return $defaultType;

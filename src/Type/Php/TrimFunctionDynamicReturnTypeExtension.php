@@ -8,12 +8,16 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function rtrim;
+use function trim;
 
 #[AutowiredService]
 final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -37,6 +41,7 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 		$stringType = $scope->getType($args[0]->value);
 		$accessory = [];
+		$defaultType = new StringType();
 		if ($stringType->isLowercaseString()->yes()) {
 			$accessory[] = new AccessoryLowercaseStringType();
 		}
@@ -45,10 +50,40 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		}
 		if (count($accessory) > 0) {
 			$accessory[] = new StringType();
-			return new IntersectionType($accessory);
+			$defaultType = new IntersectionType($accessory);
 		}
 
-		return new StringType();
+		if (count($functionCall->getArgs()) !== 2) {
+			return $defaultType;
+		}
+
+		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
+
+		$trimConstantStrings = $trimChars->getConstantStrings();
+		if (count($trimConstantStrings) > 0) {
+			$result = [];
+			$stringConstantStrings = $stringType->getConstantStrings();
+			$functionName = $functionReflection->getName();
+
+			foreach ($trimConstantStrings as $trimConstantString) {
+				if (count($stringConstantStrings) === 0) {
+					return $defaultType;
+				}
+
+				foreach ($stringConstantStrings as $stringConstantString) {
+					$result[] = new ConstantStringType(
+						$functionName === 'rtrim'
+							? rtrim($stringConstantString->getValue(), $trimConstantString->getValue())
+							: trim($stringConstantString->getValue(), $trimConstantString->getValue()),
+						true,
+					);
+				}
+			}
+
+			return TypeCombinator::union(...$result);
+		}
+
+		return $defaultType;
 	}
 
 }

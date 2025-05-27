@@ -31,12 +31,12 @@ class DOMNode
 {
 
 	/**
-	 * @var DOMNamedNodeMap|null
+	 * @var DOMNamedNodeMap<DOMAttr>|null
 	 */
 	public $attributes;
 
 	/**
-	 * @phpstan-assert-if-true !null $this->attributes
+	 * @phpstan-assert-if-true =DOMNamedNodeMap $this->attributes
 	 * @return bool
 	 */
 	public function hasAttributes() {}
@@ -45,6 +45,9 @@ class DOMNode
 
 class DOMElement extends DOMNode
 {
+
+	/** @var DOMNamedNodeMap<DOMAttr> */
+	public $attributes;
 
 	/** @var DOMDocument */
 	public $ownerDocument;

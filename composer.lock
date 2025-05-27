@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1172f6270b6d9e610f731403af5e01e6",
+    "content-hash": "b235ba93272364ed2ad1aff93785d2ca",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -6355,16 +6355,16 @@
         },
         {
             "name": "shipmonk/dead-code-detector",
-            "version": "0.12.0",
+            "version": "0.12.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/shipmonk-rnd/dead-code-detector.git",
-                "reference": "1f0c70ec4e9868c785f6505592dfb01ef53af2ca"
+                "reference": "71b842269e9a29634e34074e723023e4e151518b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/1f0c70ec4e9868c785f6505592dfb01ef53af2ca",
-                "reference": "1f0c70ec4e9868c785f6505592dfb01ef53af2ca",
+                "url": "https://api.github.com/repos/shipmonk-rnd/dead-code-detector/zipball/71b842269e9a29634e34074e723023e4e151518b",
+                "reference": "71b842269e9a29634e34074e723023e4e151518b",
                 "shasum": ""
             },
             "require": {
@@ -6424,9 +6424,9 @@
             ],
             "support": {
                 "issues": "https://github.com/shipmonk-rnd/dead-code-detector/issues",
-                "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/0.12.0"
+                "source": "https://github.com/shipmonk-rnd/dead-code-detector/tree/0.12.2"
             },
-            "time": "2025-05-16T13:02:10+00:00"
+            "time": "2025-05-22T07:50:57+00:00"
         },
         {
             "name": "shipmonk/name-collision-detector",

@@ -94,14 +94,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  [ERROR] Found 4 errors
 
@@ -143,14 +143,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  -- -----------------------
      Error
@@ -190,13 +190,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'numGenericErrors' => 0,
 			'verbose' => false,
 			'extraEnvVars' => [],
-			'expected' => ' ------ ---------------
+			'expected' => ' ------ ----------------
   Line   foo.php
- ------ ---------------
+ ------ ----------------
   5      Foobar\Buz
-         🪪 foobar.buz
-         💡 a tip
- ------ ---------------
+         🪪  foobar.buz
+         💡  a tip
+ ------ ----------------
 
 
  [ERROR] Found 1 error
@@ -211,13 +211,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'numGenericErrors' => 0,
 			'verbose' => true,
 			'extraEnvVars' => [],
-			'expected' => ' ------ ---------------
+			'expected' => ' ------ ----------------
   Line   foo.php
- ------ ---------------
+ ------ ----------------
   5      Foobar\Buz
-         🪪 foobar.buz
-         💡 a tip
- ------ ---------------
+         🪪  foobar.buz
+         💡  a tip
+ ------ ----------------
 
 
  [ERROR] Found 1 error

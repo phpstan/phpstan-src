@@ -84,7 +84,7 @@ final class TableErrorFormatter implements ErrorFormatter
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
 				if ($error->getIdentifier() !== null && $error->canBeIgnored()) {
 					$message .= "\n";
-					$message .= '🪪 ' . $error->getIdentifier();
+					$message .= '🪪  ' . $error->getIdentifier();
 				}
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();
@@ -94,11 +94,11 @@ final class TableErrorFormatter implements ErrorFormatter
 					if (str_contains($tip, "\n")) {
 						$lines = explode("\n", $tip);
 						foreach ($lines as $line) {
-							$message .= '💡 ' . ltrim($line, ' •') . "\n";
+							$message .= '💡  ' . ltrim($line, ' •') . "\n";
 						}
 						$message = rtrim($message, "\n");
 					} else {
-						$message .= '💡 ' . $tip;
+						$message .= '💡  ' . $tip;
 					}
 				}
 				if (is_string($this->editorUrl)) {
@@ -118,7 +118,7 @@ final class TableErrorFormatter implements ErrorFormatter
 						$title = $this->relativePathHelper->getRelativePath($filePath);
 					}
 
-					$message .= "\n✏️ <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
 				}
 
 				if (

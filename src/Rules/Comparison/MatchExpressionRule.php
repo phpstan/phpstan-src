@@ -132,6 +132,7 @@ final class MatchExpressionRule implements Rule
 				!$remainingType instanceof NeverType
 				&& !$this->isUnhandledMatchErrorCaught($node)
 				&& !$this->hasUnhandledMatchErrorThrowsTag($scope)
+				&& !$remainingType->isArray()->yes()
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Match expression does not handle remaining %s: %s',

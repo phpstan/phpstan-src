@@ -36,7 +36,7 @@ if (PHP_VERSION_ID >= 80400) {
 $config = [];
 $config['includes'] = $includes;
 
-// overrides config.platform.php in composer.json
-$config['parameters']['phpVersion'] = PHP_VERSION_ID;
+// undo config.platform.php from composer.json
+unset($config['parameters']['phpVersion']);
 
 return $config;

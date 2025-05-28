@@ -6235,8 +6235,10 @@ final class MutatingScope implements Scope
 
 	public function getPhpVersion(): PhpVersions
 	{
+		$minPhpVersion = IntegerRangeType::fromInterval(ConstantResolver::PHP_MIN_VERSION_ID, null);
+
 		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
-		if ($constType !== null) {
+		if ($constType !== null && !$minPhpVersion->isSuperTypeOf($constType)->yes()) {
 			return new PhpVersions($constType);
 		}
 

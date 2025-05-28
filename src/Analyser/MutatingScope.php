@@ -52,6 +52,7 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Php\PhpVersions;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Assertions;
@@ -6235,8 +6236,10 @@ final class MutatingScope implements Scope
 
 	public function getPhpVersion(): PhpVersions
 	{
+		$overallPhpVersionRange = IntegerRangeType::fromInterval(ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, PhpVersionFactory::MAX_PHP_VERSION);
+
 		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
-		if ($constType !== null) {
+		if ($constType !== null && !$constType->equals($overallPhpVersionRange)) {
 			return new PhpVersions($constType);
 		}
 

@@ -391,6 +391,9 @@ jobs:
               cd e2e/composer-version-config
               composer install
               ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/composer-version-named-args
+              ../../bin/phpstan analyze test.php --level=0
 
     steps:
       - name: "Checkout"

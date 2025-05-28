@@ -31,3 +31,27 @@ class HelloWorld2
 		];
 	}
 }
+
+class HelloWorld3
+{
+	/** @return mixed[] */
+	public function sayHello(): array|null
+	{
+		return [
+			PHP_VERSION_ID >= 70400 ? 1 : 0,
+			new Exception(previous: new Exception()),
+		];
+	}
+}
+
+class HelloWorld4
+{
+	/** @return mixed[] */
+	public function sayHello(): array|null
+	{
+		return [
+			PHP_VERSION_ID < 80000 ? 1 : 0,
+			new Exception(previous: new Exception()),
+		];
+	}
+}

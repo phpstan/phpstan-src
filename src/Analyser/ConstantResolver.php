@@ -34,7 +34,7 @@ use const PHP_INT_SIZE;
 final class ConstantResolver
 {
 
-	public const int PHP_MIN_VERSION_ID = 50207;
+	public const PHP_MIN_VERSION_ID = 50207;
 
 	/** @var array<string, true> */
 	private array $currentlyResolving = [];

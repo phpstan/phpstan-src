@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Override;
+use Symfony\Component\Console\Helper\Helper;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,9 +15,7 @@ use function array_unshift;
 use function explode;
 use function implode;
 use function sprintf;
-use function str_starts_with;
 use function strlen;
-use function wordwrap;
 use const DIRECTORY_SEPARATOR;
 
 final class ErrorsConsoleStyle extends SymfonyStyle
@@ -57,7 +56,8 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		$terminalWidth = (new Terminal())->getWidth() - 2;
 		$maxHeaderWidth = strlen($headers[0]);
 		foreach ($rows as $row) {
-			$length = strlen($row[0]);
+			$length = Helper::width(Helper::removeDecoration($this->getFormatter(), $row[0]));
+
 			if ($maxHeaderWidth !== 0 && $length <= $maxHeaderWidth) {
 				continue;
 			}
@@ -65,11 +65,6 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		// manual wrapping could be replaced with $table->setColumnMaxWidth()
-		// but it's buggy for <href> lines
-		// https://github.com/symfony/symfony/issues/45520
-		// https://github.com/symfony/symfony/issues/45521
-		$headers = $this->wrap($headers, $terminalWidth, $maxHeaderWidth);
 		foreach ($headers as $i => $header) {
 			$newHeader = [];
 			foreach (explode("\n", $header) as $h) {
@@ -79,56 +74,14 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 			$headers[$i] = implode("\n", $newHeader);
 		}
 
-		foreach ($rows as $i => $row) {
-			$rows[$i] = $this->wrap($row, $terminalWidth, $maxHeaderWidth);
-		}
-
 		$table = $this->createTable();
+		// -5 because there are 5 padding spaces: One on each side of the table, one on each side of a cell and one between columns.
+		$table->setColumnMaxWidth(1, $terminalWidth - $maxHeaderWidth - 5);
 		array_unshift($rows, $headers, new TableSeparator());
 		$table->setRows($rows);
 
 		$table->render();
 		$this->newLine();
-	}
-
-	/**
-	 * @param string[] $rows
-	 * @return string[]
-	 */
-	private function wrap(array $rows, int $terminalWidth, int $maxHeaderWidth): array
-	{
-		foreach ($rows as $i => $column) {
-			$columnRows = explode("\n", $column);
-			foreach ($columnRows as $k => $columnRow) {
-				if (str_starts_with($columnRow, '✏️')) {
-					continue;
-				}
-				$wrapped = wordwrap(
-					$columnRow,
-					$terminalWidth - $maxHeaderWidth - 5,
-				);
-				if (str_starts_with($columnRow, '💡 ')) {
-					$wrappedLines = explode("\n", $wrapped);
-					$newWrappedLines = [];
-					foreach ($wrappedLines as $l => $line) {
-						if ($l === 0) {
-							$newWrappedLines[] = $line;
-							continue;
-						}
-
-						$newWrappedLines[] = '   ' . $line;
-					}
-					$columnRows[$k] = implode("\n", $newWrappedLines);
-				} else {
-					$columnRows[$k] = $wrapped;
-				}
-
-			}
-
-			$rows[$i] = implode("\n", $columnRows);
-		}
-
-		return $rows;
 	}
 
 	#[Override]

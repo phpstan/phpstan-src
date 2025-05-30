@@ -476,7 +476,15 @@ final class TypeSpecifier
 
 		} elseif ($expr instanceof FuncCall && $expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
+
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+					$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
+				}
+
 				foreach ($this->getFunctionTypeSpecifyingExtensions() as $extension) {
 					if (!$extension->isFunctionSupported($functionReflection, $expr, $context)) {
 						continue;
@@ -485,10 +493,10 @@ final class TypeSpecifier
 					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
 				}
 
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+					if ($parametersAcceptor === null) {
+						throw new ShouldNotHappenException();
+					}
 
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
@@ -518,6 +526,14 @@ final class TypeSpecifier
 			$methodCalledOnType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
 			if ($methodReflection !== null) {
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
+
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+					$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
+				}
+
 				$referencedClasses = $methodCalledOnType->getObjectClassNames();
 				if (
 					count($referencedClasses) === 1
@@ -533,10 +549,10 @@ final class TypeSpecifier
 					}
 				}
 
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+					if ($parametersAcceptor === null) {
+						throw new ShouldNotHappenException();
+					}
 
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
@@ -571,6 +587,14 @@ final class TypeSpecifier
 
 			$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
 			if ($staticMethodReflection !== null) {
+				// lazy create parametersAcceptor, as creation can be expensive
+				$parametersAcceptor = null;
+
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+					$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
+				}
+
 				$referencedClasses = $calleeType->getObjectClassNames();
 				if (
 					count($referencedClasses) === 1
@@ -586,10 +610,10 @@ final class TypeSpecifier
 					}
 				}
 
-				// lazy create parametersAcceptor, as creation can be expensive
-				$parametersAcceptor = null;
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+					if ($parametersAcceptor === null) {
+						throw new ShouldNotHappenException();
+					}
 
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {

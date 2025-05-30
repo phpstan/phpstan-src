@@ -98,6 +98,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $functionCall->getArgs()) {
+			return $functionCall;
+		}
+
 		return new FuncCall(
 			$functionCall->name,
 			$reorderedArgs,
@@ -114,6 +119,11 @@ final class ArgumentsNormalizer
 
 		if ($reorderedArgs === null) {
 			return null;
+		}
+
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $methodCall->getArgs()) {
+			return $methodCall;
 		}
 
 		return new MethodCall(
@@ -135,6 +145,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $staticCall->getArgs()) {
+			return $staticCall;
+		}
+
 		return new StaticCall(
 			$staticCall->class,
 			$staticCall->name,
@@ -152,6 +167,11 @@ final class ArgumentsNormalizer
 
 		if ($reorderedArgs === null) {
 			return null;
+		}
+
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $new->getArgs()) {
+			return $new;
 		}
 
 		return new New_(

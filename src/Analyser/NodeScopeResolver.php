@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use ArrayAccess;
 use Closure;
 use DivisionByZeroError;
+use Iterator;
 use PhpParser\Comment\Doc;
 use PhpParser\Modifiers;
 use PhpParser\Node;
@@ -1183,6 +1184,14 @@ final class NodeScopeResolver
 				$stmt->expr,
 				new Array_([]),
 			);
+			$exprType = $scope->getType($stmt->expr);
+			$iteratorValidExpr = null;
+			if ((new ObjectType(Iterator::class))->isSuperTypeOf($exprType)->yes()) {
+				$iteratorValidExpr = new BinaryOp\Identical(
+					new MethodCall($stmt->expr, 'valid'),
+					new ConstFetch(new Name\FullyQualified('true')),
+				);
+			}
 			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 				$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 			}
@@ -1192,11 +1201,17 @@ final class NodeScopeResolver
 
 			if ($context->isTopLevel()) {
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
+				if ($iteratorValidExpr !== null) {
+					$originalScope = $originalScope->filterByTruthyValue($iteratorValidExpr);
+				}
 				$bodyScope = $this->enterForeach($originalScope, $originalScope, $stmt);
 				$count = 0;
 				do {
 					$prevScope = $bodyScope;
 					$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+					if ($iteratorValidExpr !== null) {
+						$bodyScope = $bodyScope->filterByTruthyValue($iteratorValidExpr);
+					}
 					$bodyScope = $this->enterForeach($bodyScope, $originalScope, $stmt);
 					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 					}, $context->enterDeep())->filterOutLoopExitPoints();
@@ -1216,6 +1231,9 @@ final class NodeScopeResolver
 			}
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+			if ($iteratorValidExpr !== null) {
+				$bodyScope = $bodyScope->filterByTruthyValue($iteratorValidExpr);
+			}
 			$bodyScope = $this->enterForeach($bodyScope, $originalScope, $stmt);
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
@@ -1226,7 +1244,6 @@ final class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			$exprType = $scope->getType($stmt->expr);
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
@@ -1249,8 +1266,12 @@ final class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $finalScopeResult->getImpurePoints());
 			}
-			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
+			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($exprType)->no()) {
 				$throwPoints[] = ThrowPoint::createImplicit($scope, $stmt->expr);
+			}
+
+			if ($iteratorValidExpr !== null) {
+				$finalScope = $finalScope->filterByFalseyValue($iteratorValidExpr);
 			}
 
 			return new StatementResult(

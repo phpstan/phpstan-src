@@ -14,6 +14,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
 	private bool $checkExplicitMixed = false;
+
 	private bool $checkImplicitMixed = false;
 
 	protected function getRule(): Rule
@@ -794,6 +795,16 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-8825.php'], []);
+	}
+
+	public function testBug7844(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7844.php'], []);
+	}
+
+	public function testBug7844b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7844b.php'], []);
 	}
 
 }

@@ -26,3 +26,25 @@ final class ParallelProcessRunner
 
 }
 
+final class ParallelProcessRunner
+{
+	/**
+	 * @var array<int, string>
+	 */
+	private array $nextMutantProcessKillerContainer = [];
+
+	static private string $prop;
+
+	public function fillBucketOnce(array &$killer): int
+	{
+		$name = 'prop';
+		if ($this->nextMutantProcessKillerContainer !== []) {
+			self::${$name} = array_shift($this->nextMutantProcessKillerContainer);
+		}
+
+		return 0;
+	}
+
+}
+
+

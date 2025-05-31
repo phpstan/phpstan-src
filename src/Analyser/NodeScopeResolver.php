@@ -5487,6 +5487,7 @@ final class NodeScopeResolver
 			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
 			$originalValueToWrite = $valueToWrite;
 			$originalNativeValueToWrite = $nativeValueToWrite;
+			$scopeBeforeAssignEval = $scope;
 
 			// 3. eval assigned expr
 			$result = $processExprCallback($scope);
@@ -5542,11 +5543,11 @@ final class NodeScopeResolver
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
-					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr), $scope);
+					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr), $scopeBeforeAssignEval);
 					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval);
 						if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
 							$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
 						}

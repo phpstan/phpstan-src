@@ -64,4 +64,9 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/benevolent-array-key.php'], []);
 	}
 
+	public function testBug13093(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093.php'], []);
+	}
+
 }

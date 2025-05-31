@@ -14,10 +14,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
 	private bool $checkExplicitMixed = false;
+	private bool $checkImplicitMixed = false;
 
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, false, true), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new PropertyReflectionFinder());
 	}
 
 	public function testTypesAssignedToProperties(): void
@@ -787,6 +788,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	public function testBug13093d(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13093d.php'], []);
+	}
+
+	public function testBug8825(): void
+	{
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8825.php'], []);
 	}
 
 }

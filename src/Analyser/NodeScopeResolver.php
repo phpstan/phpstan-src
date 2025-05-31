@@ -5674,7 +5674,7 @@ final class NodeScopeResolver
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval);
 				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 				// simulate dynamic property assign by __set to get throw points
 				if (!$propertyHolderType->hasMethod('__set')->no()) {

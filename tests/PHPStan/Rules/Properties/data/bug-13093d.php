@@ -26,7 +26,7 @@ final class ParallelProcessRunner
 
 }
 
-final class ParallelProcessRunner
+final class ParallelProcessRunner2
 {
 	/**
 	 * @var array<int, string>

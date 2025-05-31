@@ -5392,6 +5392,7 @@ final class NodeScopeResolver
 				}
 			}
 
+			$scopeBeforeAssignEval = $scope;
 			$scope = $result->getScope();
 			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
@@ -5404,7 +5405,7 @@ final class NodeScopeResolver
 			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
-			$nodeCallback(new VariableAssignNode($var, $assignedExpr), $result->getScope());
+			$nodeCallback(new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval);
 			$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
@@ -5575,9 +5576,9 @@ final class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof Variable) {
-					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr), $scope);
+					$nodeCallback(new VariableAssignNode($var, $assignedPropertyExpr), $scopeBeforeAssignEval);
 				} elseif ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval);
 					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
 						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
 					}

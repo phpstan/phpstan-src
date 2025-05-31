@@ -5708,6 +5708,7 @@ final class NodeScopeResolver
 				$scope = $propertyNameResult->getScope();
 			}
 
+			$scopeBeforeAssignEval = $scope;
 			$result = $processExprCallback($scope);
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -5717,7 +5718,7 @@ final class NodeScopeResolver
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {
 						$propertyNativeType = $propertyReflection->getNativeType();

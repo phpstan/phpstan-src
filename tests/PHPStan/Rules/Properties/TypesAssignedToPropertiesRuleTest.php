@@ -784,4 +784,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13093c.php'], []);
 	}
 
+	public function testBug13093d(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093d.php'], []);
+	}
+
 }

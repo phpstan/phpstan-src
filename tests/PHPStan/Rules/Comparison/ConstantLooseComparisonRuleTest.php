@@ -242,4 +242,10 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13098(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13098.php'], []);
+	}
+
 }

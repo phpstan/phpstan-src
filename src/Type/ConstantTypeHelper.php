@@ -16,7 +16,6 @@ use function is_array;
 use function is_bool;
 use function is_float;
 use function is_int;
-use function is_nan;
 use function is_object;
 use function is_string;
 
@@ -34,9 +33,6 @@ final class ConstantTypeHelper
 		if (is_int($value)) {
 			return new ConstantIntegerType($value);
 		} elseif (is_float($value)) {
-			if (is_nan($value)) {
-				return new MixedType();
-			}
 			return new ConstantFloatType($value);
 		} elseif (is_bool($value)) {
 			return new ConstantBooleanType($value);

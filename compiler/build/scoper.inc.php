@@ -43,6 +43,7 @@ return [
 	'prefix' => $prefix,
 	'finders' => [],
 	'exclude-files' => $stubs,
+	'php-version' => '7.4',
 	'patchers' => [
 		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'bin/phpstan') {

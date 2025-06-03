@@ -46,35 +46,18 @@ return [
 	'php-version' => '7.4',
 	'patchers' => [
 		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'bin/phpstan') {
-				return $content;
-			}
-			return str_replace('__DIR__ . \'/..', '\'phar://phpstan.phar', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'bin/phpstan') {
-				return $content;
-			}
-			return str_replace(sprintf('%s\\\\__PHPSTAN_RUNNING__', $prefix), '__PHPSTAN_RUNNING__', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/nette/di/src/DI/Compiler.php') {
 				return $content;
 			}
-			return str_replace('|Nette\\\\DI\\\\Statement', sprintf('|\\\\%s\\\\Nette\\\\DI\\\\Statement', $prefix), $content);
+			return str_replace('|Nette\\DI\\Statement', sprintf('|\\%s\\Nette\\DI\\Statement', $prefix), $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/nette/di/src/DI/Extensions/DefinitionSchema.php') {
 				return $content;
 			}
 			$content = str_replace(
-				sprintf('\'%s\\\\callable', $prefix),
-				'\'callable',
-				$content
-			);
-			$content = str_replace(
-				'|Nette\\\\DI\\\\Definitions\\\\Statement',
-				sprintf('|%s\\\\Nette\\\\DI\\\\Definitions\\\\Statement', $prefix),
+				'|Nette\\DI\\Definitions\\Statement',
+				sprintf('|%s\\Nette\\DI\\Definitions\\Statement', $prefix),
 				$content
 			);
 
@@ -85,25 +68,20 @@ return [
 				return $content;
 			}
 			$content = str_replace(
-				sprintf('\'%s\\\\string', $prefix),
-				'\'string',
-				$content
-			);
-			$content = str_replace(
-				'|Nette\\\\DI\\\\Definitions\\\\Statement',
-				sprintf('|%s\\\\Nette\\\\DI\\\\Definitions\\\\Statement', $prefix),
+				'|Nette\\DI\\Definitions\\Statement',
+				sprintf('|%s\\Nette\\DI\\Definitions\\Statement', $prefix),
 				$content
 			);
 
 			return $content;
 		},
+
 		function (string $filePath, string $prefix, string $content): string {
 			if (strpos($filePath, 'src/') !== 0) {
 				return $content;
 			}
 
-			$content = str_replace(sprintf('\'%s\\\\r\\\\n\'', $prefix), '\'\\\\r\\\\n\'', $content);
-			$content = str_replace(sprintf('\'%s\\\\', $prefix), '\'', $content);
+			$content = str_replace(sprintf('\'%s\\r\\n\'', $prefix), '\'\\r\\n\'', $content);
 
 			return $content;
 		},
@@ -183,7 +161,7 @@ return [
 				return $content;
 			}
 
-			$content = str_replace('\'' . $prefix . '\\\\', '\'', $content);
+			$content = str_replace('\'' . $prefix . '\\', '\'', $content);
 
 			return $content;
 		},
@@ -192,7 +170,7 @@ return [
 				return $content;
 			}
 
-			$content = str_replace('\'' . $prefix . '\\\\', '\'', $content);
+			$content = str_replace('\'' . $prefix . '\\', '\'', $content);
 
 			return $content;
 		},
@@ -208,7 +186,7 @@ return [
 				return $content;
 			}
 
-			return str_replace(sprintf('\'%s\\\\JetBrains\\\\', $prefix), '\'JetBrains\\\\', $content);
+			return str_replace(sprintf('\'%s\\JetBrains\\', $prefix), '\'JetBrains\\', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
 			if (!str_starts_with($filePath, 'vendor/nikic/php-parser/lib')) {
@@ -243,12 +221,6 @@ return [
 			}
 
 			return str_replace('#[Language(\'RegExp\')] ', '', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'vendor/fidry/cpu-core-counter/src/Finder/WindowsRegistryLogicalFinder.php') {
-				return $content;
-			}
-			return str_replace(sprintf('%s\\\\reg query', $prefix), 'reg query', $content);
 		},
 	],
 	'exclude-namespaces' => [

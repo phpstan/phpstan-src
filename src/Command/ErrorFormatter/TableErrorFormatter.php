@@ -6,6 +6,8 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -21,15 +23,20 @@ use function sprintf;
 use function str_contains;
 use function str_replace;
 
+#[AutowiredService(name: 'errorFormatter.table')]
 final class TableErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private SimpleRelativePathHelper $simpleRelativePathHelper,
 		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
+		#[AutowiredParameter(ref: '%tipsOfTheDay%')]
 		private bool $showTipsOfTheDay,
+		#[AutowiredParameter]
 		private ?string $editorUrl,
+		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
 	)
 	{

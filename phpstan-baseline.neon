@@ -175,6 +175,18 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
+			message: '#^Call to static method escape\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
+			identifier: staticMethod.internalClass
+			count: 1
+			path: src/DependencyInjection/AutowiredAttributeServicesExtension.php
+
+		-
+			message: '#^Call to static method expand\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
+			identifier: staticMethod.internalClass
+			count: 2
+			path: src/DependencyInjection/AutowiredAttributeServicesExtension.php
+
+		-
 			message: '#^Call to static method expand\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
 			identifier: staticMethod.internalClass
 			count: 1

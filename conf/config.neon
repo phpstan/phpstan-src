@@ -629,23 +629,12 @@ services:
 			exceptionTypeResolver: @exceptionTypeResolver
 
 	-
-		class: PHPStan\Rules\Exceptions\TooWideThrowTypeCheck
-		arguments:
-			implicitThrows: %exceptions.implicitThrows%
-
-	-
 		class: PHPStan\Rules\FunctionCallParametersCheck
 		arguments:
 			checkArgumentTypes: %checkFunctionArgumentTypes%
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
-
-	-
-		class: PHPStan\Rules\FunctionDefinitionCheck
-		arguments:
-			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			checkThisOnly: %checkThisOnly%
 
 	-
 		class: PHPStan\Rules\Generics\GenericAncestorsCheck
@@ -979,14 +968,6 @@ services:
 		class: PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter
 		autowired:
 			- PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter
-
-	errorFormatter.table:
-		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter
-		arguments:
-			simpleRelativePathHelper: @simpleRelativePathHelper
-			showTipsOfTheDay: %tipsOfTheDay%
-			editorUrl: %editorUrl%
-			editorUrlTitle: %editorUrlTitle%
 
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter

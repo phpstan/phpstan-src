@@ -145,64 +145,10 @@ jobs:
       ref: 2.1.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
-  checksum-phar:
-    name: "Checksum PHAR"
-    if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
+  download-base-sha-phar:
+    name: "Download base SHA PHAR"
     needs: compiler-tests
-    runs-on: "ubuntu-latest"
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Get base commit SHA
-        id: base
-        run: echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        working-directory: .github/scripts
-        run: npm ci
-
-      - name: "Compile TS scripts"
-        working-directory: .github/scripts
-        run: npx tsc
-
-      - name: Find phar-file-checksum from base commit
-        id: find-artifact
-        uses: actions/github-script@v7
-        env:
-          BASE_SHA: ${{ steps.base.outputs.base_sha }}
-          ARTIFACT_NAME: phar-file-checksum
-          WORKFLOW_NAME: Compile PHAR
-        with:
-          script: |
-            const script = require('./.github/scripts/dist/find-artifact.js');
-            await script({github, context, core})
-
-      - name: Download old artifact by ID
-        uses: actions/download-artifact@v4
-        with:
-          artifact-ids: ${{ steps.find-artifact.outputs.artifact_id }}
-          run-id: ${{ steps.find-artifact.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Save old checksum"
-        id: "old_checksum"
-        run: echo "md5=$(md5sum phar-file-checksum/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
-
-      - name: "Assert checksum"
-        run: |
-          old_checksum=${{ steps.old_checksum.outputs.md5 }}
-          new_checksum=${{needs.compiler-tests.outputs.checksum}}
-          [[ "$old_checksum" == "$new_checksum" ]];
-
-  phar-prefix-diff:
-    name: "PHAR Prefix Diff"
     if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
-    needs: compiler-tests
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
@@ -244,11 +190,55 @@ jobs:
           run-id: ${{ steps.find-artifact.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Upload old artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: phar-file-checksum-base
+          path: phar-file-checksum/phpstan.phar
+
+  checksum-phar:
+    name: "Checksum PHAR"
+    needs:
+      - compiler-tests
+      - download-base-sha-phar
+    runs-on: "ubuntu-latest"
+    steps:
       # saved to phpstan.phar
+      - name: "Download base phpstan.phar"
+        uses: actions/download-artifact@v4
+        with:
+          name: phar-file-checksum-base
+
+      - name: "Save old checksum"
+        id: "old_checksum"
+        run: echo "md5=$(md5sum phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: "Assert checksum"
+        run: |
+          old_checksum=${{ steps.old_checksum.outputs.md5 }}
+          new_checksum=${{needs.compiler-tests.outputs.checksum}}
+          [[ "$old_checksum" == "$new_checksum" ]];
+
+  phar-prefix-diff:
+    name: "PHAR Prefix Diff"
+    needs: download-base-sha-phar
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+
+      # saved to phar-file-checksum/phpstan.phar
       - name: "Download phpstan.phar"
         uses: actions/download-artifact@v4
         with:
           name: phar-file-checksum
+          path: phar-file-checksum
+
+      # saved to phar-file-checksum-base/phpstan.phar
+      - name: "Download base phpstan.phar"
+        uses: actions/download-artifact@v4
+        with:
+          name: phar-file-checksum-base
+          path: phar-file-checksum-base
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -264,10 +254,10 @@ jobs:
         run: "composer install"
 
       - name: "Extract old phpstan.phar"
-        run: "php ../box/vendor/bin/box extract phar-file-checksum/phpstan.phar phar-old"
+        run: "php compiler/box/vendor/bin/box extract phar-file-checksum-base/phpstan.phar phar-old"
 
       - name: "Extract new phpstan.phar"
-        run: "php ../box/vendor/bin/box extract phpstan.phar phar-new"
+        run: "php compiler/box/vendor/bin/box extract phar-file-checksum/phpstan.phar phar-new"
 
       - name: "List prefix locations in old PHAR"
         run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-old > phar-old.txt"

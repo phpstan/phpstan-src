@@ -184,26 +184,15 @@ jobs:
           artifact-ids: ${{ steps.find-artifact.outputs.artifact_id }}
           run-id: ${{ steps.find-artifact.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ./phar-file-checksum-old
 
       - name: "Save old checksum"
         id: "old_checksum"
-        run: echo "md5=$(md5sum phar-file-checksum-old/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
-
-      - name: Download new artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: phar-file-checksum
-          path: ./phar-file-checksum-new
-
-      - name: "Save new checksum"
-        id: "new_checksum"
-        run: echo "md5=$(md5sum phar-file-checksum-new/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "md5=$(md5sum phar-file-checksum/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
       - name: "Assert checksum"
         run: |
           old_checksum=${{ steps.old_checksum.outputs.md5 }}
-          new_checksum=${{ steps.new_checksum.outputs.md5 }}
+          new_checksum=${{needs.compiler-tests.outputs.checksum}}
           [[ "$old_checksum" == "$new_checksum" ]];
 
 

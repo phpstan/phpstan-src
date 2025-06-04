@@ -239,6 +239,13 @@ return [
 				'\'Ds\\',
 			], $content);
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/Testing/ErrorFormatterTestCase.php') !== 0) {
+				return $content;
+			}
+
+			return str_replace(sprintf('new Error(\'%s\\Foobar\\Buz', $prefix), 'new Error(\'Foobar\\Buz', $content);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',

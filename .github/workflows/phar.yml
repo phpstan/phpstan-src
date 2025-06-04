@@ -172,7 +172,6 @@ jobs:
           BASE_SHA: ${{ steps.base.outputs.base_sha }}
           ARTIFACT_NAME: phar-file-checksum
           WORKFLOW_NAME: Compile PHAR
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
             const script = require('./.github/scripts/dist/find-artifact.js');

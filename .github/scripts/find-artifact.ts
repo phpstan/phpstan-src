@@ -8,7 +8,6 @@ interface Inputs {
 }
 
 module.exports = async ({github, context, core}: Inputs) => {
-	const token = process.env.GITHUB_TOKEN;
 	const commitSha = process.env.BASE_SHA;
 	const artifactName = process.env.ARTIFACT_NAME;
 	const workflowName = process.env.WORKFLOW_NAME;

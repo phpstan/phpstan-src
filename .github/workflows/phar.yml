@@ -246,12 +246,29 @@ jobs:
         with:
           name: phar-file-checksum
 
-      - name: "New checksum"
-        run: echo $(md5sum phpstan.phar | cut -d' ' -f1)
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
 
-      - name: "Old checksum"
-        run: echo $(md5sum phar-file-checksum/phpstan.phar | cut -d' ' -f1)
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
 
+      - name: "Extract old phpstan.phar"
+        run: "php compiler/build/box.phar extract phar-file-checksum/phpstan.phar phar-old"
+
+      - name: "Extract new phpstan.phar"
+        run: "php compiler/build/box.phar extract phpstan.phar phar-new"
+
+      - name: "List prefix locations in old PHAR"
+        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-old > phar-old.txt"
+
+      - name: "List prefix locations in new PHAR"
+        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-new > phar-new.txt"
+
+      - name: "Diff locations"
+        run: "diff -u phar-old.txt phar-new.txt"
 
   commit:
     name: "Commit PHAR"

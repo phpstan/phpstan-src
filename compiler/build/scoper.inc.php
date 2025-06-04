@@ -222,6 +222,23 @@ return [
 
 			return str_replace('#[Language(\'RegExp\')] ', '', $content);
 		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/') !== 0) {
+				return $content;
+			}
+
+			return str_replace([
+				sprintf('\'%s\\BcMath\\', $prefix),
+				sprintf('\'%s\\Dom\\', $prefix),
+				sprintf('\'%s\\FFI\\', $prefix),
+				sprintf('\'%s\\Ds\\', $prefix),
+			], [
+				'\'BcMath\\',
+				'\'Dom\\',
+				'\'FFI\\',
+				'\'Ds\\',
+			], $content);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',

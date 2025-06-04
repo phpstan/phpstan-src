@@ -21,6 +21,9 @@ foreach ($files as $file) {
 		}
 
 		$trimmedPath = substr($path, strlen($dir) + 1);
+		if (str_starts_with($trimmedPath, 'vendor/composer/autoload_')) {
+			continue;
+		}
 		$locations[] = $trimmedPath . ':' . ($i + 1);
 	}
 }

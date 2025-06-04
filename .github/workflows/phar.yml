@@ -23,7 +23,7 @@ jobs:
 
     outputs:
       checksum: ${{ steps.checksum.outputs.md5 }}
-      changes: ${{ steps.changes.outputs }}
+      compiler_changed: ${{ steps.changes.outputs.compiler }}
 
     steps:
       - name: "Checkout"
@@ -142,7 +142,7 @@ jobs:
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   checksum-phar:
-    if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.changes.compiler == 'true'
+    if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
     needs: compiler-tests
     runs-on: "ubuntu-latest"
     steps:

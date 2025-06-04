@@ -7,6 +7,7 @@ on:
     paths:
       - 'compiler/**'
       - '.github/workflows/phar-prefix-diff.yml'
+      - '.github/scripts/**'
 
 concurrency:
   group: phar-prefix-diff-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
@@ -20,68 +21,37 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Get base commit SHA
         id: base
         run: echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci
+
+      - name: "Compile TS scripts"
+        working-directory: .github/scripts
+        run: npx tsc
+
       - name: Find phar-file-checksum from base commit
         id: find-artifact
         uses: actions/github-script@v7
+        env:
+            BASE_SHA: ${{ steps.base.outputs.base_sha }}
+            ARTIFACT_NAME: phar-file-checksum
+            WORKFLOW_NAME: Compile PHAR
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           script: |
-            const commitSha = `${{ steps.base.outputs.base_sha }}`
-            const artifactName = "phar-file-checksum"
-
-            // Get all workflow runs for this commit
-            const runs = await github.rest.actions.listWorkflowRunsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 20,
-              event: "push",
-              head_sha: commitSha
-            });
-
-            if (runs.data.workflow_runs.length === 0) {
-              core.setFailed(`No workflow runs found for commit ${commitSha}`);
-              return;
-            }
-
-
-            const workflowRuns = runs.data.workflow_runs;
-
-            if (workflowRuns.length === 0) {
-              core.setFailed(`No workflow runs found for commit ${commitSha}`);
-              return;
-            }
-
-            let found = false;
-            for (const run of workflowRuns) {
-              if (run.status !== "completed" || run.conclusion !== "success") {
-                continue;
-              }
-
-              if (run.name !== "Compile PHAR") {
-                continue;
-              }
-
-              const artifactsResp = await github.rest.actions.listWorkflowRunArtifacts({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: run.id,
-              });
-
-              const artifact = artifactsResp.data.artifacts.find(a => a.name === artifactName);
-              if (artifact) {
-                core.setOutput("artifact_id", artifact.id);
-                core.setOutput("run_id", run.id);
-                found = true;
-                break;
-              }
-            }
-
-            if (!found) {
-              core.setFailed(`No artifact named '${expectedArtifactName}' found for commit ${commitSha}`);
-            }
+            const script = require('./.github/scripts/dist/find-artifact.js');
+            await script({github, context, core})
 
       - name: Download artifact by ID
         uses: actions/download-artifact@v4

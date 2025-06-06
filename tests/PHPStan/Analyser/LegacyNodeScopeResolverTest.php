@@ -78,7 +78,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		return $testScope;
 	}
 
-	public function dataUnionInCatch(): array
+	public static function dataUnionInCatch(): array
 	{
 		return [
 			[
@@ -103,7 +103,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataUnionAndIntersection(): array
+	public static function dataUnionAndIntersection(): array
 	{
 		return [
 			[
@@ -228,7 +228,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAssignInIf(): array
+	public static function dataAssignInIf(): array
 	{
 		$testScope = $this->getFileScope(__DIR__ . '/data/if.php');
 
@@ -758,7 +758,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataConstantTypes(): array
+	public static function dataConstantTypes(): array
 	{
 		$testScope = $this->getFileScope(__DIR__ . '/data/constantTypes.php');
 
@@ -941,7 +941,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		}
 	}
 
-	public function dataArrayDestructuring(): array
+	public static function dataArrayDestructuring(): array
 	{
 		return [
 			[
@@ -1226,7 +1226,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataParameterTypes(): array
+	public static function dataParameterTypes(): array
 	{
 		return [
 			[
@@ -1307,7 +1307,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAnonymousFunctionParameterTypes(): array
+	public static function dataAnonymousFunctionParameterTypes(): array
 	{
 		return [
 			[
@@ -1368,7 +1368,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataVarAnnotations(): array
+	public static function dataVarAnnotations(): array
 	{
 		return [
 			[
@@ -1452,7 +1452,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCasts(): array
+	public static function dataCasts(): array
 	{
 		return [
 			[
@@ -1605,7 +1605,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataDeductedTypes(): array
+	public static function dataDeductedTypes(): array
 	{
 		return [
 			[
@@ -1735,7 +1735,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataProperties(): array
+	public static function dataProperties(): array
 	{
 		return [
 			[
@@ -1880,7 +1880,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataBinaryOperations(): array
+	public static function dataBinaryOperations(): array
 	{
 		$typeCallback = static function ($value): string {
 			if (is_int($value)) {
@@ -3197,7 +3197,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataVarStatementAnnotation(): array
+	public static function dataVarStatementAnnotation(): array
 	{
 		return [
 			[
@@ -3222,7 +3222,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCloneOperators(): array
+	public static function dataCloneOperators(): array
 	{
 		return [
 			[
@@ -3247,7 +3247,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataLiteralArrays(): array
+	public static function dataLiteralArrays(): array
 	{
 		return [
 			[
@@ -3300,7 +3300,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataLiteralArraysKeys(): array
+	public static function dataLiteralArraysKeys(): array
 	{
 		define('STRING_ONE', '1');
 		define('INT_ONE', 1);
@@ -3378,7 +3378,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataStringArrayAccess(): array
+	public static function dataStringArrayAccess(): array
 	{
 		return [
 			[
@@ -3419,7 +3419,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTypeFromFunctionPhpDocs(): array
+	public static function dataTypeFromFunctionPhpDocs(): array
 	{
 		return [
 			[
@@ -3565,7 +3565,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataTypeFromFunctionFunctionPhpDocs(): array
+	public static function dataTypeFromFunctionFunctionPhpDocs(): array
 	{
 		return [
 			[
@@ -3596,7 +3596,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTypeFromFunctionPrefixedPhpDocs(): array
+	public static function dataTypeFromFunctionPrefixedPhpDocs(): array
 	{
 		return [
 			[
@@ -3657,7 +3657,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTypeFromMethodPhpDocs(): array
+	public static function dataTypeFromMethodPhpDocs(): array
 	{
 		return [
 			[
@@ -3966,7 +3966,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTypeFromTraitPhpDocsInSameFile(): array
+	public static function dataTypeFromTraitPhpDocsInSameFile(): array
 	{
 		return [
 			[
@@ -4050,7 +4050,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSwitchInstanceOf(): array
+	public static function dataSwitchInstanceOf(): array
 	{
 		return [
 			[
@@ -4098,7 +4098,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSwitchGetClass(): array
+	public static function dataSwitchGetClass(): array
 	{
 		return [
 			[
@@ -4131,7 +4131,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSwitchInstanceOfFallthrough(): array
+	public static function dataSwitchInstanceOfFallthrough(): array
 	{
 		return [
 			[
@@ -4156,7 +4156,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSwitchTypeElimination(): array
+	public static function dataSwitchTypeElimination(): array
 	{
 		return [
 			[
@@ -4181,7 +4181,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataOverwritingVariable(): array
+	public static function dataOverwritingVariable(): array
 	{
 		return [
 			[
@@ -4219,7 +4219,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataNegatedInstanceof(): array
+	public static function dataNegatedInstanceof(): array
 	{
 		return [
 			[
@@ -4284,7 +4284,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAnonymousFunction(): array
+	public static function dataAnonymousFunction(): array
 	{
 		return [
 			[
@@ -4321,7 +4321,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataForeachArrayType(): array
+	public static function dataForeachArrayType(): array
 	{
 		return [
 			[
@@ -4458,7 +4458,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataOverridingSpecifiedType(): array
+	public static function dataOverridingSpecifiedType(): array
 	{
 		return [
 			[
@@ -4485,7 +4485,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataForeachObjectType(): array
+	public static function dataForeachObjectType(): array
 	{
 		return [
 			[
@@ -4545,7 +4545,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrayFunctions(): array
+	public static function dataArrayFunctions(): array
 	{
 		return [
 			[
@@ -5271,7 +5271,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataFunctions(): array
+	public static function dataFunctions(): array
 	{
 		$strSplitDefaultReturnType = 'non-empty-list<string>|false';
 		if (PHP_VERSION_ID >= 80000) {
@@ -5649,7 +5649,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataDioFunctions(): array
+	public static function dataDioFunctions(): array
 	{
 		return [
 			[
@@ -5677,7 +5677,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSsh2Functions(): array
+	public static function dataSsh2Functions(): array
 	{
 		return [
 			[
@@ -5702,7 +5702,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataRangeFunction(): array
+	public static function dataRangeFunction(): array
 	{
 		return [
 			[
@@ -5775,7 +5775,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSpecifiedTypesUsingIsFunctions(): array
+	public static function dataSpecifiedTypesUsingIsFunctions(): array
 	{
 		return [
 			[
@@ -5932,7 +5932,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataIterable(): array
+	public static function dataIterable(): array
 	{
 		return [
 			[
@@ -6097,7 +6097,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrayAccess(): array
+	public static function dataArrayAccess(): array
 	{
 		return [
 			[
@@ -6134,7 +6134,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataVoid(): array
+	public static function dataVoid(): array
 	{
 		return [
 			[
@@ -6167,7 +6167,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataNullableReturnTypes(): array
+	public static function dataNullableReturnTypes(): array
 	{
 		return [
 			[
@@ -6204,7 +6204,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTernary(): array
+	public static function dataTernary(): array
 	{
 		return [
 			[
@@ -6249,7 +6249,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataHeredoc(): array
+	public static function dataHeredoc(): array
 	{
 		return [
 			[
@@ -6278,7 +6278,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTypeElimination(): array
+	public static function dataTypeElimination(): array
 	{
 		return [
 			[
@@ -6451,7 +6451,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataMisleadingTypes(): array
+	public static function dataMisleadingTypes(): array
 	{
 		return [
 			[
@@ -6484,7 +6484,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataMisleadingTypesWithoutNamespace(): array
+	public static function dataMisleadingTypesWithoutNamespace(): array
 	{
 		return [
 			[
@@ -6513,7 +6513,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataUnresolvableTypes(): array
+	public static function dataUnresolvableTypes(): array
 	{
 		return [
 			[
@@ -6546,7 +6546,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCombineTypes(): array
+	public static function dataCombineTypes(): array
 	{
 		return [
 			[
@@ -6575,7 +6575,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataConstants(): array
+	public static function dataConstants(): array
 	{
 		define('ConstantsForNodeScopeResolverTest\\FOO_CONSTANT', 1);
 
@@ -6614,7 +6614,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataFinally(): array
+	public static function dataFinally(): array
 	{
 		return [
 			[
@@ -6658,7 +6658,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInheritDocFromInterface(): array
+	public static function dataInheritDocFromInterface(): array
 	{
 		return [
 			[
@@ -6698,7 +6698,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInheritDocFromInterface2(): array
+	public static function dataInheritDocFromInterface2(): array
 	{
 		return [
 			[
@@ -6740,7 +6740,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInheritDocFromTrait(): array
+	public static function dataInheritDocFromTrait(): array
 	{
 		return [
 			[
@@ -6780,7 +6780,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInheritDocFromTrait2(): array
+	public static function dataInheritDocFromTrait2(): array
 	{
 		return [
 			[
@@ -6824,7 +6824,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataResolveStatic(): array
+	public static function dataResolveStatic(): array
 	{
 		return [
 			[
@@ -6865,7 +6865,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataLoopVariables(): array
+	public static function dataLoopVariables(): array
 	{
 		return [
 			[
@@ -6911,7 +6911,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataForeachLoopVariables(): array
+	public static function dataForeachLoopVariables(): array
 	{
 		return [
 			[
@@ -7007,7 +7007,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataWhileLoopVariables(): array
+	public static function dataWhileLoopVariables(): array
 	{
 		return [
 			[
@@ -7043,7 +7043,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataForLoopVariables(): array
+	public static function dataForLoopVariables(): array
 	{
 		return [
 			[
@@ -7133,7 +7133,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataDoWhileLoopVariables(): array
+	public static function dataDoWhileLoopVariables(): array
 	{
 		return [
 			[
@@ -7242,7 +7242,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataMultipleClassesInOneFile(): array
+	public static function dataMultipleClassesInOneFile(): array
 	{
 		return [
 			[
@@ -7275,7 +7275,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCallingMultipleClassesInOneFile(): array
+	public static function dataCallingMultipleClassesInOneFile(): array
 	{
 		return [
 			[
@@ -7304,7 +7304,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataExplode(): array
+	public static function dataExplode(): array
 	{
 		return [
 			[
@@ -7345,7 +7345,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrayPointerFunctions(): array
+	public static function dataArrayPointerFunctions(): array
 	{
 		return [
 			[
@@ -7438,7 +7438,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataReplaceFunctions(): array
+	public static function dataReplaceFunctions(): array
 	{
 		return [
 			[
@@ -7515,7 +7515,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataFilterVar(): Generator
+	public static function dataFilterVar(): Generator
 	{
 		$typesAndFilters = [
 			'string' => [
@@ -7622,7 +7622,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataFilterVarUnchanged(): array
+	public static function dataFilterVarUnchanged(): array
 	{
 		return [
 			[
@@ -7676,7 +7676,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataClosureWithUsePassedByReference(): array
+	public static function dataClosureWithUsePassedByReference(): array
 	{
 		return [
 			[
@@ -7789,7 +7789,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataClosureWithUsePassedByReferenceInMethodCall(): array
+	public static function dataClosureWithUsePassedByReferenceInMethodCall(): array
 	{
 		return [
 			[
@@ -7814,7 +7814,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataClosureWithUsePassedByReferenceReturn(): array
+	public static function dataClosureWithUsePassedByReferenceReturn(): array
 	{
 		return [
 			[
@@ -7840,7 +7840,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataStaticClosure(): array
+	public static function dataStaticClosure(): array
 	{
 		return [
 			[
@@ -7882,7 +7882,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataClosureWithInferredTypehint(): array
+	public static function dataClosureWithInferredTypehint(): array
 	{
 		return [
 			[
@@ -7914,7 +7914,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTraitsPhpDocs(): array
+	public static function dataTraitsPhpDocs(): array
 	{
 		return [
 			[
@@ -8019,7 +8019,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPassedByReference(): array
+	public static function dataPassedByReference(): array
 	{
 		return [
 			[
@@ -8052,7 +8052,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCallables(): array
+	public static function dataCallables(): array
 	{
 		return [
 			[
@@ -8097,7 +8097,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrayKeysInBranches(): array
+	public static function dataArrayKeysInBranches(): array
 	{
 		return [
 			[
@@ -8154,7 +8154,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataSpecifiedFunctionCall(): array
+	public static function dataSpecifiedFunctionCall(): array
 	{
 		return [
 			[
@@ -8202,7 +8202,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataElementsOnMixed(): array
+	public static function dataElementsOnMixed(): array
 	{
 		return [
 			[
@@ -8243,7 +8243,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCaseInsensitivePhpDocTypes(): array
+	public static function dataCaseInsensitivePhpDocTypes(): array
 	{
 		return [
 			[
@@ -8272,7 +8272,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataConstantTypeAfterDuplicateCondition(): array
+	public static function dataConstantTypeAfterDuplicateCondition(): array
 	{
 		return [
 			[
@@ -8355,7 +8355,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAnonymousClass(): array
+	public static function dataAnonymousClass(): array
 	{
 		return [
 			[
@@ -8408,7 +8408,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAnonymousClassInTrait(): array
+	public static function dataAnonymousClassInTrait(): array
 	{
 		return [
 			[
@@ -8433,7 +8433,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAnonymousClassNameSameLine(): array
+	public static function dataAnonymousClassNameSameLine(): array
 	{
 		return [
 			[
@@ -8471,7 +8471,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataDynamicConstants(): array
+	public static function dataDynamicConstants(): array
 	{
 		return [
 			[
@@ -8517,7 +8517,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataDynamicConstantsWithNativeTypes(): array
+	public static function dataDynamicConstantsWithNativeTypes(): array
 	{
 		return [
 			[
@@ -8563,7 +8563,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataIsset(): array
+	public static function dataIsset(): array
 	{
 		return [
 			[
@@ -8644,7 +8644,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPropertyArrayAssignment(): array
+	public static function dataPropertyArrayAssignment(): array
 	{
 		return [
 			[
@@ -8692,7 +8692,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataGetParentClass(): array
+	public static function dataGetParentClass(): array
 	{
 		return [
 			[
@@ -8783,7 +8783,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataIsCountable(): array
+	public static function dataIsCountable(): array
 	{
 		return [
 			[
@@ -8816,7 +8816,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPhp73Functions(): array
+	public static function dataPhp73Functions(): array
 	{
 		return [
 			[
@@ -8953,7 +8953,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPhp74Functions(): array
+	public static function dataPhp74Functions(): array
 	{
 		return [
 			[
@@ -9082,7 +9082,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataUnionMethods(): array
+	public static function dataUnionMethods(): array
 	{
 		return [
 			[
@@ -9111,7 +9111,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataUnionProperties(): array
+	public static function dataUnionProperties(): array
 	{
 		return [
 			[
@@ -9140,7 +9140,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataAssignmentInCondition(): array
+	public static function dataAssignmentInCondition(): array
 	{
 		return [
 			[
@@ -9165,7 +9165,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataGeneralizeScope(): array
+	public static function dataGeneralizeScope(): array
 	{
 		return [
 			[
@@ -9190,7 +9190,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataGeneralizeScopeRecursiveType(): array
+	public static function dataGeneralizeScopeRecursiveType(): array
 	{
 		return [
 			[
@@ -9215,7 +9215,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrayShapesInPhpDoc(): array
+	public static function dataArrayShapesInPhpDoc(): array
 	{
 		return [
 			[
@@ -9248,7 +9248,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataInferPrivatePropertyTypeFromConstructor(): array
+	public static function dataInferPrivatePropertyTypeFromConstructor(): array
 	{
 		return [
 			[
@@ -9301,7 +9301,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPropertyNativeTypes(): array
+	public static function dataPropertyNativeTypes(): array
 	{
 		return [
 			[
@@ -9334,7 +9334,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrowFunctions(): array
+	public static function dataArrowFunctions(): array
 	{
 		return [
 			[
@@ -9367,7 +9367,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArrowFunctionsInside(): array
+	public static function dataArrowFunctionsInside(): array
 	{
 		return [
 			[
@@ -9400,7 +9400,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataCoalesceAssign(): array
+	public static function dataCoalesceAssign(): array
 	{
 		return [
 			[
@@ -9457,7 +9457,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataArraySpread(): array
+	public static function dataArraySpread(): array
 	{
 		return [
 			[
@@ -9506,7 +9506,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataPhp74FunctionsIn74(): array
+	public static function dataPhp74FunctionsIn74(): array
 	{
 		return [
 			[
@@ -9531,7 +9531,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataTryCatchScope(): array
+	public static function dataTryCatchScope(): array
 	{
 		return [
 			[
@@ -9626,7 +9626,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	public function dataDeclareStrictTypes(): array
+	public static function dataDeclareStrictTypes(): array
 	{
 		return [
 			[

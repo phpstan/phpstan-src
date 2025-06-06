@@ -15,7 +15,7 @@ class RestrictedMethodUsageRuleTest extends RuleTestCase
 	{
 		return new RestrictedMethodUsageRule(
 			self::getContainer(),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

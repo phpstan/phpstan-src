@@ -16,7 +16,7 @@ class ArrayFilterRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ArrayFilterRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			$this->treatPhpDocTypesAsCertain,
 			true,
 		);

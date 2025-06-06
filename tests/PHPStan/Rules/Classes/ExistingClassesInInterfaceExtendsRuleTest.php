@@ -17,7 +17,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),

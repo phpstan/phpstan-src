@@ -17,7 +17,7 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),

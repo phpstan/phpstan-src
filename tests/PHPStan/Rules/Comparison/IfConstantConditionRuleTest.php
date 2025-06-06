@@ -19,7 +19,7 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		return new IfConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

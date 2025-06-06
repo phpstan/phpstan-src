@@ -24,7 +24,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
 			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),

@@ -16,7 +16,7 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RegularExpressionQuotingRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			self::getContainer()->getByType(RegexExpressionHelper::class),
 		);
 	}

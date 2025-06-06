@@ -135,7 +135,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]), new UnionType([new IntegerType(), new FloatType()]), TrinaryLogic::createYes())
 			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]), new UnionType([new StringType(), new FloatType()]), TrinaryLogic::createYes());
 
-		$analyser = new BitwiseFlagHelper($this->createReflectionProvider());
+		$analyser = new BitwiseFlagHelper(self::createReflectionProvider());
 		$actual = $analyser->bitwiseOrContainsConstant($expr, $scope, $constName);
 		$this->assertTrue($expected->equals($actual), sprintf('Expected Trinary::%s but got Trinary::%s.', $expected->describe(), $actual->describe()));
 	}

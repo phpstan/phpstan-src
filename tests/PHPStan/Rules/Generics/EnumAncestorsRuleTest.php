@@ -17,7 +17,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 	{
 		return new EnumAncestorsRule(
 			new GenericAncestorsCheck(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),

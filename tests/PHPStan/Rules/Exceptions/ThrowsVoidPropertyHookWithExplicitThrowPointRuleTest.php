@@ -20,7 +20,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ThrowsVoidPropertyHookWithExplicitThrowPointRule(new DefaultExceptionTypeResolver(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			[],
 			[],
 			[],

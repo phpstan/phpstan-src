@@ -15,7 +15,7 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ThrowExprTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true));
+		return new ThrowExprTypeRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
 	public function testRule(): void

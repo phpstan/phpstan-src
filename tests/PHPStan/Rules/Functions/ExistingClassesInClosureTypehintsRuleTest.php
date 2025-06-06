@@ -22,7 +22,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInClosureTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,

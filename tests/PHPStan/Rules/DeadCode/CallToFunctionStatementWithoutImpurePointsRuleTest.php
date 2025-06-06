@@ -29,7 +29,7 @@ class CallToFunctionStatementWithoutImpurePointsRuleTest extends RuleTestCase
 	protected function getCollectors(): array
 	{
 		return [
-			new PossiblyPureFuncCallCollector($this->createReflectionProvider()),
+			new PossiblyPureFuncCallCollector(self::createReflectionProvider()),
 			new FunctionWithoutImpurePointsCollector(),
 		];
 	}

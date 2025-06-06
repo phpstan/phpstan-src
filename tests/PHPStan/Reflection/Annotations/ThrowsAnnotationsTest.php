@@ -73,7 +73,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 
@@ -88,7 +88,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-throws.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertNull($reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
 

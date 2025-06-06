@@ -14,7 +14,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToNonExistentFunctionRule($this->createReflectionProvider(), true, true);
+		return new CallToNonExistentFunctionRule(self::createReflectionProvider(), true, true);
 	}
 
 	public function shouldNarrowMethodScopeFromConstructor(): bool

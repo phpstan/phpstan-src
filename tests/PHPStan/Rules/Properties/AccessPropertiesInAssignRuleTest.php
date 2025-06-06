@@ -16,7 +16,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
 			new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, true),
 		);

@@ -20,7 +20,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), $this->checkNullables, false, true, $this->checkExplicitMixed, false, false, true)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), $this->checkNullables, false, true, $this->checkExplicitMixed, false, false, true)));
 	}
 
 	public function testReturnTypeRule(): void

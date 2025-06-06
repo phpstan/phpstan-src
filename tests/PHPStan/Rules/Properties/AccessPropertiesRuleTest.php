@@ -23,7 +23,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesRule(new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, $this->checkDynamicProperties));
 	}
 

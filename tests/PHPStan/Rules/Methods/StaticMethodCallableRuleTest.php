@@ -21,7 +21,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true);
 
 		return new StaticMethodCallableRule(

@@ -14,7 +14,7 @@ class ApiClassConstFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ApiClassConstFetchRule(new ApiRuleHelper(), $this->createReflectionProvider());
+		return new ApiClassConstFetchRule(new ApiRuleHelper(), self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStan(): void

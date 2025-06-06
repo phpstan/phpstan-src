@@ -17,7 +17,7 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new ExistingClassesInEnumImplementsRule(
 			new ClassNameCheck(

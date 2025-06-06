@@ -19,7 +19,7 @@ class PropertyTagTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new PropertyTagTraitUseRule(
 			new PropertyTagCheck(

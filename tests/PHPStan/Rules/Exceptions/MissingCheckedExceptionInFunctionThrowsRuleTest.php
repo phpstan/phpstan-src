@@ -16,7 +16,7 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 	{
 		return new MissingCheckedExceptionInFunctionThrowsRule(
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				[],
 				[ShouldNotHappenException::class],
 				[],

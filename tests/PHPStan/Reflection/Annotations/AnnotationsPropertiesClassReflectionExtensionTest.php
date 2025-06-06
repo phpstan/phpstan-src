@@ -277,7 +277,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 	 */
 	public function testProperties(string $className, array $properties): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -322,7 +322,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 
 	public function testOverridingNativePropertiesWithAnnotationsDoesNotBreakGetNativeProperty(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
 		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));

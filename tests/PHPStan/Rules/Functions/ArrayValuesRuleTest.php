@@ -17,7 +17,7 @@ class ArrayValuesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ArrayValuesRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			$this->treatPhpDocTypesAsCertain,
 			true,
 		);

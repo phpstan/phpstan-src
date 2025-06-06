@@ -15,7 +15,7 @@ class NamedArgumentsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NamedArgumentsRule($this->createReflectionProvider(), new PhpVersion(PHP_VERSION_ID));
+		return new NamedArgumentsRule(self::createReflectionProvider(), new PhpVersion(PHP_VERSION_ID));
 	}
 
 	public function testRule(): void

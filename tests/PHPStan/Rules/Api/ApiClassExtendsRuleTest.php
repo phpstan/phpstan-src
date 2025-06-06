@@ -14,7 +14,7 @@ class ApiClassExtendsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ApiClassExtendsRule(new ApiRuleHelper(), $this->createReflectionProvider());
+		return new ApiClassExtendsRule(new ApiRuleHelper(), self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStan(): void

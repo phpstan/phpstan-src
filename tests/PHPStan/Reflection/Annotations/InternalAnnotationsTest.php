@@ -115,7 +115,7 @@ class InternalAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testInternalAnnotations(bool $internal, string $className, array $internalAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -146,7 +146,7 @@ class InternalAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-internal.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
 		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());

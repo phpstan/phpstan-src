@@ -21,7 +21,7 @@ class InvalidCastRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true));
 	}
 

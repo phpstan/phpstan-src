@@ -44,7 +44,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/function-with-phpdoc.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
 		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
@@ -119,7 +119,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 	 */
 	public function testMethodHasPhpdoc(string $className, string $methodName, ?string $expectedDocComment): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -149,7 +149,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/returns-by-reference.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
 		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
@@ -182,7 +182,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 	 */
 	public function testMethodReturnsByReference(string $className, string $methodName, TrinaryLogic $expectedReturnsByRef): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);

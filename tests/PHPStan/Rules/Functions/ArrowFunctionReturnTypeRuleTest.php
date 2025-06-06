@@ -17,7 +17,7 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ArrowFunctionReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			true,
 			false,
 			true,

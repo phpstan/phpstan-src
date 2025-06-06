@@ -14,7 +14,7 @@ class DebugScopeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DebugScopeRule($this->createReflectionProvider());
+		return new DebugScopeRule(self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStanNamespace(): void

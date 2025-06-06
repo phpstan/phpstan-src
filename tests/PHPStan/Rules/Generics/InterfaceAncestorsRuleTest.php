@@ -16,7 +16,7 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 	{
 		return new InterfaceAncestorsRule(
 			new GenericAncestorsCheck(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),

@@ -15,7 +15,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 
 	public static function dataAttributeReflections(): iterable
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		yield [
 			$reflectionProvider->getFunction(new Name('AttributeReflectionTest\\myFunction'), null)->getAttributes(),

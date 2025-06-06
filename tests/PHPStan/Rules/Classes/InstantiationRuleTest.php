@@ -22,7 +22,7 @@ class InstantiationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new InstantiationRule(
 			self::getContainer(),
 			$reflectionProvider,

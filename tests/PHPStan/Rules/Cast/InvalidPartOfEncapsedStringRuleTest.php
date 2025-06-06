@@ -19,7 +19,7 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 	{
 		return new InvalidPartOfEncapsedStringRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
 		);
 	}
 

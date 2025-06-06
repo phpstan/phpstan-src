@@ -159,7 +159,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 	public static function dataRemoveNull(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return [
 			[
@@ -2227,7 +2227,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			'mixed~int<17, 18>=implicit',
 		];
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		yield [
 			[
 				new StaticType($reflectionProvider->getClass(stdClass::class)),
@@ -2895,7 +2895,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 	public static function dataIntersect(): iterable
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		yield from [
 			[

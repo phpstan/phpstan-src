@@ -17,7 +17,7 @@ class ExistingClassesInClassImplementsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInClassImplementsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),

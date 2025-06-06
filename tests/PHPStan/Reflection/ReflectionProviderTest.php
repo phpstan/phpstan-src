@@ -56,7 +56,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	 */
 	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$throwType = $function->getThrowType();
 		if ($expectedThrowType === null) {
@@ -103,7 +103,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	 */
 	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$this->assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
 	}
@@ -129,7 +129,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	 */
 	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
 		$throwType = $method->getThrowType();
@@ -152,7 +152,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 		eval('namespace NativeClassConstantInEvaledClass; class Foo { public const int FOO = 1; }');
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass('NativeClassConstantInEvaledClass\\Foo');
 		$constant = $class->getConstant('FOO');
 		$this->assertSame('int', $constant->getValueType()->describe(VerbosityLevel::precise()));

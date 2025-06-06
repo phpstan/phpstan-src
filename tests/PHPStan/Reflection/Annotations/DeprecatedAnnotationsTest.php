@@ -93,7 +93,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testDeprecatedAnnotations(bool $deprecated, string $className, ?string $classDeprecation, array $deprecatedAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -128,7 +128,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-deprecated.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\foo'), null)->isDeprecated()->yes());
 		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\deprecatedFoo'), null)->isDeprecated()->yes());
@@ -136,7 +136,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 
 	public function testNonDeprecatedNativeFunctions(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertFalse($reflectionProvider->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
 		$this->assertFalse($reflectionProvider->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
@@ -145,14 +145,14 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 
 	public function testDeprecatedMethodsFromInterface(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(DeprecatedBar::class);
 		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 	}
 
 	public function testNotDeprecatedChildMethods(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertTrue($reflectionProvider->getClass(BazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 		$this->assertTrue($reflectionProvider->getClass(SubBazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
@@ -197,7 +197,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/deprecated-attribute-functions.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$this->assertSame($isDeprecated->describe(), $function->isDeprecated()->describe());
 		$this->assertSame($deprecatedDescription, $function->getDeprecatedDescription());
@@ -236,7 +236,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testDeprecatedAttributeAboveMethod(string $className, string $methodName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
 		$this->assertSame($isDeprecated->describe(), $method->isDeprecated()->describe());
@@ -299,7 +299,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testDeprecatedAttributeAboveClassConstant(string $className, string $constantName, TrinaryLogic $isDeprecated, ?string $deprecatedDescription): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$constant = $class->getConstant($constantName);
 		$this->assertSame($isDeprecated->describe(), $constant->isDeprecated()->describe());
@@ -337,7 +337,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$case = $class->getEnumCase($caseName);
 		$this->assertSame($isDeprecated->describe(), $case->isDeprecated()->describe());
@@ -393,7 +393,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.4.');
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$property = $class->getNativeProperty($propertyName);
 		$hook = $property->getHook($hookName);

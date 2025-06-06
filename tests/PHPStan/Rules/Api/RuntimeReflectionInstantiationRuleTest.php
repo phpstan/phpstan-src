@@ -14,7 +14,7 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RuntimeReflectionInstantiationRule($this->createReflectionProvider());
+		return new RuntimeReflectionInstantiationRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

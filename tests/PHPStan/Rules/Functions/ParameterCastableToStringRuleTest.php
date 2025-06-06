@@ -18,7 +18,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new ParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
 	}
 

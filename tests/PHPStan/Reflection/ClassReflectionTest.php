@@ -58,7 +58,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testHasTraitUse(string $className, bool $has): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 		$this->assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
 	}
@@ -105,7 +105,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		array $expectedDistances,
 	): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($class);
 		$this->assertSame(
 			$expectedDistances,
@@ -115,7 +115,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testVariadicTraitMethod(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$fooReflection = $reflectionProvider->getClass(Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
 		$methodVariant = $variadicMethod->getOnlyVariant();
@@ -124,7 +124,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testGenericInheritance(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(C::class);
 
 		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
@@ -143,7 +143,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testIsGenericWithStubPhpDoc(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(ReflectionClass::class);
 		$this->assertTrue($reflection->isGeneric());
 	}
@@ -177,7 +177,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = Attribute::TARGET_ALL): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $reflection->isAttributeClass());
 		if (!$expected) {
@@ -188,7 +188,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testDeprecatedConstantFromAnotherFile(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
 		$constant = $reflection->getConstant('SECURED');
 		$this->assertTrue($constant->isDeprecated()->yes());
@@ -201,7 +201,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testGetTraits(string $className, array $expected, bool $recursive): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertSame(
 			array_map(
@@ -293,7 +293,7 @@ class ClassReflectionTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertTrue($enum->isEnum());
 		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection()); // @phpstan-ignore-line Exact error differs on PHP 7.4 and others
@@ -307,7 +307,7 @@ class ClassReflectionTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
 	}
@@ -316,7 +316,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$className = static::class;
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 
 		$this->assertTrue($classReflection->is($className));
@@ -331,7 +331,7 @@ class ClassReflectionTest extends PHPStanTestCase
 			return;
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		yield [
 			$reflectionProvider->getClass('PropertyHooksTypes\\Foo'),

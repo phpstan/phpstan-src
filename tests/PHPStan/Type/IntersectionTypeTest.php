@@ -372,7 +372,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			return [];
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass(FooEnum::class);
 
 		yield [

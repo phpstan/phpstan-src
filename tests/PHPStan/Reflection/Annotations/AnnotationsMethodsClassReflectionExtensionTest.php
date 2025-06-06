@@ -963,7 +963,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 	 */
 	public function testMethods(string $className, array $methods): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -1025,7 +1025,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 
 	public function testOverridingNativeMethodsWithAnnotationsDoesNotBreakGetNativeMethod(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
 		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));

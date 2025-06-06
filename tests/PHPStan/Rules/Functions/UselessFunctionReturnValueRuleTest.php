@@ -15,7 +15,7 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UselessFunctionReturnValueRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

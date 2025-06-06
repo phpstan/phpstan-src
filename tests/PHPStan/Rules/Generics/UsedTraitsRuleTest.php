@@ -18,7 +18,7 @@ class UsedTraitsRuleTest extends RuleTestCase
 		return new UsedTraitsRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),

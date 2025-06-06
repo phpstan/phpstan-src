@@ -22,7 +22,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ThrowsVoidMethodWithExplicitThrowPointRule(new DefaultExceptionTypeResolver(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			[],
 			[],
 			[],

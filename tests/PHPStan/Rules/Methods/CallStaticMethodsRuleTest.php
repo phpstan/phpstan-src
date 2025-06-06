@@ -30,7 +30,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck(

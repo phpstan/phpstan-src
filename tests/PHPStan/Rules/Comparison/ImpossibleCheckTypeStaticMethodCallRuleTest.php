@@ -19,7 +19,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 	{
 		return new ImpossibleCheckTypeStaticMethodCallRule(
 			new ImpossibleCheckTypeHelper(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[],
 				$this->treatPhpDocTypesAsCertain,

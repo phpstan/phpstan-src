@@ -48,7 +48,7 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/deprecated-constant.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertTrue($reflectionProvider->hasConstant($constName, null));
 		$this->assertSame($isDeprecated->describe(), $reflectionProvider->getConstant($constName, null)->isDeprecated()->describe());

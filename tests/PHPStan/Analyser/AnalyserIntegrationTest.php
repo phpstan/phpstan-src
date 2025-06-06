@@ -81,7 +81,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
 		$this->assertNoErrors($errors);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$this->assertTrue($reflectionProvider->hasClass(Foo::class));
 	}
 
@@ -372,7 +372,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(1, $errors);
 		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
 		$parameter = $class->getNativeMethod('createInstance')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -385,7 +385,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
 		$this->assertNoErrors($errors);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
 		$parameter = $class->getNativeMethod('paginate')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();

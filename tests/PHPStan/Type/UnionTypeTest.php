@@ -90,7 +90,7 @@ class UnionTypeTest extends PHPStanTestCase
 
 	public static function dataSelfCompare(): Iterator
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$integerType = new IntegerType();
 		$stringType = new StringType();

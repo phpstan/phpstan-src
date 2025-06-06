@@ -13,7 +13,7 @@ class FileAssertRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new FileAssertRule($this->createReflectionProvider());
+		return new FileAssertRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

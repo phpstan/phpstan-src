@@ -17,7 +17,7 @@ class MixedTypeTest extends PHPStanTestCase
 			self::markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();
 		$this->assertInstanceOf(MixedType::class, $propertyType);

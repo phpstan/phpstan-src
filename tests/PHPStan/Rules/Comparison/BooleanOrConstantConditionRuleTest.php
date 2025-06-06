@@ -21,7 +21,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		return new BooleanOrConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

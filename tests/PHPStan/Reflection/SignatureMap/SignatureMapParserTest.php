@@ -41,7 +41,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 
 	public static function dataGetFunctions(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return [
 			[
 				['int', 'fp' => 'resource', 'fields' => 'array', 'delimiter=' => 'string', 'enclosure=' => 'string', 'escape_char=' => 'string'],

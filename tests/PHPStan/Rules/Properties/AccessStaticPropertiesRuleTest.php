@@ -17,7 +17,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new AccessStaticPropertiesRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),

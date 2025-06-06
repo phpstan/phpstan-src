@@ -21,7 +21,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		return new ElseIfConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

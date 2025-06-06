@@ -13,7 +13,7 @@ class AttributeNamedArgumentsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new AttributeNamedArgumentsRule($this->createReflectionProvider());
+		return new AttributeNamedArgumentsRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

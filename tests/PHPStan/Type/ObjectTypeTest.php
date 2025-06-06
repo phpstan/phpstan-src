@@ -123,7 +123,7 @@ class ObjectTypeTest extends PHPStanTestCase
 
 	public static function dataIsSuperTypeOf(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return [
 			0 => [

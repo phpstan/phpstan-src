@@ -17,7 +17,7 @@ class MissingCheckedExceptionInPropertyHookThrowsRuleTest extends RuleTestCase
 	{
 		return new MissingCheckedExceptionInPropertyHookThrowsRule(
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				[],
 				[ShouldNotHappenException::class],
 				[],

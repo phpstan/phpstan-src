@@ -58,7 +58,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 
 	protected function setUp(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$this->printer = new Printer();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));

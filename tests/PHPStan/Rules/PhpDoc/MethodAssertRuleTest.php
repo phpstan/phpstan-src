@@ -20,7 +20,7 @@ class MethodAssertRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new MethodAssertRule(new AssertRuleHelper(
 			$initializerExprTypeResolver,
 			$reflectionProvider,

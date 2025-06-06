@@ -672,7 +672,7 @@ class AnalyserTest extends PHPStanTestCase
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				self::getContainer()->getService('typeSpecifier'),
 			),
 			new LocalIgnoresProcessor(),
@@ -700,7 +700,7 @@ class AnalyserTest extends PHPStanTestCase
 		]);
 		$collectorRegistry = new CollectorRegistry([]);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');

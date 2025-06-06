@@ -22,7 +22,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			[],
 			$this->uncheckedExceptionClasses,
 			[],

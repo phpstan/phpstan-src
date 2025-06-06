@@ -18,7 +18,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		return new VarTagChangedExpressionTypeRule(new VarTagTypeRuleHelper(
 			self::getContainer()->getByType(TypeNodeResolver::class),
 			self::getContainer()->getByType(FileTypeMapper::class),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			true,
 			true,
 		));

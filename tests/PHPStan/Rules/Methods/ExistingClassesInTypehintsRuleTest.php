@@ -22,7 +22,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,

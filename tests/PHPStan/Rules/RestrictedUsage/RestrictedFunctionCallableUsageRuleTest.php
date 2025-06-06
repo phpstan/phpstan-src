@@ -16,7 +16,7 @@ class RestrictedFunctionCallableUsageRuleTest extends RuleTestCase
 	{
 		return new RestrictedFunctionCallableUsageRule(
 			self::getContainer(),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

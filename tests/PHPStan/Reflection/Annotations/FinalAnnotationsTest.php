@@ -42,7 +42,7 @@ class FinalAnnotationsTest extends PHPStanTestCase
 	 */
 	public function testFinalAnnotations(bool $final, string $className, array $finalAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);

@@ -142,7 +142,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 		bool $expectedResult,
 	): void
 	{
-		$resolver = new DefaultExceptionTypeResolver($this->createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
+		$resolver = new DefaultExceptionTypeResolver(self::createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className, self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__))));
 	}
 

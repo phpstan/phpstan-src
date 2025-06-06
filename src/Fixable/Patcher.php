@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
 use ReflectionClass;
 use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_map;
 use function count;
 use function implode;
@@ -29,7 +30,7 @@ final class Patcher
 
 	public function __construct()
 	{
-		$this->differ = new Differ();
+		$this->differ = new Differ(new UnifiedDiffOutputBuilder());
 	}
 
 	/**

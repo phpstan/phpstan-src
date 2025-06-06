@@ -12,7 +12,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 {
 
-	public function dataIsCheckedException(): array
+	public static function dataIsCheckedException(): array
 	{
 		return [
 			[

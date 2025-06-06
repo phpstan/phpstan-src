@@ -171,7 +171,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3669.php'], []);
 	}
 
-	public function dataCheckPhpDocMissingReturn(): array
+	public static function dataCheckPhpDocMissingReturn(): array
 	{
 		return [
 			[
@@ -274,7 +274,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/check-phpdoc-missing-return.php'], $errors);
 	}
 
-	public function dataModelMixin(): array
+	public static function dataModelMixin(): array
 	{
 		return [
 			[

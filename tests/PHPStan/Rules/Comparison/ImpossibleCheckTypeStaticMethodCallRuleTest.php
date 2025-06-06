@@ -112,7 +112,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/assert-unresolved-generic.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[

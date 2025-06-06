@@ -10,7 +10,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class FinalAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataFinalAnnotations(): array
+	public static function dataFinalAnnotations(): array
 	{
 		return [
 			[

@@ -24,7 +24,7 @@ use function sprintf;
 class ConstantStringTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return [

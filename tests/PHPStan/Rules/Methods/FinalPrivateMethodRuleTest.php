@@ -16,7 +16,7 @@ class FinalPrivateMethodRuleTest extends RuleTestCase
 		return new FinalPrivateMethodRule();
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

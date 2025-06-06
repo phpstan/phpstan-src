@@ -844,7 +844,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5609.php'], []);
 	}
 
-	public function dataArrayMapMultiple(): array
+	public static function dataArrayMapMultiple(): array
 	{
 		return [
 			[true],
@@ -866,7 +866,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataArrayFilterCallback(): array
+	public static function dataArrayFilterCallback(): array
 	{
 		return [
 			[true],

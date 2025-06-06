@@ -95,7 +95,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->assertSame($expectedNegatedResult, $actualResult, sprintf('if not (%s)', $this->printer->prettyPrintExpr($expr)));
 	}
 
-	public function dataCondition(): iterable
+	public static function dataCondition(): iterable
 	{
 		if (PHP_VERSION_ID >= 80100) {
 			yield [

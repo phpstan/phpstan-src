@@ -16,7 +16,7 @@ use ThrowsAnnotations\PhpstanFoo;
 class ThrowsAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataThrowsAnnotations(): array
+	public static function dataThrowsAnnotations(): array
 	{
 		return [
 			[

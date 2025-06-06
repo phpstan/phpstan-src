@@ -100,7 +100,7 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataMergeInheritedPhpDocs(): array
+	public static function dataMergeInheritedPhpDocs(): array
 	{
 		return [
 			[

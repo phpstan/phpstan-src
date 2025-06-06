@@ -14,7 +14,7 @@ use PHPStan\Type\Type;
 class InitializerExprTypeResolverTest extends PHPStanTestCase
 {
 
-	public function dataExplicitNever(): iterable
+	public static function dataExplicitNever(): iterable
 	{
 		yield [
 			new LNumber(1),

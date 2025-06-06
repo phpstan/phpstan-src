@@ -188,7 +188,7 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9126.php'], []);
 	}
 
-	public function dataBug9403(): iterable
+	public static function dataBug9403(): iterable
 	{
 		yield [true];
 		yield [false];

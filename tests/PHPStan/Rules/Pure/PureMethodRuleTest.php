@@ -198,7 +198,7 @@ class PureMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11207.php'], []);
 	}
 
-	public function dataBug11207(): array
+	public static function dataBug11207(): array
 	{
 		return [
 			[true],

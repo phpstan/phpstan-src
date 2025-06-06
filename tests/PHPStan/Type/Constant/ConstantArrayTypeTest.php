@@ -31,7 +31,7 @@ use function sprintf;
 class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ConstantArrayType([], []),
@@ -422,7 +422,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new ConstantArrayType([], []),
@@ -706,7 +706,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -837,7 +837,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): iterable
+	public static function dataIsCallable(): iterable
 	{
 		yield 'zero items' => [
 			new ConstantArrayType([], []),
@@ -909,7 +909,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataValuesArray(): iterable
+	public static function dataValuesArray(): iterable
 	{
 		yield 'empty' => [
 			new ConstantArrayType([], []),

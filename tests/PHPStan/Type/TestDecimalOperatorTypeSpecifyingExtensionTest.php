@@ -21,7 +21,7 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 		self::assertTrue($result);
 	}
 
-	public function dataSigilAndSidesProvider(): iterable
+	public static function dataSigilAndSidesProvider(): iterable
 	{
 		yield '+' => [
 			'+',
@@ -72,7 +72,7 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 		self::assertFalse($result);
 	}
 
-	public function dataNotMatchingSidesProvider(): iterable
+	public static function dataNotMatchingSidesProvider(): iterable
 	{
 		yield 'left' => [
 			'+',

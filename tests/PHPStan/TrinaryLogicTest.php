@@ -7,7 +7,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class TrinaryLogicTest extends PHPStanTestCase
 {
 
-	public function dataAnd(): array
+	public static function dataAnd(): array
 	{
 		return [
 			[TrinaryLogic::createNo(), TrinaryLogic::createNo()],
@@ -52,7 +52,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		$this->assertTrue($expectedResult->equals($value->lazyAnd($operands, static fn (TrinaryLogic $result) => $result)));
 	}
 
-	public function dataOr(): array
+	public static function dataOr(): array
 	{
 		return [
 			[TrinaryLogic::createNo(), TrinaryLogic::createNo()],
@@ -97,7 +97,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		$this->assertTrue($expectedResult->equals($value->lazyOr($operands, static fn (TrinaryLogic $result) => $result)));
 	}
 
-	public function dataNegate(): array
+	public static function dataNegate(): array
 	{
 		return [
 			[TrinaryLogic::createNo(), TrinaryLogic::createYes()],
@@ -114,7 +114,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		$this->assertTrue($expectedResult->equals($operand->negate()));
 	}
 
-	public function dataCompareTo(): array
+	public static function dataCompareTo(): array
 	{
 		$yes = TrinaryLogic::createYes();
 		$maybe = TrinaryLogic::createMaybe();

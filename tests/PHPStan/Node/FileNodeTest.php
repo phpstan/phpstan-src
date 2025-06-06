@@ -51,7 +51,7 @@ class FileNodeTest extends RuleTestCase
 		};
 	}
 
-	public function dataRule(): iterable
+	public static function dataRule(): iterable
 	{
 		yield [
 			__DIR__ . '/data/empty.php',

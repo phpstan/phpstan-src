@@ -24,7 +24,7 @@ class FileExcluderTest extends PHPStanTestCase
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
 
-	public function dataExcludeOnWindows(): array
+	public static function dataExcludeOnWindows(): array
 	{
 		return [
 			[
@@ -132,7 +132,7 @@ class FileExcluderTest extends PHPStanTestCase
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
 
-	public function dataExcludeOnUnix(): array
+	public static function dataExcludeOnUnix(): array
 	{
 		return [
 			[
@@ -203,7 +203,7 @@ class FileExcluderTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataNoImplicitWildcard(): iterable
+	public static function dataNoImplicitWildcard(): iterable
 	{
 		yield [
 			__DIR__ . '/tests/foo.php',

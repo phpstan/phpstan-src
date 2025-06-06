@@ -88,7 +88,7 @@ class InvalidCastRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataMixed(): array
+	public static function dataMixed(): array
 	{
 		$explicitOnlyErrors = [
 			[

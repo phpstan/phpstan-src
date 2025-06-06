@@ -24,7 +24,7 @@ use const PHP_BINARY;
 class ParallelAnalyserIntegrationTest extends TestCase
 {
 
-	public function dataRun(): array
+	public static function dataRun(): array
 	{
 		return [
 			['analyse'],

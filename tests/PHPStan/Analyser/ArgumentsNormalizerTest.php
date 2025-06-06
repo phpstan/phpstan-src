@@ -22,7 +22,7 @@ use function count;
 class ArgumentsNormalizerTest extends PHPStanTestCase
 {
 
-	public function dataReorderValid(): iterable
+	public static function dataReorderValid(): iterable
 	{
 		yield [
 			[
@@ -298,7 +298,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		}
 	}
 
-	public function dataReorderInvalid(): iterable
+	public static function dataReorderInvalid(): iterable
 	{
 		yield [
 			[

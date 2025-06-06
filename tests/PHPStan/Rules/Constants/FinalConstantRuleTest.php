@@ -19,7 +19,7 @@ class FinalConstantRuleTest extends RuleTestCase
 		return new FinalConstantRule(new PhpVersion($this->phpVersionId));
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

@@ -18,7 +18,7 @@ use function sprintf;
 final class BitwiseFlagHelperTest extends PHPStanTestCase
 {
 
-	public function dataUnknownConstants(): array
+	public static function dataUnknownConstants(): array
 	{
 		return [
 			[
@@ -45,7 +45,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataJsonExprContainsConst(): array
+	public static function dataJsonExprContainsConst(): array
 	{
 		if (!defined('JSON_THROW_ON_ERROR')) {
 			return [];

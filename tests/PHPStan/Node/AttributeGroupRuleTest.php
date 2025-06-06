@@ -20,7 +20,7 @@ class AttributeGroupRuleTest extends RuleTestCase
 		return new AttributeGroupRule();
 	}
 
-	public function dataRule(): iterable
+	public static function dataRule(): iterable
 	{
 		yield [
 			__DIR__ . '/data/attributes.php',

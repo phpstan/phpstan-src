@@ -20,7 +20,7 @@ class ConstantsInTraitsRuleTest extends RuleTestCase
 		return new ConstantsInTraitsRule(new PhpVersion($this->phpVersionId));
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

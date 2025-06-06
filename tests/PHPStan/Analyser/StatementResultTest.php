@@ -15,7 +15,7 @@ use function sprintf;
 class StatementResultTest extends PHPStanTestCase
 {
 
-	public function dataIsAlwaysTerminating(): array
+	public static function dataIsAlwaysTerminating(): array
 	{
 		return [
 			[

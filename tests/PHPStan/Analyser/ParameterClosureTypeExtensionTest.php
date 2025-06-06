@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class ParameterClosureTypeExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/parameter-closure-type-extension.php');
 	}

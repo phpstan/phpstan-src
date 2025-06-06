@@ -17,7 +17,7 @@ use function sprintf;
 class IterableTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -71,7 +71,7 @@ class IterableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): array
+	public static function dataIsSubTypeOf(): array
 	{
 		return [
 			[
@@ -183,7 +183,7 @@ class IterableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -248,7 +248,7 @@ class IterableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		$templateType = TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -295,7 +295,7 @@ class IterableTypeTest extends PHPStanTestCase
 		$this->assertSame($expect, $result);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		/** @var TemplateMixedType $t */
 		$t = TemplateTypeFactory::create(

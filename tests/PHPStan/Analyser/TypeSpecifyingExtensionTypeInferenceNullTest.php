@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class TypeSpecifyingExtensionTypeInferenceNullTest extends TypeInferenceTestCase
 {
 
-	public function dataTypeSpecifyingExtensionsNull(): iterable
+	public static function dataTypeSpecifyingExtensionsNull(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-null.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-null.php');

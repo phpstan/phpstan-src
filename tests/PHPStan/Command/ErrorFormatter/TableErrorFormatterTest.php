@@ -26,7 +26,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		putenv('TERM_PROGRAM');
 	}
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'message' => 'No errors',

@@ -188,7 +188,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataBug3566(): array
+	public static function dataBug3566(): array
 	{
 		return [
 			[

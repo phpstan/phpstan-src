@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class ThrowsTagFromNativeFunctionStubTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/throws-tag-from-native-function-stub.php');
 	}

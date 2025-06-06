@@ -22,7 +22,7 @@ use function sprintf;
 class HasMethodTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -149,7 +149,7 @@ class HasMethodTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): array
+	public static function dataIsSubTypeOf(): array
 	{
 		return [
 			[

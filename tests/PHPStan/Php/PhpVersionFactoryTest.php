@@ -8,7 +8,7 @@ use const PHP_VERSION_ID;
 class PhpVersionFactoryTest extends TestCase
 {
 
-	public function dataCreate(): array
+	public static function dataCreate(): array
 	{
 		return [
 			[

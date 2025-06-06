@@ -16,7 +16,7 @@ use const PHP_VERSION_ID;
 class EnumCaseObjectTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),
@@ -118,7 +118,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),

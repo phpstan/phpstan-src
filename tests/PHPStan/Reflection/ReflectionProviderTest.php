@@ -14,7 +14,7 @@ use const PHP_VERSION_ID;
 class ReflectionProviderTest extends PHPStanTestCase
 {
 
-	public function dataFunctionThrowType(): iterable
+	public static function dataFunctionThrowType(): iterable
 	{
 		yield [
 			'rand',
@@ -70,7 +70,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataFunctionDeprecated(): iterable
+	public static function dataFunctionDeprecated(): iterable
 	{
 		if (PHP_VERSION_ID < 80000) {
 			yield 'create_function' => [
@@ -108,7 +108,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$this->assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
 	}
 
-	public function dataMethodThrowType(): array
+	public static function dataMethodThrowType(): array
 	{
 		return [
 			[

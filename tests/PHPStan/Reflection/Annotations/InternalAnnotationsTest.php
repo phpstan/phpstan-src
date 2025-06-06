@@ -15,7 +15,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class InternalAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataInternalAnnotations(): array
+	public static function dataInternalAnnotations(): array
 	{
 		return [
 			[

@@ -12,7 +12,7 @@ use function sprintf;
 class ConstantIntegerTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ConstantIntegerType(1),
@@ -46,7 +46,7 @@ class ConstantIntegerTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new ConstantIntegerType(1),

@@ -14,7 +14,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 class TypeGetFiniteTypesTest extends PHPStanTestCase
 {
 
-	public function dataGetFiniteTypes(): iterable
+	public static function dataGetFiniteTypes(): iterable
 	{
 		yield [
 			IntegerRangeType::fromInterval(0, 5),

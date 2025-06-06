@@ -639,7 +639,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3659.php'], $errors);
 	}
 
-	public function dataDynamicProperties(): array
+	public static function dataDynamicProperties(): array
 	{
 		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$errors = [
@@ -807,7 +807,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 
-	public function dataTrueAndFalse(): array
+	public static function dataTrueAndFalse(): array
 	{
 		return [
 			[true],

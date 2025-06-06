@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class AllowedSubTypesClassReflectionExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/allowed-sub-types.php');
 	}

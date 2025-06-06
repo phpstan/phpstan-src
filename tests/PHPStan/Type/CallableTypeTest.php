@@ -22,7 +22,7 @@ use function sprintf;
 class CallableTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -74,7 +74,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): array
+	public static function dataIsSubTypeOf(): array
 	{
 		return [
 			[
@@ -166,7 +166,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$param = static fn (Type $type): NativeParameterReflection => new NativeParameterReflection(
 			'',
@@ -280,7 +280,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[

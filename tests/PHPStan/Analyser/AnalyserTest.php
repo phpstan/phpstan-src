@@ -152,7 +152,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	public function dataIgnoreErrorByPathAndCount(): iterable
+	public static function dataIgnoreErrorByPathAndCount(): iterable
 	{
 		yield [
 			[
@@ -204,7 +204,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	public function dataTrueAndFalse(): array
+	public static function dataTrueAndFalse(): array
 	{
 		return [
 			[true],
@@ -422,7 +422,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
 	}
 
-	public function dataIgnoreErrorInTraitUsingClassFilePath(): array
+	public static function dataIgnoreErrorInTraitUsingClassFilePath(): array
 	{
 		return [
 			[

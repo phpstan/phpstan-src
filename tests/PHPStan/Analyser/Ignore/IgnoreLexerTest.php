@@ -10,7 +10,7 @@ use const PHP_EOL;
 class IgnoreLexerTest extends PHPStanTestCase
 {
 
-	public function dataTokenize(): iterable
+	public static function dataTokenize(): iterable
 	{
 		yield [
 			'',

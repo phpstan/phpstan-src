@@ -28,7 +28,7 @@ use const PHP_INT_MIN;
 class TypeToPhpDocNodeTest extends PHPStanTestCase
 {
 
-	public function dataToPhpDocNode(): iterable
+	public static function dataToPhpDocNode(): iterable
 	{
 		yield [
 			new ArrayType(new MixedType(), new MixedType()),
@@ -449,7 +449,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$this->assertTrue($type->equals($parsedType), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $parsedType->describe(VerbosityLevel::precise())));
 	}
 
-	public function dataToPhpDocNodeWithoutCheckingEquals(): iterable
+	public static function dataToPhpDocNodeWithoutCheckingEquals(): iterable
 	{
 		yield [
 			new ConstantStringType("foo\nbar\nbaz"),
@@ -531,7 +531,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$typeStringResolver->resolve($typeString);
 	}
 
-	public function dataFromTypeStringToPhpDocNode(): iterable
+	public static function dataFromTypeStringToPhpDocNode(): iterable
 	{
 		foreach ($this->dataToPhpDocNode() as [, $typeString]) {
 			yield [$typeString];

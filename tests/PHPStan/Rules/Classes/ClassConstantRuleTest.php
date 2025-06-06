@@ -189,7 +189,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataClassConstantOnExpression(): array
+	public static function dataClassConstantOnExpression(): array
 	{
 		return [
 			[

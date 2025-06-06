@@ -19,7 +19,7 @@ use const DIRECTORY_SEPARATOR;
 class CommandHelperTest extends TestCase
 {
 
-	public function dataBegin(): array
+	public static function dataBegin(): array
 	{
 		return [
 			[
@@ -162,7 +162,7 @@ class CommandHelperTest extends TestCase
 		}
 	}
 
-	public function dataParameters(): array
+	public static function dataParameters(): array
 	{
 		return [
 			[

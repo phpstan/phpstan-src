@@ -174,7 +174,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataNativeUnionTypes(): array
+	public static function dataNativeUnionTypes(): array
 	{
 		return [
 			[
@@ -207,7 +207,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
-	public function dataRequiredParameterAfterOptional(): array
+	public static function dataRequiredParameterAfterOptional(): array
 	{
 		return [
 			[
@@ -381,7 +381,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataIntersectionTypes(): array
+	public static function dataIntersectionTypes(): array
 	{
 		return [
 			[80000, []],

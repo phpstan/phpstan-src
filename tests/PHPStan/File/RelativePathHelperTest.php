@@ -10,7 +10,7 @@ use function substr;
 class RelativePathHelperTest extends TestCase
 {
 
-	public function dataGetRelativePath(): array
+	public static function dataGetRelativePath(): array
 	{
 		return [
 			[
@@ -222,7 +222,7 @@ class RelativePathHelperTest extends TestCase
 		);
 	}
 
-	public function dataGetRelativePathWindowsSpecific(): array
+	public static function dataGetRelativePathWindowsSpecific(): array
 	{
 		return [
 			[

@@ -7,7 +7,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class RegexExpressionHelperTest extends PHPStanTestCase
 {
 
-	public function dataRemoveDelimitersAndModifiers(): array
+	public static function dataRemoveDelimitersAndModifiers(): array
 	{
 		return [
 			[

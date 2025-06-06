@@ -670,7 +670,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportPossiblyNonexistentArrayOffset(): iterable
+	public static function dataReportPossiblyNonexistentArrayOffset(): iterable
 	{
 		yield [false, false, []];
 		yield [false, true, [

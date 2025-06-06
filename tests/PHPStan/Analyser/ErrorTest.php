@@ -15,7 +15,7 @@ class ErrorTest extends PHPStanTestCase
 		$this->assertSame(10, $error->getLine());
 	}
 
-	public function dataValidIdentifier(): iterable
+	public static function dataValidIdentifier(): iterable
 	{
 		yield ['a'];
 		yield ['aa'];
@@ -37,7 +37,7 @@ class ErrorTest extends PHPStanTestCase
 		$this->assertTrue(Error::validateIdentifier($identifier));
 	}
 
-	public function dataInvalidIdentifier(): iterable
+	public static function dataInvalidIdentifier(): iterable
 	{
 		yield [''];
 		yield [' '];

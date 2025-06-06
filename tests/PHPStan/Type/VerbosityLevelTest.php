@@ -11,7 +11,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 class VerbosityLevelTest extends PHPStanTestCase
 {
 
-	public function dataGetRecommendedLevelByType(): iterable
+	public static function dataGetRecommendedLevelByType(): iterable
 	{
 		yield [
 			new BooleanType(),

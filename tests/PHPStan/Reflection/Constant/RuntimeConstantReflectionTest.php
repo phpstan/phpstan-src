@@ -10,7 +10,7 @@ use const PHP_VERSION_ID;
 class RuntimeConstantReflectionTest extends PHPStanTestCase
 {
 
-	public function dataDeprecatedConstants(): iterable
+	public static function dataDeprecatedConstants(): iterable
 	{
 		yield [
 			new Name('\FILTER_SANITIZE_STRING'),

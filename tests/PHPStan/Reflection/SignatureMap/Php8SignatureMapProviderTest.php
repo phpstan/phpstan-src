@@ -42,7 +42,7 @@ use const PHP_VERSION_ID;
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
 
-	public function dataFunctions(): array
+	public static function dataFunctions(): array
 	{
 		return [
 			[
@@ -169,7 +169,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataMethods(): array
+	public static function dataMethods(): array
 	{
 		return [
 			[
@@ -307,7 +307,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		$this->assertSame($expectedVariadic, $actualSignature->isVariadic());
 	}
 
-	public function dataParseAll(): array
+	public static function dataParseAll(): array
 	{
 		$map = new Php8StubsMap(PHP_VERSION_ID);
 		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge($map->classes, $map->functions));

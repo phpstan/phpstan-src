@@ -19,7 +19,7 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 		return new ReadOnlyPropertyRule(new PhpVersion($this->phpVersionId));
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

@@ -10,7 +10,7 @@ class LooseConstComparisonPhp8Test extends TypeInferenceTestCase
 	/**
 	 * @return iterable<array<string, mixed[]>>
 	 */
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		// compares constants according to the php-version phpstan configuration,
 		// _NOT_ the current php runtime version

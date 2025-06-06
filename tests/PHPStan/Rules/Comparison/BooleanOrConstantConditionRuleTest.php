@@ -243,7 +243,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataTreatPhpDocTypesAsCertainRegression(): array
+	public static function dataTreatPhpDocTypesAsCertainRegression(): array
 	{
 		return [
 			[
@@ -292,7 +292,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7881.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[

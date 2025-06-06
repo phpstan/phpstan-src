@@ -572,7 +572,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataBug5218(): array
+	public static function dataBug5218(): array
 	{
 		return [
 			[

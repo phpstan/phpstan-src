@@ -39,7 +39,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
-	public function dataRule(): iterable
+	public static function dataRule(): iterable
 	{
 		yield [false, [
 			[

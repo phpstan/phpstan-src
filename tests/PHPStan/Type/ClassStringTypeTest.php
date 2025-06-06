@@ -13,7 +13,7 @@ use function sprintf;
 class ClassStringTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -52,7 +52,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ClassStringType(),
@@ -116,7 +116,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[

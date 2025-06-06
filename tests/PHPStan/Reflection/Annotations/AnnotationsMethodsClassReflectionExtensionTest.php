@@ -19,7 +19,7 @@ use function sprintf;
 class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 {
 
-	public function dataMethods(): array
+	public static function dataMethods(): array
 	{
 		$fooMethods = [
 			'getInteger' => [

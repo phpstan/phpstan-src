@@ -23,7 +23,7 @@ use PHPStan\Type\VerbosityLevel;
 class ScopeTest extends PHPStanTestCase
 {
 
-	public function dataGeneralize(): array
+	public static function dataGeneralize(): array
 	{
 		return [
 			[

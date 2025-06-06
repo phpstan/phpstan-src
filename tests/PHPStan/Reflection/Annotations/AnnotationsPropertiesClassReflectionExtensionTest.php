@@ -16,7 +16,7 @@ use function sprintf;
 class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 {
 
-	public function dataProperties(): array
+	public static function dataProperties(): array
 	{
 		return [
 			[

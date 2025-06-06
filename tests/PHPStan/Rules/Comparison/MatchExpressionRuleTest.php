@@ -309,7 +309,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[

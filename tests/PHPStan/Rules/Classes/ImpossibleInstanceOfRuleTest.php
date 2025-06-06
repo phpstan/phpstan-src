@@ -439,7 +439,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4689.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[

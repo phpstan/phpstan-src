@@ -8,7 +8,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class TypeSpecifierContextTest extends PHPStanTestCase
 {
 
-	public function dataContext(): array
+	public static function dataContext(): array
 	{
 		return [
 			[
@@ -47,7 +47,7 @@ class TypeSpecifierContextTest extends PHPStanTestCase
 		$this->assertSame($results[4], $context->null());
 	}
 
-	public function dataNegate(): array
+	public static function dataNegate(): array
 	{
 		return [
 			[

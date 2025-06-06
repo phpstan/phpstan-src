@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class DoNotRememberPossiblyImpureFunctionValuesTest extends TypeInferenceTestCase
 {
 
-	public function dataAsserts(): iterable
+	public static function dataAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/do-not-remember-possibly-impure-function-values.php');
 	}

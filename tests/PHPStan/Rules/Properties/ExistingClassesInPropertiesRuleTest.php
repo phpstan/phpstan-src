@@ -146,7 +146,7 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataIntersectionTypes(): array
+	public static function dataIntersectionTypes(): array
 	{
 		return [
 			[80000, []],

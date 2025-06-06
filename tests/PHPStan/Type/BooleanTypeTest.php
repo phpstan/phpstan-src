@@ -11,7 +11,7 @@ use function sprintf;
 class BooleanTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -60,7 +60,7 @@ class BooleanTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new BooleanType(),
@@ -106,7 +106,7 @@ class BooleanTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[

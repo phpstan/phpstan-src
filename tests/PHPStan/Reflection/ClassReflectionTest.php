@@ -43,7 +43,7 @@ use const PHP_VERSION_ID;
 class ClassReflectionTest extends PHPStanTestCase
 {
 
-	public function dataHasTraitUse(): array
+	public static function dataHasTraitUse(): array
 	{
 		return [
 			[Foo::class, true],
@@ -63,7 +63,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
 	}
 
-	public function dataClassHierarchyDistances(): array
+	public static function dataClassHierarchyDistances(): array
 	{
 		return [
 			[
@@ -148,7 +148,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($reflection->isGeneric());
 	}
 
-	public function dataIsAttributeClass(): array
+	public static function dataIsAttributeClass(): array
 	{
 		return [
 			[
@@ -212,7 +212,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataNestedRecursiveTraits(): array
+	public static function dataNestedRecursiveTraits(): array
 	{
 		return [
 			[
@@ -325,7 +325,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertFalse($classReflection->is(RuleTestCase::class));
 	}
 
-	public function dataPropertyHooks(): iterable
+	public static function dataPropertyHooks(): iterable
 	{
 		if (PHP_VERSION_ID < 80400) {
 			return;

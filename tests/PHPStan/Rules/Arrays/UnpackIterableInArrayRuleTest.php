@@ -56,7 +56,7 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataMixed(): array
+	public static function dataMixed(): array
 	{
 		$explicitOnlyErrors = [
 			[

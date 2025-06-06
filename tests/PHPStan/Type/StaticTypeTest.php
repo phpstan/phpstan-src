@@ -28,7 +28,7 @@ use function sprintf;
 class StaticTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsIterable(): array
+	public static function dataIsIterable(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -52,7 +52,7 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -75,7 +75,7 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return [
@@ -304,7 +304,7 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -341,7 +341,7 @@ class StaticTypeTest extends PHPStanTestCase
 		$this->assertSame($expected, $otherType->equals($type));
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$c = $reflectionProvider->getClass(C::class);

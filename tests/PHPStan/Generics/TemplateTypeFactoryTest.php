@@ -21,7 +21,7 @@ class TemplateTypeFactoryTest extends PHPStanTestCase
 {
 
 	/** @return array<array{?Type, Type}> */
-	public function dataCreate(): array
+	public static function dataCreate(): array
 	{
 		return [
 			[

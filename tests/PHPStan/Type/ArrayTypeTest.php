@@ -18,7 +18,7 @@ use function sprintf;
 class ArrayTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -98,7 +98,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
@@ -164,7 +164,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		return [
 			[
@@ -188,7 +188,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),

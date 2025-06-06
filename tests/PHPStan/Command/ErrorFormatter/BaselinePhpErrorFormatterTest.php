@@ -10,7 +10,7 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 class BaselinePhpErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatErrors(): iterable
+	public static function dataFormatErrors(): iterable
 	{
 		yield [
 			[

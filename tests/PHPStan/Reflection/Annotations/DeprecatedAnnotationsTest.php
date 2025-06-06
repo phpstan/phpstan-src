@@ -21,7 +21,7 @@ use const PHP_VERSION_ID;
 class DeprecatedAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataDeprecatedAnnotations(): array
+	public static function dataDeprecatedAnnotations(): array
 	{
 		return [
 			[
@@ -159,7 +159,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertTrue($reflectionProvider->getClass(Baz::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
 	}
 
-	public function dataDeprecatedAttributeAboveFunction(): iterable
+	public static function dataDeprecatedAttributeAboveFunction(): iterable
 	{
 		yield [
 			'DeprecatedAttributeFunctions\\notDeprecated',
@@ -203,7 +203,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertSame($deprecatedDescription, $function->getDeprecatedDescription());
 	}
 
-	public function dataDeprecatedAttributeAboveMethod(): iterable
+	public static function dataDeprecatedAttributeAboveMethod(): iterable
 	{
 		yield [
 			FooWithMethods::class,
@@ -243,7 +243,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertSame($deprecatedDescription, $method->getDeprecatedDescription());
 	}
 
-	public function dataDeprecatedAttributeAboveClassConstant(): iterable
+	public static function dataDeprecatedAttributeAboveClassConstant(): iterable
 	{
 		yield [
 			FooWithConstants::class,
@@ -306,7 +306,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertSame($deprecatedDescription, $constant->getDeprecatedDescription());
 	}
 
-	public function dataDeprecatedAttributeAboveEnumCase(): iterable
+	public static function dataDeprecatedAttributeAboveEnumCase(): iterable
 	{
 		yield [
 			'DeprecatedAttributeEnum\\EnumWithDeprecatedCases',
@@ -344,7 +344,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$this->assertSame($deprecatedDescription, $case->getDeprecatedDescription());
 	}
 
-	public function dataDeprecatedAttributeAbovePropertyHook(): iterable
+	public static function dataDeprecatedAttributeAbovePropertyHook(): iterable
 	{
 		yield [
 			'DeprecatedAttributePropertyHooks\\Foo',

@@ -108,7 +108,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
-	public function dataAlwaysCheckFinal(): iterable
+	public static function dataAlwaysCheckFinal(): iterable
 	{
 		yield [
 			false,

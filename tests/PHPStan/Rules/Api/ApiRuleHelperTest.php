@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 class ApiRuleHelperTest extends TestCase
 {
 
-	public function dataIsPhpStanCode(): array
+	public static function dataIsPhpStanCode(): array
 	{
 		return [
 			[

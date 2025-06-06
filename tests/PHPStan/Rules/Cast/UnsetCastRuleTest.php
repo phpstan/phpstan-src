@@ -19,7 +19,7 @@ class UnsetCastRuleTest extends RuleTestCase
 		return new UnsetCastRule(new PhpVersion($this->phpVersion));
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

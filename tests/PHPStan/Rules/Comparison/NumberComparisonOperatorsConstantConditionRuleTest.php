@@ -165,7 +165,7 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8643.php'], []);
 	}
 
-	public function dataTreatPhpDocTypesAsCertain(): iterable
+	public static function dataTreatPhpDocTypesAsCertain(): iterable
 	{
 		yield [
 			false,

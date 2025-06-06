@@ -104,7 +104,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataRulePHPDocTypes(): array
+	public static function dataRulePHPDocTypes(): array
 	{
 		$tip = sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",

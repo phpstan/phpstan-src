@@ -18,7 +18,7 @@ use function sprintf;
 class MixedTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			0 => [
@@ -172,7 +172,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsArray(): array
+	public static function dataSubstractedIsArray(): array
 	{
 		return [
 			[
@@ -241,7 +241,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsConstantArray(): array
+	public static function dataSubstractedIsConstantArray(): array
 	{
 		return [
 			[
@@ -315,7 +315,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsString(): array
+	public static function dataSubstractedIsString(): array
 	{
 		return [
 			[
@@ -367,7 +367,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNumericString(): array
+	public static function dataSubstractedIsNumericString(): array
 	{
 		return [
 			[
@@ -419,7 +419,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNonEmptyString(): array
+	public static function dataSubstractedIsNonEmptyString(): array
 	{
 		return [
 			[
@@ -479,7 +479,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNonFalsyString(): array
+	public static function dataSubstractedIsNonFalsyString(): array
 	{
 		return [
 			[
@@ -539,7 +539,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsLiteralString(): array
+	public static function dataSubstractedIsLiteralString(): array
 	{
 		return [
 			[
@@ -607,7 +607,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsClassString(): array
+	public static function dataSubstractedIsClassString(): array
 	{
 		return [
 			[
@@ -649,7 +649,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubtractedIsVoid(): array
+	public static function dataSubtractedIsVoid(): array
 	{
 		return [
 			[
@@ -678,7 +678,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubtractedIsScalar(): array
+	public static function dataSubtractedIsScalar(): array
 	{
 		return [
 			[
@@ -709,7 +709,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsIterable(): array
+	public static function dataSubstractedIsIterable(): array
 	{
 		return [
 			[
@@ -763,7 +763,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsBoolean(): array
+	public static function dataSubstractedIsBoolean(): array
 	{
 		return [
 			[
@@ -804,7 +804,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsFalse(): array
+	public static function dataSubstractedIsFalse(): array
 	{
 		return [
 			[
@@ -845,7 +845,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsNull(): array
+	public static function dataSubstractedIsNull(): array
 	{
 		return [
 			[
@@ -891,7 +891,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsTrue(): array
+	public static function dataSubstractedIsTrue(): array
 	{
 		return [
 			[
@@ -932,7 +932,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsFloat(): array
+	public static function dataSubstractedIsFloat(): array
 	{
 		return [
 			[
@@ -968,7 +968,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsInteger(): array
+	public static function dataSubstractedIsInteger(): array
 	{
 		return [
 			[
@@ -1004,7 +1004,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsOffsetAccessible(): array
+	public static function dataSubstractedIsOffsetAccessible(): array
 	{
 		return [
 			[
@@ -1059,7 +1059,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubstractedIsOffsetLegal(): array
+	public static function dataSubstractedIsOffsetLegal(): array
 	{
 		return [
 			[
@@ -1106,7 +1106,7 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSubtractedHasOffsetValueType(): array
+	public static function dataSubtractedHasOffsetValueType(): array
 	{
 		return [
 			[

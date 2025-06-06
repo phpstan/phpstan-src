@@ -14,7 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 class OversizedArrayBuilderTest extends PHPStanTestCase
 {
 
-	public function dataBuild(): iterable
+	public static function dataBuild(): iterable
 	{
 		yield [
 			'[1, 2, 3]',

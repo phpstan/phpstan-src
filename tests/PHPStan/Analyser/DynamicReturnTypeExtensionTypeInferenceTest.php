@@ -8,7 +8,7 @@ use const PHP_VERSION_ID;
 class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 {
 
-	public function dataAsserts(): iterable
+	public static function dataAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types.php');
 

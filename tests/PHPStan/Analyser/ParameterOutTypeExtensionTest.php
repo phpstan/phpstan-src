@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class ParameterOutTypeExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataAsserts(): iterable
+	public static function dataAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
 	}

@@ -21,7 +21,7 @@ class AttributeArgRuleTest extends RuleTestCase
 		return new AttributeArgRule();
 	}
 
-	public function dataRule(): iterable
+	public static function dataRule(): iterable
 	{
 		yield [
 			__DIR__ . '/data/attributes.php',

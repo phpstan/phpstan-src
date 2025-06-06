@@ -11,7 +11,7 @@ use function sprintf;
 class JsonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -238,7 +238,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));
 	}
 
-	public function dataFormatTip(): iterable
+	public static function dataFormatTip(): iterable
 	{
 		yield ['tip', 'tip'];
 		yield ['<fg=cyan>%configurationFile%</>', '%configurationFile%'];

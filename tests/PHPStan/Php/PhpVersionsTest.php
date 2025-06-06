@@ -24,7 +24,7 @@ class PhpVersionsTest extends TestCase
 		);
 	}
 
-	public function dataProducesWarningForFinalPrivateMethods(): iterable
+	public static function dataProducesWarningForFinalPrivateMethods(): iterable
 	{
 		yield [
 			TrinaryLogic::createNo(),

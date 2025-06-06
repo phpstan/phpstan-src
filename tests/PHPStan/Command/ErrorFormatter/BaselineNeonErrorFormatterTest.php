@@ -28,7 +28,7 @@ use function trim;
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -219,7 +219,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<int, array{list<Error>}, void, void>
 	 */
-	public function outputOrderingProvider(): Generator
+	public static function outputOrderingProvider(): Generator
 	{
 		$errors = [
 			new Error('Error #2', 'TestfileA', 1),
@@ -314,7 +314,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<string, array{errors: list<Error>}>
 	 */
-	public function endOfFileNewlinesProvider(): Generator
+	public static function endOfFileNewlinesProvider(): Generator
 	{
 		$existingBaselineContentWithoutEndNewlines = 'parameters:
 	ignoreErrors:
@@ -448,7 +448,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		Assert::assertNotSame("\n", substr($content, -($expectedNewlinesCount + 1), 1));
 	}
 
-	public function dataFormatErrorsWithIdentifiers(): iterable
+	public static function dataFormatErrorsWithIdentifiers(): iterable
 	{
 		yield [
 			[

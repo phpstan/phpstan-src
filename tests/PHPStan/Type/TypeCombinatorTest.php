@@ -65,7 +65,7 @@ use const PHP_VERSION_ID;
 class TypeCombinatorTest extends PHPStanTestCase
 {
 
-	public function dataAddNull(): array
+	public static function dataAddNull(): array
 	{
 		return [
 			[
@@ -157,7 +157,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 
-	public function dataRemoveNull(): array
+	public static function dataRemoveNull(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -260,7 +260,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 
-	public function dataUnion(): iterable
+	public static function dataUnion(): iterable
 	{
 		yield from [
 			[
@@ -2893,7 +2893,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
-	public function dataIntersect(): iterable
+	public static function dataIntersect(): iterable
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -4811,7 +4811,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
-	public function dataRemove(): array
+	public static function dataRemove(): array
 	{
 		return [
 			[
@@ -5363,7 +5363,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertSame($expectedResult, TypeCombinator::containsNull($type));
 	}
 
-	public function dataContainsNull(): iterable
+	public static function dataContainsNull(): iterable
 	{
 		yield [new NullType(), true];
 		yield [new UnionType([new IntegerType(), new NullType()]), true];

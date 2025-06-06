@@ -15,7 +15,7 @@ use function sprintf;
 class TemplateTypeVarianceTest extends TestCase
 {
 
-	public function dataIsValidVariance(): iterable
+	public static function dataIsValidVariance(): iterable
 	{
 		foreach ([TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createCovariant()] as $variance) {
 			yield [

@@ -249,7 +249,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportWrongType(): iterable
+	public static function dataReportWrongType(): iterable
 	{
 		$nativeCheckOnly = [
 			[
@@ -530,7 +530,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataPermutateCheckTypeAgainst(): iterable
+	public static function dataPermutateCheckTypeAgainst(): iterable
 	{
 		yield [true];
 		yield [false];

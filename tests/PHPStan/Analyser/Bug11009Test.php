@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class Bug11009Test extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-11009.php');
 	}

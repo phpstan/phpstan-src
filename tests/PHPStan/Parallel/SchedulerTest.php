@@ -10,7 +10,7 @@ use function count;
 class SchedulerTest extends TestCase
 {
 
-	public function dataSchedule(): array
+	public static function dataSchedule(): array
 	{
 		return [
 			[

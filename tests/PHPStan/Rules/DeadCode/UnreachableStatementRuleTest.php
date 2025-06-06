@@ -69,7 +69,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataBugWithoutGitHubIssue1(): array
+	public static function dataBugWithoutGitHubIssue1(): array
 	{
 		return [
 			[

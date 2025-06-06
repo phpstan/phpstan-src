@@ -10,7 +10,7 @@ use function sprintf;
 class ObjectWithoutClassTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[

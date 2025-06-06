@@ -12,7 +12,7 @@ use function count;
 class ParserTest extends PHPStanTestCase
 {
 
-	public function dataVariadicCallLikes(): iterable
+	public static function dataVariadicCallLikes(): iterable
 	{
 		yield [
 			__DIR__ . '/data/variadic-functions.php',

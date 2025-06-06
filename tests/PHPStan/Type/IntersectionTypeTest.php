@@ -27,7 +27,7 @@ use const PHP_VERSION_ID;
 class IntersectionTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): Iterator
+	public static function dataAccepts(): Iterator
 	{
 		$intersectionType = new IntersectionType([
 			new ObjectType('Collection'),
@@ -81,7 +81,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
 		return [
 			[
@@ -124,7 +124,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): Iterator
+	public static function dataIsSuperTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -247,7 +247,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): Iterator
+	public static function dataIsSubTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -366,7 +366,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		$this->assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataGetEnumCases(): iterable
+	public static function dataGetEnumCases(): iterable
 	{
 		if (PHP_VERSION_ID < 80100) {
 			return [];
@@ -403,7 +403,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		}
 	}
 
-	public function dataDescribe(): iterable
+	public static function dataDescribe(): iterable
 	{
 		yield [
 			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),

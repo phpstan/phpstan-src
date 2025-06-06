@@ -47,7 +47,7 @@ use const PHP_VERSION_ID;
 class ObjectTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsIterable(): array
+	public static function dataIsIterable(): array
 	{
 		return [
 			[new ObjectType('ArrayObject'), TrinaryLogic::createYes()],
@@ -73,7 +73,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	/**
 	 * @return iterable<array{0: ObjectType, 1: TrinaryLogic}>
 	 */
-	public function dataIsEnum(): iterable
+	public static function dataIsEnum(): iterable
 	{
 		if (PHP_VERSION_ID >= 80000) {
 			yield [new ObjectType('UnitEnum'), TrinaryLogic::createYes()];
@@ -99,7 +99,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
 		return [
 			[new ObjectType('Closure'), TrinaryLogic::createYes()],
@@ -121,7 +121,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -498,7 +498,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -573,7 +573,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame('Traversable<mixed,mixed>', $classReflection->getDisplayName());
 	}
 
-	public function dataHasOffsetValueType(): array
+	public static function dataHasOffsetValueType(): array
 	{
 		return [
 			[
@@ -645,7 +645,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataGetEnumCases(): iterable
+	public static function dataGetEnumCases(): iterable
 	{
 		yield [
 			new ObjectType(stdClass::class),

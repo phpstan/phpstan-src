@@ -10,7 +10,7 @@ use PHPStan\Type\VerbosityLevel;
 class ScopePhpVersionTest extends TypeInferenceTestCase
 {
 
-	public function dataTestPhpVersion(): array
+	public static function dataTestPhpVersion(): array
 	{
 		return [
 			[

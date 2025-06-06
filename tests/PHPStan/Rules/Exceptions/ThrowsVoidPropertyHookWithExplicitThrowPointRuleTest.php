@@ -28,7 +28,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 		), $this->missingCheckedExceptionInThrows);
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

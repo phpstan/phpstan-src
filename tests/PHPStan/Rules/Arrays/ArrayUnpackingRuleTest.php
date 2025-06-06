@@ -116,7 +116,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataRuleOnPHP81(): array
+	public static function dataRuleOnPHP81(): array
 	{
 		return [
 			[true],

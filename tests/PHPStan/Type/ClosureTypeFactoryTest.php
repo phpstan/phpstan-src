@@ -8,7 +8,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class ClosureTypeFactoryTest extends PHPStanTestCase
 {
 
-	public function dataFromClosureObjectReturnType(): array
+	public static function dataFromClosureObjectReturnType(): array
 	{
 		return [
 			[static function (): void {
@@ -30,7 +30,7 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 		$this->assertSame($returnType, $closureType->getReturnType()->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataFromClosureObjectParameter(): array
+	public static function dataFromClosureObjectParameter(): array
 	{
 		return [
 			[static function (string $foo): void {

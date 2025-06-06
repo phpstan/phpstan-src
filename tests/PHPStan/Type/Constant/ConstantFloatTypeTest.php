@@ -8,7 +8,7 @@ use PHPStan\Type\VerbosityLevel;
 class ConstantFloatTypeTest extends PHPStanTestCase
 {
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		return [
 			[

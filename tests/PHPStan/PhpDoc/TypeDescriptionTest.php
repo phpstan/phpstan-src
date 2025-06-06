@@ -24,7 +24,7 @@ use function sprintf;
 class TypeDescriptionTest extends PHPStanTestCase
 {
 
-	public function dataTest(): iterable
+	public static function dataTest(): iterable
 	{
 		yield ['string', new StringType()];
 		yield ['array', new ArrayType(new MixedType(), new MixedType())];

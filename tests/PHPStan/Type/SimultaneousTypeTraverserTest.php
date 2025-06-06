@@ -10,7 +10,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 class SimultaneousTypeTraverserTest extends PHPStanTestCase
 {
 
-	public function dataChangeStringIntoNonEmptyString(): iterable
+	public static function dataChangeStringIntoNonEmptyString(): iterable
 	{
 		yield [
 			new StringType(),

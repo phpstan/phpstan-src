@@ -1309,7 +1309,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/order.php'], []);
 	}
 
-	public function dataIterable(): array
+	public static function dataIterable(): array
 	{
 		return [
 			[
@@ -1552,7 +1552,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/shadowed-trait-method.php'], []);
 	}
 
-	public function dataExplicitMixed(): array
+	public static function dataExplicitMixed(): array
 	{
 		return [
 			[
@@ -1609,7 +1609,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], $errors);
 	}
 
-	public function dataImplicitMixed(): array
+	public static function dataImplicitMixed(): array
 	{
 		return [
 			[
@@ -2890,7 +2890,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataCallablesWithoutCheckNullables(): iterable
+	public static function dataCallablesWithoutCheckNullables(): iterable
 	{
 		yield [false, false, []];
 		yield [true, false, []];

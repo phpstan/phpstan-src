@@ -8,7 +8,7 @@ use const DIRECTORY_SEPARATOR;
 class PathConstantsTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		if (DIRECTORY_SEPARATOR === '\\') {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/pathConstants-win.php');

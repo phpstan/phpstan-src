@@ -88,7 +88,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -119,7 +119,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/loose-comparison-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
-	public function dataTreatPhpDocTypesAsCertain(): iterable
+	public static function dataTreatPhpDocTypesAsCertain(): iterable
 	{
 		yield [false, []];
 		yield [true, [

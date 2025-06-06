@@ -8,7 +8,7 @@ use function sprintf;
 class RawErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'message' => 'No errors',

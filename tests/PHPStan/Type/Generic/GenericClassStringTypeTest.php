@@ -27,7 +27,7 @@ use function sprintf;
 class GenericClassStringTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -171,7 +171,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			0 => [
@@ -292,7 +292,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 

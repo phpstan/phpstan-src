@@ -8,7 +8,7 @@ use const PHP_VERSION_ID;
 class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		if (PHP_VERSION_ID < 80000) {
 			return [];

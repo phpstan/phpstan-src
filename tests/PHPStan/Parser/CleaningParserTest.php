@@ -14,7 +14,7 @@ use const PHP_VERSION_ID;
 class CleaningParserTest extends PHPStanTestCase
 {
 
-	public function dataParse(): iterable
+	public static function dataParse(): iterable
 	{
 		return [
 			[

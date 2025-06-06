@@ -7,7 +7,7 @@ use PHPStan\Testing\TypeInferenceTestCase;
 class TypeSpecifyingExtensionTypeInferenceTrueTest extends TypeInferenceTestCase
 {
 
-	public function dataTypeSpecifyingExtensionsTrue(): iterable
+	public static function dataTypeSpecifyingExtensionsTrue(): iterable
 	{
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-true.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-true.php');

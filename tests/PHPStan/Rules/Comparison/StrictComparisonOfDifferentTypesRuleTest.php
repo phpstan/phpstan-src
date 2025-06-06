@@ -658,7 +658,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8736.php'], []);
 	}
 
-	public function dataLastMatchArm(): iterable
+	public static function dataLastMatchArm(): iterable
 	{
 		yield [false, [
 			[

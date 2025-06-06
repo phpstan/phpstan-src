@@ -8,7 +8,7 @@ use const PHP_EOL;
 class RichParserTest extends PHPStanTestCase
 {
 
-	public function dataLinesToIgnore(): iterable
+	public static function dataLinesToIgnore(): iterable
 	{
 		yield [
 			'<?php test();',
@@ -326,7 +326,7 @@ class RichParserTest extends PHPStanTestCase
 		$this->assertSame($expectedLines, $lines);
 	}
 
-	public function dataLinesToIgnoreParseErrors(): iterable
+	public static function dataLinesToIgnoreParseErrors(): iterable
 	{
 		yield [
 			'<?php' . PHP_EOL .

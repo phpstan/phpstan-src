@@ -162,7 +162,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 		);
 	}
 
-	public function dataArrayShapePatterns(): iterable
+	public static function dataArrayShapePatterns(): iterable
 	{
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_all_shapes.php',

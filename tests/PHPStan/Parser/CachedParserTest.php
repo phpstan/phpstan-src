@@ -47,7 +47,7 @@ class CachedParserTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataParseFileClearCache(): Generator
+	public static function dataParseFileClearCache(): Generator
 	{
 		yield 'even' => [
 			'cachedNodesByStringCountMax' => 50,

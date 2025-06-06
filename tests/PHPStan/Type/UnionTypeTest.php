@@ -38,7 +38,7 @@ use const PHP_VERSION_ID;
 class UnionTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
 		return [
 			[
@@ -88,7 +88,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataSelfCompare(): Iterator
+	public static function dataSelfCompare(): Iterator
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -170,7 +170,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): Iterator
+	public static function dataIsSuperTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -466,7 +466,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): Iterator
+	public static function dataIsSubTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -647,7 +647,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsScalar(): array
+	public static function dataIsScalar(): array
 	{
 		return [
 			[
@@ -710,7 +710,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		return [
 			[
@@ -953,7 +953,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield from [
 			[
@@ -1310,7 +1310,7 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasMethod(): array
+	public static function dataHasMethod(): array
 	{
 		return [
 			[
@@ -1409,7 +1409,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
-	public function dataGetConstantArrays(): iterable
+	public static function dataGetConstantArrays(): iterable
 	{
 		yield from [
 			[
@@ -1470,7 +1470,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
-	public function dataGetConstantStrings(): iterable
+	public static function dataGetConstantStrings(): iterable
 	{
 		yield from [
 			[
@@ -1537,7 +1537,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedObjectClassNames, $unionType->getObjectClassNames());
 	}
 
-	public function dataGetObjectClassNames(): iterable
+	public static function dataGetObjectClassNames(): iterable
 	{
 		yield from [
 			[
@@ -1586,7 +1586,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
-	public function dataGetArrays(): iterable
+	public static function dataGetArrays(): iterable
 	{
 		yield from [
 			[

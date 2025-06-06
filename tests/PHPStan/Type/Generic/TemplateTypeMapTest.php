@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 class TemplateTypeMapTest extends TestCase
 {
 
-	public function dataUnionWithLowerBoundTypes(): iterable
+	public static function dataUnionWithLowerBoundTypes(): iterable
 	{
 		$map = (new TemplateTypeMap([
 			'T' => new ObjectType(Exception::class),

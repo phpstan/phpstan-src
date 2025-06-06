@@ -22,7 +22,7 @@ use const PHP_VERSION_ID;
 class HasPropertyTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -115,7 +115,7 @@ class HasPropertyTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): array
+	public static function dataIsSubTypeOf(): array
 	{
 		return [
 			[

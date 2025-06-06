@@ -11,7 +11,7 @@ use const PHP_VERSION_ID;
 class FunctionReflectionTest extends PHPStanTestCase
 {
 
-	public function dataPhpdocFunctions(): iterable
+	public static function dataPhpdocFunctions(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\myFunction',
@@ -50,7 +50,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
 	}
 
-	public function dataPhpdocMethods(): iterable
+	public static function dataPhpdocMethods(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\ClassWithPhpdoc',
@@ -133,7 +133,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
 	}
 
-	public function dataFunctionReturnsByReference(): iterable
+	public static function dataFunctionReturnsByReference(): iterable
 	{
 		yield ['\\implode', TrinaryLogic::createNo()];
 
@@ -155,7 +155,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
 	}
 
-	public function dataMethodReturnsByReference(): iterable
+	public static function dataMethodReturnsByReference(): iterable
 	{
 		yield ['ReturnsByReference\\X', 'foo', TrinaryLogic::createNo()];
 		yield ['ReturnsByReference\\X', 'refFoo', TrinaryLogic::createYes()];

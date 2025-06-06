@@ -19,7 +19,7 @@ class ThrowExpressionRuleTest extends RuleTestCase
 		return new ThrowExpressionRule($this->phpVersion);
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

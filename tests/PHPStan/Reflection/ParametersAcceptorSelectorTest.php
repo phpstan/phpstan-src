@@ -33,7 +33,7 @@ use function count;
 class ParametersAcceptorSelectorTest extends PHPStanTestCase
 {
 
-	public function dataSelectFromTypes(): Generator
+	public static function dataSelectFromTypes(): Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
 		$reflectionProvider = $this->createReflectionProvider();

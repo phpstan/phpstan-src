@@ -18,7 +18,7 @@ use const PHP_VERSION_ID;
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): iterable
+	public static function dataClass(): iterable
 	{
 		yield from [
 			[
@@ -54,7 +54,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataForIdenifiersByType(): iterable
+	public static function dataForIdenifiersByType(): iterable
 	{
 		yield from [
 			'classes wrapped in conditions' => [
@@ -139,7 +139,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($expectedClassName, $classReflection->getName());
 	}
 
-	public function dataFunction(): array
+	public static function dataFunction(): array
 	{
 		return [
 			[
@@ -177,7 +177,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 	}
 
-	public function dataConst(): array
+	public static function dataConst(): array
 	{
 		return [
 			[
@@ -222,7 +222,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataConstUnknown(): array
+	public static function dataConstUnknown(): array
 	{
 		return [
 			['TEST_VARIABLE'],

@@ -19,7 +19,7 @@ use function sprintf;
 class BenevolentUnionTypeTest extends PHPStanTestCase
 {
 
-	public function dataCanAccessProperties(): Iterator
+	public static function dataCanAccessProperties(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -48,7 +48,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasProperty(): Iterator
+	public static function dataHasProperty(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -86,7 +86,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataCanCallMethods(): Iterator
+	public static function dataCanCallMethods(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -115,7 +115,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasMethod(): Iterator
+	public static function dataHasMethod(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -150,7 +150,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataCanAccessConstants(): Iterator
+	public static function dataCanAccessConstants(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -179,7 +179,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsIterable(): Iterator
+	public static function dataIsIterable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -214,7 +214,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsIterableAtLeastOnce(): Iterator
+	public static function dataIsIterableAtLeastOnce(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -249,7 +249,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsArray(): Iterator
+	public static function dataIsArray(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ArrayType(new MixedType(), new MixedType()), new ConstantArrayType([], [])]),
@@ -278,7 +278,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsString(): Iterator
+	public static function dataIsString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -310,7 +310,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsNumericString(): Iterator
+	public static function dataIsNumericString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -341,7 +341,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsNonFalsyString(): Iterator
+	public static function dataIsNonFalsyString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -372,7 +372,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsLiteralString(): Iterator
+	public static function dataIsLiteralString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -403,7 +403,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsOffsetAccesible(): Iterator
+	public static function dataIsOffsetAccesible(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -438,7 +438,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasOffsetValueType(): Iterator
+	public static function dataHasOffsetValueType(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -476,7 +476,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): Iterator
+	public static function dataIsCallable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new CallableType(), new CallableType()]),
@@ -505,7 +505,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCloneable(): Iterator
+	public static function dataIsCloneable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),

@@ -313,7 +313,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataLoopInitialAssignments(): array
+	public static function dataLoopInitialAssignments(): array
 	{
 		return [
 			[
@@ -462,7 +462,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataForeachPolluteScopeWithAlwaysIterableForeach(): array
+	public static function dataForeachPolluteScopeWithAlwaysIterableForeach(): array
 	{
 		return [
 			[

@@ -39,7 +39,7 @@ use function strpos;
 class SignatureMapParserTest extends PHPStanTestCase
 {
 
-	public function dataGetFunctions(): array
+	public static function dataGetFunctions(): array
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return [
@@ -482,7 +482,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataParseAll(): array
+	public static function dataParseAll(): array
 	{
 		return [
 			[70400],

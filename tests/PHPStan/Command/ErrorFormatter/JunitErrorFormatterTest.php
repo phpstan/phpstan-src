@@ -22,7 +22,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<array<int, (string|int)>>
 	 */
-	public function dataFormatterOutputProvider(): Generator
+	public static function dataFormatterOutputProvider(): Generator
 	{
 		yield 'No errors' => [
 			0,

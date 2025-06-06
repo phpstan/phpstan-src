@@ -31,7 +31,7 @@ use const PHP_VERSION_ID;
 class GenericObjectTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			'equal type' => [
@@ -198,7 +198,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataTypeProjections(): array
+	public static function dataTypeProjections(): array
 	{
 		$invariantA = new GenericObjectType(E\Foo::class, [new ObjectType(E\A::class)], variances: [TemplateTypeVariance::createInvariant()]);
 		$invariantB = new GenericObjectType(E\Foo::class, [new ObjectType(E\B::class)], variances: [TemplateTypeVariance::createInvariant()]);
@@ -275,7 +275,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			'equal type' => [
@@ -350,7 +350,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	}
 
 	/** @return array<string,array{Type,Type,array<string,string>}> */
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name, ?Type $bound = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -463,7 +463,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	}
 
 	/** @return array<array{TemplateTypeVariance,Type,array<TemplateTypeReference>}> */
-	public function dataGetReferencedTypeArguments(): array
+	public static function dataGetReferencedTypeArguments(): array
 	{
 		$templateType = static fn ($name, ?Type $bound = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),

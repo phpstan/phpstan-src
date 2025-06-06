@@ -13,7 +13,7 @@ use const PHP_VERSION_ID;
 class AttributeReflectionTest extends PHPStanTestCase
 {
 
-	public function dataAttributeReflections(): iterable
+	public static function dataAttributeReflections(): iterable
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 

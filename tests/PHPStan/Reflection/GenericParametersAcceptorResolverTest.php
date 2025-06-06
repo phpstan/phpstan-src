@@ -27,7 +27,7 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 	/**
 	 * @return array<array{Type[], ParametersAcceptor, ParametersAcceptor}>
 	 */
-	public function dataResolve(): array
+	public static function dataResolve(): array
 	{
 		$templateType = static fn ($name, ?Type $type = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),

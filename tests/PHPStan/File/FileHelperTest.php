@@ -10,7 +10,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataAbsolutizePathOnWindows(): array
+	public static function dataAbsolutizePathOnWindows(): array
 	{
 		return [
 			['C:/Program Files', 'C:/Program Files'],
@@ -38,7 +38,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataAbsolutizePathOnLinuxOrMac(): array
+	public static function dataAbsolutizePathOnLinuxOrMac(): array
 	{
 		return [
 			['C:/Program Files', '/abcd/C:/Program Files'],
@@ -67,7 +67,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataNormalizePathOnWindows(): array
+	public static function dataNormalizePathOnWindows(): array
 	{
 		return [
 			['C:/Program Files/PHP', 'C:\Program Files\PHP'],
@@ -93,7 +93,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataNormalizePathOnLinuxOrMac(): array
+	public static function dataNormalizePathOnLinuxOrMac(): array
 	{
 		return [
 			['C:\Program Files\PHP', 'C:/Program Files/PHP'],

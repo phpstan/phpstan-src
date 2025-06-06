@@ -18,7 +18,7 @@ class NoncapturingCatchRuleTest extends RuleTestCase
 		return new NoncapturingCatchRule();
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[

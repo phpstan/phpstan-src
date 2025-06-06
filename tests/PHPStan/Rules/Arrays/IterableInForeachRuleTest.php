@@ -84,7 +84,7 @@ class IterableInForeachRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4335.php'], []);
 	}
 
-	public function dataMixed(): array
+	public static function dataMixed(): array
 	{
 		$explicitOnlyErrors = [
 			[

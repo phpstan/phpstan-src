@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 class ParentDirectoryRelativePathHelperTest extends TestCase
 {
 
-	public function dataGetRelativePath(): array
+	public static function dataGetRelativePath(): array
 	{
 		return [
 			[

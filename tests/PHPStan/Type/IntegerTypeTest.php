@@ -12,7 +12,7 @@ use function sprintf;
 class IntegerTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -61,7 +61,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new IntegerType(),
@@ -107,7 +107,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[

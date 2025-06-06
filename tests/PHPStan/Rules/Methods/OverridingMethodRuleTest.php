@@ -37,7 +37,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		);
 	}
 
-	public function dataOverridingFinalMethod(): array
+	public static function dataOverridingFinalMethod(): array
 	{
 		return [
 			[
@@ -145,7 +145,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-method.php'], $errors);
 	}
 
-	public function dataParameterContravariance(): array
+	public static function dataParameterContravariance(): array
 	{
 		return [
 			[
@@ -245,7 +245,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([$file], $expectedErrors);
 	}
 
-	public function dataReturnTypeCovariance(): array
+	public static function dataReturnTypeCovariance(): array
 	{
 		return [
 			[
@@ -378,7 +378,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-variadics.php'], $errors);
 	}
 
-	public function dataLessOverridenParametersWithVariadic(): array
+	public static function dataLessOverridenParametersWithVariadic(): array
 	{
 		return [
 			[
@@ -444,7 +444,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/less-parameters-variadics.php'], $errors);
 	}
 
-	public function dataParameterTypeWidening(): array
+	public static function dataParameterTypeWidening(): array
 	{
 		return [
 			[
@@ -479,7 +479,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4516.php'], []);
 	}
 
-	public function dataTentativeReturnTypes(): array
+	public static function dataTentativeReturnTypes(): array
 	{
 		return [
 			[70400, []],
@@ -758,7 +758,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataCheckMissingOverrideAttribute(): iterable
+	public static function dataCheckMissingOverrideAttribute(): iterable
 	{
 		yield [false, 80000, []];
 		yield [true, 80000, []];

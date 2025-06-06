@@ -9,9 +9,9 @@ class TypeSpecifyingExtensionTypeInferenceTrueTest extends TypeInferenceTestCase
 
 	public static function dataTypeSpecifyingExtensionsTrue(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-true.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-true.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-true.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-true.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-true.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-true.php');
 	}
 
 	/**

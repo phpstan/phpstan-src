@@ -9,7 +9,7 @@ class AllowedSubTypesClassReflectionExtensionTest extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/allowed-sub-types.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/allowed-sub-types.php');
 	}
 
 	/**

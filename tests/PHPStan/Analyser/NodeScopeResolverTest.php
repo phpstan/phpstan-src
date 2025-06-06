@@ -127,7 +127,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		//define('ALREADY_DEFINED_CONSTANT', true);
-		//yield from $this->gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
+		//yield from self::gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
 
 		yield __DIR__ . '/../Rules/Methods/data/conditional-complex-templates.php';
 
@@ -239,7 +239,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFile(string $file): void
 	{
-		$asserts = $this->gatherAssertTypes($file);
+		$asserts = self::gatherAssertTypes($file);
 		$this->assertNotCount(0, $asserts, sprintf('File %s has no asserts.', $file));
 		$failures = [];
 

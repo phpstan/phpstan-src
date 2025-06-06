@@ -9,7 +9,7 @@ class ConditionalReturnTypeFromMethodStubTest extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/conditional-return-type-stub.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/conditional-return-type-stub.php');
 	}
 
 	/**

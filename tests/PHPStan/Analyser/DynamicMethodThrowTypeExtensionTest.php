@@ -14,8 +14,8 @@ class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 			return [];
 		}
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args-fixture.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args-fixture.php');
 	}
 
 	/**

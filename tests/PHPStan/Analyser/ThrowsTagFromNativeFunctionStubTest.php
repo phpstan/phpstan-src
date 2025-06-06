@@ -9,7 +9,7 @@ class ThrowsTagFromNativeFunctionStubTest extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/throws-tag-from-native-function-stub.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/throws-tag-from-native-function-stub.php');
 	}
 
 	/**

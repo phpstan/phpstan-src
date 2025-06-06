@@ -9,7 +9,7 @@ class DoNotPolluteScopeWithBlockTest extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/do-not-pollute-scope-with-block.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/do-not-pollute-scope-with-block.php');
 	}
 
 	/**

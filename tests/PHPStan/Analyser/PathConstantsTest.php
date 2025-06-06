@@ -11,9 +11,9 @@ class PathConstantsTest extends TypeInferenceTestCase
 	public static function dataFileAsserts(): iterable
 	{
 		if (DIRECTORY_SEPARATOR === '\\') {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/pathConstants-win.php');
+			yield from self::gatherAssertTypes(__DIR__ . '/data/pathConstants-win.php');
 		} else {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/pathConstants.php');
+			yield from self::gatherAssertTypes(__DIR__ . '/data/pathConstants.php');
 		}
 	}
 

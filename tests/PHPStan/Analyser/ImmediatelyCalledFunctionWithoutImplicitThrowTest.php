@@ -10,7 +10,7 @@ class ImmediatelyCalledFunctionWithoutImplicitThrowTest extends TypeInferenceTes
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/immediately-called-function-without-implicit-throw.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/immediately-called-function-without-implicit-throw.php');
 	}
 
 	/**

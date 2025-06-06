@@ -9,7 +9,7 @@ class Bug11009Test extends TypeInferenceTestCase
 
 	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-11009.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-11009.php');
 	}
 
 	/**

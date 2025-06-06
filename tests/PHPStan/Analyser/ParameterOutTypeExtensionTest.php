@@ -9,7 +9,7 @@ class ParameterOutTypeExtensionTest extends TypeInferenceTestCase
 
 	public static function dataAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
 	}
 
 	/**

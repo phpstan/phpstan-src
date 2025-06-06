@@ -14,7 +14,7 @@ class LooseConstComparisonPhp8Test extends TypeInferenceTestCase
 	{
 		// compares constants according to the php-version phpstan configuration,
 		// _NOT_ the current php runtime version
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/loose-const-comparison-php8.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/loose-const-comparison-php8.php');
 	}
 
 	/**

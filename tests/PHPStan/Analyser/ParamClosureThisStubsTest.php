@@ -9,7 +9,7 @@ class ParamClosureThisStubsTest extends TypeInferenceTestCase
 
 	public static function dataAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-closure-this-stubs.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/param-closure-this-stubs.php');
 	}
 
 	/**

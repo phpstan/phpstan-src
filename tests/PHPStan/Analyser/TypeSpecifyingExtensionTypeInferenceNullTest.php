@@ -9,9 +9,9 @@ class TypeSpecifyingExtensionTypeInferenceNullTest extends TypeInferenceTestCase
 
 	public static function dataTypeSpecifyingExtensionsNull(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-null.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-null.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-null.php');
 	}
 
 	/**

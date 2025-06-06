@@ -63,10 +63,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		});
 	}
 
-	private function getFileScope(string $filename): Scope
+	private static function getFileScope(string $filename): Scope
 	{
 		$testScope = null;
-		$this->processFile($filename, static function (Node $node, Scope $scope) use (&$testScope): void {
+		self::processFile($filename, static function (Node $node, Scope $scope) use (&$testScope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -230,7 +230,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public static function dataAssignInIf(): array
 	{
-		$testScope = $this->getFileScope(__DIR__ . '/data/if.php');
+		$testScope = self::getFileScope(__DIR__ . '/data/if.php');
 
 		return [
 			[
@@ -760,7 +760,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public static function dataConstantTypes(): array
 	{
-		$testScope = $this->getFileScope(__DIR__ . '/data/constantTypes.php');
+		$testScope = self::getFileScope(__DIR__ . '/data/constantTypes.php');
 
 		return [
 			[

@@ -131,86 +131,86 @@ class TypeSpecifierTest extends PHPStanTestCase
 		}
 		yield from [
 			[
-				$this->createFunctionCall('is_int'),
+				self::createFunctionCall('is_int'),
 				['$foo' => 'int'],
 				['$foo' => '~int'],
 			],
 			[
-				$this->createFunctionCall('is_numeric'),
+				self::createFunctionCall('is_numeric'),
 				['$foo' => 'float|int|numeric-string'],
 				['$foo' => '~float|int|numeric-string'],
 			],
 			[
-				$this->createFunctionCall('is_scalar'),
+				self::createFunctionCall('is_scalar'),
 				['$foo' => 'bool|float|int|string'],
 				['$foo' => '~bool|float|int|string'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('is_int'),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => 'int'],
 				[],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
-					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('is_int'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => '~int'],
 			],
 			[
 				new Expr\BinaryOp\LogicalAnd(
-					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('is_int'),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => 'int'],
 				[],
 			],
 			[
 				new Expr\BinaryOp\LogicalOr(
-					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('is_int'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => '~int'],
 			],
 			[
-				new Expr\BooleanNot($this->createFunctionCall('is_int')),
+				new Expr\BooleanNot(self::createFunctionCall('is_int')),
 				['$foo' => '~int'],
 				['$foo' => 'int'],
 			],
 
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					new Expr\BooleanNot($this->createFunctionCall('is_int')),
-					$this->createFunctionCall('random'),
+					new Expr\BooleanNot(self::createFunctionCall('is_int')),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => '~int'],
 				[],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
-					new Expr\BooleanNot($this->createFunctionCall('is_int')),
-					$this->createFunctionCall('random'),
+					new Expr\BooleanNot(self::createFunctionCall('is_int')),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => 'int'],
 			],
 			[
-				new Expr\BooleanNot(new Expr\BooleanNot($this->createFunctionCall('is_int'))),
+				new Expr\BooleanNot(new Expr\BooleanNot(self::createFunctionCall('is_int'))),
 				['$foo' => 'int'],
 				['$foo' => '~int'],
 			],
 			[
-				$this->createInstanceOf('Foo'),
+				self::createInstanceOf('Foo'),
 				['$foo' => 'Foo'],
 				['$foo' => '~Foo'],
 			],
 			[
-				new Expr\BooleanNot($this->createInstanceOf('Foo')),
+				new Expr\BooleanNot(self::createInstanceOf('Foo')),
 				['$foo' => '~Foo'],
 				['$foo' => 'Foo'],
 			],
@@ -280,7 +280,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Variable('foo'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
 				[],
@@ -288,7 +288,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Variable('foo'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => self::SURE_NOT_TRUTHY],
@@ -307,7 +307,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new PropertyFetch(new Variable('this'), 'foo'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				['$this->foo' => self::SURE_NOT_FALSEY],
 				[],
@@ -315,7 +315,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new PropertyFetch(new Variable('this'), 'foo'),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$this->foo' => self::SURE_NOT_TRUTHY],
@@ -328,18 +328,18 @@ class TypeSpecifierTest extends PHPStanTestCase
 
 			[
 				new Expr\BinaryOp\BooleanOr(
-					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('is_string'),
+					self::createFunctionCall('is_int'),
+					self::createFunctionCall('is_string'),
 				),
 				['$foo' => 'int|string'],
 				['$foo' => '~int|string'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
-					$this->createFunctionCall('is_int'),
+					self::createFunctionCall('is_int'),
 					new Expr\BinaryOp\BooleanOr(
-						$this->createFunctionCall('is_string'),
-						$this->createFunctionCall('is_bool'),
+						self::createFunctionCall('is_string'),
+						self::createFunctionCall('is_bool'),
 					),
 				),
 				['$foo' => 'bool|int|string'],
@@ -347,8 +347,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
-					$this->createFunctionCall('is_int', 'foo'),
-					$this->createFunctionCall('is_string', 'bar'),
+					self::createFunctionCall('is_int', 'foo'),
+					self::createFunctionCall('is_string', 'bar'),
 				),
 				[],
 				['$foo' => '~int', '$bar' => '~string'],
@@ -356,10 +356,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\BooleanOr(
-						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'foo'),
+						self::createFunctionCall('is_int', 'foo'),
+						self::createFunctionCall('is_string', 'foo'),
 					),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => 'int|string'],
 				[],
@@ -367,10 +367,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'foo'),
+						self::createFunctionCall('is_int', 'foo'),
+						self::createFunctionCall('is_string', 'foo'),
 					),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => 'mixed'],
@@ -378,10 +378,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'bar'),
+						self::createFunctionCall('is_int', 'foo'),
+						self::createFunctionCall('is_string', 'bar'),
 					),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				[],
@@ -389,10 +389,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						new Expr\BooleanNot($this->createFunctionCall('is_int', 'foo')),
-						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo')),
+						new Expr\BooleanNot(self::createFunctionCall('is_int', 'foo')),
+						new Expr\BooleanNot(self::createFunctionCall('is_string', 'foo')),
 					),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				[],
 				['$foo' => 'int|string'],
@@ -400,10 +400,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\BooleanOr(
-						new Expr\BooleanNot($this->createFunctionCall('is_int', 'foo')),
-						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo')),
+						new Expr\BooleanNot(self::createFunctionCall('is_int', 'foo')),
+						new Expr\BooleanNot(self::createFunctionCall('is_string', 'foo')),
 					),
-					$this->createFunctionCall('random'),
+					self::createFunctionCall('random'),
 				),
 				['$foo' => 'mixed'],
 				[],
@@ -427,7 +427,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Identical(
-					$this->createFunctionCall('is_int'),
+					self::createFunctionCall('is_int'),
 					new Expr\ConstFetch(new Name('true')),
 				),
 				['is_int($foo)' => 'true', '$foo' => 'int'],
@@ -435,7 +435,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Identical(
-					$this->createFunctionCall('is_string'),
+					self::createFunctionCall('is_string'),
 					new Expr\ConstFetch(new Name('true')),
 				),
 				['is_string($foo)' => 'true', '$foo' => 'string'],
@@ -443,7 +443,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Identical(
-					$this->createFunctionCall('is_int'),
+					self::createFunctionCall('is_int'),
 					new Expr\ConstFetch(new Name('false')),
 				),
 				['is_int($foo)' => 'false', '$foo' => '~int'],
@@ -451,7 +451,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Equal(
-					$this->createFunctionCall('is_int'),
+					self::createFunctionCall('is_int'),
 					new Expr\ConstFetch(new Name('true')),
 				),
 				['$foo' => 'int'],
@@ -459,7 +459,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Equal(
-					$this->createFunctionCall('is_int'),
+					self::createFunctionCall('is_int'),
 					new Expr\ConstFetch(new Name('false')),
 				),
 				['$foo' => '~int'],
@@ -1183,7 +1183,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						$this->createFunctionCall('is_string', 'a'),
+						self::createFunctionCall('is_string', 'a'),
 						new NotIdentical(new String_(''), new Variable('a')),
 					),
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
@@ -1194,9 +1194,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						$this->createFunctionCall('is_string', 'a'),
+						self::createFunctionCall('is_string', 'a'),
 						new Expr\BinaryOp\Greater(
-							$this->createFunctionCall('strlen', 'a'),
+							self::createFunctionCall('strlen', 'a'),
 							new LNumber(0),
 						),
 					),
@@ -1208,9 +1208,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
-						$this->createFunctionCall('is_array', 'a'),
+						self::createFunctionCall('is_array', 'a'),
 						new Expr\BinaryOp\Greater(
-							$this->createFunctionCall('count', 'a'),
+							self::createFunctionCall('count', 'a'),
 							new LNumber(0),
 						),
 					),
@@ -1221,7 +1221,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_array', 'foo'),
+					self::createFunctionCall('is_array', 'foo'),
 					new Identical(
 						new FuncCall(
 							new Name('array_filter'),
@@ -1238,7 +1238,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_array', 'foo'),
+					self::createFunctionCall('is_array', 'foo'),
 					new Expr\BinaryOp\GreaterOrEqual(
 						new FuncCall(
 							new Name('count'),
@@ -1255,7 +1255,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_array', 'foo'),
+					self::createFunctionCall('is_array', 'foo'),
 					new Identical(
 						new FuncCall(
 							new Name('count'),
@@ -1272,7 +1272,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_string', 'foo'),
+					self::createFunctionCall('is_string', 'foo'),
 					new NotIdentical(
 						new FuncCall(
 							new Name('strlen'),
@@ -1291,7 +1291,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_numeric', 'int'),
+					self::createFunctionCall('is_numeric', 'int'),
 					new Expr\BinaryOp\Equal(
 						new Variable('int'),
 						new Expr\Cast\Int_(new Variable('int')),
@@ -1305,7 +1305,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
-					$this->createFunctionCall('is_numeric', 'float'),
+					self::createFunctionCall('is_numeric', 'float'),
 					new Expr\BinaryOp\Equal(
 						new Variable('float'),
 						new Expr\Cast\Int_(new Variable('float')),
@@ -1346,7 +1346,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 	/**
 	 * @param non-empty-string $className
 	 */
-	private function createInstanceOf(string $className, string $variableName = 'foo'): Expr\Instanceof_
+	private static function createInstanceOf(string $className, string $variableName = 'foo'): Expr\Instanceof_
 	{
 		return new Expr\Instanceof_(new Variable($variableName), new Name($className));
 	}
@@ -1354,7 +1354,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 	/**
 	 * @param non-empty-string $functionName
 	 */
-	private function createFunctionCall(string $functionName, string $variableName = 'foo'): FuncCall
+	private static function createFunctionCall(string $functionName, string $variableName = 'foo'): FuncCall
 	{
 		return new FuncCall(new Name($functionName), [new Arg(new Variable($variableName))]);
 	}

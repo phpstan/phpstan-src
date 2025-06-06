@@ -533,7 +533,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 	public static function dataFromTypeStringToPhpDocNode(): iterable
 	{
-		foreach ($this->dataToPhpDocNode() as [, $typeString]) {
+		foreach (self::dataToPhpDocNode() as [, $typeString]) {
 			yield [$typeString];
 		}
 

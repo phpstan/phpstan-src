@@ -302,7 +302,7 @@ jobs:
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.18.0"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.20.0"
 
       - name: "Test"
         run: "${{ matrix.script }}"
@@ -409,7 +409,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.18.0"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.20.0"
 
       - name: "Test"
         run: ${{ matrix.script }}

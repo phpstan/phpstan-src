@@ -1,54 +1,76 @@
 {
   "extends": [
-    "config:base",
+    "config:recommended",
     "schedule:weekly"
   ],
   "dependencyDashboard": true,
   "rangeStrategy": "update-lockfile",
   "rebaseWhen": "conflicted",
-  "baseBranches": ["2.1.x"],
+  "baseBranches": [
+    "2.1.x"
+  ],
   "packageRules": [
     {
-      "matchPackagePatterns": ["*"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "*"
+      ]
     },
     {
-      "matchPaths": ["+(composer.json)"],
+      "matchFileNames": [
+        "+(composer.json)"
+      ],
       "enabled": true,
-      "matchBaseBranches": ["2.1.x"]
+      "matchBaseBranches": [
+        "2.1.x"
+      ]
     },
     {
-      "matchPaths": ["build-cs/**"],
+      "matchFileNames": [
+        "build-cs/**"
+      ],
       "enabled": true,
       "groupName": "build-cs"
     },
     {
-      "matchPaths": ["apigen/**"],
+      "matchFileNames": [
+        "apigen/**"
+      ],
       "enabled": true,
       "groupName": "apigen"
     },
     {
-	  "matchPaths": ["issue-bot/**"],
-	  "enabled": true,
-	  "groupName": "issue-bot"
+      "matchFileNames": [
+        "issue-bot/**"
+      ],
+      "enabled": true,
+      "groupName": "issue-bot"
     },
     {
-      "matchPaths": ["changelog-generator/**"],
+      "matchFileNames": [
+        "changelog-generator/**"
+      ],
       "enabled": true,
       "groupName": "changelog-generator"
     },
     {
-      "matchPaths": ["compiler/**"],
+      "matchFileNames": [
+        "compiler/**"
+      ],
       "enabled": true,
       "groupName": "compiler"
     },
     {
-        "matchPaths": ["tests/composer.json"],
-        "enabled": true,
-        "groupName": "paratest"
-	},
+      "matchFileNames": [
+        "tests/composer.json"
+      ],
+      "enabled": true,
+      "groupName": "paratest"
+    },
     {
-      "matchPaths": [".github/**"],
+      "matchFileNames": [
+        ".github/**"
+      ],
       "enabled": true,
       "groupName": "github-actions"
     }

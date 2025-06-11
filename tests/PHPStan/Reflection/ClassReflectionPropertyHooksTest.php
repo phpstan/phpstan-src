@@ -16,8 +16,6 @@ class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 
 	public static function dataPropertyHooks(): iterable
 	{
-		$reflectionProvider = self::createReflectionProvider();
-
 		yield [
 			'PropertyHooksTypes\\Foo',
 			'i',

@@ -9,18 +9,18 @@ class Foo
 	public function test(\DOMNode $node): void
 	{
 		if ($node->hasAttributes()) {
-			assertType('DOMNamedNodeMap&iterable<DOMAttr>', $node->attributes);
+			assertType('DOMNamedNodeMap', $node->attributes);
 		} else {
-			assertType('(DOMNamedNodeMap&iterable<DOMAttr>)|null', $node->attributes);
+			assertType('DOMNamedNodeMap|null', $node->attributes);
 		}
 	}
 
 	public function testElement(\DOMElement $node): void
 	{
 		if ($node->hasAttributes()) {
-			assertType('DOMNamedNodeMap&iterable<DOMAttr>', $node->attributes);
+			assertType('DOMNamedNodeMap', $node->attributes);
 		} else {
-			assertType('DOMNamedNodeMap&iterable<DOMAttr>', $node->attributes);
+			assertType('DOMNamedNodeMap', $node->attributes);
 		}
 	}
 }

@@ -31,7 +31,7 @@ class DOMNode
 {
 
 	/**
-	 * @var DOMNamedNodeMap<DOMAttr>|null
+	 * @var DOMNamedNodeMap|null
 	 */
 	public $attributes;
 
@@ -46,7 +46,7 @@ class DOMNode
 class DOMElement extends DOMNode
 {
 
-	/** @var DOMNamedNodeMap<DOMAttr> */
+	/** @var DOMNamedNodeMap */
 	public $attributes;
 
 	/** @var DOMDocument */

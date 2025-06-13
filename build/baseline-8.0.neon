@@ -29,8 +29,3 @@ parameters:
 			message: "#^Strict comparison using \\=\\=\\= between list<string> and false will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
-
-		-
-			message: "#^Call to function is_bool\\(\\) with string will always evaluate to false\\.$#"
-			count: 1
-			path: ../src/Type/Php/SubstrDynamicReturnTypeExtension.php

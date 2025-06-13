@@ -24,6 +24,7 @@ use function count;
 use function in_array;
 use function is_bool;
 use function mb_substr;
+use function strlen;
 use function substr;
 
 #[AutowiredService]
@@ -76,19 +77,29 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 				if ($length !== null) {
 					if ($functionReflection->getName() === 'mb_substr') {
 						$substr = mb_substr($constantString->getValue(), $offset->getValue(), $length->getValue());
+					} elseif ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+						$substr = $this->substrOrFalse($constantString->getValue(), $offset->getValue(), $length->getValue());
 					} else {
 						$substr = substr($constantString->getValue(), $offset->getValue(), $length->getValue());
 					}
 				} else {
 					if ($functionReflection->getName() === 'mb_substr') {
 						$substr = mb_substr($constantString->getValue(), $offset->getValue());
+					} elseif ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+						// Simulate substr call on an older PHP version if the runtime one is too new.
+						$substr = $this->substrOrFalse($constantString->getValue(), $offset->getValue());
 					} else {
 						$substr = substr($constantString->getValue(), $offset->getValue());
 					}
 				}
 
 				if (is_bool($substr)) {
-					$results[] = new ConstantBooleanType($substr);
+					if ($this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
+						$results[] = new ConstantBooleanType($substr);
+					} else {
+						// Simulate substr call on a recent PHP version if the runtime one is too old.
+						$results[] = new ConstantStringType('');
+					}
 				} else {
 					$results[] = new ConstantStringType($substr);
 				}
@@ -127,6 +138,30 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		return null;
+	}
+
+	private function substrOrFalse(string $string, int $offset, ?int $length = null): false|string
+	{
+		$strlen = strlen($string);
+
+		if ($offset > $strlen) {
+			return false;
+		}
+
+		if ($length !== null && $length < 0) {
+			if ($offset < 0 && -$length > $strlen) {
+				return false;
+			}
+			if ($offset >= 0 && -$length > $strlen - $offset) {
+				return false;
+			}
+		}
+
+		if ($length === null) {
+			return substr($string, $offset);
+		}
+
+		return substr($string, $offset, $length);
 	}
 
 }

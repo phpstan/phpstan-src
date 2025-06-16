@@ -38,7 +38,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 		require_once __DIR__ . '/../../vendor/attributes.php';
 		$builder = $this->getContainerBuilder();
 
-		$autowiredParameters = Attributes::findTargetMethodParameters(AutowiredParameter::class);
+		$autowiredParameters = Attributes::findTargetParameters(AutowiredParameter::class);
 
 		foreach (Attributes::findTargetClasses(AutowiredService::class) as $class) {
 			$reflection = new ReflectionClass($class->name);

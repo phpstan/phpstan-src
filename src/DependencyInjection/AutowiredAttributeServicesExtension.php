@@ -12,6 +12,7 @@ use Nette\Schema\Schema;
 use Nette\Utils\Strings;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use olvlvl\ComposerAttributeCollector\TargetMethodParameter;
+use olvlvl\ComposerAttributeCollector\TargetParameter;
 use Override;
 use PHPStan\Collectors\RegistryFactory;
 use PHPStan\Rules\LazyRegistry;
@@ -125,7 +126,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 	/**
 	 * @param class-string $className
-	 * @param TargetMethodParameter<AutowiredParameter>[] $autowiredParameters
+	 * @param TargetParameter<AutowiredParameter>[] $autowiredParameters
 	 */
 	private function processParameters(string $className, ServiceDefinition $definition, array $autowiredParameters): void
 	{

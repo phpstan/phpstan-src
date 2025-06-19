@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function count;
@@ -13,12 +15,19 @@ use function sprintf;
 use function str_replace;
 use function uasort;
 
+#[AutowiredService(name: 'errorFormatter.grouped')]
 final class GroupedErrorFormatter implements ErrorFormatter
 {
 
 	private const NO_IDENTIFIER = 'without identifier';
 
-	public function __construct(private RelativePathHelper $relativePathHelper, private ?string $editorUrl, private ?string $editorUrlTitle)
+	public function __construct(
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
+		private RelativePathHelper $relativePathHelper,
+		#[AutowiredParameter]
+		private ?string $editorUrl,
+		#[AutowiredParameter]
+		private ?string $editorUrlTitle)
 	{
 	}
 

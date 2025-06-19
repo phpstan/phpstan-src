@@ -5,7 +5,9 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -32,6 +34,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[RegisteredRule(level: 0)]
 final class InstantiationRule implements Rule
 {
 
@@ -40,6 +43,7 @@ final class InstantiationRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $check,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

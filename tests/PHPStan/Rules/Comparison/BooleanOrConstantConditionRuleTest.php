@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<BooleanOrConstantConditionRule>
@@ -21,7 +22,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		return new BooleanOrConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
@@ -243,7 +244,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataTreatPhpDocTypesAsCertainRegression(): array
+	public static function dataTreatPhpDocTypesAsCertainRegression(): array
 	{
 		return [
 			[
@@ -255,21 +256,16 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
-	 */
+	#[DataProvider('dataTreatPhpDocTypesAsCertainRegression')]
 	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/boolean-or-treat-phpdoc-types-regression.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6258(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6258.php'], []);
 	}
@@ -292,7 +288,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7881.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -342,9 +338,9 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

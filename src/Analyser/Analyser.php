@@ -5,6 +5,8 @@ namespace PHPStan\Analyser;
 use Closure;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
@@ -15,6 +17,7 @@ use function memory_get_peak_usage;
 /**
  * @phpstan-import-type CollectorData from CollectedData
  */
+#[AutowiredService]
 final class Analyser
 {
 
@@ -23,6 +26,7 @@ final class Analyser
 		private RuleRegistry $ruleRegistry,
 		private CollectorRegistry $collectorRegistry,
 		private NodeScopeResolver $nodeScopeResolver,
+		#[AutowiredParameter]
 		private int $internalErrorsCountLimit,
 	)
 	{
@@ -68,6 +72,7 @@ final class Analyser
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
+		$usedTraitDependencies = [];
 		$exportedNodes = [];
 		foreach ($files as $file) {
 			if ($preFileCallback !== null) {
@@ -91,6 +96,7 @@ final class Analyser
 				$unmatchedLineIgnores[$file] = $fileAnalyserResult->getUnmatchedLineIgnores();
 				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
+				$usedTraitDependencies[$file] = $fileAnalyserResult->getUsedTraitDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
 				if (count($fileExportedNodes) > 0) {
@@ -101,7 +107,7 @@ final class Analyser
 					throw $t;
 				}
 				$internalErrorsCount++;
-				$errors[] = (new Error($t->getMessage(), $file, null, $t))
+				$errors[] = (new Error($t->getMessage(), $file, canBeIgnored: $t))
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($t),
@@ -130,6 +136,7 @@ final class Analyser
 			[],
 			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,
+			$internalErrorsCount === 0 ? $usedTraitDependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
 			memory_get_peak_usage(true),

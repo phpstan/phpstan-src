@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,12 +19,9 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 		return new PropertyAssignRefRule(new PhpVersion(PHP_VERSION_ID), new PropertyReflectionFinder());
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-assign-ref.php'], [
 			[
 				'Property PropertyAssignRef\Foo::$foo with private visibility is assigned by reference.',
@@ -44,12 +42,9 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testAsymmetricVisibility(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-assign-ref-asymmetric.php'], [
 			[
 				'Property PropertyAssignRefAsymmetric\Foo::$a with private(set) visibility is assigned by reference.',

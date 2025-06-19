@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function array_merge;
 /**
  * @implements Rule<Node\Expr\ArrowFunction>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 

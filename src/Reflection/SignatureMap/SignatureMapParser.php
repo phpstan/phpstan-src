@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
@@ -13,6 +14,7 @@ use function array_slice;
 use function str_starts_with;
 use function substr;
 
+#[AutowiredService]
 final class SignatureMapParser
 {
 

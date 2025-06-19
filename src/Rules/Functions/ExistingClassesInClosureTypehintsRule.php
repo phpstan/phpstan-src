@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<Node\Expr\Closure>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassesInClosureTypehintsRule implements Rule
 {
 

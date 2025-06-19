@@ -7,14 +7,13 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class PhpVersionsTest extends TestCase
 {
 
-	/**
-	 * @dataProvider dataProducesWarningForFinalPrivateMethods
-	 */
+	#[DataProvider('dataProducesWarningForFinalPrivateMethods')]
 	public function testProducesWarningForFinalPrivateMethods(TrinaryLogic $expected, Type $versionType): void
 	{
 		$phpVersions = new PhpVersions($versionType);
@@ -24,7 +23,7 @@ class PhpVersionsTest extends TestCase
 		);
 	}
 
-	public function dataProducesWarningForFinalPrivateMethods(): iterable
+	public static function dataProducesWarningForFinalPrivateMethods(): iterable
 	{
 		yield [
 			TrinaryLogic::createNo(),

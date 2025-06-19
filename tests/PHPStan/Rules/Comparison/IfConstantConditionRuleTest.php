@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IfConstantConditionRule>
@@ -19,7 +19,7 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		return new IfConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
@@ -131,12 +131,9 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6902.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8485(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 
 		// reported by ConstantLooseComparisonRule instead

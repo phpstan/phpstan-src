@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use JsonSerializable;
+use Override;
 use ReturnTypeWillChange;
 use Throwable;
 use function array_map;
@@ -90,6 +91,7 @@ final class InternalError implements JsonSerializable
 	 * @return mixed
 	 */
 	#[ReturnTypeWillChange]
+	#[Override]
 	public function jsonSerialize()
 	{
 		return [

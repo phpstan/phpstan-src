@@ -1,0 +1,16 @@
+parameters:
+	ignoreErrors:
+			-
+				message: '#^Instanceof references internal interface PHPUnit\\Exception\.$#'
+				identifier: instanceof.internalInterface
+				count: 1
+				path: ../tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
+
+			-
+				message: '''
+					#^Call to deprecated method assertFileNotExists\(\) of class PHPUnit\\Framework\\Assert\:
+					https\://github\.com/sebastianbergmann/phpunit/issues/4077$#
+				'''
+				identifier: staticMethod.deprecated
+				count: 1
+				path: ../src/Testing/LevelsTestCase.php

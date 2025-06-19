@@ -9,12 +9,13 @@ use PHPStan\File\FileReader;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 class CleaningParserTest extends PHPStanTestCase
 {
 
-	public function dataParse(): iterable
+	public static function dataParse(): iterable
 	{
 		return [
 			[
@@ -60,9 +61,7 @@ class CleaningParserTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataParse
-	 */
+	#[DataProvider('dataParse')]
 	public function testParse(
 		string $beforeFile,
 		string $afterFile,

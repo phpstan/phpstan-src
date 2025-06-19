@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 use const PHP_VERSION_ID;
 
@@ -27,12 +28,9 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$errors = [
 			[
 				'Readonly property ReadonlyPropertyAssign\Foo::$foo is assigned outside of the constructor.',
@@ -131,12 +129,9 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-assign.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFeature7648(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/feature-7648.php'], [
 			[
 				'Readonly property Feature7648\Request::$offset is assigned outside of the constructor.',
@@ -145,12 +140,9 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testReadOnlyClasses(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/readonly-class-assign.php'], [
 			[
 				'Readonly property ReadonlyClassPropertyAssign\Foo::$foo is assigned outside of the constructor.',
@@ -159,12 +151,9 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6773(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6773.php'], [
 			[
 				'Readonly property Bug6773\Repository::$data is assigned outside of the constructor.',
@@ -173,21 +162,15 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8929(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8929.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12537(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-12537.php'], []);
 	}
 

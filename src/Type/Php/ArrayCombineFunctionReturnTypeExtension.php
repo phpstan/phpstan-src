@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -23,6 +24,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 
+#[AutowiredService]
 final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

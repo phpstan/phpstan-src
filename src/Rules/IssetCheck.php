@@ -5,6 +5,8 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -18,13 +20,16 @@ use function str_starts_with;
 /**
  * @phpstan-type ErrorIdentifier = 'empty'|'isset'|'nullCoalesce'
  */
+#[AutowiredService]
 final class IssetCheck
 {
 
 	public function __construct(
 		private PropertyDescriptor $propertyDescriptor,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		#[AutowiredParameter]
 		private bool $checkAdvancedIsset,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

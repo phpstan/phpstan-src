@@ -289,7 +289,7 @@ final class PhpFileCleaner
 	 */
 	private function match(string $regex, ?array &$match = null, ?int $offset = null): bool
 	{
-		return preg_match($regex, $this->contents, $match, 0, $offset ?? $this->index) === 1;
+		return preg_match($regex, $this->contents, $match, offset: $offset ?? $this->index) === 1;
 	}
 
 }

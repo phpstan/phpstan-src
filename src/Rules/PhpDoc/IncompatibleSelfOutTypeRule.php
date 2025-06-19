@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatibleSelfOutTypeRule implements Rule
 {
 
@@ -42,7 +44,7 @@ final class IncompatibleSelfOutTypeRule implements Rule
 		}
 
 		$classReflection = $method->getDeclaringClass();
-		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
+		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 
 		$errors = [];
 		if (!$classType->isSuperTypeOf($selfOutType)->yes()) {

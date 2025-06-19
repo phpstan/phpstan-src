@@ -19,7 +19,7 @@ class MixinTraitRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new MixinTraitRule(
 			new MixinCheck(

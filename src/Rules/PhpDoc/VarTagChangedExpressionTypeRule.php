@@ -4,12 +4,14 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<VarTagChangedExpressionTypeNode>
  */
+#[RegisteredRule(level: 2)]
 final class VarTagChangedExpressionTypeRule implements Rule
 {
 

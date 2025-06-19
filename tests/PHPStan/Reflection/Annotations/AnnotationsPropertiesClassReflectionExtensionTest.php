@@ -11,12 +11,13 @@ use AnnotationsProperties\FooInterface;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 {
 
-	public function dataProperties(): array
+	public static function dataProperties(): array
 	{
 		return [
 			[
@@ -272,12 +273,12 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataProperties
 	 * @param array<string, mixed> $properties
 	 */
+	#[DataProvider('dataProperties')]
 	public function testProperties(string $className, array $properties): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -322,7 +323,7 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 
 	public function testOverridingNativePropertiesWithAnnotationsDoesNotBreakGetNativeProperty(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
 		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));

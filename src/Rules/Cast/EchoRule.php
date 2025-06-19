@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Echo_>
  */
+#[RegisteredRule(level: 2)]
 final class EchoRule implements Rule
 {
 

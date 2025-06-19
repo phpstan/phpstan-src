@@ -6,11 +6,12 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ScopePhpVersionTest extends TypeInferenceTestCase
 {
 
-	public function dataTestPhpVersion(): array
+	public static function dataTestPhpVersion(): array
 	{
 		return [
 			[
@@ -24,9 +25,7 @@ class ScopePhpVersionTest extends TypeInferenceTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTestPhpVersion
-	 */
+	#[DataProvider('dataTestPhpVersion')]
 	public function testPhpVersion(string $expected, string $file): void
 	{
 		self::processFile($file, function (Node $node, Scope $scope) use ($expected): void {

@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Throwable;
 use Traversable;
@@ -23,7 +24,7 @@ use function sprintf;
 class TemplateTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		$templateType = static fn ($name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction($functionName ?? '_'),
@@ -96,9 +97,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(
 		Type $type,
 		Type $otherType,
@@ -125,7 +124,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		$templateType = static fn ($name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction($functionName ?? '_'),
@@ -285,9 +284,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(
 		Type $type,
 		Type $otherType,
@@ -313,7 +310,7 @@ class TemplateTypeTest extends PHPStanTestCase
 	}
 
 	/** @return array<string,array{Type,Type,array<string,string>}> */
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name, ?Type $bound = null, ?string $functionName = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction($functionName ?? '_'),
@@ -361,9 +358,9 @@ class TemplateTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataInferTemplateTypes
 	 * @param array<string,string> $expectedTypes
 	 */
+	#[DataProvider('dataInferTemplateTypes')]
 	public function testResolveTemplateTypes(Type $received, Type $template, array $expectedTypes): void
 	{
 		$result = $template->inferTemplateTypes($received);

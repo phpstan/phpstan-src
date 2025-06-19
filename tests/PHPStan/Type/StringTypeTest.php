@@ -11,6 +11,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
 use function sprintf;
@@ -18,7 +19,7 @@ use function sprintf;
 class StringTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -94,9 +95,7 @@ class StringTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(StringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -107,7 +106,7 @@ class StringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new StringType(),
@@ -174,9 +173,7 @@ class StringTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(StringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
@@ -187,7 +184,7 @@ class StringTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[
@@ -223,9 +220,7 @@ class StringTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataEquals
-	 */
+	#[DataProvider('dataEquals')]
 	public function testEquals(StringType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);

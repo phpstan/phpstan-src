@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignRef>
  */
+#[RegisteredRule(level: 0)]
 final class PropertyAssignRefRule implements Rule
 {
 

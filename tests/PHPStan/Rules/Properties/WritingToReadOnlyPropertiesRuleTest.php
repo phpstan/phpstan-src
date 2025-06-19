@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<WritingToReadOnlyPropertiesRule>
@@ -17,7 +17,7 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new WritingToReadOnlyPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true), new PropertyDescriptor(), new PropertyReflectionFinder(), $this->checkThisOnly);
+		return new WritingToReadOnlyPropertiesRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true), new PropertyDescriptor(), new PropertyReflectionFinder(), $this->checkThisOnly);
 	}
 
 	public function testCheckThisOnlyProperties(): void
@@ -88,12 +88,9 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/writing-to-read-only-hooked-properties.php'], [
 			[
@@ -107,12 +104,9 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12553(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/../Variables/data/bug-12553.php'], []);
 	}

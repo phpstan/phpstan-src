@@ -3,6 +3,8 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
@@ -10,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function sprintf;
 
+#[AutowiredService(as: TypeAliasResolver::class)]
 final class UsefulTypeAliasResolver implements TypeAliasResolver
 {
 
@@ -29,6 +32,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 	 * @param array<string, string> $globalTypeAliases
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '%typeAliases%')]
 		private array $globalTypeAliases,
 		private TypeStringResolver $typeStringResolver,
 		private TypeNodeResolver $typeNodeResolver,

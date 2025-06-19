@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassConstFetch>
  */
+#[RegisteredRule(level: 0)]
 final class DynamicClassConstantFetchRule implements Rule
 {
 

@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection\Reflection;
 
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
@@ -15,6 +16,7 @@ use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExte
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use function array_merge;
 
+#[AutowiredService(as: ClassReflectionExtensionRegistryProvider::class)]
 final class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 

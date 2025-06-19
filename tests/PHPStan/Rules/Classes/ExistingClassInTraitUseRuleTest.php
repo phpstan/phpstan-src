@@ -7,7 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ExistingClassInTraitUseRule>
@@ -17,7 +17,7 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
@@ -72,12 +72,9 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/trait-use-enum.php'], [
 			[
 				'Class TraitUseEnum\Foo uses enum TraitUseEnum\FooEnum.',

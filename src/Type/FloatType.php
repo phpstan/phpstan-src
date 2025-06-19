@@ -133,8 +133,7 @@ class FloatType implements Type
 			[new ConstantIntegerType(0)],
 			[$this],
 			[1],
-			[],
-			TrinaryLogic::createYes(),
+			isList: TrinaryLogic::createYes(),
 		);
 	}
 

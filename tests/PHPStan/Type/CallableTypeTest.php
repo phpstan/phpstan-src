@@ -16,13 +16,14 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function sprintf;
 
 class CallableTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -61,9 +62,7 @@ class CallableTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -74,7 +73,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): array
+	public static function dataIsSubTypeOf(): array
 	{
 		return [
 			[
@@ -140,9 +139,7 @@ class CallableTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSubTypeOf
-	 */
+	#[DataProvider('dataIsSubTypeOf')]
 	public function testIsSubTypeOf(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSubTypeOf($otherType);
@@ -153,9 +150,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	/**
-	 * @dataProvider dataIsSubTypeOf
-	 */
+	#[DataProvider('dataIsSubTypeOf')]
 	public function testIsSubTypeOfInversed(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $otherType->isSuperTypeOf($type);
@@ -166,7 +161,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$param = static fn (Type $type): NativeParameterReflection => new NativeParameterReflection(
 			'',
@@ -267,9 +262,9 @@ class CallableTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataInferTemplateTypes
 	 * @param array<string,string> $expectedTypes
 	 */
+	#[DataProvider('dataInferTemplateTypes')]
 	public function testResolveTemplateTypes(Type $received, Type $template, array $expectedTypes): void
 	{
 		$result = $template->inferTemplateTypes($received);
@@ -280,7 +275,7 @@ class CallableTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -355,66 +350,64 @@ class CallableTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				new CallableType(isPure: TrinaryLogic::createNo()),
+				new CallableType(isPure: TrinaryLogic::createNo()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(isPure: TrinaryLogic::createNo()),
+				new CallableType(isPure: TrinaryLogic::createYes()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
+				new CallableType(isPure: TrinaryLogic::createYes()),
+				new CallableType(isPure: TrinaryLogic::createYes()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createYes()),
-				new CallableType(null, null, true, null, null, [], TrinaryLogic::createNo()),
+				new CallableType(isPure: TrinaryLogic::createYes()),
+				new CallableType(isPure: TrinaryLogic::createNo()),
 				TrinaryLogic::createNo(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createNo()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createYes()),
 				TrinaryLogic::createNo(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createYes()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createNo()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createMaybe()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createMaybe()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createYes()),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createYes()),
-				new CallableType([], new VoidType(), false, null, null, [], TrinaryLogic::createNo()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createYes()),
+				new CallableType([], new VoidType(), false, isPure: TrinaryLogic::createNo()),
 				TrinaryLogic::createNo(),
 			],
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(
 		CallableType $type,
 		Type $acceptedType,

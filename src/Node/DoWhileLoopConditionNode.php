@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
@@ -30,6 +31,7 @@ final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 		return $this->exitPoints;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClosureReturnStatementsNode';
@@ -38,6 +40,7 @@ final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

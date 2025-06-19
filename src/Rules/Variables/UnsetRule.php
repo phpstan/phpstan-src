@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Unset_>
  */
+#[RegisteredRule(level: 0)]
 final class UnsetRule implements Rule
 {
 

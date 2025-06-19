@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 0)]
 final class MethodAttributesRule implements Rule
 {
 

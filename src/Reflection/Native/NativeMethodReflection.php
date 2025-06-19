@@ -84,7 +84,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {
-				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), null, $prototypeDeclaringClass);
+				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), selfClass: $prototypeDeclaringClass);
 			}
 
 			return new MethodPrototypeReflection(

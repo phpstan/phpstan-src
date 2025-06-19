@@ -3,6 +3,7 @@
 namespace PHPStan\Dependency;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -19,19 +20,28 @@ use PHPStan\Dependency\ExportedNode\ExportedMethodNode;
 use PHPStan\Dependency\ExportedNode\ExportedParameterNode;
 use PHPStan\Dependency\ExportedNode\ExportedPhpDocNode;
 use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
+use PHPStan\Dependency\ExportedNode\ExportedPropertyHookNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\NodeTypePrinter;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function is_string;
+use function sprintf;
 
+#[AutowiredService]
 final class ExportedNodeResolver
 {
 
-	public function __construct(private FileTypeMapper $fileTypeMapper, private ExprPrinter $exprPrinter)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private FileTypeMapper $fileTypeMapper,
+		private ExprPrinter $exprPrinter,
+	)
 	{
 	}
 
@@ -145,7 +155,52 @@ final class ExportedNodeResolver
 		}
 
 		if ($node instanceof Node\Stmt\Trait_ && isset($node->namespacedName)) {
-			return new ExportedTraitNode($node->namespacedName->toString());
+			$docComment = $node->getDocComment();
+			$usedTraits = [];
+			$adaptations = [];
+			foreach ($node->getTraitUses() as $traitUse) {
+				foreach ($traitUse->traits as $usedTraitName) {
+					$usedTraits[] = $usedTraitName->toString();
+				}
+				foreach ($traitUse->adaptations as $adaptation) {
+					$adaptations[] = $adaptation;
+				}
+			}
+
+			$className = $node->namespacedName->toString();
+
+			return new ExportedTraitNode(
+				$className,
+				$this->exportPhpDocNode(
+					$fileName,
+					$className,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
+				$usedTraits,
+				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
+					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+						return ExportedTraitUseAdaptation::createAlias(
+							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->method->toString(),
+							$adaptation->newModifier,
+							$adaptation->newName !== null ? $adaptation->newName->toString() : null,
+						);
+					}
+
+					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
+						return ExportedTraitUseAdaptation::createPrecedence(
+							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->method->toString(),
+							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
+						);
+					}
+
+					throw new ShouldNotHappenException();
+				}, $adaptations),
+				$this->exportClassStatements($node->stmts, $fileName, $className),
+				$this->exportAttributeNodes($node->attrGroups),
+			);
 		}
 
 		if ($node instanceof Function_) {
@@ -293,8 +348,17 @@ final class ExportedNodeResolver
 
 			$docComment = $node->getDocComment();
 
+			$names = array_map(static fn (Node\PropertyItem $prop): string => $prop->name->toString(), $node->props);
+			$virtual = false;
+			if ($this->reflectionProvider->hasClass($namespacedName)) {
+				$classReflection = $this->reflectionProvider->getClass($namespacedName);
+				if ($classReflection->hasNativeProperty($names[0])) {
+					$virtual = $classReflection->getNativeProperty($names[0])->isVirtual()->yes();
+				}
+			}
+
 			return new ExportedPropertiesNode(
-				array_map(static fn (Node\PropertyItem $prop): string => $prop->name->toString(), $node->props),
+				$names,
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,
@@ -306,7 +370,14 @@ final class ExportedNodeResolver
 				$node->isPrivate(),
 				$node->isStatic(),
 				$node->isReadonly(),
+				$node->isAbstract(),
+				$node->isFinal(),
+				$node->isPublicSet(),
+				$node->isProtectedSet(),
+				$node->isPrivateSet(),
+				$virtual,
 				$this->exportAttributeNodes($node->attrGroups),
+				$this->exportPropertyHooks($node->hooks, $fileName, $namespacedName),
 			);
 		}
 
@@ -377,6 +448,43 @@ final class ExportedNodeResolver
 					$args,
 				);
 			}
+		}
+
+		return $nodes;
+	}
+
+	/**
+	 * @param Node\PropertyHook[] $hooks
+	 * @return ExportedPropertyHookNode[]
+	 */
+	private function exportPropertyHooks(
+		array $hooks,
+		string $fileName,
+		string $namespacedName,
+	): array
+	{
+		$nodes = [];
+		foreach ($hooks as $hook) {
+			$docComment = $hook->getDocComment();
+			$propertyName = $hook->getAttribute('propertyName');
+			if ($propertyName === null) {
+				continue;
+			}
+			$nodes[] = new ExportedPropertyHookNode(
+				$hook->name->toString(),
+				$this->exportPhpDocNode(
+					$fileName,
+					$namespacedName,
+					sprintf('$%s::%s', $propertyName, $hook->name->toString()),
+					$docComment !== null ? $docComment->getText() : null,
+				),
+				$hook->byRef,
+				$hook->body === null,
+				$hook->isFinal(),
+				$hook->body instanceof Expr,
+				$this->exportParameterNodes($hook->params),
+				$this->exportAttributeNodes($hook->attrGroups),
+			);
 		}
 
 		return $nodes;

@@ -5,7 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedStaticMethodUsageRule>
@@ -15,7 +15,7 @@ class RestrictedStaticMethodUsageRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedStaticMethodUsageRule(
 			self::getContainer(),
 			$reflectionProvider,
@@ -33,12 +33,9 @@ class RestrictedStaticMethodUsageRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12951(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1');
-		}
-
 		require_once __DIR__ . '/../InternalTag/data/bug-12951-define.php';
 		$this->analyse([__DIR__ . '/../InternalTag/data/bug-12951-static-method.php'], [
 			[

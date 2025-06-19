@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
+#[RegisteredRule(level: 4)]
 final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 

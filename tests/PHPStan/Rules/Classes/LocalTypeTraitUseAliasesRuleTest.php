@@ -20,12 +20,12 @@ class LocalTypeTraitUseAliasesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new LocalTypeTraitUseAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
 				new MissingTypehintCheck(true, []),
 				new ClassNameCheck(

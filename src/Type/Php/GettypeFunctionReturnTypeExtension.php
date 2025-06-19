@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -15,6 +16,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function count;
 
+#[AutowiredService]
 final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

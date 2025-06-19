@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\Config\Loader;
+use Override;
 use PHPStan\File\FileHelper;
 
 final class NeonLoader extends Loader
@@ -18,6 +19,7 @@ final class NeonLoader extends Loader
 	/**
 	 * @return mixed[]
 	 */
+	#[Override]
 	public function load(string $file, ?bool $merge = true): array
 	{
 		if ($this->generateBaselineFile === null) {

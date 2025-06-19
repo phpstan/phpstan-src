@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\NullsafeMethodCall>
  */
+#[RegisteredRule(level: 4)]
 final class NullsafeMethodCallRule implements Rule
 {
 

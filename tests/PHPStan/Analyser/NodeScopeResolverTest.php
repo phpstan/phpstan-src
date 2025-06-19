@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use EnumTypeAssertions\Foo;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_shift;
 use function define;
@@ -49,6 +50,19 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			} else {
 				yield __DIR__ . '/data/mb-strlen-php73.php';
 			}
+		}
+
+		if (PHP_VERSION_ID >= 80200) {
+			yield __DIR__ . '/data/str-split-php82.php';
+		} elseif (PHP_VERSION_ID >= 80000) {
+			yield __DIR__ . '/data/str-split-php80.php';
+		} else {
+			yield __DIR__ . '/data/str-split-php74.php';
+		}
+		if (PHP_VERSION_ID >= 80000) {
+			yield __DIR__ . '/data/mb-str-split-php80.php';
+		} elseif (PHP_VERSION_ID >= 74000) {
+			yield __DIR__ . '/data/mb-str-split-php74.php';
 		}
 
 		yield __DIR__ . '/../Rules/Methods/data/bug-6856.php';
@@ -127,7 +141,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		//define('ALREADY_DEFINED_CONSTANT', true);
-		//yield from $this->gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
+		//yield from self::gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
 
 		yield __DIR__ . '/../Rules/Methods/data/conditional-complex-templates.php';
 
@@ -234,12 +248,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 	}
 
-	/**
-	 * @dataProvider dataFile
-	 */
+	#[DataProvider('dataFile')]
 	public function testFile(string $file): void
 	{
-		$asserts = $this->gatherAssertTypes($file);
+		$asserts = self::gatherAssertTypes($file);
 		$this->assertNotCount(0, $asserts, sprintf('File %s has no asserts.', $file));
 		$failures = [];
 

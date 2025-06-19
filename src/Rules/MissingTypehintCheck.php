@@ -6,6 +6,8 @@ use Closure;
 use Generator;
 use Iterator;
 use IteratorAggregate;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
@@ -31,6 +33,7 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class MissingTypehintCheck
 {
 
@@ -47,7 +50,9 @@ final class MissingTypehintCheck
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
+		#[AutowiredParameter]
 		private bool $checkMissingCallableSignature,
+		#[AutowiredParameter(ref: '%featureToggles.skipCheckGenericClasses%')]
 		private array $skipCheckGenericClasses,
 	)
 	{

@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -20,12 +22,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
+#[RegisteredRule(level: 3)]
 final class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
+		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
 	{

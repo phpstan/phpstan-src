@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Generators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
@@ -14,10 +16,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 3)]
 final class YieldInGeneratorRule implements Rule
 {
 
-	public function __construct(private bool $reportMaybes)
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $reportMaybes,
+	)
 	{
 	}
 

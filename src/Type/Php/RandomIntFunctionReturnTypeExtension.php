@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -17,6 +18,7 @@ use function in_array;
 use function max;
 use function min;
 
+#[AutowiredService]
 final class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

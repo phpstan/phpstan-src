@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodCall>
  */
+#[RegisteredRule(level: 0)]
 final class GetTemplateTypeRule implements Rule
 {
 

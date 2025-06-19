@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -11,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\ArrowFunction>
  */
+#[RegisteredRule(level: 0)]
 final class ArrowFunctionReturnNullsafeByRefRule implements Rule
 {
 

@@ -12,13 +12,14 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function defined;
 use function sprintf;
 
 final class BitwiseFlagHelperTest extends PHPStanTestCase
 {
 
-	public function dataUnknownConstants(): array
+	public static function dataUnknownConstants(): array
 	{
 		return [
 			[
@@ -45,7 +46,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataJsonExprContainsConst(): array
+	public static function dataJsonExprContainsConst(): array
 	{
 		if (!defined('JSON_THROW_ON_ERROR')) {
 			return [];
@@ -117,11 +118,11 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataUnknownConstants
-	 * @dataProvider dataJsonExprContainsConst
 	 *
 	 * @param non-empty-string $constName
 	 */
+	#[DataProvider('dataUnknownConstants')]
+	#[DataProvider('dataJsonExprContainsConst')]
 	public function testExprContainsConst(Expr $expr, string $constName, TrinaryLogic $expected): void
 	{
 		/** @var ScopeFactory $scopeFactory */
@@ -135,7 +136,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]), new UnionType([new IntegerType(), new FloatType()]), TrinaryLogic::createYes())
 			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]), new UnionType([new StringType(), new FloatType()]), TrinaryLogic::createYes());
 
-		$analyser = new BitwiseFlagHelper($this->createReflectionProvider());
+		$analyser = new BitwiseFlagHelper(self::createReflectionProvider());
 		$actual = $analyser->bitwiseOrContainsConstant($expr, $scope, $constName);
 		$this->assertTrue($expected->equals($actual), sprintf('Expected Trinary::%s but got Trinary::%s.', $expected->describe(), $actual->describe()));
 	}

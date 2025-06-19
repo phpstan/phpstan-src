@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -18,6 +19,7 @@ use function trim;
 /**
  * @implements Rule<FunctionLike>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatibleParamImmediatelyInvokedCallableRule implements Rule
 {
 

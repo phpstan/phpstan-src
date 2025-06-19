@@ -5,6 +5,8 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use function array_combine;
@@ -14,11 +16,13 @@ use function is_array;
 use function is_string;
 use function sprintf;
 
+#[AutowiredService]
 final class UnusedFunctionParametersCheck
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%featureToggles.reportPreciseLineForUnusedFunctionParameter%')]
 		private bool $reportExactLine,
 	)
 	{

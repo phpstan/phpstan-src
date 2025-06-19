@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ThrowsVoidPropertyHookWithExplicitThrowPointRule>
@@ -20,7 +21,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ThrowsVoidPropertyHookWithExplicitThrowPointRule(new DefaultExceptionTypeResolver(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			[],
 			[],
 			[],
@@ -28,7 +29,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 		), $this->missingCheckedExceptionInThrows);
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[
@@ -101,16 +102,13 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRule
 	 * @param string[] $checkedExceptionClasses
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.4')]
+	#[DataProvider('dataRule')]
 	public function testRule(bool $missingCheckedExceptionInThrows, array $checkedExceptionClasses, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->missingCheckedExceptionInThrows = $missingCheckedExceptionInThrows;
 		$this->checkedExceptionClasses = $checkedExceptionClasses;
 		$this->analyse([__DIR__ . '/data/throws-void-property-hook.php'], $errors);

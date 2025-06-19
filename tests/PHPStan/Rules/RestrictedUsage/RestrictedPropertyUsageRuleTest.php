@@ -15,7 +15,7 @@ class RestrictedPropertyUsageRuleTest extends RuleTestCase
 	{
 		return new RestrictedPropertyUsageRule(
 			self::getContainer(),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

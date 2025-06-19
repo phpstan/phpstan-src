@@ -12,6 +12,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -39,6 +41,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class ImpossibleCheckTypeHelper
 {
 
@@ -48,7 +51,9 @@ final class ImpossibleCheckTypeHelper
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private TypeSpecifier $typeSpecifier,
+		#[AutowiredParameter]
 		private array $universalObjectCratesClasses,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

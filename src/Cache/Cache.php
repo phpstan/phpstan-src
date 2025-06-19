@@ -2,10 +2,17 @@
 
 namespace PHPStan\Cache;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
 final class Cache
 {
 
-	public function __construct(private CacheStorage $storage)
+	public function __construct(
+		#[AutowiredParameter(ref: '@cacheStorage')]
+		private CacheStorage $storage,
+	)
 	{
 	}
 

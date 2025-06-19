@@ -2,7 +2,9 @@
 
 namespace PHPStan\DependencyInjection\Nette;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\MissingServiceException;
 use PHPStan\DependencyInjection\ParameterNotFoundException;
 use function array_key_exists;
 use function array_keys;
@@ -11,6 +13,7 @@ use function array_map;
 /**
  * @internal
  */
+#[AutowiredService(as: NetteContainer::class)]
 final class NetteContainer implements Container
 {
 
@@ -28,7 +31,11 @@ final class NetteContainer implements Container
 	 */
 	public function getService(string $serviceName)
 	{
-		return $this->container->getService($serviceName);
+		try {
+			return $this->container->getService($serviceName);
+		} catch (\Nette\DI\MissingServiceException $e) {
+			throw new MissingServiceException($e->getMessage(), previous: $e);
+		}
 	}
 
 	/**
@@ -38,7 +45,11 @@ final class NetteContainer implements Container
 	 */
 	public function getByType(string $className)
 	{
-		return $this->container->getByType($className);
+		try {
+			return $this->container->getByType($className);
+		} catch (\Nette\DI\MissingServiceException $e) {
+			throw new MissingServiceException($e->getMessage(), previous: $e);
+		}
 	}
 
 	/**

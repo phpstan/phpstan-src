@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ArrayDestructuringRule>
@@ -15,7 +15,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true);
 
 		return new ArrayDestructuringRule(
 			$ruleLevelHelper,
@@ -49,12 +49,9 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/array-destructuring-nullsafe.php'], [
 			[
 				'Cannot use array destructuring on array|null.',

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Error;
 use PhpParser\ErrorHandler;
 use PhpParser\Node;
@@ -19,6 +20,7 @@ final class PhpParserDecorator implements Parser
 	/**
 	 * @return Node\Stmt[]
 	 */
+	#[Override]
 	public function parse(string $code, ?ErrorHandler $errorHandler = null): array
 	{
 		try {
@@ -32,6 +34,7 @@ final class PhpParserDecorator implements Parser
 		}
 	}
 
+	#[Override]
 	public function getTokens(): array
 	{
 		throw new ShouldNotHappenException('PhpParserDecorator::getTokens() should not be called');

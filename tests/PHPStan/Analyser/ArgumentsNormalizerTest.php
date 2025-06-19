@@ -17,12 +17,13 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 
 class ArgumentsNormalizerTest extends PHPStanTestCase
 {
 
-	public function dataReorderValid(): iterable
+	public static function dataReorderValid(): iterable
 	{
 		yield [
 			[
@@ -245,11 +246,11 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataReorderValid
 	 * @param array<int, array{non-empty-string, bool, bool, ?Type}> $parameterSettings
 	 * @param array<int, array{Type, ?non-empty-string}> $argumentSettings
 	 * @param array<int, Type> $expectedArgumentTypes
 	 */
+	#[DataProvider('dataReorderValid')]
 	public function testReorderValid(
 		array $parameterSettings,
 		array $argumentSettings,
@@ -270,7 +271,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		$arguments = [];
 		foreach ($argumentSettings as [$type, $name]) {
-			$arguments[] = new Arg(new TypeExpr($type), false, false, [], $name === null ? null : new Identifier($name));
+			$arguments[] = new Arg(new TypeExpr($type), name: $name === null ? null : new Identifier($name));
 		}
 
 		$normalized = ArgumentsNormalizer::reorderFuncArguments(
@@ -298,7 +299,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		}
 	}
 
-	public function dataReorderInvalid(): iterable
+	public static function dataReorderInvalid(): iterable
 	{
 		yield [
 			[
@@ -325,10 +326,10 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataReorderInvalid
 	 * @param array<int, array{non-empty-string, bool, bool, ?Type}> $parameterSettings
 	 * @param array<int, array{Type, ?non-empty-string}> $argumentSettings
 	 */
+	#[DataProvider('dataReorderInvalid')]
 	public function testReorderInvalid(
 		array $parameterSettings,
 		array $argumentSettings,
@@ -348,7 +349,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		$arguments = [];
 		foreach ($argumentSettings as [$type, $name]) {
-			$arguments[] = new Arg(new TypeExpr($type), false, false, [], $name === null ? null : new Identifier($name));
+			$arguments[] = new Arg(new TypeExpr($type), name: $name === null ? null : new Identifier($name));
 		}
 
 		$normalized = ArgumentsNormalizer::reorderFuncArguments(

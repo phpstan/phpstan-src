@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 
@@ -28,6 +29,7 @@ final class FileNode extends NodeAbstract implements VirtualNode
 		return $this->nodes;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_FileNode';
@@ -36,6 +38,7 @@ final class FileNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -3,6 +3,7 @@
 namespace PHPStan\Collectors;
 
 use JsonSerializable;
+use Override;
 use PhpParser\Node;
 use ReturnTypeWillChange;
 
@@ -53,6 +54,7 @@ final class CollectedData implements JsonSerializable
 	 * @return mixed
 	 */
 	#[ReturnTypeWillChange]
+	#[Override]
 	public function jsonSerialize()
 	{
 		return [

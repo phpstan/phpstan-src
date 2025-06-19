@@ -6,8 +6,8 @@ use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function strpos;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UninitializedPropertyRule>
@@ -217,21 +217,15 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12336(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-12336.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12547(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-12547.php'], []);
 	}
 

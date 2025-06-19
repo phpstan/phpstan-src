@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\Property\PropertyRead;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
+#[RegisteredRule(level: 3)]
 final class GetNonVirtualPropertyHookReadRule implements Rule
 {
 

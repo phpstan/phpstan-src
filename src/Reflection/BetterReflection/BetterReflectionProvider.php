@@ -20,6 +20,8 @@ use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\ConstantNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\NonAutowiredService;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -61,6 +63,7 @@ use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
 
+#[NonAutowiredService(name: 'betterReflectionProvider')]
 final class BetterReflectionProvider implements ReflectionProvider
 {
 
@@ -83,6 +86,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		#[AutowiredParameter(ref: '@betterReflectionReflector')]
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
@@ -97,6 +101,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private SignatureMapProvider $signatureMapProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
 		private array $universalObjectCratesClasses,
 	)
 	{

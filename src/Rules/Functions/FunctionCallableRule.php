@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
@@ -20,10 +22,19 @@ use function strtolower;
 /**
  * @implements Rule<FunctionCallableNode>
  */
+#[RegisteredRule(level: 0)]
 final class FunctionCallableRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private RuleLevelHelper $ruleLevelHelper, private PhpVersion $phpVersion, private bool $checkFunctionNameCase, private bool $reportMaybes)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
+		private bool $checkFunctionNameCase,
+		#[AutowiredParameter]
+		private bool $reportMaybes,
+	)
 	{
 	}
 

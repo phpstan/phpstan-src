@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Constants;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MissingClassConstantTypehintRule>
@@ -37,20 +37,15 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug8957(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('This test needs PHP 8.2');
-		}
 		$this->analyse([__DIR__ . '/data/bug-8957.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testRuleShouldNotApplyToNativeTypes(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('This test needs PHP 8.3');
-		}
-
 		$this->analyse([__DIR__ . '/data/class-constant-native-type.php'], [
 			[
 				'Constant ClassConstantNativeTypeForMissingTypehintRule\Foo::B type has no value type specified in iterable type array.',

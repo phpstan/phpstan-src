@@ -18,7 +18,7 @@ class DynamicClassConstantFetchRuleTest extends RuleTestCase
 	{
 		return new DynamicClassConstantFetchRule(
 			self::getContainer()->getByType(PhpVersion::class),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
 		);
 	}
 

@@ -4,9 +4,12 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
+use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
@@ -22,7 +25,9 @@ use function sprintf;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
+#[AutowiredService]
 final class AnalyseApplication
 {
 
@@ -107,6 +112,7 @@ final class AnalyseApplication
 					$intermediateAnalyserResult->getInternalErrors(),
 					$intermediateAnalyserResult->getCollectedData(),
 					$intermediateAnalyserResult->getDependencies(),
+					$intermediateAnalyserResult->getUsedTraitDependencies(),
 					$intermediateAnalyserResult->getExportedNodes(),
 					$intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
 					$intermediateAnalyserResult->getPeakMemoryUsageBytes(),
@@ -114,7 +120,11 @@ final class AnalyseApplication
 			}
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
-			$analyserResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $onlyFiles, $debug)->getAnalyserResult();
+			$analyserResult = $this->analyserResultFinalizer->finalize(
+				$this->switchTmpFileInAnalyserResult($resultCacheResult->getAnalyserResult(), $insteadOfFile, $tmpFile),
+				$onlyFiles,
+				$debug,
+			)->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),
@@ -210,7 +220,7 @@ final class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult([], [], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		if (!$debug) {
@@ -249,6 +259,137 @@ final class AnalyseApplication
 		}
 
 		return $analyserResult;
+	}
+
+	private function switchTmpFileInAnalyserResult(
+		AnalyserResult $analyserResult,
+		?string $insteadOfFile,
+		?string $tmpFile,
+	): AnalyserResult
+	{
+		if ($insteadOfFile === null || $tmpFile === null) {
+			return $analyserResult;
+		}
+
+		$newCollectedData = [];
+		foreach ($analyserResult->getCollectedData() as $file => $data) {
+			if ($file === $tmpFile) {
+				$file = $insteadOfFile;
+			}
+
+			$newCollectedData[$file] = $data;
+		}
+
+		$dependencies = null;
+		if ($analyserResult->getDependencies() !== null) {
+			$dependencies = $this->switchTmpFileInDependencies($analyserResult->getDependencies(), $insteadOfFile, $tmpFile);
+		}
+		$usedTraitDependencies = null;
+		if ($analyserResult->getUsedTraitDependencies() !== null) {
+			$usedTraitDependencies = $this->switchTmpFileInDependencies($analyserResult->getUsedTraitDependencies(), $insteadOfFile, $tmpFile);
+		}
+
+		$exportedNodes = [];
+		foreach ($analyserResult->getExportedNodes() as $file => $fileExportedNodes) {
+			if ($file === $tmpFile) {
+				$file = $insteadOfFile;
+			}
+
+			$exportedNodes[$file] = $fileExportedNodes;
+		}
+
+		return new AnalyserResult(
+			$this->switchTmpFileInErrors($analyserResult->getUnorderedErrors(), $insteadOfFile, $tmpFile),
+			$this->switchTmpFileInErrors($analyserResult->getFilteredPhpErrors(), $insteadOfFile, $tmpFile),
+			$this->switchTmpFileInErrors($analyserResult->getAllPhpErrors(), $insteadOfFile, $tmpFile),
+			$this->switchTmpFileInErrors($analyserResult->getLocallyIgnoredErrors(), $insteadOfFile, $tmpFile),
+			$this->swittchTmpFileInLinesToIgnore($analyserResult->getLinesToIgnore(), $insteadOfFile, $tmpFile),
+			$this->swittchTmpFileInLinesToIgnore($analyserResult->getUnmatchedLineIgnores(), $insteadOfFile, $tmpFile),
+			$analyserResult->getInternalErrors(),
+			$newCollectedData,
+			$dependencies,
+			$usedTraitDependencies,
+			$exportedNodes,
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
+			$analyserResult->getPeakMemoryUsageBytes(),
+		);
+	}
+
+	/**
+	 * @param array<string, array<string>> $dependencies
+	 * @return array<string, array<string>>
+	 */
+	private function switchTmpFileInDependencies(array $dependencies, string $insteadOfFile, string $tmpFile): array
+	{
+		$newDependencies = [];
+		foreach ($dependencies as $dependencyFile => $dependentFiles) {
+			$new = [];
+			foreach ($dependentFiles as $file) {
+				if ($file === $tmpFile) {
+					$new[] = $insteadOfFile;
+					continue;
+				}
+
+				$new[] = $file;
+			}
+
+			$key = $dependencyFile;
+			if ($key === $tmpFile) {
+				$key = $insteadOfFile;
+			}
+
+			$newDependencies[$key] = $new;
+		}
+
+		return $newDependencies;
+	}
+
+	/**
+	 * @param list<Error> $errors
+	 * @return list<Error>
+	 */
+	private function switchTmpFileInErrors(array $errors, string $insteadOfFile, string $tmpFile): array
+	{
+		$newErrors = [];
+		foreach ($errors as $error) {
+			if ($error->getFilePath() === $tmpFile) {
+				$error = $error->changeFilePath($insteadOfFile);
+			}
+			if ($error->getTraitFilePath() === $tmpFile) {
+				$error = $error->changeTraitFilePath($insteadOfFile);
+			}
+
+			$newErrors[] = $error;
+		}
+
+		return $newErrors;
+	}
+
+	/**
+	 * @param array<string, LinesToIgnore> $linesToIgnore
+	 * @return array<string, LinesToIgnore>
+	 */
+	private function swittchTmpFileInLinesToIgnore(array $linesToIgnore, string $insteadOfFile, string $tmpFile): array
+	{
+		$newLinesToIgnore = [];
+		foreach ($linesToIgnore as $file => $lines) {
+			if ($file === $tmpFile) {
+				$file = $insteadOfFile;
+			}
+
+			$newLines = [];
+			foreach ($lines as $f => $line) {
+				if ($f === $tmpFile) {
+					$f = $insteadOfFile;
+				}
+
+				$newLines[$f] = $line;
+			}
+
+			$newLinesToIgnore[$file] = $newLines;
+		}
+
+		return $newLinesToIgnore;
 	}
 
 }

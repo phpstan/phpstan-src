@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 
@@ -23,6 +24,7 @@ final class NoopExpressionNode extends NodeAbstract implements VirtualNode
 		return $this->hasAssign;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_NoopExpressionNode';
@@ -31,6 +33,7 @@ final class NoopExpressionNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -11,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 0)]
 final class NativeTypedClassConstantRule implements Rule
 {
 

@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -27,6 +28,7 @@ use function strlen;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 5)]
 final class RegularExpressionQuotingRule implements Rule
 {
 

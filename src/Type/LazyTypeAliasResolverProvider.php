@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService(as: TypeAliasResolverProvider::class)]
 final class LazyTypeAliasResolverProvider implements TypeAliasResolverProvider
 {
 

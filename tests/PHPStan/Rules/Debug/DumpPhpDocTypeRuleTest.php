@@ -14,7 +14,7 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DumpPhpDocTypeRule($this->createReflectionProvider(), new Printer());
+		return new DumpPhpDocTypeRule(self::createReflectionProvider(), new Printer());
 	}
 
 	public function testRuleSymbols(): void

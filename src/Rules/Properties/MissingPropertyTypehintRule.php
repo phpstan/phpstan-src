@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
+#[RegisteredRule(level: 6)]
 final class MissingPropertyTypehintRule implements Rule
 {
 

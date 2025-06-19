@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassesInTypehintsRule implements Rule
 {
 

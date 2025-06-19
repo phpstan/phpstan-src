@@ -9,6 +9,8 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -24,7 +26,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
 			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
@@ -421,12 +423,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testPutCsvWithStringable(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test skipped on lower version than 8.0 (needs Stringable interface, added in PHP8)');
-		}
-
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter-php8.php'], [
 			// No issues expected
 		]);
@@ -474,12 +473,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$errors = [
 			[
 				'Missing parameter $j (int) in call to function FunctionNamedArguments\foo.',
@@ -499,12 +495,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/named-arguments.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testNamedArgumentsAfterUnpacking(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/named-arguments-after-unpacking.php'], [
 			[
 				'Argument for parameter $b has already been passed.',
@@ -555,12 +548,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3920.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBugNumberFormatNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/number-format-named-arguments.php'], []);
 	}
 
@@ -805,12 +795,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testExplode(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/explode-80.php'], [
 			[
 				'Parameter #1 $separator of function explode expects non-empty-string, string given.',
@@ -844,7 +831,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5609.php'], []);
 	}
 
-	public function dataArrayMapMultiple(): array
+	public static function dataArrayMapMultiple(): array
 	{
 		return [
 			[true],
@@ -852,9 +839,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataArrayMapMultiple
-	 */
+	#[DataProvider('dataArrayMapMultiple')]
 	public function testArrayMapMultiple(bool $checkExplicitMixed): void
 	{
 		$this->checkExplicitMixed = $checkExplicitMixed;
@@ -866,7 +851,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataArrayFilterCallback(): array
+	public static function dataArrayFilterCallback(): array
 	{
 		return [
 			[true],
@@ -874,9 +859,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataArrayFilterCallback
-	 */
+	#[DataProvider('dataArrayFilterCallback')]
 	public function testArrayFilterCallback(bool $checkExplicitMixed): void
 	{
 		$this->checkExplicitMixed = $checkExplicitMixed;
@@ -896,12 +879,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_callback.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testArrayAllCallback(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test skipped on lower version than 8.4 (needs array_all function)');
-		}
-
 		$this->analyse([__DIR__ . '/data/array_all.php'], [
 			[
 				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
@@ -926,12 +906,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testArrayAnyCallback(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test skipped on lower version than 8.4 (needs array_any function)');
-		}
-
 		$this->analyse([__DIR__ . '/data/array_any.php'], [
 			[
 				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(string, int): bool given.',
@@ -1236,12 +1213,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7211(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-7211.php'], []);
 	}
@@ -1272,11 +1246,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7676.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7138(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
 		$this->analyse([__DIR__ . '/data/bug-7138.php'], []);
 	}
 
@@ -1479,12 +1451,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/filter-input-type.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9283(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9283.php'], []);
 	}
 
@@ -1529,12 +1498,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testJsonValidate(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3');
-		}
-
 		$this->analyse([__DIR__ . '/data/json_validate.php'], [
 			[
 				'Parameter #2 $depth of function json_validate expects int<1, max>, 0 given.',
@@ -1557,21 +1523,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2508.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6175(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6175.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9699(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9699.php'], [
 			[
 				'Parameter #1 $f of function Bug9699\int_int_int_string expects Closure(int, int, int, string): int, Closure(int, int, int ...): int given.',
@@ -1595,12 +1555,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9803.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9018(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9018.php'], [
 			[
 				'Unknown parameter $str1 in call to function levenshtein.',
@@ -1621,48 +1578,33 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9399(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9399.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9559(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9559.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9923(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9923.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9823(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9823.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedParametersForMultiVariantFunctions(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
 	}
 
@@ -1703,21 +1645,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9793.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testCallToArrayFilterWithNullCallback(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/array_filter_null_callback.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10171(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10171.php'], [
 			[
 				'Unknown parameter $samesite in call to function setcookie.',
@@ -1753,12 +1689,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9580.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7283(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7283.php'], []);
 	}
 
@@ -1824,21 +1757,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10297(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10297.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10974(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10974.php'], []);
 	}
 
@@ -2029,12 +1956,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7707.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNoNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/no-named-arguments.php'], [
 			[
 				'Function NoNamedArgumentsFunction\\foo invoked with named argument $i, but it\'s not allowed because of @no-named-arguments.',
@@ -2090,12 +2014,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9224(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9224.php'], []);
 	}
 
@@ -2122,39 +2043,27 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12051.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8046(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8046.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11942(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11942.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11418(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11418.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9167(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9167.php'], []);
 	}
 
@@ -2211,12 +2120,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7522.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12847(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 
@@ -2246,6 +2152,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12954.php'], []);
+	}
+
+	public function testBug13065(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				'Parameter #1 $varname of function getenv expects string, null given.',
+				10,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-13065.php'], $errors);
 	}
 
 }

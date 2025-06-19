@@ -3,15 +3,14 @@
 namespace PHPStan\Type;
 
 use PHPStan\Fixture\TestDecimal;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 {
 
-	/**
-	 * @dataProvider dataSigilAndSidesProvider
-	 */
+	#[DataProvider('dataSigilAndSidesProvider')]
 	public function testSupportsMatchingSigilsAndSides(string $sigil, Type $leftType, Type $rightType): void
 	{
 		$extension = new TestDecimalOperatorTypeSpecifyingExtension();
@@ -21,7 +20,7 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 		self::assertTrue($result);
 	}
 
-	public function dataSigilAndSidesProvider(): iterable
+	public static function dataSigilAndSidesProvider(): iterable
 	{
 		yield '+' => [
 			'+',
@@ -60,9 +59,7 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataNotMatchingSidesProvider
-	 */
+	#[DataProvider('dataNotMatchingSidesProvider')]
 	public function testNotSupportsNotMatchingSides(string $sigil, Type $leftType, Type $rightType): void
 	{
 		$extension = new TestDecimalOperatorTypeSpecifyingExtension();
@@ -72,7 +69,7 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 		self::assertFalse($result);
 	}
 
-	public function dataNotMatchingSidesProvider(): iterable
+	public static function dataNotMatchingSidesProvider(): iterable
 	{
 		yield 'left' => [
 			'+',

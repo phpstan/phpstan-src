@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<UselessFunctionReturnValueRule>
@@ -15,7 +15,7 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UselessFunctionReturnValueRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 
@@ -37,12 +37,9 @@ class UselessFunctionReturnValueRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testUselessReturnValuePhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/useless-fn-return-php8.php'], [
 			[
 				'Return value of function print_r() is always true and the result is printed instead of being returned. Pass in true as parameter #2 $return to return the output instead.',

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
@@ -13,10 +15,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\ArrayItem>
  */
+#[RegisteredRule(level: 3)]
 final class InvalidKeyInArrayItemRule implements Rule
 {
 
-	public function __construct(private bool $reportMaybes)
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $reportMaybes,
+	)
 	{
 	}
 

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -22,6 +23,7 @@ use function array_key_exists;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

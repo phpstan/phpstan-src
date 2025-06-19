@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Stmt\Function_>
  */
+#[RegisteredRule(level: 0)]
 final class InnerFunctionRule implements Rule
 {
 

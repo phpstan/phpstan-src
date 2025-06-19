@@ -197,3 +197,22 @@ parametersSchema:
 	# internal - editor mode
 	singleReflectionFile: schema(string(), nullable())
 	singleReflectionInsteadOfFile: schema(string(), nullable())
+
+expandRelativePaths:
+	- '[parameters][paths][]'
+	- '[parameters][excludePaths][]'
+	- '[parameters][excludePaths][analyse][]'
+	- '[parameters][excludePaths][analyseAndScan][]'
+	- '[parameters][ignoreErrors][][paths][]'
+	- '[parameters][ignoreErrors][][path]'
+	- '[parameters][bootstrapFiles][]'
+	- '[parameters][scanFiles][]'
+	- '[parameters][scanDirectories][]'
+	- '[parameters][tmpDir]'
+	- '[parameters][pro][tmpDir]'
+	- '[parameters][memoryLimitFile]'
+	- '[parameters][benchmarkFile]'
+	- '[parameters][stubFiles][]'
+	- '[parameters][symfony][consoleApplicationLoader]'
+	- '[parameters][symfony][containerXmlPath]'
+	- '[parameters][doctrine][objectManagerLoader]'

@@ -25,7 +25,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		?Type $default,
 	)
 	{
-		parent::__construct($bound->getClassName(), $bound->getTypes(), null, null, $bound->getVariances());
+		parent::__construct($bound->getClassName(), $bound->getTypes(), variances: $bound->getVariances());
 
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;

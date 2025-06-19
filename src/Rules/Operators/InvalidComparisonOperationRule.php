@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -23,6 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidComparisonOperationRule implements Rule
 {
 

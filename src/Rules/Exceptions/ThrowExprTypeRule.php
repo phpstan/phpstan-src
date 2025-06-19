@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Throw_>
  */
+#[RegisteredRule(level: 3)]
 final class ThrowExprTypeRule implements Rule
 {
 

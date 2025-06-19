@@ -7,7 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ClassTemplateTypeRule>
@@ -17,7 +17,7 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
 		return new ClassTemplateTypeRule(
@@ -139,11 +139,9 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/interface-template.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10049(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-10049.php'], [
 			[
 				'PHPDoc tag @template for class Bug10049\SimpleEntity cannot have existing class Bug10049\SimpleEntity as its name.',

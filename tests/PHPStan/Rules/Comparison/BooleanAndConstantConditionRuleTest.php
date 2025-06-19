@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<BooleanAndConstantConditionRule>
@@ -20,7 +21,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		return new BooleanAndConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
@@ -260,7 +261,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataTreatPhpDocTypesAsCertainRegression(): array
+	public static function dataTreatPhpDocTypesAsCertainRegression(): array
 	{
 		return [
 			[
@@ -272,9 +273,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
-	 */
+	#[DataProvider('dataTreatPhpDocTypesAsCertainRegression')]
 	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
@@ -344,7 +343,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5743.php'], []);
 	}
 
-	public function dataBug4969(): iterable
+	public static function dataBug4969(): iterable
 	{
 		yield [false, []];
 		yield [true, [
@@ -357,16 +356,16 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataBug4969
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataBug4969')]
 	public function testBug4969(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/bug-4969.php'], $expectedErrors);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -416,9 +415,9 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

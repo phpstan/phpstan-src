@@ -224,8 +224,7 @@ final class IgnoredErrorHelperResult
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 						),
 						$unmatchedIgnoredError['realPath'],
-						null,
-						false,
+						canBeIgnored: false,
 					))->withIdentifier('ignore.unmatched');
 				} elseif (!$onlyFiles) {
 					$stringErrors[] = sprintf(

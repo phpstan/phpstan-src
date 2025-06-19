@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 0)]
 final class NonClassAttributeClassRule implements Rule
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
@@ -16,6 +17,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 0)]
 final class MissingMagicSerializationMethodsRule implements Rule
 {
 

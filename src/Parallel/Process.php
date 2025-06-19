@@ -61,7 +61,7 @@ final class Process
 		}
 		$this->stdOut = $tmpStdOut;
 		$this->stdErr = $tmpStdErr;
-		$this->process = new \React\ChildProcess\Process($this->command, null, null, [
+		$this->process = new \React\ChildProcess\Process($this->command, fds: [
 			1 => $this->stdOut,
 			2 => $this->stdErr,
 		]);

@@ -6,6 +6,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -32,6 +33,7 @@ use function is_numeric;
 use function preg_split;
 use function strtolower;
 
+#[AutowiredService]
 final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

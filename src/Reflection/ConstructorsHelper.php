@@ -2,11 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use ReflectionException;
 use function array_key_exists;
 use function explode;
 
+#[AutowiredService]
 final class ConstructorsHelper
 {
 
@@ -18,6 +21,7 @@ final class ConstructorsHelper
 	 */
 	public function __construct(
 		private Container $container,
+		#[AutowiredParameter]
 		private array $additionalConstructors,
 	)
 	{

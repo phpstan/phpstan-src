@@ -12,7 +12,7 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<PropertyHookAttributesRule>
@@ -22,7 +22,7 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new PropertyHookAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -47,12 +47,9 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-hook-attributes.php'], [
 			[
 				'Attribute class PropertyHookAttributes\Foo does not have the method target.',

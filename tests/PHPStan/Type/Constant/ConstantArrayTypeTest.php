@@ -25,13 +25,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function sprintf;
 
 class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ConstantArrayType([], []),
@@ -190,7 +191,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new IntegerType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('sorton'),
 				new ConstantStringType('limit'),
@@ -226,7 +227,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new IntegerType(),
-			], [0], [1]),
+			], optionalKeys: [1]),
 			new ConstantArrayType([
 				new ConstantStringType('sorton'),
 				new ConstantStringType('limit'),
@@ -242,7 +243,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				new ConstantStringType('limit'),
 			], [
 				new IntegerType(),
-			], [0], [0]),
+			], optionalKeys: [0]),
 			new ConstantArrayType([
 				new ConstantStringType('limit'),
 			], [
@@ -272,7 +273,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new StringType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('sorton'),
 				new ConstantStringType('limit'),
@@ -290,7 +291,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new StringType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('color'),
 			], [
@@ -306,7 +307,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new StringType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('sound'),
 			], [
@@ -322,14 +323,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new StringType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('foo'),
 				new ConstantStringType('bar'),
 			], [
 				new ConstantStringType('s'),
 				new ConstantStringType('m'),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			TrinaryLogic::createYes(),
 		];
 
@@ -340,7 +341,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new StringType(),
 				new IntegerType(),
-			], [0], [0, 1]),
+			], optionalKeys: [0, 1]),
 			new ConstantArrayType([
 				new ConstantStringType('sorton'),
 				new ConstantStringType('limit'),
@@ -409,9 +410,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
@@ -422,7 +421,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new ConstantArrayType([], []),
@@ -693,9 +692,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(ConstantArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -706,7 +703,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -811,9 +808,9 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataInferTemplateTypes
 	 * @param array<string,string> $expectedTypes
 	 */
+	#[DataProvider('dataInferTemplateTypes')]
 	public function testResolveTemplateTypes(Type $received, Type $template, array $expectedTypes): void
 	{
 		$result = $template->inferTemplateTypes($received);
@@ -824,9 +821,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	/**
-	 * @dataProvider dataIsCallable
-	 */
+	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(ConstantArrayType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
@@ -837,7 +832,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): iterable
+	public static function dataIsCallable(): iterable
 	{
 		yield 'zero items' => [
 			new ConstantArrayType([], []),
@@ -909,7 +904,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataValuesArray(): iterable
+	public static function dataValuesArray(): iterable
 	{
 		yield 'empty' => [
 			new ConstantArrayType([], []),
@@ -923,14 +918,14 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], [
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-			], [20], [], TrinaryLogic::createNo()),
+			], [20], isList: TrinaryLogic::createNo()),
 			new ConstantArrayType([
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-			], [2], [], TrinaryLogic::createYes()),
+			], [2], isList: TrinaryLogic::createYes()),
 		];
 
 		yield 'optional-1' => [
@@ -1034,9 +1029,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataValuesArray
-	 */
+	#[DataProvider('dataValuesArray')]
 	public function testValuesArray(ConstantArrayType $type, ConstantArrayType $expectedType): void
 	{
 		$actualType = $type->getValuesArray();

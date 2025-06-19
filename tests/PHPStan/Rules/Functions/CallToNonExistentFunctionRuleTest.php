@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CallToNonExistentFunctionRule>
@@ -14,7 +14,7 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToNonExistentFunctionRule($this->createReflectionProvider(), true, true);
+		return new CallToNonExistentFunctionRule(self::createReflectionProvider(), true, true);
 	}
 
 	public function shouldNarrowMethodScopeFromConstructor(): bool
@@ -100,12 +100,9 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testCallToRemovedFunctionsOnPhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/removed-functions-from-php8.php'], [
 			[
 				'Function convert_cyr_string not found.',
@@ -155,12 +152,9 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testCreateFunctionPhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/create_function.php'], [
 			[
 				'Function create_function not found.',
@@ -170,12 +164,9 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.0')]
 	public function testCreateFunctionPhp7(): void
 	{
-		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Test requires PHP 7.x.');
-		}
-
 		$this->analyse([__DIR__ . '/data/create_function.php'], []);
 	}
 
@@ -220,21 +211,15 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7952.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug8058(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2');
-		}
-
 		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], []);
 	}
 
+	#[RequiresPhp('< 8.2')]
 	public function testBug8058b(): void
 	{
-		if (PHP_VERSION_ID >= 80200) {
-			$this->markTestSkipped('Test requires PHP before 8.2');
-		}
-
 		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], [
 			[
 				'Function mysqli_execute_query not found.',

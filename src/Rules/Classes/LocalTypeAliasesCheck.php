@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -29,6 +31,7 @@ use function array_merge;
 use function in_array;
 use function sprintf;
 
+#[AutowiredService]
 final class LocalTypeAliasesCheck
 {
 
@@ -36,6 +39,7 @@ final class LocalTypeAliasesCheck
 	 * @param array<string, string> $globalTypeAliases
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '%typeAliases%')]
 		private array $globalTypeAliases,
 		private ReflectionProvider $reflectionProvider,
 		private TypeNodeResolver $typeNodeResolver,
@@ -43,8 +47,11 @@ final class LocalTypeAliasesCheck
 		private ClassNameCheck $classCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

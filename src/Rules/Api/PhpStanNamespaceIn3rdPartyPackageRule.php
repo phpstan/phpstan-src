@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node\Stmt\Namespace_>
  */
+#[RegisteredRule(level: 0)]
 final class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 {
 

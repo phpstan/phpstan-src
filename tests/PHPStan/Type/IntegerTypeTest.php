@@ -7,12 +7,13 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class IntegerTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -48,9 +49,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
@@ -61,7 +60,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new IntegerType(),
@@ -94,9 +93,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -107,7 +104,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[
@@ -153,9 +150,7 @@ class IntegerTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataEquals
-	 */
+	#[DataProvider('dataEquals')]
 	public function testEquals(IntegerType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);

@@ -6,8 +6,8 @@ use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function in_array;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingReadOnlyByPhpDocPropertyAssignRule>
@@ -143,12 +143,9 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign-phpdoc-and-native.php'], []);
 	}
 

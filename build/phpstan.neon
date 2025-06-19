@@ -26,6 +26,7 @@ parameters:
 	excludePaths:
 		- ../tests/*/data/*
 		- ../tests/tmp/*
+		- ../tests/vendor/*
 		- ../tests/PHPStan/Analyser/nsrt/*
 		- ../tests/PHPStan/Analyser/traits/*
 		- ../tests/notAutoloaded/*
@@ -58,6 +59,7 @@ parameters:
 			- 'PHPStan\Broker\ClassNotFoundException'
 			- 'PHPStan\Broker\FunctionNotFoundException'
 			- 'PHPStan\Broker\ConstantNotFoundException'
+			- 'PHPStan\DependencyInjection\MissingServiceException'
 			- 'PHPStan\Reflection\MissingMethodFromReflectionException'
 			- 'PHPStan\Reflection\MissingPropertyFromReflectionException'
 			- 'PHPStan\Reflection\MissingConstantFromReflectionException'
@@ -117,6 +119,10 @@ parameters:
 
 rules:
 	- PHPStan\Build\FinalClassRule
+	- PHPStan\Build\AttributeNamedArgumentsRule
+	- PHPStan\Build\NamedArgumentsRule
+	- PHPStan\Build\OverrideAttributeThirdPartyMethodRule
+	- PHPStan\Build\SkipTestsWithRequiresPhpAttributeRule
 
 services:
 	-

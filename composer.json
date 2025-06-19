@@ -5,7 +5,7 @@
 		"MIT"
 	],
 	"require": {
-		"php": "^8.1",
+		"php": "^8.2",
 		"composer-runtime-api": "^2.0",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
@@ -15,7 +15,7 @@
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/file": "1.17.07.11",
-		"jetbrains/phpstorm-stubs": "dev-master#56e49161f6f411647350b769efe7c640bd9010d1",
+		"jetbrains/phpstorm-stubs": "dev-master#00e47dbd1b21b00b9aecb90009d4011e0e09f003",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.4",
 		"nette/neon": "3.3.4",
@@ -25,7 +25,9 @@
 		"nikic/php-parser": "^5.4.0",
 		"ondram/ci-detector": "^3.4.0",
 		"ondrejmirtes/better-reflection": "6.57.0.0",
-		"phpstan/php-8-stubs": "0.4.12",
+		"ondrejmirtes/composer-attribute-collector": "^1.1.1",
+		"ondrejmirtes/php-merge": "^4.1",
+		"phpstan/php-8-stubs": "0.4.14",
 		"phpstan/phpdoc-parser": "2.1.0",
 		"psr/http-message": "^1.1",
 		"react/async": "^3",
@@ -36,6 +38,7 @@
 		"react/promise": "^3.2",
 		"react/socket": "^1.3",
 		"react/stream": "^1.1",
+		"sebastian/diff": "^6.0.2",
 		"symfony/console": "^5.4.3",
 		"symfony/finder": "^5.4.3",
 		"symfony/polyfill-intl-grapheme": "^1.23",
@@ -52,30 +55,35 @@
 		"symfony/polyfill-php73": "*"
 	},
 	"require-dev": {
-		"brianium/paratest": "^6.5",
 		"cweagans/composer-patches": "^1.7.3",
-		"ondrejmirtes/simple-downgrader": "^2.0",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^2.0.2",
 		"phpstan/phpstan-nette": "^2.0",
-		"phpstan/phpstan-phpunit": "^2.0",
+		"phpstan/phpstan-phpunit": "^2.0.7",
 		"phpstan/phpstan-strict-rules": "^2.0",
-		"phpunit/phpunit": "^9.6",
+		"phpunit/phpunit": "^11.5.23",
 		"shipmonk/composer-dependency-analyser": "^1.5",
 		"shipmonk/dead-code-detector": "^0.12.0",
 		"shipmonk/name-collision-detector": "^2.0"
 	},
 	"config": {
 		"platform": {
-			"php": "8.1.99"
+			"php": "8.2.99"
 		},
 		"platform-check": false,
 		"sort-packages": true,
 		"allow-plugins": {
-			"cweagans/composer-patches": true
+			"cweagans/composer-patches": true,
+			"ondrejmirtes/composer-attribute-collector": true,
+			"vaimo/composer-patches": true
 		}
 	},
 	"extra": {
+		"composer-attribute-collector": {
+			"include": [
+				"src"
+			]
+		},
 		"composer-exit-on-patch-failure": true,
 		"patches": {
 			"composer/ca-bundle": [

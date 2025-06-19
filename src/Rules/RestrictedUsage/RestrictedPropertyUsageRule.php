@@ -5,6 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -13,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
  */
+#[AutowiredService]
 final class RestrictedPropertyUsageRule implements Rule
 {
 

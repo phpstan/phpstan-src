@@ -5,11 +5,13 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
  */
+#[RegisteredRule(level: 0)]
 final class AccessPropertiesRule implements Rule
 {
 

@@ -7,6 +7,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -19,6 +20,7 @@ use function sprintf;
 /**
  * @implements Rule<Expr>
  */
+#[RegisteredRule(level: 3)]
 final class OffsetAccessValueAssignmentRule implements Rule
 {
 

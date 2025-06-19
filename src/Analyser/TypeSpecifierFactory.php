@@ -3,12 +3,14 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 
+#[AutowiredService(name: 'typeSpecifierFactory')]
 final class TypeSpecifierFactory
 {
 

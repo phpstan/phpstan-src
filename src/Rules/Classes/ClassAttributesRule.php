@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 0)]
 final class ClassAttributesRule implements Rule
 {
 

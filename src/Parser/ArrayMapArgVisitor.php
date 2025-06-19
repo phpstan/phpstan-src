@@ -2,16 +2,20 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_slice;
 use function count;
 
+#[AutowiredService]
 final class ArrayMapArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'arrayMapArgs';
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {

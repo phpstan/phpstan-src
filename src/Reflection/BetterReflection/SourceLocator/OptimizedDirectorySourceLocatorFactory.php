@@ -3,6 +3,8 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\Cache\Cache;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileFinder;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
@@ -17,6 +19,7 @@ use function sha1_file;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class OptimizedDirectorySourceLocatorFactory
 {
 
@@ -26,6 +29,7 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
+		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $fileFinder,
 		private PhpVersion $phpVersion,
 		private Cache $cache,

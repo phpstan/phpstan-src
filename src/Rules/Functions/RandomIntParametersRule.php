@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -19,12 +21,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 5)]
 final class RandomIntParametersRule implements Rule
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
 	{

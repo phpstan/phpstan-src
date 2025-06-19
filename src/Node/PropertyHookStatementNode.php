@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\PropertyHook;
 use PhpParser\Node\Stmt;
 
@@ -33,11 +34,13 @@ final class PropertyHookStatementNode extends Stmt implements VirtualNode
 		return null;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_PropertyHookStatementNode';
 	}
 
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

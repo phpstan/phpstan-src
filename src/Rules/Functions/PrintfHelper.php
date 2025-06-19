@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use Nette\Utils\Strings;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use function array_filter;
 use function count;
@@ -11,6 +12,7 @@ use function sprintf;
 use function strlen;
 use const PREG_SET_ORDER;
 
+#[AutowiredService]
 final class PrintfHelper
 {
 

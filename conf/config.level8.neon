@@ -3,3 +3,7 @@ includes:
 
 parameters:
 	checkNullables: true
+
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 8

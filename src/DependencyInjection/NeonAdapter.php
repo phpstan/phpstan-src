@@ -9,6 +9,7 @@ use Nette\DI\InvalidConfigurationException;
 use Nette\Neon\Entity;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
+use Override;
 use PHPStan\DependencyInjection\Neon\OptionalPath;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -29,7 +30,7 @@ use function substr;
 final class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v30-no-underscore';
+	public const CACHE_KEY = 'v31-expand-relative-paths';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -37,8 +38,16 @@ final class NeonAdapter implements Adapter
 	private array $fileHelpers = [];
 
 	/**
+	 * @param list<string> $expandRelativePaths
+	 */
+	public function __construct(private array $expandRelativePaths)
+	{
+	}
+
+	/**
 	 * @return mixed[]
 	 */
+	#[Override]
 	public function load(string $file): array
 	{
 		$contents = FileReader::read($file);
@@ -117,25 +126,7 @@ final class NeonAdapter implements Adapter
 				}
 			}
 
-			if (in_array($keyToResolve, [
-				'[parameters][paths][]',
-				'[parameters][excludePaths][]',
-				'[parameters][excludePaths][analyse][]',
-				'[parameters][excludePaths][analyseAndScan][]',
-				'[parameters][ignoreErrors][][paths][]',
-				'[parameters][ignoreErrors][][path]',
-				'[parameters][bootstrapFiles][]',
-				'[parameters][scanFiles][]',
-				'[parameters][scanDirectories][]',
-				'[parameters][tmpDir]',
-				'[parameters][pro][tmpDir]',
-				'[parameters][memoryLimitFile]',
-				'[parameters][benchmarkFile]',
-				'[parameters][stubFiles][]',
-				'[parameters][symfony][consoleApplicationLoader]',
-				'[parameters][symfony][containerXmlPath]',
-				'[parameters][doctrine][objectManagerLoader]',
-			], true) && is_string($val) && !str_contains($val, '%') && !str_starts_with($val, '*')) {
+			if (in_array($keyToResolve, $this->expandRelativePaths, true) && is_string($val) && !str_contains($val, '%') && !str_starts_with($val, '*')) {
 				$fileHelper = $this->createFileHelperByFile($file);
 				$val = $fileHelper->normalizePath($fileHelper->absolutizePath($val));
 			}

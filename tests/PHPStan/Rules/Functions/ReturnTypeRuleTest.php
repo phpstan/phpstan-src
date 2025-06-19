@@ -6,7 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ReturnTypeRule>
@@ -20,7 +20,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), $this->checkNullables, false, true, $this->checkExplicitMixed, false, false, true)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), $this->checkNullables, false, true, $this->checkExplicitMixed, false, false, true)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -225,23 +225,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8846(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/bug-8846.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10077(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/bug-10077.php'], [
@@ -259,12 +253,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8683.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7984(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/bug-7984.php'], []);

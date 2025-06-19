@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<BooleanNotConstantConditionRule>
@@ -20,7 +21,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		return new BooleanNotConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
@@ -101,7 +102,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataTreatPhpDocTypesAsCertainRegression(): array
+	public static function dataTreatPhpDocTypesAsCertainRegression(): array
 	{
 		return [
 			[
@@ -113,9 +114,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
-	 */
+	#[DataProvider('dataTreatPhpDocTypesAsCertainRegression')]
 	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
@@ -152,7 +151,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7937.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -190,9 +189,9 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

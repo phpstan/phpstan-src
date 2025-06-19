@@ -10,12 +10,13 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class StatementResultTest extends PHPStanTestCase
 {
 
-	public function dataIsAlwaysTerminating(): array
+	public static function dataIsAlwaysTerminating(): array
 	{
 		return [
 			[
@@ -509,9 +510,7 @@ class StatementResultTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsAlwaysTerminating
-	 */
+	#[DataProvider('dataIsAlwaysTerminating')]
 	public function testIsAlwaysTerminating(
 		string $code,
 		bool $expectedIsAlwaysTerminating,
@@ -533,7 +532,7 @@ class StatementResultTest extends PHPStanTestCase
 			->assignVariable('cond', new MixedType(), new MixedType(), TrinaryLogic::createYes())
 			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
 		$result = $nodeScopeResolver->processStmtNodes(
-			new Stmt\Namespace_(null, $stmts),
+			new Stmt\Namespace_(stmts: $stmts),
 			$stmts,
 			$scope,
 			static function (): void {

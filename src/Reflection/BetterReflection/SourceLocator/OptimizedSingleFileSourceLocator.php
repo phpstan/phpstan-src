@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Override;
 use PhpParser\Node\Stmt\Const_;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
@@ -12,12 +13,14 @@ use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_keys;
 use function strtolower;
 
+#[GenerateFactory(interface: OptimizedSingleFileSourceLocatorFactory::class)]
 final class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 
@@ -31,6 +34,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 	{
 	}
 
+	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($this->presentSymbols !== null) {
@@ -167,6 +171,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		throw new ShouldNotHappenException();
 	}
 
+	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
 		$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($this->fileName);

@@ -1,0 +1,85 @@
+services:
+	php8Parser:
+		class: PHPStan\Parser\SimpleParser
+		arguments:
+			parser: @php8PhpParser
+		autowired: false
+
+	php8Lexer:
+		class: PhpParser\Lexer\Emulative
+		factory: @PHPStan\Parser\LexerFactory::createEmulative()
+		autowired: false
+
+	php8PhpParser:
+		class: PhpParser\Parser\Php8
+		arguments:
+			lexer: @php8Lexer
+		autowired: false
+
+	currentPhpVersionLexer:
+		class: PhpParser\Lexer
+		factory: @PHPStan\Parser\LexerFactory::create()
+		autowired: false
+
+	currentPhpVersionPhpParser:
+		factory: @currentPhpVersionPhpParserFactory::create()
+		autowired: false
+
+	currentPhpVersionPhpParserFactory:
+		class: PHPStan\Parser\PhpParserFactory
+		arguments:
+			lexer: @currentPhpVersionLexer
+		autowired: false
+
+	currentPhpVersionSimpleDirectParser:
+		class: PHPStan\Parser\SimpleParser
+		arguments:
+			parser: @currentPhpVersionPhpParser
+		autowired: no
+
+	currentPhpVersionSimpleParser:
+		class: PHPStan\Parser\CleaningParser
+		arguments:
+			wrappedParser: @currentPhpVersionSimpleDirectParser
+		autowired: no
+
+	currentPhpVersionRichParser:
+		class: PHPStan\Parser\RichParser
+		arguments:
+			parser: @currentPhpVersionPhpParser
+		autowired: no
+
+	pathRoutingParser:
+		class: PHPStan\Parser\PathRoutingParser
+		arguments:
+			currentPhpVersionRichParser: @currentPhpVersionRichParser
+			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
+			php8Parser: @php8Parser
+			singleReflectionFile: %singleReflectionFile%
+		autowired: false
+
+	phpParserDecorator:
+		class: PHPStan\Parser\PhpParserDecorator
+		arguments:
+			wrappedParser: @defaultAnalysisParser
+		autowired: false
+
+	defaultAnalysisParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @pathRoutingParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+		autowired: false
+
+	freshStubParser:
+		class: PHPStan\Parser\StubParser
+		arguments:
+			parser: @php8PhpParser
+		autowired: false
+
+	stubParser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @freshStubParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+		autowired: false

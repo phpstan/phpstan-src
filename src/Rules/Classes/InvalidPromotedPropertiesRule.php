@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\FunctionLike>
  */
+#[RegisteredRule(level: 0)]
 final class InvalidPromotedPropertiesRule implements Rule
 {
 

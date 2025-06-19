@@ -64,9 +64,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.4"
-          - "8.0"
-          - "8.1"
           - "8.2"
           - "8.3"
           - "8.4"
@@ -99,11 +96,6 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3' && matrix.php-version != '8.4'
-        shell: bash
-        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
-
       - name: "Dump previous reflection data"
         run: "php tests/generate-reflection-test.php"
 
@@ -117,11 +109,6 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
-
-      - name: "Transform source code"
-        if: matrix.php-version != '8.1' && matrix.php-version != '8.2' && matrix.php-version != '8.3' && matrix.php-version != '8.4'
-        shell: bash
-        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Reflection golden test"
         run: "make tests-golden-reflection || true"

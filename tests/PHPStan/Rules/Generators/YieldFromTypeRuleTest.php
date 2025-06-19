@@ -14,7 +14,7 @@ class YieldFromTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new YieldFromTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true), true);
+		return new YieldFromTypeRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true), true);
 	}
 
 	public function testRule(): void

@@ -117,7 +117,7 @@ final class TemplateTypeFactory
 
 	public static function fromTemplateTag(TemplateTypeScope $scope, TemplateTag $tag): TemplateType
 	{
-		return self::create($scope, $tag->getName(), $tag->getBound(), $tag->getVariance(), null, $tag->getDefault());
+		return self::create($scope, $tag->getName(), $tag->getBound(), $tag->getVariance(), default: $tag->getDefault());
 	}
 
 }

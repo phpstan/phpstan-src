@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -21,6 +22,7 @@ use function gettype;
 use function min;
 use function strtotime;
 
+#[AutowiredService]
 final class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

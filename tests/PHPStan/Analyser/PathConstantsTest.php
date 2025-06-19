@@ -3,24 +3,25 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const DIRECTORY_SEPARATOR;
 
 class PathConstantsTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		if (DIRECTORY_SEPARATOR === '\\') {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/pathConstants-win.php');
+			yield from self::gatherAssertTypes(__DIR__ . '/data/pathConstants-win.php');
 		} else {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/pathConstants.php');
+			yield from self::gatherAssertTypes(__DIR__ . '/data/pathConstants.php');
 		}
 	}
 
 	/**
-	 * @dataProvider dataFileAsserts
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,

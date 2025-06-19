@@ -23,6 +23,7 @@ final class ResultCache
 	 * @param array<string, LinesToIgnore> $unmatchedLineIgnores
 	 * @param CollectorData $collectedData
 	 * @param array<string, array<string>> $dependencies
+	 * @param array<string, array<string>> $usedTraitDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
@@ -38,6 +39,7 @@ final class ResultCache
 		private array $unmatchedLineIgnores,
 		private array $collectedData,
 		private array $dependencies,
+		private array $usedTraitDependencies,
 		private array $exportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
@@ -117,6 +119,14 @@ final class ResultCache
 	public function getDependencies(): array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return array<string, array<string>>
+	 */
+	public function getUsedTraitDependencies(): array
+	{
+		return $this->usedTraitDependencies;
 	}
 
 	/**

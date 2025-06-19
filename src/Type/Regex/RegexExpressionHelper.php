@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
@@ -15,6 +16,7 @@ use function ltrim;
 use function strrpos;
 use function substr;
 
+#[AutowiredService]
 final class RegexExpressionHelper
 {
 

@@ -2,16 +2,20 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use function count;
 
+#[AutowiredService]
 final class ClosureBindArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'closureBindArg';
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if (

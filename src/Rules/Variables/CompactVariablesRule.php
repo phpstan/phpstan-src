@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -16,10 +18,14 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 0)]
 final class CompactVariablesRule implements Rule
 {
 
-	public function __construct(private bool $checkMaybeUndefinedVariables)
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $checkMaybeUndefinedVariables,
+	)
 	{
 	}
 

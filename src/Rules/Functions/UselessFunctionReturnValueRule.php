@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 4)]
 final class UselessFunctionReturnValueRule implements Rule
 {
 

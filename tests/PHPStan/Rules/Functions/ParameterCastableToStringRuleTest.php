@@ -6,6 +6,7 @@ use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function str_replace;
 use const PHP_VERSION_ID;
@@ -18,7 +19,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new ParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
 	}
 
@@ -68,12 +69,9 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $keys of function array_combine expects an array of values castable to string, array<int, array<int, string>> given.',
@@ -86,12 +84,9 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/param-castable-to-string-functions-enum.php'], [
 			[
 				'Parameter #1 $array of function array_intersect expects an array of values castable to string, array<int, ParamCastableToStringFunctionsEnum\\FooEnum::A> given.',
@@ -160,12 +155,9 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11111(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11111.php'], [
 			[
 				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<Bug11111\\Language> given.',
@@ -178,12 +170,9 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11141(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11141.php'], [
 			[
 				'Parameter #1 $array of function array_diff expects an array of values castable to string, array<int, Bug11141\\Language::DAN|Bug11141\\Language::ENG|Bug11141\\Language::GER> given.',

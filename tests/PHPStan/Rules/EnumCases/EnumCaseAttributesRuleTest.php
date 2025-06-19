@@ -13,7 +13,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<EnumCaseAttributesRule>
@@ -23,7 +23,7 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new EnumCaseAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -48,12 +48,9 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-case-attributes.php'], [
 			[
 				'Attribute class EnumCaseAttributes\AttributeWithPropertyTarget does not have the class constant target.',

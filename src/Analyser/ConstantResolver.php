@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\NamespaceAnswerer;
@@ -31,8 +32,11 @@ use const INF;
 use const NAN;
 use const PHP_INT_SIZE;
 
+#[AutowiredService(factory: '@PHPStan\Analyser\ConstantResolverFactory::create')]
 final class ConstantResolver
 {
+
+	public const PHP_MIN_ANALYZABLE_VERSION_ID = 50207;
 
 	/** @var array<string, true> */
 	private array $currentlyResolving = [];
@@ -141,7 +145,7 @@ final class ConstantResolver
 			return $this->createInteger($minRelease, $maxRelease);
 		}
 		if ($resolvedConstantName === 'PHP_VERSION_ID') {
-			$minVersion = 50207;
+			$minVersion = self::PHP_MIN_ANALYZABLE_VERSION_ID;
 			$maxVersion = null;
 			if ($minPhpVersion !== null) {
 				$minVersion = max($minVersion, $minPhpVersion->getVersionId());

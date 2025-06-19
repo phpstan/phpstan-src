@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -21,6 +22,7 @@ use function substr;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidBinaryOperationRule implements Rule
 {
 

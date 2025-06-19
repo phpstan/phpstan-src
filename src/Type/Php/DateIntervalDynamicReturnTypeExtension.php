@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -14,6 +15,7 @@ use Throwable;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class DateIntervalDynamicReturnTypeExtension
 implements DynamicStaticMethodReturnTypeExtension
 {

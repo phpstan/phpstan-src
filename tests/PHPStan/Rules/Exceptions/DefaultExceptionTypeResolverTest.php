@@ -8,11 +8,12 @@ use LogicException;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 {
 
-	public function dataIsCheckedException(): array
+	public static function dataIsCheckedException(): array
 	{
 		return [
 			[
@@ -127,12 +128,12 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataIsCheckedException
 	 * @param string[] $uncheckedExceptionRegexes
 	 * @param string[] $uncheckedExceptionClasses
 	 * @param string[] $checkedExceptionRegexes
 	 * @param string[] $checkedExceptionClasses
 	 */
+	#[DataProvider('dataIsCheckedException')]
 	public function testIsCheckedException(
 		array $uncheckedExceptionRegexes,
 		array $uncheckedExceptionClasses,
@@ -142,7 +143,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 		bool $expectedResult,
 	): void
 	{
-		$resolver = new DefaultExceptionTypeResolver($this->createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
+		$resolver = new DefaultExceptionTypeResolver(self::createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);
 		$this->assertSame($expectedResult, $resolver->isCheckedException($className, self::getContainer()->getByType(ScopeFactory::class)->create(ScopeContext::create(__DIR__))));
 	}
 

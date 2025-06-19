@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
@@ -14,6 +16,7 @@ use function array_key_exists;
 use function array_map;
 use function is_string;
 
+#[AutowiredService(name: 'stubPhpDocProvider')]
 final class StubPhpDocProvider
 {
 
@@ -58,7 +61,9 @@ final class StubPhpDocProvider
 	private array $knownFunctionParameterNames = [];
 
 	public function __construct(
+		#[AutowiredParameter(ref: '@stubParser')]
 		private Parser $parser,
+		#[AutowiredParameter(ref: '@stubFileTypeMapper')]
 		private FileTypeMapper $fileTypeMapper,
 		private StubFilesProvider $stubFilesProvider,
 	)

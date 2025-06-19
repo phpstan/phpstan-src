@@ -4,6 +4,7 @@ namespace PHPStan\Rules\DeadCode;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<UnreachableStatementRule>
@@ -69,7 +70,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataBugWithoutGitHubIssue1(): array
+	public static function dataBugWithoutGitHubIssue1(): array
 	{
 		return [
 			[
@@ -81,9 +82,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataBugWithoutGitHubIssue1
-	 */
+	#[DataProvider('dataBugWithoutGitHubIssue1')]
 	public function testBugWithoutGitHubIssue1(bool $treatPhpDocTypesAsCertain): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -24,6 +25,7 @@ final class VarTagChangedExpressionTypeNode extends NodeAbstract implements Virt
 		return $this->expr;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_VarTagChangedExpressionType';
@@ -32,6 +34,7 @@ final class VarTagChangedExpressionTypeNode extends NodeAbstract implements Virt
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<GetNonVirtualPropertyHookReadRule>
@@ -17,12 +17,9 @@ class GetNonVirtualPropertyHookReadRuleTest extends RuleTestCase
 		return new GetNonVirtualPropertyHookReadRule();
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/get-non-virtual-property-hook-read.php'], [
 			[
 				'Get hook for non-virtual property GetNonVirtualPropertyHookRead\Foo::$k does not read its value.',
@@ -35,12 +32,9 @@ class GetNonVirtualPropertyHookReadRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testAbstractProperty(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/get-abstract-property-hook-read.php'], []);
 	}
 

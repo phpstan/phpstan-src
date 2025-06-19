@@ -21,6 +21,7 @@ use PHPStan\DependencyInjection\DuplicateIncludedFilesException;
 use PHPStan\DependencyInjection\InvalidExcludePathsException;
 use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
+use PHPStan\DependencyInjection\MissingImplementedInterfaceInServiceWithTagException;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
@@ -257,6 +258,10 @@ final class CommandHelper
 				$containerFactory->getRootDirectory(),
 				$containerFactory->getCurrentWorkingDirectory(),
 				$generateBaselineFile,
+				[
+					'[parameters][paths][]',
+					'[parameters][tmpDir]',
+				],
 			))->createLoader();
 
 			try {
@@ -398,6 +403,12 @@ final class CommandHelper
 
 			$errorOutput->writeLineFormatted('To ignore non-existent paths in ignoreErrors,');
 			$errorOutput->writeLineFormatted('set <fg=cyan>reportUnmatchedIgnoredErrors: false</> in your configuration file.');
+			$errorOutput->writeLineFormatted('');
+
+			throw new InceptionNotSuccessfulException();
+		} catch (MissingImplementedInterfaceInServiceWithTagException $e) {
+			$errorOutput->writeLineFormatted('<error>Invalid service:</error>');
+			$errorOutput->writeLineFormatted($e->getMessage());
 			$errorOutput->writeLineFormatted('');
 
 			throw new InceptionNotSuccessfulException();

@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Expr\Match_>
  */
+#[RegisteredRule(level: 2)]
 final class UsageOfVoidMatchExpressionRule implements Rule
 {
 

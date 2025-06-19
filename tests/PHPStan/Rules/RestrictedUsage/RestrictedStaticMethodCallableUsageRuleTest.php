@@ -5,7 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedStaticMethodCallableUsageRule>
@@ -15,7 +15,7 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedStaticMethodCallableUsageRule(
 			self::getContainer(),
 			$reflectionProvider,
@@ -23,12 +23,9 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/restricted-method-callable.php'], [
 			[
 				'Cannot call doFoo',
@@ -37,12 +34,9 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12951(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1');
-		}
-
 		require_once __DIR__ . '/../InternalTag/data/bug-12951-define.php';
 		$this->analyse([__DIR__ . '/../InternalTag/data/bug-12951-static-method.php'], [
 			[

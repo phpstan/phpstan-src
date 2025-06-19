@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 6)]
 final class MissingMethodParameterTypehintRule implements Rule
 {
 

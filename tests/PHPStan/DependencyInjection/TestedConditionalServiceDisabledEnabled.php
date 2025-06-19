@@ -2,7 +2,24 @@
 
 namespace PHPStan\DependencyInjection;
 
-class TestedConditionalServiceDisabledEnabled
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
+
+/**
+ * @implements Rule<Node>
+ */
+class TestedConditionalServiceDisabledEnabled implements Rule
 {
+
+	public function getNodeType(): string
+	{
+		return Node::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		return [];
+	}
 
 }

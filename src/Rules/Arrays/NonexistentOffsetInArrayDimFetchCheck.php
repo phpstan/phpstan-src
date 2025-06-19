@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,13 +19,17 @@ use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class NonexistentOffsetInArrayDimFetchCheck
 {
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $reportMaybes,
+		#[AutowiredParameter]
 		private bool $reportPossiblyNonexistentGeneralArrayOffset,
+		#[AutowiredParameter]
 		private bool $reportPossiblyNonexistentConstantArrayOffset,
 	)
 	{

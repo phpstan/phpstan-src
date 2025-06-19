@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidUnaryOperationRule>
@@ -20,7 +20,7 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidUnaryOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
 		);
 	}
 
@@ -94,12 +94,9 @@ class InvalidUnaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testMixed(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkImplicitMixed = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/invalid-unary-mixed.php'], [

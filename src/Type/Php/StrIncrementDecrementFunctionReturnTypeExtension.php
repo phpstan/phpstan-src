@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -23,6 +24,7 @@ use function preg_match;
 use function str_split;
 use function stripos;
 
+#[AutowiredService]
 final class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

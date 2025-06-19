@@ -103,9 +103,15 @@ final class InceptionResult
 	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime): int
 	{
 		if ($this->getErrorOutput()->isVerbose()) {
+			$elapsedTime = round(microtime(true) - $analysisStartTime, 2);
+			if ($elapsedTime < 10) {
+				$elapsedTimeString = sprintf('%.2f seconds', $elapsedTime);
+			} else {
+				$elapsedTimeString = $this->formatDuration((int) $elapsedTime);
+			}
 			$this->getErrorOutput()->writeLineFormatted(sprintf(
 				'Elapsed time: %s',
-				$this->formatDuration((int) round(microtime(true) - $analysisStartTime)),
+				$elapsedTimeString,
 			));
 		}
 

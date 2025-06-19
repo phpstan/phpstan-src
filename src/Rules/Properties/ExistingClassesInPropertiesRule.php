@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
@@ -20,6 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassesInPropertiesRule implements Rule
 {
 
@@ -28,8 +31,11 @@ final class ExistingClassesInPropertiesRule implements Rule
 		private ClassNameCheck $classCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter]
 		private bool $checkThisOnly,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

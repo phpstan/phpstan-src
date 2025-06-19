@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Class_>
  */
+#[RegisteredRule(level: 0)]
 final class ApiClassExtendsRule implements Rule
 {
 

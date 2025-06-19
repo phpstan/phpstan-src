@@ -3,3 +3,7 @@ includes:
 
 parameters:
 	checkImplicitMixed: true
+
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 10

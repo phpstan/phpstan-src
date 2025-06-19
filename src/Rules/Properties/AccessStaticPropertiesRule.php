@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -34,6 +36,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
+#[RegisteredRule(level: 0)]
 final class AccessStaticPropertiesRule implements Rule
 {
 
@@ -41,6 +44,7 @@ final class AccessStaticPropertiesRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

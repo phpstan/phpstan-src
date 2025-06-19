@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Parser\TryCatchTypeVisitor;
 use PHPStan\Rules\Rule;
@@ -22,12 +24,15 @@ use function sprintf;
 /**
  * @implements Rule<MatchExpressionNode>
  */
+#[RegisteredRule(level: 4)]
 final class MatchExpressionRule implements Rule
 {
 
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
+		#[AutowiredParameter]
 		private bool $reportAlwaysTrueInLastCondition,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,15 +19,13 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		return new PropertiesInInterfaceRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
+	#[RequiresPhp('< 8.4')]
 	public function testPhp83AndPropertiesInInterface(): void
 	{
-		if (PHP_VERSION_ID >= 80400) {
-			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
-		}
+		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
-
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
 				'Interfaces can include properties only on PHP 8.4 and later.',
@@ -47,15 +46,13 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.4')]
 	public function testPhp83AndPropertyHooksInInterface(): void
 	{
-		if (PHP_VERSION_ID >= 80400) {
-			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
-		}
+		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
-
 		$this->analyse([__DIR__ . '/data/property-hooks-in-interface.php'], [
 			[
 				'Interfaces can include properties only on PHP 8.4 and later.',
@@ -68,12 +65,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndPropertiesInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/properties-in-interface.php'], [
 			[
 				'Interfaces can only include hooked properties.',
@@ -90,12 +84,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndNonPublicPropertyHooksInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-hooks-visibility-in-interface.php'], [
 			[
 				'Interfaces cannot include non-public properties.',
@@ -108,12 +99,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndPropertyHooksWithBodiesInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-hooks-bodies-in-interface.php'], [
 			[
 				'Interfaces cannot include property hooks with bodies.',
@@ -126,12 +114,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndReadonlyPropertyHooksInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/readonly-property-hooks-in-interface.php'], [
 			[
 				'Interfaces cannot include readonly hooked properties.',
@@ -148,12 +133,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndFinalPropertyHooksInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/final-property-hooks-in-interface.php'], [
 			[
 				'Interfaces cannot include final properties.',
@@ -178,12 +160,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndExplicitAbstractProperty(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-in-interface-explicit-abstract.php'], [
 			[
 				'Property in interface cannot be explicitly abstract.',
@@ -192,12 +171,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndStaticHookedPropertyInInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/static-hooked-property-in-interface.php'], [
 			[
 				'Hooked properties cannot be static.',

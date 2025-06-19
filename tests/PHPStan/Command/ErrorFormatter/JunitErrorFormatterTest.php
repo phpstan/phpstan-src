@@ -4,14 +4,17 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use DOMDocument;
 use Generator;
+use Override;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class JunitErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	private JunitErrorFormatter $formatter;
 
+	#[Override]
 	public function setUp(): void
 	{
 		parent::setUp();
@@ -22,7 +25,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<array<int, (string|int)>>
 	 */
-	public function dataFormatterOutputProvider(): Generator
+	public static function dataFormatterOutputProvider(): Generator
 	{
 		yield 'No errors' => [
 			0,
@@ -130,9 +133,8 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 
 	/**
 	 * Test generated use cases for JUnit output format.
-	 *
-	 * @dataProvider dataFormatterOutputProvider
 	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		int $exitCode,
 		int $numFileErrors,

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -25,6 +26,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[RegisteredRule(level: 0)]
 final class RuntimeReflectionInstantiationRule implements Rule
 {
 

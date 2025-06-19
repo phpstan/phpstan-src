@@ -30,6 +30,7 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_map;
 use function array_merge;
@@ -152,7 +153,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	public function dataIgnoreErrorByPathAndCount(): iterable
+	public static function dataIgnoreErrorByPathAndCount(): iterable
 	{
 		yield [
 			[
@@ -195,16 +196,16 @@ class AnalyserTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataIgnoreErrorByPathAndCount
 	 * @param mixed[] $ignoreErrors
 	 */
+	#[DataProvider('dataIgnoreErrorByPathAndCount')]
 	public function testIgnoreErrorByPathAndCount(array $ignoreErrors): void
 	{
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
 		$this->assertNoErrors($result);
 	}
 
-	public function dataTrueAndFalse(): array
+	public static function dataTrueAndFalse(): array
 	{
 		return [
 			[true],
@@ -212,9 +213,7 @@ class AnalyserTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreErrorByPathAndIdentifierCountsCorrectly(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
@@ -238,9 +237,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreErrorByPathAndCountMoreThanExpected(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
@@ -269,9 +266,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreErrorByPathAndCountLessThanExpected(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
@@ -422,7 +417,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
 	}
 
-	public function dataIgnoreErrorInTraitUsingClassFilePath(): array
+	public static function dataIgnoreErrorInTraitUsingClassFilePath(): array
 	{
 		return [
 			[
@@ -434,9 +429,7 @@ class AnalyserTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIgnoreErrorInTraitUsingClassFilePath
-	 */
+	#[DataProvider('dataIgnoreErrorInTraitUsingClassFilePath')]
 	public function testIgnoreErrorInTraitUsingClassFilePath(string $pathToIgnore): void
 	{
 		$ignoreErrors = [
@@ -487,9 +480,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame(10, $errorTwo->getLine());
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
@@ -508,9 +499,7 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathWithCountIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
 		$ignoreErrors = [
@@ -559,9 +548,7 @@ class AnalyserTest extends PHPStanTestCase
 		}
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
 		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
@@ -670,9 +657,9 @@ class AnalyserTest extends PHPStanTestCase
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRuleRegistry([]),
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
-			new RuleErrorTransformer(),
+			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				self::getContainer()->getService('typeSpecifier'),
 			),
 			new LocalIgnoresProcessor(),
@@ -700,7 +687,7 @@ class AnalyserTest extends PHPStanTestCase
 		]);
 		$collectorRegistry = new CollectorRegistry([]);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
@@ -747,9 +734,9 @@ class AnalyserTest extends PHPStanTestCase
 				self::getContainer(),
 				new IgnoreLexer(),
 			),
-			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
+			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
-			new RuleErrorTransformer(),
+			self::getContainer()->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 		);
 

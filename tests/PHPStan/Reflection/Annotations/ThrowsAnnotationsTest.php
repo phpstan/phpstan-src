@@ -6,6 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use ThrowsAnnotations\BarTrait;
 use ThrowsAnnotations\Foo;
@@ -16,7 +17,7 @@ use ThrowsAnnotations\PhpstanFoo;
 class ThrowsAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataThrowsAnnotations(): array
+	public static function dataThrowsAnnotations(): array
 	{
 		return [
 			[
@@ -68,12 +69,12 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataThrowsAnnotations
 	 * @param array<string, mixed> $throwsAnnotations
 	 */
+	#[DataProvider('dataThrowsAnnotations')]
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 
@@ -88,7 +89,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-throws.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertNull($reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
 

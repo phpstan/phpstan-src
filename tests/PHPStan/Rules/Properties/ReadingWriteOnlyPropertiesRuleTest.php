@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ReadingWriteOnlyPropertiesRule>
@@ -17,7 +17,7 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReadingWriteOnlyPropertiesRule(new PropertyDescriptor(), new PropertyReflectionFinder(), new RuleLevelHelper($this->createReflectionProvider(), true, $this->checkThisOnly, true, false, false, false, true), $this->checkThisOnly);
+		return new ReadingWriteOnlyPropertiesRule(new PropertyDescriptor(), new PropertyReflectionFinder(), new RuleLevelHelper(self::createReflectionProvider(), true, $this->checkThisOnly, true, false, false, false, true), $this->checkThisOnly);
 	}
 
 	public function testPropertyMustBeReadableInAssignOp(): void
@@ -89,12 +89,9 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/reading-write-only-hooked-properties.php'], [
 			[

@@ -15,6 +15,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -38,6 +39,7 @@ use function is_string;
 use function sprintf;
 use function substr;
 
+#[AutowiredService]
 final class ArrayFilterFunctionReturnTypeHelper
 {
 

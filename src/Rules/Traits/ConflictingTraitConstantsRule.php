@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Traits;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -20,6 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 0)]
 final class ConflictingTraitConstantsRule implements Rule
 {
 
@@ -190,7 +192,7 @@ final class ConflictingTraitConstantsRule implements Rule
 					->build();
 			}
 		} elseif ($constantNativeType === null) {
-			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, null, $this->reflectionProvider->getClass($traitDeclaringClass->getName()));
+			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, selfClass: $this->reflectionProvider->getClass($traitDeclaringClass->getName()));
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Constant %s::%s overriding constant %s::%s (%s) should also have native type %s.',
 				$classReflection->getDisplayName(),
@@ -204,7 +206,7 @@ final class ConflictingTraitConstantsRule implements Rule
 				->identifier('classConstant.missingNativeType')
 				->build();
 		} else {
-			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, null, $this->reflectionProvider->getClass($traitDeclaringClass->getName()));
+			$traitNativeTypeType = TypehintHelper::decideTypeFromReflection($traitNativeType, selfClass: $this->reflectionProvider->getClass($traitDeclaringClass->getName()));
 			$constantNativeTypeType = ParserNodeTypeToPHPStanType::resolve($constantNativeType, $classReflection);
 			if (!$traitNativeTypeType->equals($constantNativeTypeType)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

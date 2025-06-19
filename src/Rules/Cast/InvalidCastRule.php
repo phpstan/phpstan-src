@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,6 +20,7 @@ use function substr;
 /**
  * @implements Rule<Node\Expr\Cast>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidCastRule implements Rule
 {
 

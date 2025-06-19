@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 use const PHP_VERSION_ID;
 
@@ -142,12 +143,9 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12421.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testUnsetHookedProperty(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/unset-hooked-property.php'], [
 			[
 				'Cannot unset hooked UnsetHookedProperty\User::$name property.',

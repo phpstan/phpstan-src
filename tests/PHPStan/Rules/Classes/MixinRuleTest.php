@@ -10,7 +10,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MixinRule>
@@ -20,7 +20,7 @@ class MixinRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new MixinRule(
 			new MixinCheck(
@@ -115,12 +115,9 @@ class MixinRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/mixin-enums.php'], [
 			[
 				'PHPDoc tag @mixin contains non-object type int.',

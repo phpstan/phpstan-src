@@ -3,19 +3,20 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TraitStubFilesTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/trait-stubs.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/trait-stubs.php');
 	}
 
 	/**
-	 * @dataProvider dataFileAsserts
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,

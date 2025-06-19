@@ -4,7 +4,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedFunctionCallableUsageRule>
@@ -16,16 +16,13 @@ class RestrictedFunctionCallableUsageRuleTest extends RuleTestCase
 	{
 		return new RestrictedFunctionCallableUsageRule(
 			self::getContainer(),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/restricted-function-callable.php'], [
 			[
 				'Cannot call doFoo',

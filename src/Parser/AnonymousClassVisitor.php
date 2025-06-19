@@ -2,11 +2,14 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\AnonymousClassNode;
 use function count;
 
+#[AutowiredService]
 final class AnonymousClassVisitor extends NodeVisitorAbstract
 {
 
@@ -15,12 +18,14 @@ final class AnonymousClassVisitor extends NodeVisitorAbstract
 	/** @var array<int, non-empty-list<AnonymousClassNode>> */
 	private array $nodesPerLine = [];
 
+	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{
 		$this->nodesPerLine = [];
 		return null;
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if (!$node instanceof Node\Stmt\Class_ || !$node->isAnonymous()) {
@@ -34,6 +39,7 @@ final class AnonymousClassVisitor extends NodeVisitorAbstract
 		return $node;
 	}
 
+	#[Override]
 	public function afterTraverse(array $nodes): ?array
 	{
 		foreach ($this->nodesPerLine as $nodesOnLine) {

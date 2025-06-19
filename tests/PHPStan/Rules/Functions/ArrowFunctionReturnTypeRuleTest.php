@@ -6,7 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ArrowFunctionReturnTypeRule>
@@ -17,7 +17,7 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ArrowFunctionReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			true,
 			false,
 			true,
@@ -43,12 +43,9 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRuleNever(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/arrow-function-never-return.php'], [
 			[
 				'Anonymous function should never return but return statement found.',
@@ -62,12 +59,9 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3261.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8179(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8179.php'], []);
 	}
 

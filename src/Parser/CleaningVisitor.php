@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\NodeVisitorAbstract;
@@ -19,6 +20,7 @@ final class CleaningVisitor extends NodeVisitorAbstract
 		$this->nodeFinder = new NodeFinder();
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\Function_) {

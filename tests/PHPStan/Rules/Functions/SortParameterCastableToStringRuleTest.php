@@ -6,6 +6,7 @@ use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function str_replace;
 use const PHP_VERSION_ID;
@@ -18,7 +19,7 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new SortParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
 	}
 
@@ -80,12 +81,9 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $array of function array_unique expects an array of values castable to string, array<int, list<string>> given.',
@@ -110,12 +108,9 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions-enum.php'], [
 			[
 				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, SortParamCastableToStringFunctionsEnum\\FooEnum::A|string> given.',

@@ -2,6 +2,8 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\ComposerHelper;
 use function array_filter;
@@ -9,6 +11,7 @@ use function array_values;
 use function str_contains;
 use function strtr;
 
+#[AutowiredService(as: StubFilesProvider::class)]
 final class DefaultStubFilesProvider implements StubFilesProvider
 {
 
@@ -24,7 +27,9 @@ final class DefaultStubFilesProvider implements StubFilesProvider
 	 */
 	public function __construct(
 		private Container $container,
+		#[AutowiredParameter]
 		private array $stubFiles,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
 	)
 	{

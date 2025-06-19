@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -35,6 +37,7 @@ use function is_string;
 use function max;
 use function sprintf;
 
+#[AutowiredService]
 final class FunctionCallParametersCheck
 {
 
@@ -43,9 +46,13 @@ final class FunctionCallParametersCheck
 		private NullsafeCheck $nullsafeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		#[AutowiredParameter(ref: '%checkFunctionArgumentTypes%')]
 		private bool $checkArgumentTypes,
+		#[AutowiredParameter]
 		private bool $checkArgumentsPassedByReference,
+		#[AutowiredParameter]
 		private bool $checkExtraArguments,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
 	)
 	{

@@ -3,16 +3,13 @@
 namespace PHPStan\Parser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 
-/**
- * @covers \PHPStan\Parser\RichParser
- * @covers \PHPStan\Parser\SimpleParser
- */
 class ParserTest extends PHPStanTestCase
 {
 
-	public function dataVariadicCallLikes(): iterable
+	public static function dataVariadicCallLikes(): iterable
 	{
 		yield [
 			__DIR__ . '/data/variadic-functions.php',
@@ -59,10 +56,10 @@ class ParserTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataVariadicCallLikes
 	 * @param array<string, true>|array<string, array<string, true>> $expectedVariadics
 	 * @throws ParserErrorsException
 	 */
+	#[DataProvider('dataVariadicCallLikes')]
 	public function testSimpleParserVariadicCallLikes(string $file, string $attributeName, array $expectedVariadics): void
 	{
 		/** @var SimpleParser $parser */
@@ -78,10 +75,10 @@ class ParserTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataVariadicCallLikes
 	 * @param array<string, true>|array<string, array<string, true>> $expectedVariadics
 	 * @throws ParserErrorsException
 	 */
+	#[DataProvider('dataVariadicCallLikes')]
 	public function testRichParserVariadicCallLikes(string $file, string $attributeName, array $expectedVariadics): void
 	{
 		/** @var RichParser $parser */

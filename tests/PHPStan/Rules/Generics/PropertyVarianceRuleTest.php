@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<PropertyVarianceRule>
@@ -57,12 +57,9 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testPromoted(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-variance-promoted.php'], [
 			[
 				'Template type X is declared as covariant, but occurs in invariant position in property PropertyVariance\Promoted\B::$a.',
@@ -99,12 +96,9 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testReadOnly(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-variance-readonly.php'], [
 			[
 				'Template type X is declared as covariant, but occurs in contravariant position in property PropertyVariance\ReadOnly\B::$b.',

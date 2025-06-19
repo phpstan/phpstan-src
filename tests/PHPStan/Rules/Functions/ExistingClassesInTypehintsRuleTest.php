@@ -10,6 +10,8 @@ use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -22,7 +24,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,
@@ -180,7 +182,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataNativeUnionTypes(): array
+	public static function dataNativeUnionTypes(): array
 	{
 		return [
 			[
@@ -204,16 +206,16 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataNativeUnionTypes
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataNativeUnionTypes')]
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
-	public function dataRequiredParameterAfterOptional(): array
+	public static function dataRequiredParameterAfterOptional(): array
 	{
 		return [
 			[
@@ -364,20 +366,17 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRequiredParameterAfterOptional
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataRequiredParameterAfterOptional')]
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
 	}
 
-	public function dataIntersectionTypes(): array
+	public static function dataIntersectionTypes(): array
 	{
 		return [
 			[80000, []],
@@ -406,9 +405,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataIntersectionTypes
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataIntersectionTypes')]
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
 		$this->phpVersionId = $phpVersion;
@@ -432,12 +431,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConditionalReturnType(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/conditional-return-type.php'], [
 			[
 				'Template type T of function FunctionConditionalReturnType\notGet() is not referenced in a parameter.',
@@ -446,12 +442,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testTemplateInParamOut(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/param-out.php'], [
 			[
 				'Template type S of function ParamOutTemplate\uselessGeneric() is not referenced in a parameter.',

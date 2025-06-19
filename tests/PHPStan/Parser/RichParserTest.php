@@ -3,12 +3,13 @@
 namespace PHPStan\Parser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_EOL;
 
 class RichParserTest extends PHPStanTestCase
 {
 
-	public function dataLinesToIgnore(): iterable
+	public static function dataLinesToIgnore(): iterable
 	{
 		yield [
 			'<?php test();',
@@ -313,9 +314,9 @@ class RichParserTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataLinesToIgnore
 	 * @param array<int, list<string>|null> $expectedLines
 	 */
+	#[DataProvider('dataLinesToIgnore')]
 	public function testLinesToIgnore(string $code, array $expectedLines): void
 	{
 		/** @var RichParser $parser */
@@ -326,7 +327,7 @@ class RichParserTest extends PHPStanTestCase
 		$this->assertSame($expectedLines, $lines);
 	}
 
-	public function dataLinesToIgnoreParseErrors(): iterable
+	public static function dataLinesToIgnoreParseErrors(): iterable
 	{
 		yield [
 			'<?php' . PHP_EOL .
@@ -526,9 +527,9 @@ class RichParserTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataLinesToIgnoreParseErrors
 	 * @param array<int, non-empty-list<string>> $expectedErrors
 	 */
+	#[DataProvider('dataLinesToIgnoreParseErrors')]
 	public function testLinesToIgnoreParseErrors(string $code, array $expectedErrors): void
 	{
 		/** @var RichParser $parser */

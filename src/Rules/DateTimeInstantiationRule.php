@@ -6,6 +6,7 @@ use DateTime;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use Throwable;
 use function count;
 use function in_array;
@@ -15,6 +16,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[RegisteredRule(level: 5)]
 final class DateTimeInstantiationRule implements Rule
 {
 

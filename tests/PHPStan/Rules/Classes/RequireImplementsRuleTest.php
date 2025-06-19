@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RequireImplementsRule>
@@ -17,12 +17,9 @@ class RequireImplementsRuleTest extends RuleTestCase
 		return new RequireImplementsRule();
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$expectedErrors = [
 			[
 				'Trait IncompatibleRequireImplements\ValidTrait requires using class to implement IncompatibleRequireImplements\RequiredInterface, but IncompatibleRequireImplements\InValidTraitUse2 does not.',

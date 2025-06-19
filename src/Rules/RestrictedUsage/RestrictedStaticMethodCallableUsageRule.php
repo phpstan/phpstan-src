@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\ReflectionProvider;
@@ -18,6 +19,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<StaticMethodCallableNode>
  */
+#[AutowiredService]
 final class RestrictedStaticMethodCallableUsageRule implements Rule
 {
 

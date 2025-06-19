@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -9,6 +10,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
+#[AutowiredService]
 final class MethodVisibilityComparisonHelper
 {
 

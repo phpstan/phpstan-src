@@ -2,8 +2,10 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService(as: TypeNodeResolverExtensionRegistryProvider::class)]
 final class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 

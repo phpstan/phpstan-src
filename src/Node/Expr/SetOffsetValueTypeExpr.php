@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node\Expr;
 
+use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 
@@ -28,6 +29,7 @@ final class SetOffsetValueTypeExpr extends Expr implements VirtualNode
 		return $this->value;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_SetOffsetValueTypeExpr';
@@ -36,6 +38,7 @@ final class SetOffsetValueTypeExpr extends Expr implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

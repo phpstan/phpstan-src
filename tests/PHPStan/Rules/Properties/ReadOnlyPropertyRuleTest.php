@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<ReadOnlyPropertyRule>
@@ -19,7 +20,7 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 		return new ReadOnlyPropertyRule(new PhpVersion($this->phpVersionId));
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[
@@ -80,9 +81,9 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRule
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataRule')]
 	public function testRule(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
@@ -90,9 +91,9 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRule
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataRule')]
 	public function testRuleReadonlyClass(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
+#[RegisteredRule(level: 2)]
 final class AccessPrivateConstantThroughStaticRule implements Rule
 {
 

@@ -2,8 +2,10 @@
 
 namespace PHPStan\DependencyInjection\Type;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService(as: ParameterOutTypeExtensionProvider::class)]
 final class LazyParameterOutTypeExtensionProvider implements ParameterOutTypeExtensionProvider
 {
 

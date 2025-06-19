@@ -3,6 +3,7 @@
 namespace PHPStan\File;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class FileHelperTest extends PHPStanTestCase
 {
@@ -10,7 +11,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataAbsolutizePathOnWindows(): array
+	public static function dataAbsolutizePathOnWindows(): array
 	{
 		return [
 			['C:/Program Files', 'C:/Program Files'],
@@ -25,9 +26,7 @@ class FileHelperTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAbsolutizePathOnWindows
-	 */
+	#[DataProvider('dataAbsolutizePathOnWindows')]
 	public function testAbsolutizePathOnWindows(string $path, string $absolutePath): void
 	{
 		$this->skipIfNotOnWindows();
@@ -38,7 +37,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataAbsolutizePathOnLinuxOrMac(): array
+	public static function dataAbsolutizePathOnLinuxOrMac(): array
 	{
 		return [
 			['C:/Program Files', '/abcd/C:/Program Files'],
@@ -54,9 +53,7 @@ class FileHelperTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAbsolutizePathOnLinuxOrMac
-	 */
+	#[DataProvider('dataAbsolutizePathOnLinuxOrMac')]
 	public function testAbsolutizePathOnLinuxOrMac(string $path, string $absolutePath): void
 	{
 		$this->skipIfNotOnUnix();
@@ -67,7 +64,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataNormalizePathOnWindows(): array
+	public static function dataNormalizePathOnWindows(): array
 	{
 		return [
 			['C:/Program Files/PHP', 'C:\Program Files\PHP'],
@@ -81,9 +78,7 @@ class FileHelperTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataNormalizePathOnWindows
-	 */
+	#[DataProvider('dataNormalizePathOnWindows')]
 	public function testNormalizePathOnWindows(string $path, string $normalizedPath): void
 	{
 		$this->skipIfNotOnWindows();
@@ -93,7 +88,7 @@ class FileHelperTest extends PHPStanTestCase
 	/**
 	 * @return string[][]
 	 */
-	public function dataNormalizePathOnLinuxOrMac(): array
+	public static function dataNormalizePathOnLinuxOrMac(): array
 	{
 		return [
 			['C:\Program Files\PHP', 'C:/Program Files/PHP'],
@@ -109,9 +104,7 @@ class FileHelperTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataNormalizePathOnLinuxOrMac
-	 */
+	#[DataProvider('dataNormalizePathOnLinuxOrMac')]
 	public function testNormalizePathOnLinuxOrMac(string $path, string $normalizedPath): void
 	{
 		$this->skipIfNotOnUnix();

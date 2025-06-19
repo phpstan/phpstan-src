@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Pure;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<PureFunctionRule>
@@ -107,12 +107,9 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/first-class-callable-pure-function.php'], [
 			[
 				'Impure call to method FirstClassCallablePureFunction\Foo::impureFunction() in pure function FirstClassCallablePureFunction\testThese().',

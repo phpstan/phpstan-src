@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use function count;
@@ -11,6 +12,7 @@ use function count;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 2)]
 final class MethodConditionalReturnTypeRule implements Rule
 {
 

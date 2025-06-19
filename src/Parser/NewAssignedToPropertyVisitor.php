@@ -2,14 +2,18 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 
+#[AutowiredService]
 final class NewAssignedToPropertyVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'assignedToProperty';
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {

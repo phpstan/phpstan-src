@@ -6,13 +6,17 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 
+#[AutowiredService]
 final class ConstantConditionRuleHelper
 {
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

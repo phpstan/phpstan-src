@@ -3,25 +3,26 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
 		if (PHP_VERSION_ID < 80000) {
 			return [];
 		}
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args-fixture.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension-named-args-fixture.php');
 	}
 
 	/**
-	 * @dataProvider dataFileAsserts
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,

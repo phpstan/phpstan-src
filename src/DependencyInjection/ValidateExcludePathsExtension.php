@@ -3,6 +3,7 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\DI\CompilerExtension;
+use Override;
 use PHPStan\DependencyInjection\Neon\OptionalPath;
 use PHPStan\File\FileExcluder;
 use function array_key_exists;
@@ -18,6 +19,7 @@ final class ValidateExcludePathsExtension extends CompilerExtension
 	/**
 	 * @throws InvalidExcludePathsException
 	 */
+	#[Override]
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();

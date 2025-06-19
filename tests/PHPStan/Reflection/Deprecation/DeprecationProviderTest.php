@@ -15,29 +15,36 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 class DeprecationProviderTest extends PHPStanTestCase
 {
 
+	#[RequiresPhp('>= 8.0')]
 	public function testCustomDeprecations(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('PHP 8.0+ is required as CustomDeprecationProvider uses unions.');
-		}
-
 		require __DIR__ . '/data/deprecations.php';
 
 		$reflectionProvider = self::createReflectionProvider();
 
 		$notDeprecatedClass = $reflectionProvider->getClass(NotDeprecatedClass::class);
 		$attributeDeprecatedClass = $reflectionProvider->getClass(AttributeDeprecatedClass::class);
-		$phpDocDeprecatedClass = $reflectionProvider->getClass(PhpDocDeprecatedClass::class); // @phpstan-ignore classConstant.deprecatedClass
-		$phpDocDeprecatedClassWithMessages = $reflectionProvider->getClass(PhpDocDeprecatedClassWithMessage::class); // @phpstan-ignore classConstant.deprecatedClass
+
+		// @phpstan-ignore classConstant.deprecatedClass
+		$phpDocDeprecatedClass = $reflectionProvider->getClass(PhpDocDeprecatedClass::class);
+
+		// @phpstan-ignore classConstant.deprecatedClass
+		$phpDocDeprecatedClassWithMessages = $reflectionProvider->getClass(PhpDocDeprecatedClassWithMessage::class);
 		$attributeDeprecatedClassWithMessages = $reflectionProvider->getClass(AttributeDeprecatedClassWithMessage::class);
-		$doubleDeprecatedClass = $reflectionProvider->getClass(DoubleDeprecatedClass::class); // @phpstan-ignore classConstant.deprecatedClass
-		$doubleDeprecatedClassOnlyPhpDocMessage = $reflectionProvider->getClass(DoubleDeprecatedClassOnlyPhpDocMessage::class); // @phpstan-ignore classConstant.deprecatedClass
-		$doubleDeprecatedClassOnlyAttributeMessage = $reflectionProvider->getClass(DoubleDeprecatedClassOnlyAttributeMessage::class); // @phpstan-ignore classConstant.deprecatedClass
+
+		// @phpstan-ignore classConstant.deprecatedClass
+		$doubleDeprecatedClass = $reflectionProvider->getClass(DoubleDeprecatedClass::class);
+
+		// @phpstan-ignore classConstant.deprecatedClass
+		$doubleDeprecatedClassOnlyPhpDocMessage = $reflectionProvider->getClass(DoubleDeprecatedClassOnlyPhpDocMessage::class);
+
+		// @phpstan-ignore classConstant.deprecatedClass
+		$doubleDeprecatedClassOnlyAttributeMessage = $reflectionProvider->getClass(DoubleDeprecatedClassOnlyAttributeMessage::class);
 
 		$notDeprecatedFunction = $reflectionProvider->getFunction(new FullyQualified('CustomDeprecations\\notDeprecatedFunction'), null);
 		$phpDocDeprecatedFunction = $reflectionProvider->getFunction(new FullyQualified('CustomDeprecations\\phpDocDeprecatedFunction'), null);
@@ -185,12 +192,9 @@ class DeprecationProviderTest extends PHPStanTestCase
 		self::assertSame('attribute', $doubleDeprecatedFunctionOnlyAttributeMessage->getDeprecatedDescription());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testCustomDeprecationsOfEnumCases(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('PHP 8.1+ is required to test enums.');
-		}
-
 		require __DIR__ . '/data/deprecations-enums.php';
 
 		$reflectionProvider = self::createReflectionProvider();

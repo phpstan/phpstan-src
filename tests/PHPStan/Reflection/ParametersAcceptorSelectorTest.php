@@ -28,15 +28,16 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 
 class ParametersAcceptorSelectorTest extends PHPStanTestCase
 {
 
-	public function dataSelectFromTypes(): Generator
+	public static function dataSelectFromTypes(): Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$arrayRandVariants = $reflectionProvider->getFunction(new Name('array_rand'), null)->getVariants();
 		yield [
@@ -423,10 +424,10 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataSelectFromTypes
 	 * @param Type[] $types
 	 * @param ParametersAcceptor[] $variants
 	 */
+	#[DataProvider('dataSelectFromTypes')]
 	public function testSelectFromTypes(
 		array $types,
 		array $variants,

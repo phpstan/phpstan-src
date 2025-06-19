@@ -3,10 +3,12 @@
 namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 
+#[AutowiredService(as: DynamicReturnTypeExtensionRegistryProvider::class)]
 final class LazyDynamicReturnTypeExtensionRegistryProvider implements DynamicReturnTypeExtensionRegistryProvider
 {
 

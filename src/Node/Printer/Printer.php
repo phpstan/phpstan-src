@@ -3,6 +3,7 @@
 namespace PHPStan\Node\Printer;
 
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
@@ -22,6 +23,7 @@ use function sprintf;
 /**
  * @api
  */
+#[AutowiredService(as: Printer::class)]
 final class Printer extends Standard
 {
 

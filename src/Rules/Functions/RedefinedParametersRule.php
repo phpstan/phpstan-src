@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\FunctionLike>
  */
+#[RegisteredRule(level: 0)]
 final class RedefinedParametersRule implements Rule
 {
 

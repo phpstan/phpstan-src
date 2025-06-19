@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use SingleFileSourceLocatorTestClass;
 use TestSingleFileSourceLocator\AFoo;
 use function array_map;
@@ -18,7 +19,7 @@ use const PHP_VERSION_ID;
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): iterable
+	public static function dataClass(): iterable
 	{
 		yield from [
 			[
@@ -54,7 +55,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataForIdenifiersByType(): iterable
+	public static function dataForIdenifiersByType(): iterable
 	{
 		yield from [
 			'classes wrapped in conditions' => [
@@ -127,9 +128,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataClass
-	 */
+	#[DataProvider('dataClass')]
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
@@ -139,7 +138,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($expectedClassName, $classReflection->getName());
 	}
 
-	public function dataFunction(): array
+	public static function dataFunction(): array
 	{
 		return [
 			[
@@ -165,9 +164,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFunction
-	 */
+	#[DataProvider('dataFunction')]
 	public function testFunction(string $functionName, string $expectedFunctionName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
@@ -177,7 +174,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 	}
 
-	public function dataConst(): array
+	public static function dataConst(): array
 	{
 		return [
 			[
@@ -203,9 +200,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataConst
-	 */
+	#[DataProvider('dataConst')]
 	public function testConst(string $constantName, string $valueTypeDescription): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
@@ -222,16 +217,14 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataConstUnknown(): array
+	public static function dataConstUnknown(): array
 	{
 		return [
 			['TEST_VARIABLE'],
 		];
 	}
 
-	/**
-	 * @dataProvider dataConstUnknown
-	 */
+	#[DataProvider('dataConstUnknown')]
 	public function testConstUnknown(string $constantName): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
@@ -242,9 +235,9 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataForIdenifiersByType
 	 * @param class-string[] $expectedIdentifiers
 	 */
+	#[DataProvider('dataForIdenifiersByType')]
 	public function testLocateIdentifiersByType(
 		IdentifierType $identifierType,
 		array $expectedIdentifiers,

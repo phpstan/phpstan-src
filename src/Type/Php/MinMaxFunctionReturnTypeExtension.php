@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
@@ -20,6 +21,7 @@ use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

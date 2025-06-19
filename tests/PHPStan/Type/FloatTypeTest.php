@@ -7,12 +7,13 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class FloatTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		return [
 			[
@@ -60,9 +61,7 @@ class FloatTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$type = new FloatType();
@@ -74,7 +73,7 @@ class FloatTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
 		return [
 			[
@@ -120,9 +119,7 @@ class FloatTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataEquals
-	 */
+	#[DataProvider('dataEquals')]
 	public function testEquals(FloatType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);

@@ -7,11 +7,13 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_map;
 use function count;
 
+#[AutowiredService]
 final class PropertyReflectionFinder
 {
 

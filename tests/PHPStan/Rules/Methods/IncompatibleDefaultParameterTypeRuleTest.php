@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IncompatibleDefaultParameterTypeRule>
@@ -74,12 +74,9 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10956(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10956.php'], []);
 	}
 

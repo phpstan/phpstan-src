@@ -47,7 +47,7 @@ php;
 			$typeCombination,
 			implode(', ', $interfaces),
 			implode("\n\n\t", array_map(static fn (array $property): string => sprintf('%spublic %s $%s;', $property[2] !== $property[1] ? sprintf("/** @var %s */\n\t", $property[2]) : '', $property[1], $property[0]), $properties)),
-			implode("\n\n\t", array_map(static fn (array $property): string => sprintf("%spublic function get%s(): %s\n\t{\n\t\treturn \$this->%s;\n\t}", $property[2] !== $property[1] ? sprintf("/**\n\t * @return %s\n\t */\n\t", $property[2]) : '', ucfirst($property[0]), $property[1], $property[0]), $properties)),
+			implode("\n\n\t", array_map(static fn (array $property): string => sprintf("%spublic function get%s()%s\n\t{\n\t\treturn \$this->%s;\n\t}", $property[2] !== $property[1] ? sprintf("/**\n\t * @return %s\n\t */\n\t", $property[2]) : '', ucfirst($property[0]), $property[1] === null ? '' : sprintf(': %s', $property[1]), $property[0]), $properties)),
 		);
 
 		file_put_contents(__DIR__ . '/../src/Rules/RuleErrors/RuleError' . $typeCombination . '.php', $phpClass);

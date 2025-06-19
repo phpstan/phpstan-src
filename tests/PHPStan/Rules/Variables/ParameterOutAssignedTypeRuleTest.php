@@ -15,7 +15,7 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new ParameterOutAssignedTypeRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, true, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, true, false, false, true),
 		);
 	}
 
@@ -62,6 +62,16 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 	public function testBenevolentArrayKey(): void
 	{
 		$this->analyse([__DIR__ . '/data/benevolent-array-key.php'], []);
+	}
+
+	public function testBug13093(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093.php'], []);
+	}
+
+	public function testBug13093b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093b.php'], []);
 	}
 
 }

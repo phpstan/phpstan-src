@@ -619,7 +619,7 @@ final class TypeCombinator
 				if ($b->isSuperTypeOf($subtractedTypeTmp)->yes()) {
 					return $a->getTypeWithoutSubtractedType();
 				}
-				$subtractedType = new MixedType(false, $b);
+				$subtractedType = new MixedType(subtractedType: $b);
 			}
 		}
 

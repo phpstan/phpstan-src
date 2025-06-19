@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function ucfirst;
 /**
  * @implements Rule<FuncCall>
  */
+#[RegisteredRule(level: 5)]
 final class CallUserFuncRule implements Rule
 {
 

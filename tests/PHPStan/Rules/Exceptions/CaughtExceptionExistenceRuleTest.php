@@ -16,7 +16,7 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new CaughtExceptionExistenceRule(
 			$reflectionProvider,
 			new ClassNameCheck(

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -20,6 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
+#[RegisteredRule(level: 4)]
 final class TooWidePropertyTypeRule implements Rule
 {
 

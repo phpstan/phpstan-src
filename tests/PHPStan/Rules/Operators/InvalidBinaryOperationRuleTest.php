@@ -7,7 +7,7 @@ use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidBinaryOperationRule>
@@ -23,7 +23,7 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
 		);
 	}
 
@@ -284,12 +284,9 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8827.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-binary-nullsafe.php'], [
 			[
 				'Binary operation "+" between array|null and \'2\' results in an error.',
@@ -303,12 +300,9 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5309.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBinaryMixed(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/invalid-binary-mixed.php'], [

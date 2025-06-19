@@ -160,7 +160,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 
 	public function testFileWithCyclicPhpDocs(): void
 	{
-		$this->createReflectionProvider();
+		self::createReflectionProvider();
 
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);

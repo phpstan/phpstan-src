@@ -13,7 +13,7 @@ class DumpTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DumpTypeRule($this->createReflectionProvider());
+		return new DumpTypeRule(self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStanNamespace(): void

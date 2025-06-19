@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\TypeTraverserInstanceofVisitor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -51,6 +52,7 @@ use function strtolower;
 /**
  * @implements Rule<Instanceof_>
  */
+#[RegisteredRule(level: 0)]
 final class ApiInstanceofTypeRule implements Rule
 {
 

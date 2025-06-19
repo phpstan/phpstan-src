@@ -20,7 +20,7 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 		return new LogicalXorConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

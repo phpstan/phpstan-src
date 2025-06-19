@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\StatementExitPoint;
 
@@ -36,6 +37,7 @@ final class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 		return $this->tryCatchExitPoints;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_FinallyExitPointsNode';
@@ -44,6 +46,7 @@ final class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -9,6 +9,8 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -29,7 +31,7 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
@@ -37,24 +39,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('< 8.0')]
 	public function testIsCallablePhp7(): void
 	{
-		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Test requires PHP 7.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([ __DIR__ . '/data/call-methods-is-callable.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testIsCallablePhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1309,7 +1305,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/order.php'], []);
 	}
 
-	public function dataIterable(): array
+	public static function dataIterable(): array
 	{
 		return [
 			[
@@ -1321,9 +1317,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIterable
-	 */
+	#[DataProvider('dataIterable')]
 	public function testIterables(bool $checkNullables): void
 	{
 		$this->checkThisOnly = false;
@@ -1552,7 +1546,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/shadowed-trait-method.php'], []);
 	}
 
-	public function dataExplicitMixed(): array
+	public static function dataExplicitMixed(): array
 	{
 		return [
 			[
@@ -1593,15 +1587,12 @@ class CallMethodsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataExplicitMixed
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataExplicitMixed')]
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1609,7 +1600,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], $errors);
 	}
 
-	public function dataImplicitMixed(): array
+	public static function dataImplicitMixed(): array
 	{
 		return [
 			[
@@ -1637,9 +1628,9 @@ class CallMethodsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataImplicitMixed
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataImplicitMixed')]
 	public function testImplicitMixed(bool $checkImplicitMixed, array $errors): void
 	{
 		$this->checkThisOnly = false;
@@ -1729,12 +1720,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testStringable(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1801,12 +1789,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.0')]
 	public function testDisallowNamedArguments(): void
 	{
-		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Test requires PHP earlier than 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1833,12 +1818,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2113,15 +2095,12 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3546.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug4800(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
 
 		$this->analyse([__DIR__ . '/data/bug-4800.php'], [
 			[
@@ -2363,12 +2342,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3465.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5868(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2406,12 +2382,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-method-callable.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2456,12 +2429,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6239(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('This test needs PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2489,12 +2459,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testReadOnlyPropertyPassedByReference(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2537,12 +2504,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6236.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6118(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2658,12 +2622,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6904(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2720,12 +2681,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conditional-complex-templates.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6291(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2742,12 +2700,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1517.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7593(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2782,11 +2737,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7600.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug8058(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2');
-		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = false;
 		$this->checkUnionTypes = false;
@@ -2794,11 +2747,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8058.php'], []);
 	}
 
+	#[RequiresPhp('< 8.2')]
 	public function testBug8058b(): void
 	{
-		if (PHP_VERSION_ID >= 80200) {
-			$this->markTestSkipped('Test requires PHP before 8.2');
-		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = false;
 		$this->checkUnionTypes = false;
@@ -2890,7 +2841,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataCallablesWithoutCheckNullables(): iterable
+	public static function dataCallablesWithoutCheckNullables(): iterable
 	{
 		yield [false, false, []];
 		yield [true, false, []];
@@ -2930,9 +2881,9 @@ class CallMethodsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataCallablesWithoutCheckNullables
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataCallablesWithoutCheckNullables')]
 	public function testCallablesWithoutCheckNullables(bool $checkNullables, bool $checkUnionTypes, array $expectedErrors): void
 	{
 		$this->checkThisOnly = false;
@@ -2941,12 +2892,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8713(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3140,12 +3088,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9951(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3162,12 +3107,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testTypedClassConstants(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3175,12 +3117,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/return-type-class-constant.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedParametersForMultiVariantFunctions(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3273,12 +3212,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBugTemplateMixedUnionIntersect(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3380,12 +3316,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/closure-parameter-generics.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNoNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -3529,12 +3462,9 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12691.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12422(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

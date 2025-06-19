@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -25,6 +26,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
 
+#[AutowiredService]
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

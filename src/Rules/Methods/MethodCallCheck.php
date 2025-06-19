@@ -8,6 +8,8 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -22,13 +24,16 @@ use function count;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class MethodCallCheck
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
+		#[AutowiredParameter]
 		private bool $reportMagicMethods,
 	)
 	{

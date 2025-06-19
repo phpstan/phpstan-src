@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 6)]
 final class MissingMethodReturnTypehintRule implements Rule
 {
 

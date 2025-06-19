@@ -18,6 +18,7 @@ use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use StaticTypeTest\Base;
 use StaticTypeTest\Child;
 use StaticTypeTest\FinalChild;
@@ -28,9 +29,9 @@ use function sprintf;
 class StaticTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsIterable(): array
+	public static function dataIsIterable(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return [
 			[new StaticType($reflectionProvider->getClass('ArrayObject')), TrinaryLogic::createYes()],
@@ -39,9 +40,7 @@ class StaticTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsIterable
-	 */
+	#[DataProvider('dataIsIterable')]
 	public function testIsIterable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterable();
@@ -52,9 +51,9 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return [
 			[new StaticType($reflectionProvider->getClass('Closure')), TrinaryLogic::createYes()],
@@ -62,9 +61,7 @@ class StaticTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsCallable
-	 */
+	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
@@ -75,9 +72,9 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return [
 			1 => [
 				new StaticType($reflectionProvider->getClass(ArrayAccess::class)),
@@ -291,9 +288,7 @@ class StaticTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -304,9 +299,9 @@ class StaticTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataEquals(): array
+	public static function dataEquals(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return [
 			[
@@ -332,18 +327,16 @@ class StaticTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataEquals
-	 */
+	#[DataProvider('dataEquals')]
 	public function testEquals(StaticType $type, StaticType $otherType, bool $expected): void
 	{
 		$this->assertSame($expected, $type->equals($otherType));
 		$this->assertSame($expected, $otherType->equals($type));
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$c = $reflectionProvider->getClass(C::class);
 
 		yield [
@@ -455,9 +448,7 @@ class StaticTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(StaticType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true);

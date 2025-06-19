@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\BinaryOp\Plus;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Scalar\Int_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -16,6 +17,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
+#[AutowiredService]
 final class ArraySumFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

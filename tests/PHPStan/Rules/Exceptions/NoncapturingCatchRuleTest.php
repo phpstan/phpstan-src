@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,7 +19,7 @@ class NoncapturingCatchRuleTest extends RuleTestCase
 		return new NoncapturingCatchRule();
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[
@@ -42,10 +43,9 @@ class NoncapturingCatchRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRule
-	 *
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataRule')]
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
 		$testVersion = new PhpVersion($phpVersion);

@@ -19,7 +19,7 @@ class MethodTagTraitRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new MethodTagTraitRule(
 			new MethodTagCheck(

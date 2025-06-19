@@ -4,7 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MethodConditionalReturnTypeRule>
@@ -96,12 +96,9 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7310.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11939(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11939.php'], []);
 	}
 

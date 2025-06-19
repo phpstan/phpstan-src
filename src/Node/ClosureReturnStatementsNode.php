@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Yield_;
@@ -83,6 +84,7 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 		return $this->closureExpr->byRef;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClosureReturnStatementsNode';
@@ -91,6 +93,7 @@ final class ClosureReturnStatementsNode extends NodeAbstract implements ReturnSt
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\DeadCode;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CallToMethodStatementWithoutImpurePointsRule>
@@ -75,11 +75,9 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11011(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-11011.php'], [
 			[
 				'Call to method Bug11011\AnotherPureImpl::doFoo() on a separate line has no effect.',
@@ -88,11 +86,9 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12379(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-12379.php'], []);
 	}
 

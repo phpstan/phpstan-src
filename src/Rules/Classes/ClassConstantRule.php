@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
@@ -32,6 +33,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
+#[RegisteredRule(level: 0)]
 final class ClassConstantRule implements Rule
 {
 

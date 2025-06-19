@@ -8,6 +8,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
 use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function count;
@@ -48,9 +49,7 @@ abstract class LevelsTestCase extends TestCase
 		return true;
 	}
 
-	/**
-	 * @dataProvider dataTopics
-	 */
+	#[DataProvider('dataTopics')]
 	public function testLevels(
 		string $topic,
 	): void

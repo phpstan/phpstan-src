@@ -11,10 +11,13 @@ use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
+use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -26,6 +29,7 @@ use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 
+#[AutowiredService]
 final class DependencyResolver
 {
 
@@ -83,6 +87,10 @@ final class DependencyResolver
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
+		} elseif ($node instanceof InPropertyHookNode) {
+			$nativeMethod = $node->getHookReflection();
+			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
+			$this->extractFromParametersAcceptor($nativeMethod, $dependenciesReflections);
 		} elseif ($node instanceof ClassPropertyNode) {
 			$nativeType = $node->getNativeType();
 			if ($nativeType !== null) {
@@ -467,6 +475,16 @@ final class DependencyResolver
 		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
 	}
 
+	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies
+	{
+		$dependenciesReflections = [];
+		foreach ($inClassNode->getClassReflection()->getTraits(true) as $trait) {
+			$dependenciesReflections[] = $trait;
+		}
+
+		return new NodeDependencies($this->fileHelper, $dependenciesReflections, null);
+	}
+
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool
 	{
 		$items = $arrayNode->items;
@@ -496,7 +514,7 @@ final class DependencyResolver
 				$dependenciesReflections[] = $interface;
 			}
 
-			foreach ($classReflection->getTraits() as $trait) {
+			foreach ($classReflection->getTraits(true) as $trait) {
 				$dependenciesReflections[] = $trait;
 			}
 

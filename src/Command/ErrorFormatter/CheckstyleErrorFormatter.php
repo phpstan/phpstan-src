@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use function count;
 use function htmlspecialchars;
@@ -12,10 +14,14 @@ use function sprintf;
 use const ENT_COMPAT;
 use const ENT_XML1;
 
+#[AutowiredService(name: 'errorFormatter.checkstyle')]
 final class CheckstyleErrorFormatter implements ErrorFormatter
 {
 
-	public function __construct(private RelativePathHelper $relativePathHelper)
+	public function __construct(
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
+		private RelativePathHelper $relativePathHelper,
+	)
 	{
 	}
 

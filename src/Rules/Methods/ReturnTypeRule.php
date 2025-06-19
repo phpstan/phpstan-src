@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
@@ -26,6 +27,7 @@ use function ucfirst;
 /**
  * @implements Rule<Node\Stmt\Return_>
  */
+#[RegisteredRule(level: 3)]
 final class ReturnTypeRule implements Rule
 {
 

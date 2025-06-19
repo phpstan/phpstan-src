@@ -61,6 +61,18 @@ parameters:
 			path: src/Analyser/RicherScopeGetTypeHelper.php
 
 		-
+			message: '#^Call to method __construct\(\) of internal class PhpParser\\Internal\\TokenStream from outside its root namespace PhpParser\.$#'
+			identifier: method.internalClass
+			count: 1
+			path: src/Analyser/RuleErrorTransformer.php
+
+		-
+			message: '#^Instantiation of internal class PhpParser\\Internal\\TokenStream\.$#'
+			identifier: new.internalClass
+			count: 1
+			path: src/Analyser/RuleErrorTransformer.php
+
+		-
 			message: '#^Doing instanceof PHPStan\\Type\\ConstantScalarType is error\-prone and deprecated\. Use Type\:\:isConstantScalarValue\(\) or Type\:\:getConstantScalarTypes\(\) or Type\:\:getConstantScalarValues\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -163,6 +175,18 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
+			message: '#^Call to static method escape\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
+			identifier: staticMethod.internalClass
+			count: 1
+			path: src/DependencyInjection/AutowiredAttributeServicesExtension.php
+
+		-
+			message: '#^Call to static method expand\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
+			identifier: staticMethod.internalClass
+			count: 2
+			path: src/DependencyInjection/AutowiredAttributeServicesExtension.php
+
+		-
 			message: '#^Call to static method expand\(\) of internal class Nette\\DI\\Helpers from outside its root namespace Nette\.$#'
 			identifier: staticMethod.internalClass
 			count: 1
@@ -203,6 +227,42 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: src/Diagnose/PHPStanDiagnoseExtension.php
+
+		-
+			message: '#^Call to method getContent\(\) of internal class PhpMerge\\internal\\Line from outside its root namespace PhpMerge\.$#'
+			identifier: method.internalClass
+			count: 2
+			path: src/Fixable/Patcher.php
+
+		-
+			message: '#^Call to static method createArray\(\) of internal class PhpMerge\\internal\\Hunk from outside its root namespace PhpMerge\.$#'
+			identifier: staticMethod.internalClass
+			count: 2
+			path: src/Fixable/Patcher.php
+
+		-
+			message: '#^Call to static method createArray\(\) of internal class PhpMerge\\internal\\Line from outside its root namespace PhpMerge\.$#'
+			identifier: staticMethod.internalClass
+			count: 5
+			path: src/Fixable/Patcher.php
+
+		-
+			message: '#^Call to method getTokenCode\(\) of internal class PhpParser\\Internal\\TokenStream from outside its root namespace PhpParser\.$#'
+			identifier: method.internalClass
+			count: 1
+			path: src/Fixable/PhpPrinterIndentationDetectorVisitor.php
+
+		-
+			message: '#^Parameter \$origTokens of method PHPStan\\Fixable\\PhpPrinterIndentationDetectorVisitor\:\:__construct\(\) has typehint with internal class PhpParser\\Internal\\TokenStream\.$#'
+			identifier: parameter.internalClass
+			count: 1
+			path: src/Fixable/PhpPrinterIndentationDetectorVisitor.php
+
+		-
+			message: '#^Property \$origTokens references internal class PhpParser\\Internal\\TokenStream in its type\.$#'
+			identifier: property.internalClass
+			count: 1
+			path: src/Fixable/PhpPrinterIndentationDetectorVisitor.php
 
 		-
 			message: '#^Access to property \$id of internal class Symfony\\Polyfill\\Php80\\PhpToken from outside its root namespace Symfony\.$#'
@@ -686,15 +746,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Rules/RuleLevelHelper.php
-
-		-
-			message: '''
-				#^Call to deprecated method assertFileNotExists\(\) of class PHPUnit\\Framework\\Assert\:
-				https\://github\.com/sebastianbergmann/phpunit/issues/4077$#
-			'''
-			identifier: staticMethod.deprecated
-			count: 1
-			path: src/Testing/LevelsTestCase.php
 
 		-
 			message: '#^Call to function method_exists\(\) with ''PHPUnit\\\\Framework\\\\TestCase'' and ''assertFileDoesNotEx…'' will always evaluate to true\.$#'
@@ -1951,22 +2002,10 @@ parameters:
 			path: tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 
 		-
-			message: '#^Instanceof references internal interface PHPUnit\\Exception\.$#'
-			identifier: instanceof.internalInterface
-			count: 1
-			path: tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
-
-		-
 			message: '#^Creating new PHPStan\\Php8StubsMap is not covered by backward compatibility promise\. The class might change in a minor PHPStan version\.$#'
 			identifier: phpstanApi.constructor
 			count: 1
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
-
-		-
-			message: '#^Catching internal class PHPUnit\\Framework\\AssertionFailedError\.$#'
-			identifier: catch.internalClass
-			count: 1
-			path: tests/PHPStan/Rules/WarningEmittingRuleTest.php
 
 		-
 			message: '#^Call to method getComparisonFailure\(\) of internal class PHPUnit\\Framework\\ExpectationFailedException from outside its root namespace PHPUnit\.$#'

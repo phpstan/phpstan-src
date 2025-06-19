@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\EnumCase;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,6 +19,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 0)]
 final class DuplicateDeclarationRule implements Rule
 {
 

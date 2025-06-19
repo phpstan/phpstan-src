@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Functions;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<Node\Param>
  */
+#[RegisteredRule(level: 0)]
 final class ParamAttributesRule implements Rule
 {
 

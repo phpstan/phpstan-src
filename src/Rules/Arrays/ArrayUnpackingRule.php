@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node;
 use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<ArrayItem>
  */
+#[RegisteredRule(level: 3)]
 final class ArrayUnpackingRule implements Rule
 {
 

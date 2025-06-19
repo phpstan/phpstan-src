@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
+#[RegisteredRule(level: 0)]
 final class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 

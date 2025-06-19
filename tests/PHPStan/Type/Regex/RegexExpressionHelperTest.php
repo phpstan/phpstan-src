@@ -3,11 +3,12 @@
 namespace PHPStan\Type\Regex;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RegexExpressionHelperTest extends PHPStanTestCase
 {
 
-	public function dataRemoveDelimitersAndModifiers(): array
+	public static function dataRemoveDelimitersAndModifiers(): array
 	{
 		return [
 			[
@@ -45,9 +46,7 @@ class RegexExpressionHelperTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataRemoveDelimitersAndModifiers
-	 */
+	#[DataProvider('dataRemoveDelimitersAndModifiers')]
 	public function testRemoveDelimitersAndModifiers(string $inputPattern, string $expectedPatternWithoutDelimiter): void
 	{
 		$regexExpressionHelper = self::getContainer()->getByType(RegexExpressionHelper::class);

@@ -7,7 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ExistingClassInInstanceOfRule>
@@ -19,7 +19,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassInInstanceOfRule(
 			$reflectionProvider,
 			new ClassNameCheck(
@@ -76,12 +76,9 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instanceof-class-exists.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7720(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7720.php'], [
 			[
 				'Instanceof between mixed and trait Bug7720\FooBar will always evaluate to false.',

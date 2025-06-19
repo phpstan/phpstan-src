@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Classes;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 0)]
 final class ClassConstantAttributesRule implements Rule
 {
 

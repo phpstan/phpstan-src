@@ -23,6 +23,7 @@ jobs:
 
     outputs:
       checksum: ${{ steps.checksum.outputs.md5 }}
+      compiler_changed: ${{ steps.changes.outputs.compiler }}
 
     steps:
       - name: "Checkout"
@@ -34,11 +35,15 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.1"
+          php-version: "8.2"
           extensions: mbstring, intl
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
+
+      # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
+      - name: "Downgrade PHPUnit"
+        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install compiler dependencies"
         run: "composer install --no-interaction --no-progress --working-dir=compiler"
@@ -49,15 +54,22 @@ jobs:
 
       - name: "Compiler PHPStan"
         working-directory: "compiler"
-        run: "../bin/phpstan analyse -l 8 src tests"
+        run: "vendor/bin/phpstan analyse -l 8 src tests"
 
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
         run: "php bin/prepare"
 
+      - name: "Dump autoloader one more time for attributes"
+        run: "composer dump"
+
+      - name: "Install Box dependencies"
+        working-directory: "compiler/box"
+        run: "composer install"
+
       - name: "Compile PHAR"
         working-directory: "compiler/build"
-        run: "php box.phar compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -81,7 +93,7 @@ jobs:
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
-        run: "php box.phar compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
           COMPOSER_ROOT_VERSION: "2.1.x-dev"
@@ -103,6 +115,15 @@ jobs:
 
       - name: "Delete checksum PHAR"
         run: "rm tmp/phpstan.phar"
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            compiler:
+              - 'compiler/**'
+              - '.github/workflows/phar.yml'
+              - '.github/scripts/**'
 
   integration-tests:
     if: github.event_name == 'pull_request'
@@ -127,6 +148,132 @@ jobs:
     with:
       ref: 2.1.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
+
+  download-base-sha-phar:
+    name: "Download base SHA PHAR"
+    needs: compiler-tests
+    if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get base commit SHA
+        id: base
+        run: echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci
+
+      - name: "Compile TS scripts"
+        working-directory: .github/scripts
+        run: npx tsc
+
+      - name: Find phar-file-checksum from base commit
+        id: find-artifact
+        uses: actions/github-script@v7
+        env:
+          BASE_SHA: ${{ steps.base.outputs.base_sha }}
+          ARTIFACT_NAME: phar-file-checksum
+          WORKFLOW_NAME: Compile PHAR
+        with:
+          script: |
+            const script = require('./.github/scripts/dist/find-artifact.js');
+            await script({github, context, core})
+
+      # saved to phar-file-checksum/phpstan.phar
+      - name: Download old artifact by ID
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.find-artifact.outputs.artifact_id }}
+          run-id: ${{ steps.find-artifact.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Upload old artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: phar-file-checksum-base
+          path: phar-file-checksum/phpstan.phar
+
+  checksum-phar:
+    name: "Checksum PHAR"
+    needs:
+      - compiler-tests
+      - download-base-sha-phar
+    runs-on: "ubuntu-latest"
+    steps:
+      # saved to phpstan.phar
+      - name: "Download base phpstan.phar"
+        uses: actions/download-artifact@v4
+        with:
+          name: phar-file-checksum-base
+
+      - name: "Save old checksum"
+        id: "old_checksum"
+        run: echo "md5=$(md5sum phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: "Assert checksum"
+        run: |
+          old_checksum=${{ steps.old_checksum.outputs.md5 }}
+          new_checksum=${{needs.compiler-tests.outputs.checksum}}
+          [[ "$old_checksum" == "$new_checksum" ]];
+
+  phar-prefix-diff:
+    name: "PHAR Prefix Diff"
+    needs: download-base-sha-phar
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+
+      # saved to phar-file-checksum/phpstan.phar
+      - name: "Download phpstan.phar"
+        uses: actions/download-artifact@v4
+        with:
+          name: phar-file-checksum
+          path: phar-file-checksum
+
+      # saved to phar-file-checksum-base/phpstan.phar
+      - name: "Download base phpstan.phar"
+        uses: actions/download-artifact@v4
+        with:
+          name: phar-file-checksum-base
+          path: phar-file-checksum-base
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.2"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install Box dependencies"
+        working-directory: "compiler/box"
+        run: "composer install"
+
+      - name: "Extract old phpstan.phar"
+        run: "php compiler/box/vendor/bin/box extract phar-file-checksum-base/phpstan.phar phar-old"
+
+      - name: "Extract new phpstan.phar"
+        run: "php compiler/box/vendor/bin/box extract phar-file-checksum/phpstan.phar phar-new"
+
+      - name: "List prefix locations in old PHAR"
+        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-old > phar-old.txt"
+
+      - name: "List prefix locations in new PHAR"
+        run: "php .github/scripts/listPrefix.php ${{ github.workspace }}/phar-new > phar-new.txt"
+
+      - name: "Diff locations"
+        run: "diff -u phar-old.txt phar-new.txt > diff.txt || true"
+
+      - name: "Diff files where prefix changed"
+        run: "php .github/scripts/diffPrefixes.php ${{ github.workspace }}/diff.txt ${{ github.workspace }}/phar-old ${{ github.workspace }}/phar-new"
 
   commit:
     name: "Commit PHAR"

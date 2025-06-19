@@ -886,7 +886,7 @@ final class ResolvedPhpDocBlock
 	private static function mergeOneParentVarTags(self $parent, PhpDocBlock $phpDocBlock): ?array
 	{
 		foreach ($parent->getVarTags() as $key => $parentVarTag) {
-			return [$key => self::resolveTemplateTypeInTag($parentVarTag, $phpDocBlock, TemplateTypeVariance::createInvariant())];
+			return [$key => self::resolveTemplateTypeInTag($parentVarTag->toImplicit(), $phpDocBlock, TemplateTypeVariance::createInvariant())];
 		}
 
 		return null;

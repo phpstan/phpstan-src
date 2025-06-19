@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -76,6 +77,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return $this->propertyUsages;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClassPropertiesNode';
@@ -84,6 +86,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

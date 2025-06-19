@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Expr\YieldFrom;
 use PhpParser\Node\Stmt;
@@ -77,6 +78,7 @@ final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnS
 		return count($this->yieldStatements) > 0;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_FunctionReturnStatementsNode';
@@ -85,6 +87,7 @@ final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnS
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

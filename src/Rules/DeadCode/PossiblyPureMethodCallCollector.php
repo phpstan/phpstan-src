@@ -6,10 +6,12 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use PHPStan\DependencyInjection\RegisteredCollector;
 
 /**
  * @implements Collector<Node\Stmt\Expression, array{non-empty-list<class-string>, string, int}>
  */
+#[RegisteredCollector(level: 4)]
 final class PossiblyPureMethodCallCollector implements Collector
 {
 

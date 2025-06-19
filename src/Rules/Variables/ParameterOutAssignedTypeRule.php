@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Rules\Rule;
@@ -19,6 +20,7 @@ use function sprintf;
 /**
  * @implements Rule<VariableAssignNode>
  */
+#[RegisteredRule(level: 3)]
 final class ParameterOutAssignedTypeRule implements Rule
 {
 

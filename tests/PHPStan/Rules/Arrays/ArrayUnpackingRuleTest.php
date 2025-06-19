@@ -6,7 +6,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ArrayUnpackingRule>
@@ -22,16 +23,13 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	{
 		return new ArrayUnpackingRule(
 			self::getContainer()->getByType(PhpVersion::class),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, $this->checkBenevolentUnions, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnions, false, false, $this->checkBenevolentUnions, true),
 		);
 	}
 
+	#[RequiresPhp('< 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			$this->markTestSkipped('Test requires PHP version <= 8.0');
-		}
-
 		$this->checkUnions = true;
 		$this->checkBenevolentUnions = true;
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], [
@@ -70,12 +68,9 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.1')]
 	public function testRuleDoNotCheckBenevolentUnion(): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			$this->markTestSkipped('Test requires PHP version <= 8.0');
-		}
-
 		$this->checkUnions = true;
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], [
 			[
@@ -97,12 +92,9 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.1')]
 	public function testRuleDoNotCheckUnions(): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			$this->markTestSkipped('Test requires PHP version <= 8.0');
-		}
-
 		$this->checkUnions = false;
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], [
 			[
@@ -116,7 +108,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataRuleOnPHP81(): array
+	public static function dataRuleOnPHP81(): array
 	{
 		return [
 			[true],
@@ -124,15 +116,10 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataRuleOnPHP81
-	 */
+	#[RequiresPhp('>= 8.1')]
+	#[DataProvider('dataRuleOnPHP81')]
 	public function testRuleOnPHP81(bool $checkUnions): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1+');
-		}
-
 		$this->checkUnions = $checkUnions;
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], []);
 	}

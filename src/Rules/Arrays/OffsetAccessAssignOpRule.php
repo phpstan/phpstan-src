@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignOp>
  */
+#[RegisteredRule(level: 3)]
 final class OffsetAccessAssignOpRule implements Rule
 {
 

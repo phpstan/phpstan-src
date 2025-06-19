@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Include_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileHelper;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -21,10 +23,14 @@ use const PATH_SEPARATOR;
 /**
  * @implements Rule<Include_>
  */
+#[RegisteredRule(level: 0)]
 final class RequireFileExistsRule implements Rule
 {
 
-	public function __construct(private string $currentWorkingDirectory)
+	public function __construct(
+		#[AutowiredParameter]
+		private string $currentWorkingDirectory,
+	)
 	{
 	}
 

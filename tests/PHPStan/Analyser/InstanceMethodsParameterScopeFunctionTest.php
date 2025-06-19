@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InstanceMethodsParameterScopeFunctionRule>
@@ -22,12 +22,9 @@ class InstanceMethodsParameterScopeFunctionTest extends RuleTestCase
 		return true;
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/instance-methods-parameter-scope.php'], [
 			[
 				'Name DateTime found in function scope null',

@@ -7,8 +7,8 @@ use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function in_array;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnusedPrivatePropertyRule>
@@ -257,12 +257,9 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6107.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8204(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-8204.php'], []);
@@ -289,23 +286,17 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10059(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-10059.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10628(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-10628.php'], []);
@@ -347,12 +338,9 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
 
 		$this->alwaysWrittenTags = [];
@@ -387,24 +375,18 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12621(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 
 		$this->analyse([__DIR__ . '/data/bug-12621.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12702(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 

@@ -13,7 +13,7 @@ class RuntimeReflectionFunctionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new RuntimeReflectionFunctionRule($this->createReflectionProvider());
+		return new RuntimeReflectionFunctionRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

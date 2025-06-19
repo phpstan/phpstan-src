@@ -16,7 +16,7 @@ class ApiInstantiationRuleTest extends RuleTestCase
 	{
 		return new ApiInstantiationRule(
 			new ApiRuleHelper(),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

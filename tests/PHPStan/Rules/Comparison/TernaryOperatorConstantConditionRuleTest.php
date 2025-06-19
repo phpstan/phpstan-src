@@ -18,7 +18,7 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		return new TernaryOperatorConstantConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

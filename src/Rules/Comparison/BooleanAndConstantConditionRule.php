@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
@@ -15,13 +17,17 @@ use function sprintf;
 /**
  * @implements Rule<BooleanAndNode>
  */
+#[RegisteredRule(level: 4)]
 final class BooleanAndConstantConditionRule implements Rule
 {
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
 		private bool $reportAlwaysTrueInLastCondition,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

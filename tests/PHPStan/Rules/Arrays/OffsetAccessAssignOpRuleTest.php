@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<OffsetAccessAssignOpRule>
@@ -17,7 +17,7 @@ class OffsetAccessAssignOpRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnions, false, false, false, true);
 		return new OffsetAccessAssignOpRule($ruleLevelHelper);
 	}
 
@@ -38,12 +38,9 @@ class OffsetAccessAssignOpRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/offset-access-assignop.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkUnions = true;
 		$this->analyse([__DIR__ . '/data/offset-access-assignop-nullsafe.php'], []);
 	}

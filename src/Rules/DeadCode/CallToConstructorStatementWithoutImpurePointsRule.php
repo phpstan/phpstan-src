@@ -4,6 +4,7 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function strtolower;
 /**
  * @implements Rule<CollectedDataNode>
  */
+#[RegisteredRule(level: 4)]
 final class CallToConstructorStatementWithoutImpurePointsRule implements Rule
 {
 

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<SetNonVirtualPropertyHookAssignRule>
@@ -17,12 +17,9 @@ class SetNonVirtualPropertyHookAssignRuleTest extends RuleTestCase
 		return new SetNonVirtualPropertyHookAssignRule();
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/set-non-virtual-property-hook-assign.php'], [
 			[
 				'Set hook for non-virtual property SetNonVirtualPropertyHookAssign\Foo::$k does not assign value to it.',

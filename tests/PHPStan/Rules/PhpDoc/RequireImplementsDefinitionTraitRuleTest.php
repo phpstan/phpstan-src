@@ -7,7 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RequireImplementsDefinitionTraitRule>
@@ -17,7 +17,7 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new RequireImplementsDefinitionTraitRule(
 			$reflectionProvider,
@@ -32,12 +32,9 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$expectedErrors = [
 			[
 				'PHPDoc tag @phpstan-require-implements cannot contain non-interface type IncompatibleRequireImplements\SomeTrait.',

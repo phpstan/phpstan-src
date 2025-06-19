@@ -6,6 +6,8 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
@@ -15,6 +17,7 @@ use PHPStan\Type\Type;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
 {
 
@@ -25,7 +28,13 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 	/**
 	 * @param string[] $universalObjectCratesClasses
 	 */
-	public function __construct(private ReflectionProvider $reflectionProvider, private bool $treatPhpDocTypesAsCertain, private array $universalObjectCratesClasses)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
+		private array $universalObjectCratesClasses,
+	)
 	{
 	}
 

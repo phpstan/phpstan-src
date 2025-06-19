@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Namespaces;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -19,13 +21,16 @@ use function strtolower;
 /**
  * @implements Rule<Node\Stmt\GroupUse>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingNamesInGroupUseRule implements Rule
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

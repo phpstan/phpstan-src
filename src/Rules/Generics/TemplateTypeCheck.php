@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
@@ -38,6 +40,7 @@ use function array_merge;
 use function get_class;
 use function sprintf;
 
+#[AutowiredService]
 final class TemplateTypeCheck
 {
 
@@ -46,6 +49,7 @@ final class TemplateTypeCheck
 		private ClassNameCheck $classCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private TypeAliasResolver $typeAliasResolver,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
 	)
 	{

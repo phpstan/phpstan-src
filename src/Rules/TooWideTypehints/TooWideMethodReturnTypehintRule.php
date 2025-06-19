@@ -4,6 +4,8 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,10 +20,14 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[RegisteredRule(level: 4)]
 final class TooWideMethodReturnTypehintRule implements Rule
 {
 
-	public function __construct(private bool $checkProtectedAndPublicMethods)
+	public function __construct(
+		#[AutowiredParameter(ref: '%checkTooWideReturnTypesInProtectedAndPublicMethods%')]
+		private bool $checkProtectedAndPublicMethods,
+	)
 	{
 	}
 

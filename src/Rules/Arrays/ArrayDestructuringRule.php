@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -23,6 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<Assign>
  */
+#[RegisteredRule(level: 3)]
 final class ArrayDestructuringRule implements Rule
 {
 

@@ -6,10 +6,12 @@ use OndraM\CiDetector\CiDetector;
 use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredService;
 
 /**
  * @api
  */
+#[AutowiredService(as: CiDetectedErrorFormatter::class)]
 final class CiDetectedErrorFormatter implements ErrorFormatter
 {
 

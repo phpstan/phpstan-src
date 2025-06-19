@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<InPropertyHookNode>
  */
+#[RegisteredRule(level: 0)]
 final class PropertyHookAttributesRule implements Rule
 {
 

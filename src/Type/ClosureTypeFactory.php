@@ -13,6 +13,8 @@ use PHPStan\BetterReflection\SourceLocator\Ast\FindReflectionsInTree;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflection;
@@ -26,6 +28,7 @@ use function str_replace;
 /**
  * @api
  */
+#[AutowiredService]
 final class ClosureTypeFactory
 {
 
@@ -33,6 +36,7 @@ final class ClosureTypeFactory
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 		private Reflector $reflector,
+		#[AutowiredParameter(ref: '@currentPhpVersionPhpParser')]
 		private Parser $parser,
 	)
 	{
@@ -82,7 +86,7 @@ final class ClosureTypeFactory
 
 				public function getType(): Type
 				{
-					return TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($this->reflection->getType()), null, null, $this->reflection->isVariadic());
+					return TypehintHelper::decideTypeFromReflection(ReflectionType::fromTypeOrNull($this->reflection->getType()), isVariadic: $this->reflection->isVariadic());
 				}
 
 				public function passedByReference(): PassedByReference

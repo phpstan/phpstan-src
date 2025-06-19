@@ -6,66 +6,9 @@ parameters:
 	checkThisOnly: false
 	checkPhpDocMissingReturn: true
 
-rules:
-	- PHPStan\Rules\Cast\EchoRule
-	- PHPStan\Rules\Cast\InvalidCastRule
-	- PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
-	- PHPStan\Rules\Cast\PrintRule
-	- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
-	- PHPStan\Rules\Classes\MethodTagRule
-	- PHPStan\Rules\Classes\MethodTagTraitRule
-	- PHPStan\Rules\Classes\MethodTagTraitUseRule
-	- PHPStan\Rules\Classes\PropertyTagRule
-	- PHPStan\Rules\Classes\PropertyTagTraitRule
-	- PHPStan\Rules\Classes\PropertyTagTraitUseRule
-	- PHPStan\Rules\Classes\MixinTraitRule
-	- PHPStan\Rules\Classes\MixinTraitUseRule
-	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
-	- PHPStan\Rules\Constants\ValueAssignedToClassConstantRule
-	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
-	- PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
-	- PHPStan\Rules\Generics\ClassAncestorsRule
-	- PHPStan\Rules\Generics\ClassTemplateTypeRule
-	- PHPStan\Rules\Generics\EnumAncestorsRule
-	- PHPStan\Rules\Generics\EnumTemplateTypeRule
-	- PHPStan\Rules\Generics\FunctionTemplateTypeRule
-	- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
-	- PHPStan\Rules\Generics\InterfaceAncestorsRule
-	- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
-	- PHPStan\Rules\Generics\MethodTemplateTypeRule
-	- PHPStan\Rules\Generics\MethodTagTemplateTypeRule
-	- PHPStan\Rules\Generics\MethodTagTemplateTypeTraitRule
-	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
-	- PHPStan\Rules\Generics\PropertyVarianceRule
-	- PHPStan\Rules\Generics\TraitTemplateTypeRule
-	- PHPStan\Rules\Generics\UsedTraitsRule
-	- PHPStan\Rules\Methods\CallPrivateMethodThroughStaticRule
-	- PHPStan\Rules\Methods\IncompatibleDefaultParameterTypeRule
-	- PHPStan\Rules\Operators\InvalidBinaryOperationRule
-	- PHPStan\Rules\Operators\InvalidComparisonOperationRule
-	- PHPStan\Rules\Operators\InvalidUnaryOperationRule
-	- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
-	- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
-	- PHPStan\Rules\PhpDoc\FunctionAssertRule
-	- PHPStan\Rules\PhpDoc\MethodAssertRule
-	- PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule
-	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
-	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
-	- PHPStan\Rules\PhpDoc\IncompatiblePropertyHookPhpDocTypeRule
-	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
-	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
-	- PHPStan\Rules\PhpDoc\IncompatibleParamImmediatelyInvokedCallableRule
-	- PHPStan\Rules\PhpDoc\VarTagChangedExpressionTypeRule
-	- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
-	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
-	- PHPStan\Rules\Classes\RequireImplementsRule
-	- PHPStan\Rules\Classes\RequireExtendsRule
-	- PHPStan\Rules\PhpDoc\RequireImplementsDefinitionClassRule
-	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionClassRule
-	- PHPStan\Rules\PhpDoc\RequireExtendsDefinitionTraitRule
-	- PHPStan\Rules\Pure\PureFunctionRule
-	- PHPStan\Rules\Pure\PureMethodRule
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 2
 
 conditionalTags:
 	PHPStan\Rules\InternalTag\RestrictedInternalPropertyUsageExtension:
@@ -74,49 +17,6 @@ conditionalTags:
 		phpstan.restrictedMethodUsageExtension: %featureToggles.internalTag%
 
 services:
-	-
-		class: PHPStan\Rules\Classes\MixinRule
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\PhpDoc\RequireExtendsCheck
-		arguments:
-			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			discoveringSymbolsTip: %tips.discoveringSymbols%
-
-	-
-		class: PHPStan\Rules\PhpDoc\RequireImplementsDefinitionTraitRule
-		arguments:
-			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			discoveringSymbolsTip: %tips.discoveringSymbols%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Functions\CallCallablesRule
-		arguments:
-			reportMaybes: %reportMaybes%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\PhpDoc\InvalidPhpDocVarTagTypeRule
-		arguments:
-			checkClassCaseSensitivity: %checkClassCaseSensitivity%
-			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
-			discoveringSymbolsTip: %tips.discoveringSymbols%
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
-		tags:
-			- phpstan.rules.rule
-
 	-
 		class: PHPStan\Rules\InternalTag\RestrictedInternalPropertyUsageExtension
 

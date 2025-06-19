@@ -3,10 +3,12 @@
 namespace PHPStan\Rules\Playground;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ReturnStatementsNode;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
+#[AutowiredService]
 final class NeverRuleHelper
 {
 

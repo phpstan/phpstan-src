@@ -4,6 +4,8 @@ namespace PHPStan\Php;
 
 use Composer\Semver\VersionParser;
 use Nette\Utils\Strings;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\ComposerHelper;
 use function count;
 use function end;
@@ -11,6 +13,7 @@ use function is_string;
 use function min;
 use function sprintf;
 
+#[AutowiredService]
 final class ComposerPhpVersionFactory
 {
 
@@ -24,6 +27,7 @@ final class ComposerPhpVersionFactory
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
 	)
 	{

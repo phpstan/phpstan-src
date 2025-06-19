@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -19,13 +21,17 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
+#[RegisteredRule(level: 4)]
 final class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
 	public function __construct(
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
 		private bool $reportAlwaysTrueInLastCondition,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

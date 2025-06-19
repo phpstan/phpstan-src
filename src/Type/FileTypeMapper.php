@@ -7,6 +7,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
@@ -39,6 +41,7 @@ use function sprintf;
 use function str_contains;
 use function strtolower;
 
+#[AutowiredService]
 final class FileTypeMapper
 {
 
@@ -60,6 +63,7 @@ final class FileTypeMapper
 
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $phpParser,
 		private PhpDocStringResolver $phpDocStringResolver,
 		private PhpDocNodeResolver $phpDocNodeResolver,
@@ -154,8 +158,7 @@ final class FileTypeMapper
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
 				1,
-				null,
-				true,
+				preserve_keys: true,
 			);
 
 			$this->resolvedPhpDocBlockCacheCount--;
@@ -198,8 +201,7 @@ final class FileTypeMapper
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
 					1,
-					null,
-					true,
+					preserve_keys: true,
 				);
 				$this->memoryCacheCount--;
 			}
@@ -541,7 +543,7 @@ final class FileTypeMapper
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
 							$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
-							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, false, $constUses, $lookForTrait);
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, constUses: $constUses, typeAliasClassName: $lookForTrait);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -586,9 +588,8 @@ final class FileTypeMapper
 						$functionName,
 						($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
 						$typeAliasesMap,
-						false,
-						$constUses,
-						$lookForTrait,
+						constUses: $constUses,
+						typeAliasClassName: $lookForTrait,
 					);
 				}
 

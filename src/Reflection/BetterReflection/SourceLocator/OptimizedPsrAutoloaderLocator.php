@@ -2,14 +2,17 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Override;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\PsrAutoloaderMapping;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\DependencyInjection\GenerateFactory;
 use function is_file;
 
+#[GenerateFactory(interface: OptimizedPsrAutoloaderLocatorFactory::class)]
 final class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
@@ -23,6 +26,7 @@ final class OptimizedPsrAutoloaderLocator implements SourceLocator
 	{
 	}
 
+	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		foreach ($this->locators as $locator) {
@@ -56,6 +60,7 @@ final class OptimizedPsrAutoloaderLocator implements SourceLocator
 	/**
 	 * @return list<Reflection>
 	 */
+	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
 		return [];

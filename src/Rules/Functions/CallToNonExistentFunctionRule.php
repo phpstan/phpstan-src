@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,12 +16,15 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 0)]
 final class CallToNonExistentFunctionRule implements Rule
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

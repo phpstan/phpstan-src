@@ -3,6 +3,7 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\AssertTagParameter;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
@@ -49,6 +50,7 @@ use function method_exists;
 use function str_starts_with;
 use function substr;
 
+#[AutowiredService]
 final class PhpDocNodeResolver
 {
 
@@ -76,9 +78,9 @@ final class PhpDocNodeResolver
 				}
 				if ($tagValue->variableName !== '') {
 					$variableName = substr($tagValue->variableName, 1);
-					$resolved[$variableName] = new VarTag($type);
+					$resolved[$variableName] = new VarTag($type, true);
 				} else {
-					$varTag = new VarTag($type);
+					$varTag = new VarTag($type, true);
 					$tagResolved[] = $varTag;
 				}
 			}

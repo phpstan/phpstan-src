@@ -9,7 +9,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidThrowsPhpDocValueRule>
@@ -100,7 +101,7 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataMergeInheritedPhpDocs(): array
+	public static function dataMergeInheritedPhpDocs(): array
 	{
 		return [
 			[
@@ -121,16 +122,14 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataMergeInheritedPhpDocs
-	 */
+	#[DataProvider('dataMergeInheritedPhpDocs')]
 	public function testMergeInheritedPhpDocs(
 		string $className,
 		string $method,
 		string $expectedType,
 	): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$method = $reflection->getNativeMethod($method);
 		$throwsType = $method->getThrowType();
@@ -138,12 +137,9 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		$this->assertSame($expectedType, $throwsType->describe(VerbosityLevel::precise()));
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-throws-property-hook.php'], [
 			[
 				'PHPDoc tag @throws with type DateTimeImmutable is not subtype of Throwable',

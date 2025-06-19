@@ -5,10 +5,12 @@ namespace PHPStan\Rules\Traits;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use PHPStan\DependencyInjection\RegisteredCollector;
 
 /**
  * @implements Collector<Node\Stmt\Trait_, array{string, int}>
  */
+#[RegisteredCollector(level: 4)]
 final class TraitDeclarationCollector implements Collector
 {
 

@@ -6,6 +6,8 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -21,15 +23,20 @@ use function sprintf;
 use function str_contains;
 use function str_replace;
 
+#[AutowiredService(name: 'errorFormatter.table')]
 final class TableErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private SimpleRelativePathHelper $simpleRelativePathHelper,
 		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
+		#[AutowiredParameter(ref: '%tipsOfTheDay%')]
 		private bool $showTipsOfTheDay,
+		#[AutowiredParameter]
 		private ?string $editorUrl,
+		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
 	)
 	{
@@ -77,14 +84,19 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
+		$fixableErrorsCount = 0;
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
+				if ($error->getFixedErrorDiff() !== null) {
+					$message .= ' 🔧';
+					$fixableErrorsCount++;
+				}
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
 				if ($error->getIdentifier() !== null && $error->canBeIgnored()) {
 					$message .= "\n";
-					$message .= '🪪 ' . $error->getIdentifier();
+					$message .= '🪪  ' . $error->getIdentifier();
 				}
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();
@@ -94,11 +106,11 @@ final class TableErrorFormatter implements ErrorFormatter
 					if (str_contains($tip, "\n")) {
 						$lines = explode("\n", $tip);
 						foreach ($lines as $line) {
-							$message .= '💡 ' . ltrim($line, ' •') . "\n";
+							$message .= '💡  ' . ltrim($line, ' •') . "\n";
 						}
 						$message = rtrim($message, "\n");
 					} else {
-						$message .= '💡 ' . $tip;
+						$message .= '💡  ' . $tip;
 					}
 				}
 				if (is_string($this->editorUrl)) {
@@ -118,7 +130,7 @@ final class TableErrorFormatter implements ErrorFormatter
 						$title = $this->relativePathHelper->getRelativePath($filePath);
 					}
 
-					$message .= "\n✏️ <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
 				}
 
 				if (
@@ -155,6 +167,11 @@ final class TableErrorFormatter implements ErrorFormatter
 			$style->error($finalMessage);
 		} else {
 			$style->warning($finalMessage);
+		}
+
+		if ($fixableErrorsCount > 0) {
+			$output->writeLineFormatted(sprintf('🔧 %d %s can be fixed automatically. Run PHPStan again with <fg=cyan>--fix</>.', $fixableErrorsCount, $fixableErrorsCount === 1 ? 'error' : 'errors'));
+			$output->writeLineFormatted('');
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;

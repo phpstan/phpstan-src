@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<TypesAssignedToPropertiesRule>
@@ -15,9 +15,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, false, true), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new PropertyReflectionFinder());
 	}
 
 	public function testTypesAssignedToProperties(): void
@@ -631,12 +633,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10686.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11275(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-11275.php'], [
 			[
@@ -696,22 +695,16 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6571.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12565(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-12565.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testShortBodySetHook(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/short-set-property-hook-assign.php'], [
 			[
@@ -740,12 +733,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/assign-hooked-properties.php'], [
 			[
 				'Property AssignHookedProperties\Foo::$i (int) does not accept array<string>|int.',
@@ -777,6 +767,37 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				91,
 			],
 		]);
+	}
+
+	public function testBug13093c(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093c.php'], []);
+	}
+
+	public function testBug13093d(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13093d.php'], []);
+	}
+
+	public function testBug8825(): void
+	{
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8825.php'], []);
+	}
+
+	public function testBug7844(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7844.php'], []);
+	}
+
+	public function testBug7844b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7844b.php'], []);
+	}
+
+	public function testBug12675(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12675.php'], []);
 	}
 
 }

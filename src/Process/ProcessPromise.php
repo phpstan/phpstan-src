@@ -43,7 +43,7 @@ final class ProcessPromise
 			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
 		}
 
-		$this->process = new Process($this->command, null, null, [
+		$this->process = new Process($this->command, fds: [
 			1 => $tmpStdOutResource,
 			2 => $tmpStdErrResource,
 		]);

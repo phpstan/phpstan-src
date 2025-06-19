@@ -2,11 +2,14 @@
 
 namespace PHPStan\File;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_key_exists;
 use function array_merge;
 use function array_unique;
 use function array_values;
 
+#[AutowiredService]
 final class FileExcluderFactory
 {
 
@@ -15,6 +18,7 @@ final class FileExcluderFactory
 	 */
 	public function __construct(
 		private FileExcluderRawFactory $fileExcluderRawFactory,
+		#[AutowiredParameter]
 		private array $excludePaths,
 	)
 	{

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -19,6 +20,7 @@ use function array_splice;
 use function array_values;
 use function count;
 
+#[AutowiredService]
 final class OversizedArrayBuilder
 {
 

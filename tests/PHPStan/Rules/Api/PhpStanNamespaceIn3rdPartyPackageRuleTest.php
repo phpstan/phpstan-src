@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Api;
 
 use Nette\Utils\Json;
+use Override;
 use PHPStan\File\FileWriter;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -19,6 +20,7 @@ class PhpStanNamespaceIn3rdPartyPackageRuleTest extends RuleTestCase
 		return new PhpStanNamespaceIn3rdPartyPackageRule(new ApiRuleHelper());
 	}
 
+	#[Override]
 	protected function tearDown(): void
 	{
 		@unlink(__DIR__ . '/composer.json');

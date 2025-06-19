@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Regexp;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Regex\RegexExpressionHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -152,8 +153,8 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
-	 * @dataProvider dataArrayShapePatterns
 	 */
+	#[DataProvider('dataArrayShapePatterns')]
 	public function testArrayShapePatterns(string $file, array $errors): void
 	{
 		$this->analyse(
@@ -162,7 +163,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 		);
 	}
 
-	public function dataArrayShapePatterns(): iterable
+	public static function dataArrayShapePatterns(): iterable
 	{
 		yield [
 			__DIR__ . '/../../Analyser/nsrt/preg_match_all_shapes.php',

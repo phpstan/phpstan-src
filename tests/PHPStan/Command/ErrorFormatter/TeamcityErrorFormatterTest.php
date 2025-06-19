@@ -5,12 +5,13 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -93,9 +94,9 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider dataFormatterOutputProvider
 	 * @param array{int, int}|int $numFileErrors
 	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,

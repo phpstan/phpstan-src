@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Php\PhpVersion;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodCallableNode>
  */
+#[RegisteredRule(level: 0)]
 final class MethodCallableRule implements Rule
 {
 

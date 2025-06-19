@@ -17,6 +17,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Throwable;
 use function sprintf;
@@ -24,9 +25,9 @@ use function sprintf;
 class ConstantStringTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return [
 			0 => [
 				new ConstantStringType(Exception::class),
@@ -136,9 +137,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(ConstantStringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);

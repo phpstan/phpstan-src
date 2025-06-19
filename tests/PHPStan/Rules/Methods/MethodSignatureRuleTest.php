@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -30,7 +31,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			true,
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
-			$phpClassReflectionExtension,
+			new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
 			false,
 		);
 	}
@@ -377,12 +378,9 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7652(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-7652.php'], [
@@ -452,12 +450,9 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9905.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testTraits(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 
@@ -469,12 +464,9 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10166(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 
@@ -486,12 +478,9 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10184(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 
@@ -530,12 +519,9 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3580.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testOverridenAbstractTraitMethodPhpDoc(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/overriden-abstract-trait-method-phpdoc.php'], []);
@@ -548,34 +534,25 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-signature-generic-static-type.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10240(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-10240.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10488(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-10488.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12073(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-12073.php'], []);

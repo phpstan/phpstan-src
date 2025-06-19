@@ -2,8 +2,10 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 
+#[AutowiredService]
 final class ReflectionClassStubFilesExtension implements StubFilesExtension
 {
 

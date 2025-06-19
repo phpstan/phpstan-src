@@ -11,7 +11,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<LocalTypeAliasesRule>
@@ -21,12 +21,12 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new LocalTypeAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				self::getContainer()->getByType(TypeNodeResolver::class),
 				new MissingTypehintCheck(true, []),
 				new ClassNameCheck(
@@ -148,12 +148,9 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/local-type-aliases-enums.php'], [
 			[
 				'Cannot import type alias Test: class LocalTypeAliasesEnums\NonexistentClass does not exist.',

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeVisitor;
@@ -30,6 +31,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 
 	private ?Node\Stmt\Namespace_ $currentNamespaceNode = null;
 
+	#[Override]
 	public function enterNode(Node $node): ?int
 	{
 		if ($node instanceof Namespace_) {
@@ -110,6 +112,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 	/**
 	 * @return null
 	 */
+	#[Override]
 	public function leaveNode(Node $node)
 	{
 		if (!$node instanceof Namespace_) {

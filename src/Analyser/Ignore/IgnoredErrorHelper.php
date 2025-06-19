@@ -4,6 +4,8 @@ namespace PHPStan\Analyser\Ignore;
 
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
@@ -12,6 +14,7 @@ use function is_array;
 use function is_file;
 use function sprintf;
 
+#[AutowiredService]
 final class IgnoredErrorHelper
 {
 
@@ -20,7 +23,9 @@ final class IgnoredErrorHelper
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
+		#[AutowiredParameter]
 		private array $ignoreErrors,
+		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{

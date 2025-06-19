@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -12,6 +13,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[RegisteredRule(level: 0)]
 final class NewStaticRule implements Rule
 {
 

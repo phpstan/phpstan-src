@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
@@ -14,6 +15,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
+#[AutowiredService]
 final class DateIntervalConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

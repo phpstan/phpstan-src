@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -16,11 +18,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\BinaryOp>
  */
+#[RegisteredRule(level: 4)]
 final class NumberComparisonOperatorsConstantConditionRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

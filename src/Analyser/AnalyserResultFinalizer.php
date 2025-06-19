@@ -6,6 +6,8 @@ use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
@@ -14,6 +16,7 @@ use function count;
 use function get_class;
 use function sprintf;
 
+#[AutowiredService]
 final class AnalyserResultFinalizer
 {
 
@@ -23,6 +26,7 @@ final class AnalyserResultFinalizer
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
+		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
@@ -50,7 +54,7 @@ final class AnalyserResultFinalizer
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
-				$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, null, null, $e->getTip()))
+				$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, tip: $e->getTip()))
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
@@ -58,7 +62,7 @@ final class AnalyserResultFinalizer
 					]);
 				continue;
 			} catch (IdentifierNotFound $e) {
-				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
+				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, tip: 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
 					->withIdentifier('phpstan.reflection')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
@@ -89,7 +93,7 @@ final class AnalyserResultFinalizer
 			}
 
 			foreach ($ruleErrors as $ruleError) {
-				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $nodeType, $node->getStartLine());
+				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $node);
 
 				if ($error->canBeIgnored()) {
 					foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
@@ -140,6 +144,7 @@ final class AnalyserResultFinalizer
 			$internalErrors,
 			$analyserResult->getCollectedData(),
 			$analyserResult->getDependencies(),
+			$analyserResult->getUsedTraitDependencies(),
 			$analyserResult->getExportedNodes(),
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
 			$analyserResult->getPeakMemoryUsageBytes(),
@@ -158,6 +163,7 @@ final class AnalyserResultFinalizer
 			$analyserResult->getInternalErrors(),
 			$analyserResult->getCollectedData(),
 			$analyserResult->getDependencies(),
+			$analyserResult->getUsedTraitDependencies(),
 			$analyserResult->getExportedNodes(),
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
 			$analyserResult->getPeakMemoryUsageBytes(),
@@ -221,6 +227,7 @@ final class AnalyserResultFinalizer
 				$analyserResult->getInternalErrors(),
 				$analyserResult->getCollectedData(),
 				$analyserResult->getDependencies(),
+				$analyserResult->getUsedTraitDependencies(),
 				$analyserResult->getExportedNodes(),
 				$analyserResult->hasReachedInternalErrorsCountLimit(),
 				$analyserResult->getPeakMemoryUsageBytes(),

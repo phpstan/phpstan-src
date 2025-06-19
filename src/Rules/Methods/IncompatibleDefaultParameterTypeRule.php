@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatibleDefaultParameterTypeRule implements Rule
 {
 

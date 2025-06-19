@@ -2,8 +2,10 @@
 
 namespace PHPStan\DependencyInjection\Type;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService(as: ParameterClosureTypeExtensionProvider::class)]
 final class LazyParameterClosureTypeExtensionProvider implements ParameterClosureTypeExtensionProvider
 {
 

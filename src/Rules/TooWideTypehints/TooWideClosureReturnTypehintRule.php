@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<ClosureReturnStatementsNode>
  */
+#[RegisteredRule(level: 4)]
 final class TooWideClosureReturnTypehintRule implements Rule
 {
 

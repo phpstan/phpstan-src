@@ -11,10 +11,10 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function count;
 use function implode;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<Rule<NodeAbstract>>
@@ -80,12 +80,9 @@ class AttributeReflectionFromNodeRuleTest extends RuleTestCase
 		};
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/attribute-reflection.php'], [
 			[
 				'#[AttributeReflectionTest\MyAttr(one: 7, two: 8)], $test: #[AttributeReflectionTest\MyAttr(one: 9, two: 10)]',

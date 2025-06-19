@@ -34,6 +34,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function array_merge;
 use function count;
@@ -42,7 +43,7 @@ use const PHP_VERSION_ID;
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
 
-	public function dataFunctions(): array
+	public static function dataFunctions(): array
 	{
 		return [
 			[
@@ -132,9 +133,9 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataFunctions
 	 * @param mixed[] $parameters
 	 */
+	#[DataProvider('dataFunctions')]
 	public function testFunctions(
 		string $functionName,
 		array $parameters,
@@ -169,7 +170,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataMethods(): array
+	public static function dataMethods(): array
 	{
 		return [
 			[
@@ -262,9 +263,9 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataMethods
 	 * @param mixed[] $parameters
 	 */
+	#[DataProvider('dataMethods')]
 	public function testMethods(
 		string $className,
 		string $methodName,
@@ -307,15 +308,13 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		$this->assertSame($expectedVariadic, $actualSignature->isVariadic());
 	}
 
-	public function dataParseAll(): array
+	public static function dataParseAll(): array
 	{
 		$map = new Php8StubsMap(PHP_VERSION_ID);
 		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge($map->classes, $map->functions));
 	}
 
-	/**
-	 * @dataProvider dataParseAll
-	 */
+	#[DataProvider('dataParseAll')]
 	public function testParseAll(string $stubFile): void
 	{
 		$parser = $this->getParser();

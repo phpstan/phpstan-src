@@ -14,7 +14,7 @@ class ApiTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ApiTraitUseRule(new ApiRuleHelper(), $this->createReflectionProvider());
+		return new ApiTraitUseRule(new ApiRuleHelper(), self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStan(): void

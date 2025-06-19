@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectType;
@@ -16,6 +17,7 @@ use function str_starts_with;
 /**
  * @implements Rule<MethodCall>
  */
+#[RegisteredRule(level: 0)]
 final class NodeConnectingVisitorAttributesRule implements Rule
 {
 

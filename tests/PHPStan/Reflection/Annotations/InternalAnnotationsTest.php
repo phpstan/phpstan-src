@@ -11,11 +11,12 @@ use InternalAnnotations\InternalFooTrait;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class InternalAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataInternalAnnotations(): array
+	public static function dataInternalAnnotations(): array
 	{
 		return [
 			[
@@ -110,12 +111,12 @@ class InternalAnnotationsTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataInternalAnnotations
 	 * @param array<string, mixed> $internalAnnotations
 	 */
+	#[DataProvider('dataInternalAnnotations')]
 	public function testInternalAnnotations(bool $internal, string $className, array $internalAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -146,7 +147,7 @@ class InternalAnnotationsTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/annotations-internal.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
 		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());

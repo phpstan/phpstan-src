@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Override;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -67,6 +68,7 @@ final class AutoloadSourceLocator implements SourceLocator
 	{
 	}
 
+	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isFunction()) {
@@ -278,6 +280,7 @@ final class AutoloadSourceLocator implements SourceLocator
 		return null;
 	}
 
+	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
 		return [];

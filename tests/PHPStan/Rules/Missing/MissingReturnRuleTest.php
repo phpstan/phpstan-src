@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Missing;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MissingReturnRule>
@@ -153,12 +154,9 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug3488(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->analyse([__DIR__ . '/data/bug-3488.php'], []);
 	}
@@ -171,7 +169,7 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3669.php'], []);
 	}
 
-	public function dataCheckPhpDocMissingReturn(): array
+	public static function dataCheckPhpDocMissingReturn(): array
 	{
 		return [
 			[
@@ -260,21 +258,18 @@ class MissingReturnRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataCheckPhpDocMissingReturn
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataCheckPhpDocMissingReturn')]
 	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->checkPhpDocMissingReturn = $checkPhpDocMissingReturn;
 		$this->analyse([__DIR__ . '/data/check-phpdoc-missing-return.php'], $errors);
 	}
 
-	public function dataModelMixin(): array
+	public static function dataModelMixin(): array
 	{
 		return [
 			[
@@ -286,15 +281,10 @@ class MissingReturnRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataModelMixin
-	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataModelMixin')]
 	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
 		$this->checkPhpDocMissingReturn = true;
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/model-mixin.php'], [
@@ -305,11 +295,9 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6257(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->checkPhpDocMissingReturn = true;
 		$this->analyse([__DIR__ . '/data/bug-6257.php'], [
@@ -351,12 +339,9 @@ class MissingReturnRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9374.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->analyse([__DIR__ . '/data/property-hooks-missing-return.php'], [
 			[
@@ -381,12 +366,9 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12722(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->analyse([__DIR__ . '/data/bug-12722.php'], []);
 	}

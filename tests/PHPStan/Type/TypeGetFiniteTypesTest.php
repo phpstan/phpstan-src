@@ -10,11 +10,12 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TypeGetFiniteTypesTest extends PHPStanTestCase
 {
 
-	public function dataGetFiniteTypes(): iterable
+	public static function dataGetFiniteTypes(): iterable
 	{
 		yield [
 			IntegerRangeType::fromInterval(0, 5),
@@ -97,36 +98,36 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(true),
-				], [2], [], TrinaryLogic::createYes()),
+				], [2], isList: TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(true),
 					new ConstantBooleanType(false),
-				], [2], [], TrinaryLogic::createYes()),
+				], [2], isList: TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(true),
-				], [2], [], TrinaryLogic::createYes()),
+				], [2], isList: TrinaryLogic::createYes()),
 				new ConstantArrayType([
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
 					new ConstantBooleanType(false),
 					new ConstantBooleanType(false),
-				], [2], [], TrinaryLogic::createYes()),
+				], [2], isList: TrinaryLogic::createYes()),
 			],
 		];
 	}
 
 	/**
-	 * @dataProvider dataGetFiniteTypes
 	 * @param list<Type> $expectedTypes
 	 */
+	#[DataProvider('dataGetFiniteTypes')]
 	public function testGetFiniteTypes(
 		Type $type,
 		array $expectedTypes,

@@ -153,4 +153,9 @@ class NoopRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11361.php'], []);
 	}
 
+	public function testBug13067(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13067.php'], []);
+	}
+
 }

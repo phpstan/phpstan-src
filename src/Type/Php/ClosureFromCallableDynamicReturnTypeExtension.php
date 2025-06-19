@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClosureType;
@@ -14,6 +15,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
+#[AutowiredService]
 final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 
@@ -48,12 +50,11 @@ final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStat
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ExtendedParametersAcceptor ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-				[],
-				$variant->getThrowPoints(),
-				$variant->getImpurePoints(),
-				$variant->getInvalidateExpressions(),
-				$variant->getUsedVariables(),
-				$variant->acceptsNamedArguments(),
+				throwPoints: $variant->getThrowPoints(),
+				impurePoints: $variant->getImpurePoints(),
+				invalidateExpressions: $variant->getInvalidateExpressions(),
+				usedVariables: $variant->getUsedVariables(),
+				acceptsNamedArguments: $variant->acceptsNamedArguments(),
 			);
 		}
 

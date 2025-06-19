@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,12 +19,9 @@ class MissingMagicSerializationMethodsRuleTest extends RuleTestCase
 		return new MissingMagicSerializationMethodsRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-serialization.php'], [
 			[
 				'Non-abstract class MissingMagicSerializationMethods\myObj implements the Serializable interface, but does not implement __serialize().',

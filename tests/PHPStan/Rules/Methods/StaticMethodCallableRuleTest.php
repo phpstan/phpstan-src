@@ -9,6 +9,7 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -21,7 +22,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true);
 
 		return new StaticMethodCallableRule(
@@ -42,12 +43,9 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('< 8.1')]
 	public function testNotSupportedOnOlderVersions(): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			self::markTestSkipped('Test runs on PHP < 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/static-method-callable-not-supported.php'], [
 			[
 				'First-class callables are supported only on PHP 8.1 and later.',
@@ -56,12 +54,9 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/static-method-callable.php'], [
 			[
 				'Call to static method StaticMethodCallable\Foo::doFoo() with incorrect case: dofoo',

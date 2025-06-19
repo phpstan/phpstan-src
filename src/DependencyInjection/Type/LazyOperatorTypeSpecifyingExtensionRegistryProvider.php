@@ -3,9 +3,11 @@
 namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 
+#[AutowiredService(as: OperatorTypeSpecifyingExtensionRegistryProvider::class)]
 final class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 

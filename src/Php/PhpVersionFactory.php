@@ -2,11 +2,13 @@
 
 namespace PHPStan\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use function explode;
 use function max;
 use function min;
 use const PHP_VERSION_ID;
 
+#[AutowiredService(factory: '@PHPStan\Php\PhpVersionFactoryFactory::create')]
 final class PhpVersionFactory
 {
 

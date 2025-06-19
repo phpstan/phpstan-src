@@ -98,6 +98,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $functionCall->getArgs()) {
+			return $functionCall;
+		}
+
 		return new FuncCall(
 			$functionCall->name,
 			$reorderedArgs,
@@ -114,6 +119,11 @@ final class ArgumentsNormalizer
 
 		if ($reorderedArgs === null) {
 			return null;
+		}
+
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $methodCall->getArgs()) {
+			return $methodCall;
 		}
 
 		return new MethodCall(
@@ -135,6 +145,11 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $staticCall->getArgs()) {
+			return $staticCall;
+		}
+
 		return new StaticCall(
 			$staticCall->class,
 			$staticCall->name,
@@ -152,6 +167,11 @@ final class ArgumentsNormalizer
 
 		if ($reorderedArgs === null) {
 			return null;
+		}
+
+		// return identical object if not reordered, as TypeSpecifier relies on object identity
+		if ($reorderedArgs === $new->getArgs()) {
+			return $new;
 		}
 
 		return new New_(
@@ -202,7 +222,16 @@ final class ArgumentsNormalizer
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
-				$reorderedArgs[$i] = $arg;
+
+				$attributes = $arg->getAttributes();
+				$attributes[self::ORIGINAL_ARG_ATTRIBUTE] = $arg;
+				$reorderedArgs[$i] = new Arg(
+					$arg->value,
+					$arg->byRef,
+					$arg->unpack,
+					$attributes,
+					null,
+				);
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
 				$argName = $arg->name->toString();
 				// order named args into the position the signature expects them

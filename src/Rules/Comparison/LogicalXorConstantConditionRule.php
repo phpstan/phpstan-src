@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\LogicalXor;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,13 +16,17 @@ use function sprintf;
 /**
  * @implements Rule<LogicalXor>
  */
+#[RegisteredRule(level: 4)]
 final class LogicalXorConstantConditionRule implements Rule
 {
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
 		private bool $reportAlwaysTrueInLastCondition,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

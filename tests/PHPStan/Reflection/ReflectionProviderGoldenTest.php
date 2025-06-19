@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use JetBrains\PHPStormStub\PhpStormStubsMap;
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\NodeTraverser;
@@ -12,6 +13,7 @@ use PHPStan\Php8StubsMap;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 use Throwable;
@@ -63,7 +65,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		}
 	}
 
-	/** @dataProvider data */
+	#[DataProvider('data')]
 	public function test(string $input, string $expectedOutput): void
 	{
 		$output = self::generateSymbolDescription($input);
@@ -491,7 +493,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		$symbols = self::scrapeInputSymbols();
 		$symbolsFile = self::getPhpSymbolsFile();
-		@mkdir(dirname($symbolsFile), 0777, true);
+		@mkdir(dirname($symbolsFile), recursive: true);
 		$result = file_put_contents($symbolsFile, implode("\n", $symbols));
 
 		if ($result !== false) {
@@ -634,6 +636,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 
 			private Node\Stmt\ClassLike $classLike;
 
+			#[Override]
 			public function enterNode(Node $node)
 			{
 				if ($node instanceof Node\Stmt\ClassLike && $node->namespacedName !== null) {
@@ -656,6 +659,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 				return null;
 			}
 
+			#[Override]
 			public function leaveNode(Node $node)
 			{
 				if ($node instanceof Node\Stmt\ClassLike) {

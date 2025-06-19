@@ -11,6 +11,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CallableType;
@@ -18,6 +19,7 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 use function strtolower;
 
+#[AutowiredService]
 final class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Type\TypeCombinator;
 /**
  * @implements Rule<ClosureReturnStatementsNode>
  */
+#[RegisteredRule(level: 3)]
 final class ClosureReturnTypeRule implements Rule
 {
 

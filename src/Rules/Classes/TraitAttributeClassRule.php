@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Stmt\Trait_>
  */
+#[RegisteredRule(level: 0)]
 final class TraitAttributeClassRule implements Rule
 {
 

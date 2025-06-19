@@ -2,14 +2,21 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class ClassCaseSensitivityCheck
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider, private bool $checkInternalClassCaseSensitivity)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter]
+		private bool $checkInternalClassCaseSensitivity,
+	)
 	{
 	}
 

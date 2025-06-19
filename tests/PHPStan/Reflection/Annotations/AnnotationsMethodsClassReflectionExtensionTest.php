@@ -12,6 +12,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_merge;
 use function count;
 use function sprintf;
@@ -19,7 +20,7 @@ use function sprintf;
 class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 {
 
-	public function dataMethods(): array
+	public static function dataMethods(): array
 	{
 		$fooMethods = [
 			'getInteger' => [
@@ -958,12 +959,12 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataMethods
 	 * @param array<string, mixed> $methods
 	 */
+	#[DataProvider('dataMethods')]
 	public function testMethods(string $className, array $methods): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -1025,7 +1026,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 
 	public function testOverridingNativeMethodsWithAnnotationsDoesNotBreakGetNativeMethod(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
 		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));

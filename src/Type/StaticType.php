@@ -88,8 +88,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 					$this->classReflection->getName(),
 					$this->classReflection->typeMapToList($typeMap),
 					$this->subtractedType,
-					null,
-					$this->classReflection->varianceMapToList($varianceMap),
+					variances: $this->classReflection->varianceMapToList($varianceMap),
 				);
 			}
 

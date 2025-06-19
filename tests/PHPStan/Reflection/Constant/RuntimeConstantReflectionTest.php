@@ -5,12 +5,13 @@ namespace PHPStan\Reflection\Constant;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 class RuntimeConstantReflectionTest extends PHPStanTestCase
 {
 
-	public function dataDeprecatedConstants(): iterable
+	public static function dataDeprecatedConstants(): iterable
 	{
 		yield [
 			new Name('\FILTER_SANITIZE_STRING'),
@@ -41,14 +42,12 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataDeprecatedConstants
-	 */
+	#[DataProvider('dataDeprecatedConstants')]
 	public function testDeprecatedConstants(Name $constName, TrinaryLogic $isDeprecated, ?string $deprecationMessage): void
 	{
 		require_once __DIR__ . '/data/deprecated-constant.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$this->assertTrue($reflectionProvider->hasConstant($constName, null));
 		$this->assertSame($isDeprecated->describe(), $reflectionProvider->getConstant($constName, null)->isDeprecated()->describe());

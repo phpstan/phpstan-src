@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Stmt\Catch_>
  */
+#[RegisteredRule(level: 0)]
 final class NoncapturingCatchRule implements Rule
 {
 

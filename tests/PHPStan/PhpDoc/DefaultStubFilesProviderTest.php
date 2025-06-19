@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
+use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use function sprintf;
 
@@ -10,6 +11,7 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 
 	private string $currentWorkingDirectory;
 
+	#[Override]
 	protected function setUp(): void
 	{
 		$this->currentWorkingDirectory = $this->getContainer()->getParameter('currentWorkingDirectory');

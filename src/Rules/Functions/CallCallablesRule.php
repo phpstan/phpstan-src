@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -25,12 +27,14 @@ use function ucfirst;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[RegisteredRule(level: 2)]
 final class CallCallablesRule implements Rule
 {
 
 	public function __construct(
 		private FunctionCallParametersCheck $check,
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
 	{

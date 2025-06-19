@@ -12,6 +12,8 @@ use Nette\Utils\Json;
 use Phar;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\InternalError;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
@@ -64,6 +66,7 @@ use const PHP_BINARY;
 use const PHP_URL_PORT;
 use const PHP_VERSION_ID;
 
+#[AutowiredService]
 final class FixerApplication
 {
 
@@ -83,15 +86,25 @@ final class FixerApplication
 		private FileMonitor $fileMonitor,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
+		#[AutowiredParameter]
 		private array $analysedPaths,
+		#[AutowiredParameter]
 		private string $currentWorkingDirectory,
+		#[AutowiredParameter(ref: '%pro.tmpDir%')]
 		private string $proTmpDir,
+		#[AutowiredParameter(ref: '%pro.dnsServers%')]
 		private array $dnsServers,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
 		private array $allConfigFiles,
+		#[AutowiredParameter]
 		private ?string $cliAutoloadFile,
+		#[AutowiredParameter]
 		private array $bootstrapFiles,
+		#[AutowiredParameter]
 		private ?string $editorUrl,
+		#[AutowiredParameter]
 		private string $usedLevel,
 	)
 	{
@@ -117,7 +130,7 @@ final class FixerApplication
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
-			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
+			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: 128 * 1024 * 1024);
 			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$encoder->write(['action' => 'initialData', 'data' => [
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
@@ -292,7 +305,7 @@ final class FixerApplication
 			}
 		}
 
-		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), null, $env, []);
+		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), env: $env, fds: []);
 	}
 
 	private function downloadPhar(
@@ -458,7 +471,7 @@ final class FixerApplication
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
-			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
+			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: 128 * 1024 * 1024);
 			$decoder->on('data', static function (array $data) use ($phpstanFixerEncoder): void {
 				$phpstanFixerEncoder->write($data);
 			});

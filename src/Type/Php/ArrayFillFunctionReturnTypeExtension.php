@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -20,6 +21,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
+#[AutowiredService]
 final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

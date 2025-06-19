@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_change_key_case;
@@ -16,6 +17,7 @@ use function str_starts_with;
 /**
  * @implements Rule<Name>
  */
+#[RegisteredRule(level: 0)]
 final class OldPhpParser4ClassRule implements Rule
 {
 

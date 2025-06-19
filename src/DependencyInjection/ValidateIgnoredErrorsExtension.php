@@ -7,6 +7,7 @@ use Hoa\File\Read;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use Override;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
@@ -48,6 +49,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 	/**
 	 * @throws InvalidIgnoredErrorPatternsException
 	 */
+	#[Override]
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();

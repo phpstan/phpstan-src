@@ -3,14 +3,15 @@
 namespace PHPStan\File;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class FileExcluderTest extends PHPStanTestCase
 {
 
 	/**
-	 * @dataProvider dataExcludeOnWindows
 	 * @param string[] $analyseExcludes
 	 */
+	#[DataProvider('dataExcludeOnWindows')]
 	public function testFilesAreExcludedFromAnalysingOnWindows(
 		string $filePath,
 		array $analyseExcludes,
@@ -24,7 +25,7 @@ class FileExcluderTest extends PHPStanTestCase
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
 
-	public function dataExcludeOnWindows(): array
+	public static function dataExcludeOnWindows(): array
 	{
 		return [
 			[
@@ -116,9 +117,9 @@ class FileExcluderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataExcludeOnUnix
 	 * @param string[] $analyseExcludes
 	 */
+	#[DataProvider('dataExcludeOnUnix')]
 	public function testFilesAreExcludedFromAnalysingOnUnix(
 		string $filePath,
 		array $analyseExcludes,
@@ -132,7 +133,7 @@ class FileExcluderTest extends PHPStanTestCase
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
 
-	public function dataExcludeOnUnix(): array
+	public static function dataExcludeOnUnix(): array
 	{
 		return [
 			[
@@ -203,7 +204,7 @@ class FileExcluderTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataNoImplicitWildcard(): iterable
+	public static function dataNoImplicitWildcard(): iterable
 	{
 		yield [
 			__DIR__ . '/tests/foo.php',
@@ -239,9 +240,9 @@ class FileExcluderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataNoImplicitWildcard
 	 * @param string[] $analyseExcludes
 	 */
+	#[DataProvider('dataNoImplicitWildcard')]
 	public function testNoImplicitWildcard(
 		string $filePath,
 		array $analyseExcludes,

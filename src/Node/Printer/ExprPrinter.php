@@ -3,10 +3,12 @@
 namespace PHPStan\Node\Printer;
 
 use PhpParser\Node\Expr;
+use PHPStan\DependencyInjection\AutowiredService;
 
 /**
  * @api
  */
+#[AutowiredService]
 final class ExprPrinter
 {
 

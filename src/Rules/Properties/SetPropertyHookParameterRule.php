@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -16,12 +18,15 @@ use function sprintf;
 /**
  * @implements Rule<InPropertyHookNode>
  */
+#[RegisteredRule(level: 0)]
 final class SetPropertyHookParameterRule implements Rule
 {
 
 	public function __construct(
 		private MissingTypehintCheck $missingTypehintCheck,
+		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
 	)
 	{

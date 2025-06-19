@@ -7,17 +7,6 @@ parameters:
 	reportMagicMethods: true
 	reportMagicProperties: true
 
-rules:
-	- PHPStan\Rules\Classes\UnusedConstructorParametersRule
-	- PHPStan\Rules\Functions\UnusedClosureUsesRule
-	- PHPStan\Rules\Variables\EmptyRule
-	- PHPStan\Rules\Variables\IssetRule
-	- PHPStan\Rules\Variables\NullCoalesceRule
-
-services:
-	-
-		class: PHPStan\Rules\Constants\ConstantRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			discoveringSymbolsTip: %tips.discoveringSymbols%
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 1

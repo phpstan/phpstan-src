@@ -3,21 +3,22 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TypeSpecifyingExtensionTypeInferenceNullTest extends TypeInferenceTestCase
 {
 
-	public function dataTypeSpecifyingExtensionsNull(): iterable
+	public static function dataTypeSpecifyingExtensionsNull(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-null.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-null.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-null.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-null.php');
 	}
 
 	/**
-	 * @dataProvider dataTypeSpecifyingExtensionsNull
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataTypeSpecifyingExtensionsNull')]
 	public function testTypeSpecifyingExtensionsNull(
 		string $assertType,
 		string $file,

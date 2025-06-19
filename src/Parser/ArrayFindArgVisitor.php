@@ -2,15 +2,19 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use function in_array;
 
+#[AutowiredService]
 final class ArrayFindArgVisitor extends NodeVisitorAbstract
 {
 
 	public const ATTRIBUTE_NAME = 'isArrayFindArg';
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {

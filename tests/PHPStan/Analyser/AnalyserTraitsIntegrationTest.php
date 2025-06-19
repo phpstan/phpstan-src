@@ -2,20 +2,22 @@
 
 namespace PHPStan\Analyser;
 
+use Override;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function sprintf;
 use function usort;
-use const PHP_VERSION_ID;
 
 class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
 
 	private FileHelper $fileHelper;
 
+	#[Override]
 	protected function setUp(): void
 	{
 		$this->fileHelper = self::getContainer()->getByType(FileHelper::class);
@@ -169,12 +171,9 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testUnititializedReadonlyPropertyAccessedInTrait(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped();
-		}
-
 		$errors = $this->runAnalyse([
 			__DIR__ . '/traits/uninitializedProperty/FooClass.php',
 			__DIR__ . '/traits/uninitializedProperty/FooTrait.php',

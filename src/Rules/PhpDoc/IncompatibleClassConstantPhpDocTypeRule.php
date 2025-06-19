@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -20,6 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatibleClassConstantPhpDocTypeRule implements Rule
 {
 

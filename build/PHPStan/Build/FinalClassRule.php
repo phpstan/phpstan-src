@@ -2,6 +2,7 @@
 
 namespace PHPStan\Build;
 
+use PhpParser\Modifiers;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\FileHelper;
@@ -23,7 +24,7 @@ use function str_starts_with;
 final class FinalClassRule implements Rule
 {
 
-	public function __construct(private FileHelper $fileHelper)
+	public function __construct(private FileHelper $fileHelper, private bool $skipTests = true)
 	{
 	}
 
@@ -58,16 +59,25 @@ final class FinalClassRule implements Rule
 			return [];
 		}
 
-		if (str_starts_with($this->fileHelper->normalizePath($scope->getFile()), $this->fileHelper->normalizePath(dirname(__DIR__, 3) . '/tests'))) {
+		if ($this->skipTests && str_starts_with($this->fileHelper->normalizePath($scope->getFile()), $this->fileHelper->normalizePath(dirname(__DIR__, 3) . '/tests'))) {
 			return [];
 		}
 
+		$errorBuilder = RuleErrorBuilder::message(
+			sprintf('Class %s must be abstract or final.', $classReflection->getDisplayName()),
+		)->identifier('phpstan.finalClass');
+
+		$originalNode = $node->getOriginalNode();
+		if ($originalNode instanceof Node\Stmt\Class_ && $originalNode->name !== null) {
+			$errorBuilder->fixNode($originalNode, static function ($classNode) {
+				$classNode->flags |= Modifiers::FINAL;
+
+				return $classNode;
+			});
+		}
+
 		return [
-			RuleErrorBuilder::message(
-				sprintf('Class %s must be abstract or final.', $classReflection->getDisplayName()),
-			)
-				->identifier('phpstan.finalClass')
-				->build(),
+			$errorBuilder->build(),
 		];
 	}
 

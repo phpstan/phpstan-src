@@ -16,14 +16,12 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-/**
- * @covers \PHPStan\Analyser\MutatingScope
- */
 class ScopeTest extends PHPStanTestCase
 {
 
-	public function dataGeneralize(): array
+	public static function dataGeneralize(): array
 	{
 		return [
 			[
@@ -230,9 +228,7 @@ class ScopeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataGeneralize
-	 */
+	#[DataProvider('dataGeneralize')]
 	public function testGeneralize(Type $a, Type $b, string $expectedTypeDescription): void
 	{
 		/** @var ScopeFactory $scopeFactory */

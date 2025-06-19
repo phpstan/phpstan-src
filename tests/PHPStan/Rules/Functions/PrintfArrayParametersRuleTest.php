@@ -17,7 +17,7 @@ class PrintfArrayParametersRuleTest extends RuleTestCase
 	{
 		return new PrintfArrayParametersRule(
 			new PrintfHelper(new PhpVersion(PHP_VERSION_ID)),
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 		);
 	}
 

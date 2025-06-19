@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -22,6 +23,7 @@ use function strtolower;
 /**
  * @implements Rule<FileNode>
  */
+#[RegisteredRule(level: 0)]
 final class UsedNamesRule implements Rule
 {
 

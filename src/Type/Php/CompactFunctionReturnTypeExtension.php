@@ -4,6 +4,8 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -13,10 +15,14 @@ use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 
+#[AutowiredService]
 final class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private bool $checkMaybeUndefinedVariables)
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $checkMaybeUndefinedVariables,
+	)
 	{
 	}
 

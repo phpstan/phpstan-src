@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
@@ -15,13 +17,17 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\MethodCall>
  */
+#[RegisteredRule(level: 4)]
 final class ImpossibleCheckTypeMethodCallRule implements Rule
 {
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
 		private bool $reportAlwaysTrueInLastCondition,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

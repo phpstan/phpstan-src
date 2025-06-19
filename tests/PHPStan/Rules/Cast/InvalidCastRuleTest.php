@@ -5,9 +5,10 @@ namespace PHPStan\Rules\Cast;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 use function usort;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidCastRule>
@@ -21,7 +22,7 @@ class InvalidCastRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true));
 	}
 
@@ -60,12 +61,9 @@ class InvalidCastRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5162.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-cast-nullsafe.php'], [
 			[
 				'Cannot cast stdClass|null to string.',
@@ -88,7 +86,7 @@ class InvalidCastRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataMixed(): array
+	public static function dataMixed(): array
 	{
 		$explicitOnlyErrors = [
 			[
@@ -158,15 +156,12 @@ class InvalidCastRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataMixed
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataMixed')]
 	public function testMixed(bool $checkExplicitMixed, bool $checkImplicitMixed, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkImplicitMixed = $checkImplicitMixed;
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/mixed-cast.php'], $errors);

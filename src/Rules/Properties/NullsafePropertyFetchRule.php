@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -12,6 +13,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\NullsafePropertyFetch>
  */
+#[RegisteredRule(level: 4)]
 final class NullsafePropertyFetchRule implements Rule
 {
 

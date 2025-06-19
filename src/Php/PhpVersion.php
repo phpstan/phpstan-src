@@ -2,11 +2,13 @@
 
 namespace PHPStan\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use function floor;
 
 /**
  * @api
  */
+#[AutowiredService(factory: '@PHPStan\Php\PhpVersionFactory::create')]
 final class PhpVersion
 {
 

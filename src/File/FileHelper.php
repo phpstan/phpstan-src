@@ -3,6 +3,8 @@
 namespace PHPStan\File;
 
 use Nette\Utils\Strings;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_pop;
 use function explode;
 use function implode;
@@ -18,12 +20,16 @@ use function substr;
 use function trim;
 use const DIRECTORY_SEPARATOR;
 
+#[AutowiredService]
 final class FileHelper
 {
 
 	private string $workingDirectory;
 
-	public function __construct(string $workingDirectory)
+	public function __construct(
+		#[AutowiredParameter(ref: '%currentWorkingDirectory%')]
+		string $workingDirectory,
+	)
 	{
 		$this->workingDirectory = $this->normalizePath($workingDirectory);
 	}

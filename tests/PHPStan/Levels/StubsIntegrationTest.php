@@ -3,10 +3,9 @@
 namespace PHPStan\Levels;
 
 use PHPStan\Testing\LevelsTestCase;
+use PHPUnit\Framework\Attributes\Group;
 
-/**
- * @group levels
- */
+#[Group('levels')]
 class StubsIntegrationTest extends LevelsTestCase
 {
 

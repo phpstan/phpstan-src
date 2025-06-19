@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ArrayType;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 
+#[AutowiredService]
 final class CountCharsFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

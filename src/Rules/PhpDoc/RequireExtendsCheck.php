@@ -4,6 +4,8 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -19,12 +21,15 @@ use function sort;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class RequireExtendsCheck
 {
 
 	public function __construct(
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Stmt\Foreach_>
  */
+#[RegisteredRule(level: 4)]
 final class DeadForeachRule implements Rule
 {
 

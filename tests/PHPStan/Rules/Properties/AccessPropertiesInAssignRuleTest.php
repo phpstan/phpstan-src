@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,7 +17,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
 			new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, true),
 		);
@@ -122,12 +123,9 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10477.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testAsymmetricVisibility(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/write-asymmetric-visibility.php'], [
 			[
 				'Assign to private(set) property $this(WriteAsymmetricVisibility\Bar)::$a.',

@@ -6,12 +6,13 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -110,10 +111,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFormatterOutputProvider
-	 *
-	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
@@ -141,9 +139,8 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			'Foo',
 			__DIR__ . '/FooTrait.php (in context of class Foo)',
 			5,
-			true,
-			__DIR__ . '/Foo.php',
-			__DIR__ . '/FooTrait.php',
+			filePath: __DIR__ . '/Foo.php',
+			traitFilePath: __DIR__ . '/FooTrait.php',
 		);
 		$formatter->formatErrors(new AnalysisResult(
 			[$error],
@@ -172,9 +169,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			'Foo',
 			__DIR__ . '/FooTrait.php',
 			5,
-			true,
-			__DIR__ . '/Foo.php',
-			null,
+			filePath: __DIR__ . '/Foo.php',
 		))->withIdentifier('argument.type');
 		$formatter->formatErrors(new AnalysisResult(
 			[$error],

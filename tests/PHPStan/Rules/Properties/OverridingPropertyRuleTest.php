@@ -5,8 +5,9 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<OverridingPropertyRule>
@@ -104,7 +105,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataRulePHPDocTypes(): array
+	public static function dataRulePHPDocTypes(): array
 	{
 		$tip = sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
@@ -156,9 +157,9 @@ class OverridingPropertyRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRulePHPDocTypes
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataRulePHPDocTypes')]
 	public function testRulePHPDocTypes(bool $reportMaybes, array $errors): void
 	{
 		$this->reportMaybes = $reportMaybes;
@@ -177,12 +178,9 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7692.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testFinal(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/overriding-final-property.php'], [
 			[
@@ -212,12 +210,9 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyPrototypeFromInterface(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/property-prototype-from-interface.php'], [
 			[
@@ -239,12 +234,9 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12466(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$tip = sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
 			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
@@ -273,12 +265,9 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12586(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/bug-12586.php'], [
 			[

@@ -35,7 +35,7 @@ final class StaticTypeFactory
 		static $truthy;
 
 		if ($truthy === null) {
-			$truthy = new MixedType(false, self::falsey());
+			$truthy = new MixedType(subtractedType: self::falsey());
 		}
 
 		return $truthy;

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -23,6 +24,7 @@ use function sprintf;
 /**
  * @implements Rule<ExecutionEndNode>
  */
+#[RegisteredRule(level: 3)]
 final class ParameterOutExecutionEndTypeRule implements Rule
 {
 

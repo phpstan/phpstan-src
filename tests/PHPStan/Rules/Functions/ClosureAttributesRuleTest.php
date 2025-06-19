@@ -22,7 +22,7 @@ class ClosureAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ClosureAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,

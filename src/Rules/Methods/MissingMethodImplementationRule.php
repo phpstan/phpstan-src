@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 0)]
 final class MissingMethodImplementationRule implements Rule
 {
 

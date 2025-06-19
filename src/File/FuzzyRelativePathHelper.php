@@ -2,6 +2,8 @@
 
 namespace PHPStan\File;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use function count;
 use function explode;
 use function implode;
@@ -14,6 +16,7 @@ use function strlen;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 
+#[AutowiredService(name: 'relativePathHelper', as: RelativePathHelper::class)]
 final class FuzzyRelativePathHelper implements RelativePathHelper
 {
 
@@ -26,8 +29,11 @@ final class FuzzyRelativePathHelper implements RelativePathHelper
 	 * @param non-empty-string|null $directorySeparator
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '@parentDirectoryRelativePathHelper')]
 		private RelativePathHelper $fallbackRelativePathHelper,
+		#[AutowiredParameter]
 		string $currentWorkingDirectory,
+		#[AutowiredParameter]
 		array $analysedPaths,
 		?string $directorySeparator = null,
 	)

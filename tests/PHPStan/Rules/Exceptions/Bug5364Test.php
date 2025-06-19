@@ -15,7 +15,7 @@ class Bug5364Test extends RuleTestCase
 	{
 		return new MissingCheckedExceptionInMethodThrowsRule(
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				[],
 				[],
 				[],

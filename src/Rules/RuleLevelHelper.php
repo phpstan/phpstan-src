@@ -4,6 +4,8 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CallableType;
@@ -23,17 +25,25 @@ use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class RuleLevelHelper
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter]
 		private bool $checkNullables,
+		#[AutowiredParameter]
 		private bool $checkThisOnly,
+		#[AutowiredParameter]
 		private bool $checkUnionTypes,
+		#[AutowiredParameter]
 		private bool $checkExplicitMixed,
+		#[AutowiredParameter]
 		private bool $checkImplicitMixed,
+		#[AutowiredParameter]
 		private bool $checkBenevolentUnionTypes,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

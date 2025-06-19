@@ -4,12 +4,13 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class GitlabFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -283,11 +284,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFormatterOutputProvider
-	 *
-	 *
-	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,

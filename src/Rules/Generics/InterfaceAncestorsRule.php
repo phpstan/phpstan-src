@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
+#[RegisteredRule(level: 2)]
 final class InterfaceAncestorsRule implements Rule
 {
 

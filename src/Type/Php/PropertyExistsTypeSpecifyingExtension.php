@@ -11,6 +11,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -21,6 +22,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
 use function count;
 
+#[AutowiredService]
 final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

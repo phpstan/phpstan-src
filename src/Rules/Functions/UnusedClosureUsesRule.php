@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use function array_map;
@@ -12,6 +13,7 @@ use function count;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
+#[RegisteredRule(level: 1)]
 final class UnusedClosureUsesRule implements Rule
 {
 

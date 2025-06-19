@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
@@ -43,6 +44,7 @@ final class MatchExpressionNode extends NodeAbstract implements VirtualNode
 		return $this->endScope;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_MatchExpression';
@@ -51,6 +53,7 @@ final class MatchExpressionNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

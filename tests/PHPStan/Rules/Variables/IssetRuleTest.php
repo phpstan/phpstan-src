@@ -7,7 +7,7 @@ use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IssetRule>
@@ -332,12 +332,9 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7109(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -390,12 +387,9 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6997.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7776(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7776.php'], []);
@@ -453,12 +447,9 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10064.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testVirtualProperty(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/isset-virtual-property.php'], [
 			[

@@ -3,6 +3,7 @@
 namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
+use Override;
 use PHPStan\Dependency\ExportedNode;
 use ReturnTypeWillChange;
 
@@ -33,6 +34,7 @@ final class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 * @return mixed
 	 */
 	#[ReturnTypeWillChange]
+	#[Override]
 	public function jsonSerialize()
 	{
 		return [

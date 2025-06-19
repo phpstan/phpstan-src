@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<NullsafePropertyFetchRule>
@@ -32,30 +32,21 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7109(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5172(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-5172.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7980(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7980.php'], []);
 	}
 
@@ -64,21 +55,15 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8517.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9105(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9105.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6922(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6922.php'], []);
 	}
 

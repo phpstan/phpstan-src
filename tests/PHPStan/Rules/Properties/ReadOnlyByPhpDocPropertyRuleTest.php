@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ReadOnlyByPhpDocPropertyRule>
@@ -17,12 +17,9 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 		return new ReadOnlyByPhpDocPropertyRule();
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc.php'], [
 			[
 				'@readonly property cannot have a default value.',
@@ -43,21 +40,15 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-and-native.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleAllowedPrivateMutation(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-allowed-private-mutation.php'], [
 			[
 				'@readonly property cannot have a default value.',

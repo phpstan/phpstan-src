@@ -26,6 +26,7 @@ final class AnalyserResult
 	 * @param CollectorData $collectedData
 	 * @param list<InternalError> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
+	 * @param array<string, array<string>>|null $usedTraitDependencies
 	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 */
 	public function __construct(
@@ -38,6 +39,7 @@ final class AnalyserResult
 		private array $internalErrors,
 		private array $collectedData,
 		private ?array $dependencies,
+		private ?array $usedTraitDependencies,
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
@@ -139,6 +141,14 @@ final class AnalyserResult
 	public function getDependencies(): ?array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return array<string, array<string>>|null
+	 */
+	public function getUsedTraitDependencies(): ?array
+	{
+		return $this->usedTraitDependencies;
 	}
 
 	/**

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -17,10 +19,12 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 0)]
 final class OverridingConstantRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
 	)
 	{

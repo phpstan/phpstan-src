@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -36,6 +37,7 @@ final class InClassMethodNode extends Node\Stmt implements VirtualNode
 		return $this->originalNode;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Stmt_InClassMethodNode';
@@ -44,6 +46,7 @@ final class InClassMethodNode extends Node\Stmt implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

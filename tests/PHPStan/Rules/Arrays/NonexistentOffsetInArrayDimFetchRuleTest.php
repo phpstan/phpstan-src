@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -23,7 +25,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
@@ -341,12 +343,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/nonexistent-offset-nullsafe.php'], [
 			[
 				'Offset 1 does not exist on array{a: int}.',
@@ -375,12 +374,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6379.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug4885(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4885.php'], []);
 	}
 
@@ -484,12 +480,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7469.php'], $expected);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7763(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7763.php'], []);
 	}
 
@@ -612,12 +605,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testMixed(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/offset-access-mixed.php'], [
@@ -670,7 +660,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportPossiblyNonexistentArrayOffset(): iterable
+	public static function dataReportPossiblyNonexistentArrayOffset(): iterable
 	{
 		yield [false, false, []];
 		yield [false, true, [
@@ -698,9 +688,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportPossiblyNonexistentArrayOffset
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
 	 */
+	#[DataProvider('dataReportPossiblyNonexistentArrayOffset')]
 	public function testReportPossiblyNonexistentArrayOffset(bool $reportPossiblyNonexistentGeneralArrayOffset, bool $reportPossiblyNonexistentConstantArrayOffset, array $errors): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = $reportPossiblyNonexistentGeneralArrayOffset;
@@ -764,11 +754,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testInternalClassesWithOverloadedOffsetAccess84(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-php84.php'], []);
 	}
 
@@ -777,11 +765,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testInternalClassesWithOverloadedOffsetAccessInvalid84(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
 		$this->analyse([__DIR__ . '/data/internal-classes-overload-offset-access-invalid-php84.php'], []);
 	}
 

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PhpParser\Node\Name;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
@@ -24,6 +26,7 @@ use function implode;
 use function in_array;
 use function sprintf;
 
+#[AutowiredService]
 final class GenericAncestorsCheck
 {
 
@@ -35,7 +38,9 @@ final class GenericAncestorsCheck
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private VarianceCheck $varianceCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		#[AutowiredParameter(ref: '%featureToggles.skipCheckGenericClasses%')]
 		private array $skipCheckGenericClasses,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
 	)
 	{

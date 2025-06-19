@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /** @extends RuleTestCase<OverridingConstantRule> */
@@ -90,12 +91,9 @@ class OverridingConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-final-constant.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testNativeTypes(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/overriding-constant-native-types.php'], [
 			[
 				'Native type int|string of constant OverridingConstantNativeTypes\Bar::D is not covariant with native type int of constant OverridingConstantNativeTypes\Foo::D.',

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Ignore;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<FileNode>
  */
+#[RegisteredRule(level: 0)]
 final class IgnoreParseErrorRule implements Rule
 {
 

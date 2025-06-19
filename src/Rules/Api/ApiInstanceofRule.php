@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
@@ -19,6 +20,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\Instanceof_>
  */
+#[RegisteredRule(level: 0)]
 final class ApiInstanceofRule implements Rule
 {
 
@@ -93,7 +95,7 @@ final class ApiInstanceofRule implements Rule
 			return [];
 		}
 
-		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
+		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 
 		$exprType = $scope->getType($node->expr);
 		if ($exprType instanceof UnionType) {

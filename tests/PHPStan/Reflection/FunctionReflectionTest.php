@@ -6,12 +6,13 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 class FunctionReflectionTest extends PHPStanTestCase
 {
 
-	public function dataPhpdocFunctions(): iterable
+	public static function dataPhpdocFunctions(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\myFunction',
@@ -36,21 +37,20 @@ class FunctionReflectionTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataPhpdocFunctions
-	 *
 	 * @param non-empty-string $functionName
 	 */
+	#[DataProvider('dataPhpdocFunctions')]
 	public function testFunctionHasPhpdoc(string $functionName, ?string $expectedDoc): void
 	{
 		require_once __DIR__ . '/data/function-with-phpdoc.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
 		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
 	}
 
-	public function dataPhpdocMethods(): iterable
+	public static function dataPhpdocMethods(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\ClassWithPhpdoc',
@@ -114,12 +114,10 @@ class FunctionReflectionTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataPhpdocMethods
-	 */
+	#[DataProvider('dataPhpdocMethods')]
 	public function testMethodHasPhpdoc(string $className, string $methodName, ?string $expectedDocComment): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);
@@ -133,7 +131,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
 	}
 
-	public function dataFunctionReturnsByReference(): iterable
+	public static function dataFunctionReturnsByReference(): iterable
 	{
 		yield ['\\implode', TrinaryLogic::createNo()];
 
@@ -142,20 +140,20 @@ class FunctionReflectionTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataFunctionReturnsByReference
 	 * @param non-empty-string $functionName
 	 */
+	#[DataProvider('dataFunctionReturnsByReference')]
 	public function testFunctionReturnsByReference(string $functionName, TrinaryLogic $expectedReturnsByRef): void
 	{
 		require_once __DIR__ . '/data/returns-by-reference.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
 		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
 	}
 
-	public function dataMethodReturnsByReference(): iterable
+	public static function dataMethodReturnsByReference(): iterable
 	{
 		yield ['ReturnsByReference\\X', 'foo', TrinaryLogic::createNo()];
 		yield ['ReturnsByReference\\X', 'refFoo', TrinaryLogic::createYes()];
@@ -177,12 +175,10 @@ class FunctionReflectionTest extends PHPStanTestCase
 		yield ['ReturnsByReference\\E', 'cases', TrinaryLogic::createNo()];
 	}
 
-	/**
-	 * @dataProvider dataMethodReturnsByReference
-	 */
+	#[DataProvider('dataMethodReturnsByReference')]
 	public function testMethodReturnsByReference(string $className, string $methodName, TrinaryLogic $expectedReturnsByRef): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);

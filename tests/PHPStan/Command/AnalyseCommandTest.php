@@ -4,6 +4,8 @@ namespace PHPStan\Command;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Console\Tester\CommandTester;
 use Throwable;
 use function chdir;
@@ -14,15 +16,11 @@ use function sprintf;
 use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
-/**
- * @group exec
- */
+#[Group('exec')]
 class AnalyseCommandTest extends PHPStanTestCase
 {
 
-	/**
-	 * @dataProvider autoDiscoveryPathsProvider
-	 */
+	#[DataProvider('autoDiscoveryPathsProvider')]
 	public function testConfigurationAutoDiscovery(string $dir, string $file): void
 	{
 		$originalDir = getcwd();

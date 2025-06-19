@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<SetPropertyHookParameterRule>
@@ -18,12 +18,9 @@ class SetPropertyHookParameterRuleTest extends RuleTestCase
 		return new SetPropertyHookParameterRule(new MissingTypehintCheck(true, []), true, true);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/set-property-hook-parameter.php'], [
 			[
 				'Parameter $v of set hook has a native type but the property SetPropertyHookParameter\Bar::$a does not.',

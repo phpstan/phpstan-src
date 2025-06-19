@@ -421,3 +421,32 @@ final class StaticMethodAssigningStaticProperty
 		return 1;
 	}
 }
+
+class CallDateTime
+{
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo(\DateTimeInterface $date): string
+	{
+		return $date->format('j. n. Y');
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo2(\DateTime $date): string
+	{
+		return $date->format('j. n. Y');
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	public function doFoo3(\DateTimeImmutable $date): string
+	{
+		return $date->format('j. n. Y');
+	}
+
+}

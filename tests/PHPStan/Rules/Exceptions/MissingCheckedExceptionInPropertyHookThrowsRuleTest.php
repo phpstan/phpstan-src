@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MissingCheckedExceptionInPropertyHookThrowsRule>
@@ -17,7 +17,7 @@ class MissingCheckedExceptionInPropertyHookThrowsRuleTest extends RuleTestCase
 	{
 		return new MissingCheckedExceptionInPropertyHookThrowsRule(
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				[],
 				[ShouldNotHappenException::class],
 				[],
@@ -26,12 +26,9 @@ class MissingCheckedExceptionInPropertyHookThrowsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-exception-property-hook-throws.php'], [
 			[
 				'Get hook for property MissingExceptionPropertyHookThrows\Foo::$k throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',

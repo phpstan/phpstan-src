@@ -2,12 +2,15 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_pop;
 use function array_reverse;
 use function count;
 
+#[AutowiredService]
 final class TryCatchTypeVisitor extends NodeVisitorAbstract
 {
 
@@ -16,12 +19,14 @@ final class TryCatchTypeVisitor extends NodeVisitorAbstract
 	/** @var array<int, array<int, string>|null> */
 	private array $typeStack = [];
 
+	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{
 		$this->typeStack = [];
 		return null;
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt || $node instanceof Node\Expr\Match_) {
@@ -57,6 +62,7 @@ final class TryCatchTypeVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
+	#[Override]
 	public function leaveNode(Node $node): ?Node
 	{
 		if (

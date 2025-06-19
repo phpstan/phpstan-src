@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
@@ -22,6 +23,7 @@ use function var_export;
 /**
  * @implements Rule<LiteralArrayNode>
  */
+#[RegisteredRule(level: 0)]
 final class DuplicateKeysInLiteralArraysRule implements Rule
 {
 

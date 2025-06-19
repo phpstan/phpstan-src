@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<LiteralArrayNode>
  */
+#[RegisteredRule(level: 3)]
 final class UnpackIterableInArrayRule implements Rule
 {
 

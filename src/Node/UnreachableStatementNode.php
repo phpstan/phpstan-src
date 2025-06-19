@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt;
 
 /**
@@ -21,6 +22,7 @@ final class UnreachableStatementNode extends Stmt implements VirtualNode
 		return $this->originalStatement;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Stmt_UnreachableStatementNode';
@@ -29,6 +31,7 @@ final class UnreachableStatementNode extends Stmt implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

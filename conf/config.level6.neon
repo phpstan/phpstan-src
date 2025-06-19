@@ -5,11 +5,6 @@ parameters:
 	checkMissingVarTagTypehint: true
 	checkMissingTypehints: true
 
-rules:
-	- PHPStan\Rules\Constants\MissingClassConstantTypehintRule
-	- PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule
-	- PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule
-	- PHPStan\Rules\Methods\MissingMethodParameterTypehintRule
-	- PHPStan\Rules\Methods\MissingMethodReturnTypehintRule
-	- PHPStan\Rules\Methods\MissingMethodSelfOutTypeRule
-	- PHPStan\Rules\Properties\MissingPropertyTypehintRule
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 6

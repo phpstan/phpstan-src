@@ -175,8 +175,7 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		if ($this->finalNativeType === null) {
 			$this->finalNativeType = TypehintHelper::decideTypeFromReflection(
 				$this->nativeType,
-				null,
-				$this->declaringClass,
+				selfClass: $this->declaringClass,
 			);
 		}
 

@@ -3,9 +3,11 @@
 namespace PHPStan\Collectors;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredService;
 use function class_implements;
 use function class_parents;
 
+#[AutowiredService(factory: '@PHPStan\Collectors\RegistryFactory::create')]
 final class Registry
 {
 

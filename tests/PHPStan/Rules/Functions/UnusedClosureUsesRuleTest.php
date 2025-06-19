@@ -14,7 +14,7 @@ class UnusedClosureUsesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck($this->createReflectionProvider(), true));
+		return new UnusedClosureUsesRule(new UnusedFunctionParametersCheck(self::createReflectionProvider(), true));
 	}
 
 	public function testUnusedClosureUses(): void

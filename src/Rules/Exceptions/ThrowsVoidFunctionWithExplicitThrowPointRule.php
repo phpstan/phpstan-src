@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,11 +17,14 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
+#[RegisteredRule(level: 3)]
 final class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter(ref: '@exceptionTypeResolver')]
 		private ExceptionTypeResolver $exceptionTypeResolver,
+		#[AutowiredParameter(ref: '%exceptions.check.missingCheckedExceptionInThrows%')]
 		private bool $missingCheckedExceptionInThrows,
 	)
 	{

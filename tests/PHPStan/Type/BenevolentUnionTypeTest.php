@@ -14,12 +14,13 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class BenevolentUnionTypeTest extends PHPStanTestCase
 {
 
-	public function dataCanAccessProperties(): Iterator
+	public static function dataCanAccessProperties(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -37,7 +38,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataCanAccessProperties */
+	#[DataProvider('dataCanAccessProperties')]
 	public function testCanAccessProperties(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canAccessProperties();
@@ -48,7 +49,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasProperty(): Iterator
+	public static function dataHasProperty(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -75,7 +76,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataHasProperty */
+	#[DataProvider('dataHasProperty')]
 	public function testHasProperty(BenevolentUnionType $type, string $propertyName, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasProperty($propertyName);
@@ -86,7 +87,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataCanCallMethods(): Iterator
+	public static function dataCanCallMethods(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -104,7 +105,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataCanCallMethods */
+	#[DataProvider('dataCanCallMethods')]
 	public function testCanCanCallMethods(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canCallMethods();
@@ -115,7 +116,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasMethod(): Iterator
+	public static function dataHasMethod(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -139,7 +140,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataHasMethod */
+	#[DataProvider('dataHasMethod')]
 	public function testHasMethod(BenevolentUnionType $type, string $methodName, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasMethod($methodName);
@@ -150,7 +151,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataCanAccessConstants(): Iterator
+	public static function dataCanAccessConstants(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -168,7 +169,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataCanAccessConstants */
+	#[DataProvider('dataCanAccessConstants')]
 	public function testCanAccessConstants(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canAccessConstants();
@@ -179,7 +180,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsIterable(): Iterator
+	public static function dataIsIterable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -203,7 +204,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsIterable */
+	#[DataProvider('dataIsIterable')]
 	public function testIsIterable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterable();
@@ -214,7 +215,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsIterableAtLeastOnce(): Iterator
+	public static function dataIsIterableAtLeastOnce(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -238,7 +239,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsIterableAtLeastOnce */
+	#[DataProvider('dataIsIterableAtLeastOnce')]
 	public function testIsIterableAtLeastOnce(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterableAtLeastOnce();
@@ -249,7 +250,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsArray(): Iterator
+	public static function dataIsArray(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ArrayType(new MixedType(), new MixedType()), new ConstantArrayType([], [])]),
@@ -267,7 +268,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsArray */
+	#[DataProvider('dataIsArray')]
 	public function testIsArray(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isArray();
@@ -278,7 +279,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsString(): Iterator
+	public static function dataIsString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -299,7 +300,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsString */
+	#[DataProvider('dataIsString')]
 	public function testIsString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isString();
@@ -310,7 +311,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsNumericString(): Iterator
+	public static function dataIsNumericString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -330,7 +331,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsNumericString */
+	#[DataProvider('dataIsNumericString')]
 	public function testIsNumericString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isNumericString();
@@ -341,7 +342,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsNonFalsyString(): Iterator
+	public static function dataIsNonFalsyString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -361,7 +362,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsNonFalsyString */
+	#[DataProvider('dataIsNonFalsyString')]
 	public function testIsNonFalsyString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isNonFalsyString();
@@ -372,7 +373,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsLiteralString(): Iterator
+	public static function dataIsLiteralString(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -392,7 +393,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsLiteralString */
+	#[DataProvider('dataIsLiteralString')]
 	public function testIsLiteralString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isLiteralString();
@@ -403,7 +404,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsOffsetAccesible(): Iterator
+	public static function dataIsOffsetAccesible(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -427,7 +428,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsOffsetAccesible */
+	#[DataProvider('dataIsOffsetAccesible')]
 	public function testIsOffsetAccessible(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isOffsetAccessible();
@@ -438,7 +439,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataHasOffsetValueType(): Iterator
+	public static function dataHasOffsetValueType(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([
@@ -465,7 +466,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataHasOffsetValueType */
+	#[DataProvider('dataHasOffsetValueType')]
 	public function testHasOffsetValue(BenevolentUnionType $type, Type $offsetType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasOffsetValueType($offsetType);
@@ -476,7 +477,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): Iterator
+	public static function dataIsCallable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new CallableType(), new CallableType()]),
@@ -494,7 +495,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsCallable */
+	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
@@ -505,7 +506,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCloneable(): Iterator
+	public static function dataIsCloneable(): Iterator
 	{
 		yield [
 			new BenevolentUnionType([new ObjectWithoutClassType(), new ObjectWithoutClassType()]),
@@ -523,7 +524,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/** @dataProvider dataIsCloneable */
+	#[DataProvider('dataIsCloneable')]
 	public function testIsCloneable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCloneable();

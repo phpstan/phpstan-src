@@ -20,7 +20,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, true, false, false, true);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),

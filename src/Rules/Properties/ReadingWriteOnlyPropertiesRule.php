@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -12,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 0)]
 final class ReadingWriteOnlyPropertiesRule implements Rule
 {
 
@@ -19,6 +22,7 @@ final class ReadingWriteOnlyPropertiesRule implements Rule
 		private PropertyDescriptor $propertyDescriptor,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $checkThisOnly,
 	)
 	{

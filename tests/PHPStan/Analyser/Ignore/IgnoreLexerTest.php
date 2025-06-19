@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Ignore;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_pop;
 use function substr_count;
 use const PHP_EOL;
@@ -10,7 +11,7 @@ use const PHP_EOL;
 class IgnoreLexerTest extends PHPStanTestCase
 {
 
-	public function dataTokenize(): iterable
+	public static function dataTokenize(): iterable
 	{
 		yield [
 			'',
@@ -80,9 +81,9 @@ class IgnoreLexerTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataTokenize
 	 * @param list<array{string, IgnoreLexer::TOKEN_*}> $expectedTokens
 	 */
+	#[DataProvider('dataTokenize')]
 	public function testTokenize(string $input, array $expectedTokens): void
 	{
 		$lexer = new IgnoreLexer();

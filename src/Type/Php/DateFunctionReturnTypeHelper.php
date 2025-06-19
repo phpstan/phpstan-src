@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -17,6 +18,7 @@ use function is_numeric;
 use function str_pad;
 use const STR_PAD_LEFT;
 
+#[AutowiredService]
 final class DateFunctionReturnTypeHelper
 {
 

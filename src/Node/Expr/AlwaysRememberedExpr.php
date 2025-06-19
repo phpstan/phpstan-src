@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node\Expr;
 
+use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Type\Type;
@@ -29,6 +30,7 @@ final class AlwaysRememberedExpr extends Expr implements VirtualNode
 		return $this->nativeType;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_AlwaysRememberedExpr';
@@ -37,6 +39,7 @@ final class AlwaysRememberedExpr extends Expr implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return ['expr'];

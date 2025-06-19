@@ -13,6 +13,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
 use function fopen;
@@ -28,7 +29,7 @@ use function trim;
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -112,10 +113,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider dataFormatterOutputProvider
-	 *
 	 * @param mixed[] $expected
 	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
@@ -219,7 +219,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<int, array{list<Error>}, void, void>
 	 */
-	public function outputOrderingProvider(): Generator
+	public static function outputOrderingProvider(): Generator
 	{
 		$errors = [
 			new Error('Error #2', 'TestfileA', 1),
@@ -240,9 +240,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider outputOrderingProvider
 	 * @param list<Error> $errors
 	 */
+	#[DataProvider('outputOrderingProvider')]
 	public function testOutputOrdering(array $errors): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
@@ -314,7 +314,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @return Generator<string, array{errors: list<Error>}>
 	 */
-	public function endOfFileNewlinesProvider(): Generator
+	public static function endOfFileNewlinesProvider(): Generator
 	{
 		$existingBaselineContentWithoutEndNewlines = 'parameters:
 	ignoreErrors:
@@ -395,10 +395,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider endOfFileNewlinesProvider
-	 *
 	 * @param list<Error> $errors
 	 */
+	#[DataProvider('endOfFileNewlinesProvider')]
 	public function testEndOfFileNewlines(
 		array $errors,
 		string $existingBaselineContent,
@@ -424,7 +423,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		if ($resource === false) {
 			throw new ShouldNotHappenException();
 		}
-		$outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
+		$outputStream = new StreamOutput($resource, decorated: false);
 
 		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $outputStream);
 		$output = new SymfonyOutput($outputStream, new SymfonyStyle($errorConsoleStyle));
@@ -448,7 +447,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		Assert::assertNotSame("\n", substr($content, -($expectedNewlinesCount + 1), 1));
 	}
 
-	public function dataFormatErrorsWithIdentifiers(): iterable
+	public static function dataFormatErrorsWithIdentifiers(): iterable
 	{
 		yield [
 			[
@@ -553,10 +552,10 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider dataFormatErrorsWithIdentifiers
 	 * @param list<Error> $errors
 	 * @param mixed[] $expectedOutput
 	 */
+	#[DataProvider('dataFormatErrorsWithIdentifiers')]
 	public function testFormatErrorsWithIdentifiers(array $errors, array $expectedOutput): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(__DIR__));

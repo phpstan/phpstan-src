@@ -34,8 +34,7 @@ final class CachedParser implements Parser
 			$this->cachedNodesByString = array_slice(
 				$this->cachedNodesByString,
 				1,
-				null,
-				true,
+				preserve_keys: true,
 			);
 
 			--$this->cachedNodesByStringCount;
@@ -60,8 +59,7 @@ final class CachedParser implements Parser
 			$this->cachedNodesByString = array_slice(
 				$this->cachedNodesByString,
 				1,
-				null,
-				true,
+				preserve_keys: true,
 			);
 
 			--$this->cachedNodesByStringCount;

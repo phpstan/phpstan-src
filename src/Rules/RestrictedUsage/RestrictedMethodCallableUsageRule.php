@@ -5,6 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\ReflectionProvider;
@@ -14,6 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<MethodCallableNode>
  */
+#[AutowiredService]
 final class RestrictedMethodCallableUsageRule implements Rule
 {
 

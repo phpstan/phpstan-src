@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -20,13 +22,16 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\Instanceof_>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassInInstanceOfRule implements Rule
 {
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

@@ -19,6 +19,7 @@ final class FileAnalyserResult
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param CollectorData $collectedData
 	 * @param list<string> $dependencies
+	 * @param list<string> $usedTraitDependencies
 	 * @param list<RootExportedNode> $exportedNodes
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
@@ -30,6 +31,7 @@ final class FileAnalyserResult
 		private array $locallyIgnoredErrors,
 		private array $collectedData,
 		private array $dependencies,
+		private array $usedTraitDependencies,
 		private array $exportedNodes,
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
@@ -83,6 +85,14 @@ final class FileAnalyserResult
 	public function getDependencies(): array
 	{
 		return $this->dependencies;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getUsedTraitDependencies(): array
+	{
+		return $this->usedTraitDependencies;
 	}
 
 	/**

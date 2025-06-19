@@ -74,8 +74,7 @@ final class AllowedArrayKeysTypes
 		}
 
 		return new MixedType(
-			false,
-			new UnionType([
+			subtractedType: new UnionType([
 				new ArrayType(new MixedType(), new MixedType()),
 				new ObjectWithoutClassType(),
 				new ResourceType(),

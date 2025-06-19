@@ -5,6 +5,7 @@ namespace PHPStan\Type\Regex;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use Override;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use function array_reverse;
@@ -150,6 +151,7 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return $alternation;
 	}
 
+	#[Override]
 	public function count(): int
 	{
 		return count($this->groups);
@@ -158,6 +160,7 @@ final class RegexGroupList implements Countable, IteratorAggregate
 	/**
 	 * @return ArrayIterator<int, RegexCapturingGroup>
 	 */
+	#[Override]
 	public function getIterator(): ArrayIterator
 	{
 		return new ArrayIterator($this->groups);

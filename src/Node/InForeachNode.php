@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeAbstract;
 
@@ -18,6 +19,7 @@ final class InForeachNode extends NodeAbstract implements VirtualNode
 		return $this->originalNode;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_InForeachNode';
@@ -26,6 +28,7 @@ final class InForeachNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -7,7 +7,7 @@ use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidPartOfEncapsedStringRule>
@@ -19,7 +19,7 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 	{
 		return new InvalidPartOfEncapsedStringRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
 		);
 	}
 
@@ -33,12 +33,9 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-encapsed-part-nullsafe.php'], [
 			[
 				'Part $bar?->obj (stdClass|null) of encapsed string cannot be cast to string.',

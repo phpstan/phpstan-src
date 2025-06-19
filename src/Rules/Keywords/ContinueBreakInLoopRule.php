@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\ParentStmtTypesVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Stmt>
  */
+#[RegisteredRule(level: 0)]
 final class ContinueBreakInLoopRule implements Rule
 {
 

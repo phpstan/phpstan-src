@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -21,6 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<PropertyAssignNode>
  */
+#[RegisteredRule(level: 3)]
 final class TypesAssignedToPropertiesRule implements Rule
 {
 

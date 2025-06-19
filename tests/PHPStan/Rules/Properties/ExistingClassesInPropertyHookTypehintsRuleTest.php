@@ -10,6 +10,7 @@ use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -20,7 +21,7 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInPropertyHookTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,
@@ -38,12 +39,9 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/existing-classes-property-hooks.php'], [
 			[
 				'Parameter $v of set hook for property ExistingClassesPropertyHooks\Foo::$i has invalid type ExistingClassesPropertyHooks\Nonexistent.',

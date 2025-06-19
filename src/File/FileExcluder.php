@@ -2,6 +2,7 @@
 
 namespace PHPStan\File;
 
+use PHPStan\DependencyInjection\GenerateFactory;
 use function fnmatch;
 use function in_array;
 use function is_dir;
@@ -14,6 +15,7 @@ use const DIRECTORY_SEPARATOR;
 use const FNM_CASEFOLD;
 use const FNM_NOESCAPE;
 
+#[GenerateFactory(interface: FileExcluderRawFactory::class)]
 final class FileExcluder
 {
 

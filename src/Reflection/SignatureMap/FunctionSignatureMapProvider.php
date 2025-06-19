@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -19,6 +21,7 @@ use function sprintf;
 use function strtolower;
 use const CASE_LOWER;
 
+#[AutowiredService(as: FunctionSignatureMapProvider::class)]
 final class FunctionSignatureMapProvider implements SignatureMapProvider
 {
 
@@ -32,6 +35,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 		private SignatureMapParser $parser,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%featureToggles.stricterFunctionMap%')]
 		private bool $stricterFunctionMap,
 	)
 	{

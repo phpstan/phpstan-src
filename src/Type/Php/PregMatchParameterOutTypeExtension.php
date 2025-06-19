@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
@@ -12,6 +13,7 @@ use PHPStan\Type\Type;
 use function in_array;
 use function strtolower;
 
+#[AutowiredService]
 final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
 

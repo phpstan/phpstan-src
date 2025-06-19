@@ -13,7 +13,7 @@ use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 {
@@ -21,12 +21,9 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 	/**
 	 * function call, all arguments named and given in order
 	 */
+	#[RequiresPhp('>= 8.0')]
 	public function testArgumentReorderAllNamed(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
@@ -38,17 +35,11 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$args = [
 			new Arg(
 				new LNumber(0),
-				false,
-				false,
-				[],
-				new Identifier('flags'),
+				name: new Identifier('flags'),
 			),
 			new Arg(
 				new String_('my json value'),
-				false,
-				false,
-				[],
-				new Identifier('value'),
+				name: new Identifier('value'),
 			),
 		];
 		$funcCall = new FuncCall($funcName, $args);
@@ -71,12 +62,9 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 	/**
 	 * function call, all args named, not in order
 	 */
+	#[RequiresPhp('>= 8.0')]
 	public function testArgumentReorderAllNamedWithSkipped(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
@@ -88,17 +76,11 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$args = [
 			new Arg(
 				new LNumber(128),
-				false,
-				false,
-				[],
-				new Identifier('depth'),
+				name: new Identifier('depth'),
 			),
 			new Arg(
 				new String_('my json value'),
-				false,
-				false,
-				[],
-				new Identifier('value'),
+				name: new Identifier('value'),
 			),
 		];
 		$funcCall = new FuncCall($funcName, $args);
@@ -124,12 +106,9 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$this->assertSame(128, $reorderedArgs[2]->value->value);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testMissingRequiredParameter(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
@@ -141,10 +120,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$args = [
 			new Arg(
 				new LNumber(128),
-				false,
-				false,
-				[],
-				new Identifier('depth'),
+				name: new Identifier('depth'),
 			),
 		];
 		$funcCall = new FuncCall($funcName, $args);

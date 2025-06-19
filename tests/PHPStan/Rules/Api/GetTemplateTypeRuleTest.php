@@ -13,7 +13,7 @@ class GetTemplateTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new GetTemplateTypeRule($this->createReflectionProvider());
+		return new GetTemplateTypeRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

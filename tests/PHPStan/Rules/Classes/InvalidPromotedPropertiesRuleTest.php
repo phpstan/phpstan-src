@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidPromotedPropertiesRule>
@@ -94,22 +94,16 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9577(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersion = 80100;
 		$this->analyse([__DIR__ . '/data/bug-9577.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testHooks(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->phpVersion = 80100;
 		$this->analyse([__DIR__ . '/data/invalid-hooked-properties.php'], [
 			[

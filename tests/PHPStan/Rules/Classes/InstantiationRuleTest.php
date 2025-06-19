@@ -12,7 +12,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InstantiationRule>
@@ -22,7 +22,7 @@ class InstantiationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new InstantiationRule(
 			self::getContainer(),
 			$reflectionProvider,
@@ -231,12 +231,9 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testOldStyleConstructorOnPhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/php80-constructor.php'], [
 			[
 				'Class OldStyleConstructorOnPhp8 does not have a constructor and must be instantiated without any parameters.',
@@ -249,12 +246,9 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.0')]
 	public function testOldStyleConstructorOnPhp7(): void
 	{
-		if (PHP_VERSION_ID >= 80000) {
-			$this->markTestSkipped('Test requires PHP 7.x');
-		}
-
 		$this->analyse([__DIR__ . '/data/php80-constructor.php'], [
 			[
 				'Class OldStyleConstructorOnPhp8 constructor invoked with 0 parameters, 1 required.',
@@ -291,12 +285,9 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4056.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/instantiation-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to InstantiationNamedArguments\Foo constructor.',
@@ -353,22 +344,16 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4681.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1 and static reflection.');
-		}
-
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-instantiation-callable.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnumInstantiation(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-instantiation.php'], [
 			[
 				'Cannot instantiate enum EnumInstantiation\Foo.',
@@ -395,21 +380,15 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5553(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-5553.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7048(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7048.php'], [
 			[
 				'Unknown parameter $recurrences in call to DatePeriod constructor.',
@@ -438,12 +417,9 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7594(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7594.php'], []);
 	}
 
@@ -506,12 +482,9 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10248.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11815(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11815.php'], []);
 	}
 
@@ -567,12 +540,9 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12951(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1');
-		}
-
 		require_once __DIR__ . '/../InternalTag/data/bug-12951-define.php';
 		$this->analyse([__DIR__ . '/../InternalTag/data/bug-12951-constructor.php'], [
 			[
@@ -584,6 +554,12 @@ class InstantiationRuleTest extends RuleTestCase
 				7,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testNamedArgumentsPhpversion(): void
+	{
+		$this->analyse([__DIR__ . '/data/named-arguments-phpversion.php'], []);
 	}
 
 }

@@ -1,41 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-	bootstrap="tests/bootstrap.php"
-	cacheResult="false"
-	colors="true"
-	executionOrder="random"
-	failOnRisky="true"
-	failOnWarning="true"
-	failOnEmptyTestSuite="true"
-	beStrictAboutChangesToGlobalState="true"
-	beStrictAboutCoversAnnotation="true"
-	beStrictAboutOutputDuringTests="true"
-	beStrictAboutTodoAnnotatedTests="true"
-	verbose="false"
-	convertDeprecationsToExceptions="true">
-	<coverage processUncoveredFiles="true">
-		<include>
-			<directory suffix=".php">src</directory>
-		</include>
-		<report>
-			<clover outputFile="tests/tmp/clover.xml"/>
-			<text outputFile="php://stdout" showUncoveredFiles="true" showOnlySummary="true"/>
-		</report>
-	</coverage>
-
-	<testsuites>
-		<testsuite name="PHPStan">
-			<directory suffix="Test.php">tests/PHPStan</directory>
-			<exclude>tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php</exclude>
-		</testsuite>
-	</testsuites>
-
-	<groups>
-		<exclude>
-			<group>exec</group>
-			<group>levels</group>
-		</exclude>
-	</groups>
-	<logging/>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" bootstrap="tests/bootstrap.php" cacheResult="false" colors="true" executionOrder="random" failOnRisky="true" failOnWarning="true" failOnEmptyTestSuite="true" beStrictAboutChangesToGlobalState="true" beStrictAboutOutputDuringTests="true" cacheDirectory=".phpunit.cache" beStrictAboutCoverageMetadata="true">
+  <testsuites>
+    <testsuite name="PHPStan">
+      <directory suffix="Test.php">tests/PHPStan</directory>
+      <exclude>tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php</exclude>
+    </testsuite>
+  </testsuites>
+  <groups>
+    <exclude>
+      <group>exec</group>
+      <group>levels</group>
+    </exclude>
+  </groups>
+  <logging/>
 </phpunit>

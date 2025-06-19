@@ -4,8 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MatchExpressionRule>
@@ -18,21 +18,15 @@ class MatchExpressionDoNotRememberPossiblyImpureValuesRuleTest extends RuleTestC
 		return self::getContainer()->getByType(MatchExpressionRule::class);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9357(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9357.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9007(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9007.php'], []);
 	}
 

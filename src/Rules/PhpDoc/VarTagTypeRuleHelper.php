@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -26,6 +28,7 @@ use function count;
 use function is_string;
 use function sprintf;
 
+#[AutowiredService]
 final class VarTagTypeRuleHelper
 {
 
@@ -33,7 +36,9 @@ final class VarTagTypeRuleHelper
 		private TypeNodeResolver $typeNodeResolver,
 		private FileTypeMapper $fileTypeMapper,
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%reportWrongPhpDocTypeInVarTag%')]
 		private bool $checkTypeAgainstPhpDocType,
+		#[AutowiredParameter(ref: '%reportAnyTypeWideningInVarTag%')]
 		private bool $strictWideningCheck,
 	)
 	{

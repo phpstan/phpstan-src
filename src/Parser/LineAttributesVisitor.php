@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
@@ -12,6 +13,7 @@ final class LineAttributesVisitor extends NodeVisitorAbstract
 	{
 	}
 
+	#[Override]
 	public function enterNode(Node $node): Node
 	{
 		if ($node->getStartLine() === -1) {

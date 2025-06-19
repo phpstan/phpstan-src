@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Traits;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use PHPStan\DependencyInjection\RegisteredCollector;
 use function array_map;
 use function array_values;
 
 /**
  * @implements Collector<Node\Stmt\TraitUse, list<string>>
  */
+#[RegisteredCollector(level: 4)]
 final class TraitUseCollector implements Collector
 {
 

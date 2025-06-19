@@ -2,6 +2,7 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Php\PhpVersion;
@@ -15,6 +16,7 @@ final class RemoveUnusedCodeByPhpVersionIdVisitor extends NodeVisitorAbstract
 	{
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if (!$node instanceof Node\Stmt\If_) {

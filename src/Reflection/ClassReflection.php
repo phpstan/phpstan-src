@@ -1115,16 +1115,20 @@ final class ClassReflection
 			}
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
-			$varTags = $resolvedPhpDoc->getVarTags();
-			if (isset($varTags[0]) && count($varTags) === 1) {
-				$phpDocType = $varTags[0]->getType();
-			}
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
-				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), null, $declaringClass);
+				$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $declaringClass);
 			} elseif ($this->signatureMapProvider->hasClassConstantMetadata($declaringClass->getName(), $name)) {
 				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
+			}
+
+			$varTags = $resolvedPhpDoc->getVarTags();
+			if (isset($varTags[0]) && count($varTags) === 1) {
+				$varTag = $varTags[0];
+				if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
+					$phpDocType = $varTag->getType();
+				}
 			}
 
 			$this->constants[$name] = new RealClassClassConstantReflection(
@@ -1367,7 +1371,7 @@ final class ClassReflection
 				if ($i === '') {
 					throw new ShouldNotHappenException();
 				}
-				$arguments[] = new Arg($expression, false, false, [], is_int($i) ? null : new Identifier($i));
+				$arguments[] = new Arg($expression, name: is_int($i) ? null : new Identifier($i));
 			}
 
 			if (!$attributeClass->hasConstructor()) {

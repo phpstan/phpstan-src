@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -24,6 +25,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 0)]
 final class InvalidIncDecOperationRule implements Rule
 {
 

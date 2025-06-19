@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node\Expr;
 
+use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Type\Type;
@@ -23,6 +24,7 @@ final class TypeExpr extends Expr implements VirtualNode
 		return $this->exprType;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_TypeExpr';
@@ -31,6 +33,7 @@ final class TypeExpr extends Expr implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

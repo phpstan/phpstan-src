@@ -5,7 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IncompatibleClassConstantPhpDocTypeRule>
@@ -32,12 +32,9 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testNativeType(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/incompatible-class-constant-phpdoc-native-type.php'], [
 			[
 				'PHPDoc tag @var for constant IncompatibleClassConstantPhpDocNativeType\Foo::BAZ with type string is incompatible with native type int.',
@@ -48,6 +45,12 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 				17,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.3')]
+	public function testBug10911(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10911.php'], []);
 	}
 
 }

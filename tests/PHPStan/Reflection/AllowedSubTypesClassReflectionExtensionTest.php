@@ -3,19 +3,20 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AllowedSubTypesClassReflectionExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataFileAsserts(): iterable
+	public static function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/allowed-sub-types.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/allowed-sub-types.php');
 	}
 
 	/**
-	 * @dataProvider dataFileAsserts
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,

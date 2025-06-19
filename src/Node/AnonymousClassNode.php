@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt\Class_;
 
 /**
@@ -24,6 +25,7 @@ final class AnonymousClassNode extends Class_
 		);
 	}
 
+	#[Override]
 	public function isAnonymous(): bool
 	{
 		return true;

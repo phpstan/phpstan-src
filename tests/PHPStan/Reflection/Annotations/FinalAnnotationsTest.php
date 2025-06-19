@@ -6,11 +6,12 @@ use FinalAnnotations\FinalFoo;
 use FinalAnnotations\Foo;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class FinalAnnotationsTest extends PHPStanTestCase
 {
 
-	public function dataFinalAnnotations(): array
+	public static function dataFinalAnnotations(): array
 	{
 		return [
 			[
@@ -37,12 +38,12 @@ class FinalAnnotationsTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataFinalAnnotations
 	 * @param array<string, mixed> $finalAnnotations
 	 */
+	#[DataProvider('dataFinalAnnotations')]
 	public function testFinalAnnotations(bool $final, string $className, array $finalAnnotations): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
 		$scope->method('isInClass')->willReturn(true);

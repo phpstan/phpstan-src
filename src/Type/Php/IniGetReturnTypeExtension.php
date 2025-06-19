@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -13,6 +14,7 @@ use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function count;
 
+#[AutowiredService]
 final class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -16,6 +17,7 @@ use PHPStan\Type\UnionType;
 use function array_unique;
 use function array_values;
 
+#[AutowiredService]
 final class IsAFunctionTypeSpecifyingHelper
 {
 

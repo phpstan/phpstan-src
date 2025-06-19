@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<PropertyAssignNode>
  */
+#[RegisteredRule(level: 0)]
 final class AccessStaticPropertiesInAssignRule implements Rule
 {
 

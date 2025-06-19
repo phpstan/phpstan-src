@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ReturnStatementsNode;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<ReturnStatementsNode>
  */
+#[RegisteredRule(level: 0)]
 final class ReturnNullsafeByRefRule implements Rule
 {
 

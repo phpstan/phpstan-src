@@ -10,13 +10,14 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 class EnumCaseObjectTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): iterable
+	public static function dataIsSuperTypeOf(): iterable
 	{
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),
@@ -102,14 +103,10 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[RequiresPhp('>= 8.1')]
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$actualResult = $type->isSuperTypeOf($otherType);
 		$this->assertSame(
 			$expectedResult->describe(),
@@ -118,7 +115,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): iterable
+	public static function dataAccepts(): iterable
 	{
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),
@@ -204,19 +201,14 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[RequiresPhp('>= 8.1')]
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(
 		Type $type,
 		Type $acceptedType,
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->result->describe(),

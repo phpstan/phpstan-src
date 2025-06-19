@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use function hash;
 use function implode;
@@ -12,10 +14,14 @@ use function implode;
 /**
  * @see https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#implementing-a-custom-tool
  */
+#[AutowiredService(name: 'errorFormatter.gitlab')]
 final class GitlabErrorFormatter implements ErrorFormatter
 {
 
-	public function __construct(private RelativePathHelper $relativePathHelper)
+	public function __construct(
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
+		private RelativePathHelper $relativePathHelper,
+	)
 	{
 	}
 

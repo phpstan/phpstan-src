@@ -5,6 +5,8 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
@@ -20,6 +22,7 @@ use function count;
 use function is_array;
 use function version_compare;
 
+#[AutowiredService]
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
@@ -27,6 +30,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '%phpVersion%')]
 		private int|array|null $configPhpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 	)

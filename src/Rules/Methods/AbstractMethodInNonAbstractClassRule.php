@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassMethod>
  */
+#[RegisteredRule(level: 0)]
 final class AbstractMethodInNonAbstractClassRule implements Rule
 {
 

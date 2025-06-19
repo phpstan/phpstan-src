@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -11,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<InstantiationCallableNode>
  */
+#[RegisteredRule(level: 0)]
 final class InstantiationCallableRule implements Rule
 {
 

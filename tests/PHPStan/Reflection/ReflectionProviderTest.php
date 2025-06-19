@@ -9,12 +9,14 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 class ReflectionProviderTest extends PHPStanTestCase
 {
 
-	public function dataFunctionThrowType(): iterable
+	public static function dataFunctionThrowType(): iterable
 	{
 		yield [
 			'rand',
@@ -50,13 +52,12 @@ class ReflectionProviderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataFunctionThrowType
-	 *
 	 * @param non-empty-string $functionName
 	 */
+	#[DataProvider('dataFunctionThrowType')]
 	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$throwType = $function->getThrowType();
 		if ($expectedThrowType === null) {
@@ -70,7 +71,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataFunctionDeprecated(): iterable
+	public static function dataFunctionDeprecated(): iterable
 	{
 		if (PHP_VERSION_ID < 80000) {
 			yield 'create_function' => [
@@ -97,18 +98,17 @@ class ReflectionProviderTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataFunctionDeprecated
-	 *
 	 * @param non-empty-string $functionName
 	 */
+	#[DataProvider('dataFunctionDeprecated')]
 	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$this->assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
 	}
 
-	public function dataMethodThrowType(): array
+	public static function dataMethodThrowType(): array
 	{
 		return [
 			[
@@ -124,12 +124,10 @@ class ReflectionProviderTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataMethodThrowType
-	 */
+	#[DataProvider('dataMethodThrowType')]
 	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
 		$throwType = $method->getThrowType();
@@ -144,15 +142,12 @@ class ReflectionProviderTest extends PHPStanTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testNativeClassConstantTypeInEvaledClass(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		eval('namespace NativeClassConstantInEvaledClass; class Foo { public const int FOO = 1; }');
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass('NativeClassConstantInEvaledClass\\Foo');
 		$constant = $class->getConstant('FOO');
 		$this->assertSame('int', $constant->getValueType()->describe(VerbosityLevel::precise()));

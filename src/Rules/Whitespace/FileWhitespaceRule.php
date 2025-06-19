@@ -3,11 +3,13 @@
 namespace PHPStan\Rules\Whitespace;
 
 use Nette\Utils\Strings;
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +18,7 @@ use function count;
 /**
  * @implements Rule<FileNode>
  */
+#[RegisteredRule(level: 0)]
 final class FileWhitespaceRule implements Rule
 {
 
@@ -48,6 +51,7 @@ final class FileWhitespaceRule implements Rule
 			/**
 			 * @return int|null
 			 */
+			#[Override]
 			public function enterNode(Node $node)
 			{
 				if ($node instanceof Node\Stmt\Declare_) {

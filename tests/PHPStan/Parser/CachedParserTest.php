@@ -8,14 +8,13 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class CachedParserTest extends PHPStanTestCase
 {
 
-	/**
-	 * @dataProvider dataParseFileClearCache
-	 */
+	#[DataProvider('dataParseFileClearCache')]
 	public function testParseFileClearCache(
 		int $cachedNodesByStringCountMax,
 		int $cachedNodesByStringCountExpected,
@@ -47,7 +46,7 @@ class CachedParserTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataParseFileClearCache(): Generator
+	public static function dataParseFileClearCache(): Generator
 	{
 		yield 'even' => [
 			'cachedNodesByStringCountMax' => 50,

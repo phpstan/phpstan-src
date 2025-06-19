@@ -3,9 +3,11 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Type;
 use ReflectionFunctionAbstract;
 
+#[AutowiredService(factory: '@PHPStan\Reflection\SignatureMap\SignatureMapProviderFactory::create')]
 interface SignatureMapProvider
 {
 

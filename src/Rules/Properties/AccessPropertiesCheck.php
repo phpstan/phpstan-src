@@ -10,6 +10,8 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
@@ -26,6 +28,7 @@ use function array_merge;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class AccessPropertiesCheck
 {
 
@@ -33,7 +36,9 @@ final class AccessPropertiesCheck
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
 		private bool $reportMagicProperties,
+		#[AutowiredParameter]
 		private bool $checkDynamicProperties,
 	)
 	{

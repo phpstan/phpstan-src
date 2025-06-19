@@ -3,11 +3,13 @@
 namespace PHPStan\PhpDoc;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function strtolower;
 
+#[AutowiredService]
 final class PhpDocInheritanceResolver
 {
 

@@ -7,11 +7,12 @@ use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class VerbosityLevelTest extends PHPStanTestCase
 {
 
-	public function dataGetRecommendedLevelByType(): iterable
+	public static function dataGetRecommendedLevelByType(): iterable
 	{
 		yield [
 			new BooleanType(),
@@ -30,9 +31,7 @@ class VerbosityLevelTest extends PHPStanTestCase
 					new IntegerType(),
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 				],
-				null,
-				null,
-				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
+				variances: [TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
 			),
 			new GenericObjectType(
 				'ArrayAccess',
@@ -40,17 +39,13 @@ class VerbosityLevelTest extends PHPStanTestCase
 					new IntegerType(),
 					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 				],
-				null,
-				null,
-				[TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
+				variances: [TemplateTypeVariance::createInvariant(), TemplateTypeVariance::createInvariant()],
 			),
 			VerbosityLevel::precise(),
 		];
 	}
 
-	/**
-	 * @dataProvider dataGetRecommendedLevelByType
-	 */
+	#[DataProvider('dataGetRecommendedLevelByType')]
 	public function testGetRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType, VerbosityLevel $expected): void
 	{
 		$level = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);

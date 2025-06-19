@@ -3,21 +3,22 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TypeSpecifyingExtensionTypeInferenceFalseTest extends TypeInferenceTestCase
 {
 
-	public function dataTypeSpecifyingExtensionsFalse(): iterable
+	public static function dataTypeSpecifyingExtensionsFalse(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-false.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-false.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-false.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-false.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-false.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-false.php');
 	}
 
 	/**
-	 * @dataProvider dataTypeSpecifyingExtensionsFalse
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataTypeSpecifyingExtensionsFalse')]
 	public function testTypeSpecifyingExtensionsFalse(
 		string $assertType,
 		string $file,

@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MatchExpressionRule>
@@ -21,7 +22,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		return new MatchExpressionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
@@ -112,20 +113,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5454(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-5454.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/match-enums.php'], [
 			[
 				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
@@ -167,21 +163,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6394(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6394.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6115(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
 			[
 				'Match expression does not handle remaining value: 3',
@@ -190,71 +180,54 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7095(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7095.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7176(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-7176.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6064(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-6064.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6647(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-6647.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7622(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-7622.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7698(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-7698.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7746(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-7746.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8240(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8240.php'], [
 			[
@@ -270,11 +243,9 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testLastArmAlwaysTrue(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->treatPhpDocTypesAsCertain = true;
 		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
 		$this->analyse([__DIR__ . '/data/last-match-arm-always-true.php'], [
@@ -309,7 +280,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -344,171 +315,118 @@ class MatchExpressionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[RequiresPhp('>= 8.1')]
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/match-always-true-last-arm.php'], $expectedErrors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8932(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-8932.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8937(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-8937.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8900(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8900.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug4451(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4451.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9007(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9007.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9457(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9457.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8614(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8614.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8536(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8536.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9499(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9499.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6407(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6407.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBugUnhandledTrueWithComplexCondition(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-unhandled-true-with-complex-condition.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11246(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11246.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9879(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9879.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11313(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11313.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9436(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9436.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11852(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11852.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/match-expr-property-hooks.php'], [
 			[
 				'Match expression does not handle remaining value: 3',

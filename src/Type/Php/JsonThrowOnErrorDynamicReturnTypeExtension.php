@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -20,6 +21,7 @@ use PHPStan\Type\TypeCombinator;
 use function is_bool;
 use function json_decode;
 
+#[AutowiredService]
 final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

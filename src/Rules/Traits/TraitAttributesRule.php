@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Traits;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -14,6 +15,7 @@ use function count;
 /**
  * @implements Rule<InTraitNode>
  */
+#[RegisteredRule(level: 0)]
 final class TraitAttributesRule implements Rule
 {
 

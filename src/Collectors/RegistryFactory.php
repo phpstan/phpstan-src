@@ -2,8 +2,10 @@
 
 namespace PHPStan\Collectors;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 
+#[AutowiredService]
 final class RegistryFactory
 {
 

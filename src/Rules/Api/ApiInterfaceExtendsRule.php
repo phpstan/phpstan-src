@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Interface_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Interface_>
  */
+#[RegisteredRule(level: 0)]
 final class ApiInterfaceExtendsRule implements Rule
 {
 

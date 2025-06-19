@@ -19,12 +19,14 @@ use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CalledOnTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
@@ -140,9 +142,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new GenericObjectType(
 			$reflection->getName(),
 			$reflection->typeMapToList($reflection->getActiveTemplateTypeMap()),
-			null,
-			null,
-			$reflection->varianceMapToList($reflection->getCallSiteVarianceMap()),
+			variances: $reflection->varianceMapToList($reflection->getCallSiteVarianceMap()),
 		);
 	}
 
@@ -158,7 +158,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($classReflection->hasProperty($propertyName)) {
+		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasProperty($propertyName));
+		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -224,7 +225,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		$property = $nakedClassReflection->getProperty($propertyName, $scope);
+		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getProperty($propertyName, $scope));
+		if ($property instanceof ErrorType) {
+			$property = new DummyPropertyReflection($propertyName);
+
+			return new CallbackUnresolvedPropertyPrototypeReflection(
+				$property,
+				$property->getDeclaringClass(),
+				false,
+				static fn (Type $type): Type => $type,
+			);
+		}
 
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;
@@ -246,6 +257,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		);
 	}
 
+	/**
+	 * @deprecated Not in use anymore.
+	 */
 	public function getPropertyWithoutTransformingStatic(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		$classReflection = $this->getNakedClassReflection();

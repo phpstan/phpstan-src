@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\VariadicMethodsVisitor;
@@ -46,6 +48,7 @@ use const PHP_VERSION_ID;
 /**
  * @api
  */
+#[GenerateFactory(interface: PhpMethodReflectionFactory::class)]
 final class PhpMethodReflection implements ExtendedMethodReflection
 {
 
@@ -75,6 +78,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private ReflectionMethod $reflection,
 		private ReflectionProvider $reflectionProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
@@ -125,7 +129,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {
-				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), null, $prototypeDeclaringClass);
+				$tentativeReturnType = TypehintHelper::decideTypeFromReflection($prototypeMethod->getTentativeReturnType(), selfClass: $prototypeDeclaringClass);
 			}
 
 			return new MethodPrototypeReflection(
@@ -345,8 +349,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		if ($this->nativeReturnType === null) {
 			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
-				null,
-				$this->declaringClass,
+				selfClass: $this->declaringClass,
 			);
 		}
 

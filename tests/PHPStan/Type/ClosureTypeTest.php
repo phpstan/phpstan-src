@@ -5,12 +5,13 @@ namespace PHPStan\Type;
 use Closure;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class ClosureTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -24,7 +25,7 @@ class ClosureTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			[
-				new ClosureType([], new MixedType(), false, null, null, null, [], [], []),
+				new ClosureType([], new MixedType(), false, impurePoints: []),
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createMaybe(),
 			],
@@ -91,9 +92,7 @@ class ClosureTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(
 		Type $type,
 		Type $otherType,

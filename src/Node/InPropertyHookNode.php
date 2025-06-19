@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Reflection\ClassReflection;
@@ -44,6 +45,7 @@ final class InPropertyHookNode extends NodeAbstract implements VirtualNode
 		return $this->originalNode;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_InPropertyHookNode';
@@ -52,6 +54,7 @@ final class InPropertyHookNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
+use Override;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -19,6 +20,9 @@ use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\Fixable\FileChangedException;
+use PHPStan\Fixable\MergeConflictException;
+use PHPStan\Fixable\Patcher;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
@@ -82,6 +86,7 @@ final class AnalyseCommand extends Command
 		parent::__construct();
 	}
 
+	#[Override]
 	protected function configure(): void
 	{
 		$this->setName(self::NAME)
@@ -90,31 +95,33 @@ final class AnalyseCommand extends Command
 				new InputArgument('paths', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Paths with source code to run analysis on'),
 				new InputOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Path to project configuration file'),
 				new InputOption(self::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
-				new InputOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS, null, InputOption::VALUE_NONE, 'Do not show progress bar, only results'),
-				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
+				new InputOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS, mode: InputOption::VALUE_NONE, description: 'Do not show progress bar, only results'),
+				new InputOption('debug', mode: InputOption::VALUE_NONE, description: 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
-				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', null),
+				new InputOption('error-format', mode: InputOption::VALUE_REQUIRED, description: 'Format in which to print the result of the analysis'),
 				new InputOption('generate-baseline', 'b', InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
-				new InputOption('allow-empty-baseline', null, InputOption::VALUE_NONE, 'Do not error out when the generated baseline is empty'),
-				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
-				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
-				new InputOption('tmp-file', null, InputOption::VALUE_REQUIRED, '(Editor mode) Edited file used in place of --instead-of file'),
-				new InputOption('instead-of', null, InputOption::VALUE_REQUIRED, '(Editor mode) File being replaced by --tmp-file'),
-				new InputOption('fix', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
-				new InputOption('watch', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
-				new InputOption('pro', null, InputOption::VALUE_NONE, 'Launch PHPStan Pro'),
-				new InputOption('fail-without-result-cache', null, InputOption::VALUE_NONE, 'Return non-zero exit code when result cache is not used'),
+				new InputOption('allow-empty-baseline', mode: InputOption::VALUE_NONE, description: 'Do not error out when the generated baseline is empty'),
+				new InputOption('memory-limit', mode: InputOption::VALUE_REQUIRED, description: 'Memory limit for analysis'),
+				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
+				new InputOption('tmp-file', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) Edited file used in place of --instead-of file'),
+				new InputOption('instead-of', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) File being replaced by --tmp-file'),
+				new InputOption('fix', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable errors (experimental)'),
+				new InputOption('watch', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
+				new InputOption('pro', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
+				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when result cache is not used'),
 			]);
 	}
 
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getAliases(): array
 	{
 		return ['analyze'];
 	}
 
+	#[Override]
 	protected function initialize(InputInterface $input, OutputInterface $output): void
 	{
 		if ((bool) $input->getOption('debug')) {
@@ -127,6 +134,7 @@ final class AnalyseCommand extends Command
 		}
 	}
 
+	#[Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$paths = $input->getArgument('paths');
@@ -136,7 +144,8 @@ final class AnalyseCommand extends Command
 		$level = $input->getOption(self::OPTION_LEVEL);
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
-		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
+		$pro = (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
+		$fix = (bool) $input->getOption('fix');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
 
 		/** @var string|false|null $generateBaselineFile */
@@ -196,10 +205,23 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used when generating the baseline.');
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
-			if ($fix) {
+			if ($pro) {
 				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with PHPStan Pro.');
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
+			if ($fix) {
+				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix.');
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			}
+		}
+
+		if ($fix) {
+			if ($generateBaselineFile !== null) {
+				$inceptionResult->getStdOutput()->getStyle()->error('Errors cannot be fixed when generating the baseline.');
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			}
+
+			$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -269,6 +291,13 @@ final class AnalyseCommand extends Command
 			}
 		}
 
+		if ($inceptionResult->getEditorModeTmpFile() !== null) {
+			if (in_array($inceptionResult->getEditorModeTmpFile(), $files, true)) {
+				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('File %s passed to --tmp-file is already in analysed project files.', $inceptionResult->getEditorModeInsteadOfFile()));
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			}
+		}
+
 		$analysedConfigFiles = array_intersect($files, $container->getParameter('allConfigFiles'));
 		/** @var RelativePathHelper $relativePathHelper */
 		$relativePathHelper = $container->getService('relativePathHelper');
@@ -289,7 +318,7 @@ final class AnalyseCommand extends Command
 			));
 		}
 
-		if ($fix) {
+		if ($pro) {
 			if ($generateBaselineFile !== null) {
 				$inceptionResult->getStdOutput()->getStyle()->error('You cannot pass the --generate-baseline option when running PHPStan Pro.');
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
@@ -304,6 +333,10 @@ final class AnalyseCommand extends Command
 		$debug = $input->getOption('debug');
 		if (!is_bool($debug)) {
 			throw new ShouldNotHappenException();
+		}
+
+		if ($fix) {
+			$inceptionResult->getErrorOutput()->writeLineFormatted('Analysing files...');
 		}
 
 		try {
@@ -477,8 +510,78 @@ final class AnalyseCommand extends Command
 			);
 		}
 
-		$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
-		if ($failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
+		if ($fix) {
+			$fixableErrors = [];
+			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+				if ($fileSpecificError->getFixedErrorDiff() === null) {
+					continue;
+				}
+
+				$fixableErrors[] = $fileSpecificError;
+			}
+
+			$fixableErrorsCount = count($fixableErrors);
+			if ($fixableErrorsCount === 0) {
+				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
+				$exitCode = 1;
+			} else {
+				$skippedCount = 0;
+				$diffsByFile = [];
+				foreach ($fixableErrors as $fixableError) {
+					$fixFile = $fixableError->getFilePath();
+					if ($fixableError->getTraitFilePath() !== null) {
+						$fixFile = $fixableError->getTraitFilePath();
+					}
+
+					if ($fixableError->getFixedErrorDiff() === null) {
+						throw new ShouldNotHappenException();
+					}
+
+					$diffsByFile[$fixFile][] = $fixableError->getFixedErrorDiff();
+				}
+
+				$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
+				$errorOutput->getStyle()->progressStart($fixableErrorsCount);
+
+				$patcher = $container->getByType(Patcher::class);
+				foreach ($diffsByFile as $file => $diffs) {
+					$diffsCount = count($diffs);
+					try {
+						$finalFileContents = $patcher->applyDiffs($file, $diffs);
+						$errorOutput->getStyle()->progressAdvance($diffsCount);
+					} catch (FileChangedException | MergeConflictException) {
+						$skippedCount += $diffsCount;
+						$errorOutput->getStyle()->progressAdvance($diffsCount);
+						continue;
+					}
+
+					FileWriter::write($file, $finalFileContents);
+				}
+
+				$errorOutput->getStyle()->progressFinish();
+
+				if ($skippedCount > 0) {
+					$inceptionResult->getStdOutput()->getStyle()->warning(sprintf(
+						'%d %s fixed, %d %s skipped',
+						$fixableErrorsCount,
+						$fixableErrorsCount === 1 ? 'error' : 'errors',
+						$skippedCount,
+						$skippedCount === 1 ? 'error' : 'errors',
+					));
+				} else {
+					$inceptionResult->getStdOutput()->getStyle()->success(sprintf(
+						'%d %s fixed',
+						$fixableErrorsCount,
+						$fixableErrorsCount === 1 ? 'error' : 'errors',
+					));
+				}
+				$exitCode = 0;
+			}
+		} else {
+			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
+		}
+
+		if ($exitCode === 0 && $failWithoutResultCache && !$analysisResult->isResultCacheUsed()) {
 			$exitCode = 2;
 		}
 

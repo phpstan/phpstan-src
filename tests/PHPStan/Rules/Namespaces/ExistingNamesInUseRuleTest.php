@@ -16,7 +16,7 @@ class ExistingNamesInUseRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingNamesInUseRule(
 			$reflectionProvider,
 			new ClassNameCheck(

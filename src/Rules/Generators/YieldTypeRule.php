@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Yield_>
  */
+#[RegisteredRule(level: 3)]
 final class YieldTypeRule implements Rule
 {
 

@@ -3,10 +3,12 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use function class_implements;
 use function class_parents;
 
+#[AutowiredService(name: 'registry', as: Registry::class)]
 final class LazyRegistry implements Registry
 {
 

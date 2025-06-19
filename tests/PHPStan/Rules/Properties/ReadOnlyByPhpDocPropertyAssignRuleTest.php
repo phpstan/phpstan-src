@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ReadOnlyByPhpDocPropertyAssignRule>
@@ -132,21 +132,15 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRuleIgnoresNativeReadonly(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/readonly-assign-phpdoc-and-native.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7361(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7361.php'], [
 			[
 				'@readonly property Bug7361\Example::$foo is assigned outside of the constructor.',
@@ -155,21 +149,15 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFeature7648(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/feature-7648.php'], []);
 	}
 
+	#[RequiresPhp('>= 7.4')]
 	public function testFeature11775(): void
 	{
-		if (PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/feature-11775.php'], [
 			[
 				'@readonly property Feature11775\FooImmutable::$i is assigned outside of the constructor.',
@@ -182,12 +170,9 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-hooks-readonly-by-phpdoc-assign.php'], [
 			[
 				'@readonly property PropertyHooksReadonlyByPhpDocAssign\Foo::$i is assigned outside of the constructor.',

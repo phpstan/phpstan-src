@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\VariadicFunctionsVisitor;
@@ -14,6 +16,7 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
@@ -27,6 +30,7 @@ use function count;
 use function is_array;
 use function is_file;
 
+#[GenerateFactory(interface: FunctionReflectionFactory::class)]
 final class PhpFunctionReflection implements FunctionReflection
 {
 
@@ -45,6 +49,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionFunction $reflection,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private Parser $parser,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private TemplateTypeMap $templateTypeMap,

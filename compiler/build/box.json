@@ -8,7 +8,8 @@
   ],
   "files": [
 	"preload.php",
-	"vendor/composer/installed.php"
+	"vendor/composer/installed.php",
+    "vendor/attributes.php"
   ],
   "directories": [
     "conf",

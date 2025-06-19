@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function str_contains;
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
+#[RegisteredRule(level: 0)]
 final class ApiClassConstFetchRule implements Rule
 {
 

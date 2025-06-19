@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
@@ -43,6 +44,7 @@ final class ClassMethodsNode extends NodeAbstract implements VirtualNode
 		return $this->methodCalls;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClassMethodsNode';
@@ -51,6 +53,7 @@ final class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

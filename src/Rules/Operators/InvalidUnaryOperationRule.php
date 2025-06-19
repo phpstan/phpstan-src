@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidUnaryOperationRule implements Rule
 {
 

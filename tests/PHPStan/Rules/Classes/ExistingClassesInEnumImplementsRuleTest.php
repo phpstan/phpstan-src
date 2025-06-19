@@ -7,7 +7,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ExistingClassesInEnumImplementsRule>
@@ -17,7 +17,7 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new ExistingClassesInEnumImplementsRule(
 			new ClassNameCheck(
@@ -31,12 +31,9 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-implements.php'], [
 			[
 				'Interface EnumImplements\FooInterface referenced with incorrect case: EnumImplements\FOOInterface.',

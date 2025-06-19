@@ -4,11 +4,12 @@ namespace PHPStan\Type;
 
 use Closure;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ClosureTypeFactoryTest extends PHPStanTestCase
 {
 
-	public function dataFromClosureObjectReturnType(): array
+	public static function dataFromClosureObjectReturnType(): array
 	{
 		return [
 			[static function (): void {
@@ -21,8 +22,8 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 
 	/**
 	 * @param Closure(): mixed $closure
-	 * @dataProvider dataFromClosureObjectReturnType
 	 */
+	#[DataProvider('dataFromClosureObjectReturnType')]
 	public function testFromClosureObjectReturnType(Closure $closure, string $returnType): void
 	{
 		$closureType = $this->getClosureType($closure);
@@ -30,7 +31,7 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 		$this->assertSame($returnType, $closureType->getReturnType()->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataFromClosureObjectParameter(): array
+	public static function dataFromClosureObjectParameter(): array
 	{
 		return [
 			[static function (string $foo): void {
@@ -48,8 +49,8 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 
 	/**
 	 * @param Closure(): mixed $closure
-	 * @dataProvider dataFromClosureObjectParameter
 	 */
+	#[DataProvider('dataFromClosureObjectParameter')]
 	public function testFromClosureObjectParameter(Closure $closure, int $index, string $type): void
 	{
 		$closureType = $this->getClosureType($closure);

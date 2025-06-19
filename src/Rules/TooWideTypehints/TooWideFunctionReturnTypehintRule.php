@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
+#[RegisteredRule(level: 4)]
 final class TooWideFunctionReturnTypehintRule implements Rule
 {
 

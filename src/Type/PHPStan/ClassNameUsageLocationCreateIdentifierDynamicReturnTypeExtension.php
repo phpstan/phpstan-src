@@ -5,6 +5,7 @@ namespace PHPStan\Type\PHPStan;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -14,6 +15,7 @@ use ReflectionClass;
 use function count;
 use function sort;
 
+#[AutowiredService]
 final class ClassNameUsageLocationCreateIdentifierDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

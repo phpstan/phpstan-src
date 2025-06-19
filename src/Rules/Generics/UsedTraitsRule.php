@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,7 @@ use function ucfirst;
 /**
  * @implements Rule<Node\Stmt\TraitUse>
  */
+#[RegisteredRule(level: 2)]
 final class UsedTraitsRule implements Rule
 {
 

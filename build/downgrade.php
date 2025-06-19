@@ -1,6 +1,7 @@
 <?php declare(strict_types = 1);
 
 return [
+	'composerJson' => __DIR__ . '/../composer.json',
 	'paths' => [
 		__DIR__ . '/../build/PHPStan',
 		__DIR__ . '/../src',

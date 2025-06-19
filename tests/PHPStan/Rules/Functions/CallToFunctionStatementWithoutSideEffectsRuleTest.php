@@ -14,7 +14,7 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToFunctionStatementWithoutSideEffectsRule($this->createReflectionProvider());
+		return new CallToFunctionStatementWithoutSideEffectsRule(self::createReflectionProvider());
 	}
 
 	public function testRule(): void

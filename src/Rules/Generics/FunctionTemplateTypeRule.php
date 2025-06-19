@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Function_>
  */
+#[RegisteredRule(level: 2)]
 final class FunctionTemplateTypeRule implements Rule
 {
 

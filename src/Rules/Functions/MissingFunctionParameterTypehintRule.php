@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
+#[RegisteredRule(level: 6)]
 final class MissingFunctionParameterTypehintRule implements Rule
 {
 

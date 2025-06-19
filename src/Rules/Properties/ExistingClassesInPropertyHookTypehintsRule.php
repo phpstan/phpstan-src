@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -16,6 +17,7 @@ use function ucfirst;
 /**
  * @implements Rule<InPropertyHookNode>
  */
+#[RegisteredRule(level: 0)]
 final class ExistingClassesInPropertyHookTypehintsRule implements Rule
 {
 

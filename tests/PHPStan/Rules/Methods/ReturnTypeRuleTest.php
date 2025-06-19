@@ -6,6 +6,8 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -22,7 +24,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, $this->checkBenevolentUnionTypes, true)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, $this->checkBenevolentUnionTypes, true)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -302,12 +304,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-misleading-mixed-return.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testMisleadingTypehintsInClassWithoutNamespace(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/misleadingTypehints.php'], [
 			[
 				'Method FooWithoutNamespace::misleadingBoolReturnType() should return boolean but returns true.',
@@ -548,12 +547,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2573-return.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug4603(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4603.php'], []);
 	}
 
@@ -572,7 +568,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataBug5218(): array
+	public static function dataBug5218(): array
 	{
 		return [
 			[
@@ -592,9 +588,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataBug5218
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataBug5218')]
 	public function testBug5218(bool $checkExplicitMixed, array $errors): void
 	{
 		$this->checkExplicitMixed = $checkExplicitMixed;
@@ -776,12 +772,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7904(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-7904.php'], []);
 	}
@@ -804,12 +797,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8071(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-8071.php'], [
 			[
@@ -1126,12 +1116,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12223.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			self::markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/property-hooks-return.php'], [
 			[
 				'Get hook for property PropertyHooksReturn\Foo::$i should return int but returns string.',
@@ -1163,12 +1150,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testShortGetPropertyHook(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/short-get-property-hook-return.php'], [
 			[
 				'Get hook for property ShortGetPropertyHookReturn\Foo::$i should return int but returns string.',
@@ -1196,12 +1180,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug1O580(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10580.php'], [
 			[
 				'Method Bug10580\FooA::fooThisInterface() should return $this(Bug10580\FooA) but returns Bug10580\FooA.',
@@ -1242,12 +1223,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug4443(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4443.php'], [
 			[
 				'Method Bug4443\HelloWorld::getArray() should return array<mixed> but returns array<mixed>|null.',

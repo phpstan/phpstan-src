@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
@@ -31,6 +32,7 @@ final class BooleanOrNode extends Expr implements VirtualNode
 		return $this->rightScope;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_BooleanOrNode';
@@ -39,6 +41,7 @@ final class BooleanOrNode extends Expr implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

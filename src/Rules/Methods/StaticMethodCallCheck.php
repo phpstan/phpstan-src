@@ -7,6 +7,8 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -33,6 +35,7 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class StaticMethodCallCheck
 {
 
@@ -40,8 +43,11 @@ final class StaticMethodCallCheck
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
+		#[AutowiredParameter]
 		private bool $reportMagicMethods,
 	)
 	{

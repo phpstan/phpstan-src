@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<ClassPropertyNode>
  */
+#[RegisteredRule(level: 0)]
 final class PropertyInClassRule implements Rule
 {
 

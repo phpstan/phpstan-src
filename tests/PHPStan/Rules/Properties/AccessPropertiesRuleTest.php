@@ -6,6 +6,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 use const PHP_VERSION_ID;
 
@@ -23,7 +25,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesRule(new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, $this->checkDynamicProperties));
 	}
 
@@ -536,11 +538,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5868(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
@@ -564,12 +564,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6385(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
@@ -589,11 +586,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6566(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
@@ -639,7 +634,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3659.php'], $errors);
 	}
 
-	public function dataDynamicProperties(): array
+	public static function dataDynamicProperties(): array
 	{
 		$tipText = 'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>';
 		$errors = [
@@ -771,9 +766,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataDynamicProperties
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataDynamicProperties')]
 	public function testDynamicProperties(bool $checkDynamicProperties, array $errors): void
 	{
 		$this->checkThisOnly = false;
@@ -807,7 +802,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 
-	public function dataTrueAndFalse(): array
+	public static function dataTrueAndFalse(): array
 	{
 		return [
 			[true],
@@ -815,9 +810,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testPhp82AndDynamicProperties(bool $b): void
 	{
 		$errors = [];
@@ -868,9 +861,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/php-82-dynamic-properties.php'], $errors);
 	}
 
-	/**
-	 * @dataProvider dataTrueAndFalse
-	 */
+	#[DataProvider('dataTrueAndFalse')]
 	public function testPhp82AndDynamicPropertiesAllow(bool $b): void
 	{
 		$errors = [];
@@ -949,12 +940,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8536(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
@@ -985,12 +973,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8629.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9694(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
@@ -1005,24 +990,18 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/trait-mixin.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testAsymmetricVisibility(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
 		$this->analyse([__DIR__ . '/data/read-asymmetric-visibility.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testNewIsAlwaysFinalClass(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;

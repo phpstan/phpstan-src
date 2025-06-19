@@ -10,7 +10,7 @@ use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IncompatiblePropertyHookPhpDocTypeRule>
@@ -20,7 +20,7 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver([], $reflectionProvider);
 
 		return new IncompatiblePropertyHookPhpDocTypeRule(
@@ -46,12 +46,9 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/incompatible-property-hook-phpdoc-types.php'], [
 			[
 				'PHPDoc tag @return with type string is incompatible with native type int.',

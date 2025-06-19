@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -22,6 +23,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function in_array;
 
+#[AutowiredService]
 final class AdapterReflectionEnumDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

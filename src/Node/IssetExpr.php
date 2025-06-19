@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Expr;
 
 /**
@@ -25,6 +26,7 @@ final class IssetExpr extends Expr implements VirtualNode
 		return $this->expr;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_IssetExpr';
@@ -33,6 +35,7 @@ final class IssetExpr extends Expr implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -5,12 +5,14 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use function count;
 
 /**
  * @implements Collector<FunctionReturnStatementsNode, string>
  */
+#[RegisteredCollector(level: 4)]
 final class FunctionWithoutImpurePointsCollector implements Collector
 {
 

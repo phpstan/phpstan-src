@@ -1,0 +1,34 @@
+<?php // lint >= 8.3
+
+namespace FixOverrideAttribute;
+
+class Foo
+{
+
+	public function doFoo(): void
+	{
+
+	}
+
+}
+
+class Bar extends Foo
+{
+
+	#[\Override]
+	public function doFoo(): void
+	{
+
+	}
+
+
+	public function doBar(): void
+	{
+
+	}
+
+	public function doBaz(): void
+	{
+	}
+
+}

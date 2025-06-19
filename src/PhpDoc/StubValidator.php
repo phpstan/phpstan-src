@@ -7,6 +7,7 @@ use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Php\PhpVersion;
@@ -67,6 +68,7 @@ use PHPStan\Rules\Generics\UsedTraitsRule;
 use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
 use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
+use PHPStan\Rules\Methods\MethodPrototypeFinder;
 use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MethodVisibilityComparisonHelper;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
@@ -101,6 +103,7 @@ use function array_fill_keys;
 use function count;
 use function sprintf;
 
+#[AutowiredService]
 final class StubValidator
 {
 
@@ -159,7 +162,7 @@ final class StubValidator
 				}
 
 				$internalErrorMessage = sprintf('Internal error: %s', $e->getMessage());
-				$errors[] = (new Error($internalErrorMessage, $stubFile, null, $e))
+				$errors[] = (new Error($internalErrorMessage, $stubFile, canBeIgnored: $e))
 					->withIdentifier('phpstan.internal')
 					->withMetadata([
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
@@ -217,7 +220,7 @@ final class StubValidator
 				true,
 				new MethodParameterComparisonHelper($phpVersion),
 				new MethodVisibilityComparisonHelper(),
-				$phpClassReflectionExtension,
+				new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
 				$container->getParameter('checkMissingOverrideMethodAttribute'),
 			),
 			new DuplicateDeclarationRule(),

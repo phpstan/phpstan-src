@@ -3,11 +3,10 @@
 namespace PHPStan\Levels;
 
 use PHPStan\Testing\LevelsTestCase;
+use PHPUnit\Framework\Attributes\Group;
 use const PHP_VERSION_ID;
 
-/**
- * @group levels
- */
+#[Group('levels')]
 class LevelsIntegrationTest extends LevelsTestCase
 {
 

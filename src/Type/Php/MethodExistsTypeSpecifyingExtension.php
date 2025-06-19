@@ -9,6 +9,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
@@ -20,6 +21,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\UnionType;
 use function count;
 
+#[AutowiredService]
 final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

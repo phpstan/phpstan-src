@@ -14,7 +14,7 @@ class ApiStaticCallRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ApiStaticCallRule(new ApiRuleHelper(), $this->createReflectionProvider());
+		return new ApiStaticCallRule(new ApiRuleHelper(), self::createReflectionProvider());
 	}
 
 	public function testRuleInPhpStan(): void

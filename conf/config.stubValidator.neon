@@ -11,11 +11,29 @@ services:
 		arguments:
 			php8Parser: @php8PhpParser
 
+	# overrides service from parsers.neon
 	defaultAnalysisParser!:
 		factory: @stubParser
 
+	# overrides service from services.neon
 	nodeScopeResolverReflector:
 		factory: @stubReflector
+
+	# overrides service from services.neon
+	reflectionProvider:
+		factory: @stubBetterReflectionProvider
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider
+
+	# overrides service from parsers.neon
+	currentPhpVersionLexer:
+		factory: @php8Lexer
+		autowired: false
+
+	# overrides service from parsers.neon
+	currentPhpVersionPhpParser:
+		factory: @php8PhpParser
+		autowired: false
 
 	stubBetterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
@@ -33,17 +51,4 @@ services:
 	stubSourceLocator:
 		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\PhpDoc\StubSourceLocatorFactory::create()
-		autowired: false
-
-	reflectionProvider:
-		factory: @stubBetterReflectionProvider
-		autowired:
-			- PHPStan\Reflection\ReflectionProvider
-
-	currentPhpVersionLexer:
-		factory: @php8Lexer
-		autowired: false
-
-	currentPhpVersionPhpParser:
-		factory: @php8PhpParser
 		autowired: false

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Collectors\CollectedData;
@@ -54,6 +55,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 		return $this->onlyFiles;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_CollectedDataNode';
@@ -62,6 +64,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return array{}
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

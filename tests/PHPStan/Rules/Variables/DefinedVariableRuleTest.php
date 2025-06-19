@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<DefinedVariableRule>
@@ -313,7 +314,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataLoopInitialAssignments(): array
+	public static function dataLoopInitialAssignments(): array
 	{
 		return [
 			[
@@ -349,9 +350,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataLoopInitialAssignments
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataLoopInitialAssignments')]
 	public function testLoopInitialAssignments(
 		bool $polluteScopeWithLoopInitialAssignments,
 		bool $checkMaybeUndefinedVariables,
@@ -462,7 +463,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataForeachPolluteScopeWithAlwaysIterableForeach(): array
+	public static function dataForeachPolluteScopeWithAlwaysIterableForeach(): array
 	{
 		return [
 			[
@@ -571,10 +572,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataForeachPolluteScopeWithAlwaysIterableForeach
-	 *
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataForeachPolluteScopeWithAlwaysIterableForeach')]
 	public function testForeachPolluteScopeWithAlwaysIterableForeach(bool $polluteScopeWithAlwaysIterableForeach, array $errors): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -877,12 +877,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1016b.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8142(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -958,12 +955,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-393.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9474(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -971,12 +965,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9474.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -1029,12 +1020,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/discussion-10252.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10418(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -1042,11 +1030,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10418.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testPassByReferenceIntoNotNullable(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
@@ -1068,12 +1054,9 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10228.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;

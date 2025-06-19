@@ -3,12 +3,13 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class RawErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'message' => 'No errors',
@@ -102,9 +103,9 @@ Bar2
 	}
 
 	/**
-	 * @dataProvider dataFormatterOutputProvider
 	 * @param array{int, int}|int $numFileErrors
 	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,

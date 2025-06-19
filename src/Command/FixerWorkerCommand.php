@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use Clue\React\NDJson\Encoder;
+use Override;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
@@ -57,6 +58,7 @@ final class FixerWorkerCommand extends Command
 		parent::__construct();
 	}
 
+	#[Override]
 	protected function configure(): void
 	{
 		$this->setName(self::NAME)
@@ -66,13 +68,14 @@ final class FixerWorkerCommand extends Command
 				new InputOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Path to project configuration file'),
 				new InputOption(AnalyseCommand::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
-				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for analysis'),
-				new InputOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running with Xdebug for debugging purposes'),
-				new InputOption('server-port', null, InputOption::VALUE_REQUIRED, 'Server port for FixerApplication'),
+				new InputOption('memory-limit', mode: InputOption::VALUE_REQUIRED, description: 'Memory limit for analysis'),
+				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
+				new InputOption('server-port', mode: InputOption::VALUE_REQUIRED, description: 'Server port for FixerApplication'),
 			])
 			->setHidden(true);
 	}
 
+	#[Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
 		$paths = $input->getArgument('paths');
@@ -387,7 +390,7 @@ final class FixerWorkerCommand extends Command
 		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return resolve(new AnalyserResult([], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true)));
+			return resolve(new AnalyserResult([], [], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true)));
 		}
 
 		/** @var Scheduler $scheduler */

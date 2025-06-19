@@ -27,7 +27,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new TraitAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -52,12 +52,9 @@ class TraitAttributesRuleTest extends RuleTestCase
 		);
 	}
 
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/trait-attributes.php'], [
 			[
 				'Attribute class TraitAttributes\AbstractAttribute is abstract.',
@@ -70,12 +67,9 @@ class TraitAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
 	public function testBug12011(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 
@@ -87,12 +81,9 @@ class TraitAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.1')]
 	public function testBug12281(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-12281.php'], [
 			[
 				'Attribute class AllowDynamicProperties cannot be used with trait.',

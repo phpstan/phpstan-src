@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PhpParser\Node\Scalar\MagicConst;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\MagicConstantParamDefaultVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
 
 /** @implements Rule<MagicConst> */
+#[RegisteredRule(level: 0)]
 final class MagicConstantContextRule implements Rule
 {
 

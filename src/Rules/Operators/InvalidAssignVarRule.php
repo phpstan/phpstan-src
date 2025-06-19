@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,6 +16,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Expr>
  */
+#[RegisteredRule(level: 0)]
 final class InvalidAssignVarRule implements Rule
 {
 

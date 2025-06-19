@@ -6,12 +6,14 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
+use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Reflection\ReflectionProvider;
 use function strtolower;
 
 /**
  * @implements Collector<Expression, array{string, int}>
  */
+#[RegisteredCollector(level: 4)]
 final class PossiblyPureNewCollector implements Collector
 {
 

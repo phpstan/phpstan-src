@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
+#[RegisteredRule(level: 3)]
 final class DefaultValueTypesAssignedToPropertiesRule implements Rule
 {
 

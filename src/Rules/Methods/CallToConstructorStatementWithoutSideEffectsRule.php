@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<NoopExpressionNode>
  */
+#[RegisteredRule(level: 4)]
 final class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 {
 

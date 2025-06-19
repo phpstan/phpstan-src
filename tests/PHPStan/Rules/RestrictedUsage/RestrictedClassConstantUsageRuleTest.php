@@ -14,7 +14,7 @@ class RestrictedClassConstantUsageRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new RestrictedClassConstantUsageRule(
 			self::getContainer(),
 			$reflectionProvider,

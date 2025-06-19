@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
+#[RegisteredRule(level: 3)]
 final class SetNonVirtualPropertyHookAssignRule implements Rule
 {
 

@@ -6,6 +6,7 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\InClassMethodNode;
@@ -31,6 +32,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt>
  */
+#[RegisteredRule(level: 2)]
 final class WrongVariableNameInVarTagRule implements Rule
 {
 

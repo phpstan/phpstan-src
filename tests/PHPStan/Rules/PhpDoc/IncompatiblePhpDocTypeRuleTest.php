@@ -10,7 +10,7 @@ use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<IncompatiblePhpDocTypeRule>
@@ -20,7 +20,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
 		return new IncompatiblePhpDocTypeRule(
@@ -232,12 +232,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/generic-enum-param.php'], [
 			[
 				'PHPDoc tag @param for parameter $e contains generic type GenericEnumParam\FooEnum<int> but enum GenericEnumParam\FooEnum is not generic.',
@@ -246,12 +243,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testValueOfEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/value-of-enum.php'], [
 			[
 				'PHPDoc tag @param for parameter $shouldError with type string is incompatible with native type int.',
@@ -264,12 +258,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConditionalReturnType(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('This test needs PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/incompatible-conditional-return-type.php'], [
 			[
 				'PHPDoc tag @return with type ($p is int ? int : string) is not subtype of native type int.',

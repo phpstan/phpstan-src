@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
@@ -20,6 +21,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 1)]
 final class UnusedConstructorParametersRule implements Rule
 {
 

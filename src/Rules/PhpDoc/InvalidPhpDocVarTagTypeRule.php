@@ -4,6 +4,8 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -23,6 +25,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
@@ -33,8 +36,11 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter]
 		private bool $checkMissingVarTagTypehint,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

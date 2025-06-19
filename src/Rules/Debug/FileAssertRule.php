@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Debug;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[AutowiredService]
 final class FileAssertRule implements Rule
 {
 

@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ImpossibleCheckTypeMethodCallRule>
@@ -20,7 +21,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 	{
 		return new ImpossibleCheckTypeMethodCallRule(
 			new ImpossibleCheckTypeHelper(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[],
 				$this->treatPhpDocTypesAsCertain,
@@ -199,12 +200,9 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8169(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-8169.php'], [
 			[
@@ -222,7 +220,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -244,9 +242,9 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

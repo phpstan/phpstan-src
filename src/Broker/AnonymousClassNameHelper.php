@@ -3,6 +3,8 @@
 namespace PHPStan\Broker;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\AnonymousClassVisitor;
@@ -10,11 +12,13 @@ use PHPStan\ShouldNotHappenException;
 use function md5;
 use function sprintf;
 
+#[AutowiredService]
 final class AnonymousClassNameHelper
 {
 
 	public function __construct(
 		private FileHelper $fileHelper,
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private RelativePathHelper $relativePathHelper,
 	)
 	{

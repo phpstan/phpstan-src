@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<OffsetAccessValueAssignmentRule>
@@ -15,7 +15,7 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new OffsetAccessValueAssignmentRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true));
+		return new OffsetAccessValueAssignmentRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
 	public function testRule(): void
@@ -52,12 +52,9 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-nullsafe.php'], [
 			[
 				'ArrayAccess<int, int> does not accept int|null.',
@@ -66,12 +63,9 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5655b(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-5655b.php'], []);
 	}
 

@@ -16,6 +16,8 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\UnionType;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -44,6 +46,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class FunctionDefinitionCheck
 {
 
@@ -52,7 +55,9 @@ final class FunctionDefinitionCheck
 		private ClassNameCheck $classCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter]
 		private bool $checkThisOnly,
 	)
 	{

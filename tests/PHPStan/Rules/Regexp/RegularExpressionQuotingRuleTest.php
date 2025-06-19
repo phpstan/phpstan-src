@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Regexp;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Regex\RegexExpressionHelper;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RegularExpressionQuotingRule>
@@ -16,7 +16,7 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new RegularExpressionQuotingRule(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			self::getContainer()->getByType(RegexExpressionHelper::class),
 		);
 	}
@@ -74,12 +74,9 @@ class RegularExpressionQuotingRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRulePhp8(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse(
 			[__DIR__ . '/data/preg-quote-php8.php'],
 			[

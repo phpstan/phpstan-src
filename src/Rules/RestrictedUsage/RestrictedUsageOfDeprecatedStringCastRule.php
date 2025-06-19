@@ -5,6 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Cast;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -13,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<Cast\String_>
  */
+#[AutowiredService]
 final class RestrictedUsageOfDeprecatedStringCastRule implements Rule
 {
 

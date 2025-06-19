@@ -5,11 +5,13 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /** @implements Rule<ClassConst> */
+#[RegisteredRule(level: 0)]
 final class FinalConstantRule implements Rule
 {
 

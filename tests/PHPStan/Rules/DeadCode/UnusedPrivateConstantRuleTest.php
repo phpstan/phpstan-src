@@ -7,8 +7,8 @@ use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtension;
 use PHPStan\Rules\Constants\DirectAlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use UnusedPrivateConstant\TestExtension;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnusedPrivateConstantRule>
@@ -54,12 +54,9 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5651.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/unused-private-constant-enum.php'], [
 			[
 				'Constant UnusedPrivateConstantEnum\Foo::TEST_2 is unused.',
@@ -74,21 +71,15 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6758.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8204(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8204.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9005(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9005.php'], []);
 	}
 
@@ -97,12 +88,9 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testDynamicConstantFetch(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/unused-private-constant-dynamic-fetch.php'], [
 			[
 				'Constant UnusedPrivateConstantDynamicFetch\Baz::FOO is unused.',

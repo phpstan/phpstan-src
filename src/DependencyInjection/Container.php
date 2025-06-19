@@ -10,6 +10,7 @@ interface Container
 
 	/**
 	 * @return mixed
+	 * @throws MissingServiceException
 	 */
 	public function getService(string $serviceName);
 
@@ -17,6 +18,7 @@ interface Container
 	 * @template T of object
 	 * @param class-string<T> $className
 	 * @return T
+	 * @throws MissingServiceException
 	 */
 	public function getByType(string $className);
 

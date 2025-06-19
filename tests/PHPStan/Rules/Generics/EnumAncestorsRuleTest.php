@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Generics;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<EnumAncestorsRule>
@@ -17,7 +17,7 @@ class EnumAncestorsRuleTest extends RuleTestCase
 	{
 		return new EnumAncestorsRule(
 			new GenericAncestorsCheck(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				new UnresolvableTypeHelper(),
@@ -28,12 +28,9 @@ class EnumAncestorsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-ancestors.php'], [
 			[
 				'Enum EnumGenericAncestors\Foo has @implements tag, but does not implement any interface.',
@@ -62,12 +59,9 @@ class EnumAncestorsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testCrossCheckInterfaces(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/cross-check-interfaces-enums.php'], [
 			[
 				'Interface IteratorAggregate specifies template type TValue of interface Traversable as string but it\'s already specified as CrossCheckInterfacesEnums\Item.',

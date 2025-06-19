@@ -18,7 +18,7 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 		return new WhileLoopAlwaysTrueConditionRule(
 			new ConstantConditionRuleHelper(
 				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
+					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,

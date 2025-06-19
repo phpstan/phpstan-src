@@ -6,6 +6,8 @@ use Attribute;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -14,6 +16,7 @@ use function count;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class AttributesCheck
 {
 
@@ -21,6 +24,7 @@ final class AttributesCheck
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $functionCallParametersCheck,
 		private ClassNameCheck $classCheck,
+		#[AutowiredParameter]
 		private bool $deprecationRulesInstalled,
 	)
 	{

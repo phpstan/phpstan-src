@@ -4,8 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
@@ -16,7 +16,7 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
-			$this->createReflectionProvider(),
+			self::createReflectionProvider(),
 			[],
 			[],
 			[],
@@ -34,12 +34,9 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/unthrown-exception-property-hooks-implicit-throws-disabled.php'], [
 			[
 				'Dead catch - UnthrownExceptionPropertyHooksImplicitThrowsDisabled\MyCustomException is never thrown in the try block.',

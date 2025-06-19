@@ -6,9 +6,9 @@ use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function in_array;
 use function strpos;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingReadOnlyPropertyAssignRule>
@@ -87,12 +87,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		];
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign.php'], [
 			[
 				'Class MissingReadOnlyPropertyAssign\Foo has an uninitialized readonly property $unassigned. Assign it in the constructor.',
@@ -161,57 +158,39 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7119(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7119.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7314(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7314.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8412(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8412.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8958(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8958.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8563(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8563.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6402(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6402.php'], [
 			[
 				'Access to an uninitialized readonly property Bug6402\SomeModel2::$views.',
@@ -220,21 +199,15 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7198(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7198.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7649(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-7649.php'], [
 			[
 				'Class Bug7649\Foo has an uninitialized readonly property $bar. Assign it in the constructor.',
@@ -243,12 +216,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9577(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
 			[
 				'Class Bug9577\SpecializedException2 has an uninitialized readonly property $message. Assign it in the constructor.',
@@ -257,12 +227,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testAnonymousReadonlyClass(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-readonly-anonymous-class-property-assign.php'], [
 			[
 				'Class class@anonymous/tests/PHPStan/Rules/Properties/data/missing-readonly-anonymous-class-property-assign.php:10 has an uninitialized readonly property $foo. Assign it in the constructor.',
@@ -271,12 +238,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10523(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10523.php'], [
 			[
 				'Readonly property Bug10523\MultipleWrites::$userAccount is already assigned.',
@@ -285,21 +249,15 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10822(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10822.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRedeclaredReadonlyProperties(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/redeclare-readonly-property.php'], [
 			[
 				'Readonly property RedeclareReadonlyProperty\B1::$myProp is already assigned.',
@@ -332,12 +290,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testRedeclaredPropertiesOfReadonlyClass(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2.');
-		}
-
 		$this->analyse([__DIR__ . '/data/redeclare-property-of-readonly-class.php'], [
 			[
 				'Readonly property RedeclarePropertyOfReadonlyClass\B1::$promotedProp is already assigned.',
@@ -346,12 +301,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8101(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8101.php'], [
 			[
 				'Readonly property Bug8101\B::$myProp is already assigned.',
@@ -360,12 +312,9 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9863(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9863.php'], [
 			[
 				'Readonly property Bug9863\ReadonlyChildWithoutIsset::$foo is already assigned.',
@@ -382,32 +331,23 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10048(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->shouldNarrowMethodScopeFromConstructor = true;
 		$this->analyse([__DIR__ . '/data/bug-10048.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11828(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->shouldNarrowMethodScopeFromConstructor = true;
 		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9864(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9864.php'], []);
 	}
 

@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -16,7 +17,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new FunctionCallableRule(
 			$reflectionProvider,
@@ -27,11 +28,9 @@ class FunctionCallableRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('< 8.1')]
 	public function testNotSupportedOnOlderVersions(): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			self::markTestSkipped('Test runs on PHP < 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/function-callable-not-supported.php'], [
 			[
 				'First-class callables are supported only on PHP 8.1 and later.',
@@ -40,12 +39,9 @@ class FunctionCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/function-callable.php'], [
 			[
 				'Function nonexistent not found.',

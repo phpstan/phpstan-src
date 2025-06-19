@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use PHPStan\Type\ObjectType;
 /**
  * @implements Rule<InArrowFunctionNode>
  */
+#[RegisteredRule(level: 3)]
 final class ArrowFunctionReturnTypeRule implements Rule
 {
 

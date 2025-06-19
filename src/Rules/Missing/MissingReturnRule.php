@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Missing;
 use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
@@ -24,11 +26,14 @@ use function ucfirst;
 /**
  * @implements Rule<ExecutionEndNode>
  */
+#[RegisteredRule(level: 0)]
 final class MissingReturnRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter]
 		private bool $checkExplicitMixedMissingReturn,
+		#[AutowiredParameter]
 		private bool $checkPhpDocMissingReturn,
 	)
 	{

@@ -4,3 +4,7 @@ includes:
 parameters:
 	checkUnionTypes: true
 	reportMaybes: true
+
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 7

@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
+use Override;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
@@ -49,6 +50,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 	 * @param string[] $headers
 	 * @param string[][] $rows
 	 */
+	#[Override]
 	public function table(array $headers, array $rows): void
 	{
 		/** @var int $terminalWidth */
@@ -129,6 +131,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		return $rows;
 	}
 
+	#[Override]
 	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
@@ -180,6 +183,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		return ProgressBar::getFormatDefinition($formatName);
 	}
 
+	#[Override]
 	public function progressStart(int $max = 0): void
 	{
 		if (!$this->showProgress) {
@@ -188,6 +192,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		parent::progressStart($max);
 	}
 
+	#[Override]
 	public function progressAdvance(int $step = 1): void
 	{
 		if (!$this->showProgress) {
@@ -197,6 +202,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		parent::progressAdvance($step);
 	}
 
+	#[Override]
 	public function progressFinish(): void
 	{
 		if (!$this->showProgress) {

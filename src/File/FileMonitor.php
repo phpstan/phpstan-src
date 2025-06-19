@@ -2,6 +2,8 @@
 
 namespace PHPStan\File;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function array_diff;
 use function array_key_exists;
@@ -12,6 +14,7 @@ use function is_dir;
 use function is_file;
 use function sha1_file;
 
+#[AutowiredService]
 final class FileMonitor
 {
 
@@ -28,11 +31,17 @@ final class FileMonitor
 	 * @param string[] $scanDirectories
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '@fileFinderAnalyse')]
 		private FileFinder $analyseFileFinder,
+		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $scanFileFinder,
+		#[AutowiredParameter]
 		private array $analysedPaths,
+		#[AutowiredParameter]
 		private array $analysedPathsFromConfig,
+		#[AutowiredParameter]
 		private array $scanFiles,
+		#[AutowiredParameter]
 		private array $scanDirectories,
 	)
 	{

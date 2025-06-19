@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -21,6 +22,7 @@ use function count;
 use function in_array;
 use function preg_match_all;
 
+#[AutowiredService]
 final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

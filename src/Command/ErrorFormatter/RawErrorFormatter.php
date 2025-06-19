@@ -4,8 +4,10 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredService;
 use function sprintf;
 
+#[AutowiredService(name: 'errorFormatter.raw')]
 final class RawErrorFormatter implements ErrorFormatter
 {
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
@@ -13,6 +14,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<InPropertyHookNode>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatiblePropertyHookPhpDocTypeRule implements Rule
 {
 

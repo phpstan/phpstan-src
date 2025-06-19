@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<TooWidePropertyHookThrowTypeRule>
@@ -20,12 +20,9 @@ class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 		return new TooWidePropertyHookThrowTypeRule(self::getContainer()->getByType(FileTypeMapper::class), new TooWideThrowTypeCheck($this->implicitThrows));
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/too-wide-throws-property-hook.php'], [
 			[
 				'Get hook for property TooWideThrowsPropertyHook\Foo::$c has InvalidArgumentException in PHPDoc @throws tag but it\'s not thrown.',

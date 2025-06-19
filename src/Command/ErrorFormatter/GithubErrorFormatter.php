@@ -4,6 +4,8 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use function array_walk;
 use function implode;
@@ -14,10 +16,12 @@ use function str_replace;
  * Allow errors to be reported in pull-requests diff when run in a GitHub Action
  * @see https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
  */
+#[AutowiredService(name: 'errorFormatter.github')]
 final class GithubErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(
+		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
 		private RelativePathHelper $relativePathHelper,
 	)
 	{

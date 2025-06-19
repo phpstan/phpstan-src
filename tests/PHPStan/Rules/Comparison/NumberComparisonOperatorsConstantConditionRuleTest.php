@@ -4,7 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<NumberComparisonOperatorsConstantConditionRule>
@@ -105,11 +106,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5295.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7052(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-7052.php'], [
 			[
 				'Comparison operation ">" between Bug7052\Foo::A and Bug7052\Foo::B is always false.',
@@ -165,7 +164,7 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8643.php'], []);
 	}
 
-	public function dataTreatPhpDocTypesAsCertain(): iterable
+	public static function dataTreatPhpDocTypesAsCertain(): iterable
 	{
 		yield [
 			false,
@@ -189,9 +188,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataTreatPhpDocTypesAsCertain
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataTreatPhpDocTypesAsCertain')]
 	public function testTreatPhpDocTypesAsCertain(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;

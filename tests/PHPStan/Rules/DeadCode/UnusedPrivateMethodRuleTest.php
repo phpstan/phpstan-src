@@ -7,7 +7,7 @@ use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
 use PHPStan\Rules\Methods\DirectAlwaysUsedMethodExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<UnusedPrivateMethodRule>
@@ -72,21 +72,15 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/nullsafe-unused-private-method.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/callable-unused-private-method.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/unused-private-method-enum.php'], [
 			[
 				'Method UnusedPrivateMethodEnunm\Foo::doBaz() is unused.',
@@ -114,12 +108,9 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8346.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFalsePositiveWithTraitUse(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/unused-method-false-positive-with-trait.php'], []);
 	}
 

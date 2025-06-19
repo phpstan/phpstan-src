@@ -4,12 +4,15 @@ namespace PHPStan\Rules\Exceptions;
 
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use function count;
 
 /**
  * @api
  */
+#[AutowiredService(name: 'exceptionTypeResolver', as: [ExceptionTypeResolver::class, DefaultExceptionTypeResolver::class])]
 final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {
 
@@ -21,9 +24,13 @@ final class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter(ref: '%exceptions.uncheckedExceptionRegexes%')]
 		private array $uncheckedExceptionRegexes,
+		#[AutowiredParameter(ref: '%exceptions.uncheckedExceptionClasses%')]
 		private array $uncheckedExceptionClasses,
+		#[AutowiredParameter(ref: '%exceptions.checkedExceptionRegexes%')]
 		private array $checkedExceptionRegexes,
+		#[AutowiredParameter(ref: '%exceptions.checkedExceptionClasses%')]
 		private array $checkedExceptionClasses,
 	)
 	{

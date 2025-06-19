@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
@@ -12,6 +13,7 @@ use PHPStan\Rules\Rule;
 /**
  * @implements Rule<InFunctionNode>
  */
+#[RegisteredRule(level: 0)]
 final class FunctionAttributesRule implements Rule
 {
 

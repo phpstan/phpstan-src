@@ -10,8 +10,8 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<Rule>
@@ -112,12 +112,9 @@ class DeprecatedAttributePhpFunctionFromParserReflectionRuleTest extends RuleTes
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHookRule(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/deprecated-attribute-property-hooks.php'], [
 			[
 				'Not deprecated',

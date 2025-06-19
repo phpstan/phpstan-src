@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<NonClassAttributeClassRule>
@@ -39,12 +39,9 @@ class NonClassAttributeClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-cannot-be-attribute.php'], [
 			[
 				'Enum cannot be an Attribute class.',

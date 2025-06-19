@@ -10,7 +10,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MethodTagTraitUseRule>
@@ -20,7 +20,7 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 
 		return new MethodTagTraitUseRule(
 			new MethodTagCheck(
@@ -61,12 +61,9 @@ class MethodTagTraitUseRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/method-tag-trait-enum.php'], [
 			[
 				'PHPDoc tag @method for method MethodTagTraitEnum\Foo::doFoo() return type contains unknown class MethodTagTraitEnum\intt.',

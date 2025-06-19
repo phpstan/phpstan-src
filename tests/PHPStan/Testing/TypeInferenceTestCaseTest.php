@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use PHPStan\File\FileHelper;
 use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_values;
 use function sprintf;
 
@@ -80,22 +81,20 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFileAssertionFailedErrors
-	 */
+	#[DataProvider('dataFileAssertionFailedErrors')]
 	public function testFileAssertionFailedErrors(string $filePath, string $errorMessage): void
 	{
 		$this->expectException(AssertionFailedError::class);
 		$this->expectExceptionMessage($errorMessage);
 
-		$this->gatherAssertTypes($filePath);
+		self::gatherAssertTypes($filePath);
 	}
 
 	public function testVariableOrOffsetDescription(): void
 	{
 		$filePath = __DIR__ . '/data/assert-certainty-variable-or-offset.php';
 
-		[$variableAssert, $offsetAssert] = array_values($this->gatherAssertTypes($filePath));
+		[$variableAssert, $offsetAssert] = array_values(self::gatherAssertTypes($filePath));
 
 		$this->assertSame('variable $context', $variableAssert[4]);
 		$this->assertSame("offset 'email'", $offsetAssert[4]);
@@ -103,7 +102,7 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 
 	public function testNonexistentClassInAnalysedFile(): void
 	{
-		foreach ($this->gatherAssertTypes(__DIR__ . '/../../notAutoloaded/nonexistentClasses.php') as $data) {
+		foreach (self::gatherAssertTypes(__DIR__ . '/../../notAutoloaded/nonexistentClasses.php') as $data) {
 			$this->assertFileAsserts(...$data);
 		}
 	}
@@ -111,7 +110,7 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 	public function testNonexistentClassInAnalysedFileWithError(): void
 	{
 		try {
-			foreach ($this->gatherAssertTypes(__DIR__ . '/../../notAutoloaded/nonexistentClasses-error.php') as $data) {
+			foreach (self::gatherAssertTypes(__DIR__ . '/../../notAutoloaded/nonexistentClasses-error.php') as $data) {
 				$this->assertFileAsserts(...$data);
 			}
 

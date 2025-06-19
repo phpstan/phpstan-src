@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Playground;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<FunctionNeverRule>
@@ -17,12 +17,9 @@ class FunctionNeverRuleTest extends RuleTestCase
 		return new FunctionNeverRule(new NeverRuleHelper());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1 or greater.');
-		}
-
 		$this->analyse([__DIR__ . '/data/function-never.php'], [
 			[
 				'Function FunctionNever\doBar() always throws an exception, it should have return type "never".',

@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
+#[RegisteredRule(level: 0)]
 final class OffsetAccessWithoutDimForReadingRule implements Rule
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Override;
 use PhpParser\Node;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
@@ -33,6 +34,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	{
 	}
 
+	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isClass()) {
@@ -152,6 +154,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	/**
 	 * @return list<Reflection>
 	 */
+	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
 		$reflections = [];

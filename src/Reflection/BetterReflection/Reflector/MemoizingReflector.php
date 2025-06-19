@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\Reflector;
 
+use Override;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
@@ -9,9 +10,12 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use function array_key_exists;
 use function strtolower;
 
+#[AutowiredService(name: 'betterReflectionReflector', as: Reflector::class)]
 final class MemoizingReflector implements Reflector
 {
 
@@ -24,10 +28,14 @@ final class MemoizingReflector implements Reflector
 	/** @var array<string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
-	public function __construct(private Reflector $reflector)
+	public function __construct(
+		#[AutowiredParameter(ref: '@originalBetterReflectionReflector')]
+		private Reflector $reflector,
+	)
 	{
 	}
 
+	#[Override]
 	public function reflectClass(string $className): ReflectionClass
 	{
 		$lowerClassName = strtolower($className);
@@ -52,6 +60,7 @@ final class MemoizingReflector implements Reflector
 		}
 	}
 
+	#[Override]
 	public function reflectConstant(string $constantName): ReflectionConstant
 	{
 		if (array_key_exists($constantName, $this->constantReflections)) {
@@ -72,6 +81,7 @@ final class MemoizingReflector implements Reflector
 		}
 	}
 
+	#[Override]
 	public function reflectFunction(string $functionName): ReflectionFunction
 	{
 		$lowerFunctionName = strtolower($functionName);
@@ -93,16 +103,19 @@ final class MemoizingReflector implements Reflector
 		}
 	}
 
+	#[Override]
 	public function reflectAllClasses(): iterable
 	{
 		return $this->reflector->reflectAllClasses();
 	}
 
+	#[Override]
 	public function reflectAllFunctions(): iterable
 	{
 		return $this->reflector->reflectAllFunctions();
 	}
 
+	#[Override]
 	public function reflectAllConstants(): iterable
 	{
 		return $this->reflector->reflectAllConstants();

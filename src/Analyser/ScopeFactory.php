@@ -2,9 +2,12 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\AutowiredService;
+
 /**
  * @api
  */
+#[AutowiredService]
 final class ScopeFactory
 {
 

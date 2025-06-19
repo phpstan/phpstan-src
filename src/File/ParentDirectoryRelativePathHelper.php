@@ -2,6 +2,8 @@
 
 namespace PHPStan\File;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\NonAutowiredService;
 use PHPStan\ShouldNotHappenException;
 use function array_fill;
 use function array_merge;
@@ -14,10 +16,14 @@ use function strpos;
 use function substr;
 use function trim;
 
+#[NonAutowiredService(name: 'parentDirectoryRelativePathHelper')]
 final class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
-	public function __construct(private string $parentDirectory)
+	public function __construct(
+		#[AutowiredParameter(ref: '%currentWorkingDirectory%')]
+		private string $parentDirectory,
+	)
 	{
 	}
 

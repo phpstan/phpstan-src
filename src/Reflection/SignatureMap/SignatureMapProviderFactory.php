@@ -2,8 +2,10 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 
+#[AutowiredService]
 final class SignatureMapProviderFactory
 {
 

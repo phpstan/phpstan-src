@@ -6,6 +6,8 @@ use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,11 +19,13 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\YieldFrom>
  */
+#[RegisteredRule(level: 3)]
 final class YieldFromTypeRule implements Rule
 {
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
 	{

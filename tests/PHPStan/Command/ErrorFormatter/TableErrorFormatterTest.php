@@ -2,12 +2,14 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Override;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function getenv;
 use function putenv;
 use function sprintf;
@@ -15,18 +17,20 @@ use function sprintf;
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 
+	#[Override]
 	protected function setUp(): void
 	{
 		putenv('GITHUB_ACTIONS');
 	}
 
+	#[Override]
 	protected function tearDown(): void
 	{
 		putenv('COLUMNS');
 		putenv('TERM_PROGRAM');
 	}
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'message' => 'No errors',
@@ -94,14 +98,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  [ERROR] Found 4 errors
 
@@ -143,14 +147,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ----------
+ ------ -----------
   Line   foo.php
- ------ ----------
+ ------ -----------
   1      Foo<Bar>
   5      Bar
          Bar2
-         💡 a tip
- ------ ----------
+         💡  a tip
+ ------ -----------
 
  -- -----------------------
      Error
@@ -190,13 +194,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'numGenericErrors' => 0,
 			'verbose' => false,
 			'extraEnvVars' => [],
-			'expected' => ' ------ ---------------
+			'expected' => ' ------ ----------------
   Line   foo.php
- ------ ---------------
+ ------ ----------------
   5      Foobar\Buz
-         🪪 foobar.buz
-         💡 a tip
- ------ ---------------
+         🪪  foobar.buz
+         💡  a tip
+ ------ ----------------
 
 
  [ERROR] Found 1 error
@@ -211,13 +215,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			'numGenericErrors' => 0,
 			'verbose' => true,
 			'extraEnvVars' => [],
-			'expected' => ' ------ ---------------
+			'expected' => ' ------ ----------------
   Line   foo.php
- ------ ---------------
+ ------ ----------------
   5      Foobar\Buz
-         🪪 foobar.buz
-         💡 a tip
- ------ ---------------
+         🪪  foobar.buz
+         💡  a tip
+ ------ ----------------
 
 
  [ERROR] Found 1 error
@@ -227,10 +231,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @dataProvider dataFormatterOutputProvider
 	 * @param array{int, int}|int $numFileErrors
 	 * @param array<string> $extraEnvVars
 	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
@@ -259,7 +263,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	public function testEditorUrlWithTrait(): void
 	{
 		$formatter = $this->createErrorFormatter('editor://%file%/%line%');
-		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
+		$error = new Error('Test', 'Foo.php (in context of trait)', 12, filePath: 'Foo.php', traitFilePath: 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
 
 		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
@@ -272,7 +276,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		}
 
 		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');
-		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
+		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
 
 		$this->assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
@@ -281,7 +285,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	public function testEditorUrlWithCustomTitle(): void
 	{
 		$formatter = $this->createErrorFormatter('editor://any', '%relFile%:%line%');
-		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
+		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
 
 		$this->assertStringContainsString('rel/Foo.php:12', $this->getOutputContent(true));

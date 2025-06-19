@@ -36,7 +36,7 @@ final class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, selfClass: $selfClass), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}
@@ -44,7 +44,7 @@ final class TypehintHelper
 		if ($reflectionType instanceof ReflectionIntersectionType) {
 			$types = [];
 			foreach ($reflectionType->getTypes() as $innerReflectionType) {
-				$innerType = self::decideTypeFromReflection($innerReflectionType, null, $selfClass, false);
+				$innerType = self::decideTypeFromReflection($innerReflectionType, selfClass: $selfClass);
 				if (!$innerType->isObject()->yes()) {
 					return new NeverType();
 				}

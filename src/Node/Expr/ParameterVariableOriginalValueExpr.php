@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node\Expr;
 
+use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
 
@@ -18,6 +19,7 @@ final class ParameterVariableOriginalValueExpr extends Expr implements VirtualNo
 		return $this->variableName;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ParameterVariableOriginalValueExpr';
@@ -26,6 +28,7 @@ final class ParameterVariableOriginalValueExpr extends Expr implements VirtualNo
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

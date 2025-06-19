@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
@@ -18,12 +20,15 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertyNode>
  */
+#[RegisteredRule(level: 0)]
 final class OverridingPropertyRule implements Rule
 {
 
 	public function __construct(
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
+		#[AutowiredParameter(ref: '%reportMaybesInPropertyPhpDocTypes%')]
 		private bool $reportMaybes,
 	)
 	{

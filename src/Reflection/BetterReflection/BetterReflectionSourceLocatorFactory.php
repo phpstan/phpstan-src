@@ -13,6 +13,8 @@ use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
@@ -30,6 +32,7 @@ use function extension_loaded;
 use function is_dir;
 use function is_file;
 
+#[AutowiredService]
 final class BetterReflectionSourceLocatorFactory
 {
 
@@ -41,7 +44,9 @@ final class BetterReflectionSourceLocatorFactory
 	 * @param string[] $analysedPathsFromConfig
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '@phpParserDecorator')]
 		private Parser $parser,
+		#[AutowiredParameter(ref: '@php8PhpParser')]
 		private Parser $php8Parser,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
@@ -50,12 +55,19 @@ final class BetterReflectionSourceLocatorFactory
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private FileNodesFetcher $fileNodesFetcher,
+		#[AutowiredParameter]
 		private array $scanFiles,
+		#[AutowiredParameter]
 		private array $scanDirectories,
+		#[AutowiredParameter]
 		private array $analysedPaths,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
 		private array $analysedPathsFromConfig,
+		#[AutowiredParameter(ref: '%sourceLocatorPlaygroundMode%')]
 		private bool $playgroundMode, // makes all PHPStan classes in the PHAR discoverable with PSR-4
+		#[AutowiredParameter]
 		private ?string $singleReflectionFile,
 	)
 	{

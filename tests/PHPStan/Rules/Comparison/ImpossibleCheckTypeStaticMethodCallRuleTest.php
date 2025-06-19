@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<ImpossibleCheckTypeStaticMethodCallRule>
@@ -19,7 +20,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 	{
 		return new ImpossibleCheckTypeStaticMethodCallRule(
 			new ImpossibleCheckTypeHelper(
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[],
 				$this->treatPhpDocTypesAsCertain,
@@ -112,7 +113,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/assert-unresolved-generic.php'], []);
 	}
 
-	public function dataReportAlwaysTrueInLastCondition(): iterable
+	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [
 			[
@@ -134,9 +135,9 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataReportAlwaysTrueInLastCondition
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
 	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

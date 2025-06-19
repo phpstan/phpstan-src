@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use BackedEnum;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -14,6 +15,7 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
+#[AutowiredService]
 final class BackedEnumFromMethodDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 

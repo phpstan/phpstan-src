@@ -21,6 +21,7 @@ class PromoteParameterRuleTest extends RuleTestCase
 				self::getContainer(),
 				[],
 			)),
+			self::getContainer(),
 			ClassPropertiesNode::class,
 			false,
 			'checkUninitializedProperties',

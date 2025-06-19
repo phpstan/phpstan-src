@@ -6,6 +6,7 @@ use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function str_replace;
 use const PHP_VERSION_ID;
@@ -18,7 +19,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new ParameterCastableToNumberRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
 	}
 
@@ -76,12 +77,9 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]));
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/param-castable-to-number-functions-named-args.php'], [
 			[
 				'Parameter $array of function array_sum expects an array of values castable to number, array<int, array<int, int>> given.',
@@ -94,12 +92,9 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/param-castable-to-number-functions-enum.php'], [
 			[
 				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, ParamCastableToNumberFunctionsEnum\\FooEnum::A> given.',
@@ -112,12 +107,9 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11883(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11883.php'], [
 			[
 				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, Bug11883\\SomeEnum::A|Bug11883\\SomeEnum::B> given.',

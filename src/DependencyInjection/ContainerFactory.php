@@ -120,6 +120,7 @@ final class ContainerFactory
 			$this->rootDirectory,
 			$this->currentWorkingDirectory,
 			$generateBaselineFile,
+			$projectConfig['expandRelativePaths'],
 		), $this->journalContainer);
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,
@@ -222,7 +223,7 @@ final class ContainerFactory
 		array $loaderParameters,
 	): array
 	{
-		$neonAdapter = new NeonAdapter();
+		$neonAdapter = new NeonAdapter([]);
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		$configArray = [];

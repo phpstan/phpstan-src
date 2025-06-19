@@ -11,8 +11,8 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function extension_loaded;
-use function restore_error_handler;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -81,7 +81,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
 		$this->assertNoErrors($errors);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$this->assertTrue($reflectionProvider->hasClass(Foo::class));
 	}
 
@@ -183,7 +183,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testCollectWarnings(): void
 	{
-		restore_error_handler();
 		$errors = $this->runAnalyse(__DIR__ . '/data/declaration-warning.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.', $errors[0]->getMessage());
@@ -323,12 +322,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6872(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6872.php');
 		$this->assertNoErrors($errors);
 	}
@@ -372,7 +368,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(1, $errors);
 		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Service::class);
 		$parameter = $class->getNativeMethod('createInstance')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -385,7 +381,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
 		$this->assertNoErrors($errors);
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
 		$parameter = $class->getNativeMethod('paginate')->getOnlyVariant()->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
@@ -448,12 +444,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNotEmpty($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12512(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12512.php');
 		$this->assertNoErrors($errors);
 	}
@@ -482,21 +475,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5951(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5951.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/enums-integration.php');
 		$this->assertCount(3, $errors);
 		$this->assertSame('Access to an undefined property EnumIntegrationTest\Foo::TWO::$value.', $errors[0]->getMessage());
@@ -516,12 +504,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug6300(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6300.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(1, $errors);
 		$this->assertSame('Call to an undefined method Bug6300\Bar::get().', $errors[0]->getMessage());
-		$this->assertSame(23, $errors[0]->getLine());
-
-		$this->assertSame('Access to an undefined property Bug6300\Bar::$fooProp.', $errors[1]->getMessage());
-		$this->assertSame(24, $errors[1]->getLine());
+		$this->assertSame(27, $errors[0]->getLine());
 	}
 
 	public function testBug6466(): void
@@ -530,11 +515,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6494(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6494.php');
 		$this->assertNoErrors($errors);
 	}
@@ -562,6 +545,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(9, $errors[1]->getLine());
 	}
 
+	public function testBug13057(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13057.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug6375(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6375.php');
@@ -576,12 +565,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(24, $errors[0]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6114(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6114.php');
 		$this->assertNoErrors($errors);
 	}
@@ -633,12 +619,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(54, $errors[1]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6896(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6896.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Generic type IteratorIterator<(int|string), mixed> in PHPDoc tag @return does not specify all template types of class IteratorIterator: TKey, TValue, TIterator', $errors[0]->getMessage());
@@ -677,12 +660,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug4308(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4308.php');
 		$this->assertNoErrors($errors);
 	}
@@ -717,22 +697,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	null, $shippingLongitude = null, $shippingNeutralShipping = null)): Unexpected token "\n * ", expected type at offset 193 on line 6', $errors[0]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7012(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7012.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug6192(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6192.php');
 		$this->assertNoErrors($errors);
 	}
@@ -743,12 +717,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testDiscussion6993(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-6993.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Parameter #1 $specificable of method Bug6993\AndSpecificationValidator<Bug6993\TestSpecification,Bug6993\Foo>::isSatisfiedBy() expects Bug6993\Foo, Bug6993\Bar given.', $errors[0]->getMessage());
@@ -760,22 +731,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7078(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-7078.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7116(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7116.php');
 		$this->assertNoErrors($errors);
 	}
@@ -786,23 +751,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug7135(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7135.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Cannot create callable from the new operator.', $errors[0]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testDiscussion7124(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, 0|1|2=): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
@@ -858,12 +817,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(29, $errors[5]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testOffsetAccess(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/offset-access.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[0]->getMessage());
@@ -1047,22 +1003,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8078(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8078.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8072(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8072.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1120,12 +1070,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testAssertDocblock(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
@@ -1138,22 +1085,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(238, $errors[3]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8147(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8147.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12934(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12934.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1182,12 +1123,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug8537(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8537.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1235,12 +1173,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method SkipCheckNoGenericClasses\Foo::doFoo() has parameter $i with generic class LimitIterator but does not specify its types: TKey, TValue, TIterator', $errors[0]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8983(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8983.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1277,12 +1212,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Constant Bug9039\Test::RULES is unused.', $errors[0]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testDiscussion9053(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-9053.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1293,12 +1225,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9428(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9428.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1330,34 +1259,25 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(16, $errors[4]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9994(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9994.php');
 		$this->assertCount(2, $errors);
 		$this->assertSame('Negated boolean expression is always false.', $errors[0]->getMessage());
 		$this->assertSame('Parameter #2 $callback of function array_filter expects (callable(1|2|3|null): bool)|null, false given.', $errors[1]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10049(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10049-recursive.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10086(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10086.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1368,12 +1288,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug10302(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10302.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1400,42 +1317,30 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10847(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10847.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10772(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10772.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10985(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10985.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10979(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10979.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1452,33 +1357,24 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11263(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11263.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11147(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11147.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Method Bug11147\RedisAdapter::createConnection() has invalid return type Bug11147\NonExistentClass.', $errors[0]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11283(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11283.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1489,32 +1385,23 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11297(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11297.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug5597(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5597.php');
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11511(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11511.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Access to an undefined property object::$bar.', $errors[0]->getMessage());
@@ -1532,12 +1419,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11709(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11709.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1548,12 +1432,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug12549(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12549.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1564,12 +1445,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug12159(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12159.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1586,13 +1464,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug12949(): void
 	{
-		// Fetching class constants with a dynamic name is supported only on PHP 8.3 and later
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12949.php');
 		$this->assertCount(3, $errors);
 		$this->assertSame('Call to an undefined method object::0().', $errors[0]->getMessage());

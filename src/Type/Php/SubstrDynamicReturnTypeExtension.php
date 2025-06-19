@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -25,6 +26,7 @@ use function is_bool;
 use function mb_substr;
 use function substr;
 
+#[AutowiredService]
 final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

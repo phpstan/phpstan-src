@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
@@ -15,6 +16,7 @@ use function trim;
 /**
  * @implements Rule<Node\FunctionLike>
  */
+#[RegisteredRule(level: 2)]
 final class IncompatiblePhpDocTypeRule implements Rule
 {
 

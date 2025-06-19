@@ -3,6 +3,8 @@
 namespace PHPStan\Parallel;
 
 use PHPStan\Command\Output;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use function array_chunk;
 use function count;
@@ -11,6 +13,7 @@ use function max;
 use function min;
 use function sprintf;
 
+#[AutowiredService]
 final class Scheduler implements DiagnoseExtension
 {
 
@@ -23,8 +26,11 @@ final class Scheduler implements DiagnoseExtension
 	 * @param positive-int $minimumNumberOfJobsPerProcess
 	 */
 	public function __construct(
+		#[AutowiredParameter(ref: '%parallel.jobSize%')]
 		private int $jobSize,
+		#[AutowiredParameter(ref: '%parallel.maximumNumberOfProcesses%')]
 		private int $maximumNumberOfProcesses,
+		#[AutowiredParameter(ref: '%parallel.minimumNumberOfJobsPerProcess%')]
 		private int $minimumNumberOfJobsPerProcess,
 	)
 	{

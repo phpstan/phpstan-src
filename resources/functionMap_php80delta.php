@@ -82,6 +82,8 @@ return [
 		'imagejpeg' => ['bool', 'im'=>'GdImage', 'filename='=>'string|resource|null', 'quality='=>'int'],
 		'imagerotate' => ['false|object', 'src_im'=>'resource', 'angle'=>'float', 'bgdcolor'=>'int', 'ignoretransparent='=>'int'],
 		'imagescale' => ['false|object', 'im'=>'resource', 'new_width'=>'int', 'new_height='=>'int', 'method='=>'int'],
+		'getenv' => ['string|false', 'varname'=>'string', 'local_only='=>'bool'],
+		'getenv\'1' => ['array<string, string>', 'varname='=>'null', 'local_only='=>'bool'],
 		'ldap_set_rebind_proc' => ['bool', 'ldap'=>'resource', 'callback'=>'?callable'],
 		'mb_decode_numericentity' => ['string|false', 'string'=>'string', 'convmap'=>'array', 'encoding='=>'string'],
 		'mb_detect_order' => ['bool|list<non-falsy-string>', 'encoding_list='=>'non-empty-list<non-falsy-string>|non-falsy-string|null'],

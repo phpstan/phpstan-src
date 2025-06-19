@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -14,6 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 /**
  * @implements Rule<MethodCall>
  */
+#[AutowiredService]
 final class RestrictedMethodUsageRule implements Rule
 {
 

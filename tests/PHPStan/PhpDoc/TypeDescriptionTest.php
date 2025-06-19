@@ -19,12 +19,13 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class TypeDescriptionTest extends PHPStanTestCase
 {
 
-	public function dataTest(): iterable
+	public static function dataTest(): iterable
 	{
 		yield ['string', new StringType()];
 		yield ['array', new ArrayType(new MixedType(), new MixedType())];
@@ -69,9 +70,7 @@ class TypeDescriptionTest extends PHPStanTestCase
 		yield ['array{\'"foo"\': int}', $builder->getArray()];
 	}
 
-	/**
-	 * @dataProvider dataTest
-	 */
+	#[DataProvider('dataTest')]
 	public function testParsingDesiredTypeDescription(string $description, Type $expectedType): void
 	{
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
@@ -83,9 +82,7 @@ class TypeDescriptionTest extends PHPStanTestCase
 		$this->assertTrue($type->equals($newType), sprintf('Parsing %s again did not result in %s, but in %s', $newDescription, $type->describe(VerbosityLevel::value()), $newType->describe(VerbosityLevel::value())));
 	}
 
-	/**
-	 * @dataProvider dataTest
-	 */
+	#[DataProvider('dataTest')]
 	public function testDesiredTypeDescription(string $description, Type $expectedType): void
 	{
 		$this->assertSame($description, $expectedType->describe(VerbosityLevel::value()));

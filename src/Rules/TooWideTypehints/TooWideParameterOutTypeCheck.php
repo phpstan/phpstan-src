@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -14,6 +15,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
+#[AutowiredService]
 final class TooWideParameterOutTypeCheck
 {
 

@@ -6,11 +6,12 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class BaselinePhpErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatErrors(): iterable
+	public static function dataFormatErrors(): iterable
 	{
 		yield [
 			[
@@ -151,9 +152,9 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 	}
 
 	/**
-	 * @dataProvider dataFormatErrors
 	 * @param list<Error> $errors
 	 */
+	#[DataProvider('dataFormatErrors')]
 	public function testFormatErrors(array $errors, string $expectedOutput): void
 	{
 		$formatter = new BaselinePhpErrorFormatter(new ParentDirectoryRelativePathHelper(__DIR__));

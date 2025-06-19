@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
@@ -14,6 +15,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
+#[AutowiredService(as: InternalScopeFactory::class)]
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 

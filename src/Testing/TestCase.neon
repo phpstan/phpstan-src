@@ -10,22 +10,27 @@ services:
 			fileExtensions: %fileExtensions%
 			excludePaths: %excludePaths%
 
+	# overrides service from services.neon
 	cacheStorage:
 		class: PHPStan\Cache\MemoryCacheStorage
 		arguments!: []
 
+	# overrides service from parsers.neon
 	currentPhpVersionSimpleParser!:
 		factory: @currentPhpVersionRichParser
 
+	# overrides service from parsers.neon
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer
 		factory: @PHPStan\Parser\LexerFactory::createEmulative()
 
+	# overrides service from services.neon
 	betterReflectionSourceLocator:
 		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
 		autowired: false
 
+	# overrides service from services.neon
 	reflectionProvider:
 		factory: @betterReflectionProvider
 		arguments!: []

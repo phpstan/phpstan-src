@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
@@ -486,12 +488,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8158.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug8485(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
 			[
 				'Strict comparison using === between Bug8485\E::c and Bug8485\E::c will always evaluate to true.',
@@ -542,12 +541,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8586.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug4242(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4242.php'], []);
 	}
 
@@ -643,12 +639,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7578.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug6260(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-6260.php'], []);
 	}
@@ -658,7 +651,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8736.php'], []);
 	}
 
-	public function dataLastMatchArm(): iterable
+	public static function dataLastMatchArm(): iterable
 	{
 		yield [false, [
 			[
@@ -723,15 +716,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataLastMatchArm
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[RequiresPhp('>= 8.1')]
+	#[DataProvider('dataLastMatchArm')]
 	public function testLastMatchArm(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/strict-comparison-last-match-arm.php'], $expectedErrors);
 	}
@@ -782,12 +772,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnumTips(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/strict-comparison-enum-tips.php'], [
 			[
 				'Strict comparison using === between StrictComparisonEnumTips\SomeEnum::Two and StrictComparisonEnumTips\SomeEnum::Two will always evaluate to true.',
@@ -797,12 +784,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9142(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9142.php'], [
 			[
 				'Strict comparison using === between $this(Bug9142\MyEnum) and Bug9142\MyEnum::Three will always evaluate to false.',
@@ -815,30 +799,21 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug4061(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4061.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9723(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9723.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9723b(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9723b.php'], []);
 	}
 

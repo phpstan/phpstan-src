@@ -4,6 +4,7 @@ namespace PHPStan\DependencyInjection;
 
 use function array_merge;
 
+#[AutowiredService]
 final class DerivativeContainerFactory
 {
 
@@ -14,16 +15,27 @@ final class DerivativeContainerFactory
 	 * @param string[] $analysedPathsFromConfig
 	 */
 	public function __construct(
+		#[AutowiredParameter]
 		private string $currentWorkingDirectory,
+		#[AutowiredParameter(ref: '%tempDir%')]
 		private string $tempDirectory,
+		#[AutowiredParameter]
 		private array $additionalConfigFiles,
+		#[AutowiredParameter]
 		private array $analysedPaths,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
 		private array $analysedPathsFromConfig,
+		#[AutowiredParameter]
 		private string $usedLevel,
+		#[AutowiredParameter]
 		private ?string $generateBaselineFile,
+		#[AutowiredParameter]
 		private ?string $cliAutoloadFile,
+		#[AutowiredParameter]
 		private ?string $singleReflectionFile,
+		#[AutowiredParameter]
 		private ?string $singleReflectionInsteadOfFile,
 	)
 	{

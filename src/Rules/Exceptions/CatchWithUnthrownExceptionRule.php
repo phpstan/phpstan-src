@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,11 +16,14 @@ use function sprintf;
 /**
  * @implements Rule<CatchWithUnthrownExceptionNode>
  */
+#[RegisteredRule(level: 4)]
 final class CatchWithUnthrownExceptionRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter(ref: '@exceptionTypeResolver')]
 		private ExceptionTypeResolver $exceptionTypeResolver,
+		#[AutowiredParameter(ref: '%exceptions.reportUncheckedExceptionDeadCatch%')]
 		private bool $reportUncheckedExceptionDeadCatch,
 	)
 	{

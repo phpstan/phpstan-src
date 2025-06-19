@@ -20,6 +20,8 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
+use PHPStan\Fixable\Patcher;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -39,6 +41,7 @@ use function array_merge;
 use function count;
 use function implode;
 use function sprintf;
+use function str_replace;
 
 /**
  * @api
@@ -120,7 +123,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
 				new IgnoreErrorExtensionProvider(self::getContainer()),
-				new RuleErrorTransformer(),
+				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 			);
 			$this->analyser = new Analyser(
@@ -193,6 +196,30 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$this->assertSame($expectedErrorsString, $actualErrorsString);
 	}
 
+	public function fix(string $file, string $expectedFile): void
+	{
+		[$errors] = $this->gatherAnalyserErrorsWithDelayedErrors([$file]);
+		$diffs = [];
+		foreach ($errors as $error) {
+			if ($error->getFixedErrorDiff() === null) {
+				continue;
+			}
+			$diffs[] = $error->getFixedErrorDiff();
+		}
+
+		$patcher = self::getContainer()->getByType(Patcher::class);
+		$newFileContents = $patcher->applyDiffs($file, $diffs); // @phpstan-ignore missingType.checkedException, missingType.checkedException
+
+		$fixedFileContents = FileReader::read($expectedFile);
+
+		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($newFileContents));
+	}
+
+	private function normalizeLineEndings(string $string): string
+	{
+		return str_replace("\r\n", "\n", $string);
+	}
+
 	/**
 	 * @param string[] $files
 	 * @return list<Error>
@@ -237,7 +264,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$finalizer = new AnalyserResultFinalizer(
 			$ruleRegistry,
 			new IgnoreErrorExtensionProvider(self::getContainer()),
-			new RuleErrorTransformer(),
+			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory($reflectionProvider, $this->getTypeSpecifier()),
 			new LocalIgnoresProcessor(),
 			true,

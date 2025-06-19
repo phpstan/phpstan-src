@@ -6,6 +6,8 @@ use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
@@ -24,6 +26,7 @@ use function array_key_exists;
 use function array_map;
 use function strtolower;
 
+#[AutowiredService]
 final class NativeFunctionReflectionProvider
 {
 
@@ -32,6 +35,7 @@ final class NativeFunctionReflectionProvider
 
 	public function __construct(
 		private SignatureMapProvider $signatureMapProvider,
+		#[AutowiredParameter(ref: '@betterReflectionReflector')]
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
 		private StubPhpDocProvider $stubPhpDocProvider,

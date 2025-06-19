@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,11 +19,10 @@ class PropertyInClassRuleTest extends RuleTestCase
 		return new PropertyInClassRule(new PhpVersion(PHP_VERSION_ID));
 	}
 
+	#[RequiresPhp('< 8.4')]
 	public function testPhpLessThan84AndHookedPropertiesInClass(): void
 	{
-		if (PHP_VERSION_ID >= 80400) {
-			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
-		}
+		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
@@ -35,10 +35,12 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndHookedPropertiesWithoutBodiesInClass(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
+		// @phpstan-ignore phpstan.skipTestsRequiresPhp
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
 
 		$this->analyse([__DIR__ . '/data/hooked-properties-without-bodies-in-class.php'], [
@@ -57,12 +59,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndNonAbstractHookedPropertiesInClass(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-class.php'], [
 			[
 				'Non-abstract properties cannot include hooks without bodies.',
@@ -75,12 +74,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractHookedPropertiesInClass(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-in-class.php'], [
 			[
 				'Non-abstract classes cannot include abstract properties.',
@@ -93,12 +89,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndNonAbstractHookedPropertiesInAbstractClass(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/non-abstract-hooked-properties-in-abstract-class.php'], [
 			[
 				'Non-abstract properties cannot include hooks without bodies.',
@@ -115,12 +108,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractNonHookedPropertiesInAbstractClass(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/abstract-non-hooked-properties-in-abstract-class.php'], [
 			[
 				'Only hooked properties can be declared abstract.',
@@ -133,12 +123,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractHookedPropertiesWithBodies(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/abstract-hooked-properties-with-bodies.php'], [
 			[
 				'Abstract properties must specify at least one abstract hook.',
@@ -151,12 +138,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndReadonlyHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/readonly-property-hooks.php'], [
 			[
 				'Hooked properties cannot be readonly.',
@@ -181,12 +165,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndVirtualHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/virtual-hooked-properties.php'], [
 			[
 				'Virtual hooked properties cannot have a default value.',
@@ -195,12 +176,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndStaticHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/static-hooked-properties.php'], [
 			[
 				'Hooked properties cannot be static.',
@@ -213,12 +191,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndPrivateFinalHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/private-final-property-hooks.php'], [
 			[
 				'Property cannot be both final and private.',
@@ -231,12 +206,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractFinalHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/abstract-final-property-hook.php'], [
 			[
 				'Property cannot be both abstract and final.',
@@ -245,12 +217,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractPrivateHookedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/abstract-private-property-hook.php'], [
 			[
 				'Property cannot be both abstract and private.',
@@ -259,12 +228,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84AndAbstractFinalHookedPropertiesParseError(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		// errors when parsing with php-parser, see https://github.com/nikic/PHP-Parser/issues/1071
 		$this->analyse([__DIR__ . '/data/abstract-final-property-hook-parse-error.php'], [
 			[
@@ -274,12 +240,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84FinalProperties(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
 				'Property cannot be both final and private.',
@@ -288,12 +251,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('< 8.4')]
 	public function testBeforePhp84FinalProperties(): void
 	{
-		if (PHP_VERSION_ID >= 80400) {
-			$this->markTestSkipped('Test requires PHP 8.3 or earlier.');
-		}
-
 		$this->analyse([__DIR__ . '/data/final-properties.php'], [
 			[
 				'Final properties are supported only on PHP 8.4 and later.',
@@ -310,12 +270,9 @@ class PropertyInClassRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testPhp84FinalPropertyHooks(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4 or later.');
-		}
-
 		$this->analyse([__DIR__ . '/data/final-property-hooks.php'], [
 			[
 				'Cannot use the final modifier on an abstract class member on line 19',

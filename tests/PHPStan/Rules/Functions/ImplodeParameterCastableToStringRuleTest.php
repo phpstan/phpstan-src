@@ -6,7 +6,7 @@ use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ImplodeParameterCastableToStringRule>
@@ -16,16 +16,13 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
+		$broker = self::createReflectionProvider();
 		return new ImplodeParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-named-args.php'], [
 			[
 				'Parameter $array of function implode expects array<string>, array<int, array<int, string>> given.',
@@ -46,12 +43,9 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnum(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/implode-param-castable-to-string-functions-enum.php'], [
 			[
 				'Parameter #2 $array of function implode expects array<string>, array<int, ImplodeParamCastableToStringFunctionsEnum\\FooEnum::A> given.',

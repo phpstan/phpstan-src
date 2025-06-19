@@ -5,6 +5,8 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -28,6 +30,7 @@ use function array_merge;
 use function sprintf;
 use function substr;
 
+#[AutowiredService]
 final class AssertRuleHelper
 {
 
@@ -38,7 +41,9 @@ final class AssertRuleHelper
 		private ClassNameCheck $classCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
 	)
 	{
@@ -61,7 +66,7 @@ final class AssertRuleHelper
 
 		if ($reflection instanceof ExtendedMethodReflection && !$reflection->isStatic()) {
 			$class = $reflection->getDeclaringClass();
-			$parametersByName['this'] = new ObjectType($class->getName(), null, $class);
+			$parametersByName['this'] = new ObjectType($class->getName(), classReflection: $class);
 		}
 
 		$context = InitializerExprContext::createEmpty();

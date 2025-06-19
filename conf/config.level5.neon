@@ -9,36 +9,10 @@ conditionalTags:
 	PHPStan\Rules\Functions\ParameterCastableToNumberRule:
 		phpstan.rules.rule: %featureToggles.checkParameterCastableToNumberFunctions%
 
-rules:
-	- PHPStan\Rules\DateTimeInstantiationRule
-	- PHPStan\Rules\Functions\CallUserFuncRule
-	- PHPStan\Rules\Functions\ParameterCastableToStringRule
-	- PHPStan\Rules\Functions\ImplodeParameterCastableToStringRule
-	- PHPStan\Rules\Functions\SortParameterCastableToStringRule
-	- PHPStan\Rules\Regexp\RegularExpressionQuotingRule
+autowiredAttributeServices:
+	# registers rules with #[RegisteredRule] attribute
+	level: 5
 
 services:
-	-
-		class: PHPStan\Rules\Functions\RandomIntParametersRule
-		arguments:
-			reportMaybes: %reportMaybes%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Functions\ArrayFilterRule
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Functions\ArrayValuesRule
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
 	-
 		class: PHPStan\Rules\Functions\ParameterCastableToNumberRule

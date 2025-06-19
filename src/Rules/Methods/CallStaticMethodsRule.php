@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\StaticCall>
  */
+#[RegisteredRule(level: 0)]
 final class CallStaticMethodsRule implements Rule
 {
 

@@ -13,7 +13,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ClassAttributesRule>
@@ -27,7 +27,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ClassAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -118,12 +118,9 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRuleForEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/enum-attributes.php'], [
 			[
 				'Attribute class EnumAttributes\AttributeWithPropertyTarget does not have the class target.',
@@ -151,12 +148,9 @@ class ClassAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/allow-dynamic-properties-attribute.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug12011(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-12011.php'], [
@@ -167,12 +161,9 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug12281(): void
 	{
-		if (PHP_VERSION_ID < 80200) {
-			$this->markTestSkipped('Test requires PHP 8.2.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-12281.php'], [

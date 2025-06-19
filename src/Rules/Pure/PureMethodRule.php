@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Pure;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use function sprintf;
@@ -11,6 +12,7 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[RegisteredRule(level: 2)]
 final class PureMethodRule implements Rule
 {
 

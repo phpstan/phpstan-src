@@ -3,7 +3,7 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ScopeFunctionCallStackWithParametersRule>
@@ -16,12 +16,9 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 		return new ScopeFunctionCallStackWithParametersRule();
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/scope-function-call-stack.php'], [
 			[
 				"var_dump (\$value)\nprint_r (\$value)\nsleep (\$seconds)",

@@ -10,6 +10,8 @@ use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -22,7 +24,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		return new ExistingClassesInArrowFunctionTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,
@@ -55,7 +57,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataNativeUnionTypes(): array
+	public static function dataNativeUnionTypes(): array
 	{
 		return [
 			[
@@ -79,16 +81,16 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataNativeUnionTypes
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataNativeUnionTypes')]
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
-	public function dataRequiredParameterAfterOptional(): array
+	public static function dataRequiredParameterAfterOptional(): array
 	{
 		return [
 			[
@@ -239,20 +241,17 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRequiredParameterAfterOptional
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[RequiresPhp('>= 8.0')]
+	#[DataProvider('dataRequiredParameterAfterOptional')]
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-arrow.php'], $errors);
 	}
 
-	public function dataIntersectionTypes(): array
+	public static function dataIntersectionTypes(): array
 	{
 		return [
 			[80000, []],
@@ -281,9 +280,9 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataIntersectionTypes
 	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
+	#[DataProvider('dataIntersectionTypes')]
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
 		$this->phpVersionId = $phpVersion;

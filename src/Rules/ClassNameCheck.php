@@ -3,10 +3,12 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 
+#[AutowiredService]
 final class ClassNameCheck
 {
 

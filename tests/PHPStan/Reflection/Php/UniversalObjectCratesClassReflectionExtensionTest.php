@@ -13,7 +13,7 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 
 	public function testNonexistentClass(): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$extension = new UniversalObjectCratesClassReflectionExtension(
 			$reflectionProvider,
 			['NonexistentClass', 'stdClass'],
@@ -26,7 +26,7 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 	{
 		require_once __DIR__ . '/data/universal-object-crates.php';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$extension = new UniversalObjectCratesClassReflectionExtension(
 			$reflectionProvider,
 			['UniversalObjectCreates\DifferentGetSetTypes'],
@@ -52,7 +52,7 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 		require_once __DIR__ . '/data/universal-object-crates-annotations.php';
 		$className = 'UniversalObjectCratesAnnotations\Model';
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$extension = new UniversalObjectCratesClassReflectionExtension(
 			$reflectionProvider,
 			[$className],

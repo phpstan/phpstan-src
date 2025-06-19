@@ -7,6 +7,8 @@ use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,12 +18,15 @@ use function sprintf;
 /**
  * @implements Rule<DoWhileLoopConditionNode>
  */
+#[RegisteredRule(level: 4)]
 final class DoWhileLoopConstantConditionRule implements Rule
 {
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{

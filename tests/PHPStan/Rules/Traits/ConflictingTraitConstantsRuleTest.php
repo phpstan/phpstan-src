@@ -14,7 +14,7 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new ConflictingTraitConstantsRule(self::getContainer()->getByType(InitializerExprTypeResolver::class), $this->createReflectionProvider());
+		return new ConflictingTraitConstantsRule(self::getContainer()->getByType(InitializerExprTypeResolver::class), self::createReflectionProvider());
 	}
 
 	public function testRule(): void
@@ -59,12 +59,9 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
 	public function testNativeTypes(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/conflicting-trait-constants-types.php'], [
 			[
 				'Constant ConflictingTraitConstantsTypes\Baz::FOO_CONST (int) overriding constant ConflictingTraitConstantsTypes\Foo::FOO_CONST (int|string) should have the same native type int|string.',

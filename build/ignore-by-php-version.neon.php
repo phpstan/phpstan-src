@@ -33,6 +33,11 @@ if (PHP_VERSION_ID >= 80400) {
 	$includes[] = __DIR__ . '/deprecated-8.4.neon';
 }
 
+if (PHP_VERSION_ID < 80200) {
+	$includes[] = __DIR__ . '/old-phpunit.neon';
+} else {
+	$includes[] = __DIR__ . '/new-phpunit.neon';
+}
 $config = [];
 $config['includes'] = $includes;
 

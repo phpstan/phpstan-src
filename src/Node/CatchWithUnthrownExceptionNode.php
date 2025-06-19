@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\NodeAbstract;
 use PHPStan\Type\Type;
@@ -32,6 +33,7 @@ final class CatchWithUnthrownExceptionNode extends NodeAbstract implements Virtu
 		return $this->originalCaughtType;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_CatchWithUnthrownExceptionNode';
@@ -40,6 +42,7 @@ final class CatchWithUnthrownExceptionNode extends NodeAbstract implements Virtu
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

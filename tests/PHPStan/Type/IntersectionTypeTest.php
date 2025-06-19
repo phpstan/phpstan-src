@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
 use Traversable;
@@ -27,7 +28,7 @@ use const PHP_VERSION_ID;
 class IntersectionTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): Iterator
+	public static function dataAccepts(): Iterator
 	{
 		$intersectionType = new IntersectionType([
 			new ObjectType('Collection'),
@@ -68,9 +69,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
@@ -81,7 +80,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsCallable(): array
+	public static function dataIsCallable(): array
 	{
 		return [
 			[
@@ -111,9 +110,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsCallable
-	 */
+	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(IntersectionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
@@ -124,7 +121,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSuperTypeOf(): Iterator
+	public static function dataIsSuperTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -234,9 +231,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -247,7 +242,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataIsSubTypeOf(): Iterator
+	public static function dataIsSubTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -334,9 +329,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSubTypeOf
-	 */
+	#[DataProvider('dataIsSubTypeOf')]
 	public function testIsSubTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSubTypeOf($otherType);
@@ -347,9 +340,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	/**
-	 * @dataProvider dataIsSubTypeOf
-	 */
+	#[DataProvider('dataIsSubTypeOf')]
 	public function testIsSubTypeOfInversed(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $otherType->isSuperTypeOf($type);
@@ -366,13 +357,13 @@ class IntersectionTypeTest extends PHPStanTestCase
 		$this->assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataGetEnumCases(): iterable
+	public static function dataGetEnumCases(): iterable
 	{
 		if (PHP_VERSION_ID < 80100) {
 			return [];
 		}
 
-		$reflectionProvider = $this->createReflectionProvider();
+		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass(FooEnum::class);
 
 		yield [
@@ -387,9 +378,9 @@ class IntersectionTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataGetEnumCases
 	 * @param list<EnumCaseObjectType> $expectedEnumCases
 	 */
+	#[DataProvider('dataGetEnumCases')]
 	public function testGetEnumCases(
 		IntersectionType $type,
 		array $expectedEnumCases,
@@ -403,7 +394,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		}
 	}
 
-	public function dataDescribe(): iterable
+	public static function dataDescribe(): iterable
 	{
 		yield [
 			new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
@@ -723,9 +714,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataDescribe
-	 */
+	#[DataProvider('dataDescribe')]
 	public function testDescribe(IntersectionType $type, VerbosityLevel $verbosityLevel, string $expected): void
 	{
 		static::assertSame($expected, $type->describe($verbosityLevel));

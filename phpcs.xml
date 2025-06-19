@@ -208,6 +208,7 @@
 	<exclude-pattern>compiler/tests/*/data/</exclude-pattern>
 	<exclude-pattern>tests/*/Fixture/</exclude-pattern>
 	<exclude-pattern>tests/*/cache/</exclude-pattern>
+	<exclude-pattern>tests/vendor/*</exclude-pattern>
 	<exclude-pattern>tests/*/data/</exclude-pattern>
 	<exclude-pattern>tests/*/traits/</exclude-pattern>
 	<exclude-pattern>tests/PHPStan/Analyser/nsrt/</exclude-pattern>

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Types;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node>
  */
+#[RegisteredRule(level: 0)]
 final class InvalidTypesInUnionRule implements Rule
 {
 

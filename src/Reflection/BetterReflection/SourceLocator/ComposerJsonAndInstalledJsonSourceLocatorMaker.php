@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr0Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\ComposerHelper;
@@ -25,6 +26,7 @@ use function is_file;
 use function str_contains;
 use const GLOB_ONLYDIR;
 
+#[AutowiredService]
 final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Return_>
  */
+#[RegisteredRule(level: 3)]
 final class ReturnTypeRule implements Rule
 {
 

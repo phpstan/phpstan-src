@@ -17,6 +17,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
 use function sprintf;
@@ -27,7 +28,7 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 	/**
 	 * @return array<array{Type[], ParametersAcceptor, ParametersAcceptor}>
 	 */
-	public function dataResolve(): array
+	public static function dataResolve(): array
 	{
 		$templateType = static fn ($name, ?Type $type = null): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -422,9 +423,9 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataResolve
 	 * @param Type[] $argTypes
 	 */
+	#[DataProvider('dataResolve')]
 	public function testResolve(array $argTypes, ParametersAcceptor $parametersAcceptor, ParametersAcceptor $expectedResult): void
 	{
 		self::getContainer(); // to initialize bleeding edge

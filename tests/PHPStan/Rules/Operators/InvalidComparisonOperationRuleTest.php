@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidComparisonOperationRule>
@@ -16,7 +16,7 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidComparisonOperationRule(
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
 		);
 	}
 
@@ -154,12 +154,9 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-comparison-nullsafe.php'], [
 			[
 				'Comparison operation "==" between stdClass|null and int results in an error.',

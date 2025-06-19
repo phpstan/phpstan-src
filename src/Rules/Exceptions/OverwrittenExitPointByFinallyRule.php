@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,6 +14,7 @@ use function sprintf;
 /**
  * @implements Rule<FinallyExitPointsNode>
  */
+#[RegisteredRule(level: 4)]
 final class OverwrittenExitPointByFinallyRule implements Rule
 {
 

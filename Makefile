@@ -2,20 +2,14 @@
 
 build: cs tests phpstan
 
-tests:
-	XDEBUG_MODE=off php vendor/bin/paratest --runner WrapperRunner --no-coverage
+tests: install-paratest
+	XDEBUG_MODE=off php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage
 
-tests-integration:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
-
-tests-levels:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group levels
-
-tests-coverage:
-	php vendor/bin/paratest --runner WrapperRunner
+tests-integration: install-paratest
+	php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
 
 tests-golden-reflection:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
+	php vendor/bin/phpunit tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 
 lint:
 	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors \
@@ -110,7 +104,11 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/property-in-interface-explicit-abstract.php \
 		--exclude tests/PHPStan/Rules/Constants/data/final-private-const.php \
 		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php \
+		--exclude tests/PHPStan/Rules/Playground/data/promote-missing-override.php \
 		src tests
+
+install-paratest:
+	composer install --working-dir tests
 
 cs:
 	composer install --working-dir build-cs && XDEBUG_MODE=off php build-cs/vendor/bin/phpcs
@@ -123,6 +121,9 @@ phpstan:
 
 phpstan-result-cache:
 	php -d memory_limit=448M bin/phpstan
+
+phpstan-fix:
+	php -d memory_limit=448M bin/phpstan --fix
 
 phpstan-generate-baseline:
 	php -d memory_limit=448M bin/phpstan --generate-baseline

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -20,6 +21,7 @@ use function count;
 use function in_array;
 use function strtolower;
 
+#[AutowiredService]
 final class ParseStrParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
 

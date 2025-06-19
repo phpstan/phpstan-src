@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -30,6 +31,7 @@ use const PHP_URL_QUERY;
 use const PHP_URL_SCHEME;
 use const PHP_URL_USER;
 
+#[AutowiredService]
 final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

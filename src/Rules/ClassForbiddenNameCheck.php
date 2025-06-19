@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use function array_map;
 use function array_merge;
@@ -12,6 +13,7 @@ use function strlen;
 use function strpos;
 use function substr;
 
+#[AutowiredService]
 final class ClassForbiddenNameCheck
 {
 

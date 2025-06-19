@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
@@ -17,6 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\ClassConst>
  */
+#[RegisteredRule(level: 6)]
 final class MissingClassConstantTypehintRule implements Rule
 {
 

@@ -6,12 +6,13 @@ use Nette\Utils\Json;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
 class JsonErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	public function dataFormatterOutputProvider(): iterable
+	public static function dataFormatterOutputProvider(): iterable
 	{
 		yield [
 			'No errors',
@@ -193,10 +194,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFormatterOutputProvider
-	 *
-	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testPrettyFormatErrors(
 		string $message,
 		int $exitCode,
@@ -215,11 +213,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent());
 	}
 
-	/**
-	 * @dataProvider dataFormatterOutputProvider
-	 *
-	 *
-	 */
+	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
@@ -238,21 +232,19 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));
 	}
 
-	public function dataFormatTip(): iterable
+	public static function dataFormatTip(): iterable
 	{
 		yield ['tip', 'tip'];
 		yield ['<fg=cyan>%configurationFile%</>', '%configurationFile%'];
 		yield ['this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.', 'this check by setting treatPhpDocTypesAsCertain: false in your %configurationFile%.'];
 	}
 
-	/**
-	 * @dataProvider dataFormatTip
-	 */
+	#[DataProvider('dataFormatTip')]
 	public function testFormatTip(string $tip, string $expectedTip): void
 	{
 		$formatter = new JsonErrorFormatter(false);
 		$formatter->formatErrors(new AnalysisResult([
-			new Error('Foo', '/foo/bar.php', 1, true, null, null, $tip),
+			new Error('Foo', '/foo/bar.php', 1, tip: $tip),
 		], [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
 
 		$content = $this->getOutputContent();

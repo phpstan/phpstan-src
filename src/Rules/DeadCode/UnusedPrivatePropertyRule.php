@@ -4,6 +4,8 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -23,6 +25,7 @@ use function str_contains;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
+#[RegisteredRule(level: 4)]
 final class UnusedPrivatePropertyRule implements Rule
 {
 
@@ -32,8 +35,11 @@ final class UnusedPrivatePropertyRule implements Rule
 	 */
 	public function __construct(
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		#[AutowiredParameter(ref: '%propertyAlwaysWrittenTags%')]
 		private array $alwaysWrittenTags,
+		#[AutowiredParameter(ref: '%propertyAlwaysReadTags%')]
 		private array $alwaysReadTags,
+		#[AutowiredParameter]
 		private bool $checkUninitializedProperties,
 	)
 	{
@@ -50,7 +56,7 @@ final class UnusedPrivatePropertyRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
-		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
+		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
 			if (!$property->isPrivate()) {

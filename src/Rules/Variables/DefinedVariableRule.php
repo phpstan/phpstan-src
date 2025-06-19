@@ -7,6 +7,8 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,11 +20,14 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Variable>
  */
+#[RegisteredRule(level: 0)]
 final class DefinedVariableRule implements Rule
 {
 
 	public function __construct(
+		#[AutowiredParameter]
 		private bool $cliArgumentsVariablesRegistered,
+		#[AutowiredParameter]
 		private bool $checkMaybeUndefinedVariables,
 	)
 	{

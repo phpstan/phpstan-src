@@ -3,19 +3,20 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ParameterOutTypeExtensionTest extends TypeInferenceTestCase
 {
 
-	public function dataAsserts(): iterable
+	public static function dataAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
 	}
 
 	/**
-	 * @dataProvider dataAsserts
 	 * @param mixed ...$args
 	 */
+	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,

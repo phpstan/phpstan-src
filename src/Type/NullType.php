@@ -366,7 +366,7 @@ class NullType implements ConstantScalarType
 	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
 		// All truthy types, but also '0'
-		return new MixedType(false, new UnionType([
+		return new MixedType(subtractedType: new UnionType([
 			new NullType(),
 			new ConstantBooleanType(false),
 			new ConstantIntegerType(0),

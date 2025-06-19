@@ -4,6 +4,7 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<NoopExpressionNode>
  */
+#[RegisteredRule(level: 4)]
 final class NoopRule implements Rule
 {
 

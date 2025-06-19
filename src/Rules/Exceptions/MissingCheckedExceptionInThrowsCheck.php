@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\ThrowPoint;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -12,10 +14,14 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
 
+#[AutowiredService]
 final class MissingCheckedExceptionInThrowsCheck
 {
 
-	public function __construct(private ExceptionTypeResolver $exceptionTypeResolver)
+	public function __construct(
+		#[AutowiredParameter(ref: '@exceptionTypeResolver')]
+		private ExceptionTypeResolver $exceptionTypeResolver,
+	)
 	{
 	}
 

@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<EnumSanityRule>
@@ -17,12 +17,9 @@ class EnumSanityRuleTest extends RuleTestCase
 		return new EnumSanityRule();
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$expected = [
 			/*[
 				// reported by AbstractMethodInNonAbstractClassRule
@@ -110,12 +107,9 @@ class EnumSanityRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], $expected);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug9402(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-9402.php'], [
 			[
 				'Enum case Bug9402\Foo::Two value \'foo\' does not match the "int" type.',
@@ -124,12 +118,9 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11592(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-11592.php'], [
 			[
 				'Enum Bug11592\Test2 cannot redeclare native method cases().',

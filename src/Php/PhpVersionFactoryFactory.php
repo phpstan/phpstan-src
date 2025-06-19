@@ -4,6 +4,8 @@ namespace PHPStan\Php;
 
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use function count;
@@ -13,6 +15,7 @@ use function is_file;
 use function is_int;
 use function is_string;
 
+#[AutowiredService]
 final class PhpVersionFactoryFactory
 {
 
@@ -21,7 +24,9 @@ final class PhpVersionFactoryFactory
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
+		#[AutowiredParameter]
 		private int|array|null $phpVersion,
+		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
 	)
 	{

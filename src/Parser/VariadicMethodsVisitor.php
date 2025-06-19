@@ -2,10 +2,12 @@
 
 namespace PHPStan\Parser;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use function array_key_exists;
 use function array_pop;
@@ -13,6 +15,7 @@ use function count;
 use function in_array;
 use function sprintf;
 
+#[AutowiredService]
 final class VariadicMethodsVisitor extends NodeVisitorAbstract
 {
 
@@ -35,6 +38,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	/** @var array<string, array<string, bool>> */
 	private array $variadicMethods = [];
 
+	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{
 		$this->topNode = null;
@@ -46,6 +50,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($this->topNode === null) {
@@ -91,6 +96,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
+	#[Override]
 	public function leaveNode(Node $node): ?Node
 	{
 		if ($node instanceof ClassMethod) {
@@ -112,6 +118,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
+	#[Override]
 	public function afterTraverse(array $nodes): ?array
 	{
 		if ($this->topNode !== null && $this->variadicMethods !== []) {

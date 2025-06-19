@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Analyser\ThrowPoint;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -10,10 +12,14 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 
+#[AutowiredService]
 final class TooWideThrowTypeCheck
 {
 
-	public function __construct(private bool $implicitThrows)
+	public function __construct(
+		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
+		private bool $implicitThrows,
+	)
 	{
 	}
 

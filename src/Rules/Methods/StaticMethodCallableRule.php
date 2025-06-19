@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Php\PhpVersion;
@@ -14,6 +15,7 @@ use function sprintf;
 /**
  * @implements Rule<StaticMethodCallableNode>
  */
+#[RegisteredRule(level: 0)]
 final class StaticMethodCallableRule implements Rule
 {
 

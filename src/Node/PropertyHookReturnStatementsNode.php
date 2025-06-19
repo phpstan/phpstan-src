@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\PropertyHook;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ImpurePoint;
@@ -95,6 +96,7 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 		return $this->propertyReflection;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_PropertyHookReturnStatementsNode';
@@ -103,6 +105,7 @@ final class PropertyHookReturnStatementsNode extends NodeAbstract implements Ret
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

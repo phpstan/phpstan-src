@@ -4,13 +4,17 @@ namespace PHPStan\DependencyInjection;
 
 use function array_key_exists;
 
+#[AutowiredService(as: Container::class)]
 final class MemoizingContainer implements Container
 {
 
 	/** @var array<string, mixed> */
 	private array $servicesByType = [];
 
-	public function __construct(private Container $originalContainer)
+	public function __construct(
+		#[AutowiredParameter(ref: '@PHPStan\DependencyInjection\Nette\NetteContainer')]
+		private Container $originalContainer,
+	)
 	{
 	}
 

@@ -20,6 +20,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function sprintf;
 use const PHP_INT_MAX;
@@ -28,7 +29,7 @@ use const PHP_INT_MIN;
 class TypeToPhpDocNodeTest extends PHPStanTestCase
 {
 
-	public function dataToPhpDocNode(): iterable
+	public static function dataToPhpDocNode(): iterable
 	{
 		yield [
 			new ArrayType(new MixedType(), new MixedType()),
@@ -66,7 +67,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantIntegerType(2),
 				new ConstantIntegerType(3),
 				new ConstantIntegerType(4),
-			], [0], [2]),
+			], optionalKeys: [2]),
 			'array{foo: 1, bar: 2, baz?: 3, \'$ref\': 4}',
 		];
 
@@ -104,7 +105,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantStringType('foo'),
 				new ConstantStringType('bar'),
 				new ConstantStringType('baz'),
-			], [0], [2]),
+			], optionalKeys: [2]),
 			'array{1: \'foo\', 2: \'bar\', 3?: \'baz\'}',
 		];
 
@@ -151,7 +152,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new StringType(),
 				new IntegerType(),
 				new MixedType(),
-			], null, null, [
+			], variances: [
 				TemplateTypeVariance::createInvariant(),
 				TemplateTypeVariance::createContravariant(),
 				TemplateTypeVariance::createBivariant(),
@@ -434,9 +435,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataToPhpDocNode
-	 */
+	#[DataProvider('dataToPhpDocNode')]
 	public function testToPhpDocNode(Type $type, string $expected): void
 	{
 		$phpDocNode = $type->toPhpDocNode();
@@ -449,7 +448,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$this->assertTrue($type->equals($parsedType), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $parsedType->describe(VerbosityLevel::precise())));
 	}
 
-	public function dataToPhpDocNodeWithoutCheckingEquals(): iterable
+	public static function dataToPhpDocNodeWithoutCheckingEquals(): iterable
 	{
 		yield [
 			new ConstantStringType("foo\nbar\nbaz"),
@@ -517,9 +516,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataToPhpDocNodeWithoutCheckingEquals
-	 */
+	#[DataProvider('dataToPhpDocNodeWithoutCheckingEquals')]
 	public function testToPhpDocNodeWithoutCheckingEquals(Type $type, string $expected): void
 	{
 		$phpDocNode = $type->toPhpDocNode();
@@ -531,9 +528,9 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$typeStringResolver->resolve($typeString);
 	}
 
-	public function dataFromTypeStringToPhpDocNode(): iterable
+	public static function dataFromTypeStringToPhpDocNode(): iterable
 	{
-		foreach ($this->dataToPhpDocNode() as [, $typeString]) {
+		foreach (self::dataToPhpDocNode() as [, $typeString]) {
 			yield [$typeString];
 		}
 
@@ -548,9 +545,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield ['Closure(Foo $foo=, Bar $bar=): (Closure(Foo): Bar)'];
 	}
 
-	/**
-	 * @dataProvider dataFromTypeStringToPhpDocNode
-	 */
+	#[DataProvider('dataFromTypeStringToPhpDocNode')]
 	public function testFromTypeStringToPhpDocNode(string $typeString): void
 	{
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);

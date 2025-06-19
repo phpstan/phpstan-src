@@ -4,11 +4,12 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ConstantFloatTypeTest extends PHPStanTestCase
 {
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		return [
 			[
@@ -38,9 +39,7 @@ class ConstantFloatTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataDescribe
-	 */
+	#[DataProvider('dataDescribe')]
 	public function testDescribe(
 		ConstantFloatType $type,
 		string $expectedDescription,

@@ -36,7 +36,7 @@ class EnumCaseObjectType extends ObjectType
 		?ClassReflection $classReflection = null,
 	)
 	{
-		parent::__construct($className, null, $classReflection);
+		parent::__construct($className, classReflection: $classReflection);
 	}
 
 	public function getEnumCaseName(): string

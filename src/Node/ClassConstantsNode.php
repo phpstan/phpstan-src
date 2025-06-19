@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
@@ -44,6 +45,7 @@ final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 		return $this->fetches;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Node_ClassConstantsNode';
@@ -52,6 +54,7 @@ final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

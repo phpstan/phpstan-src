@@ -7,6 +7,7 @@ use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -267,12 +268,9 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7109(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -351,12 +349,9 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10610.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
 	public function testBug12553(): void
 	{
-		if (PHP_VERSION_ID < 80400) {
-			$this->markTestSkipped('Test requires PHP 8.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-12553.php'], []);
 	}

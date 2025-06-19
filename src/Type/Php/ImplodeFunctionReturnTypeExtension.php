@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -23,6 +24,7 @@ use function count;
 use function implode;
 use function in_array;
 
+#[AutowiredService]
 final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

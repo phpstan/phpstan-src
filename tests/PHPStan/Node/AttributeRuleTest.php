@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<Rule>
@@ -20,7 +21,7 @@ class AttributeRuleTest extends RuleTestCase
 		return new AttributeRule();
 	}
 
-	public function dataRule(): iterable
+	public static function dataRule(): iterable
 	{
 		yield [
 			__DIR__ . '/data/attributes.php',
@@ -31,8 +32,8 @@ class AttributeRuleTest extends RuleTestCase
 
 	/**
 	 * @param int[] $lines
-	 * @dataProvider dataRule
 	 */
+	#[DataProvider('dataRule')]
 	public function testRule(string $file, string $expectedError, array $lines): void
 	{
 		$errors = [];

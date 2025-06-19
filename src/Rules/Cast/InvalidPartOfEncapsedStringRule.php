@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Scalar\InterpolatedString>
  */
+#[RegisteredRule(level: 2)]
 final class InvalidPartOfEncapsedStringRule implements Rule
 {
 

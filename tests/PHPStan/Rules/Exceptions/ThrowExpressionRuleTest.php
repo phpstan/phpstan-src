@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @extends RuleTestCase<ThrowExpressionRule>
@@ -19,7 +20,7 @@ class ThrowExpressionRuleTest extends RuleTestCase
 		return new ThrowExpressionRule($this->phpVersion);
 	}
 
-	public function dataRule(): array
+	public static function dataRule(): array
 	{
 		return [
 			[
@@ -39,9 +40,9 @@ class ThrowExpressionRuleTest extends RuleTestCase
 	}
 
 	/**
-	 * @dataProvider dataRule
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataRule')]
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
 		$this->phpVersion = new PhpVersion($phpVersion);

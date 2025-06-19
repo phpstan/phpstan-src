@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -15,6 +16,7 @@ use function array_keys;
 use function array_merge;
 use function sprintf;
 
+#[AutowiredService]
 final class MethodTagTemplateTypeCheck
 {
 

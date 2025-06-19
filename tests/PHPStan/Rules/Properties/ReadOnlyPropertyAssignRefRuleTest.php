@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -17,12 +18,9 @@ class ReadOnlyPropertyAssignRefRuleTest extends RuleTestCase
 		return new ReadOnlyPropertyAssignRefRule(new PropertyReflectionFinder());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$errors = [
 			[
 				'Readonly property ReadOnlyPropertyAssignRef\Foo::$foo is assigned by reference.',

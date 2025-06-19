@@ -2,9 +2,12 @@
 
 namespace Bug6300;
 
+use AllowDynamicProperties;
+
 /**
  * @mixin Bar
  */
+#[AllowDynamicProperties]
 class Foo
 {
 
@@ -13,6 +16,7 @@ class Foo
 /**
  * @mixin Foo
  */
+#[AllowDynamicProperties]
 class Bar
 {
 

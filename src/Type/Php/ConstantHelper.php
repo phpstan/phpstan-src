@@ -8,10 +8,12 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\DependencyInjection\AutowiredService;
 use function count;
 use function explode;
 use function ltrim;
 
+#[AutowiredService]
 final class ConstantHelper
 {
 

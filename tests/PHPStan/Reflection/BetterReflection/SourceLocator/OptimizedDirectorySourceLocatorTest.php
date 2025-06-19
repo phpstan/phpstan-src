@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TestDirectorySourceLocator\AFoo;
 use TestDirectorySourceLocator\EmptyClass;
 use function array_map;
@@ -17,7 +18,7 @@ use const PHP_VERSION_ID;
 class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): iterable
+	public static function dataClass(): iterable
 	{
 		yield from [
 			[
@@ -70,9 +71,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataClass
-	 */
+	#[DataProvider('dataClass')]
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
@@ -84,7 +83,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($file, basename($classReflection->getFileName()));
 	}
 
-	public function dataFunctionExists(): array
+	public static function dataFunctionExists(): array
 	{
 		return [
 			[
@@ -130,9 +129,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFunctionExists
-	 */
+	#[DataProvider('dataFunctionExists')]
 	public function testFunctionExists(string $functionName, string $expectedFunctionName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
@@ -144,7 +141,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($file, basename($functionReflection->getFileName()));
 	}
 
-	public function dataConstant(): iterable
+	public static function dataConstant(): iterable
 	{
 		yield from [
 			[
@@ -202,9 +199,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataConstant
-	 */
+	#[DataProvider('dataConstant')]
 	public function testConstant(string $constantName, ?string $expectedFile): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
@@ -290,7 +285,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		], $actualConstants);
 	}
 
-	public function dataFunctionDoesNotExist(): array
+	public static function dataFunctionDoesNotExist(): array
 	{
 		return [
 			['doFoo'],
@@ -298,9 +293,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataFunctionDoesNotExist
-	 */
+	#[DataProvider('dataFunctionDoesNotExist')]
 	public function testFunctionDoesNotExist(string $functionName): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);

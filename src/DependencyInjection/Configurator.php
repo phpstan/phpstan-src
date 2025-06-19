@@ -6,6 +6,7 @@ use DirectoryIterator;
 use Nette\DI\Config\Loader;
 use Nette\DI\Container as OriginalNetteContainer;
 use Nette\DI\ContainerLoader;
+use Override;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
@@ -42,6 +43,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		parent::__construct();
 	}
 
+	#[Override]
 	protected function createLoader(): Loader
 	{
 		return $this->loaderFactory->createLoader();
@@ -58,6 +60,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	/**
 	 * @return mixed[]
 	 */
+	#[Override]
 	protected function getDefaultParameters(): array
 	{
 		return [];
@@ -68,6 +71,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		return $this->getCacheDirectory() . '/nette.configurator';
 	}
 
+	#[Override]
 	public function loadContainer(): string
 	{
 		$loader = new ContainerLoader(
@@ -75,9 +79,18 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			$this->staticParameters['debugMode'],
 		);
 
+		$attributesPhp = __DIR__ . '/../../vendor/attributes.php';
+
 		$className = $loader->load(
 			[$this, 'generateContainer'],
-			[$this->staticParameters, array_keys($this->dynamicParameters), $this->configs, PHP_VERSION_ID - PHP_RELEASE_VERSION, NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes()],
+			[
+				$this->staticParameters,
+				array_keys($this->dynamicParameters),
+				$this->configs,
+				PHP_VERSION_ID - PHP_RELEASE_VERSION,
+				is_file($attributesPhp) ? sha1_file($attributesPhp) : 'attributes-missing',
+				NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes(),
+			],
 		);
 
 		if ($this->journalContainer) {
@@ -177,6 +190,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		}
 	}
 
+	#[Override]
 	public function createContainer(bool $initialize = true): OriginalNetteContainer
 	{
 		set_error_handler(static function (int $errno): bool {

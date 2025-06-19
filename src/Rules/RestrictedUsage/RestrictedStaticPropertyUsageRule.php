@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -17,6 +18,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
+#[AutowiredService]
 final class RestrictedStaticPropertyUsageRule implements Rule
 {
 

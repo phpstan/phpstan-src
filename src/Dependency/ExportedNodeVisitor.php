@@ -2,6 +2,7 @@
 
 namespace PHPStan\Dependency;
 
+use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
@@ -37,6 +38,7 @@ final class ExportedNodeVisitor extends NodeVisitorAbstract
 		return $this->currentNodes;
 	}
 
+	#[Override]
 	public function enterNode(Node $node): ?int
 	{
 		if ($this->fileName === null) {

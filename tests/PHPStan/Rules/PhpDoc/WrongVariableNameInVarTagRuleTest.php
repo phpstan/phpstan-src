@@ -6,7 +6,8 @@ use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<WrongVariableNameInVarTagRule>
@@ -25,7 +26,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			new VarTagTypeRuleHelper(
 				self::getContainer()->getByType(TypeNodeResolver::class),
 				self::getContainer()->getByType(FileTypeMapper::class),
-				$this->createReflectionProvider(),
+				self::createReflectionProvider(),
 				$this->checkTypeAgainstPhpDocType,
 				$this->strictWideningCheck,
 			),
@@ -235,12 +236,9 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testEnums(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/wrong-var-enum.php'], [
 			[
 				'PHPDoc tag @var above an enum has no effect.',
@@ -249,7 +247,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataReportWrongType(): iterable
+	public static function dataReportWrongType(): iterable
 	{
 		$nativeCheckOnly = [
 			[
@@ -516,9 +514,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]];
 	}
 
-	/**
-	 * @dataProvider dataPermutateCheckTypeAgainst
-	 */
+	#[DataProvider('dataPermutateCheckTypeAgainst')]
 	public function testEmptyArrayInitWithWiderPhpDoc(bool $checkTypeAgainstPhpDocType): void
 	{
 		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
@@ -530,16 +526,16 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function dataPermutateCheckTypeAgainst(): iterable
+	public static function dataPermutateCheckTypeAgainst(): iterable
 	{
 		yield [true];
 		yield [false];
 	}
 
 	/**
-	 * @dataProvider dataReportWrongType
 	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
+	#[DataProvider('dataReportWrongType')]
 	public function testReportWrongType(
 		bool $checkTypeAgainstPhpDocType,
 		bool $strictWideningCheck,

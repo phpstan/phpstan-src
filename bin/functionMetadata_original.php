@@ -130,6 +130,12 @@ return [
 	'random_int' => ['hasSideEffects' => true],
 
 	// methods
+	'DateTimeInterface::diff' => ['hasSideEffects' => false],
+	'DateTimeInterface::format' => ['hasSideEffects' => false],
+	'DateTimeInterface::getOffset' => ['hasSideEffects' => false],
+	'DateTimeInterface::getTimestamp' => ['hasSideEffects' => false],
+	'DateTimeInterface::getTimezone' => ['hasSideEffects' => false],
+
 	'DateTime::createFromFormat' => ['hasSideEffects' => false],
 	'DateTime::createFromImmutable' => ['hasSideEffects' => false],
 	'DateTime::getLastErrors' => ['hasSideEffects' => false],

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\DeclarePositionVisitor;
 use PHPStan\Rules\Rule;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Stmt\Declare_>
  */
+#[RegisteredRule(level: 0)]
 final class DeclareStrictTypesRule implements Rule
 {
 

@@ -5,7 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ThrowExprTypeRule>
@@ -15,7 +15,7 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ThrowExprTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false, true));
+		return new ThrowExprTypeRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
 	public function testRule(): void
@@ -57,12 +57,9 @@ class ThrowExprTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/throw-class-exists.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/throw-values-nullsafe.php'], [
 			[
 				'Invalid type Exception|null to throw.',

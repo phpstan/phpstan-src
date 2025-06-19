@@ -10,7 +10,7 @@ use PHPStan\Type\Type;
 final class VarTag implements TypedTag
 {
 
-	public function __construct(private Type $type)
+	public function __construct(private Type $type, private bool $isExplicit)
 	{
 	}
 
@@ -21,7 +21,17 @@ final class VarTag implements TypedTag
 
 	public function withType(Type $type): self
 	{
-		return new self($type);
+		return new self($type, $this->isExplicit);
+	}
+
+	public function isExplicit(): bool
+	{
+		return $this->isExplicit;
+	}
+
+	public function toImplicit(): self
+	{
+		return new self($this->type, false);
 	}
 
 }

@@ -10,6 +10,7 @@ use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -34,6 +35,7 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService(as: Php8SignatureMapProvider::class)]
 final class Php8SignatureMapProvider implements SignatureMapProvider
 {
 

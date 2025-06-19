@@ -6,7 +6,7 @@ use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<TooWidePropertyTypeRule>
@@ -22,12 +22,9 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			self::markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/too-wide-property-type.php'], [
 			[
 				'Property TooWidePropertyType\Foo::$foo (int|string) is never assigned string so it can be removed from the property type.',

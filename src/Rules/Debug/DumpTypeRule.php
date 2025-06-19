@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Debug;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,6 +16,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[AutowiredService]
 final class DumpTypeRule implements Rule
 {
 

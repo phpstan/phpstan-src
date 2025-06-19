@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Clone_>
  */
+#[RegisteredRule(level: 3)]
 final class VariableCloningRule implements Rule
 {
 

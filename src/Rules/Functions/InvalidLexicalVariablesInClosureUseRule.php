@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_filter;
@@ -15,6 +16,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\Closure>
  */
+#[RegisteredRule(level: 0)]
 final class InvalidLexicalVariablesInClosureUseRule implements Rule
 {
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use Override;
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
 
@@ -31,6 +32,7 @@ final class InTraitNode extends Node\Stmt implements VirtualNode
 		return $this->implementingClassReflection;
 	}
 
+	#[Override]
 	public function getType(): string
 	{
 		return 'PHPStan_Stmt_InTraitNode';
@@ -39,6 +41,7 @@ final class InTraitNode extends Node\Stmt implements VirtualNode
 	/**
 	 * @return string[]
 	 */
+	#[Override]
 	public function getSubNodeNames(): array
 	{
 		return [];

@@ -5,12 +5,14 @@ namespace PHPStan\Rules\Properties;
 use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 
 /**
  * @implements Rule<Node\Stmt\Property>
  */
+#[RegisteredRule(level: 0)]
 final class PropertyAttributesRule implements Rule
 {
 

@@ -8,6 +8,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
@@ -15,6 +16,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
 use ReflectionClass;
 
+#[AutowiredService]
 final class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

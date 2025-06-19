@@ -5,11 +5,13 @@ namespace PHPStan\Type\Php;
 use Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 
+#[AutowiredService]
 final class ClosureBindToDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

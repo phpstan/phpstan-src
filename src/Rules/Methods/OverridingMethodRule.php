@@ -3,16 +3,14 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PhpParser\Node\Attribute;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\Native\NativeMethodReflection;
-use PHPStan\Reflection\Php\PhpClassReflectionExtension;
-use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -27,16 +25,19 @@ use function strtolower;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[RegisteredRule(level: 0)]
 final class OverridingMethodRule implements Rule
 {
 
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private MethodSignatureRule $methodSignatureRule,
+		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
 		private MethodVisibilityComparisonHelper $methodVisibilityComparisonHelper,
-		private PhpClassReflectionExtension $phpClassReflectionExtension,
+		private MethodPrototypeFinder $methodPrototypeFinder,
+		#[AutowiredParameter]
 		private bool $checkMissingOverrideMethodAttribute,
 	)
 	{
@@ -50,7 +51,7 @@ final class OverridingMethodRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $node->getMethodReflection();
-		$prototypeData = $this->findPrototype($node->getClassReflection(), $method->getName());
+		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName());
 		if ($prototypeData === null) {
 			if (strtolower($method->getName()) === '__construct') {
 				$parent = $method->getDeclaringClass()->getParentClass();
@@ -94,6 +95,10 @@ final class OverridingMethodRule implements Rule
 					))
 						->nonIgnorable()
 						->identifier('method.override')
+						->fixNode($node->getOriginalNode(), function (Node\Stmt\ClassMethod $method) {
+							$method->attrGroups = $this->filterOverrideAttribute($method->attrGroups);
+							return $method;
+						})
 						->build(),
 				];
 			}
@@ -116,7 +121,16 @@ final class OverridingMethodRule implements Rule
 				$method->getName(),
 				$prototypeDeclaringClass->getDisplayName(true),
 				$prototype->getName(),
-			))->identifier('method.missingOverride')->build();
+			))
+				->identifier('method.missingOverride')
+				->fixNode($node->getOriginalNode(), static function (Node\Stmt\ClassMethod $method) {
+					$method->attrGroups[] = new Node\AttributeGroup([
+						new Attribute(new Node\Name\FullyQualified('Override')),
+					]);
+
+					return $method;
+				})
+				->build();
 		}
 		if ($prototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -279,6 +293,30 @@ final class OverridingMethodRule implements Rule
 	}
 
 	/**
+	 * @param Node\AttributeGroup[] $attrGroups
+	 * @return Node\AttributeGroup[]
+	 */
+	private function filterOverrideAttribute(array $attrGroups): array
+	{
+		foreach ($attrGroups as $i => $attrGroup) {
+			foreach ($attrGroup->attrs as $j => $attr) {
+				if ($attr->name->toLowerString() !== 'override') {
+					continue;
+				}
+
+				unset($attrGroup->attrs[$j]);
+				if (count($attrGroup->attrs) !== 0) {
+					continue;
+				}
+
+				unset($attrGroups[$i]);
+			}
+		}
+
+		return $attrGroups;
+	}
+
+	/**
 	 * @param list<IdentifierRuleError> $errors
 	 * @return list<IdentifierRuleError>
 	 */
@@ -323,79 +361,6 @@ final class OverridingMethodRule implements Rule
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return array{ExtendedMethodReflection, ClassReflection, bool}|null
-	 */
-	private function findPrototype(ClassReflection $classReflection, string $methodName): ?array
-	{
-		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
-			if ($immediateInterface->hasNativeMethod($methodName)) {
-				$method = $immediateInterface->getNativeMethod($methodName);
-				return [$method, $method->getDeclaringClass(), true];
-			}
-		}
-
-		if ($this->phpVersion->supportsAbstractTraitMethods()) {
-			foreach ($classReflection->getTraits(true) as $trait) {
-				$nativeTraitReflection = $trait->getNativeReflection();
-				if (!$nativeTraitReflection->hasMethod($methodName)) {
-					continue;
-				}
-
-				$methodReflection = $nativeTraitReflection->getMethod($methodName);
-				$isAbstract = $methodReflection->isAbstract();
-				if ($isAbstract) {
-					$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
-					return [
-						$this->phpClassReflectionExtension->createUserlandMethodReflection(
-							$trait,
-							$classReflection,
-							$methodReflection,
-							$declaringTrait->getName(),
-						),
-						$declaringTrait,
-						false,
-					];
-				}
-			}
-		}
-
-		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === null) {
-			return null;
-		}
-
-		if (!$parentClass->hasNativeMethod($methodName)) {
-			return null;
-		}
-
-		$method = $parentClass->getNativeMethod($methodName);
-		if ($method->isPrivate()) {
-			return null;
-		}
-
-		$declaringClass = $method->getDeclaringClass();
-		if ($declaringClass->hasConstructor()) {
-			if ($method->getName() === $declaringClass->getConstructor()->getName()) {
-				$prototype = $method->getPrototype();
-				if ($prototype instanceof PhpMethodReflection || $prototype instanceof MethodPrototypeReflection || $prototype instanceof NativeMethodReflection) {
-					$abstract = $prototype->isAbstract();
-					if (is_bool($abstract)) {
-						if (!$abstract) {
-							return null;
-						}
-					} elseif (!$abstract->yes()) {
-						return null;
-					}
-				}
-			} elseif (strtolower($methodName) === '__construct') {
-				return null;
-			}
-		}
-
-		return [$method, $method->getDeclaringClass(), true];
 	}
 
 }

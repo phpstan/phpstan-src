@@ -2,14 +2,20 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use function dirname;
 use function is_file;
 use function unlink;
 
+#[AutowiredService]
 final class ResultCacheClearer
 {
 
-	public function __construct(private string $cacheFilePath)
+	public function __construct(
+		#[AutowiredParameter(ref: '%resultCachePath%')]
+		private string $cacheFilePath,
+	)
 	{
 	}
 

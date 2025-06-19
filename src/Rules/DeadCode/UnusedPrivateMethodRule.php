@@ -5,6 +5,7 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Methods\AlwaysUsedMethodExtensionProvider;
@@ -20,6 +21,7 @@ use function strtolower;
 /**
  * @implements Rule<ClassMethodsNode>
  */
+#[RegisteredRule(level: 4)]
 final class UnusedPrivateMethodRule implements Rule
 {
 
@@ -38,7 +40,7 @@ final class UnusedPrivateMethodRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
-		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
+		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 		$constructor = null;
 		if ($classReflection->hasConstructor()) {
 			$constructor = $classReflection->getConstructor();

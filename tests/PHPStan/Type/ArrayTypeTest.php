@@ -12,13 +12,14 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function sprintf;
 
 class ArrayTypeTest extends PHPStanTestCase
 {
 
-	public function dataIsSuperTypeOf(): array
+	public static function dataIsSuperTypeOf(): array
 	{
 		return [
 			[
@@ -57,12 +58,12 @@ class ArrayTypeTest extends PHPStanTestCase
 				TrinaryLogic::createYes(),
 			],
 			[
-				new ArrayType(new MixedType(), new MixedType(false, StaticTypeFactory::falsey())),
+				new ArrayType(new MixedType(), new MixedType(subtractedType: StaticTypeFactory::falsey())),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new ArrayType(new MixedType(), new MixedType(false, new NullType())),
+				new ArrayType(new MixedType(), new MixedType(subtractedType: new NullType())),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
 			],
@@ -85,9 +86,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataIsSuperTypeOf
-	 */
+	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(ArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
@@ -98,7 +97,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataAccepts(): array
+	public static function dataAccepts(): array
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
@@ -147,9 +146,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataAccepts
-	 */
+	#[DataProvider('dataAccepts')]
 	public function testAccepts(
 		ArrayType $acceptingType,
 		Type $acceptedType,
@@ -164,7 +161,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
-	public function dataDescribe(): array
+	public static function dataDescribe(): array
 	{
 		return [
 			[
@@ -177,9 +174,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataDescribe
-	 */
+	#[DataProvider('dataDescribe')]
 	public function testDescribe(
 		ArrayType $type,
 		string $expectedDescription,
@@ -188,7 +183,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
 	}
 
-	public function dataInferTemplateTypes(): array
+	public static function dataInferTemplateTypes(): array
 	{
 		$templateType = static fn ($name): Type => TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('a'),
@@ -261,9 +256,9 @@ class ArrayTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider dataInferTemplateTypes
 	 * @param array<string,string> $expectedTypes
 	 */
+	#[DataProvider('dataInferTemplateTypes')]
 	public function testResolveTemplateTypes(Type $received, Type $template, array $expectedTypes): void
 	{
 		$result = $template->inferTemplateTypes($received);

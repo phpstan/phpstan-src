@@ -5,16 +5,19 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
+use Override;
 use PHPStan\Rules\LazyRegistry;
 
 final class RulesExtension extends CompilerExtension
 {
 
+	#[Override]
 	public function getConfigSchema(): Schema
 	{
 		return Expect::listOf('string');
 	}
 
+	#[Override]
 	public function loadConfiguration(): void
 	{
 		/** @var mixed[] $config */

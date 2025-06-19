@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\Reflection\ClassReflection;
@@ -22,6 +24,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
 
+#[AutowiredService]
 final class PropertyTagCheck
 {
 
@@ -31,8 +34,11 @@ final class PropertyTagCheck
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private MissingTypehintCheck $missingTypehintCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
+		#[AutowiredParameter]
 		private bool $checkMissingTypehints,
+		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
 	)
 	{

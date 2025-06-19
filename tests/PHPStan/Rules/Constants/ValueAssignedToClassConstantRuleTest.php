@@ -4,7 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ValueAssignedToClassConstantRule>
@@ -60,12 +60,9 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5655.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testNativeType(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/value-assigned-to-class-constant-native-type.php'], [
 			[
 				'Constant ValueAssignedToClassConstantNativeType\Foo::BAR (int) does not accept value \'bar\'.',
@@ -86,12 +83,9 @@ class ValueAssignedToClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
 	public function testBug10212(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			$this->markTestSkipped('Test requires PHP 8.3.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-10212.php'], [
 			[
 				'Constant Bug10212\HelloWorld::B (Bug10212\X\Foo) does not accept value Bug10212\Foo::Bar.',

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Type;
@@ -11,6 +12,7 @@ use PHPStan\Type\Type;
 /**
  * @implements Rule<Node\Expr>
  */
+#[RegisteredRule(level: 1)]
 final class NullCoalesceRule implements Rule
 {
 

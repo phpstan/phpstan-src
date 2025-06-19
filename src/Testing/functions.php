@@ -36,6 +36,20 @@ function assertNativeType(string $type, $value) // phpcs:ignore
 }
 
 /**
+ * Asserts a super type of a value.
+ *
+ * @phpstan-pure
+ * @param mixed $value
+ * @return mixed
+ *
+ * @throws void
+ */
+function assertSuperType(string $superType, $value) // phpcs:ignore
+{
+	return null;
+}
+
+/**
  * @phpstan-pure
  * @param mixed $variable
  * @return mixed

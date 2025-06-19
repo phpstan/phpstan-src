@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -23,7 +24,10 @@ use function sprintf;
 final class FileAssertRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private TypeStringResolver $typeStringResolver,
+	)
 	{
 	}
 
@@ -49,6 +53,10 @@ final class FileAssertRule implements Rule
 
 		if ($function->getName() === 'PHPStan\\Testing\\assertNativeType') {
 			return $this->processAssertNativeType($node->getArgs(), $scope);
+		}
+
+		if ($function->getName() === 'PHPStan\\Testing\\assertSuperType') {
+			return $this->processAssertSuperType($node->getArgs(), $scope);
 		}
 
 		if ($function->getName() === 'PHPStan\\Testing\\assertVariableCertainty') {
@@ -120,6 +128,40 @@ final class FileAssertRule implements Rule
 			RuleErrorBuilder::message(sprintf('Expected native type %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType))
 				->nonIgnorable()
 				->identifier('phpstan.nativeType')
+				->build(),
+		];
+	}
+
+	/**
+	 * @param Node\Arg[] $args
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processAssertSuperType(array $args, Scope $scope): array
+	{
+		if (count($args) !== 2) {
+			return [];
+		}
+
+		$expectedTypeStrings = $scope->getType($args[0]->value)->getConstantStrings();
+		if (count($expectedTypeStrings) !== 1) {
+			return [
+				RuleErrorBuilder::message('Expected super type must be a literal string.')
+					->nonIgnorable()
+					->identifier('phpstan.unknownExpectation')
+					->build(),
+			];
+		}
+
+		$expressionType = $scope->getType($args[1]->value);
+		$expectedType = $this->typeStringResolver->resolve($expectedTypeStrings[0]->getValue());
+		if ($expectedType->isSuperTypeOf($expressionType)->yes()) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message(sprintf('Expected subtype of %s, actual: %s', $expectedTypeStrings[0]->getValue(), $expressionType->describe(VerbosityLevel::precise())))
+				->nonIgnorable()
+				->identifier('phpstan.superType')
 				->build(),
 		];
 	}

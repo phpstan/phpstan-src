@@ -35,6 +35,7 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		'PHPStan\\debugScope',
 		'PHPStan\\Testing\\assertType',
 		'PHPStan\\Testing\\assertNativeType',
+		'PHPStan\\Testing\\assertSuperType',
 		'PHPStan\\Testing\\assertVariableCertainty',
 	];
 

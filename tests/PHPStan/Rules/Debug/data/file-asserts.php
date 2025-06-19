@@ -5,6 +5,7 @@ namespace FileAsserts;
 use PHPStan\TrinaryLogic;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertSuperType;
 use function PHPStan\Testing\assertVariableCertainty;
 
 class Foo
@@ -17,6 +18,9 @@ class Foo
 	{
 		assertType('array<int>', $a);
 		assertType('array<string>', $a);
+
+		assertSuperType('array<int|string>', $a);
+		assertSuperType('array<string>', $a);
 	}
 
 	/**
@@ -26,6 +30,7 @@ class Foo
 	{
 		assertType('non-empty-array<int>', $a);
 		assertNativeType('array', $a);
+		assertSuperType('mixed', $a);
 
 		assertType('false', $a === []);
 		assertType('true', $a !== []);
@@ -35,6 +40,12 @@ class Foo
 
 		assertNativeType('false', $a === []);
 		assertNativeType('true', $a !== []);
+
+		assertSuperType('bool', $a === []);
+		assertSuperType('bool', $a !== []);
+		assertSuperType('mixed', $a === []);
+		assertSuperType('string', $a === []);
+		assertSuperType('never', $a === []);
 	}
 
 	public function doBaz($a): void

@@ -147,6 +147,28 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$actual,
 				$failureMessage,
 			);
+		} elseif ($assertType === 'superType') {
+			$expected = $args[0];
+			$actual = $args[1];
+			$isCorrect = $args[2];
+
+			$failureMessage = sprintf('Expected subtype of %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[3]);
+
+			$delayedErrors = $args[4] ?? [];
+			if (count($delayedErrors) > 0) {
+				$failureMessage .= sprintf(
+					"\n\nThis failure might be reported because of the following misconfiguration %s:\n\n",
+					count($delayedErrors) === 1 ? 'issue' : 'issues',
+				);
+				foreach ($delayedErrors as $delayedError) {
+					$failureMessage .= sprintf("* %s\n", $delayedError);
+				}
+			}
+
+			$this->assertTrue(
+				$isCorrect,
+				$failureMessage,
+			);
 		} elseif ($assertType === 'variableCertainty') {
 			$expectedCertainty = $args[0];
 			$actualCertainty = $args[1];
@@ -214,7 +236,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			$functionName = $nameNode->toString();
-			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertvariablecertainty'], true)) {
+			if (in_array(strtolower($functionName), ['asserttype', 'assertnativetype', 'assertsupertype', 'assertvariablecertainty'], true)) {
 				self::fail(sprintf(
 					'Missing use statement for %s() in %s on line %d.',
 					$functionName,
@@ -246,6 +268,18 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getStartLine()];
+			} elseif ($functionName === 'PHPStan\\Testing\\assertSuperType') {
+				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				if (!$expectedType instanceof ConstantScalarType) {
+					self::fail(sprintf(
+						'Expected super type must be a literal string, %s given in %s on line %d.',
+						$expectedType->describe(VerbosityLevel::precise()),
+						$relativePathHelper->getRelativePath($file),
+						$node->getStartLine(),
+					));
+				}
+				$actualType = $scope->getType($node->getArgs()[1]->value);
+				$assert = ['superType', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $expectedType->isSuperTypeOf($actualType)->yes(), $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {
@@ -284,6 +318,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$assertFunctions = [
 					'assertType' => 'PHPStan\\Testing\\assertType',
 					'assertNativeType' => 'PHPStan\\Testing\\assertNativeType',
+					'assertSuperType' => 'PHPStan\\Testing\\assertSuperType',
 					'assertVariableCertainty' => 'PHPStan\\Testing\\assertVariableCertainty',
 				];
 				foreach ($assertFunctions as $assertFn => $fqFunctionName) {

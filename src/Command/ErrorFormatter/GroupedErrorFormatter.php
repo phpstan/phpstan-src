@@ -27,7 +27,8 @@ final class GroupedErrorFormatter implements ErrorFormatter
 		#[AutowiredParameter]
 		private ?string $editorUrl,
 		#[AutowiredParameter]
-		private ?string $editorUrlTitle)
+		private ?string $editorUrlTitle,
+	)
 	{
 	}
 

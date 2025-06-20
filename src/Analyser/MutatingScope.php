@@ -159,6 +159,7 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
+use function preg_match;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -2329,25 +2330,43 @@ final class MutatingScope implements Scope
 		}
 
 		if ($node instanceof FuncCall) {
-			if ($node->name instanceof Expr) {
+			$functionName = null;
+			if ($node->name instanceof Name) {
+				$functionName = $node->name;
+			} elseif ($node->name instanceof Expr) {
 				$calledOnType = $this->getType($node->name);
 				if ($calledOnType->isCallable()->no()) {
 					return new ErrorType();
 				}
 
-				return ParametersAcceptorSelector::selectFromArgs(
-					$this,
-					$node->getArgs(),
-					$calledOnType->getCallableParametersAcceptors($this),
-					null,
-				)->getReturnType();
+				if ($node->name instanceof String_) {
+					/** @var non-empty-string $name */
+					$name = $node->name->value;
+					$functionName = new Name($name);
+				} elseif (
+					$node->name instanceof FuncCall
+					&& $node->name->isFirstClassCallable()
+					&& $node->name->getAttribute('phpstan_cache_printer') !== null
+					&& preg_match('/\A(?<name>\\\\?[^()]+)\(...\)\z/', $node->name->getAttribute('phpstan_cache_printer'), $m) === 1
+				) {
+					/** @var non-falsy-string $name */
+					$name = $m['name'];
+					$functionName = new Name($name);
+				} else {
+					return ParametersAcceptorSelector::selectFromArgs(
+						$this,
+						$node->getArgs(),
+						$calledOnType->getCallableParametersAcceptors($this),
+						null,
+					)->getReturnType();
+				}
 			}
 
-			if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
+			if (!$this->reflectionProvider->hasFunction($functionName, $this)) {
 				return new ErrorType();
 			}
 
-			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+			$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
 			if ($this->nativeTypesPromoted) {
 				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
 			}

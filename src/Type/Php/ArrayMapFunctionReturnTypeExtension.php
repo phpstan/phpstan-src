@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -41,21 +41,18 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
-		$callableType = $scope->getType($functionCall->getArgs()[0]->value);
+		$callback = $functionCall->getArgs()[0]->value;
+		$callableType = $scope->getType($callback);
 		$callableIsNull = $callableType->isNull()->yes();
 
-		$callableParametersAcceptors = null;
-
 		if ($callableType->isCallable()->yes()) {
-			$callableParametersAcceptors = $callableType->getCallableParametersAcceptors($scope);
-			$valueType = ParametersAcceptorSelector::selectFromTypes(
+			$valueType = $scope->getType(new FuncCall(
+				$callback,
 				array_map(
-					static fn (Node\Arg $arg) => $scope->getType($arg->value)->getIterableValueType(),
+					static fn (Node\Arg $arg) => new Node\Arg(new TypeExpr($scope->getType($arg->value)->getIterableValueType())),
 					array_slice($functionCall->getArgs(), 1),
 				),
-				$callableParametersAcceptors,
-				false,
-			)->getReturnType();
+			));
 		} elseif ($callableIsNull) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			$argTypes = [];
@@ -134,13 +131,9 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 							$returnedArrayBuilder->setOffsetValueType(
 								$keyType,
-								$callableParametersAcceptors !== null
-									? ParametersAcceptorSelector::selectFromTypes(
-										[$valueTypes[$i]],
-										$callableParametersAcceptors,
-										false,
-									)->getReturnType()
-									: $valueType,
+								$scope->getType(new FuncCall($callback, [
+									new Node\Arg(new TypeExpr($valueTypes[$i])),
+								])),
 								$constantArray->isOptionalKey($i),
 							);
 						}

@@ -239,6 +239,13 @@ class ArrayColumnTest
 		assertType('non-empty-array<DOMElement>', array_column($array, null, 'foo'));
 	}
 
+	/**
+	 * @param non-empty-list<array<string, mixed>> $list
+	 */
+	public function testList1(array $list): void
+	{
+		assertType('non-empty-list<mixed>', array_column($list, 'value'));
+	}
 }
 
 final class Foo

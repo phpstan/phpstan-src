@@ -43,7 +43,13 @@ final class ArrayColumnHelper
 
 		if ($returnValueType === null) {
 			$returnValueType = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope, true);
-			$iterableAtLeastOnce = TrinaryLogic::createMaybe();
+
+//			if (TypeCombinator::contains($arrayType, new NonEmptyArrayType())) {
+//				$iterableAtLeastOnce = TrinaryLogic::createYes();
+//			} else {
+//				$iterableAtLeastOnce = TrinaryLogic::createMaybe();
+//			}
+
 			if ($returnValueType === null) {
 				throw new ShouldNotHappenException();
 			}

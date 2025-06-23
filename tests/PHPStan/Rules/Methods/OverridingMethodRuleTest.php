@@ -820,4 +820,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/fix-override-attribute.php', __DIR__ . '/data/fix-override-attribute.php.fixed');
 	}
 
+	#[RequiresPhp('>= 8.3')]
+	public function testFixWithTabs(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->fix(__DIR__ . '/data/fix-with-tabs.php', __DIR__ . '/data/fix-with-tabs.php.fixed');
+	}
 }

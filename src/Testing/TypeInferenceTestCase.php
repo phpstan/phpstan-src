@@ -17,6 +17,7 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -203,12 +204,13 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 		$relativePathHelper = new SystemAgnosticSimpleRelativePathHelper($fileHelper);
 		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 
 		$file = $fileHelper->normalizePath($file);
 
 		$asserts = [];
 		$delayedErrors = [];
-		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, &$delayedErrors, $file, $relativePathHelper, $reflectionProvider): void {
+		self::processFile($file, static function (Node $node, Scope $scope) use (&$asserts, &$delayedErrors, $file, $relativePathHelper, $reflectionProvider, $typeStringResolver): void {
 			if ($node instanceof InClassNode) {
 				if (!$reflectionProvider->hasClass($node->getClassReflection()->getName())) {
 					$delayedErrors[] = sprintf(
@@ -270,7 +272,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$assert = ['type', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertSuperType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
-				if (!$expectedType instanceof ConstantScalarType) {
+				$expectedTypeStrings = $expectedType->getConstantStrings();
+				if (count($expectedTypeStrings) !== 1) {
 					self::fail(sprintf(
 						'Expected super type must be a literal string, %s given in %s on line %d.',
 						$expectedType->describe(VerbosityLevel::precise()),
@@ -278,8 +281,11 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 						$node->getStartLine(),
 					));
 				}
+
 				$actualType = $scope->getType($node->getArgs()[1]->value);
-				$assert = ['superType', $file, $expectedType->getValue(), $actualType->describe(VerbosityLevel::precise()), $expectedType->isSuperTypeOf($actualType)->yes(), $node->getStartLine()];
+				$isCorrect = $typeStringResolver->resolve($expectedTypeStrings[0]->getValue())->isSuperTypeOf($actualType)->yes();
+
+				$assert = ['superType', $file, $expectedTypeStrings[0]->getValue(), $actualType->describe(VerbosityLevel::precise()), $isCorrect, $node->getStartLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;
 				if (!$certainty instanceof StaticCall) {

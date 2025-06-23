@@ -121,6 +121,28 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 		$this->assertSame("offset 'email'", $offsetAssert[4]);
 	}
 
+	public function testSuperType(): void
+	{
+		foreach (self::gatherAssertTypes(__DIR__ . '/data/assert-super-type.php') as $data) {
+			$this->assertFileAsserts(...$data);
+		}
+	}
+
+	public static function dataSuperTypeFailed(): array
+	{
+		return self::gatherAssertTypes(__DIR__ . '/data/assert-super-type-failed.php');
+	}
+
+	/**
+	 * @param mixed ...$args
+	 */
+	#[DataProvider('dataSuperTypeFailed')]
+	public function testSuperTypeFailed(...$args): void
+	{
+		$this->expectException(AssertionFailedError::class);
+		$this->assertFileAsserts(...$args);
+	}
+
 	public function testNonexistentClassInAnalysedFile(): void
 	{
 		foreach (self::gatherAssertTypes(__DIR__ . '/../../notAutoloaded/nonexistentClasses.php') as $data) {

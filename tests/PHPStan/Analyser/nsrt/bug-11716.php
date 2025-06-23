@@ -13,7 +13,7 @@ class TypeExpression
 	{
 		$seenGlues = ['|' => false, '&' => false];
 
-		assertType("array{|: false, &: false}", $seenGlues);
+		assertType("array{'|': false, '&': false}", $seenGlues);
 
 		if ($glue !== '') {
 			assertType('non-empty-string', $glue);
@@ -22,13 +22,13 @@ class TypeExpression
 			$seenGlues[$glue] = true;
 
 			assertType("'&'|'|'", $glue);
-			assertType('array{|: bool, &: bool}', $seenGlues);
+			assertType("array{'|': bool, '&': bool}", $seenGlues);
 		} else {
 			assertType("''", $glue);
 		}
 
 		assertType("''|'&'|'|'", $glue);
-		assertType("array{|: bool, &: bool}", $seenGlues);
+		assertType("array{'|': bool, '&': bool}", $seenGlues);
 
 		return array_key_first($seenGlues);
 	}

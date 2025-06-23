@@ -1538,7 +1538,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'(float) $str',
 			],
 			[
-				"array{\0TypesNamespaceCasts\\Foo\0foo: TypesNamespaceCasts\\Foo, \0TypesNamespaceCasts\\Foo\0int: int, \0*\0protectedInt: int, publicInt: int, \0TypesNamespaceCasts\\Bar\0barProperty: TypesNamespaceCasts\\Bar}",
+				"array{'\0TypesNamespaceCasts\\Foo\0foo': TypesNamespaceCasts\\Foo, '\0TypesNamespaceCasts\\Foo\0int': int, '\0*\0protectedInt': int, publicInt: int, '\0TypesNamespaceCasts\\Bar\0barProperty': TypesNamespaceCasts\\Bar}",
 				'(array) $foo',
 			],
 			[

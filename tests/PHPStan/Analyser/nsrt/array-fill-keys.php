@@ -26,12 +26,12 @@ class Baz {}
 function withBoolKey() : array
 {
 	assertType("array{1: 'b'}", array_fill_keys([true], 'b'));
-	assertType("array{: 'b'}", array_fill_keys([false], 'b'));
+	assertType("array{'': 'b'}", array_fill_keys([false], 'b'));
 }
 
 function withFloatKey() : array
 {
-	assertType("array{1.5: 'b'}", array_fill_keys([1.5], 'b'));
+	assertType("array{'1.5': 'b'}", array_fill_keys([1.5], 'b'));
 }
 
 function withIntegerKey() : array

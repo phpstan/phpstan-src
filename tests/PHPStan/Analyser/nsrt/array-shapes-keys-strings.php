@@ -17,8 +17,8 @@ class Foo
 	 */
 	public function doFoo(array $slash, array $dollar): void
 	{
-		assertType('array{namespace/key: string}', $slash);
-		assertType('array<int, array{$ref: string}>', $dollar);
+		assertType("array{'namespace/key': string}", $slash);
+		assertType('array<int, array{\'$ref\': string}>', $dollar);
 	}
 
 }

@@ -20,6 +20,6 @@ class HelloWorld
 		$header = sprintf('%s-%s', '', '');
 
 		assertType('\'-\'', $header);
-		assertType('array{-: string}', [$header => $message]);
+		assertType('array{\'-\': string}', [$header => $message]);
 	}
 }

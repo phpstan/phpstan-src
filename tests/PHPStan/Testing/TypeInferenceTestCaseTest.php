@@ -38,6 +38,13 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 			),
 		];
 		yield [
+			__DIR__ . '/data/assert-super-type-missing-namespace.php',
+			sprintf(
+				'Missing use statement for assertSuperType() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-super-type-missing-namespace.php'),
+			),
+		];
+		yield [
 			__DIR__ . '/data/assert-certainty-wrong-namespace.php',
 			sprintf(
 				'Function PHPStan\Testing\assertVariableCertainty imported with wrong namespace SomeWrong\Namespace\assertVariableCertainty called in %s on line 9.',
@@ -59,6 +66,13 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 			),
 		];
 		yield [
+			__DIR__ . '/data/assert-super-type-wrong-namespace.php',
+			sprintf(
+				'Function PHPStan\Testing\assertSuperType imported with wrong namespace SomeWrong\Namespace\assertSuperType called in %s on line 8.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-super-type-wrong-namespace.php'),
+			),
+		];
+		yield [
 			__DIR__ . '/data/assert-certainty-case-insensitive.php',
 			sprintf(
 				'Missing use statement for assertvariablecertainty() in %s on line 8.',
@@ -77,6 +91,13 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 			sprintf(
 				'Missing use statement for assertTYPe() in %s on line 6.',
 				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-type-case-insensitive.php'),
+			),
+		];
+		yield [
+			__DIR__ . '/data/assert-super-type-case-insensitive.php',
+			sprintf(
+				'Missing use statement for assertSuperTYPe() in %s on line 6.',
+				$fileHelper->normalizePath('tests/PHPStan/Testing/data/assert-super-type-case-insensitive.php'),
 			),
 		];
 	}

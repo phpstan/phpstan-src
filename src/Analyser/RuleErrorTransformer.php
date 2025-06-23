@@ -29,6 +29,7 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function get_class;
 use function sha1;
+use function str_contains;
 use function str_repeat;
 
 #[AutowiredService]
@@ -137,7 +138,12 @@ final class RuleErrorTransformer
 			$newStmts = $traverser->traverse($newStmts);
 
 			if ($visitor->isFound()) {
-				$printer = new PhpPrinter(['indent' => str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize)]);
+				if (str_contains($indentDetector->indentCharacter, "\t")) {
+					$indent = "\t";
+				} else {
+					$indent = str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize);
+				}
+				$printer = new PhpPrinter(['indent' => $indent]);
 				$newCode = $printer->printFormatPreserving($newStmts, $fileNodes, $oldTokens);
 
 				if ($oldCode !== $newCode) {

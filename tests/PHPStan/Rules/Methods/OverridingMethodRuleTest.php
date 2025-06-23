@@ -827,4 +827,5 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->checkMissingOverrideMethodAttribute = true;
 		$this->fix(__DIR__ . '/data/fix-with-tabs.php', __DIR__ . '/data/fix-with-tabs.php.fixed');
 	}
+
 }

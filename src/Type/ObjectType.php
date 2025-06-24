@@ -946,7 +946,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new ErrorType();
 		}
 
-		return IntegerRangeType::fromInterval(0, null);
+		return RecursionGuard::run($this, fn (): Type => $this->getMethod('count', new OutOfClassScope())->getOnlyVariant()->getReturnType());
 	}
 
 	public function getIterableKeyType(): Type

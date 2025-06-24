@@ -30,7 +30,7 @@ class HelloWorld
 			return false;
 		}
 
-		if ($value instanceof Countable) {
+		if ($value instanceof \Countable) {
 			return count($value) === 0;
 		}
 

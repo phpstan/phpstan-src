@@ -15,9 +15,31 @@ class Foo implements \Countable {
 	}
 }
 
+class Bar implements \Countable {
+
+	/**
+	 * @return -1
+	 */
+	public function count() : int {
+		return -1;
+	}
+
+	static public function doBar() {
+		$bar = new Bar();
+		assertType('-1', $bar->count());
+	}
+}
+
 class NonCountable {}
+
+function doNonCountable() {
+	assertType('*ERROR*', count(new NonCountable()));
+}
 
 function doFoo() {
 	assertType('int<0, max>', count(new Foo()));
-	assertType('*ERROR*', count(new NonCountable()));
+}
+
+function doBar() {
+	assertType('-1', count(new Bar()));
 }

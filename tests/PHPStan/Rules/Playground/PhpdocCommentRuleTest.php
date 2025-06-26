@@ -20,11 +20,11 @@ class PhpdocCommentRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/comments.php'], [
 			[
-				'Comment contains phpdoc-tag but does not start with /** tag.',
+				'Comment contains PHPDoc tag but does not start with /** prefix.',
 				13,
 			],
 			[
-				'Comment contains phpdoc-tag but does not start with /** tag.',
+				'Comment contains PHPDoc tag but does not start with /** prefix.',
 				23,
 			],
 		]);

@@ -36,6 +36,7 @@ final class PhpdocCommentRule implements Rule
 			if (!$comment instanceof Comment) {
 				throw new ShouldNotHappenException();
 			}
+
 			if (!str_contains($comment->getText(), '@')) {
 				continue;
 			}

@@ -32,4 +32,7 @@ class Bar
 	{
 		return $this->foo;
 	}
+
+	// this should not error: @var
+	# this should not error: @var
 }

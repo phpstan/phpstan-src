@@ -41,8 +41,10 @@ final class PhpdocCommentRule implements Rule
 				continue;
 			}
 
-			if (str_starts_with($comment->getText(), '/**')) {
-				continue;
+			foreach(['/**', '//', '#'] as $startTag) {
+				if (str_starts_with($comment->getText(), $startTag)) {
+					continue 2;
+				}
 			}
 
 			$errors[] =	RuleErrorBuilder::message('Comment contains phpdoc-tag but does not start with /** tag.')

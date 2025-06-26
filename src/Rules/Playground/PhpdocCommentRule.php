@@ -48,7 +48,7 @@ final class PhpdocCommentRule implements Rule
 			}
 
 			$errors[] =	RuleErrorBuilder::message('Comment contains PHPDoc tag but does not start with /** prefix.')
-				->identifier('phpstanPlayground.noPhpdoc')
+				->identifier('phpstanPlayground.phpDoc')
 				->build();
 		}
 

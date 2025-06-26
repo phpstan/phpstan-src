@@ -41,7 +41,7 @@ final class PhpdocCommentRule implements Rule
 				continue;
 			}
 
-			foreach(['/**', '//', '#'] as $startTag) {
+			foreach (['/**', '//', '#'] as $startTag) {
 				if (str_starts_with($comment->getText(), $startTag)) {
 					continue 2;
 				}

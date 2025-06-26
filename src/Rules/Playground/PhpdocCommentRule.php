@@ -2,13 +2,11 @@
 
 namespace PHPStan\Rules\Playground;
 
-use PhpParser\Comment;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function str_contains;
 use function str_starts_with;
 
@@ -29,14 +27,10 @@ final class PhpdocCommentRule implements Rule
 			return [];
 		}
 
-		$comments = $node->getAttribute('comments', []);
+		$comments = $node->getComments();
 
 		$errors = [];
 		foreach ($comments as $comment) {
-			if (!$comment instanceof Comment) {
-				throw new ShouldNotHappenException();
-			}
-
 			if (!str_contains($comment->getText(), '@')) {
 				continue;
 			}

@@ -23,9 +23,11 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 
 #[AutowiredService]
@@ -125,10 +127,17 @@ final class AccessPropertiesCheck
 				}
 			}
 
+			$propertyTags = [];
 			if (count($classNames) === 1) {
 				$propertyClassReflection = $this->reflectionProvider->getClass($classNames[0]);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
+				$propertyTags = $propertyClassReflection->isInterface() ? [] : $propertyClassReflection->getPropertyTags();
+
 				while ($parentClassReflection !== null) {
+					if (!$parentClassReflection->isInterface()) {
+						$propertyTags[] = $parentClassReflection->getPropertyTags();
+					}
+
 					if ($parentClassReflection->hasProperty($name)) {
 						if ($write) {
 							if ($scope->canWriteProperty($parentClassReflection->getProperty($name, $scope))) {
@@ -146,9 +155,12 @@ final class AccessPropertiesCheck
 							))->identifier('property.private')->build(),
 						];
 					}
-
 					$parentClassReflection = $parentClassReflection->getParentClass();
 				}
+			}
+
+			if (in_array($name, array_keys($propertyTags), true)) {
+				return [];
 			}
 
 			if ($node->name instanceof Expr) {

@@ -100,7 +100,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		foreach ($rows as $i => $column) {
 			$columnRows = explode("\n", $column);
 			foreach ($columnRows as $k => $columnRow) {
-				if (str_starts_with($columnRow, '✏️')) {
+				if (str_starts_with($columnRow, 'at  ')) {
 					continue;
 				}
 				$wrapped = wordwrap(

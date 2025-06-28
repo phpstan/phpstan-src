@@ -130,7 +130,7 @@ final class TableErrorFormatter implements ErrorFormatter
 						$title = $this->relativePathHelper->getRelativePath($filePath);
 					}
 
-					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
+					$message .= "\nat  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
 				}
 
 				if (

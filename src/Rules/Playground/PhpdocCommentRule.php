@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Playground;
 
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
@@ -31,14 +32,14 @@ final class PhpdocCommentRule implements Rule
 
 		$errors = [];
 		foreach ($comments as $comment) {
-			if (!str_contains($comment->getText(), '@')) {
-				continue;
-			}
-
 			foreach (['/**', '//', '#'] as $startTag) {
 				if (str_starts_with($comment->getText(), $startTag)) {
 					continue 2;
 				}
+			}
+
+			if (!Strings::match($comment->getText(), '{(\s|^)@\w+(\s|$)}')) {
+				continue;
 			}
 
 			$errors[] =	RuleErrorBuilder::message('Comment contains PHPDoc tag but does not start with /** prefix.')

@@ -35,4 +35,15 @@ class Bar
 
 	// this should not error: @var
 	# this should not error: @var
+
+	/*
+	 * comments which look like phpdoc should be ignored
+	 *
+	 * x@x.cz
+	 * 10 amps @ 1 volt
+	 */
+	public function ignoreComments(): FooInterface
+	{
+		return $this->foo;
+	}
 }

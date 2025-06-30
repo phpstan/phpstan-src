@@ -338,6 +338,9 @@ final class FixerApplication
 		$dnsConfig = new Config();
 		$dnsConfig->nameservers = $this->dnsServers;
 
+		$loop = new StreamSelectLoop();
+		Loop::set($loop); // @phpstan-ignore staticMethod.internal (required because of the await() call below)
+
 		$client = new Browser(
 			new Connector(
 				[
@@ -347,7 +350,9 @@ final class FixerApplication
 					],
 					'dns' => $dnsConfig,
 				],
+				$loop,
 			),
+			$loop,
 		);
 
 		/**
@@ -388,7 +393,7 @@ final class FixerApplication
 			$this->printDownloadError($output, $e);
 		});
 
-		Loop::run();
+		$loop->run();
 
 		fclose($pharPathResource);
 

@@ -946,6 +946,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return new ErrorType();
 		}
 
+		if ($this->hasMethod('count')->yes() === false) {
+			return IntegerRangeType::fromInterval(0, null);
+		}
+
 		return RecursionGuard::run($this, fn (): Type => $this->getMethod('count', new OutOfClassScope())->getOnlyVariant()->getReturnType());
 	}
 

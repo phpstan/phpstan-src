@@ -30,6 +30,9 @@ class Bar implements \Countable {
 	}
 }
 
+interface Baz {
+}
+
 class NonCountable {}
 
 function doNonCountable() {
@@ -42,4 +45,8 @@ function doFoo() {
 
 function doBar() {
 	assertType('-1', count(new Bar()));
+}
+
+function doBaz(Baz $baz) {
+	assertType('int<0, max>', count($baz));
 }

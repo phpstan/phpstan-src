@@ -1,0 +1,10 @@
+<?php
+
+interface UnitEnum
+{
+	/**
+	 * @return list<static>
+	 * @pure
+	 */
+	public static function cases(): array;
+}

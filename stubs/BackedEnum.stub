@@ -1,0 +1,14 @@
+<?php
+
+interface BackedEnum extends UnitEnum
+{
+	/**
+	 * @pure
+	 */
+	public static function from(int|string $value): static;
+
+	/**
+	 * @pure
+	 */
+	public static function tryFrom(int|string $value): ?static;
+}

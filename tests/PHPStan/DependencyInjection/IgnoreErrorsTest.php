@@ -9,7 +9,7 @@ class IgnoreErrorsTest extends PHPStanTestCase
 
 	public function testIgnoreErrors(): void
 	{
-		$this->assertCount(12, self::getContainer()->getParameter('ignoreErrors'));
+		$this->assertCount(16, self::getContainer()->getParameter('ignoreErrors'));
 	}
 
 	/**

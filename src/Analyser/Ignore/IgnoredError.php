@@ -37,6 +37,13 @@ final class IgnoredError
 			} else {
 				$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
 			}
+		} elseif (isset($ignoredError['identifiers'])) {
+			$identifierList = implode(', ', $ignoredError['identifiers']);
+			if ($message === '') {
+				$message = $identifierList;
+			} else {
+				$message = sprintf('%s (%s)', $message, $identifierList);
+			}
 		}
 
 		if ($message === '') {

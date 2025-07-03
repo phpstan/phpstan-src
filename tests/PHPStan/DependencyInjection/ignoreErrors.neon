@@ -45,3 +45,21 @@ parameters:
 			paths:
 				- '/dir/*'
 			reportUnmatched: false
+		-
+			identifiers:
+				- 'error.identifier'
+		-
+			identifiers:
+				- 'error.identifier'
+			path: '/dir/*'
+		-
+			identifiers:
+				- 'error.identifier'
+			paths:
+				- '/dir/*'
+		-
+			identifiers:
+				- 'error.identifier'
+				- 'another.identifier'
+			path: '/dir/*'
+			reportUnmatched: false

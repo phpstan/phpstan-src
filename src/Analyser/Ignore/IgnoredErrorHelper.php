@@ -40,7 +40,7 @@ final class IgnoredErrorHelper
 		$expandedIgnoreErrors = [];
 		foreach ($this->ignoreErrors as $ignoreError) {
 			if (is_array($ignoreError)) {
-				if (!isset($ignoreError['message']) && !isset($ignoreError['messages']) && !isset($ignoreError['identifier'])) {
+				if (!isset($ignoreError['message']) && !isset($ignoreError['messages']) && !isset($ignoreError['identifier']) && !isset($ignoreError['identifiers'])) {
 					$errors[] = sprintf(
 						'Ignored error %s is missing a message or an identifier.',
 						Json::encode($ignoreError),
@@ -52,6 +52,13 @@ final class IgnoredErrorHelper
 						$expandedIgnoreError = $ignoreError;
 						unset($expandedIgnoreError['messages']);
 						$expandedIgnoreError['message'] = $message;
+						$expandedIgnoreErrors[] = $expandedIgnoreError;
+					}
+				} elseif (isset($ignoreError['identifiers'])) {
+					foreach ($ignoreError['identifiers'] as $identifier) {
+						$expandedIgnoreError = $ignoreError;
+						unset($expandedIgnoreError['identifiers']);
+						$expandedIgnoreError['identifier'] = $identifier;
 						$expandedIgnoreErrors[] = $expandedIgnoreError;
 					}
 				} else {

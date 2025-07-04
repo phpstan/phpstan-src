@@ -23,6 +23,24 @@ final class ParserNodeTypeToPHPStanType
 	{
 		if ($type === null) {
 			return new MixedType();
+		} elseif ($type instanceof Identifier && $type->isSpecialClassName()) {
+			// !!!
+			$typeClassName = (string) $type;
+			$lowercasedClassName = strtolower($typeClassName);
+			if ($classReflection !== null && in_array($lowercasedClassName, ['self', 'static'], true)) {
+				if ($lowercasedClassName === 'static') {
+					return new StaticType($classReflection);
+				}
+				$typeClassName = $classReflection->getName();
+			} elseif (
+				$lowercasedClassName === 'parent'
+				&& $classReflection !== null
+				&& $classReflection->getParentClass() !== null
+			) {
+				$typeClassName = $classReflection->getParentClass()->getName();
+			}
+
+			return new ObjectType($typeClassName);
 		} elseif ($type instanceof Name) {
 			$typeClassName = (string) $type;
 			$lowercasedClassName = strtolower($typeClassName);

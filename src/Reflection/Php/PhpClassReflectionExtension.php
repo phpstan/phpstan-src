@@ -839,7 +839,17 @@ final class PhpClassReflectionExtension
 		}
 		$isInternal = $resolvedPhpDoc->isInternal();
 		$isFinal = $resolvedPhpDoc->isFinal();
-		$isPure = $resolvedPhpDoc->isPure();
+		$isPure = null;
+		foreach ($actualDeclaringClass->getAncestors() as $className => $_) {
+			if ($this->signatureMapProvider->hasMethodMetadata($className, $methodReflection->getName())) {
+				$hasSideEffects = $this->signatureMapProvider->getMethodMetadata($className, $methodReflection->getName())['hasSideEffects'];
+				$isPure = !$hasSideEffects;
+
+				break;
+			}
+		}
+
+		$isPure ??= $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 		$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;

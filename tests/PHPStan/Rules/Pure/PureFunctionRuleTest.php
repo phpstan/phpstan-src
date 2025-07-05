@@ -174,4 +174,10 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13201(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13201.php'], []);
+	}
+
 }

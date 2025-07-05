@@ -3,13 +3,11 @@
 interface BackedEnum extends UnitEnum
 {
 	/**
-	 * @return static
 	 * @pure
 	 */
 	public static function from(int|string $value): static;
 
 	/**
-	 * @return ?static
 	 * @pure
 	 */
 	public static function tryFrom(int|string $value): ?static;

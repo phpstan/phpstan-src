@@ -41,8 +41,8 @@ use function is_dir;
 use function is_string;
 use function preg_match;
 use function sprintf;
+use function str_starts_with;
 use function stripos;
-use function strpos;
 use function strtolower;
 use function version_compare;
 use const PHP_VERSION;
@@ -424,7 +424,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			// ignore shebang line
-			if (strpos($firstLine, '#!') === 0) {
+			if (str_starts_with($firstLine, '#!')) {
 				$firstLine = fgets($f);
 				if ($firstLine === false) {
 					return false;

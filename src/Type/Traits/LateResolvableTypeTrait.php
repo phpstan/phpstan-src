@@ -584,11 +584,7 @@ trait LateResolvableTypeTrait
 
 	public function resolve(): Type
 	{
-		if ($this->result === null) {
-			return $this->result = $this->getResult();
-		}
-
-		return $this->result;
+		return $this->result ??= $this->getResult();
 	}
 
 	abstract protected function getResult(): Type;

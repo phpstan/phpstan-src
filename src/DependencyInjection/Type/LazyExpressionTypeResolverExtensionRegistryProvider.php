@@ -19,13 +19,9 @@ final class LazyExpressionTypeResolverExtensionRegistryProvider implements Expre
 
 	public function getRegistry(): ExpressionTypeResolverExtensionRegistry
 	{
-		if ($this->registry === null) {
-			$this->registry = new ExpressionTypeResolverExtensionRegistry(
-				$this->container->getServicesByTag(BrokerFactory::EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG),
-			);
-		}
-
-		return $this->registry;
+		return $this->registry ??= new ExpressionTypeResolverExtensionRegistry(
+			$this->container->getServicesByTag(BrokerFactory::EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG),
+		);
 	}
 
 }

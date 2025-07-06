@@ -68,20 +68,17 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
-		if ($this->variants === null) {
-			$this->variants = [
-				new ExtendedFunctionVariant(
-					$this->templateTypeMap,
-					null,
-					$this->parameters,
-					$this->isVariadic,
-					$this->returnType,
-					$this->returnType,
-					new MixedType(),
-				),
-			];
-		}
-		return $this->variants;
+		return $this->variants ??= [
+			new ExtendedFunctionVariant(
+				$this->templateTypeMap,
+				null,
+				$this->parameters,
+				$this->isVariadic,
+				$this->returnType,
+				$this->returnType,
+				new MixedType(),
+			),
+		];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

@@ -76,11 +76,7 @@ final class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements Dynamic
 
 	private function getHelper(): ImpossibleCheckTypeHelper
 	{
-		if ($this->helper === null) {
-			$this->helper = new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->universalObjectCratesClasses, $this->treatPhpDocTypesAsCertain);
-		}
-
-		return $this->helper;
+		return $this->helper ??= new ImpossibleCheckTypeHelper($this->reflectionProvider, $this->typeSpecifier, $this->universalObjectCratesClasses, $this->treatPhpDocTypesAsCertain);
 	}
 
 }

@@ -28,14 +28,10 @@ final class TypeAlias
 
 	public function resolve(TypeNodeResolver $typeNodeResolver): Type
 	{
-		if ($this->resolvedType === null) {
-			$this->resolvedType = $typeNodeResolver->resolve(
-				$this->typeNode,
-				$this->nameScope,
-			);
-		}
-
-		return $this->resolvedType;
+		return $this->resolvedType ??= $typeNodeResolver->resolve(
+			$this->typeNode,
+			$this->nameScope,
+		);
 	}
 
 }

@@ -198,21 +198,17 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 */
 	public function getVariants(): array
 	{
-		if ($this->variants === null) {
-			$this->variants = [
-				new ExtendedFunctionVariant(
-					$this->templateTypeMap,
-					null,
-					$this->getParameters(),
-					$this->isVariadic(),
-					$this->getReturnType(),
-					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType(),
-				),
-			];
-		}
-
-		return $this->variants;
+		return $this->variants ??= [
+			new ExtendedFunctionVariant(
+				$this->templateTypeMap,
+				null,
+				$this->getParameters(),
+				$this->isVariadic(),
+				$this->getReturnType(),
+				$this->getPhpDocReturnType(),
+				$this->getNativeReturnType(),
+			),
+		];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor
@@ -230,20 +226,16 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 */
 	private function getParameters(): array
 	{
-		if ($this->parameters === null) {
-			$this->parameters = array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
-				$this->initializerExprTypeResolver,
-				$reflection,
-				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-				$this->getDeclaringClass(),
-				$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
-				$this->immediatelyInvokedCallableParameters[$reflection->getName()] ?? TrinaryLogic::createMaybe(),
-				$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
-				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
-			), $this->reflection->getParameters());
-		}
-
-		return $this->parameters;
+		return $this->parameters ??= array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+			$this->initializerExprTypeResolver,
+			$reflection,
+			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+			$this->getDeclaringClass(),
+			$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
+			$this->immediatelyInvokedCallableParameters[$reflection->getName()] ?? TrinaryLogic::createMaybe(),
+			$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
+			$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
+		), $this->reflection->getParameters());
 	}
 
 	private function isVariadic(): bool
@@ -346,14 +338,10 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	private function getNativeReturnType(): Type
 	{
-		if ($this->nativeReturnType === null) {
-			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
-				$this->reflection->getReturnType(),
-				selfClass: $this->declaringClass,
-			);
-		}
-
-		return $this->nativeReturnType;
+		return $this->nativeReturnType ??= TypehintHelper::decideTypeFromReflection(
+			$this->reflection->getReturnType(),
+			selfClass: $this->declaringClass,
+		);
 	}
 
 	public function getDeprecatedDescription(): ?string

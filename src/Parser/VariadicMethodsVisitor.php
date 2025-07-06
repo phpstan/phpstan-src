@@ -53,9 +53,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
-		if ($this->topNode === null) {
-			$this->topNode = $node;
-		}
+		$this->topNode ??= $node;
 
 		if ($node instanceof Node\Stmt\Namespace_ && $node->name !== null) {
 			$this->inNamespace = $node->name->toString();

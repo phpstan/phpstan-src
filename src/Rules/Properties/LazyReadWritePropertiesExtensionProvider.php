@@ -18,11 +18,7 @@ final class LazyReadWritePropertiesExtensionProvider implements ReadWritePropert
 
 	public function getExtensions(): array
 	{
-		if ($this->extensions === null) {
-			$this->extensions = $this->container->getServicesByTag(ReadWritePropertiesExtensionProvider::EXTENSION_TAG);
-		}
-
-		return $this->extensions;
+		return $this->extensions ??= $this->container->getServicesByTag(ReadWritePropertiesExtensionProvider::EXTENSION_TAG);
 	}
 
 }

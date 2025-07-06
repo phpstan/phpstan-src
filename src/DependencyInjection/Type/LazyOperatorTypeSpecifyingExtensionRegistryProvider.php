@@ -19,13 +19,9 @@ final class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements Opera
 
 	public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
 	{
-		if ($this->registry === null) {
-			$this->registry = new OperatorTypeSpecifyingExtensionRegistry(
-				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
-			);
-		}
-
-		return $this->registry;
+		return $this->registry ??= new OperatorTypeSpecifyingExtensionRegistry(
+			$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
+		);
 	}
 
 }

@@ -18,11 +18,7 @@ final class LazyAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedC
 
 	public function getExtensions(): array
 	{
-		if ($this->extensions === null) {
-			$this->extensions = $this->container->getServicesByTag(AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG);
-		}
-
-		return $this->extensions;
+		return $this->extensions ??= $this->container->getServicesByTag(AlwaysUsedClassConstantsExtensionProvider::EXTENSION_TAG);
 	}
 
 }

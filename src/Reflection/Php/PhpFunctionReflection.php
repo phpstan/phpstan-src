@@ -92,21 +92,17 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function getVariants(): array
 	{
-		if ($this->variants === null) {
-			$this->variants = [
-				new ExtendedFunctionVariant(
-					$this->templateTypeMap,
-					null,
-					$this->getParameters(),
-					$this->isVariadic(),
-					$this->getReturnType(),
-					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType(),
-				),
-			];
-		}
-
-		return $this->variants;
+		return $this->variants ??= [
+			new ExtendedFunctionVariant(
+				$this->templateTypeMap,
+				null,
+				$this->getParameters(),
+				$this->isVariadic(),
+				$this->getReturnType(),
+				$this->getPhpDocReturnType(),
+				$this->getNativeReturnType(),
+			),
+		];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

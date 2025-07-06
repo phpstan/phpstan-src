@@ -105,21 +105,17 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	public function getVariants(): array
 	{
-		if ($this->variants === null) {
-			$this->variants = [
-				new ExtendedFunctionVariant(
-					$this->getTemplateTypeMap(),
-					$this->getResolvedTemplateTypeMap(),
-					$this->getParameters(),
-					$this->isVariadic(),
-					$this->getReturnType(),
-					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType(),
-				),
-			];
-		}
-
-		return $this->variants;
+		return $this->variants ??= [
+			new ExtendedFunctionVariant(
+				$this->getTemplateTypeMap(),
+				$this->getResolvedTemplateTypeMap(),
+				$this->getParameters(),
+				$this->isVariadic(),
+				$this->getReturnType(),
+				$this->getPhpDocReturnType(),
+				$this->getNativeReturnType(),
+			),
+		];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

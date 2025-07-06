@@ -104,15 +104,11 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 
 	public function getNativeType(): Type
 	{
-		if ($this->nativeType === null) {
-			$this->nativeType = TypehintHelper::decideTypeFromReflection(
-				$this->reflection->getType(),
-				selfClass: $this->declaringClass,
-				isVariadic: $this->isVariadic(),
-			);
-		}
-
-		return $this->nativeType;
+		return $this->nativeType ??= TypehintHelper::decideTypeFromReflection(
+			$this->reflection->getType(),
+			selfClass: $this->declaringClass,
+			isVariadic: $this->isVariadic(),
+		);
 	}
 
 	public function getDefaultValue(): ?Type

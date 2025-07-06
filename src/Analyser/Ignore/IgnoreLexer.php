@@ -41,9 +41,7 @@ final class IgnoreLexer
 	 */
 	public function tokenize(string $input): array
 	{
-		if ($this->regexp === null) {
-			$this->regexp = $this->generateRegexp();
-		}
+		$this->regexp ??= $this->generateRegexp();
 
 		$matches = Strings::matchAll($input, $this->regexp, PREG_SET_ORDER);
 

@@ -733,12 +733,9 @@ final class ResolvedPhpDocBlock
 
 	public function isDeprecated(): bool
 	{
-		if ($this->isDeprecated === null) {
-			$this->isDeprecated = $this->phpDocNodeResolver->resolveIsDeprecated(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isDeprecated;
+		return $this->isDeprecated ??= $this->phpDocNodeResolver->resolveIsDeprecated(
+			$this->phpDocNode,
+		);
 	}
 
 	/**
@@ -746,52 +743,37 @@ final class ResolvedPhpDocBlock
 	 */
 	public function isNotDeprecated(): bool
 	{
-		if ($this->isNotDeprecated === null) {
-			$this->isNotDeprecated = $this->phpDocNodeResolver->resolveIsNotDeprecated(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isNotDeprecated;
+		return $this->isNotDeprecated ??= $this->phpDocNodeResolver->resolveIsNotDeprecated(
+			$this->phpDocNode,
+		);
 	}
 
 	public function isInternal(): bool
 	{
-		if ($this->isInternal === null) {
-			$this->isInternal = $this->phpDocNodeResolver->resolveIsInternal(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isInternal;
+		return $this->isInternal ??= $this->phpDocNodeResolver->resolveIsInternal(
+			$this->phpDocNode,
+		);
 	}
 
 	public function isFinal(): bool
 	{
-		if ($this->isFinal === null) {
-			$this->isFinal = $this->phpDocNodeResolver->resolveIsFinal(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isFinal;
+		return $this->isFinal ??= $this->phpDocNodeResolver->resolveIsFinal(
+			$this->phpDocNode,
+		);
 	}
 
 	public function hasConsistentConstructor(): bool
 	{
-		if ($this->hasConsistentConstructor === null) {
-			$this->hasConsistentConstructor = $this->phpDocNodeResolver->resolveHasConsistentConstructor(
-				$this->phpDocNode,
-			);
-		}
-		return $this->hasConsistentConstructor;
+		return $this->hasConsistentConstructor ??= $this->phpDocNodeResolver->resolveHasConsistentConstructor(
+			$this->phpDocNode,
+		);
 	}
 
 	public function acceptsNamedArguments(): bool
 	{
-		if ($this->acceptsNamedArguments === null) {
-			$this->acceptsNamedArguments = $this->phpDocNodeResolver->resolveAcceptsNamedArguments(
-				$this->phpDocNode,
-			);
-		}
-		return $this->acceptsNamedArguments;
+		return $this->acceptsNamedArguments ??= $this->phpDocNodeResolver->resolveAcceptsNamedArguments(
+			$this->phpDocNode,
+		);
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
@@ -826,33 +808,23 @@ final class ResolvedPhpDocBlock
 
 	public function isReadOnly(): bool
 	{
-		if ($this->isReadOnly === null) {
-			$this->isReadOnly = $this->phpDocNodeResolver->resolveIsReadOnly(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isReadOnly;
+		return $this->isReadOnly ??= $this->phpDocNodeResolver->resolveIsReadOnly(
+			$this->phpDocNode,
+		);
 	}
 
 	public function isImmutable(): bool
 	{
-		if ($this->isImmutable === null) {
-			$this->isImmutable = $this->phpDocNodeResolver->resolveIsImmutable(
-				$this->phpDocNode,
-			);
-		}
-		return $this->isImmutable;
+		return $this->isImmutable ??= $this->phpDocNodeResolver->resolveIsImmutable(
+			$this->phpDocNode,
+		);
 	}
 
 	public function isAllowedPrivateMutation(): bool
 	{
-		if ($this->isAllowedPrivateMutation === null) {
-			$this->isAllowedPrivateMutation = $this->phpDocNodeResolver->resolveAllowPrivateMutation(
-				$this->phpDocNode,
-			);
-		}
-
-		return $this->isAllowedPrivateMutation;
+		return $this->isAllowedPrivateMutation ??= $this->phpDocNodeResolver->resolveAllowPrivateMutation(
+			$this->phpDocNode,
+		);
 	}
 
 	/**

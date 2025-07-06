@@ -101,15 +101,11 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function getReadableType(): Type
 	{
-		if ($this->type === null) {
-			$this->type = TypehintHelper::decideTypeFromReflection(
-				$this->nativeType,
-				$this->phpDocType,
-				$this->declaringClass,
-			);
-		}
-
-		return $this->type;
+		return $this->type ??= TypehintHelper::decideTypeFromReflection(
+			$this->nativeType,
+			$this->phpDocType,
+			$this->declaringClass,
+		);
 	}
 
 	public function getWritableType(): Type
@@ -172,14 +168,10 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 
 	public function getNativeType(): Type
 	{
-		if ($this->finalNativeType === null) {
-			$this->finalNativeType = TypehintHelper::decideTypeFromReflection(
-				$this->nativeType,
-				selfClass: $this->declaringClass,
-			);
-		}
-
-		return $this->finalNativeType;
+		return $this->finalNativeType ??= TypehintHelper::decideTypeFromReflection(
+			$this->nativeType,
+			selfClass: $this->declaringClass,
+		);
 	}
 
 	public function isReadable(): bool

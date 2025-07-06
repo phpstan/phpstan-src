@@ -1,0 +1,113 @@
+<?php // lint >= 8.0
+
+namespace MemoizationProperty;
+
+final class A
+{
+	private ?string $foo = null;
+	private ?string $bar = null;
+	private string|false $buz = false;
+
+	public function getFoo()
+	{
+		if ($this->foo === null) {
+			$this->foo = random_bytes(1);
+		}
+
+		return $this->foo;
+	}
+
+	public function getBar()
+	{
+		if ($this->bar === null) {
+			$this->bar = random_bytes(1);
+		}
+
+		return $this->bar;
+	}
+
+	/** Not applicable because it has an else clause in the if. */
+	public function getBarElse()
+	{
+		if ($this->bar === null) {
+			$this->bar = random_bytes(1);
+		} else {
+			// no-op
+		}
+
+		return $this->bar;
+	}
+
+	/** Not applicable because it has an elseif clause in the if. */
+	public function getBarElseIf()
+	{
+		if ($this->bar === null) {
+			$this->bar = random_bytes(1);
+		} elseif (false) {
+			// no-op
+		}
+
+		return $this->bar;
+	}
+
+	public function getBarReceiveParam(int $length)
+	{
+		if ($this->bar === null) {
+			$this->bar = random_bytes($length);
+		}
+
+		return $this->bar;
+	}
+
+	/** Not applicable because the body of if is not just an assignment. */
+	public function getBarComplex()
+	{
+		if ($this->bar === null) {
+			$rand = random_bytes(1);
+			$this->bar = $rand;
+		}
+
+		return $this->bar;
+	}
+
+	/** Not applicable because it is comparing a property with a non-null value. */
+	public function getBuz()
+	{
+		if ($this->buz === false) {
+			$this->buz = random_bytes(1);
+		}
+
+		return $this->buz;
+	}
+
+	public function printFoo(): void
+	{
+		if ($this->foo === null) {
+			$this->foo = random_bytes(1);
+		}
+
+		echo $this->foo;
+	}
+
+	private static ?self $singleton = null;
+
+	public static function singleton(): self
+	{
+		if (self::$singleton === null) {
+			self::$singleton = new self();
+		}
+
+		return self::$singleton;
+	}
+
+	/** Not applicable because property names are not matched. */
+	public static function singletonBadProperty(): self
+	{
+		if (self::$singleton === null) {
+			self::$singletom = new self();
+		}
+
+		return self::$singleton;
+	}
+
+}

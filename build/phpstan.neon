@@ -123,6 +123,7 @@ rules:
 	- PHPStan\Build\NamedArgumentsRule
 	- PHPStan\Build\OverrideAttributeThirdPartyMethodRule
 	- PHPStan\Build\SkipTestsWithRequiresPhpAttributeRule
+	- PHPStan\Build\MemoizationPropertyRule
 
 services:
 	-

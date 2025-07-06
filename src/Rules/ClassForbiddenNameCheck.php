@@ -59,11 +59,12 @@ final class ClassForbiddenNameCheck
 				$projectName = $project;
 				$withoutPrefixClassName = substr($className, strlen($prefix));
 
-				if (strpos($withoutPrefixClassName, '\\') === false) {
+				$pos = strpos($withoutPrefixClassName, '\\');
+				if ($pos === false) {
 					continue;
 				}
 
-				$withoutPrefixClassName = substr($withoutPrefixClassName, strpos($withoutPrefixClassName, '\\'));
+				$withoutPrefixClassName = substr($withoutPrefixClassName, $pos);
 			}
 
 			if ($projectName === null) {

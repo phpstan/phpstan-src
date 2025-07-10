@@ -51,6 +51,7 @@ return [
 		'ReflectionProperty::isInitialized' => ['bool', 'object='=>'?object'],
 		'ReflectionReference::fromArrayElement' => ['?ReflectionReference', 'array'=>'array', 'key'=>'int|string'],
 		'ReflectionReference::getId' => ['string'],
+		'SplFileObject::fwrite' => ['int|false', 'str'=>'string', 'length='=>'int'],
 		'SQLite3Stmt::getSQL' => ['string', 'expanded='=>'bool'],
 		'strip_tags' => ['string', 'str'=>'string', 'allowable_tags='=>'string|array<int, string>'],
 		'WeakReference::create' => ['WeakReference', 'referent'=>'object'],

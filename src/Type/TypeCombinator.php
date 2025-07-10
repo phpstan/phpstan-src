@@ -1159,7 +1159,7 @@ final class TypeCombinator
 		}
 
 		usort($types, static function (Type $a, Type $b): int {
-			// move subtractables with subtracts before those without to avoid loosing them in the union logic
+			// move subtractables with subtracts before those without to avoid losing them in the union logic
 			if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
 				return -1;
 			}

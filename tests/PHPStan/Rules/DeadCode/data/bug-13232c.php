@@ -6,7 +6,7 @@ final class HelloWorld
 {
 	public function sayHello(): void
 	{
-		echo 'Hello, ' . $this->mightReturnNever()
+		echo 'Hello, ' . $this->returnNever()
 			. ' no way';
 
 		echo 'this will never happen';
@@ -14,7 +14,7 @@ final class HelloWorld
 
 	static public function sayStaticHello(): void
 	{
-		echo 'Hello, ' . self::staticMightReturnNever()
+		echo 'Hello, ' . self::staticReturnNever()
 			. ' no way';
 
 		echo 'this will never happen';
@@ -22,7 +22,7 @@ final class HelloWorld
 
 	public function sayNullsafeHello(?self $x): void
 	{
-		echo 'Hello, ' . $x?->mightReturnNever()
+		echo 'Hello, ' . $x?->returnNever()
 			. ' no way';
 
 		echo 'this might happen, in case $x is null';
@@ -31,20 +31,20 @@ final class HelloWorld
 	public function sayMaybeHello(): void
 	{
 		if (rand(0, 1)) {
-			echo 'Hello, ' . $this->mightReturnNever()
+			echo 'Hello, ' . $this->returnNever()
 				. ' no way';
 		}
 
 		echo 'this might happen';
 	}
 
-	function mightReturnNever(): never
+	function returnNever(): never
 
 	{
 		exit();
 	}
 
-	static function staticMightReturnNever(): never
+	static function staticReturnNever(): never
 	{
 		exit();
 	}

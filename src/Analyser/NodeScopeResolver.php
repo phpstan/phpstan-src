@@ -2854,6 +2854,7 @@ final class NodeScopeResolver
 
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
+				$isAlwaysTerminating = $parametersAcceptor->getReturnType() instanceof NeverType;
 			}
 
 			$result = $this->processArgs(
@@ -3040,6 +3041,7 @@ final class NodeScopeResolver
 
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
+				$isAlwaysTerminating = $parametersAcceptor->getReturnType() instanceof NeverType;
 			}
 			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();

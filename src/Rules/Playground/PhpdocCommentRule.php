@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function str_contains;
 use function str_starts_with;
 
 /**

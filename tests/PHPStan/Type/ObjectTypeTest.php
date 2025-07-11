@@ -557,6 +557,41 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public static function dataHasConstant(): Iterator
+	{
+		yield [
+			new ObjectType(DateTimeImmutable::class),
+			'ATOM',
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			new ObjectType(DateTimeImmutable::class),
+			'CUSTOM',
+			TrinaryLogic::createMaybe(),
+		];
+		yield [
+			new ObjectType(Closure::class), // is final
+			'CUSTOM',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			new ObjectType('SomeNonExistingClass'),
+			'CUSTOM',
+			TrinaryLogic::createMaybe(),
+		];
+	}
+
+	#[DataProvider('dataHasConstant')]
+	public function testHasConstant(ObjectType $type, string $constantName, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $type->hasConstant($constantName);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> hasConstant("%s")', $type->describe(VerbosityLevel::precise()), $constantName),
+		);
+	}
+
 	public function testGetClassReflectionOfGenericClass(): void
 	{
 		$objectType = new ObjectType(Traversable::class);

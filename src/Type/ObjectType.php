@@ -869,14 +869,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function hasConstant(string $constantName): TrinaryLogic
 	{
-		$class = $this->getClassReflection();
-		if ($class === null) {
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		if ($classReflection->hasConstant($constantName)) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ($classReflection->isFinal()) {
 			return TrinaryLogic::createNo();
 		}
 
-		return TrinaryLogic::createFromBoolean(
-			$class->hasConstant($constantName),
-		);
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function getConstant(string $constantName): ClassConstantReflection

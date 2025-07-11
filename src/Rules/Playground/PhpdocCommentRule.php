@@ -37,7 +37,7 @@ final class PhpdocCommentRule implements Rule
 				}
 			}
 
-			if (!Strings::match($comment->getText(), '{(\s|^)@\w+(\s|$)}')) {
+			if (Strings::match($comment->getText(), '{(\s|^)@\w+(\s|$)}') === null) {
 				continue;
 			}
 

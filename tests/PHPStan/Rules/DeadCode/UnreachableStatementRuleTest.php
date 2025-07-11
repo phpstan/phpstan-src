@@ -5,6 +5,7 @@ namespace PHPStan\Rules\DeadCode;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<UnreachableStatementRule>
@@ -251,6 +252,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13232a(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -262,6 +264,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13232b(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -273,6 +276,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13232c(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -288,6 +292,7 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13232d(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;

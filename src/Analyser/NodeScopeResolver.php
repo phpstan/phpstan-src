@@ -2933,7 +2933,7 @@ final class NodeScopeResolver
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-				$exprResult->isAlwaysTerminating()
+				$exprResult->isAlwaysTerminating(),
 			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;
@@ -5804,7 +5804,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 			foreach ($var->items as $i => $arrayItem) {
 				if ($arrayItem === null) {

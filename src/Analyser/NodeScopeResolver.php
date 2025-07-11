@@ -929,12 +929,14 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+
 			if ($earlyTerminationExpr !== null) {
 				return new StatementResult($scope, $hasYield, true, [
 					new StatementExitPoint($stmt, $scope),
 				], $overridingThrowPoints ?? $throwPoints, $impurePoints);
 			}
-			return new StatementResult($scope, $hasYield, false, [], $overridingThrowPoints ?? $throwPoints, $impurePoints);
+			return new StatementResult($scope, $hasYield, $isAlwaysTerminating, [], $overridingThrowPoints ?? $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof Node\Stmt\Namespace_) {
 			if ($stmt->name !== null) {
 				$scope = $scope->enterNamespace($stmt->name->toString());
@@ -2466,13 +2468,14 @@ final class NodeScopeResolver
 					$hasYield = $result->hasYield();
 					$throwPoints = $result->getThrowPoints();
 					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+					$isAlwaysTerminating = $result->isAlwaysTerminating();
 					$scope = $result->getScope();
 
 					if ($expr instanceof AssignRef) {
 						$scope = $scope->exitExpressionAssign($expr->expr);
 					}
 
-					return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints);
+					return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
 				},
 				true,
 			);
@@ -2480,6 +2483,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$vars = $this->getAssignedVariables($expr->var);
 			if (count($vars) > 0) {
 				$varChangedScope = false;
@@ -2511,6 +2515,7 @@ final class NodeScopeResolver
 							$result->hasYield(),
 							$result->getThrowPoints(),
 							$result->getImpurePoints(),
+							isAlwaysTerminating: $result->isAlwaysTerminating(),
 						);
 					}
 
@@ -2522,6 +2527,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			if (
 				($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
 				!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
@@ -5382,12 +5388,14 @@ final class NodeScopeResolver
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
+		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			if (in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $var, 'superglobal', 'assign to superglobal variable', true);
 			}
@@ -5472,6 +5480,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 			if ($enterExpressionAssign) {
 				$scope = $scope->exitExpressionAssign($var);
@@ -5523,6 +5532,7 @@ final class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
@@ -5628,6 +5638,7 @@ final class NodeScopeResolver
 			$hasYield = $objectResult->hasYield();
 			$throwPoints = $objectResult->getThrowPoints();
 			$impurePoints = $objectResult->getImpurePoints();
+			$isAlwaysTerminating = $objectResult->isAlwaysTerminating();
 			$scope = $objectResult->getScope();
 
 			$propertyName = null;
@@ -5638,6 +5649,7 @@ final class NodeScopeResolver
 				$hasYield = $hasYield || $propertyNameResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $propertyNameResult->isAlwaysTerminating();
 				$scope = $propertyNameResult->getScope();
 			}
 
@@ -5646,6 +5658,7 @@ final class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 
 			if ($var->name instanceof Expr && $this->phpVersion->supportsPropertyHooks()) {
@@ -5733,6 +5746,7 @@ final class NodeScopeResolver
 				$hasYield = $propertyNameResult->hasYield();
 				$throwPoints = $propertyNameResult->getThrowPoints();
 				$impurePoints = $propertyNameResult->getImpurePoints();
+				$isAlwaysTerminating = $propertyNameResult->isAlwaysTerminating();
 				$scope = $propertyNameResult->getScope();
 			}
 
@@ -5741,6 +5755,7 @@ final class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 
 			if ($propertyName !== null) {
@@ -5785,6 +5800,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 			foreach ($var->items as $i => $arrayItem) {
 				if ($arrayItem === null) {
@@ -5802,6 +5818,7 @@ final class NodeScopeResolver
 					$hasYield = $hasYield || $keyResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
 					$itemScope = $keyResult->getScope();
 				}
 
@@ -5809,6 +5826,7 @@ final class NodeScopeResolver
 				$hasYield = $hasYield || $valueResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 
 				if ($arrayItem->key === null) {
 					$dimExpr = new Node\Scalar\Int_($i);
@@ -5829,6 +5847,7 @@ final class NodeScopeResolver
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			}
 		} elseif ($var instanceof ExistingArrayDimFetch) {
 			$dimFetchStack = [];
@@ -5907,7 +5926,7 @@ final class NodeScopeResolver
 			}
 		}
 
-		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints);
+		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
 	}
 
 	/**

@@ -2932,8 +2932,7 @@ final class NodeScopeResolver
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-				$exprResult->isAlwaysTerminating(),
+				static fn (): MutatingScope => $scope->filterByFalseyValue($expr)
 			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;

@@ -20,6 +20,14 @@ final class HelloWorld
 		echo 'this will never happen';
 	}
 
+	public function sayNullsafeHello(?self $x): void
+	{
+		echo 'Hello, ' . $x?->mightReturnNever()
+			. ' no way';
+
+		echo 'this might happen, in case $x is null';
+	}
+
 	function mightReturnNever(): never
 
 	{

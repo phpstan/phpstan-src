@@ -842,17 +842,20 @@ final class NodeScopeResolver
 		} elseif ($stmt instanceof Echo_) {
 			$hasYield = false;
 			$throwPoints = [];
+			$isAlwaysTerminating = false;
 			foreach ($stmt->exprs as $echoExpr) {
 				$result = $this->processExprNode($stmt, $echoExpr, $scope, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
+				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			}
 
 			$throwPoints = $overridingThrowPoints ?? $throwPoints;
 			$impurePoints = [
 				new ImpurePoint($scope, $stmt, 'echo', 'echo', true),
 			];
+			return new StatementResult($scope, $hasYield, $isAlwaysTerminating, [], $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof Return_) {
 			if ($stmt->expr !== null) {
 				$result = $this->processExprNode($stmt, $stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -2410,6 +2413,7 @@ final class NodeScopeResolver
 			return $this->processExprNode($stmt, $newExpr, $scope, $nodeCallback, $context);
 		}
 
+		$isAlwaysTerminating = false;
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $context);
 
 		if ($expr instanceof Variable) {
@@ -2593,6 +2597,7 @@ final class NodeScopeResolver
 
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
+				$isAlwaysTerminating = $parametersAcceptor->getReturnType() instanceof NeverType;
 			}
 			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
@@ -3302,6 +3307,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$result = $this->processExprNode($stmt, $expr->right, $scope, $nodeCallback, $context->enterDeep());
 			if (
 				($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
@@ -3313,6 +3319,7 @@ final class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 		} elseif ($expr instanceof Expr\Include_) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
@@ -3998,6 +4005,7 @@ final class NodeScopeResolver
 			$impurePoints,
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			$isAlwaysTerminating,
 		);
 	}
 

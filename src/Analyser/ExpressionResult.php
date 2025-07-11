@@ -28,6 +28,7 @@ final class ExpressionResult
 		private array $impurePoints,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
+		private bool $isAlwaysTerminating = false,
 	)
 	{
 		$this->truthyScopeCallback = $truthyScopeCallback;
@@ -88,6 +89,11 @@ final class ExpressionResult
 		$callback = $this->falseyScopeCallback;
 		$this->falseyScope = $callback();
 		return $this->falseyScope;
+	}
+
+	public function isAlwaysTerminating(): bool
+	{
+		return $this->isAlwaysTerminating;
 	}
 
 }

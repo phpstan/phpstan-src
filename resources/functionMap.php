@@ -482,7 +482,7 @@ return [
 'bson_encode' => ['string', 'anything'=>'mixed'],
 'bzclose' => ['bool', 'bz'=>'resource'],
 'bzcompress' => ['string|int', 'source'=>'string', 'blocksize100k='=>'int', 'workfactor='=>'int'],
-'bzdecompress' => ['string|false', 'source'=>'string', 'small='=>'int'],
+'bzdecompress' => ['string|int|false', 'source'=>'string', 'small='=>'int'],
 'bzerrno' => ['int', 'bz'=>'resource'],
 'bzerror' => ['array', 'bz'=>'resource'],
 'bzerrstr' => ['string', 'bz'=>'resource'],

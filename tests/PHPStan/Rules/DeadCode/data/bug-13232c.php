@@ -28,6 +28,16 @@ final class HelloWorld
 		echo 'this might happen, in case $x is null';
 	}
 
+	public function sayMaybeHello(): void
+	{
+		if (rand(0, 1)) {
+			echo 'Hello, ' . $this->mightReturnNever()
+				. ' no way';
+		}
+
+		echo 'this might happen';
+	}
+
 	function mightReturnNever(): never
 
 	{

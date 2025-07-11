@@ -2933,6 +2933,7 @@ final class NodeScopeResolver
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+				$exprResult->isAlwaysTerminating()
 			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;

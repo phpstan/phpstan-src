@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
@@ -76,7 +77,11 @@ final class ClassConstantRule implements Rule
 				$type = $typeResult->getType();
 
 				if (!$type->isString()->yes()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Cannot fetch class constant with a non-stringable type %s.', $nameType->describe(VerbosityLevel::precise())))
+					$className = $node->class instanceof Name
+						? $scope->resolveName($node->class)
+						: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
+
+					$errors[] = RuleErrorBuilder::message(sprintf('Cannot fetch constant from %s with a non-stringable type %s.', $className, $nameType->describe(VerbosityLevel::precise())))
 						->identifier('classConstant.fetchInvalidExpression')
 						->build();
 				}

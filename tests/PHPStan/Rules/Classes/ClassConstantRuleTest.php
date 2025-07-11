@@ -449,7 +449,7 @@ class ClassConstantRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type object.',
+				'Cannot fetch constant from ClassConstantDynamicAccess\Foo with a non-stringable type object.',
 				19,
 			],
 			[
@@ -494,32 +494,52 @@ class ClassConstantRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/dynamic-constant-stringable-access.php'], [
 			[
-				'Cannot fetch class constant with a non-stringable type mixed.',
-				13,
-			],
-			[
-				'Cannot fetch class constant with a non-stringable type string|null.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type mixed.',
 				14,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type Stringable|null.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type string|null.',
 				15,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type int.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type Stringable|null.',
 				16,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type int|null.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type int.',
 				17,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type DateTime|string.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type int|null.',
 				18,
 			],
 			[
-				'Cannot fetch class constant with a non-stringable type 1111.',
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type DateTime|string.',
 				19,
+			],
+			[
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type 1111.',
+				20,
+			],
+			[
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type Stringable.',
+				22,
+			],
+			[
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Foo with a non-stringable type mixed.',
+				32,
+			],
+			[
+				'Cannot fetch constant from ClassConstantDynamicStringableAccess\Bar with a non-stringable type mixed.',
+				33,
+			],
+			[
+				'Cannot fetch constant from DateTime|DateTimeImmutable with a non-stringable type mixed.',
+				38,
+			],
+			[
+				'Cannot fetch constant from object with a non-stringable type mixed.',
+				39,
 			],
 		]);
 	}

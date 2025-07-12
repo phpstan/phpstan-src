@@ -17,9 +17,6 @@ conditionalTags:
 
 services:
 	-
-		class: PHPStan\Rules\Classes\ClassConstantRule
-
-	-
 		class: PHPStan\Rules\Classes\NewStaticInAbstractClassStaticMethodRule
 
 	-

@@ -9,6 +9,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
@@ -43,7 +44,8 @@ final class ClassConstantRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
-		private bool $checkNonStringableDynamicAccess = true,
+		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
+		private bool $checkNonStringableDynamicAccess,
 	)
 	{
 	}

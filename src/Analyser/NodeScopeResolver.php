@@ -3211,6 +3211,7 @@ final class NodeScopeResolver
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof ArrayDimFetch) {

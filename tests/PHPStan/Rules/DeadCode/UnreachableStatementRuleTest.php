@@ -261,6 +261,10 @@ class UnreachableStatementRuleTest extends RuleTestCase
 				'Unreachable statement - code above always terminates.',
 				11,
 			],
+			[
+				'Unreachable statement - code above always terminates.',
+				17,
+			],
 		]);
 	}
 

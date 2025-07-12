@@ -10,6 +10,14 @@ final class HelloWorld
 			. ' no way';
 		echo 'this will never happen';
 	}
+
+	public function sayHo(): void
+	{
+		echo "Hello, {$this->neverReturnsMethod()} no way";
+		echo 'this will never happen';
+	}
+
+	function neverReturnsMethod(): never {}
 }
 function neverReturns(): never {}
 

@@ -32,6 +32,13 @@ final class HelloWorld
 		echo 'this will never happen';
 	}
 
+	public function sayHuu(): void
+	{
+		$x = [
+			$this->neverReturnsMethod()
+		];
+		echo 'this will never happen';
+	}
 
 	function neverReturnsMethod(): never {
 		exit();

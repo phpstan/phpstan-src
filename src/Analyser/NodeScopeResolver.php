@@ -2935,7 +2935,7 @@ final class NodeScopeResolver
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr)
+				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof StaticCall) {
 			$hasYield = false;
@@ -3247,6 +3247,7 @@ final class NodeScopeResolver
 					$hasYield = $hasYield || $keyResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
 					$scope = $keyResult->getScope();
 				}
 
@@ -3254,6 +3255,7 @@ final class NodeScopeResolver
 				$hasYield = $hasYield || $valueResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 				$scope = $valueResult->getScope();
 			}
 			$nodeCallback(new LiteralArrayNode($expr, $itemNodes), $scope);

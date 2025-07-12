@@ -69,9 +69,6 @@ final class ProcessPromise
 			}
 
 			if ($exitCode === 0) {
-				if ($stdOut === false) {
-					$stdOut = '';
-				}
 				$this->deferred->resolve($stdOut);
 				return;
 			}

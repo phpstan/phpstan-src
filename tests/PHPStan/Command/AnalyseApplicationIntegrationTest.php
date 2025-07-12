@@ -93,10 +93,6 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 		rewind($output->getStream());
 
 		$contents = stream_get_contents($output->getStream());
-		if ($contents === false) {
-			throw new ShouldNotHappenException();
-		}
-
 		$this->assertSame($expectedStatusCode, $statusCode, $contents);
 
 		return $contents;

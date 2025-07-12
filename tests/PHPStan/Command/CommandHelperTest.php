@@ -136,9 +136,6 @@ class CommandHelperTest extends TestCase
 			if (!$expectException) {
 				rewind($output->getStream());
 				$contents = stream_get_contents($output->getStream());
-				if ($contents === false) {
-					throw new ShouldNotHappenException();
-				}
 				$this->fail($contents);
 			}
 		}
@@ -146,9 +143,6 @@ class CommandHelperTest extends TestCase
 		rewind($output->getStream());
 
 		$contents = stream_get_contents($output->getStream());
-		if ($contents === false) {
-			throw new ShouldNotHappenException();
-		}
 		$this->assertStringContainsString($expectedOutput, $contents);
 
 		if (isset($result)) {

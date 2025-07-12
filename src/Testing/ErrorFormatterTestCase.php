@@ -75,10 +75,6 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 		rewind($this->getOutputStream($decorated, $verbose)->getStream());
 
 		$contents = stream_get_contents($this->getOutputStream($decorated, $verbose)->getStream());
-		if ($contents === false) {
-			throw new ShouldNotHappenException();
-		}
-
 		return $this->rtrimMultiline($contents);
 	}
 

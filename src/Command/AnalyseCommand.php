@@ -746,9 +746,6 @@ final class AnalyseCommand extends Command
 		$stream = $streamOutput->getStream();
 		rewind($stream);
 		$baselineContents = stream_get_contents($stream);
-		if ($baselineContents === false) {
-			throw new ShouldNotHappenException();
-		}
 
 		try {
 			DirectoryCreator::ensureDirectoryExists($baselineFileDirectory, 0644);

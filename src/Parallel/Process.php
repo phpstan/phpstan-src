@@ -9,7 +9,6 @@ use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableStreamInterface;
 use Throwable;
 use function fclose;
-use function is_string;
 use function rewind;
 use function sprintf;
 use function stream_get_contents;
@@ -73,16 +72,11 @@ final class Process
 
 			$output = '';
 			rewind($this->stdOut);
-			$stdOut = stream_get_contents($this->stdOut);
-			if (is_string($stdOut)) {
-				$output .= $stdOut;
-			}
+			$output .= stream_get_contents($this->stdOut);
 
 			rewind($this->stdErr);
-			$stdErr = stream_get_contents($this->stdErr);
-			if (is_string($stdErr)) {
-				$output .= $stdErr;
-			}
+			$output .= stream_get_contents($this->stdErr);
+
 			$onExit($exitCode, $output);
 			fclose($this->stdOut);
 			fclose($this->stdErr);

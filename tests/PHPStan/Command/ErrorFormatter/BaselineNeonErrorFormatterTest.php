@@ -437,10 +437,6 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		rewind($outputStream->getStream());
 
 		$content = stream_get_contents($outputStream->getStream());
-		if ($content === false) {
-			throw new ShouldNotHappenException();
-		}
-
 		if ($expectedNewlinesCount > 0) {
 			Assert::assertSame(str_repeat("\n", $expectedNewlinesCount), substr($content, -$expectedNewlinesCount));
 		}

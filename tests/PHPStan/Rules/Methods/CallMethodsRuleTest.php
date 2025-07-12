@@ -3572,4 +3572,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3396(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/data/bug-3396.php'], [
+			[
+				'Parameter #1 $s of method Bug3396\HelloWorld::takesString() expects string, string|false given.',
+				18,
+			],
+		]);
+	}
+
 }

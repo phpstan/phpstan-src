@@ -67,14 +67,14 @@ final class ClassConstantRule implements Rule
 			}
 
 			if ($this->checkNonStringableDynamicAccess) {
-				$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+				$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
 					$node->name,
 					'',
 					static fn (Type $type) => $type->isString()->yes(),
 				);
 
-				$type = $typeResult->getType();
+				$type = $nameTypeResult->getType();
 
 				if (!$type->isString()->yes()) {
 					$className = $node->class instanceof Name

@@ -81,8 +81,8 @@ final class ClassConstantRule implements Rule
 						? $scope->resolveName($node->class)
 						: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
 
-					$errors[] = RuleErrorBuilder::message(sprintf('Cannot fetch constant from %s with a non-stringable type %s.', $className, $nameType->describe(VerbosityLevel::precise())))
-						->identifier('classConstant.fetchInvalidExpression')
+					$errors[] = RuleErrorBuilder::message(sprintf('Class constant name for %s must be a string, but %s was given.', $className, $nameType->describe(VerbosityLevel::precise())))
+						->identifier('classConstant.nameNotString')
 						->build();
 				}
 			}

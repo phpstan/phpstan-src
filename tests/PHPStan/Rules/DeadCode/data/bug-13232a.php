@@ -23,6 +23,16 @@ final class HelloWorld
 		echo 'this will never happen';
 	}
 
+	public function sayHe(): void
+	{
+		$callable = function (): never {
+			exit();
+		};
+		echo sprintf("Hello, %s no way", $callable);
+		echo 'this will never happen';
+	}
+
+
 	function neverReturnsMethod(): never {
 		exit();
 	}

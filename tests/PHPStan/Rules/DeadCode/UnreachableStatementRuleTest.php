@@ -253,6 +253,18 @@ class UnreachableStatementRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1')]
+	public function testBug11909(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-11909.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				10,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13232a(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;

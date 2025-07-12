@@ -4,6 +4,12 @@ namespace Bug13232a;
 
 final class HelloWorld
 {
+	public function sayHa(): void
+	{
+		echo sprintf("Hello, %s no way", $this->neverReturnsMethod());
+		echo 'this will never happen';
+	}
+
 	public function sayHi(): void
 	{
 		echo 'Hello, ' . neverReturns()
@@ -17,7 +23,11 @@ final class HelloWorld
 		echo 'this will never happen';
 	}
 
-	function neverReturnsMethod(): never {}
+	function neverReturnsMethod(): never {
+		exit();
+	}
 }
-function neverReturns(): never {}
+function neverReturns(): never {
+	exit();
+}
 

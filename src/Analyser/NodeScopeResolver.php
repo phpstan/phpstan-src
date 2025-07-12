@@ -2554,6 +2554,7 @@ final class NodeScopeResolver
 				$scope = $nameResult->getScope();
 				$throwPoints = $nameResult->getThrowPoints();
 				$impurePoints = $nameResult->getImpurePoints();
+				$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 				if (
 					$nameType->isObject()->yes()
 					&& $nameType->isCallable()->yes()
@@ -2569,6 +2570,7 @@ final class NodeScopeResolver
 					);
 					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $invokeResult->isAlwaysTerminating();
 				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
 					$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
 					if (!$this->implicitThrows) {
@@ -2604,13 +2606,14 @@ final class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+				$isAlwaysTerminating = $isAlwaysTerminating || $returnType instanceof NeverType && $returnType->isExplicit();
 			}
 			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 
 			if ($functionReflection !== null) {
 				$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $expr, $scope);
@@ -5012,6 +5015,7 @@ final class NodeScopeResolver
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
+		$isAlwaysTerminating = false;
 		foreach ($args as $i => $arg) {
 			$assignByReference = false;
 			$parameter = null;
@@ -5161,6 +5165,7 @@ final class NodeScopeResolver
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $nodeCallback, $context->enterDeep());
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
 				$scope = $exprResult->getScope();
 				$hasYield = $hasYield || $exprResult->hasYield();
 
@@ -5285,7 +5290,7 @@ final class NodeScopeResolver
 			}
 		}
 
-		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints);
+		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
 	}
 
 	/**

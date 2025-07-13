@@ -19,7 +19,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, true),
+			new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, true, true),
 		);
 	}
 
@@ -94,6 +94,21 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	public function testBug4492(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4492.php'], []);
+	}
+
+	public function testDynamicStringableAccess(): void
+	{
+		// All warnings are reported by the AccessPropertiesRule.
+		// The AccessPropertiesInAssignRule does not report any warnings.
+		$this->analyse([__DIR__ . '/data/dynamic-stringable-access.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testDynamicStringableNullsafeAccess(): void
+	{
+		// All warnings are reported by the AccessPropertiesRule.
+		// The AccessPropertiesInAssignRule does not report any warnings.
+		$this->analyse([__DIR__ . '/data/dynamic-stringable-nullsafe-access.php'], []);
 	}
 
 	public function testObjectShapes(): void

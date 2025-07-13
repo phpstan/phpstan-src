@@ -40,6 +40,8 @@ final class AccessPropertiesCheck
 		private bool $reportMagicProperties,
 		#[AutowiredParameter]
 		private bool $checkDynamicProperties,
+		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
+		private bool $checkNonStringableDynamicAccess,
 	)
 	{
 	}
@@ -49,13 +51,30 @@ final class AccessPropertiesCheck
 	 */
 	public function check(PropertyFetch $node, Scope $scope, bool $write): array
 	{
+		$errors = [];
 		if ($node->name instanceof Identifier) {
 			$names = [$node->name->name];
 		} else {
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
+
+			if (!$write && $this->checkNonStringableDynamicAccess) {
+				$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$node->name,
+					'',
+					static fn (Type $type) => $type->toString()->isString()->yes(),
+				);
+				$nameType = $nameTypeResult->getType();
+				if ($nameType instanceof ErrorType || $nameType->toString() instanceof ErrorType || !$nameType->toString()->isString()->yes()) {
+					$originalNameType = $scope->getType($node->name);
+					$className = $scope->getType($node->var)->describe(VerbosityLevel::typeOnly());
+					$errors[] = RuleErrorBuilder::message(sprintf('Property name for %s must be a string, but %s was given.', $className, $originalNameType->describe(VerbosityLevel::precise())))
+						->identifier('property.nameNotString')
+						->build();
+				}
+			}
 		}
 
-		$errors = [];
 		foreach ($names as $name) {
 			$errors = array_merge($errors, $this->processSingleProperty($scope, $node, $name, $write));
 		}

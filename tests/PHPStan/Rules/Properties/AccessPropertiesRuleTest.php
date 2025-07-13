@@ -26,7 +26,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		return new AccessPropertiesRule(new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, $this->checkDynamicProperties));
+		return new AccessPropertiesRule(new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, $this->checkDynamicProperties, true));
 	}
 
 	public function testAccessProperties(): void
@@ -971,6 +971,84 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
 		$this->analyse([__DIR__ . '/data/bug-8629.php'], []);
+	}
+
+	public function testDynamicStringableAccess(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/dynamic-stringable-access.php'], [
+			// DynamicStringableAccess\Foo::testProperties()
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				13,
+			],
+			[
+				'Property name for DynamicStringableAccess\Foo must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				14,
+			],
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				15,
+			],
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				16,
+			],
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but object was given.',
+				17,
+			],
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but array was given.',
+				18,
+			],
+			// DynamicStringableAccess\Foo::testPropertyAssignments()
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				30,
+			],
+			[
+				'Property name for DynamicStringableAccess\Foo must be a string, but $this(DynamicStringableAccess\Foo) was given.',
+				31,
+			],
+			[
+				'Property name for $this(DynamicStringableAccess\Foo) must be a string, but object was given.',
+				32,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testDynamicStringableNullsafeAccess(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/dynamic-stringable-nullsafe-access.php'], [
+			// DynamicStringableNullsafeAccess\Foo::testNullsafePropertyFetch()
+			[
+				'Property name for $this(DynamicStringableNullsafeAccess\Foo) must be a string, but $this(DynamicStringableNullsafeAccess\Foo) was given.',
+				13,
+			],
+			[
+				'Property name for DynamicStringableNullsafeAccess\Foo must be a string, but $this(DynamicStringableNullsafeAccess\Foo) was given.',
+				14,
+			],
+			[
+				'Property name for $this(DynamicStringableNullsafeAccess\Foo) must be a string, but $this(DynamicStringableNullsafeAccess\Foo) was given.',
+				15,
+			],
+			[
+				'Property name for $this(DynamicStringableNullsafeAccess\Foo) must be a string, but $this(DynamicStringableNullsafeAccess\Foo) was given.',
+				16,
+			],
+			[
+				'Property name for $this(DynamicStringableNullsafeAccess\Foo) must be a string, but object was given.',
+				17,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0')]

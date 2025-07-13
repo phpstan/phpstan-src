@@ -10,7 +10,6 @@ class ExampleClass
 	{
 		$xml = new \SimpleXmlElement('');
 		$elements = $xml->xpath('//data');
-		assertType('array<SimpleXmlElement>', $elements);
+		assertType('array<SimpleXmlElement>|null', $elements);
 	}
 }
-

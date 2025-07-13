@@ -3144,7 +3144,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$simpleXMLWritingXML',
 			],
 			[
-				'array<SimpleXMLElement>',
+				'array<SimpleXMLElement>|null',
 				'$simpleXMLRightXpath',
 			],
 			[

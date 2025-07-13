@@ -26,6 +26,24 @@ class AllowedSubTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSealed(): void
+	{
+		$this->analyse([__DIR__ . '/data/sealed.php'], [
+			[
+				'Type Sealed\BazClass is not allowed to be a subtype of Sealed\BaseClass.',
+				11,
+			],
+			[
+				'Type Sealed\BazClass2 is not allowed to be a subtype of Sealed\BaseInterface.',
+				19,
+			],
+			[
+				'Type Sealed\BazInterface is not allowed to be a subtype of Sealed\BaseInterface2.',
+				27,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

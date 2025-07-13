@@ -4639,21 +4639,21 @@
         },
         {
             "name": "phpstan/phpstan-nette",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-nette.git",
-                "reference": "4b291c9f4c41fed86f5a7e308f0ac6a6664839bf"
+                "reference": "9b629867b8e13e0afad8c8537b6541230d7b6a38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/4b291c9f4c41fed86f5a7e308f0ac6a6664839bf",
-                "reference": "4b291c9f4c41fed86f5a7e308f0ac6a6664839bf",
+                "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/9b629867b8e13e0afad8c8537b6541230d7b6a38",
+                "reference": "9b629867b8e13e0afad8c8537b6541230d7b6a38",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
-                "phpstan/phpstan": "^2.1.3"
+                "phpstan/phpstan": "^2.1.12"
             },
             "conflict": {
                 "nette/application": "<2.3.0",
@@ -4669,6 +4669,7 @@
                 "nette/forms": "^3.0",
                 "nette/utils": "^2.3.0 || ^3.0.0",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
                 "phpstan/phpstan-phpunit": "^2.0",
                 "phpstan/phpstan-strict-rules": "^2.0",
                 "phpunit/phpunit": "^9.6"
@@ -4694,9 +4695,9 @@
             "description": "Nette Framework class reflection extension for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-nette/issues",
-                "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.3"
+                "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.4"
             },
-            "time": "2025-02-12T09:01:49+00:00"
+            "time": "2025-06-17T13:26:39+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -4754,21 +4755,21 @@
         },
         {
             "name": "phpstan/phpstan-strict-rules",
-            "version": "2.0.0",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "a4a6a08bd4a461e516b9c3b8fdbf0f1883b34158"
+                "reference": "3e139cbe67fafa3588e1dbe27ca50f31fdb6236a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/a4a6a08bd4a461e516b9c3b8fdbf0f1883b34158",
-                "reference": "a4a6a08bd4a461e516b9c3b8fdbf0f1883b34158",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/3e139cbe67fafa3588e1dbe27ca50f31fdb6236a",
+                "reference": "3e139cbe67fafa3588e1dbe27ca50f31fdb6236a",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
-                "phpstan/phpstan": "^2.0"
+                "phpstan/phpstan": "^2.0.4"
             },
             "require-dev": {
                 "php-parallel-lint/php-parallel-lint": "^1.2",
@@ -4796,9 +4797,9 @@
             "description": "Extra strict and opinionated rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.0"
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.4"
             },
-            "time": "2024-10-26T16:04:33+00:00"
+            "time": "2025-03-18T11:42:40+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

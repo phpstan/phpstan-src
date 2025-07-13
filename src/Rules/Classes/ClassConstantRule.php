@@ -76,9 +76,8 @@ final class ClassConstantRule implements Rule
 					static fn (Type $type) => $type->isString()->yes(),
 				);
 
-				$type = $nameTypeResult->getType();
-
-				if (!$type->isString()->yes()) {
+				$nameType = $nameTypeResult->getType();
+				if (!$nameType instanceof ErrorType && !$nameType->isString()->yes()) {
 					$className = $node->class instanceof Name
 						? $scope->resolveName($node->class)
 						: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());

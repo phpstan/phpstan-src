@@ -58,6 +58,7 @@ final class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-readonly-allow-private-mutation',
 		'@phpstan-require-extends',
 		'@phpstan-require-implements',
+		'@phpstan-sealed',
 		'@phpstan-param-immediately-invoked-callable',
 		'@phpstan-param-later-invoked-callable',
 		'@phpstan-param-closure-this',

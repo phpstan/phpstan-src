@@ -23,6 +23,7 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
 use PHPStan\PhpDoc\Tag\RequireImplementsTag;
+use PHPStan\PhpDoc\Tag\SealedTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
 use PHPStan\PhpDoc\Tag\TypeAliasTag;
@@ -1885,6 +1886,19 @@ final class ClassReflection
 		}
 
 		return $resolvedPhpDoc->getRequireImplementsTags();
+	}
+
+	/**
+	 * @return array<SealedTypeTag>
+	 */
+	public function getSealedTags(): array
+	{
+		$resolvedPhpDoc = $this->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		return $resolvedPhpDoc->getSealedTags();
 	}
 
 	/**

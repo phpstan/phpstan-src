@@ -38,6 +38,7 @@ final class ClassNameUsageLocation
 	public const PHPDOC_TAG_PROPERTY = 'propertyTag';
 	public const PHPDOC_TAG_REQUIRE_EXTENDS = 'requireExtends';
 	public const PHPDOC_TAG_REQUIRE_IMPLEMENTS = 'requireImplements';
+	public const PHPDOC_TAG_SEALED = 'sealed';
 	public const STATIC_METHOD_CALL = 'staticMethod';
 	public const PHPDOC_TAG_TEMPLATE_BOUND = 'templateBound';
 	public const PHPDOC_TAG_TEMPLATE_DEFAULT = 'templateDefault';
@@ -255,6 +256,8 @@ final class ClassNameUsageLocation
 				return sprintf('PHPDoc tag @phpstan-require-extends references %s.', $part);
 			case self::PHPDOC_TAG_REQUIRE_IMPLEMENTS:
 				return sprintf('PHPDoc tag @phpstan-require-implements references %s.', $part);
+			case self::PHPDOC_TAG_SEALED:
+				return sprintf('PHPDoc tag @phpstan-sealed references %s.', $part);
 			case self::STATIC_METHOD_CALL:
 				$method = $this->getMethod();
 				if ($method !== null) {

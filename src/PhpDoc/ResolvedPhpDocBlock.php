@@ -16,6 +16,7 @@ use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
 use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\PhpDoc\Tag\SealedTypeTag;
 use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
@@ -110,6 +111,9 @@ final class ResolvedPhpDocBlock
 
 	/** @var array<RequireImplementsTag>|false */
 	private array|false $requireImplementsTags = false;
+
+	/** @var array<SealedTypeTag>|false */
+	private array|false $sealedTypeTags = false;
 
 	/** @var array<TypeAliasTag>|false */
 	private array|false $typeAliasTags = false;
@@ -218,6 +222,7 @@ final class ResolvedPhpDocBlock
 		$self->mixinTags = [];
 		$self->requireExtendsTags = [];
 		$self->requireImplementsTags = [];
+		$self->sealedTypeTags = [];
 		$self->typeAliasTags = [];
 		$self->typeAliasImportTags = [];
 		$self->assertTags = [];
@@ -282,6 +287,7 @@ final class ResolvedPhpDocBlock
 		$result->mixinTags = $this->getMixinTags();
 		$result->requireExtendsTags = $this->getRequireExtendsTags();
 		$result->requireImplementsTags = $this->getRequireImplementsTags();
+		$result->sealedTypeTags = $this->getSealedTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
@@ -661,6 +667,21 @@ final class ResolvedPhpDocBlock
 		}
 
 		return $this->requireImplementsTags;
+	}
+
+	/**
+	 * @return array<SealedTypeTag>
+	 */
+	public function getSealedTags(): array
+	{
+		if ($this->sealedTypeTags === false) {
+			$this->sealedTypeTags = $this->phpDocNodeResolver->resolveSealedTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->sealedTypeTags;
 	}
 
 	/**

@@ -19,6 +19,7 @@ use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
 use PHPStan\PhpDoc\Tag\RequireImplementsTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\PhpDoc\Tag\SealedTypeTag;
 use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
@@ -516,6 +517,24 @@ final class PhpDocNodeResolver
 		foreach (['@psalm-require-implements', '@phpstan-require-implements'] as $tagName) {
 			foreach ($phpDocNode->getRequireImplementsTagValues($tagName) as $tagValue) {
 				$resolved[] = new RequireImplementsTag(
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
+				);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return array<SealedTypeTag>
+	 */
+	public function resolveSealedTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-inheritors', '@phpstan-sealed'] as $tagName) {
+			foreach ($phpDocNode->getSealedTagValues($tagName) as $tagValue) {
+				$resolved[] = new SealedTypeTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}

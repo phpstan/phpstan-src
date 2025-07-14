@@ -133,19 +133,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		self::$enumCases = [];
 	}
 
-	private static function createFromReflection(ClassReflection $reflection): self
-	{
-		if (!$reflection->isGeneric()) {
-			return new ObjectType($reflection->getName());
-		}
-
-		return new GenericObjectType(
-			$reflection->getName(),
-			$reflection->typeMapToList($reflection->getActiveTemplateTypeMap()),
-			variances: $reflection->varianceMapToList($reflection->getCallSiteVarianceMap()),
-		);
-	}
-
 	public function getClassName(): string
 	{
 		return $this->className;
@@ -1639,7 +1626,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return null;
 		}
 
-		return $this->cachedParent = self::createFromReflection($parentReflection);
+		return $this->cachedParent = $parentReflection->getObjectType();
 	}
 
 	/** @return ObjectType[] */
@@ -1653,7 +1640,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $this->cachedInterfaces = [];
 		}
 
-		return $this->cachedInterfaces = array_map(static fn (ClassReflection $interfaceReflection): self => self::createFromReflection($interfaceReflection), $thisReflection->getInterfaces());
+		return $this->cachedInterfaces = array_map(static fn (ClassReflection $interfaceReflection): self => $interfaceReflection->getObjectType(), $thisReflection->getInterfaces());
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

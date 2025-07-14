@@ -7,6 +7,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumUnitCase;
 use PHPStan\Internal\DeprecatedAttributeHelper;
 use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Type;
 
 /**
@@ -53,6 +54,14 @@ final class EnumCaseReflection
 	public function getName(): string
 	{
 		return $this->reflection->getName();
+	}
+
+	public function getEnumCaseObjectType(): EnumCaseObjectType
+	{
+		return new EnumCaseObjectType(
+			$this->declaringEnum->getName(),
+			$this->getName(),
+		);
 	}
 
 	public function getBackingValueType(): ?Type

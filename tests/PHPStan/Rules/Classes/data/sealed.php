@@ -25,3 +25,7 @@ interface BaseInterface2 {}
 interface FooInterface extends BaseInterface2 {}
 interface BarInterface extends BaseInterface2 {}
 interface BazInterface extends BaseInterface2 {} // this is an error
+
+class BarClassChild extends BarClass {}
+class BarClass2Child extends BarClass2 {}
+interface BarInterfaceChild extends BarInterface {}

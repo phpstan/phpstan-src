@@ -131,6 +131,7 @@ rules:
 	- PHPStan\Build\OverrideAttributeThirdPartyMethodRule
 	- PHPStan\Build\SkipTestsWithRequiresPhpAttributeRule
 	- PHPStan\Build\MemoizationPropertyRule
+	- PHPStan\Build\OrChainIdenticalComparisonToInArrayRule
 
 services:
 	-

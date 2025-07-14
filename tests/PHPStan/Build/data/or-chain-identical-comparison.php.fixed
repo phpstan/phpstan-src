@@ -1,0 +1,31 @@
+<?php
+
+if ($var === 'foo') {
+	echo 'ok';
+}
+
+if (\in_array($var, ['foo', 'bar'], true)) {
+	echo 'ok';
+}
+
+if (\in_array($var, ['foo', 'bar', 'buz'], true)) {
+	echo 'ok';
+}
+
+if (\in_array($var, ['foo', 'bar', 'buz'], true)) {
+	echo 'ok';
+} elseif (\in_array($var, ['foofoo', 'barbar', 'buzbuz'], true)) {
+	echo 'ok';
+}
+
+if ($var === 'foo' || $var === 'bar' || $var2 === 'buz') {
+	echo 'no';
+}
+
+if ($var === 'foo' || $var2 === 'bar' || $var === 'buz') {
+	echo 'no';
+}
+
+if ($var === 'foo' || $var2 === 'bar' || $var2 === 'buz') {
+	echo 'no';
+}

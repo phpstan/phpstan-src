@@ -10,6 +10,7 @@ use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 use function count;
+use function in_array;
 
 #[AutowiredService]
 final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
@@ -18,7 +19,7 @@ final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTy
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
 		return $methodReflection->getDeclaringClass()->getName() === 'Ds\Map'
-			&& ($methodReflection->getName() === 'get' || $methodReflection->getName() === 'remove');
+			&& in_array($methodReflection->getName(), ['get', 'remove'], true);
 	}
 
 	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type

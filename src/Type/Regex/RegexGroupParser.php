@@ -711,7 +711,7 @@ final class RegexGroupParser
 			}
 		}
 
-		if ($token === 'anchor' || $token === 'match_point_reset') {
+		if (in_array($token, ['anchor', 'match_point_reset'], true)) {
 			return '';
 		}
 

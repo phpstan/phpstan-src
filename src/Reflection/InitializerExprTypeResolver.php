@@ -864,7 +864,7 @@ final class InitializerExprTypeResolver
 
 		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
 		foreach ($rightScalarValues as $scalarValue) {
-			if ($scalarValue === 0 || $scalarValue === 0.0) {
+			if (in_array($scalarValue, [0, 0.0], true)) {
 				return new ErrorType();
 			}
 		}
@@ -938,7 +938,7 @@ final class InitializerExprTypeResolver
 		$rightScalarValues = $rightType->toNumber()->getConstantScalarValues();
 		foreach ($rightScalarValues as $scalarValue) {
 
-			if ($scalarValue === 0 || $scalarValue === 0.0) {
+			if (in_array($scalarValue, [0, 0.0], true)) {
 				return new ErrorType();
 			}
 		}

@@ -12,6 +12,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_combine;
 use function array_map;
 use function array_merge;
+use function in_array;
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -78,7 +79,7 @@ final class UnusedFunctionParametersCheck
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
 				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
-				if ($functionName === 'func_get_args' || $functionName === 'get_defined_vars') {
+				if (in_array($functionName, ['func_get_args', 'get_defined_vars'], true)) {
 					return $scope->getDefinedVariables();
 				}
 			}

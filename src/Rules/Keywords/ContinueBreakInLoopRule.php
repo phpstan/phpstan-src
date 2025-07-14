@@ -10,6 +10,7 @@ use PHPStan\Parser\ParentStmtTypesVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_reverse;
+use function in_array;
 use function sprintf;
 
 /**
@@ -52,13 +53,13 @@ final class ContinueBreakInLoopRule implements Rule
 						->build(),
 				];
 			}
-			if (
-				$parentStmtType === Stmt\For_::class
-				|| $parentStmtType === Stmt\Foreach_::class
-				|| $parentStmtType === Stmt\Do_::class
-				|| $parentStmtType === Stmt\While_::class
-				|| $parentStmtType === Stmt\Switch_::class
-			) {
+			if (in_array($parentStmtType, [
+				Stmt\For_::class,
+				Stmt\Foreach_::class,
+				Stmt\Do_::class,
+				Stmt\While_::class,
+				Stmt\Switch_::class,
+			], true)) {
 				$value--;
 			}
 			if ($value === 0) {

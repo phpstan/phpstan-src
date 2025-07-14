@@ -8,6 +8,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use function count;
+use function in_array;
 use function is_array;
 use function preg_match;
 use function preg_match_all;
@@ -47,7 +48,7 @@ final class PhpPrinterIndentationDetectorVisitor extends NodeVisitorAbstract
 		$text = $this->origTokens->getTokenCode($node->getStartTokenPos(), $firstStmt->getStartTokenPos(), 0);
 
 		$c = preg_match_all('~\n([\\x09\\x20]*)~', $text, $matches, PREG_SET_ORDER);
-		if ($c === 0 || $c === false) {
+		if (in_array($c, [0, false], true)) {
 			return null;
 		}
 

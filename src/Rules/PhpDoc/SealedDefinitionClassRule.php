@@ -22,7 +22,7 @@ use function sprintf;
 /**
  * @implements Rule<InClassNode>
  */
-#[RegisteredRule(level: 0)]
+#[RegisteredRule(level: 2)]
 final class SealedDefinitionClassRule implements Rule
 {
 

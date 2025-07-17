@@ -36,7 +36,6 @@ final class OrChainIdenticalComparisonToInArrayRule implements Rule
 {
 
 	public function __construct(
-		#[AutowiredParameter]
 		private ExprPrinter $printer,
 		private FileHelper $fileHelper,
 		private bool $skipTests = true,

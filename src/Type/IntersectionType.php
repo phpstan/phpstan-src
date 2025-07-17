@@ -39,6 +39,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use function array_filter;
 use function array_intersect_key;
 use function array_map;
 use function array_shift;
@@ -599,7 +600,10 @@ class IntersectionType implements CompoundType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
+		return $this->intersectResults(
+			static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce(),
+			static fn (Type $type): bool => !$type->isIterable()->no(),
+		);
 	}
 
 	public function getArraySize(): Type
@@ -1243,16 +1247,29 @@ class IntersectionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
+	 * @param (callable(Type $type): bool)|null  $filter
 	 */
-	private function intersectResults(callable $getResult): TrinaryLogic
+	private function intersectResults(
+		callable $getResult,
+		?callable $filter = null,
+	): TrinaryLogic
 	{
-		return TrinaryLogic::lazyMaxMin($this->types, $getResult);
+		$types = $this->types;
+		if ($filter !== null) {
+			$types = array_filter($types, $filter);
+		}
+		if (count($types) === 0) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::lazyMaxMin($types, $getResult);
 	}
 
 	/**
-	 * @param callable(Type $type): Type $getType
+	 * @param callable(Type $type): Type        $getType
+	 * @param (callable(Type $type): Type)|null $filter
 	 */
-	private function intersectTypes(callable $getType): Type
+	private function intersectTypes(callable $getType, ?callable $filter = null): Type
 	{
 		$operands = array_map($getType, $this->types);
 		return TypeCombinator::intersect(...$operands);

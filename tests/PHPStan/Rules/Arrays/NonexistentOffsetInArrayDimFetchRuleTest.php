@@ -926,4 +926,12 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3747.php'], []);
 	}
 
+	public function testBug8372(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-8372.php'], []);
+	}
+
 }

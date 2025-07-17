@@ -2935,7 +2935,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$scope,
 				$exprResult->hasYield(),
-				$exprResult->isAlwaysTerminating(),
+				false,
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
@@ -3142,7 +3142,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$scope,
 				$exprResult->hasYield(),
-				$exprResult->isAlwaysTerminating(),
+				false,
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),

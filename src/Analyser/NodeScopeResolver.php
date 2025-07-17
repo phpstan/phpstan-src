@@ -2555,6 +2555,7 @@ final class NodeScopeResolver
 				$scope = $nameResult->getScope();
 				$throwPoints = $nameResult->getThrowPoints();
 				$impurePoints = $nameResult->getImpurePoints();
+				$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 				if (
 					$nameType->isObject()->yes()
 					&& $nameType->isCallable()->yes()
@@ -2961,6 +2962,7 @@ final class NodeScopeResolver
 				$hasYield = $classResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
+				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 				foreach ($additionalThrowPoints as $throwPoint) {
 					$throwPoints[] = $throwPoint;
 				}
@@ -3108,14 +3110,14 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = false;
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->name, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
+				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 				$scope = $result->getScope();
 				if ($this->phpVersion->supportsPropertyHooks()) {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);

@@ -84,7 +84,7 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
-	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
+	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
 		return new ErrorType();
 	}

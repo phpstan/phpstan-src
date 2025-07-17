@@ -221,7 +221,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
-	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
+	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
 		return new MixedType();
 	}

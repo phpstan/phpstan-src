@@ -874,8 +874,9 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
+	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
+		$strict ??= TrinaryLogic::createMaybe();
 		$matches = [];
 		$hasIdenticalValue = false;
 

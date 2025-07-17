@@ -254,8 +254,9 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new NonEmptyArrayType();
 	}
 
-	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
+	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
+		$strict ??= TrinaryLogic::createMaybe();
 		if (
 			$needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
 			&& (

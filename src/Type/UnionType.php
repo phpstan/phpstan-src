@@ -776,7 +776,7 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->reverseArray($preserveKeys));
 	}
 
-	public function searchArray(Type $needleType, TrinaryLogic $strict): Type
+	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->searchArray($needleType, $strict));
 	}

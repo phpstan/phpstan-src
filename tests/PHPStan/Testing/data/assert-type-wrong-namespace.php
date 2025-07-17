@@ -4,7 +4,7 @@ namespace WrongAssertTypeNamespace;
 
 use function SomeWrong\Namespace\assertType;
 
-function doFoo(string $s) {
+function doFoo1(string $s) {
 	assertType('string', $s);
 }
 

@@ -2,7 +2,7 @@
 
 namespace MissingTypeCaseSensitive;
 
-function doFoo(string $s) {
+function doFoo1(string $s) {
 	assertTYPe('string', $s);
 }
 

@@ -3383,7 +3383,7 @@ final class NodeScopeResolver
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = true;
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$hasYield = $result->hasYield();
 
 			$exprType = $scope->getType($expr->expr);
@@ -3751,7 +3751,7 @@ final class NodeScopeResolver
 				$scope = $keyResult->getScope();
 				$throwPoints = $keyResult->getThrowPoints();
 				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
+				$isAlwaysTerminating = $keyResult->isAlwaysTerminating();
 			}
 			if ($expr->value !== null) {
 				$valueResult = $this->processExprNode($stmt, $expr->value, $scope, $nodeCallback, $context->enterDeep());
@@ -4029,7 +4029,7 @@ final class NodeScopeResolver
 				$hasYield = $classResult->hasYield();
 				$throwPoints = $classResult->getThrowPoints();
 				$impurePoints = $classResult->getImpurePoints();
-				$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
+				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			}
 			if ($expr->getName() instanceof Expr) {
 				$nameResult = $this->processExprNode($stmt, $expr->getName(), $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -4050,7 +4050,7 @@ final class NodeScopeResolver
 				$hasYield = $classResult->hasYield();
 				$throwPoints = $classResult->getThrowPoints();
 				$impurePoints = $classResult->getImpurePoints();
-				$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
+				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			}
 		} elseif ($expr instanceof Node\Scalar) {
 			$hasYield = false;

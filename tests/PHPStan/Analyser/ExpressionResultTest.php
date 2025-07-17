@@ -35,6 +35,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'(string) $x;',
+				false,
+			],
+			[
 				'sprintf("hello %s", exit());',
 				true,
 			],

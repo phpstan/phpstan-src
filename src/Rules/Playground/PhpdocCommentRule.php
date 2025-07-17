@@ -18,7 +18,7 @@ final class PhpdocCommentRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

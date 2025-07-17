@@ -261,7 +261,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($classReflection->hasInstanceProperty($propertyName)) {
+		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasInstanceProperty($propertyName));
+		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -327,7 +328,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		$property = $nakedClassReflection->getInstanceProperty($propertyName, $scope);
+		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getInstanceProperty($propertyName, $scope));
+		if ($property instanceof ErrorType) {
+			$property = new DummyPropertyReflection($propertyName);
+
+			return new CallbackUnresolvedPropertyPrototypeReflection(
+				$property,
+				$property->getDeclaringClass(),
+				false,
+				static fn (Type $type): Type => $type,
+			);
+		}
 
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;
@@ -356,7 +367,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($classReflection->hasStaticProperty($propertyName)) {
+		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasStaticProperty($propertyName));
+		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -398,7 +410,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		$property = $nakedClassReflection->getStaticProperty($propertyName);
+		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getStaticProperty($propertyName));
+		if ($property instanceof ErrorType) {
+			$property = new DummyPropertyReflection($propertyName);
+
+			return new CallbackUnresolvedPropertyPrototypeReflection(
+				$property,
+				$property->getDeclaringClass(),
+				false,
+				static fn (Type $type): Type => $type,
+			);
+		}
 
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;

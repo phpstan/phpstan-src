@@ -3187,7 +3187,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$result->getScope(),
 				$result->hasYield(),
-				false,
+				$result->isAlwaysTerminating(),
 				[],
 				[],
 			);
@@ -3196,7 +3196,7 @@ final class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = false;
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 		} elseif ($expr instanceof Exit_) {
 			$hasYield = false;
@@ -4794,7 +4794,7 @@ final class NodeScopeResolver
 		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
 		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return new ExpressionResult($scope, false, false, $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
+		return new ExpressionResult($scope, false, $exprResult->isAlwaysTerminating(), $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
 	}
 
 	/**

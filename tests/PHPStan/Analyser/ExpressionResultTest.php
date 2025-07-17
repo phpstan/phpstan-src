@@ -74,6 +74,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				'fn() => yield (exit());',
 				true,
 			],
+			[
+				'@exit();',
+				true,
+			],
 		];
 	}
 

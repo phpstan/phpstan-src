@@ -27,7 +27,47 @@ class ExpressionResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'isset($x);',
+				false,
+			],
+			[
+				'$x ? "def" : "abc";',
+				false,
+			],
+			[
 				'sprintf("hello %s", exit());',
+				true,
+			],
+			[
+				'(string) exit();',
+				true,
+			],
+			[
+				'!exit();',
+				true,
+			],
+			[
+				'eval(exit());',
+				true,
+			],
+			[
+				'empty(exit());',
+				true,
+			],
+			[
+				'isset(exit());',
+				true,
+			],
+			[
+				'$x ? "abc" : exit();',
+				true,
+			],
+			[
+				'$x ? exit() : "abc";',
+				true,
+			],
+			[
+				'fn() => yield (exit());',
 				true,
 			],
 		];

@@ -11,7 +11,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function str_starts_with;
 
 /**
- * @implements Rule<Node>
+ * @implements Rule<Node\Stmt>
  */
 final class PhpdocCommentRule implements Rule
 {

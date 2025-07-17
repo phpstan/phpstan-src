@@ -39,6 +39,14 @@ class ExpressionResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'$x || exit();',
+				false,
+			],
+			[
+				'$x ?? exit();',
+				false,
+			],
+			[
 				'sprintf("hello %s", exit());',
 				true,
 			],
@@ -76,6 +84,22 @@ class ExpressionResultTest extends PHPStanTestCase
 			],
 			[
 				'@exit();',
+				true,
+			],
+			[
+				'$x && exit();',
+				true,
+			],
+			[
+				'exit() && $x;',
+				true,
+			],
+			[
+				'exit() || $x;',
+				true,
+			],
+			[
+				'exit() ?? $x;',
 				true,
 			],
 		];

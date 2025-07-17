@@ -3289,7 +3289,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
-				false,
+				$leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
 				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
@@ -3310,7 +3310,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
-				false,
+				$leftResult->isAlwaysTerminating(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
 				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
@@ -3335,7 +3335,7 @@ final class NodeScopeResolver
 			$hasYield = $condResult->hasYield() || $rightResult->hasYield();
 			$throwPoints = array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints());
 			$impurePoints = array_merge($condResult->getImpurePoints(), $rightResult->getImpurePoints());
-			$isAlwaysTerminating = false;
+			$isAlwaysTerminating = $condResult->isAlwaysTerminating();
 		} elseif ($expr instanceof BinaryOp) {
 			$result = $this->processExprNode($stmt, $expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
@@ -3368,7 +3368,7 @@ final class NodeScopeResolver
 				true,
 			);
 			$hasYield = $result->hasYield();
-			$isAlwaysTerminating = false;
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope()->afterExtractCall();
 		} elseif ($expr instanceof Expr\Print_) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());

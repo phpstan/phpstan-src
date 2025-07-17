@@ -33,7 +33,7 @@ function withBoolKey(): void
 	$c = [false, 'red', 'yellow'];
 	$d = ['avocado', 'apple', 'banana'];
 
-	assertType("array{: 'avocado', red: 'apple', yellow: 'banana'}", array_combine($c, $d));
+	assertType("array{'': 'avocado', red: 'apple', yellow: 'banana'}", array_combine($c, $d));
 }
 
 function withFloatKey(): void
@@ -41,7 +41,7 @@ function withFloatKey(): void
 	$a = [1.5, 'red', 'yellow'];
 	$b = ['avocado', 'apple', 'banana'];
 
-	assertType("array{1.5: 'avocado', red: 'apple', yellow: 'banana'}", array_combine($a, $b));
+	assertType("array{'1.5': 'avocado', red: 'apple', yellow: 'banana'}", array_combine($a, $b));
 }
 
 function withIntegerKey(): void

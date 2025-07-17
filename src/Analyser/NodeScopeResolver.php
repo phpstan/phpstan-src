@@ -3201,6 +3201,7 @@ final class NodeScopeResolver
 			$impurePoints = [
 				new ImpurePoint($scope, $expr, $identifier, $identifier, true),
 			];
+			$isAlwaysTerminating = true;
 			if ($expr->expr !== null) {
 				$result = $this->processExprNode($stmt, $expr->expr, $scope, $nodeCallback, $context->enterDeep());
 				$hasYield = $result->hasYield();

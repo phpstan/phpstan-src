@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-class NodeScopeResolverPhp8Test extends TypeInferenceTestCase
+class SubstrPhp7Test extends TypeInferenceTestCase
 {
 
 	/**
@@ -13,11 +13,7 @@ class NodeScopeResolverPhp8Test extends TypeInferenceTestCase
 	 */
 	public static function dataFileAsserts(): iterable
 	{
-		// compares constants according to the php-version phpstan configuration,
-		// _NOT_ the current php runtime version
-		yield from self::gatherAssertTypes(__DIR__ . '/data/loose-const-comparison-php8.php');
-
-		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-13129-php8.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-13129-php7.php');
 	}
 
 	/**
@@ -36,7 +32,7 @@ class NodeScopeResolverPhp8Test extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
-			__DIR__ . '/nodeScopeResolverPhp8.neon',
+			__DIR__ . '/nodeScopeResolverPhp7.neon',
 		];
 	}
 

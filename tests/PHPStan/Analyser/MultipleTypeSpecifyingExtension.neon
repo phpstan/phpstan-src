@@ -1,0 +1,21 @@
+services:
+	-
+		class: PHPStan\Tests\AssertionClassMethodTypeSpecifyingExtension
+		arguments:
+			nullContext: true
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
+	-
+		class: PHPStan\Tests\AssertionClassStaticMethodTypeSpecifyingExtension
+		arguments:
+			nullContext: true
+		tags:
+			- phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
+	-
+		class: PHPStan\Tests\AssertionClassMethodMultipleTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension
+	-
+		class: PHPStan\Tests\AssertionClassStaticMethodMultipleTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension

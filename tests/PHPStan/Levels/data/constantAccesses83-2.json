@@ -1,5 +1,10 @@
 [
     {
+        "message": "Class constant name for Levels\\ConstantAccesses83\\Foo must be a string, but int was given.",
+        "line": 18,
+        "ignorable": true
+    },
+    {
         "message": "Class constant name in dynamic fetch can only be a string, int given.",
         "line": 18,
         "ignorable": true

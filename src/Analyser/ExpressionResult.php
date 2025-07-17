@@ -24,11 +24,11 @@ final class ExpressionResult
 	public function __construct(
 		private MutatingScope $scope,
 		private bool $hasYield,
+		private bool $isAlwaysTerminating,
 		private array $throwPoints,
 		private array $impurePoints,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
-		private bool $isAlwaysTerminating = false,
 	)
 	{
 		$this->truthyScopeCallback = $truthyScopeCallback;

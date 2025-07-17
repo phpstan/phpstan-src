@@ -1915,7 +1915,7 @@ final class NodeScopeResolver
 							$nodeCallback($node, $scope);
 						},
 						ExpressionContext::createDeep(),
-						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 						false,
 					)->getScope();
 				} elseif ($var instanceof PropertyFetch) {
@@ -2475,7 +2475,7 @@ final class NodeScopeResolver
 						$scope = $scope->exitExpressionAssign($expr->expr);
 					}
 
-					return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
+					return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 				},
 				true,
 			);
@@ -2513,9 +2513,9 @@ final class NodeScopeResolver
 						return new ExpressionResult(
 							$result->getScope()->mergeWith($originalScope),
 							$result->hasYield(),
+							$result->isAlwaysTerminating(),
 							$result->getThrowPoints(),
 							$result->getImpurePoints(),
-							isAlwaysTerminating: $result->isAlwaysTerminating(),
 						);
 					}
 
@@ -2933,6 +2933,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$scope,
 				$exprResult->hasYield(),
+				false,
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
@@ -3135,6 +3136,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$scope,
 				$exprResult->hasYield(),
+				false,
 				$exprResult->getThrowPoints(),
 				$exprResult->getImpurePoints(),
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
@@ -3172,6 +3174,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$processClosureResult->getScope(),
 				false,
+				false,
 				[],
 				[],
 			);
@@ -3180,6 +3183,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$result->getScope(),
 				$result->hasYield(),
+				false,
 				[],
 				[],
 			);
@@ -3276,6 +3280,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
+				false,
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
 				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
@@ -3296,6 +3301,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
+				false,
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
 				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
@@ -3494,7 +3500,7 @@ final class NodeScopeResolver
 			}
 		} elseif ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
-			return new ExpressionResult($scope, false, [], []);
+			return new ExpressionResult($scope, false, false, [], []);
 		} elseif ($expr instanceof New_) {
 			$parametersAcceptor = null;
 			$constructorReflection = null;
@@ -3646,7 +3652,7 @@ final class NodeScopeResolver
 					$nodeCallback($node, $scope);
 				},
 				$context,
-				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 				false,
 			)->getScope();
 		} elseif ($expr instanceof Ternary) {
@@ -3691,6 +3697,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$finalScope,
 				$ternaryCondResult->hasYield(),
+				false,
 				$throwPoints,
 				$impurePoints,
 				static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
@@ -4020,11 +4027,11 @@ final class NodeScopeResolver
 		return new ExpressionResult(
 			$scope,
 			$hasYield,
+			$isAlwaysTerminating,
 			$throwPoints,
 			$impurePoints,
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-			$isAlwaysTerminating,
 		);
 	}
 
@@ -4741,7 +4748,7 @@ final class NodeScopeResolver
 		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
 		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return new ExpressionResult($scope, false, $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
+		return new ExpressionResult($scope, false, false, $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
 	}
 
 	/**
@@ -5263,7 +5270,7 @@ final class NodeScopeResolver
 							$nodeCallback($node, $scope);
 						},
 						$context,
-						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 						true,
 					);
 					$scope = $result->getScope();
@@ -5296,7 +5303,7 @@ final class NodeScopeResolver
 			}
 		}
 
-		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
+		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 	}
 
 	/**
@@ -5855,7 +5862,7 @@ final class NodeScopeResolver
 					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
-					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 					$enterExpressionAssign,
 				);
 				$scope = $result->getScope();
@@ -5941,7 +5948,7 @@ final class NodeScopeResolver
 			}
 		}
 
-		return new ExpressionResult($scope, $hasYield, $throwPoints, $impurePoints, isAlwaysTerminating: $isAlwaysTerminating);
+		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
 	}
 
 	/**
@@ -6277,7 +6284,7 @@ final class NodeScopeResolver
 				static function (): void {
 				},
 				ExpressionContext::createDeep(),
-				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 				true,
 			)->getScope();
 			$vars = $this->getAssignedVariables($stmt->valueVar);
@@ -6295,7 +6302,7 @@ final class NodeScopeResolver
 					static function (): void {
 					},
 					ExpressionContext::createDeep(),
-					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, [], []),
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
 					true,
 				)->getScope();
 				$vars = array_merge($vars, $this->getAssignedVariables($stmt->keyVar));

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
 
 /**
@@ -75,11 +76,9 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13093b.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug12754(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('PHP 8.0+ is required for this test.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-12754.php'], []);
 	}
 

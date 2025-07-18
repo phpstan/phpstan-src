@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -16,6 +17,12 @@ use function strtolower;
 #[RegisteredRule(level: 0)]
 final class NewStaticRule implements Rule
 {
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -74,6 +81,20 @@ final class NewStaticRule implements Rule
 			$prototype = $constructor->getPrototype();
 			if ($prototype->isAbstract()) {
 				return [];
+			}
+		}
+
+		if (
+			$this->phpVersion->supportsAbstractTraitMethods()
+			&& $scope->isInTrait()
+		) {
+			$traitReflection = $scope->getTraitReflection();
+			if ($traitReflection->hasConstructor()) {
+				$traitConstructor = $traitReflection->getConstructor();
+
+				if ($traitConstructor instanceof PhpMethodReflection && $traitConstructor->isAbstract()) {
+					return [];
+				}
 			}
 		}
 

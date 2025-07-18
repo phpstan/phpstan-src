@@ -6765,7 +6765,7 @@ final class NodeScopeResolver
 				$stmts[] = $node;
 				continue;
 			}
-			if ($node instanceof Node\Stmt\Nop) {
+			if ($node instanceof Node\Stmt\Nop || $node instanceof Node\Stmt\InlineHTML) {
 				continue;
 			}
 			if (!$node instanceof Node\Stmt) {

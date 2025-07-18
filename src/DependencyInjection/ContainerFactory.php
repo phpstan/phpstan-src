@@ -337,14 +337,20 @@ final class ContainerFactory
 				continue;
 			}
 
-			$atLeastOneOf = ['message', 'messages', 'identifier', 'identifiers', 'path', 'paths'];
+			$atLeastOneOf = ['message', 'messages', 'rawMessage', 'identifier', 'identifiers', 'path', 'paths'];
 			if (array_intersect($atLeastOneOf, array_keys($ignoreError)) === []) {
 				throw new InvalidIgnoredErrorException('An ignoreErrors entry must contain at least one of the following fields: ' . implode(', ', $atLeastOneOf) . '.');
 			}
 
-			foreach (['message', 'identifier', 'path'] as $field) {
-				if (array_key_exists($field, $ignoreError) && array_key_exists($field . 's', $ignoreError)) {
-					throw new InvalidIgnoredErrorException(sprintf('An ignoreErrors entry cannot contain both %s and %s fields.', $field, $field . 's'));
+			foreach ([
+				['message', 'messages'],
+				['rawMessage', 'message'],
+				['rawMessage', 'messages'],
+				['identifier', 'identifiers'],
+				['path', 'paths'],
+			] as [$field1, $field2]) {
+				if (array_key_exists($field1, $ignoreError) && array_key_exists($field2, $ignoreError)) {
+					throw new InvalidIgnoredErrorException(sprintf('An ignoreErrors entry cannot contain both %s and %s fields.', $field1, $field2));
 				}
 			}
 

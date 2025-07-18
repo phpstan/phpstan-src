@@ -79,6 +79,12 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertEmpty($result);
 	}
 
+	public function testFileWithAnIgnoredErrorRawMessage(): void
+	{
+		$result = $this->runAnalyser([['rawMessage' => 'Fail.']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
 	public function testFileWithAnIgnoredErrorMessageAndWrongIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
@@ -87,6 +93,16 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Fail.', $result[0]->getMessage());
 		assert(is_string($result[1]));
 		$this->assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
+	}
+
+	public function testFileWithAnIgnoredErrorRawMessageAndWrongIdentifier(): void
+	{
+		$result = $this->runAnalyser([['rawMessage' => 'Fail.', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(2, $result);
+		assert($result[0] instanceof Error);
+		$this->assertSame('Fail.', $result[0]->getMessage());
+		assert(is_string($result[1]));
+		$this->assertSame('Ignored error pattern "Fail." (wrong.identifier) was not matched in reported errors.', $result[1]);
 	}
 
 	public function testFileWithAnIgnoredWrongIdentifier(): void
@@ -102,6 +118,12 @@ class AnalyserTest extends PHPStanTestCase
 	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
+	public function testFileWithAnIgnoredErrorRawMessageAndCorrectIdentifier(): void
+	{
+		$result = $this->runAnalyser([['rawMessage' => 'Fail.', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
 		$this->assertEmpty($result);
 	}
 
@@ -212,6 +234,31 @@ class AnalyserTest extends PHPStanTestCase
 				],
 				[
 					'message' => '#Fail\.#',
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+			],
+		];
+
+		yield [
+			[
+				[
+					'rawMessage' => 'Fail.',
+					'count' => 3,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+			],
+		];
+
+		yield [
+			[
+				[
+					'rawMessage' => 'Fail.',
+					'count' => 2,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+				[
+					'rawMessage' => 'Fail.',
+					'count' => 1,
 					'path' => __DIR__ . '/data/two-fails.php',
 				],
 			],
@@ -345,6 +392,18 @@ class AnalyserTest extends PHPStanTestCase
 		$ignoreErrors = [
 			[
 				'message' => '#Fail\.#',
+				'paths' => [__DIR__ . '/data/bootstrap-error.php'],
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertNoErrors($result);
+	}
+
+	public function testIgnoreErrorRawByPaths(): void
+	{
+		$ignoreErrors = [
+			[
+				'rawMessage' => 'Fail.',
 				'paths' => [__DIR__ . '/data/bootstrap-error.php'],
 			],
 		];
@@ -622,6 +681,18 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
+	public function testIgnoreErrorExplicitReportUnmatchedDisableRaw(): void
+	{
+		$ignoreErrors = [
+			[
+				'rawMessage' => 'Fail.',
+				'reportUnmatched' => false,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertNoErrors($result);
+	}
+
 	public function testIgnoreErrorExplicitReportUnmatchedDisableMulti(): void
 	{
 		$ignoreErrors = [
@@ -645,6 +716,19 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
 		$this->assertCount(1, $result);
 		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
+	}
+
+	public function testIgnoreErrorExplicitReportUnmatchedEnableRaw(): void
+	{
+		$ignoreErrors = [
+			[
+				'rawMessage' => 'Fail.',
+				'reportUnmatched' => true,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertCount(1, $result);
+		$this->assertSame('Ignored error pattern "Fail." was not matched in reported errors.', $result[0]);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedEnableMulti(): void

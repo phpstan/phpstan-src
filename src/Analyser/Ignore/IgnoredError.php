@@ -30,6 +30,8 @@ final class IgnoredError
 		$message = '';
 		if (isset($ignoredError['message'])) {
 			$message = $ignoredError['message'];
+		} elseif (isset($ignoredError['rawMessage'])) {
+			$message = '"' . $ignoredError['rawMessage'] . '"';
 		}
 		if (isset($ignoredError['identifier'])) {
 			if ($message === '') {
@@ -71,6 +73,7 @@ final class IgnoredError
 		FileHelper $fileHelper,
 		Error $error,
 		?string $ignoredErrorPattern,
+		?string $ignoredErrorMessage,
 		?string $identifier,
 		?string $path,
 	): bool
@@ -87,6 +90,12 @@ final class IgnoredError
 			$errorMessage = str_replace(['\r\n', '\r'], '\n', $errorMessage);
 			$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
 			if (Strings::match($errorMessage, $ignoredErrorPattern) === null) {
+				return false;
+			}
+		}
+
+		if ($ignoredErrorMessage !== null) {
+			if ($error->getMessage() !== $ignoredErrorMessage) {
 				return false;
 			}
 		}

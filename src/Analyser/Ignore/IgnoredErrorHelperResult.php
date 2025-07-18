@@ -58,13 +58,13 @@ final class IgnoredErrorHelperResult
 		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
-				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null, null);
+				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore, null, null, null);
 				if ($shouldBeIgnored) {
 					unset($unmatchedIgnoredErrors[$i]);
 				}
 			} else {
 				if (isset($ignore['path'])) {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, $ignore['path']);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['rawMessage'] ?? null, $ignore['identifier'] ?? null, $ignore['path']);
 					if ($shouldBeIgnored) {
 						if (isset($ignore['count'])) {
 							$realCount = $unmatchedIgnoredErrors[$i]['realCount'] ?? 0;
@@ -85,7 +85,7 @@ final class IgnoredErrorHelperResult
 					}
 				} elseif (isset($ignore['paths'])) {
 					foreach ($ignore['paths'] as $j => $ignorePath) {
-						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, $ignorePath);
+						$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['rawMessage'] ?? null, $ignore['identifier'] ?? null, $ignorePath);
 						if (!$shouldBeIgnored) {
 							continue;
 						}
@@ -102,7 +102,7 @@ final class IgnoredErrorHelperResult
 						break;
 					}
 				} else {
-					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['identifier'] ?? null, null);
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'] ?? null, $ignore['rawMessage'] ?? null, $ignore['identifier'] ?? null, null);
 					if ($shouldBeIgnored) {
 						unset($unmatchedIgnoredErrors[$i]);
 					}

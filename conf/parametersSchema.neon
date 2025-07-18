@@ -114,6 +114,7 @@ parametersSchema:
 			structure([
 				?message: string()
 				?messages: listOf(string())
+				?rawMessage: string()
 				?identifier: string()
 				?identifiers: listOf(string())
 				?path: string()

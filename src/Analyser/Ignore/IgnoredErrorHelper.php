@@ -40,7 +40,7 @@ final class IgnoredErrorHelper
 		$expandedIgnoreErrors = [];
 		foreach ($this->ignoreErrors as $ignoreError) {
 			if (is_array($ignoreError)) {
-				if (!isset($ignoreError['message']) && !isset($ignoreError['messages']) && !isset($ignoreError['identifier']) && !isset($ignoreError['identifiers'])) {
+				if (!isset($ignoreError['message']) && !isset($ignoreError['messages']) && !isset($ignoreError['rawMessage']) && !isset($ignoreError['identifier']) && !isset($ignoreError['identifiers'])) {
 					$errors[] = sprintf(
 						'Ignored error %s is missing a message or an identifier.',
 						Json::encode($ignoreError),
@@ -71,7 +71,7 @@ final class IgnoredErrorHelper
 
 		$uniquedExpandedIgnoreErrors = [];
 		foreach ($expandedIgnoreErrors as $ignoreError) {
-			if (!isset($ignoreError['message']) && !isset($ignoreError['identifier'])) {
+			if (!isset($ignoreError['message']) && !isset($ignoreError['rawMessage']) && !isset($ignoreError['identifier'])) {
 				$uniquedExpandedIgnoreErrors[] = $ignoreError;
 				continue;
 			}
@@ -83,6 +83,9 @@ final class IgnoredErrorHelper
 			$key = $ignoreError['path'];
 			if (isset($ignoreError['message'])) {
 				$key = sprintf("%s\n%s", $key, $ignoreError['message']);
+			}
+			if (isset($ignoreError['rawMessage'])) {
+				$key = sprintf("%s\n%s", $key, $ignoreError['rawMessage']);
 			}
 			if (isset($ignoreError['identifier'])) {
 				$key = sprintf("%s\n%s", $key, $ignoreError['identifier']);
@@ -98,6 +101,7 @@ final class IgnoredErrorHelper
 
 			$uniquedExpandedIgnoreErrors[$key] = [
 				'message' => $ignoreError['message'] ?? null,
+				'rawMessage' => $ignoreError['rawMessage'] ?? null,
 				'path' => $ignoreError['path'],
 				'identifier' => $ignoreError['identifier'] ?? null,
 				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
@@ -114,7 +118,7 @@ final class IgnoredErrorHelper
 			];
 			try {
 				if (is_array($ignoreError)) {
-					if (!isset($ignoreError['message']) && !isset($ignoreError['identifier'])) {
+					if (!isset($ignoreError['message']) && !isset($ignoreError['rawMessage']) && !isset($ignoreError['identifier'])) {
 						$errors[] = sprintf(
 							'Ignored error %s is missing a message or an identifier.',
 							Json::encode($ignoreError),

@@ -12125,7 +12125,7 @@ return [
 'SyncSharedMemory::size' => ['bool'],
 'SyncSharedMemory::write' => ['', 'string='=>'string', 'start='=>'int'],
 'sys_get_temp_dir' => ['string'],
-'sys_getloadavg' => ['array|false'],
+'sys_getloadavg' => ['array{float,float,float}|false'],
 'syslog' => ['bool', 'priority'=>'int', 'message'=>'string'],
 'system' => ['string|false', 'command'=>'string', '&w_return_value='=>'int'],
 'taint' => ['bool', '&rw_string'=>'string', '&...w_other_strings='=>'string'],

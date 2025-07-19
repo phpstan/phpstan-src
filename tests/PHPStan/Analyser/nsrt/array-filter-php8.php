@@ -1,6 +1,6 @@
-<?php
+<?php // lint >= 8.0
 
-namespace ArrayFilter;
+namespace ArrayFilterPHP8;
 
 use function PHPStan\Testing\assertType;
 
@@ -16,7 +16,7 @@ function withoutAnyArgs(): void
 function withMixedInsteadOfArray($var1): void
 {
 	$filtered1 = array_filter($var1);
-	assertType('(array|null)', $filtered1);
+	assertType('array', $filtered1);
 }
 
 /**

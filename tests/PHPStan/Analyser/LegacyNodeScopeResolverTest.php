@@ -4854,7 +4854,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_filter($withPossiblyFalsey)',
 			],
 			[
-				'(array|null)',
+				PHP_VERSION_ID < 80000 ? '(array|null)' : 'array',
 				'array_filter($mixed)',
 			],
 			[

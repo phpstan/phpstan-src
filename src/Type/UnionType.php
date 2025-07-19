@@ -337,7 +337,7 @@ class UnionType implements CompoundType
 				}
 			}
 
-			if ($level->isPrecise()) {
+			if ($level->isPrecise() || $level->isCache()) {
 				$duplicates = array_diff_assoc($typeNames, array_unique($typeNames));
 				if (count($duplicates) > 0) {
 					$indexByDuplicate = array_fill_keys($duplicates, 0);

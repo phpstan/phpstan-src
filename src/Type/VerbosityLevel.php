@@ -86,6 +86,11 @@ final class VerbosityLevel
 		return $this->value === self::PRECISE;
 	}
 
+	public function isCache(): bool
+	{
+		return $this->value === self::CACHE;
+	}
+
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{

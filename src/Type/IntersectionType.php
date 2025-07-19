@@ -368,6 +368,7 @@ class IntersectionType implements CompoundType
 				if (
 					($type instanceof AccessoryLowercaseStringType || $type instanceof AccessoryUppercaseStringType)
 					&& !$level->isPrecise()
+					&& !$level->isCache()
 				) {
 					continue;
 				}

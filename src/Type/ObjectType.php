@@ -1228,12 +1228,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if (!$this->isExtraOffsetAccessibleClass()->no()) {
-			return new MixedType();
-		}
-
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
 			return RecursionGuard::run($this, fn (): Type => $this->getMethod('offsetGet', new OutOfClassScope())->getOnlyVariant()->getReturnType());
+		}
+
+		if (!$this->isExtraOffsetAccessibleClass()->no()) {
+			return new MixedType();
 		}
 
 		return new ErrorType();

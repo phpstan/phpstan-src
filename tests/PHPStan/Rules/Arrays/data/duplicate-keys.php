@@ -172,4 +172,15 @@ class Foo
 			'baz' => 'baz',
 		];
 	}
+
+	public function duplicateWithCast(): void
+	{
+		$a = [
+			1 => 'foo',
+			'1' => 'bar',
+			true => 'baz',
+			1.0 => 'some',
+			1.1 => 'thing'
+		];
+	}
 }

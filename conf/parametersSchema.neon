@@ -79,6 +79,7 @@ parametersSchema:
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
+	reportPropertiesThatShouldBePromoted: bool()
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),

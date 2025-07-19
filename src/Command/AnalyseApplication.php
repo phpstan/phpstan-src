@@ -303,8 +303,8 @@ final class AnalyseApplication
 			$this->switchTmpFileInErrors($analyserResult->getFilteredPhpErrors(), $insteadOfFile, $tmpFile),
 			$this->switchTmpFileInErrors($analyserResult->getAllPhpErrors(), $insteadOfFile, $tmpFile),
 			$this->switchTmpFileInErrors($analyserResult->getLocallyIgnoredErrors(), $insteadOfFile, $tmpFile),
-			$this->swittchTmpFileInLinesToIgnore($analyserResult->getLinesToIgnore(), $insteadOfFile, $tmpFile),
-			$this->swittchTmpFileInLinesToIgnore($analyserResult->getUnmatchedLineIgnores(), $insteadOfFile, $tmpFile),
+			$this->switchTmpFileInLinesToIgnore($analyserResult->getLinesToIgnore(), $insteadOfFile, $tmpFile),
+			$this->switchTmpFileInLinesToIgnore($analyserResult->getUnmatchedLineIgnores(), $insteadOfFile, $tmpFile),
 			$analyserResult->getInternalErrors(),
 			$newCollectedData,
 			$dependencies,
@@ -369,7 +369,7 @@ final class AnalyseApplication
 	 * @param array<string, LinesToIgnore> $linesToIgnore
 	 * @return array<string, LinesToIgnore>
 	 */
-	private function swittchTmpFileInLinesToIgnore(array $linesToIgnore, string $insteadOfFile, string $tmpFile): array
+	private function switchTmpFileInLinesToIgnore(array $linesToIgnore, string $insteadOfFile, string $tmpFile): array
 	{
 		$newLinesToIgnore = [];
 		foreach ($linesToIgnore as $file => $lines) {

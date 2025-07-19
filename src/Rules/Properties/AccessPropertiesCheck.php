@@ -42,6 +42,8 @@ final class AccessPropertiesCheck
 		private bool $checkDynamicProperties,
 		#[AutowiredParameter(ref: '%featureToggles.checkNonStringableDynamicAccess%')]
 		private bool $checkNonStringableDynamicAccess,
+		#[AutowiredParameter]
+		private bool $checkThisOnly,
 	)
 	{
 	}
@@ -58,20 +60,7 @@ final class AccessPropertiesCheck
 			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 
 			if (!$write && $this->checkNonStringableDynamicAccess) {
-				$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
-					$scope,
-					$node->name,
-					'',
-					static fn (Type $type) => $type->toString()->isString()->yes(),
-				);
-				$nameType = $nameTypeResult->getType();
-				if ($nameType instanceof ErrorType || $nameType->toString() instanceof ErrorType || !$nameType->toString()->isString()->yes()) {
-					$originalNameType = $scope->getType($node->name);
-					$className = $scope->getType($node->var)->describe(VerbosityLevel::typeOnly());
-					$errors[] = RuleErrorBuilder::message(sprintf('Property name for %s must be a string, but %s was given.', $className, $originalNameType->describe(VerbosityLevel::precise())))
-						->identifier('property.nameNotString')
-						->build();
-				}
+				$errors = array_merge($errors, $this->checkNonStringableDynamicAccess($scope, $node->var, $node->name));
 			}
 		}
 
@@ -80,6 +69,44 @@ final class AccessPropertiesCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkNonStringableDynamicAccess(Scope $scope, Expr $nodeVar, Expr $nodeName): array
+	{
+		if (
+			$this->checkThisOnly
+			&& !$this->ruleLevelHelper->isThis($nodeVar)
+		) {
+			return [];
+		}
+
+		$nameTypeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$nodeName,
+			'',
+			static fn (Type $type) => $type->toString()->isString()->yes(),
+		);
+		$nameType = $nameTypeResult->getType();
+		if (
+			!$nameType instanceof ErrorType
+			&& !$nameType->toString() instanceof ErrorType
+			&& $nameType->toString()->isString()->yes()
+		) {
+			return [];
+		}
+
+		$originalNameType = $scope->getType($nodeName);
+		$className = $scope->getType($nodeVar)->describe(VerbosityLevel::typeOnly());
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Property name for %s must be a string, but %s was given.',
+				$className,
+				$originalNameType->describe(VerbosityLevel::precise()),
+			))->identifier('property.nameNotString')->build(),
+		];
 	}
 
 	/**

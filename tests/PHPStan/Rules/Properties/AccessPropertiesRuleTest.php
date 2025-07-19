@@ -26,7 +26,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		return new AccessPropertiesRule(new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, $this->checkDynamicProperties, true));
+		return new AccessPropertiesRule(new AccessPropertiesCheck(
+			$reflectionProvider,
+			new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false, false, false, true),
+			new PhpVersion(PHP_VERSION_ID),
+			true,
+			$this->checkDynamicProperties,
+			true,
+			$this->checkThisOnly,
+		));
 	}
 
 	public function testAccessProperties(): void
@@ -1090,6 +1098,14 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
 			],
 		]);
+	}
+
+	public function testBug13271(): void
+	{
+		$this->checkThisOnly = true;
+		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-13271.php'], []);
 	}
 
 	public function testPropertyExists(): void

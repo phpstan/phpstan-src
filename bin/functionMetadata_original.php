@@ -170,6 +170,9 @@ return [
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
 
+	'SplDoublyLinkedList::pop' => ['hasSideEffects' => true],
+	'SplDoublyLinkedList::shift' => ['hasSideEffects' => true],
+
 	'SplFileObject::fflush' => ['hasSideEffects' => true],
 	'SplFileObject::fgetc' => ['hasSideEffects' => true],
 	'SplFileObject::fgetcsv' => ['hasSideEffects' => true],
@@ -183,11 +186,23 @@ return [
 	'SplFileObject::ftruncate' => ['hasSideEffects' => true],
 	'SplFileObject::fwrite' => ['hasSideEffects' => true],
 
+	'SplFixedArray::extract' => ['hasSideEffects' => true],
+
+	'SplHead::extract' => ['hasSideEffects' => true],
+	'SplHead::insert' => ['hasSideEffects' => true],
+	'SplHead::recoverFromCorruption' => ['hasSideEffects' => true],
+
 	'SplObjectStorage::addAll' => ['hasSideEffects' => true],
 	'SplObjectStorage::attach' => ['hasSideEffects' => true],
 	'SplObjectStorage::detach' => ['hasSideEffects' => true],
 	'SplObjectStorage::removeAll' => ['hasSideEffects' => true],
 	'SplObjectStorage::removeAllExcept' => ['hasSideEffects' => true],
+
+	'SplPriorityQueue::extract' => ['hasSideEffects' => true],
+	'SplPriorityQueue::insert' => ['hasSideEffects' => true],
+	'SplPriorityQueue::recoverFromCorruption' => ['hasSideEffects' => true],
+
+	'SplQueue::dequeue' => ['hasSideEffects' => true],
 
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],

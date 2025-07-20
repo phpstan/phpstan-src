@@ -4260,6 +4260,18 @@ final class NodeScopeResolver
 
 		if ($throwType !== null) {
 			if (!$throwType->isVoid()->yes()) {
+				if ($throwType instanceof StaticType) {
+					$classReflections = $scope->getType($methodCall->var)->getObjectClassReflections();
+					if (count($classReflections) > 0) {
+						$types = [];
+						foreach ($classReflections as $classReflection) {
+							$types[] = $throwType->changeBaseClass($classReflection);
+						}
+
+						$throwType = TypeCombinator::union(...$types);
+					}
+				}
+
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -4297,6 +4309,10 @@ final class NodeScopeResolver
 		if ($constructorReflection->getThrowType() !== null) {
 			$throwType = $constructorReflection->getThrowType();
 			if (!$throwType->isVoid()->yes()) {
+				if ($throwType instanceof StaticType && $this->reflectionProvider->hasClass($className->name)) {
+					$throwType = $throwType->changeBaseClass($this->reflectionProvider->getClass($className->name));
+				}
+
 				return ThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -4329,6 +4345,25 @@ final class NodeScopeResolver
 		if ($methodReflection->getThrowType() !== null) {
 			$throwType = $methodReflection->getThrowType();
 			if (!$throwType->isVoid()->yes()) {
+				if ($throwType instanceof StaticType) {
+					if ($methodCall->class instanceof Name) {
+						if ($this->reflectionProvider->hasClass($methodCall->class->name)) {
+							$throwType = $throwType->changeBaseClass($this->reflectionProvider->getClass($methodCall->class->name));
+						}
+					} else {
+						$classReflections = $scope->getType($methodCall->class)->getObjectClassReflections();
+
+						if (count($classReflections) > 0) {
+							$types = [];
+							foreach ($classReflections as $classReflection) {
+								$types[] = $throwType->changeBaseClass($classReflection);
+							}
+
+							$throwType = TypeCombinator::union(...$types);
+						}
+					}
+				}
+
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -4409,6 +4444,18 @@ final class NodeScopeResolver
 
 		if ($throwType !== null) {
 			if (!$throwType->isVoid()->yes()) {
+				if ($throwType instanceof StaticType) {
+					$classReflections = $scope->getType($propertyFetch->var)->getObjectClassReflections();
+					if (count($classReflections) > 0) {
+						$types = [];
+						foreach ($classReflections as $classReflection) {
+							$types[] = $throwType->changeBaseClass($classReflection);
+						}
+
+						$throwType = TypeCombinator::union(...$types);
+					}
+				}
+
 				return [ThrowPoint::createExplicit($scope, $throwType, $propertyFetch, true)];
 			}
 		} elseif ($this->implicitThrows) {

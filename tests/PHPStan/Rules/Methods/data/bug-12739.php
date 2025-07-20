@@ -40,6 +40,15 @@ class MyLowerString extends ScalarType {
 }
 
 /**
+ * @extends ScalarType<uppercase-string>
+ */
+class MyUpperString extends ScalarType {
+	public static function getClassIdentify() : string {
+		return MyUpperString::class;
+	}
+}
+
+/**
  * @extends ScalarType<class-string>
  */
 class MyClassString extends ScalarType {

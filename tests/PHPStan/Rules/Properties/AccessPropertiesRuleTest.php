@@ -1068,6 +1068,14 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/trait-mixin.php'], []);
 	}
 
+	public function testBug9706(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/bug-9706.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.4')]
 	public function testAsymmetricVisibility(): void
 	{

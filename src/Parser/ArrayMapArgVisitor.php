@@ -6,7 +6,6 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use function array_splice;
 use function count;
 
 #[AutowiredService]
@@ -27,14 +26,31 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		$callbackPos = 0;
-		if ($args[1]->name !== null && $args[1]->name->name === 'callback') {
-			$callbackPos = 1;
+		$callbackArg = null;
+		$arrayArgs = [];
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			$arrayArgs[] = $arg;
 		}
-		$callbackArg = $args[$callbackPos];
-		$arrayArgs = $args;
-		array_splice($arrayArgs, $callbackPos, 1);
-		$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
+
+		if ($callbackArg !== null) {
+			$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
+			return new Node\Expr\FuncCall(
+				$node->name,
+				[$callbackArg, ...$arrayArgs],
+				$node->getAttributes(),
+			);
+		}
 
 		return null;
 	}

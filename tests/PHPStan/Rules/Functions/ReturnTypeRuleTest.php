@@ -357,4 +357,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9401(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9401.php'], [
+			[
+				'Function Bug9401\foo() should return list<int<1, max>> but returns list<int<0, max>>.',
+				17,
+			],
+		]);
+	}
+
 }

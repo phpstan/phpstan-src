@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -17,6 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function ltrim;
+use function preg_match;
 
 #[AutowiredService]
 final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -69,6 +71,8 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 				} elseif ($trimConstantString->getValue() === '\\' && $string->isClassString()->yes()) {
 					$result[] = new ClassStringType();
+				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $string->isNumericString()->yes()) {
+					$result[] = new AccessoryNumericStringType();
 				} else {
 					return $defaultType;
 				}

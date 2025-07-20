@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -16,6 +17,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function preg_match;
 use function rtrim;
 use function trim;
 
@@ -66,17 +68,19 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 			$functionName = $functionReflection->getName();
 
 			foreach ($trimConstantStrings as $trimConstantString) {
-				if (count($stringConstantStrings) === 0) {
+				if (count($stringConstantStrings) > 0) {
+					foreach ($stringConstantStrings as $stringConstantString) {
+						$result[] = new ConstantStringType(
+							$functionName === 'rtrim'
+								? rtrim($stringConstantString->getValue(), $trimConstantString->getValue())
+								: trim($stringConstantString->getValue(), $trimConstantString->getValue()),
+							true,
+						);
+					}
+				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $stringType->isNumericString()->yes()) {
+					$result[] = new AccessoryNumericStringType();
+				} else {
 					return $defaultType;
-				}
-
-				foreach ($stringConstantStrings as $stringConstantString) {
-					$result[] = new ConstantStringType(
-						$functionName === 'rtrim'
-							? rtrim($stringConstantString->getValue(), $trimConstantString->getValue())
-							: trim($stringConstantString->getValue(), $trimConstantString->getValue()),
-						true,
-					);
 				}
 			}
 

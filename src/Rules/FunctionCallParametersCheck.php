@@ -188,6 +188,16 @@ final class FunctionCallParametersCheck
 							$arg->getStartLine(),
 						];
 					}
+
+					if (count($arguments) === 0 && $type->isIterableAtLeastOnce()->yes()) {
+						$arguments[] = [
+							$arg->value,
+							$type->getIterableValueType(),
+							true,
+							null,
+							$arg->getStartLine(),
+						];
+					}
 				} else {
 					$arguments[] = [
 						$arg->value,

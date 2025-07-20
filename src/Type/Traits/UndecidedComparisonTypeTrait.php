@@ -5,6 +5,7 @@ namespace PHPStan\Type\Traits;
 use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 trait UndecidedComparisonTypeTrait
@@ -12,11 +13,19 @@ trait UndecidedComparisonTypeTrait
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		if ($otherType->isNull()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		if ($otherType->isNull()->yes() && $this->isObject()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
@@ -32,11 +41,15 @@ trait UndecidedComparisonTypeTrait
 
 	public function getGreaterType(PhpVersion $phpVersion): Type
 	{
-		return new MixedType();
+		return new MixedType(subtractedType: new NullType());
 	}
 
 	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
+		if ($this->isObject()->yes()) {
+			return new MixedType(subtractedType: new NullType());
+		}
+
 		return new MixedType();
 	}
 

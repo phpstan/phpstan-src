@@ -110,6 +110,10 @@ class NullType implements ConstantScalarType
 			return $otherType->isGreaterThan($this, $phpVersion);
 		}
 
+		if ($otherType->isObject()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
@@ -121,6 +125,10 @@ class NullType implements ConstantScalarType
 
 		if ($otherType instanceof CompoundType) {
 			return $otherType->isGreaterThanOrEqual($this, $phpVersion);
+		}
+
+		if ($otherType->isObject()->yes()) {
+			return TrinaryLogic::createYes();
 		}
 
 		return TrinaryLogic::createMaybe();

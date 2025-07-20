@@ -103,7 +103,7 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 		$phpVersion = new PhpVersion($firstStmt->cond->right->value);
 
 		return [
-			RuleErrorBuilder::message('Skip tests with #[RequiresPhp] attribute intead.')
+			RuleErrorBuilder::message('Skip tests with #[RequiresPhp] attribute instead.')
 				->identifier('phpstan.skipTestsRequiresPhp')
 				->line($firstStmt->getStartLine())
 				->fixNode($originalNode, static function (Node\Stmt\ClassMethod $node) use ($phpVersion, $inverseBinaryOpSigil) {

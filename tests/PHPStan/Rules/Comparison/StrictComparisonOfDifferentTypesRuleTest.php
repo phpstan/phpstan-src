@@ -996,6 +996,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12946.php'], []);
 	}
 
+	public function testBug10884(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10884.php'], []);
+	}
+
 	public function testBug13208(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13208.php'], []);

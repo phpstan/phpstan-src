@@ -183,6 +183,12 @@ return [
 	'SplFileObject::ftruncate' => ['hasSideEffects' => true],
 	'SplFileObject::fwrite' => ['hasSideEffects' => true],
 
+	'SplObjectStorage::addAll' => ['hasSideEffects' => true],
+	'SplObjectStorage::attach' => ['hasSideEffects' => true],
+	'SplObjectStorage::detach' => ['hasSideEffects' => true],
+	'SplObjectStorage::removeAll' => ['hasSideEffects' => true],
+	'SplObjectStorage::removeAllExcept' => ['hasSideEffects' => true],
+
 	'XmlReader::next' => ['hasSideEffects' => true],
 	'XmlReader::read' => ['hasSideEffects' => true],
 ];

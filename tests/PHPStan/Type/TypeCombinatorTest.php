@@ -4127,6 +4127,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntersectionType::class,
 				'lowercase-string&uppercase-string',
 			],
+			[
+				[
+					new ObjectType(DateTime::class),
+					new MixedType(subtractedType: new NullType()),
+				],
+				ObjectType::class,
+				'DateTime',
+			],
+			[
+				[
+					new ObjectWithoutClassType(),
+					new MixedType(subtractedType: new NullType()),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
 		];
 
 		if (PHP_VERSION_ID < 80100) {

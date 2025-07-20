@@ -544,6 +544,11 @@ final class TypeCombinator
 			$subtractedType = $type->getSubtractedType() === null
 				? $subtractedType
 				: self::union($type->getSubtractedType(), $subtractedType);
+
+			$subtractedType = self::intersect(
+				$type->getTypeWithoutSubtractedType(),
+				$subtractedType,
+			);
 			if ($subtractedType instanceof NeverType) {
 				$subtractedType = null;
 			}

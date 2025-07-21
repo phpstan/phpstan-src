@@ -31,18 +31,18 @@ final class IgnoredError
 		if (isset($ignoredError['message'])) {
 			$message = $ignoredError['message'];
 		}
-		if (isset($ignoredError['identifier'])) {
-			if ($message === '') {
-				$message = $ignoredError['identifier'];
-			} else {
-				$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
-			}
-		} elseif (isset($ignoredError['identifiers'])) {
+		if (isset($ignoredError['identifiers'])) {
 			$identifierList = implode(', ', $ignoredError['identifiers']);
 			if ($message === '') {
 				$message = $identifierList;
 			} else {
 				$message = sprintf('%s (%s)', $message, $identifierList);
+			}
+		} elseif (isset($ignoredError['identifier'])) {
+			if ($message === '') {
+				$message = $ignoredError['identifier'];
+			} else {
+				$message = sprintf('%s (%s)', $message, $ignoredError['identifier']);
 			}
 		}
 

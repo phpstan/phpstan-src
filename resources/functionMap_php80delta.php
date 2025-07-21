@@ -93,6 +93,7 @@ return [
 		'mb_strlen' => ['0|positive-int', 'str'=>'string', 'encoding='=>'string'],
 		'mktime' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string'],
+		'odbc_do' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result'=>'array'],
 		'password_hash' => ['non-empty-string', 'password'=>'string', 'algo'=>'string|int|null', 'options='=>'array'],
 		'PDOStatement::fetchAll' => ['array', 'how='=>'int', 'fetch_argument='=>'int|string|callable', 'ctor_args='=>'?array'],

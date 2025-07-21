@@ -7,10 +7,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\StringType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
@@ -130,10 +127,7 @@ class ExpressionResultTest extends PHPStanTestCase
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create('test.php'))
-			->assignVariable('string', new StringType(), new StringType(), TrinaryLogic::createYes())
-			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes())
-			->assignVariable('cond', new MixedType(), new MixedType(), TrinaryLogic::createYes())
-			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
+			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes());
 
 		$result = $nodeScopeResolver->processExprNode(
 			$stmt,

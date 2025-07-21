@@ -48,12 +48,12 @@ class NewStaticRuleTest extends RuleTestCase
 		$errors = [];
 		if (PHP_VERSION_ID < 80000) {
 			$errors[] = [
-				'Unsafe usage of new static()',
+				'Unsafe usage of new static().',
 				11,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unsafe-usage-of-new-static',
 			];
 			$errors[] = [
-				'Unsafe usage of new static()',
+				'Unsafe usage of new static().',
 				11,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unsafe-usage-of-new-static',
 			];

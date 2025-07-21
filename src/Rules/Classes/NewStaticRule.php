@@ -9,6 +9,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use function strtolower;
 
 /**
@@ -90,9 +91,8 @@ final class NewStaticRule implements Rule
 		) {
 			$traitReflection = $scope->getTraitReflection();
 			if ($traitReflection->hasConstructor()) {
-				$traitConstructor = $traitReflection->getConstructor();
-
-				if ($traitConstructor instanceof PhpMethodReflection && $traitConstructor->isAbstract()) {
+				$isAbstract = $traitReflection->getConstructor()->isAbstract();
+				if ($isAbstract === true || ($isAbstract instanceof TrinaryLogic && $isAbstract->yes())) {
 					return [];
 				}
 			}

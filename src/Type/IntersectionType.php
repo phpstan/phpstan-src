@@ -1266,10 +1266,9 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
-	 * @param callable(Type $type): Type        $getType
-	 * @param (callable(Type $type): Type)|null $filter
+	 * @param callable(Type $type): Type $getType
 	 */
-	private function intersectTypes(callable $getType, ?callable $filter = null): Type
+	private function intersectTypes(callable $getType): Type
 	{
 		$operands = array_map($getType, $this->types);
 		return TypeCombinator::intersect(...$operands);

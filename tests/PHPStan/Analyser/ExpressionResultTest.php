@@ -99,6 +99,34 @@ class ExpressionResultTest extends PHPStanTestCase
 				'exit() ?? $x;',
 				true,
 			],
+			[
+				'var_dump(1+exit());',
+				true,
+			],
+			[
+				'var_dump(1-exit());',
+				true,
+			],
+			[
+				'var_dump(1*exit());',
+				true,
+			],
+			[
+				'var_dump(1**exit());',
+				true,
+			],
+			[
+				'var_dump(1/exit());',
+				true,
+			],
+			[
+				'var_dump("a".exit());',
+				true,
+			],
+			[
+				'var_dump(exit()."a");',
+				true,
+			],
 		];
 	}
 

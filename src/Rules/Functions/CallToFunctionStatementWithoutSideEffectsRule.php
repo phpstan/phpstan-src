@@ -30,6 +30,7 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 	];
 
 	public const PHPSTAN_TESTING_FUNCTIONS = [
+		'PHPStan\\dumpNativeType',
 		'PHPStan\\dumpType',
 		'PHPStan\\dumpPhpDocType',
 		'PHPStan\\debugScope',

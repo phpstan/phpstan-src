@@ -72,15 +72,15 @@ class ExpressionResultTest extends PHPStanTestCase
 			],
 			[
 				'$x ? "abc" : exit();',
-				true,
+				false,
 			],
 			[
 				'$x ? exit() : "abc";',
-				true,
+				false,
 			],
 			[
 				'fn() => yield (exit());',
-				true,
+				false,
 			],
 			[
 				'@exit();',
@@ -88,7 +88,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			],
 			[
 				'$x && exit();',
-				true,
+				false,
 			],
 			[
 				'exit() && $x;',

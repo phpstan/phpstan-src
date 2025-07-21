@@ -3296,7 +3296,7 @@ final class NodeScopeResolver
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
 				$leftResult->hasYield() || $rightResult->hasYield(),
-				$leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
+				$leftResult->isAlwaysTerminating(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
 				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
@@ -3704,7 +3704,6 @@ final class NodeScopeResolver
 				$ifResult = $this->processExprNode($stmt, $expr->if, $ifTrueScope, $nodeCallback, $context);
 				$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $ifResult->isAlwaysTerminating();
 				$ifTrueScope = $ifResult->getScope();
 				$ifTrueType = $ifTrueScope->getType($expr->if);
 			}
@@ -3712,7 +3711,6 @@ final class NodeScopeResolver
 			$elseResult = $this->processExprNode($stmt, $expr->else, $ifFalseScope, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $elseResult->isAlwaysTerminating();
 			$ifFalseScope = $elseResult->getScope();
 
 			$condType = $scope->getType($expr->cond);
@@ -4806,7 +4804,7 @@ final class NodeScopeResolver
 		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
 		$exprResult = $this->processExprNode($stmt, $expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
-		return new ExpressionResult($scope, false, $exprResult->isAlwaysTerminating(), $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
+		return new ExpressionResult($scope, false, false, $exprResult->getThrowPoints(), $exprResult->getImpurePoints());
 	}
 
 	/**

@@ -5139,7 +5139,13 @@ final class NodeScopeResolver
 				$scopeToPass = $closureBindScope;
 			}
 
-			if ($parameter instanceof ExtendedParameterReflection) {
+			if (
+				$parameterType === null
+				|| $parameterType instanceof MixedType
+				|| $parameterType->isCallable()->no()
+			) {
+				$callCallbackImmediately = false;
+			} elseif ($parameter instanceof ExtendedParameterReflection) {
 				$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
 				if ($parameterCallImmediately->maybe()) {
 					$callCallbackImmediately = $calleeReflection instanceof FunctionReflection;
@@ -5149,6 +5155,7 @@ final class NodeScopeResolver
 			} else {
 				$callCallbackImmediately = $calleeReflection instanceof FunctionReflection;
 			}
+
 			if ($arg->value instanceof Expr\Closure) {
 				$restoreThisScope = null;
 				if (

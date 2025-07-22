@@ -7,7 +7,9 @@ use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
@@ -127,6 +129,22 @@ class ExpressionResultTest extends PHPStanTestCase
 				'var_dump(exit()."a");',
 				true,
 			],
+			[
+				'array_push($arr, fn() => "exit");',
+				false,
+			],
+			[
+				'array_push($arr, function() { exit(); });',
+				false,
+			],
+			[
+				'array_push($arr, "exit");',
+				false,
+			],
+			[
+				'array_unshift($arr, "exit");',
+				false,
+			],
 		];
 	}
 
@@ -155,7 +173,8 @@ class ExpressionResultTest extends PHPStanTestCase
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create('test.php'))
-			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes());
+			->assignVariable('x', new IntegerType(), new IntegerType(), TrinaryLogic::createYes())
+			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()), TrinaryLogic::createYes());
 
 		$result = $nodeScopeResolver->processExprNode(
 			$stmt,

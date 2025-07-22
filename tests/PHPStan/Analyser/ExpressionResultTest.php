@@ -82,6 +82,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				false,
 			],
 			[
+				'(fn() => exit())();', // immediately invoked function expression
+				true,
+			],
+			[
 				'@exit();',
 				true,
 			],

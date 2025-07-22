@@ -11661,7 +11661,7 @@ return [
 'stream_filter_prepend' => ['resource|false', 'stream'=>'resource', 'filtername'=>'string', 'read_write='=>'int', 'params='=>'mixed'],
 'stream_filter_register' => ['bool', 'filtername'=>'string', 'classname'=>'string'],
 'stream_filter_remove' => ['bool', 'stream_filter'=>'resource'],
-'stream_get_contents' => ['string|false', 'source'=>'resource', 'maxlen='=>'int', 'offset='=>'int'],
+'stream_get_contents' => ['__benevolent<string|false>', 'source'=>'resource', 'maxlen='=>'int', 'offset='=>'int'],
 'stream_get_filters' => ['list<string>'],
 'stream_get_line' => ['string|false', 'stream'=>'resource', 'maxlen'=>'int', 'ending='=>'string'],
 'stream_get_meta_data' => ['array{timed_out:bool,blocked:bool,eof:bool,unread_bytes:int,stream_type:string,wrapper_type:string,wrapper_data:mixed,mode:string,seekable:bool,uri?:string,mediatype?:string,base64?:bool}', 'fp'=>'resource'],

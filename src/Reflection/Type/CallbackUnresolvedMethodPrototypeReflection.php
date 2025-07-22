@@ -125,6 +125,10 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 		$namedArgumentVariants = $namedArgumentVariants !== null
 			? array_map($variantFn, $namedArgumentVariants)
 			: null;
+		$throwType = $method->getThrowType();
+		$throwType = $throwType !== null
+			? $this->transformStaticType($throwType)
+			: null;
 
 		return new ChangedTypeMethodReflection(
 			$declaringClass,
@@ -132,6 +136,7 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 			$variants,
 			$namedArgumentVariants,
 			$selfOutType,
+			$throwType,
 		);
 	}
 

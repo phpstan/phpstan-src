@@ -26,6 +26,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		private array $variants,
 		private ?array $namedArgumentsVariants,
 		private ?Type $selfOutType,
+		private ?Type $throwType,
 	)
 	{
 	}
@@ -122,7 +123,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getThrowType(): ?Type
 	{
-		return $this->reflection->getThrowType();
+		return $this->throwType;
 	}
 
 	public function hasSideEffects(): TrinaryLogic

@@ -1106,6 +1106,7 @@ final class TypeSpecifier
 			if (
 				$sizeType instanceof ConstantIntegerType
 				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& $isList->yes()
 				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
 			) {
 				// turn optional offsets non-optional
@@ -1122,6 +1123,7 @@ final class TypeSpecifier
 				$sizeType instanceof IntegerRangeType
 				&& $sizeType->getMin() !== null
 				&& $sizeType->getMin() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& $isList->yes()
 				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($sizeType->getMax() ?? $sizeType->getMin()) - 1))->yes()
 			) {
 				$builderData = [];
@@ -1167,7 +1169,7 @@ final class TypeSpecifier
 				continue;
 			}
 
-			$resultTypes[] = $arrayType;
+			$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 
 		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);

@@ -407,7 +407,7 @@ class CountWithOptionalKeys
 	protected function testOptionalKeysInUnionArrayWithIntRange($row, $twoOrThree): void
 	{
 		if (count($row) >= $twoOrThree) {
-			assertType('array{0: int, 1: string|null, 2?: int|null}', $row);
+			assertType('array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}', $row);
 		} else {
 			assertType('array{0: int, 1?: string|null, 2?: int|null, 3?: float|null}|array{string}', $row);
 		}

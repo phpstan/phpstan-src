@@ -104,6 +104,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure output between PHP opening and closing tags in pure function PureFunction\justContainsInlineHtml().',
 				160,
 			],
+			[
+				'Impure call to function array_push() in pure function PureFunction\bug13288().',
+				171,
+			],
 		]);
 	}
 

@@ -164,3 +164,11 @@ function justContainsInlineHtml()
 	</table>
 	<?php
 }
+
+/** @phpstan-pure */
+function bug13288(array $a)
+{
+	array_push($a, function() { // error because by ref arg
+		exit(); // ok, as array_push() will not invoke the function
+	});
+}

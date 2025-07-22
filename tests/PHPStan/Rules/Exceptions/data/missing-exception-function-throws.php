@@ -56,3 +56,10 @@ function doBar3(): void
 {
 	throw new \LogicException(); // error
 }
+
+function bug13288(array $a): void
+{
+	array_push($a, function() {
+		throw new \LogicException(); // ok, as array_push() will not invoke the function
+	});
+}

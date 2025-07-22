@@ -171,4 +171,16 @@ function bug13288(array $a)
 	array_push($a, function() { // error because by ref arg
 		exit(); // ok, as array_push() will not invoke the function
 	});
+
+	array_push($a, // error because by ref arg
+		fn() => exit() // ok, as array_push() will not invoke the function
+	);
+
+	$closure = function() {
+		exit();
+	};
+	array_push($a, // error because by ref arg
+		$closure // ok, as array_push() will not invoke the function
+	);
 }
+

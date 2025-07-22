@@ -4690,7 +4690,7 @@ final class NodeScopeResolver
 				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope);
 
-			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $statementResult->isAlwaysTerminating());
 		}
 
 		$count = 0;
@@ -4736,7 +4736,7 @@ final class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions);
+		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $statementResult->isAlwaysTerminating());
 	}
 
 	/**
@@ -5180,6 +5180,7 @@ final class NodeScopeResolver
 				if ($callCallbackImmediately) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? ThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : ThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $closureResult->isAlwaysTerminating();
 				}
 
 				$uses = [];

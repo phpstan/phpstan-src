@@ -17,6 +17,7 @@ final class ProcessClosureResult
 		private array $throwPoints,
 		private array $impurePoints,
 		private array $invalidateExpressions,
+		private bool $isAlwaysTerminating,
 	)
 	{
 	}
@@ -48,6 +49,11 @@ final class ProcessClosureResult
 	public function getInvalidateExpressions(): array
 	{
 		return $this->invalidateExpressions;
+	}
+
+	public function isAlwaysTerminating(): bool
+	{
+		return $this->isAlwaysTerminating;
 	}
 
 }

@@ -102,6 +102,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				true,
 			],
 			[
+				'call_user_func(fn() => exit());',
+				true,
+			],
+			[
 				'var_dump(1+exit());',
 				true,
 			],

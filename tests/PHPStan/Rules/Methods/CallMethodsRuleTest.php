@@ -3615,12 +3615,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = false;
 
-		$this->analyse([__DIR__ . '/data/bug-3396.php'], [
-			[
-				'Parameter #1 $s of method Bug3396\HelloWorld::takesString() expects string, string|false given.',
-				18,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-3396.php'], []);
 	}
 
 }

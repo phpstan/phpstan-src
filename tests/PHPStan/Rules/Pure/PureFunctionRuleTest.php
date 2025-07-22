@@ -108,6 +108,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function array_push() in pure function PureFunction\bug13288().',
 				171,
 			],
+			[
+				'Impure call to function array_push() in pure function PureFunction\bug13288().',
+				175,
+			],
+			[
+				'Impure call to function array_push() in pure function PureFunction\bug13288().',
+				182,
+			],
 		]);
 	}
 

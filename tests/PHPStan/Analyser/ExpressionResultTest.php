@@ -118,6 +118,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				true,
 			],
 			[
+				'usort($arr, static function($a, $b):int { return $a <=> $b; });',
+				false,
+			],
+			[
 				'var_dump(1+exit());',
 				true,
 			],

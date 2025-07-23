@@ -14,7 +14,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -50,14 +49,19 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$methodNameType = $scope->getType($node->getArgs()[1]->value);
-		if (!$methodNameType instanceof ConstantStringType) {
+		$methodNameTypes = $scope->getType($node->getArgs()[1]->value)->getConstantStrings();
+		if ($methodNameTypes === []) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
 				new ConstantBooleanType(true),
 				$context,
 				$scope,
 			);
+		}
+
+		$hasMethodTypes = [];
+		foreach ($methodNameTypes as $methodNameType) {
+			$hasMethodTypes[] = new HasMethodType($methodNameType->getValue());
 		}
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
@@ -67,7 +71,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					$node->getArgs()[0]->value,
 					new IntersectionType([
 						$objectType,
-						new HasMethodType($methodNameType->getValue()),
+						...$hasMethodTypes,
 					]),
 					$context,
 					$scope,
@@ -82,7 +86,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			new UnionType([
 				new IntersectionType([
 					new ObjectWithoutClassType(),
-					new HasMethodType($methodNameType->getValue()),
+					...$hasMethodTypes,
 				]),
 				new ClassStringType(),
 			]),

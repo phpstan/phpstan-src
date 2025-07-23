@@ -1650,7 +1650,7 @@ return [
 'DomXsltStylesheet::result_dump_mem' => ['string', 'xmldoc'=>'DOMDocument'],
 'DOTNET::__construct' => ['void', 'assembly_name'=>'string', 'class_name'=>'string', 'codepage='=>'int'],
 'dotnet_load' => ['int', 'assembly_name'=>'string', 'datatype_name='=>'string', 'codepage='=>'int'],
-'doubleval' => ['float', 'var'=>'scalar|array|resource|null'],
+'doubleval' => ['float', 'var'=>'scalar|array|null'],
 'Ds\Deque::__construct' => ['void', 'values='=>'mixed'],
 'Ds\Deque::count' => ['0|positive-int'],
 'Ds\Deque::jsonSerialize' => ['array'],

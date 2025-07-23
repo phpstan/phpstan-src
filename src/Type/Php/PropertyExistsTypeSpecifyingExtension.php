@@ -55,8 +55,9 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$propertyNameType = $scope->getType($node->getArgs()[1]->value);
-		if (!$propertyNameType instanceof ConstantStringType) {
+		$propertyNameTypes = $scope->getType($node->getArgs()[1]->value)->getConstantStrings();
+
+		if ($propertyNameTypes === []) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
 				new ConstantBooleanType(true),
@@ -65,26 +66,33 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			);
 		}
 
-		if ($propertyNameType->getValue() === '') {
-			return new SpecifiedTypes([], []);
+		$hasPropertyTypes = [];
+		foreach ($propertyNameTypes as $propertyNameType) {
+			$hasPropertyTypes[] = new HasPropertyType($propertyNameType->getValue());
 		}
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		} elseif ($objectType->isObject()->yes()) {
-			$propertyNode = new PropertyFetch(
-				$node->getArgs()[0]->value,
-				new Identifier($propertyNameType->getValue()),
-			);
+			$propertyNodes = [];
+
+			foreach($propertyNameTypes as $propertyNameType) {
+				$propertyNodes[] = new PropertyFetch(
+					$node->getArgs()[0]->value,
+					new Identifier($propertyNameType->getValue()),
+				);
+			}
 		} else {
 			return new SpecifiedTypes([], []);
 		}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
-		if ($propertyReflection !== null) {
-			if (!$propertyReflection->isNative()) {
-				return new SpecifiedTypes([], []);
+		foreach($propertyNodes as $propertyNode) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
+			if ($propertyReflection !== null) {
+				if (!$propertyReflection->isNative()) {
+					return new SpecifiedTypes([], []);
+				}
 			}
 		}
 
@@ -92,7 +100,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			$node->getArgs()[0]->value,
 			new IntersectionType([
 				new ObjectWithoutClassType(),
-				new HasPropertyType($propertyNameType->getValue()),
+				...$hasPropertyTypes,
 			]),
 			$context,
 			$scope,

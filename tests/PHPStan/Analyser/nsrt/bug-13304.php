@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug13272Property;
+namespace Bug13304;
 
 use function PHPStan\Testing\assertType;
 

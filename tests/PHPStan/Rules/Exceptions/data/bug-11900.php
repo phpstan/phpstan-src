@@ -68,20 +68,4 @@ class TestPhpStan
 	{
 		TestDataException::throw2();
 	}
-
-	/**
-	 * @throws TestDataException
-	 */
-	public function validate3(TestDataException $e): void
-	{
-		$e->i;
-	}
-
-	/**
-	 * @throws TestDataException
-	 */
-	public function validate4(): void
-	{
-		new TestDataException();
-	}
 }

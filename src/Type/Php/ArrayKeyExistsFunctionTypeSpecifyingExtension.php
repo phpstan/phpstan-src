@@ -58,7 +58,7 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		}
 		$key = $node->getArgs()[0]->value;
 		$array = $node->getArgs()[1]->value;
-		$keyType = $scope->getType($key);
+		$keyType = $scope->getType($key)->toArrayKey();
 		$arrayType = $scope->getType($array);
 
 		if (

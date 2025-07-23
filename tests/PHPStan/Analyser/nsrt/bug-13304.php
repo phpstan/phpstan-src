@@ -4,13 +4,22 @@ namespace Bug13272Property;
 
 use function PHPStan\Testing\assertType;
 
-function foo(object $bar): void
+function foo(object $foo): void
 {
 	foreach (['qux', 'quux'] as $property) {
-		if (!property_exists($bar, $property)) {
+		if (!property_exists($foo, $property)) {
 			throw new \Exception;
 		}
 
-		assertType("object&hasProperty(quux)&hasProperty(qux)", $bar);
+		assertType("object&hasProperty(quux)&hasProperty(qux)", $foo);
 	}
+}
+
+function bar(object $bar): void
+{
+	if (!property_exists($bar, '')) {
+		throw new \Exception;
+	}
+
+	assertType("object", $bar);
 }

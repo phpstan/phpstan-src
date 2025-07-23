@@ -68,6 +68,10 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 
 		$hasPropertyTypes = [];
 		foreach ($propertyNameTypes as $propertyNameType) {
+			if($propertyNameType->getValue() === '') {
+				return new SpecifiedTypes([], []);
+			}
+
 			$hasPropertyTypes[] = new HasPropertyType($propertyNameType->getValue());
 		}
 

@@ -77,8 +77,8 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		} elseif ($objectType->isObject()->yes()) {
 			$propertyNodes = [];
 
-			foreach($propertyNameTypes as $propertyNameType) {
-				if($propertyNameType->getValue() === '') {
+			foreach ($propertyNameTypes as $propertyNameType) {
+				if ($propertyNameType->getValue() === '') {
 					return new SpecifiedTypes([], []);
 				}
 
@@ -91,12 +91,14 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
-		foreach($propertyNodes as $propertyNode) {
+		foreach ($propertyNodes as $propertyNode) {
 			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyNode, $scope);
-			if ($propertyReflection !== null) {
-				if (!$propertyReflection->isNative()) {
-					return new SpecifiedTypes([], []);
-				}
+			if ($propertyReflection === null) {
+				continue;
+			}
+
+			if (!$propertyReflection->isNative()) {
+				return new SpecifiedTypes([], []);
 			}
 		}
 

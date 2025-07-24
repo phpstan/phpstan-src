@@ -68,10 +68,6 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 
 		$hasPropertyTypes = [];
 		foreach ($propertyNameTypes as $propertyNameType) {
-			if($propertyNameType->getValue() === '') {
-				return new SpecifiedTypes([], []);
-			}
-
 			$hasPropertyTypes[] = new HasPropertyType($propertyNameType->getValue());
 		}
 
@@ -82,6 +78,10 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			$propertyNodes = [];
 
 			foreach($propertyNameTypes as $propertyNameType) {
+				if($propertyNameType->getValue() === '') {
+					return new SpecifiedTypes([], []);
+				}
+
 				$propertyNodes[] = new PropertyFetch(
 					$node->getArgs()[0]->value,
 					new Identifier($propertyNameType->getValue()),

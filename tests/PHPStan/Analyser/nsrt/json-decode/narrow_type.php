@@ -32,3 +32,12 @@ function ($mixed) {
 	$value = json_decode($mixed, false);
 	assertType('mixed', $value);
 };
+
+function(string $json): void {
+	/** @var '{}'|'null' $json */
+	$value = json_decode($json);
+	assertType('stdClass|null', $value);
+
+	$value = json_decode($json, true);
+	assertType('array{}|null', $value);
+};

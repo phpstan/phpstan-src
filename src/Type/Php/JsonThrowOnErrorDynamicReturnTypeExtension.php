@@ -12,12 +12,12 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 use function is_bool;
 use function json_decode;
 
@@ -87,8 +87,14 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$firstValueType = $scope->getType($args[0]->value);
-		if ($firstValueType instanceof ConstantStringType) {
-			return $this->resolveConstantStringType($firstValueType, $isForceArray);
+		if ($firstValueType->getConstantStrings() !== []) {
+			$types = [];
+
+			foreach ($firstValueType->getConstantStrings() as $constantString) {
+				$types[] = $this->resolveConstantStringType($constantString, $isForceArray);
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		if ($isForceArray) {
@@ -109,7 +115,7 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$secondArgType = $scope->getType($args[1]->value);
-		$secondArgValue = $secondArgType instanceof ConstantScalarType ? $secondArgType->getValue() : null;
+		$secondArgValue = count($secondArgType->getConstantScalarValues()) === 1 ? $secondArgType->getConstantScalarValues()[0] : null;
 
 		if (is_bool($secondArgValue)) {
 			return $secondArgValue;

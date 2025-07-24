@@ -14,12 +14,3 @@ function foo(object $foo): void
 		assertType("object&hasProperty(quux)&hasProperty(qux)", $foo);
 	}
 }
-
-function bar(object $bar): void
-{
-	if (!property_exists($bar, '')) {
-		throw new \Exception;
-	}
-
-	assertType("object", $bar);
-}

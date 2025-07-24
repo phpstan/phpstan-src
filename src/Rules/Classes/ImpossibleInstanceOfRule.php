@@ -9,10 +9,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -25,6 +28,7 @@ final class ImpossibleInstanceOfRule implements Rule
 {
 
 	public function __construct(
+		private RuleLevelHelper $ruleLevelHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -42,11 +46,6 @@ final class ImpossibleInstanceOfRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$instanceofType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
-		if (!$instanceofType instanceof ConstantBooleanType) {
-			return [];
-		}
-
 		if ($node->class instanceof Node\Name) {
 			$className = $scope->resolveName($node->class);
 			$classType = new ObjectType($className);
@@ -56,7 +55,13 @@ final class ImpossibleInstanceOfRule implements Rule
 				new StringType(),
 				new ObjectWithoutClassType(),
 			);
-			if (!$allowed->isSuperTypeOf($classType)->yes()) {
+			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+				$scope,
+				$node->class,
+				'',
+				static fn (Type $type): bool => !$allowed->isSuperTypeOf($type)->yes(),
+			);
+			if (!$typeResult->getType() instanceof ErrorType && !$allowed->isSuperTypeOf($typeResult->getType())->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',
@@ -65,6 +70,11 @@ final class ImpossibleInstanceOfRule implements Rule
 					))->identifier('instanceof.invalidExprType')->build(),
 				];
 			}
+		}
+
+		$instanceofType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
+		if (!$instanceofType instanceof ConstantBooleanType) {
+			return [];
 		}
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {

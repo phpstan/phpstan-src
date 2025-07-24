@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -19,7 +20,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true);
+
 		return new ImpossibleInstanceOfRule(
+			$ruleLevelHelper,
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,
@@ -151,14 +155,14 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
 					322,
 				],
-				/*[
+				[
 					'Instanceof between mixed and int results in an error.',
 					353,
 				],
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
-				],*/
+				],
 				[
 					'Instanceof between ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					388,
@@ -492,6 +496,22 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				'Instanceof between Bug3632\NiceClass and Bug3632\NiceClass will always evaluate to true.',
 				36,
 				$tipText,
+			],
+		]);
+	}
+
+	public function testBug10036(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10036.php'], [
+			[
+				'Instanceof between stdClass and string|null results in an error.',
+				11,
+			],
+			[
+				'Instanceof between stdClass and string|null results in an error.',
+				19,
 			],
 		]);
 	}

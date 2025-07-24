@@ -16,7 +16,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -72,23 +71,22 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		}
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
-		if ($objectType instanceof ConstantStringType) {
+
+		if (!$objectType->isObject()->yes()) {
 			return new SpecifiedTypes([], []);
-		} elseif ($objectType->isObject()->yes()) {
-			$propertyNodes = [];
+		}
 
-			foreach ($propertyNameTypes as $propertyNameType) {
-				if ($propertyNameType->getValue() === '') {
-					return new SpecifiedTypes([], []);
-				}
+		$propertyNodes = [];
 
-				$propertyNodes[] = new PropertyFetch(
-					$node->getArgs()[0]->value,
-					new Identifier($propertyNameType->getValue()),
-				);
+		foreach ($propertyNameTypes as $propertyNameType) {
+			if ($propertyNameType->getValue() === '') {
+				return new SpecifiedTypes([], []);
 			}
-		} else {
-			return new SpecifiedTypes([], []);
+
+			$propertyNodes[] = new PropertyFetch(
+				$node->getArgs()[0]->value,
+				new Identifier($propertyNameType->getValue()),
+			);
 		}
 
 		foreach ($propertyNodes as $propertyNode) {

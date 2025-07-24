@@ -28,4 +28,14 @@ class HelloWorld
 	{
 		var_dump(new stdClass instanceof $class);
 	}
+
+	public function sayObject(object $class): void
+	{
+		var_dump(new stdClass instanceof $class);
+	}
+
+	public function sayArray(array $class): void
+	{
+		var_dump(new stdClass instanceof $class);
+	}
 }

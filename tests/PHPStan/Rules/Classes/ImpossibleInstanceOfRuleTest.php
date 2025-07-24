@@ -513,6 +513,10 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				'Instanceof between stdClass and string|null results in an error.',
 				19,
 			],
+			[
+				'Instanceof between stdClass and array results in an error.',
+				39,
+			],
 		]);
 	}
 

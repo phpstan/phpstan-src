@@ -30,6 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        php-version: ["8.2"]
         include:
           - script: |
               cd e2e/result-cache-1
@@ -282,6 +283,10 @@ jobs:
               cd e2e/ignore-error-extension
               composer install
               ../../bin/phpstan
+          - script: |
+              cd e2e/bug10483
+              ../../bin/phpstan -vvv
+            php-version: "7.2"
 
     steps:
       - name: "Checkout"
@@ -291,7 +296,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.2"
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring
           ini-values: memory_limit=256M
 
@@ -407,6 +412,11 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
+
+      - name: "Transform source code"
+        if: matrix.php-version == '7.2'
+        shell: bash
+        run: "vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}"
 
       - name: "Install bashunit"
         run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s e2e/ 0.22.0"

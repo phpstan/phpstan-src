@@ -58,7 +58,7 @@ final class FilterFunctionReturnTypeHelper
 
 	public function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
-		$inexistentOffsetType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
+		$inexistentOffsetType = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
 			? new ConstantBooleanType(false)
 			: new NullType();
 
@@ -107,6 +107,9 @@ final class FilterFunctionReturnTypeHelper
 
 		if ($filterType === null) {
 			$filterValue = $this->getConstant('FILTER_DEFAULT');
+			if (null === $filterValue) {
+				return $mixedType;
+			}
 		} else {
 			if (!$filterType instanceof ConstantIntegerType) {
 				return $mixedType;
@@ -121,17 +124,17 @@ final class FilterFunctionReturnTypeHelper
 		$hasOptions = $this->hasOptions($flagsType);
 		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
 
-		$defaultType = $options['default'] ?? ($this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
+		$defaultType = $options['default'] ?? ($this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
 			? new NullType()
 			: new ConstantBooleanType(false));
 
 		$inputIsArray = $inputType->isArray();
-		$hasRequireArrayFlag = $this->hasFlag($this->getConstant('FILTER_REQUIRE_ARRAY'), $flagsType);
+		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
 		if ($inputIsArray->no() && $hasRequireArrayFlag) {
 			return $defaultType;
 		}
 
-		$hasForceArrayFlag = $this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsType);
+		$hasForceArrayFlag = $this->hasFlag('FILTER_FORCE_ARRAY', $flagsType);
 		if ($inputIsArray->yes() && ($hasRequireArrayFlag || $hasForceArrayFlag)) {
 			$inputArrayKeyType = $inputType->getIterableKeyType();
 			$inputType = $inputType->getIterableValueType();
@@ -187,32 +190,46 @@ final class FilterFunctionReturnTypeHelper
 		$stringType = new StringType();
 		$nonFalsyStringType = TypeCombinator::intersect($stringType, new AccessoryNonFalsyStringType());
 
-		$this->filterTypeMap = [
-			$this->getConstant('FILTER_UNSAFE_RAW') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_EMAIL') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_ENCODED') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_NUMBER_FLOAT') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_NUMBER_INT') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_SPECIAL_CHARS') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_STRING') => $stringType,
-			$this->getConstant('FILTER_SANITIZE_URL') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_BOOLEAN') => $booleanType,
-			$this->getConstant('FILTER_VALIDATE_DOMAIN') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_EMAIL') => $nonFalsyStringType,
-			$this->getConstant('FILTER_VALIDATE_FLOAT') => $floatType,
-			$this->getConstant('FILTER_VALIDATE_INT') => $intType,
-			$this->getConstant('FILTER_VALIDATE_IP') => $nonFalsyStringType,
-			$this->getConstant('FILTER_VALIDATE_MAC') => $nonFalsyStringType,
-			$this->getConstant('FILTER_VALIDATE_REGEXP') => $stringType,
-			$this->getConstant('FILTER_VALIDATE_URL') => $nonFalsyStringType,
+		$map = [
+			'FILTER_UNSAFE_RAW' => $stringType,
+			'FILTER_SANITIZE_EMAIL' => $stringType,
+			'FILTER_SANITIZE_ENCODED' => $stringType,
+			'FILTER_SANITIZE_NUMBER_FLOAT' => $stringType,
+			'FILTER_SANITIZE_NUMBER_INT' => $stringType,
+			'FILTER_SANITIZE_SPECIAL_CHARS' => $stringType,
+			'FILTER_SANITIZE_STRING' => $stringType,
+			'FILTER_SANITIZE_URL' => $stringType,
+			'FILTER_VALIDATE_BOOLEAN' => $booleanType,
+			'FILTER_VALIDATE_DOMAIN' => $stringType,
+			'FILTER_VALIDATE_EMAIL' => $nonFalsyStringType,
+			'FILTER_VALIDATE_FLOAT' => $floatType,
+			'FILTER_VALIDATE_INT' => $intType,
+			'FILTER_VALIDATE_IP' => $nonFalsyStringType,
+			'FILTER_VALIDATE_MAC' => $nonFalsyStringType,
+			'FILTER_VALIDATE_REGEXP' => $stringType,
+			'FILTER_VALIDATE_URL' => $nonFalsyStringType,
 		];
 
+		$this->filterTypeMap = [];
+		foreach ($map as $filter => $type) {
+			$constant = $this->getConstant($filter);
+			if (null !== $constant) {
+				$this->filterTypeMap[$constant] = $type;
+			}
+		}
+
 		if ($this->reflectionProvider->hasConstant(new Node\Name('FILTER_SANITIZE_MAGIC_QUOTES'), null)) {
-			$this->filterTypeMap[$this->getConstant('FILTER_SANITIZE_MAGIC_QUOTES')] = $stringType;
+			$sanitizeMagicQuote = $this->getConstant('FILTER_SANITIZE_MAGIC_QUOTES');
+			if (null !== $sanitizeMagicQuote) {
+				$this->filterTypeMap[$sanitizeMagicQuote] = $stringType;
+			}
 		}
 
 		if ($this->reflectionProvider->hasConstant(new Node\Name('FILTER_SANITIZE_ADD_SLASHES'), null)) {
-			$this->filterTypeMap[$this->getConstant('FILTER_SANITIZE_ADD_SLASHES')] = $stringType;
+			$sanitizeAddSlashes = $this->getConstant('FILTER_SANITIZE_ADD_SLASHES');
+			if (null !== $sanitizeAddSlashes) {
+				$this->filterTypeMap[$sanitizeAddSlashes] = $stringType;
+			}
 		}
 
 		return $this->filterTypeMap;
@@ -227,11 +244,19 @@ final class FilterFunctionReturnTypeHelper
 			return $this->filterTypeOptions;
 		}
 
-		$this->filterTypeOptions = [
-			$this->getConstant('FILTER_VALIDATE_INT') => ['min_range', 'max_range'],
+		$map = [
+			'FILTER_VALIDATE_INT' => ['min_range', 'max_range'],
 			// PHPStan does not yet support FloatRangeType
-			// $this->getConstant('FILTER_VALIDATE_FLOAT') => ['min_range', 'max_range'],
+			// 'FILTER_VALIDATE_FLOAT' => ['min_range', 'max_range'],
 		];
+
+		$this->filterTypeOptions = [];
+		foreach ($map as $filter => $type) {
+			$constant = $this->getConstant($filter);
+			if (null !== $constant) {
+				$this->filterTypeOptions[$constant] = $type;
+			}
+		}
 
 		return $this->filterTypeOptions;
 	}
@@ -239,12 +264,12 @@ final class FilterFunctionReturnTypeHelper
 	/**
 	 * @param non-empty-string $constantName
 	 */
-	private function getConstant(string $constantName): int
+	private function getConstant(string $constantName): ?int
 	{
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			return null;
 		}
 
 		return $valueType->getValue();
@@ -301,8 +326,8 @@ final class FilterFunctionReturnTypeHelper
 
 			if ($in instanceof ConstantStringType) {
 				$value = $in->getValue();
-				$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
-				$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
+				$allowOctal = $this->hasFlag('FILTER_FLAG_ALLOW_OCTAL', $flagsType);
+				$allowHex = $this->hasFlag('FILTER_FLAG_ALLOW_HEX', $flagsType);
 
 				if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
 					$octalValue = octdec($value);
@@ -411,8 +436,13 @@ final class FilterFunctionReturnTypeHelper
 		return $options;
 	}
 
-	private function hasFlag(int $flag, ?Type $flagsType): bool
+	private function hasFlag(string $flagName, ?Type $flagsType): bool
 	{
+		$flag = $this->getConstant($flagName);
+		if (null === $flag) {
+			return false;
+		}
+
 		if ($flagsType === null) {
 			return false;
 		}
@@ -441,9 +471,9 @@ final class FilterFunctionReturnTypeHelper
 		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
 		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			return $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_LOW'), $flagsType)
-				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_HIGH'), $flagsType)
-				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_BACKTICK'), $flagsType);
+			return $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
+				|| $this->hasFlag('FILTER_FLAG_STRIP_HIGH', $flagsType)
+				|| $this->hasFlag('FILTER_FLAG_STRIP_BACKTICK', $flagsType);
 		}
 
 		return true;

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -68,6 +69,29 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 			];
 		}
 		$this->analyse([__DIR__ . '/data/missing-exception-method-throws.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13297(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13297.php'], [
+			[
+				"Method Bug13297\HelloWorld::sayHello3() throws checked exception ValueError but it's missing from the PHPDoc @throws tag.",
+				25,
+			],
+			[
+				"Method Bug13297\HelloWorld::sayHello3() throws checked exception TypeError but it's missing from the PHPDoc @throws tag.",
+				25,
+			],
+			[
+				"Method Bug13297\HelloWorld::sayHello4() throws checked exception ValueError but it's missing from the PHPDoc @throws tag.",
+				31,
+			],
+			[
+				"Method Bug13297\HelloWorld::sayHello4() throws checked exception TypeError but it's missing from the PHPDoc @throws tag.",
+				31,
+			],
+		]);
 	}
 
 }

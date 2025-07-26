@@ -48,7 +48,6 @@ final class DateIntervalFormatDynamicReturnTypeExtension implements DynamicMetho
 				return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 			}
 
-
 			return null;
 		}
 
@@ -61,9 +60,10 @@ final class DateIntervalFormatDynamicReturnTypeExtension implements DynamicMetho
 			$possibleReturnTypes[] = new ConstantStringType($value);
 		}
 
-		$result = TypeCombinator::union(...$possibleReturnTypes)->generalize(GeneralizePrecision::moreSpecific());
-
-		return TypeCombinator::remove($result, new AccessoryLiteralStringType());
+		return TypeCombinator::remove(
+			TypeCombinator::union(...$possibleReturnTypes)->generalize(GeneralizePrecision::moreSpecific()),
+			new AccessoryLiteralStringType(),
+		);
 	}
 
 }

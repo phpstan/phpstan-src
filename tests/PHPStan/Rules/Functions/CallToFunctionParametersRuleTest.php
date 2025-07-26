@@ -364,6 +364,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}
 
+	public function testImplodeNamedParameters(): void
+	{
+		$this->analyse([__DIR__ . '/data/implode-named-parameters.php'], [
+			[
+				'Missing parameter $separator (string) in call to function implode.',
+				6,
+			],
+			[
+				'Missing parameter $separator (string) in call to function join.',
+				7,
+			],
+		]);
+	}
+
 	public function testVariableIsNotNullAfterSeriesOfConditions(): void
 	{
 		require_once __DIR__ . '/data/variable-is-not-null-after-conditions.php';

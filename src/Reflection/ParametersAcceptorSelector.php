@@ -205,7 +205,7 @@ final class ParametersAcceptorSelector
 			}
 
 			if ((bool) $args[0]->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
-				if (isset($args[1])) {
+				if (isset($args[1]) || $args[0]->name?->name === 'array') {
 					$parameters = [
 						new NativeParameterReflection('separator', false, new StringType(), PassedByReference::createNo(), false, null),
 						new NativeParameterReflection('array', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),

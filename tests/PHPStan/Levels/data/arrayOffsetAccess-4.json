@@ -1,0 +1,37 @@
+[
+    {
+        "message": "Expression \"$a[42]\" on a separate line does not do anything.",
+        "line": 15,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[null]\" on a separate line does not do anything.",
+        "line": 16,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[$intOrNull]\" on a separate line does not do anything.",
+        "line": 18,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[$objectOrInt]\" on a separate line does not do anything.",
+        "line": 19,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[$objectOrNull]\" on a separate line does not do anything.",
+        "line": 20,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[$explicitlyMixed]\" on a separate line does not do anything.",
+        "line": 21,
+        "ignorable": true
+    },
+    {
+        "message": "Expression \"$a[$implicitlyMixed]\" on a separate line does not do anything.",
+        "line": 22,
+        "ignorable": true
+    }
+]

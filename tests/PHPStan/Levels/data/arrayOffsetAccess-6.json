@@ -1,0 +1,12 @@
+[
+    {
+        "message": "Method Levels\\ArrayOffsetAccess\\Foo::test() has parameter $a with no value type specified in iterable type array.",
+        "line": 7,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\ArrayOffsetAccess\\Foo::test() has parameter $implicitlyMixed with no type specified.",
+        "line": 7,
+        "ignorable": true
+    }
+]

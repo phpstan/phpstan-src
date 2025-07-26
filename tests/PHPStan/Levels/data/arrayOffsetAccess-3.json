@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Invalid array key type DateTimeImmutable.",
+        "line": 17,
+        "ignorable": true
+    }
+]

@@ -41,6 +41,7 @@ class LevelsIntegrationTest extends LevelsTestCase
 			['arrayDestructuring'],
 			['listType'],
 			['missingTypes'],
+			['arrayOffsetAccess'],
 		];
 		if (PHP_VERSION_ID >= 80300) {
 			$topics[] = ['constantAccesses83'];

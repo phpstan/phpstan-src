@@ -16,7 +16,10 @@ class Foo
 	public function doFoo(): void
 	{
 		if (!empty($this->config['authors'])) {
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $this->config['authors']);
 			foreach ($this->config['authors'] as $key => $author) {
+				assertType("mixed~(0|0.0|false|null)", $this->config['authors']);
+
 				if (!is_array($author)) {
 					$this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
 					assertType("mixed~(0|0.0|false|null)", $this->config['authors']);

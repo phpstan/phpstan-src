@@ -205,7 +205,7 @@ final class ParametersAcceptorSelector
 			}
 
 			if (count($args) <= 2 && (bool) $args[0]->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
-				$acceptor = $parametersAcceptors[0];
+				$acceptor = $namedArgumentsVariants[0] ?? $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (isset($args[1]) || ($args[0]->name !== null && $args[0]->name->name === 'array')) {
 					$parameters = [

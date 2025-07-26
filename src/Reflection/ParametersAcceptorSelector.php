@@ -209,16 +209,15 @@ final class ParametersAcceptorSelector
 				$parameters = $acceptor->getParameters();
 				if (isset($args[1]) || ($args[0]->name !== null && $args[0]->name->name === 'array')) {
 					$parameters = [
-						new NativeParameterReflection('separator', false, new StringType(), PassedByReference::createNo(), false, null),
-						new NativeParameterReflection('array', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection($parameters[0]->getName(), false, new StringType(), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection($parameters[1]->getName(), false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
 					];
 				} else {
 					$parameters = [
-						new NativeParameterReflection('separator', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection($parameters[0]->getName(), false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
 					];
 				}
 
-				$acceptor = $parametersAcceptors[0];
 				$parametersAcceptors = [
 					new FunctionVariant(
 						$acceptor->getTemplateTypeMap(),

@@ -129,6 +129,9 @@
 			],
 			"react/http": [
 				"patches/Sender.patch"
+			],
+			"symfony/console": [
+				"patches/OutputFormatter.patch"
 			]
 		}
 	},

@@ -320,6 +320,36 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		self::expectNotToPerformAssertions();
 	}
 
+	public function testBug13292(): void
+	{
+		putenv('COLUMNS=200');
+		$formatter = $this->createErrorFormatter(null);
+		$formatter->formatErrors(
+			new AnalysisResult(
+				[
+					new Error(
+						'Parameter #1 $arrayabc of method Abcdefghijklmnopqrstuvwxyzabcdefghijk::translateAbcdefgh() expects array{status: int, error: string, date?: string}, non-empty-array<mixed, mixed> given.',
+						'Foo.php',
+						5,
+						identifier: 'argument.type',
+					),
+				],
+				[],
+				[],
+				[],
+				[],
+				false,
+				null,
+				true,
+				0,
+				false,
+				[],
+			),
+			$this->getOutput(),
+		);
+		self::expectNotToPerformAssertions();
+	}
+
 	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');

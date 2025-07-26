@@ -5,7 +5,7 @@
         "ignorable": true
     },
     {
-        "message": "Possibly invalid array key type object|null.",
+        "message": "Invalid array key type object.",
         "line": 20,
         "ignorable": true
     }

@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -41,19 +40,24 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		$dimensionType = $scope->getType($node->dim);
-		if ($dimensionType instanceof MixedType) {
-			return [];
-		}
-
 		$varType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->var,
 			'',
-			static fn (Type $varType): bool => $varType->isArray()->no() || AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType)->yes(),
+			static fn (Type $varType): bool => $varType->isArray()->no(),
 		)->getType();
 
 		if ($varType instanceof ErrorType || $varType->isArray()->no()) {
+			return [];
+		}
+
+		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->dim,
+			'',
+			static fn (Type $dimType): bool => AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimType)->yes(),
+		)->getType();
+		if ($dimensionType instanceof ErrorType) {
 			return [];
 		}
 

@@ -1131,7 +1131,7 @@ return [
 	}
 
 	/**
-	 * @return array<string, string>
+	 * @return array<string, array<mixed>>
 	 */
 	private function getComposerInstalled(): array
 	{
@@ -1149,6 +1149,10 @@ return [
 			}
 
 			$installed = require $filePath;
+			if (!is_array($installed)) {
+				throw new ShouldNotHappenException();
+			}
+
 			$rootName = $installed['root']['name'];
 			unset($installed['root']);
 			unset($installed['versions'][$rootName]);

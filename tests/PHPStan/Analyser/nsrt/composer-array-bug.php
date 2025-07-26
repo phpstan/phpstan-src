@@ -19,12 +19,12 @@ class Foo
 			foreach ($this->config['authors'] as $key => $author) {
 				if (!is_array($author)) {
 					$this->errors[] = 'authors.'.$key.' : should be an array, '.gettype($author).' given';
-					assertType("mixed", $this->config['authors']);
+					assertType("mixed~(0|0.0|''|'0'|false)", $this->config['authors']);
 					unset($this->config['authors'][$key]);
-					assertType("mixed", $this->config['authors']);
+					assertType("mixed~(0|0.0|''|'0'|false)", $this->config['authors']);
 					continue;
 				}
-				assertType("mixed", $this->config['authors']);
+				assertType("mixed~(0|0.0|''|'0'|false)", $this->config['authors']);
 				foreach (['homepage', 'email', 'name', 'role'] as $authorData) {
 					if (isset($author[$authorData]) && !is_string($author[$authorData])) {
 						$this->errors[] = 'authors.'.$key.'.'.$authorData.' : invalid value, must be a string';
@@ -32,9 +32,9 @@ class Foo
 					}
 				}
 				if (isset($author['homepage'])) {
-					assertType("mixed", $this->config['authors']);
+					assertType("mixed~(0|0.0|''|'0'|false)", $this->config['authors']);
 					unset($this->config['authors'][$key]['homepage']);
-					assertType("mixed", $this->config['authors']);
+					assertType("array|ArrayAccess|null", $this->config['authors']);
 				}
 				if (isset($author['email']) && !filter_var($author['email'], FILTER_VALIDATE_EMAIL)) {
 					unset($this->config['authors'][$key]['email']);
@@ -44,8 +44,8 @@ class Foo
 				}
 			}
 
-			assertType("non-empty-array&hasOffsetValue('authors', mixed)", $this->config);
-			assertType("mixed", $this->config['authors']);
+			assertType("non-empty-array&hasOffsetValue('authors', mixed~(0|0.0|''|'0'|false))", $this->config);
+			assertType("mixed~(0|0.0|''|'0'|false)", $this->config['authors']);
 
 			if (empty($this->config['authors'])) {
 				unset($this->config['authors']);

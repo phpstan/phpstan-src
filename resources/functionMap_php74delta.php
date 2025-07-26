@@ -60,5 +60,6 @@ return [
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
+		'join\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
 	],
 ];

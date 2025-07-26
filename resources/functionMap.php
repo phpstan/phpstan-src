@@ -5156,6 +5156,7 @@ return [
 'jobqueue_license_info' => ['array'],
 'join' => ['string', 'glue'=>'string', 'pieces'=>'array'],
 'join\'1' => ['string', 'pieces'=>'array'],
+'join\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
 'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
 'json_decode' => ['mixed', 'json'=>'string', 'assoc='=>'bool|null', 'depth='=>'positive-int', 'options='=>'int'],
 'json_encode' => ['non-empty-string|false', 'data'=>'mixed', 'options='=>'int', 'depth='=>'positive-int'],

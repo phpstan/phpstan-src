@@ -120,12 +120,20 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				258,
 			],
 			[
+				'Offset int|null might not exist on array<int, string>.',
+				309,
+			],
+			[
 				'Offset null does not exist on array<int, string>.',
 				310,
 			],
 			[
 				'Offset int does not exist on array<string, string>.',
 				312,
+			],
+			[
+				' Offset int|null might not exist on array<string, string>.',
+				314,
 			],
 			[
 				'Offset \'baz\' might not exist on array{bar: 1, baz?: 2}.',
@@ -186,12 +194,20 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				13,
 			],
 			[
+				"Offset int|object might not exist on 'foo'.",
+				16,
+			],
+			[
 				'Offset \'foo\' might not exist on array|string.',
 				24,
 			],
 			[
 				'Offset 12.34 might not exist on array|string.',
 				28,
+			],
+			[
+				'Offset int|object might not exist on array|string.',
+				32,
 			],
 		]);
 	}
@@ -956,8 +972,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug1061(): void
 	{
-		$this->reportPossiblyNonexistentConstantArrayOffset = true;
-
 		$this->analyse([__DIR__ . '/data/bug-1061.php'], [
 			[
 				"Offset 'one'|'two' might not exist on array{two: 1, three: 2}.",

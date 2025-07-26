@@ -76,6 +76,7 @@ final class NonexistentOffsetInArrayDimFetchCheck
 			} else {
 				$flattenedTypes = TypeUtils::flattenTypes($type);
 			}
+
 			foreach ($flattenedTypes as $innerType) {
 				if (
 					$this->reportPossiblyNonexistentGeneralArrayOffset
@@ -95,9 +96,11 @@ final class NonexistentOffsetInArrayDimFetchCheck
 					break;
 				}
 				if ($dimType instanceof UnionType) {
-					if ($innerType->hasOffsetValueType($dimType)->no()) {
-						$report = true;
-						break;
+					foreach ($dimType->getTypes() as $subDimType) {
+						if ($innerType->hasOffsetValueType($subDimType)->no()) {
+							$report = true;
+							break 2;
+						}
 					}
 					continue;
 				}

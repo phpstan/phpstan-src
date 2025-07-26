@@ -322,7 +322,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
-					'Parameter #2 $array of function implode expects array|null, string given.',
+					'Parameter #1 $separator of function implode expects string, array given.',
+					8,
+				],
+				[
+					'Parameter #2 $array of function implode expects array, string given.',
 					8,
 				],
 			];
@@ -336,7 +340,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
 				[
-					'Parameter #2 $array of function implode expects array|null, string given.',
+					'Parameter #1 $separator of function implode expects string, array given.',
+					8,
+				],
+				[
+					'Parameter #2 $array of function implode expects array, string given.',
 					8,
 				],
 			];
@@ -2222,6 +2230,46 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-3506.php'], []);
+	}
+
+	public function testBug5760(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5760.php'], [
+			[
+				'Parameter #2 $pieces of function join expects array, list<int>|null given.',
+				10,
+			],
+			[
+				'Parameter #1 $glue of function join expects array, list<int>|null given.',
+				11,
+			],
+			[
+				'Parameter #2 $array of function implode expects array, list<int>|null given.',
+				13,
+			],
+			[
+				'Parameter #1 $separator of function implode expects array, list<int>|null given.',
+				14,
+			],
+			[
+				'Parameter #2 $pieces of function join expects array, array<string>|string given.',
+				22,
+			],
+			[
+				'Parameter #1 $glue of function join expects array, array<string>|string given.',
+				23,
+			],
+			[
+				'Parameter #2 $array of function implode expects array, array<string>|string given.',
+				25,
+			],
+			[
+				'Parameter #1 $separator of function implode expects array, array<string>|string given.',
+				26,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0')]

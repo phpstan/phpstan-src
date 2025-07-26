@@ -4238,7 +4238,7 @@ final class MutatingScope implements Scope
 						new ObjectType(ArrayAccess::class),
 						new NullType(),
 					];
-					if ($dimType instanceof ConstantIntegerType) {
+					if ($dimType->isInteger()->yes()) {
 						$types[] = new StringType();
 					}
 

@@ -172,9 +172,8 @@ class MixedType implements CompoundType, SubtractableType
 		$types = [
 			new ArrayType(new MixedType(), new MixedType()),
 			new ObjectType(ArrayAccess::class),
-			new NullType(),
 		];
-		if ($offsetType->isInteger()->yes()) {
+		if (!$offsetType->isInteger()->no()) {
 			$types[] = new StringType();
 		}
 		return TypeCombinator::union(...$types);

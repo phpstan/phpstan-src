@@ -1025,6 +1025,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12412.php'], []);
 	}
 
+	public function testBug2730(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-2730.php'], [
+			[
+				'Call to function is_object() with int will always evaluate to false.',
+				43,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.2')]
 	public function testBug13291(): void
 	{

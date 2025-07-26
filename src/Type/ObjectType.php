@@ -36,6 +36,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -693,8 +694,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$classReflection = $classReflection->getParentClass();
 		} while ($classReflection !== null);
 
-		if (!$isFinal && count($arrayKeys) === 0) {
-			return new ArrayType(new MixedType(), new MixedType());
+		if (!$isFinal) {
+			if (count($arrayKeys) === 0) {
+				return new ArrayType(new MixedType(), new MixedType());
+			}
+
+			$types = [new ArrayType(new MixedType(), new MixedType())];
+			foreach ($arrayKeys as $i => $arrayKey) {
+				$types[] = new HasOffsetValueType($arrayKey, $arrayValues[$i]);
+			}
+
+			return new IntersectionType($types);
 		}
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);

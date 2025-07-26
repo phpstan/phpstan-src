@@ -12,13 +12,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function get_class;
@@ -59,7 +60,9 @@ final class InvalidComparisonOperationRule implements Rule
 			return [];
 		}
 
-		if ($this->isNumberType($scope, $node->left) && $this->isNumberType($scope, $node->right)) {
+		$isLeftNumberType = $this->isNumberType($scope, $node->left);
+		$isRightNumberType = $this->isNumberType($scope, $node->right);
+		if (($isLeftNumberType && $isRightNumberType) || (!$isLeftNumberType && !$isRightNumberType)) {
 			return [];
 		}
 
@@ -80,10 +83,10 @@ final class InvalidComparisonOperationRule implements Rule
 		}
 
 		if (
-			($this->isNumberType($scope, $node->left) && (
+			($isLeftNumberType && (
 				$this->isPossiblyNullableObjectType($scope, $node->right) || $this->isPossiblyNullableArrayType($scope, $node->right)
 			))
-			|| ($this->isNumberType($scope, $node->right) && (
+			|| ($isRightNumberType && (
 				$this->isPossiblyNullableObjectType($scope, $node->left) || $this->isPossiblyNullableArrayType($scope, $node->left)
 			))
 		) {
@@ -113,45 +116,18 @@ final class InvalidComparisonOperationRule implements Rule
 
 	private function isPossiblyNullableObjectType(Scope $scope, Node\Expr $expr): bool
 	{
-		$acceptedType = new ObjectWithoutClassType();
+		$type = $scope->getType($expr);
+		$acceptedType = new UnionType([new ObjectWithoutClassType(), new NullType()]);
 
-		$type = $this->ruleLevelHelper->findTypeToCheck(
-			$scope,
-			$expr,
-			'',
-			static fn (Type $type): bool => $acceptedType->isSuperTypeOf($type)->yes(),
-		)->getType();
-
-		if ($type instanceof ErrorType) {
-			return false;
-		}
-
-		if (TypeCombinator::containsNull($type) && !$type->isNull()->yes()) {
-			$type = TypeCombinator::removeNull($type);
-		}
-
-		$isSuperType = $acceptedType->isSuperTypeOf($type);
-		if ($type instanceof BenevolentUnionType) {
-			return !$isSuperType->no();
-		}
-
-		return $isSuperType->yes();
+		return !$type->isNull()->yes() && $acceptedType->isSuperTypeOf($type)->yes();
 	}
 
 	private function isPossiblyNullableArrayType(Scope $scope, Node\Expr $expr): bool
 	{
-		$type = $this->ruleLevelHelper->findTypeToCheck(
-			$scope,
-			$expr,
-			'',
-			static fn (Type $type): bool => $type->isArray()->yes(),
-		)->getType();
+		$type = $scope->getType($expr);
+		$acceptedType = new UnionType([new ArrayType(new MixedType(), new MixedType()), new NullType()]);
 
-		if (TypeCombinator::containsNull($type) && !$type->isNull()->yes()) {
-			$type = TypeCombinator::removeNull($type);
-		}
-
-		return !($type instanceof ErrorType) && $type->isArray()->yes();
+		return !$type->isNull()->yes() && $acceptedType->isSuperTypeOf($type)->yes();
 	}
 
 	/** @return list<IdentifierRuleError> */

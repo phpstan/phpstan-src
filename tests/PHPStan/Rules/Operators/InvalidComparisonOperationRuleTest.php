@@ -14,10 +14,12 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class InvalidComparisonOperationRuleTest extends RuleTestCase
 {
 
+	private bool $checkUnion = true;
+
 	protected function getRule(): Rule
 	{
 		return new InvalidComparisonOperationRule(
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnion, false, false, false, true),
 			$this->getContainer()->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			true,
 		);
@@ -164,6 +166,21 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 			[
 				'Comparison operation "==" between stdClass|null and int results in an error.',
 				12,
+			],
+		]);
+	}
+
+	public function testBug3364(): void
+	{
+		$this->checkUnion = false;
+		$this->analyse([__DIR__ . '/data/bug-3364.php'], [
+			[
+				'Comparison operation "!=" between array<int|string>|null and 1 results in an error.',
+				18,
+			],
+			[
+				'Comparison operation "!=" between object|null and 1 results in an error.',
+				26,
 			],
 		]);
 	}

@@ -165,7 +165,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #2 $array of function implode expects array|null, array|int|string given.",
+        "message": "Parameter #2 $array of function implode expects array, array|int|string given.",
         "line": 756,
         "ignorable": true
     }

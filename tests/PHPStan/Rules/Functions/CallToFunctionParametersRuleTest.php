@@ -2249,39 +2249,47 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug5760(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$param1Name = '$glue';
+			$param2Name = '$pieces';
+		} else {
+			$param1Name = '$separator';
+			$param2Name = '$array';
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5760.php'], [
 			[
-				'Parameter #2 $pieces of function join expects array, list<int>|null given.',
+				sprintf('Parameter #2 %s of function join expects array, list<int>|null given.', $param2Name),
 				10,
 			],
 			[
-				'Parameter #1 $glue of function join expects array, list<int>|null given.',
+				sprintf('Parameter #1 %s of function join expects array, list<int>|null given.', $param1Name),
 				11,
 			],
 			[
-				'Parameter #2 $array of function implode expects array, list<int>|null given.',
+				sprintf('Parameter #2 %s of function implode expects array, list<int>|null given.', $param2Name),
 				13,
 			],
 			[
-				'Parameter #1 $separator of function implode expects array, list<int>|null given.',
+				sprintf('Parameter #1 %s of function implode expects array, list<int>|null given.', $param1Name),
 				14,
 			],
 			[
-				'Parameter #2 $pieces of function join expects array, array<string>|string given.',
+				sprintf('Parameter #2 %s of function join expects array, array<string>|string given.', $param2Name),
 				22,
 			],
 			[
-				'Parameter #1 $glue of function join expects array, array<string>|string given.',
+				sprintf('Parameter #1 %s of function join expects array, array<string>|string given.', $param1Name),
 				23,
 			],
 			[
-				'Parameter #2 $array of function implode expects array, array<string>|string given.',
+				sprintf('Parameter #2 %s of function implode expects array, array<string>|string given.', $param2Name),
 				25,
 			],
 			[
-				'Parameter #1 $separator of function implode expects array, array<string>|string given.',
+				sprintf('Parameter #1 %s of function implode expects array, array<string>|string given.', $param1Name),
 				26,
 			],
 		]);

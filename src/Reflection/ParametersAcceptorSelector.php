@@ -204,15 +204,17 @@ final class ParametersAcceptorSelector
 				];
 			}
 
-			if ((bool) $args[0]->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
-				if (isset($args[1]) || $args[0]->name?->name === 'array') {
+			if (count($args) <= 2 && (bool) $args[0]->getAttribute(ImplodeArgVisitor::ATTRIBUTE_NAME)) {
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				if (isset($args[1]) || ($args[0]->name !== null && $args[0]->name->name === 'array')) {
 					$parameters = [
 						new NativeParameterReflection('separator', false, new StringType(), PassedByReference::createNo(), false, null),
 						new NativeParameterReflection('array', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
 					];
 				} else {
 					$parameters = [
-						new NativeParameterReflection('array', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection('separator', false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
 					];
 				}
 

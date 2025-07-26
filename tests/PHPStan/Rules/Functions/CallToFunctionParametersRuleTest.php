@@ -364,6 +364,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/implode-74.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testImplodeNamedParameters(): void
 	{
 		$this->analyse([__DIR__ . '/data/implode-named-parameters.php'], [

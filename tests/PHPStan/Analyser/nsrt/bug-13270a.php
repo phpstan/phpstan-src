@@ -14,7 +14,7 @@ final class HelloWorld
 	public function test(array $data): void
 	{
 		foreach($data as $k => $v) {
-			assertType('non-empty-array<mixed>', $data);
+			assertType('non-empty-array', $data);
 			$data[$k]['a'] = true;
 			assertType("non-empty-array<(non-empty-array&hasOffsetValue('a', true))|(ArrayAccess&hasOffsetValue('a', true))>", $data);
 			foreach($data[$k] as $val) {

@@ -1250,6 +1250,19 @@ final class NodeScopeResolver
 			$exprType = $scope->getType($stmt->expr);
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
+				$foreachType = $this->getForeachType();
+				if (
+					!$foreachType->isSuperTypeOf($exprType)->yes()
+					&& $finalScope->getType($stmt->expr)->equals($foreachType)
+				) {
+					// restore iteratee type, in case the type was narrowed while entering the foreach
+					$finalScope = $finalScope->assignExpression(
+						$stmt->expr,
+						$exprType,
+						$scope->getNativeType($stmt->expr),
+					);
+				}
+
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 					new BinaryOp\Identical(
 						$stmt->expr,
@@ -6307,11 +6320,35 @@ final class NodeScopeResolver
 		return $scope;
 	}
 
+	private function getForeachType(): Type
+	{
+		return TypeCombinator::union(
+			new ArrayType(new MixedType(), new MixedType()),
+			new ObjectType(Traversable::class),
+		);
+	}
+
 	private function enterForeach(MutatingScope $scope, MutatingScope $originalScope, Foreach_ $stmt): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
 			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
+
+		// narrow the iteratee type to those supported by foreach
+		$foreachType = $this->getForeachType();
+		$scope = $scope->specifyExpressionType(
+			$stmt->expr,
+			TypeCombinator::intersect(
+				$scope->getType($stmt->expr),
+				$foreachType,
+			),
+			TypeCombinator::intersect(
+				$scope->getNativeType($stmt->expr),
+				$foreachType,
+			),
+			TrinaryLogic::createYes(),
+		);
+
 		$iterateeType = $originalScope->getType($stmt->expr);
 		if (
 			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))

@@ -190,7 +190,11 @@ final class RuleLevelHelper
 		bool $isTopLevel = false,
 	): FoundTypeResult
 	{
-		if (!$this->checkNullables && !$type->isNull()->yes()) {
+		if (
+			!$this->checkNullables
+			&& !$type->isNull()->yes()
+			&& !$unionTypeCriteriaCallback(new NullType())
+		) {
 			$type = TypeCombinator::removeNull($type);
 		}
 

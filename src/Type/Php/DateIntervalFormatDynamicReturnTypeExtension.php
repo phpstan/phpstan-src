@@ -7,16 +7,20 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function is_numeric;
+use function strtolower;
+use function strtoupper;
 
 #[AutowiredService]
 final class DateIntervalFormatDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -57,13 +61,31 @@ final class DateIntervalFormatDynamicReturnTypeExtension implements DynamicMetho
 		$possibleReturnTypes = [];
 		foreach ($constantStrings as $string) {
 			$value = $dateInterval->format($string->getValue());
-			$possibleReturnTypes[] = new ConstantStringType($value);
+
+			$accessories = [];
+			if (is_numeric($value)) {
+				$accessories[] = new AccessoryNumericStringType();
+			}
+			if ($value !== '0' && $value !== '') {
+				$accessories[] = new AccessoryNonFalsyStringType();
+			} elseif ($value !== '') {
+				$accessories[] = new AccessoryNonEmptyStringType();
+			}
+			if (strtolower($value) === $value) {
+				$accessories[] = new AccessoryLowercaseStringType();
+			}
+			if (strtoupper($value) === $value) {
+				$accessories[] = new AccessoryUppercaseStringType();
+			}
+
+			if (count($accessories) === 0) {
+				return null;
+			}
+
+			$possibleReturnTypes[] = new IntersectionType([new StringType(), ...$accessories]);
 		}
 
-		return TypeCombinator::remove(
-			TypeCombinator::union(...$possibleReturnTypes)->generalize(GeneralizePrecision::moreSpecific()),
-			new AccessoryLiteralStringType(),
-		);
+		return TypeCombinator::union(...$possibleReturnTypes);
 	}
 
 }

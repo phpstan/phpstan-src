@@ -60,4 +60,19 @@ class HelloWorld
 		}
 		assertType('array<string, string>', $list[$k]);
 	}
+
+	/**
+	 * @param list<array<string, string>> $list
+	 * @param 'ab'|'cd' $constUnion
+	 */
+	public function sayUnionFoo2(array $list, $constUnion): void
+	{
+		foreach($list as $k => $v) {
+			$list[$k][$constUnion] = 'world';
+			assertType("non-empty-list<non-empty-array<string, string>&hasOffsetValue('ab', 'world')&hasOffsetValue('cd', 'world')>", $list);
+			assertType("non-empty-array<string, string>&hasOffsetValue('ab', 'world')&hasOffsetValue('cd', 'world')", $list[$k]);
+		}
+		assertType("list<non-empty-array<string, string>&hasOffsetValue('ab', 'world')&hasOffsetValue('cd', 'world')>", $list);
+	}
+
 }

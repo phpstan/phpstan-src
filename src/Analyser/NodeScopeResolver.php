@@ -171,7 +171,6 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
@@ -6053,15 +6052,19 @@ final class NodeScopeResolver
 				&& $scope->hasExpressionType($arrayDimFetch)->yes()
 			) {
 				$hasOffsetType = null;
-				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
-					$hasOffsetType = new HasOffsetValueType($offsetType, $valueToWrite);
+				$offsetConstantArrayKeys = $offsetType->getConstantArrayKeys();
+				if ($offsetConstantArrayKeys !== []) {
+					$hasOffsetType = [];
+					foreach ($offsetConstantArrayKeys as $constantArrayKey) {
+						$hasOffsetType[] = new HasOffsetValueType($constantArrayKey, $valueToWrite);
+					}
 				}
 				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
 
 				if ($hasOffsetType !== null) {
 					$valueToWrite = TypeCombinator::intersect(
 						$valueToWrite,
-						$hasOffsetType,
+						...$hasOffsetType,
 					);
 				} elseif ($valueToWrite->isArray()->yes()) {
 					$valueToWrite = TypeCombinator::intersect(

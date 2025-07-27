@@ -4236,12 +4236,14 @@ final class MutatingScope implements Scope
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
 					$hasOffsets = [];
 					$containsInteger = false;
-					foreach($dimTypes as $dimType) {
+					foreach ($dimTypes as $dimType) {
 						$hasOffsets[] = new HasOffsetValueType($dimType, $type);
 
-						if ($dimType instanceof ConstantIntegerType) {
-							$containsInteger = true;
+						if (!($dimType instanceof ConstantIntegerType)) {
+							continue;
 						}
+
+						$containsInteger = true;
 					}
 
 					$types = [

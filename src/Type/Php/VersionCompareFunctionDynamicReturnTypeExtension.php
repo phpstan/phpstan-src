@@ -10,21 +10,41 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_filter;
 use function count;
+use function in_array;
 use function is_array;
 use function version_compare;
 
 #[AutowiredService]
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const VALID_OPERATORS = [
+		'<',
+		'lt',
+		'<=',
+		'le',
+		'>',
+		'gt',
+		'>=',
+		'ge',
+		'==',
+		'=',
+		'eq',
+		'!=',
+		'<>',
+		'ne',
+	];
 
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
@@ -33,6 +53,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		#[AutowiredParameter(ref: '%phpVersion%')]
 		private int|array|null $configPhpVersion,
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -63,7 +84,9 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		if (isset($args[2])) {
 			$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 			$counts[] = count($operatorStrings);
-			$returnType = new BooleanType();
+			$returnType = $this->phpVersion->throwsValueErrorForInternalFunctions()
+				? new BooleanType()
+				: new BenevolentUnionType([new BooleanType(), new NullType()]);
 		} else {
 			$returnType = TypeCombinator::union(
 				new ConstantIntegerType(-1),
@@ -81,11 +104,21 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 		}
 
 		$types = [];
+		$canBeNull = false;
 		foreach ($version1Strings as $version1String) {
 			foreach ($version2Strings as $version2String) {
 				if (isset($operatorStrings)) {
 					foreach ($operatorStrings as $operatorString) {
-						$value = version_compare($version1String->getValue(), $version2String->getValue(), $operatorString->getValue());
+						$operatorValue = $operatorString->getValue();
+						if (!in_array($operatorValue, self::VALID_OPERATORS, true)) {
+							if (!$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+								$canBeNull = true;
+							}
+
+							continue;
+						}
+
+						$value = version_compare($version1String->getValue(), $version2String->getValue(), $operatorValue);
 						$types[$value] = new ConstantBooleanType($value);
 					}
 				} else {
@@ -94,6 +127,11 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 				}
 			}
 		}
+
+		if ($canBeNull) {
+			$types[] = new NullType();
+		}
+
 		return TypeCombinator::union(...$types);
 	}
 

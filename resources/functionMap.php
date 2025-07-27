@@ -12725,7 +12725,7 @@ return [
 'VarnishStat::__construct' => ['void', 'args='=>'array'],
 'VarnishStat::getSnapshot' => ['array'],
 'version_compare' => ['int', 'version1'=>'string', 'version2'=>'string'],
-'version_compare\'1' => ['bool', 'version1'=>'string', 'version2'=>'string', 'operator'=>'string|null'],
+'version_compare\'1' => ['__benevolent<bool|null>', 'version1'=>'string', 'version2'=>'string', 'operator'=>'string|null'],
 'vfprintf' => ['int', 'stream'=>'resource', 'format'=>'string', 'args'=>'array<__stringAndStringable|int|float|null|bool>'],
 'virtual' => ['bool', 'uri'=>'string'],
 'Volatile::__construct' => ['void'],

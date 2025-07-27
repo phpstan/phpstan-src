@@ -358,6 +358,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->getConstant($constantName);
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

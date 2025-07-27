@@ -693,6 +693,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return parent::exponentiate($exponent);
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return $this->getFiniteTypes();
+	}
+
 	/**
 	 * @return list<ConstantIntegerType>
 	 */

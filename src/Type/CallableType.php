@@ -124,6 +124,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return [];
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

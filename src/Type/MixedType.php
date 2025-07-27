@@ -88,6 +88,11 @@ class MixedType implements CompoundType, SubtractableType
 		return [];
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

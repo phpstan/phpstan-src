@@ -46,6 +46,11 @@ class BooleanType implements Type
 		return [];
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantScalarTypes(): array
 	{
 		return [new ConstantBooleanType(true), new ConstantBooleanType(false)];

@@ -47,6 +47,11 @@ class IntegerType implements Type
 		return 'int';
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

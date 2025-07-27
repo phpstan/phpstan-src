@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -63,6 +64,9 @@ interface Type
 
 	/** @return list<ConstantStringType> */
 	public function getConstantStrings(): array;
+
+	/** @return list<ConstantIntegerType|ConstantStringType> */
+	public function getConstantArrayKeys(): array;
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult;
 

@@ -182,6 +182,11 @@ class UnionType implements CompoundType
 		);
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getConstantArrayKeys());
+	}
+
 	public function getConstantStrings(): array
 	{
 		return $this->pickFromTypes(

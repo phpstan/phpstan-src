@@ -45,6 +45,11 @@ class ResourceType implements Type
 		return 'resource';
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

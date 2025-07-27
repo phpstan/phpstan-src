@@ -81,6 +81,11 @@ trait NonObjectTypeTrait
 		throw new ShouldNotHappenException();
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

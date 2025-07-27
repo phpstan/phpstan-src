@@ -44,6 +44,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getConstantArrays();
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return $this->resolve()->getConstantArrayKeys();
+	}
+
 	public function getConstantStrings(): array
 	{
 		return $this->resolve()->getConstantStrings();

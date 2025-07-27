@@ -47,6 +47,11 @@ class StringType implements Type
 		return 'string';
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

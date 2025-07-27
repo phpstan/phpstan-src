@@ -71,6 +71,11 @@ class IterableType implements CompoundType
 		return [];
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

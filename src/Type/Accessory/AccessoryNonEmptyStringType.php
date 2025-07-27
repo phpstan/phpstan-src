@@ -65,6 +65,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

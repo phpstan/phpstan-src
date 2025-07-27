@@ -114,6 +114,11 @@ trait ObjectTypeTrait
 		return new DummyClassConstantReflection($constantName);
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

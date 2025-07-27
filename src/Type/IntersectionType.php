@@ -176,6 +176,18 @@ class IntersectionType implements CompoundType
 		return $constantArrays;
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		$arrayKeys = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getConstantArrayKeys() as $string) {
+				$arrayKeys[] = $string;
+			}
+		}
+
+		return $arrayKeys;
+	}
+
 	public function getConstantStrings(): array
 	{
 		$strings = [];

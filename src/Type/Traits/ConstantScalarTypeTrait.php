@@ -9,6 +9,8 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LooseComparisonHelper;
@@ -118,6 +120,22 @@ trait ConstantScalarTypeTrait
 	public function getConstantScalarValues(): array
 	{
 		return [$this->getValue()];
+	}
+
+	public function getConstantArrayKeys(): array
+	{
+		$arrayKey = $this->toArrayKey();
+
+		if (
+			/** @phpstan-ignore phpstanApi.instanceofType */
+			!$arrayKey instanceof ConstantIntegerType
+			/** @phpstan-ignore phpstanApi.instanceofType */
+			&& !$arrayKey instanceof ConstantStringType
+		) {
+			throw new ShouldNotHappenException();
+		}
+
+		return [$arrayKey];
 	}
 
 	public function getFiniteTypes(): array

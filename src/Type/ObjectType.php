@@ -917,6 +917,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $type;
 	}
 
+	public function getConstantArrayKeys(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

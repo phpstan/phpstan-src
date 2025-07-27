@@ -5237,11 +5237,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$versionCompare6',
 			],
 			[
-				'bool',
+				PHP_VERSION_ID < 80000 ? '(bool|null)' : 'bool',
 				'$versionCompare7',
 			],
 			[
-				'bool',
+				PHP_VERSION_ID < 80000 ? '(bool|null)' : 'bool',
 				'$versionCompare8',
 			],
 			[

@@ -181,6 +181,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -6322,10 +6323,7 @@ final class NodeScopeResolver
 
 	private function getForeachIterateeType(): Type
 	{
-		return TypeCombinator::union(
-			new ArrayType(new MixedType(), new MixedType()),
-			new ObjectType(Traversable::class),
-		);
+		return new IterableType(new MixedType(), new MixedType());
 	}
 
 	private function enterForeach(MutatingScope $scope, MutatingScope $originalScope, Foreach_ $stmt): MutatingScope

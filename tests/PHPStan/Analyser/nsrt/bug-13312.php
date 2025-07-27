@@ -35,7 +35,7 @@ function foo(array $arr): void {
 function fooBar(mixed $mixed): void {
 	assertType('mixed', $mixed);
 	foreach ($mixed as $v) {
-		assertType('array|Traversable', $mixed); // could be non-empty-array|Traversable
+		assertType('iterable', $mixed); // could be non-empty-array|Traversable
 	}
 	assertType('mixed', $mixed);
 

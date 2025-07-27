@@ -15,10 +15,10 @@ class Foo
 		if (!empty($this->config['authors'])) {
 			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $this->config['authors']);
 			foreach ($this->config['authors'] as $key => $author) {
-				assertType("array|Traversable", $this->config['authors']);
+				assertType("iterable", $this->config['authors']);
 				if (!is_array($author)) {
 					unset($this->config['authors'][$key]);
-					assertType("array|Traversable", $this->config['authors']);
+					assertType("iterable", $this->config['authors']);
 					continue;
 				}
 				foreach (['homepage', 'email', 'name', 'role'] as $authorData) {
@@ -33,11 +33,11 @@ class Foo
 					unset($this->config['authors'][$key]['email']);
 				}
 				if (empty($this->config['authors'][$key])) {
-					assertType("array|Traversable", $this->config['authors']);
+					assertType("iterable", $this->config['authors']);
 					unset($this->config['authors'][$key]);
-					assertType("array|Traversable", $this->config['authors']);
+					assertType("iterable", $this->config['authors']);
 				}
-				assertType("array|Traversable", $this->config['authors']);
+				assertType("iterable", $this->config['authors']);
 			}
 			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $this->config['authors']);
 		}

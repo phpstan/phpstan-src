@@ -350,6 +350,51 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		self::expectNotToPerformAssertions();
 	}
 
+	public function testBug13317(): void
+	{
+		putenv('COLUMNS=170');
+		$formatter = $this->createErrorFormatter(null);
+		$formatter->formatErrors(
+			new AnalysisResult(
+				[
+					new Error(
+						'Property bla::$error_params (non-empty-list<string>|null) is never assigned non-empty-list<string> so it can be removed from the property type.',
+						'bla.php',
+						6,
+						identifier: 'property.unusedType',
+					),
+				],
+				[],
+				[],
+				[],
+				[],
+				false,
+				null,
+				true,
+				0,
+				false,
+				[],
+			),
+			$this->getOutput(),
+		);
+		$this->assertSame(
+			<<<'TABLE'
+ ------ -------------------------------------------------------------------------------------------------------------------------------------------------
+  Line   bla.php
+ ------ -------------------------------------------------------------------------------------------------------------------------------------------------
+  6      Property bla::$error_params (non-empty-list<string>|null) is never assigned non-empty-list<string> so it can be removed from the property type.
+         🪪  property.unusedType
+ ------ -------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ [ERROR] Found 1 error
+
+
+TABLE,
+			$this->getOutputContent(),
+		);
+	}
+
 	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');

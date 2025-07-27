@@ -1250,7 +1250,7 @@ final class NodeScopeResolver
 			$exprType = $scope->getType($stmt->expr);
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
-				$foreachType = $this->getForeachType();
+				$foreachType = $this->getForeachIterateeType();
 				if (
 					!$foreachType->isSuperTypeOf($exprType)->yes()
 					&& $finalScope->getType($stmt->expr)->equals($foreachType)
@@ -6320,7 +6320,7 @@ final class NodeScopeResolver
 		return $scope;
 	}
 
-	private function getForeachType(): Type
+	private function getForeachIterateeType(): Type
 	{
 		return TypeCombinator::union(
 			new ArrayType(new MixedType(), new MixedType()),
@@ -6335,7 +6335,7 @@ final class NodeScopeResolver
 		}
 
 		// narrow the iteratee type to those supported by foreach
-		$foreachType = $this->getForeachType();
+		$foreachType = $this->getForeachIterateeType();
 		$scope = $scope->specifyExpressionType(
 			$stmt->expr,
 			TypeCombinator::intersect(

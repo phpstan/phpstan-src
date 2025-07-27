@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug3589;
+
 class Foo{}
 class Bar{}
 

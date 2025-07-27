@@ -3617,12 +3617,12 @@ class CallMethodsRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/bug-3589.php'], [
 			[
-				'Parameter #1 $fooId of method FooRepository::load() expects Id<Foo>, Id<Bar> given.',
-				33,
+				'Parameter #1 $fooId of method Bug3589\FooRepository::load() expects Bug3589\Id<Bug3589\Foo>, Bug3589\Id<Bug3589\Bar> given.',
+				35,
 			],
 			[
-				'Parameter #1 $fooId of method FooRepository::load() expects Id<Foo>, Id<mixed> given.',
-				39,
+				'Parameter #1 $fooId of method Bug3589\FooRepository::load() expects Bug3589\Id<Bug3589\Foo>, Bug3589\Id<mixed> given.',
+				41,
 			],
 		]);
 	}

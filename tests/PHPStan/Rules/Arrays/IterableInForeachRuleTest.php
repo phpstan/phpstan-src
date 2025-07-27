@@ -139,6 +139,7 @@ class IterableInForeachRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/foreach-mixed.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug13312(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13312.php'], []);

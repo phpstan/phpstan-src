@@ -2347,7 +2347,11 @@ final class MutatingScope implements Scope
 					/** @var non-empty-string $name */
 					$name = $node->name->value;
 					$functionName = new Name($name);
-				} elseif ($node->name instanceof FuncCall && $node->name->name instanceof Name) {
+				} elseif (
+					$node->name instanceof FuncCall
+					&& $node->name->name instanceof Name
+					&& $node->name->isFirstClassCallable()
+				) {
 					$functionName = $node->name->name;
 				}
 

@@ -118,6 +118,7 @@ final class WorkerCommand extends Command
 				$tmpFile,
 				$insteadOfFile,
 				false,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;

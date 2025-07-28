@@ -95,6 +95,7 @@ final class CommandHelper
 		?string $singleReflectionFile,
 		?string $singleReflectionInsteadOfFile,
 		bool $cleanupContainerCache,
+		bool $dirty,
 	): InceptionResult
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
@@ -239,7 +240,13 @@ final class CommandHelper
 			$defaultLevelUsed = true;
 		}
 
-		$paths = array_map(static fn (string $path): string => $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path)), $paths);
+		if ($dirty) {
+			$dirtyPathsHelper = new DirtyFilesHelper();
+			$paths = array_map(static fn (string $path): string => $currentWorkingDirectoryFileHelper
+				->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path)), $dirtyPathsHelper->getGitDirtyFiles());
+		} else {
+			$paths = array_map(static fn (string $path): string => $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path)), $paths);
+		}
 
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);

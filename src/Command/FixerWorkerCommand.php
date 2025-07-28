@@ -114,6 +114,7 @@ final class FixerWorkerCommand extends Command
 				null,
 				null,
 				false,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

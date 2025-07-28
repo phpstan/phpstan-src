@@ -109,6 +109,7 @@ final class AnalyseCommand extends Command
 				new InputOption('watch', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('pro', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when result cache is not used'),
+				new InputOption('dirty', mode: InputOption::VALUE_NONE, description: 'Only analyze files that have uncommitted changes'),
 			]);
 	}
 
@@ -147,6 +148,7 @@ final class AnalyseCommand extends Command
 		$pro = (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
 		$fix = (bool) $input->getOption('fix');
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
+		$dirty = (bool) $input->getOption('dirty');
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');
@@ -190,6 +192,7 @@ final class AnalyseCommand extends Command
 				$tmpFile,
 				$insteadOfFile,
 				true,
+				$dirty,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;

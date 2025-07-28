@@ -128,6 +128,7 @@ class CommandHelperTest extends TestCase
 				null,
 				null,
 				false,
+				false,
 			);
 			if ($expectException) {
 				$this->fail();
@@ -308,6 +309,7 @@ class CommandHelperTest extends TestCase
 			false,
 			null,
 			null,
+			false,
 			false,
 		);
 		$parameters = $result->getContainer()->getParameters();

@@ -88,6 +88,7 @@ final class ClearResultCacheCommand extends Command
 				null,
 				null,
 				true,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

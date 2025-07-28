@@ -17,3 +17,16 @@ function foo(object $bar): void
 		assertType("object&hasMethod(quux)&hasMethod(qux)", $bar);
 	}
 }
+
+/**
+ * @param 'quux'|'qux' $constUnion
+ */
+function fooBar(object $bar, string $constUnion): void
+{
+	if (!method_exists($bar, $constUnion)) {
+		throw new \Exception;
+	}
+
+	// at this point we don't know whether $constUnion was 'quux' or 'qux'
+	assertType("object", $bar);
+}

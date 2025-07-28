@@ -465,6 +465,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7684.php'], []);
 	}
 
+	public function testBug4993(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
+				'Strict comparison using === between list<string|null> and null will always evaluate to false.',
+				11,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4993.php'], $errors);
+	}
+
 	public function testBug6181(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6181.php'], []);

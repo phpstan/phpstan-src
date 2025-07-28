@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -67,10 +68,10 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 				foreach ($methodNameTypes as $methodNameType) {
 					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 						$node->getArgs()[0]->value,
-						new IntersectionType([
+						TypeCombinator::intersect(
 							$objectType,
 							new HasMethodType($methodNameType->getValue()),
-						]),
+						),
 						$context,
 						$scope,
 					));
@@ -83,13 +84,13 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		foreach ($methodNameTypes as $methodNameType) {
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 				$node->getArgs()[0]->value,
-				new UnionType([
-					new IntersectionType([
+				TypeCombinator::union(
+					TypeCombinator::intersect(
 						new ObjectWithoutClassType(),
 						new HasMethodType($methodNameType->getValue()),
-					]),
+					),
 					new ClassStringType(),
-				]),
+				),
 				$context,
 				$scope,
 			));

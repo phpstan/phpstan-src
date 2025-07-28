@@ -59,40 +59,43 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			);
 		}
 
-		$hasMethodTypes = [];
-		foreach ($methodNameTypes as $methodNameType) {
-			$hasMethodTypes[] = new HasMethodType($methodNameType->getValue());
-		}
+		$specifiedTypes = new SpecifiedTypes([], []);
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
-				return $this->typeSpecifier->create(
-					$node->getArgs()[0]->value,
-					new IntersectionType([
-						$objectType,
-						...$hasMethodTypes,
-					]),
-					$context,
-					$scope,
-				);
+				foreach ($methodNameTypes as $methodNameType) {
+					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+						$node->getArgs()[0]->value,
+						new IntersectionType([
+							$objectType,
+							new HasMethodType($methodNameType->getValue()),
+						]),
+						$context,
+						$scope,
+					));
+				}
 			}
 
-			return new SpecifiedTypes([], []);
+			return $specifiedTypes;
 		}
 
-		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
-			new UnionType([
-				new IntersectionType([
-					new ObjectWithoutClassType(),
-					...$hasMethodTypes,
+		foreach ($methodNameTypes as $methodNameType) {
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[0]->value,
+				new UnionType([
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasMethodType($methodNameType->getValue()),
+					]),
+					new ClassStringType(),
 				]),
-				new ClassStringType(),
-			]),
-			$context,
-			$scope,
-		);
+				$context,
+				$scope,
+			));
+		}
+
+		return $specifiedTypes;
 	}
 
 }

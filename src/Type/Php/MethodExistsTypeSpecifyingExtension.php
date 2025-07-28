@@ -15,10 +15,8 @@ use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -50,53 +48,57 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
+		$specifiedTypes = $this->typeSpecifier->create(
+			new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
+			new ConstantBooleanType(true),
+			$context,
+			$scope,
+		);
+
 		$methodNameTypes = $scope->getType($node->getArgs()[1]->value)->getConstantStrings();
 		if ($methodNameTypes === []) {
-			return $this->typeSpecifier->create(
-				new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
-				new ConstantBooleanType(true),
-				$context,
-				$scope,
-			);
+			return $specifiedTypes;
 		}
-
-		$specifiedTypes = new SpecifiedTypes([], []);
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
+				$types = [];
 				foreach ($methodNameTypes as $methodNameType) {
-					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-						$node->getArgs()[0]->value,
-						TypeCombinator::intersect(
-							$objectType,
-							new HasMethodType($methodNameType->getValue()),
-						),
-						$context,
-						$scope,
-					));
+					$types[] = TypeCombinator::intersect(
+						$objectType,
+						new HasMethodType($methodNameType->getValue()),
+					);
 				}
+
+				return $specifiedTypes->unionWith($this->typeSpecifier->create(
+					$node->getArgs()[0]->value,
+					TypeCombinator::union(...$types),
+					$context,
+					$scope,
+				));
 			}
 
 			return $specifiedTypes;
 		}
 
+		$types = [];
 		foreach ($methodNameTypes as $methodNameType) {
-			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-				$node->getArgs()[0]->value,
-				TypeCombinator::union(
-					TypeCombinator::intersect(
-						new ObjectWithoutClassType(),
-						new HasMethodType($methodNameType->getValue()),
-					),
-					new ClassStringType(),
+			$types[] = TypeCombinator::union(
+				TypeCombinator::intersect(
+					new ObjectWithoutClassType(),
+					new HasMethodType($methodNameType->getValue()),
 				),
-				$context,
-				$scope,
-			));
+				new ClassStringType(),
+			);
 		}
 
-		return $specifiedTypes;
+		return $specifiedTypes->unionWith($this->typeSpecifier->create(
+			$node->getArgs()[0]->value,
+			TypeCombinator::union(...$types),
+			$context,
+			$scope,
+		));
 	}
 
 }

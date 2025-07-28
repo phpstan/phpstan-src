@@ -3627,6 +3627,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5642(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/data/bug-5642.php'], [
+			[
+				'Method Couchbase\BucketManager::flush() invoked with 0 parameters, 1 required.',
+				9,
+			],
+			[
+				'Method Couchbase\BucketManager::flush() invoked with 2 parameters, 1 required.',
+				11,
+			],
+		]);
+	}
+
 	public function testBug3396(): void
 	{
 		$this->checkThisOnly = false;

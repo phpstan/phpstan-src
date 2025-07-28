@@ -28,5 +28,5 @@ function fooBar(object $bar, string $constUnion): void
 	}
 
 	// at this point we don't know whether $constUnion was 'quux' or 'qux'
-	assertType("object&hasMethod(quux)|hasMethod(qux)", $bar);
+	assertType("object&hasMethod(quux)|object&hasMethod(qux)", $bar);
 }

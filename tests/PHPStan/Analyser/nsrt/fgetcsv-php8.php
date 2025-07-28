@@ -8,5 +8,5 @@ use function PHPStan\Testing\assertType;
 
 function test($resource): void
 {
-	assertType('list<string|null>|false', fgetcsv($resource));
+	assertType('non-empty-list<string|null>|false', fgetcsv($resource));
 }

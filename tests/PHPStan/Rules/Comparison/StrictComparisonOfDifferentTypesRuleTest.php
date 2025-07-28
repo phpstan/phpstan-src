@@ -470,7 +470,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$errors = [];
 		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
-				'Strict comparison using === between list<string|null> and null will always evaluate to false.',
+				'Strict comparison using === between non-empty-list<string|null> and null will always evaluate to false.',
 				11,
 			];
 		}

@@ -46,7 +46,7 @@ return [
 		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
 		'explode' => ['list<string>', 'separator'=>'non-empty-string', 'str'=>'string', 'limit='=>'int'],
 		'fdiv' => ['float', 'dividend'=>'float', 'divisor'=>'float'],
-		'fgetcsv' => ['list<string>|array{0: null}|false', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+		'fgetcsv' => ['non-empty-list<string>|array{0: null}|false', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 		'filter_input' => ['mixed', 'type'=>'INPUT_GET|INPUT_POST|INPUT_COOKIE|INPUT_SERVER|INPUT_ENV', 'variable_name'=>'string', 'filter='=>'int', 'options='=>'array|int'],
 		'filter_input_array' => ['array|false|null', 'type'=>'INPUT_GET|INPUT_POST|INPUT_COOKIE|INPUT_SERVER|INPUT_ENV', 'definition='=>'int|array', 'add_empty='=>'bool'],
 		'floor' => ['float', 'number'=>'float'],

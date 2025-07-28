@@ -2393,7 +2393,7 @@ return [
 'ffmpeg_movie::hasAudio' => ['bool'],
 'ffmpeg_movie::hasVideo' => ['bool'],
 'fgetc' => ['string|false', 'fp'=>'resource'],
-'fgetcsv' => ['list<string>|array{0: null}|false|null', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+'fgetcsv' => ['non-empty-list<string>|array{0: null}|false|null', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 'fgets' => ['string|false', 'fp'=>'resource', 'length='=>'0|positive-int'],
 'fgetss' => ['string|false', 'fp'=>'resource', 'length='=>'0|positive-int', 'allowable_tags='=>'string'],
 'file' => ['list<string>|false', 'filename'=>'string', 'flags='=>'int-mask<FILE_USE_INCLUDE_PATH|FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES|FILE_NO_DEFAULT_CONTEXT>', 'context='=>'resource'],
@@ -9966,7 +9966,7 @@ return [
 'SplFileObject::fflush' => ['bool'],
 'SplFileObject::fgetc' => ['string|false'],
 // Do not believe https://www.php.net/manual/en/splfileobject.fgetcsv#refsect1-splfileobject.fgetcsv-returnvalues
-'SplFileObject::fgetcsv' => ['list<string>|array{0: null}|false|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+'SplFileObject::fgetcsv' => ['non-empty-list<string>|array{0: null}|false|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 'SplFileObject::fgets' => ['string'],
 'SplFileObject::fgetss' => ['string|false', 'allowable_tags='=>'string'],
 'SplFileObject::flock' => ['bool', 'operation'=>'int-mask<LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB>', '&w_wouldblock='=>'0|1'],

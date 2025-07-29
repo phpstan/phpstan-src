@@ -3,6 +3,7 @@
 build: cs tests phpstan
 
 tests: install-paratest
+	rm vendor/symfony/polyfill-php80/Resources/stubs/Attribute.php
 	XDEBUG_MODE=off php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage
 
 tests-integration: install-paratest

@@ -16,12 +16,14 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use ReflectionClass;
 use function dirname;
 use function is_file;
 use function serialize;
 use function sha1;
+use const PHP_VERSION_ID;
 
 final class TestCaseSourceLocatorFactory
 {
@@ -35,6 +37,7 @@ final class TestCaseSourceLocatorFactory
 	 */
 	public function __construct(
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
+		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private Parser $phpParser,
 		private Parser $php8Parser,
 		private FileNodesFetcher $fileNodesFetcher,
@@ -57,7 +60,13 @@ final class TestCaseSourceLocatorFactory
 			$this->excludePaths,
 		]));
 		if ($classLoaderReflection->hasProperty('vendorDir') && ! isset(self::$composerSourceLocatorsCache[$cacheKey])) {
-			$composerLocators = [];
+			$composerLocators = [
+				$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(
+					PHP_VERSION_ID < 80500
+						? __DIR__ . '/../../stubs/runtime/Attribute84.php'
+						: __DIR__ . '/../../stubs/runtime/Attribute85.php',
+				),
+			];
 			$vendorDirProperty = $classLoaderReflection->getProperty('vendorDir');
 			$vendorDirProperty->setAccessible(true);
 			foreach ($classLoaders as $classLoader) {

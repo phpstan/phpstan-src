@@ -15,11 +15,11 @@ class ScopePhpVersionTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'int<80000, 80499>',
+				'int<80000, 80599>',
 				__DIR__ . '/data/scope-constants-global.php',
 			],
 			[
-				'int<80000, 80499>',
+				'int<80000, 80599>',
 				__DIR__ . '/data/scope-constants-namespace.php',
 			],
 		];

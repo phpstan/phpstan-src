@@ -313,7 +313,15 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 
 	public function testBug5206(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5206.php'], []);
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				'Parameter $mixed of anonymous function has invalid type Bug5206\mixed.',
+				9,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-5206.php'], $errors);
 	}
 
 }

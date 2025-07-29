@@ -311,4 +311,9 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/arrow-function-never.php'], $errors);
 	}
 
+	public function testBug5206(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5206.php'], []);
+	}
+
 }

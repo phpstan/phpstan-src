@@ -353,9 +353,4 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug5206(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-5206.php'], []);
-	}
-
 }

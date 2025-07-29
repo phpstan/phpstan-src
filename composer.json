@@ -235,7 +235,7 @@
 	"prefer-stable": true,
 	"scripts": {
 		"post-install-cmd": [
-			"rm vendor/symfony/polyfill-php80/Resources/stubs/Attribute.php"
+			"rm -f vendor/symfony/polyfill-php80/Resources/stubs/Attribute.php"
 		]
 	},
 	"bin": [

@@ -31,6 +31,7 @@ use function array_unique;
 use function extension_loaded;
 use function is_dir;
 use function is_file;
+use const PHP_VERSION_ID;
 
 #[AutowiredService]
 final class BetterReflectionSourceLocatorFactory
@@ -76,7 +77,11 @@ final class BetterReflectionSourceLocatorFactory
 	public function create(): SourceLocator
 	{
 		$locators = [
-			$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../../stubs/runtime/Attribute.php'),
+			$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(
+				PHP_VERSION_ID < 80500
+					? __DIR__ . '/../../../stubs/runtime/Attribute84.php'
+					: __DIR__ . '/../../../stubs/runtime/Attribute85.php',
+			),
 		];
 
 		if ($this->singleReflectionFile !== null) {

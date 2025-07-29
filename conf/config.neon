@@ -7,7 +7,7 @@ parameters:
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
 		- ../stubs/runtime/ReflectionAttribute.php
-		- ../stubs/runtime/Attribute.php
+		- ../stubs/runtime/Attribute85.php
 		- ../stubs/runtime/ReflectionIntersectionType.php
 	excludePaths: []
 	level: null

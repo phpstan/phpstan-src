@@ -165,7 +165,7 @@ class CommandHelperTest extends TestCase
 					'bootstrapFiles' => [
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php'),
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionAttribute.php'),
-						realpath(__DIR__ . '/../../../stubs/runtime/Attribute.php'),
+						realpath(__DIR__ . '/../../../stubs/runtime/Attribute85.php'),
 						realpath(__DIR__ . '/../../../stubs/runtime/ReflectionIntersectionType.php'),
 						__DIR__ . DIRECTORY_SEPARATOR . 'relative-paths' . DIRECTORY_SEPARATOR . 'here.php',
 					],

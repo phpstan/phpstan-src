@@ -5,7 +5,9 @@ namespace PHPStan\PhpDoc;
 use Override;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
+use function dirname;
 use function sprintf;
+use const DIRECTORY_SEPARATOR;
 
 class DefaultStubFilesProviderTest extends PHPStanTestCase
 {
@@ -30,10 +32,15 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 	public function testGetProjectStubFiles(): void
 	{
 		$thirdPartyStubFile = sprintf('%s/vendor/thirdpartyStub.stub', $this->currentWorkingDirectory);
-		$defaultStubFilesProvider = $this->createDefaultStubFilesProvider(['/projectStub.stub', $thirdPartyStubFile]);
+		$firstPartyStubFile = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . 'spl.stub';
+		$defaultStubFilesProvider = $this->createDefaultStubFilesProvider(['/projectStub.stub', $thirdPartyStubFile, $firstPartyStubFile]);
 		$projectStubFiles = $defaultStubFilesProvider->getProjectStubFiles();
 		$this->assertContains('/projectStub.stub', $projectStubFiles);
 		$this->assertNotContains($thirdPartyStubFile, $projectStubFiles);
+		$this->assertNotContains($firstPartyStubFile, $projectStubFiles);
+
+		$fileHelper = new FileHelper(__DIR__);
+		$this->assertNotContains($fileHelper->normalizePath($firstPartyStubFile), $projectStubFiles);
 	}
 
 	public function testGetProjectStubFilesWhenPathContainsWindowsSeparator(): void

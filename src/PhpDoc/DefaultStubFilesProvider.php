@@ -10,7 +10,9 @@ use PHPStan\Internal\ComposerHelper;
 use function array_filter;
 use function array_map;
 use function array_values;
+use function dirname;
 use function str_contains;
+use function str_starts_with;
 
 #[AutowiredService(as: StubFilesProvider::class)]
 final class DefaultStubFilesProvider implements StubFilesProvider
@@ -60,7 +62,13 @@ final class DefaultStubFilesProvider implements StubFilesProvider
 			return $this->cachedProjectFiles;
 		}
 
+		$phpstanStubsDirectory = $this->fileHelper->normalizePath(dirname(dirname(__DIR__)) . '/stubs');
+
 		$filteredStubFiles = $this->getStubFiles();
+		$filteredStubFiles = array_filter(
+			$filteredStubFiles,
+			static fn (string $file): bool => !str_starts_with($file, $phpstanStubsDirectory)
+		);
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$composerConfig = ComposerHelper::getComposerConfig($composerAutoloaderProjectPath);
 			if ($composerConfig === null) {

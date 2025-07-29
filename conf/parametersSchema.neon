@@ -87,10 +87,10 @@ parametersSchema:
 		buffer: int()
 	])
 	phpVersion: schema(anyOf(
-		schema(int(), min(70100), max(80499)),
+		schema(int(), min(70100), max(80599)),
 		structure([
-			min: schema(int(), min(70100), max(80499)),
-			max: schema(int(), min(70100), max(80499))
+			min: schema(int(), min(70100), max(80599)),
+			max: schema(int(), min(70100), max(80599))
 		])
 	), nullable())
 	polluteScopeWithLoopInitialAssignments: bool()

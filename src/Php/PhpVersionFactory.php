@@ -13,7 +13,7 @@ final class PhpVersionFactory
 {
 
 	public const MIN_PHP_VERSION = 70100;
-	public const MAX_PHP_VERSION = 80499;
+	public const MAX_PHP_VERSION = 80599;
 	public const MAX_PHP5_VERSION = 50699;
 	public const MAX_PHP7_VERSION = 70499;
 

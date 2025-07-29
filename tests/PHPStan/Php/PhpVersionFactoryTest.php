@@ -81,14 +81,20 @@ class PhpVersionFactoryTest extends TestCase
 			[
 				null,
 				'8.5',
-				80499,
-				'8.4.99',
+				80500,
+				'8.5',
 			],
 			[
 				null,
 				'8.0.95',
 				80095,
 				'8.0.95',
+			],
+			[
+				null,
+				'8.6',
+				80599,
+				'8.5.99',
 			],
 		];
 	}

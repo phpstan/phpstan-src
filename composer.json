@@ -233,6 +233,11 @@
 	],
 	"minimum-stability": "dev",
 	"prefer-stable": true,
+	"scripts": {
+		"post-install-cmd": [
+			"rm vendor/symfony/polyfill-php80/Resources/stubs/Attribute.php"
+		]
+	},
 	"bin": [
 		"bin/phpstan"
 	]

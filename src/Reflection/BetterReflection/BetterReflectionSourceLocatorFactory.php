@@ -75,7 +75,9 @@ final class BetterReflectionSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
-		$locators = [];
+		$locators = [
+			$this->optimizedSingleFileSourceLocatorRepository->getOrCreate(__DIR__ . '/../../../stubs/runtime/Attribute.php'),
+		];
 
 		if ($this->singleReflectionFile !== null) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($this->singleReflectionFile);

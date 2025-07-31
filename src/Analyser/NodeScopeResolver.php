@@ -5139,15 +5139,21 @@ final class NodeScopeResolver
 				$scopeToPass = $closureBindScope;
 			}
 
-			if ($parameter instanceof ExtendedParameterReflection) {
+			if (
+				$parameterType === null
+				|| $parameterType instanceof MixedType
+				|| $parameterType->isCallable()->no()
+			) {
+				$callCallbackImmediately = false;
+			} elseif ($parameter instanceof ExtendedParameterReflection) {
 				$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
 				if ($parameterCallImmediately->maybe()) {
-					$callCallbackImmediately = $calleeReflection instanceof FunctionReflection && !$calleeReflection->isBuiltin();
+					$callCallbackImmediately = $calleeReflection instanceof FunctionReflection;
 				} else {
 					$callCallbackImmediately = $parameterCallImmediately->yes();
 				}
 			} else {
-				$callCallbackImmediately = $calleeReflection instanceof FunctionReflection && !$calleeReflection->isBuiltin();
+				$callCallbackImmediately = $calleeReflection instanceof FunctionReflection;
 			}
 
 			if ($arg->value instanceof Expr\Closure) {

@@ -327,3 +327,14 @@ function get_defined_constants(bool $categorize = false): array {}
  */
 function getopt(string $short_options, array $long_options = [], &$rest_index = null) {}
 
+/**
+ * @param callable|int $handler
+ * @param-later-invoked-callable $handler
+ */
+function pcntl_signal(int $signal, $handler, bool $restart_syscalls = true): bool {}
+
+/**
+ * @param-later-invoked-callable $callback
+ * @return string|array|object|null
+ */
+function set_error_handler(?callable $callback, int $error_levels = E_ALL) {}

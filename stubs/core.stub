@@ -352,3 +352,8 @@ function spl_autoload_register(?callable $callback = null, bool $throw = true, b
  * @param-later-invoked-callable $callback
  */
 function register_shutdown_function(callable $callback, mixed ...$args): void {}
+
+/**
+ * @param-later-invoked-callable $callback
+ */
+function header_register_callback(callable $callback): bool {}

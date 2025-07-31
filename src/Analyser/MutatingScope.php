@@ -2807,11 +2807,9 @@ final class MutatingScope implements Scope
 		return $offsetAccessibleType->getOffsetValueType($offsetType);
 	}
 
-	private function resolveExactName(Name $name): ?string
+	private function resolveExactName(string $name): ?string
 	{
-		$originalClass = (string) $name;
-
-		switch (strtolower($originalClass)) {
+		switch (strtolower($name)) {
 			case 'self':
 				if (!$this->isInClass()) {
 					return null;
@@ -2830,7 +2828,7 @@ final class MutatingScope implements Scope
 				return null;
 		}
 
-		return $originalClass;
+		return $name;
 	}
 
 	/** @api */
@@ -5764,7 +5762,7 @@ final class MutatingScope implements Scope
 	 */
 	private function exactInstantiation(New_ $node, string $className): ?Type
 	{
-		$resolvedClassName = $this->resolveExactName(new Name($className));
+		$resolvedClassName = $this->resolveExactName($className);
 		$isStatic = false;
 		if ($resolvedClassName === null) {
 			if (strtolower($className) !== 'static') {

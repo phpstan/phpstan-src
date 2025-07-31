@@ -10,14 +10,14 @@ class HelloWorld
 {
 	public function testMethod(): string
 	{
-		var_dump("dd");
+		var_dump("\Bug13307\dd");
 
 		return "test";
 	}
 
 	public function testMethod2(): string
 	{
-		var_dump("DD");
+		var_dump("\Bug13307\DD");
 
 		return "test";
 	}

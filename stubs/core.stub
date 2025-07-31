@@ -341,6 +341,11 @@ function set_error_handler(?callable $callback, int $error_levels = E_ALL): ?cal
 /**
  * @param-later-invoked-callable $callback
  */
+function set_exception_handler(?callable $callback): ?callable {}
+
+/**
+ * @param-later-invoked-callable $callback
+ */
 function spl_autoload_register(?callable $callback = null, bool $throw = true, bool $prepend = false): bool {}
 
 /**

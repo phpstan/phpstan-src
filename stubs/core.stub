@@ -337,3 +337,13 @@ function pcntl_signal(int $signal, $handler, bool $restart_syscalls = true): boo
  * @param-later-invoked-callable $callback
  */
 function set_error_handler(?callable $callback, int $error_levels = E_ALL): ?callable {}
+
+/**
+ * @param-later-invoked-callable $callback
+ */
+function spl_autoload_register(?callable $callback = null, bool $throw = true, bool $prepend = false): bool {}
+
+/**
+ * @param-later-invoked-callable $callback
+ */
+function register_shutdown_function(callable $callback, mixed ...$args): void {}

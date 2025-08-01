@@ -4639,6 +4639,9 @@ final class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 
+		$returnType = $closureType->getReturnType();
+		$isAlwaysTerminating = ($returnType instanceof NeverType && $returnType->isExplicit());
+
 		$nodeCallback(new InClosureNode($closureType, $expr), $closureScope);
 
 		$executionEnds = [];
@@ -4690,7 +4693,7 @@ final class NodeScopeResolver
 				array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 			), $closureScope);
 
-			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $statementResult->isAlwaysTerminating());
+			return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating);
 		}
 
 		$count = 0;
@@ -4736,7 +4739,7 @@ final class NodeScopeResolver
 			array_merge($statementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope);
 
-		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $statementResult->isAlwaysTerminating());
+		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating);
 	}
 
 	/**

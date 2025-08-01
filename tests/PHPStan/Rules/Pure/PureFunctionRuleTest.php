@@ -116,6 +116,18 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function array_push() in pure function PureFunction\bug13288().',
 				182,
 			],
+			[
+				'Impure exit in pure function PureFunction\bug13288b().',
+				200,
+			],
+			[
+				'Impure exit in pure function PureFunction\bug13288c().',
+				217,
+			],
+			[
+				'Impure exit in pure function PureFunction\bug13288d().',
+				230,
+			],
 		]);
 	}
 

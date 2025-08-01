@@ -170,6 +170,24 @@ final class TypeUtils
 		return null;
 	}
 
+	public static function findCallableType(Type $type): ?Type
+	{
+		if ($type->isCallable()->yes()) {
+			return $type;
+		}
+
+		if ($type instanceof UnionType || $type instanceof IntersectionType) {
+			foreach ($type->getTypes() as $innerType) {
+				$callableType = self::findCallableType($innerType);
+				if ($callableType !== null) {
+					return $callableType;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * @return HasPropertyType[]
 	 */

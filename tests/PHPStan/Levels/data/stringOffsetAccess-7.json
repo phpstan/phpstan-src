@@ -1,5 +1,10 @@
 [
     {
+        "message": "Offset int|object might not exist on 'foo'.",
+        "line": 19,
+        "ignorable": true
+    },
+    {
         "message": "Offset 'foo' might not exist on array|string.",
         "line": 27,
         "ignorable": true
@@ -10,8 +15,18 @@
         "ignorable": true
     },
     {
+        "message": "Offset int|object might not exist on array|string.",
+        "line": 35,
+        "ignorable": true
+    },
+    {
         "message": "Possibly invalid array key type int|object.",
         "line": 35,
+        "ignorable": true
+    },
+    {
+        "message": "Offset int|object might not exist on array{baz: 21}|array{foo: 17, bar: 19}.",
+        "line": 55,
         "ignorable": true
     },
     {

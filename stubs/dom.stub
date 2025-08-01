@@ -49,9 +49,6 @@ class DOMElement extends DOMNode
 	/** @var DOMNamedNodeMap<DOMAttr> */
 	public $attributes;
 
-	/** @var DOMDocument */
-	public $ownerDocument;
-
 	/**
 	 * @param string $name
 	 * @return DOMNodeList<DOMElement>
@@ -98,48 +95,10 @@ class DOMXPath
 class DOMAttr extends DOMNode
 {
 
-	/** @var DOMDocument */
-	public $ownerDocument;
-
-}
-
-class DOMCharacterData
-{
-
-	/** @var DOMDocument */
-	public $ownerDocument;
-
-}
-
-class DOMDocumentType
-{
-
-	/** @var DOMDocument */
-	public $ownerDocument;
-
-}
-
-class DOMEntity
-{
-
-	/** @var DOMDocument */
-	public $ownerDocument;
-
-}
-
-class DOMNotation
-{
-
-	/** @var DOMDocument */
-	public $ownerDocument;
-
 }
 
 class DOMProcessingInstruction
 {
-
-	/** @var DOMDocument */
-	public $ownerDocument;
 
 	/**
 	 * @var string

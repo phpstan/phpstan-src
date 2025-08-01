@@ -86,6 +86,10 @@ class ExpressionResultTest extends PHPStanTestCase
 				true,
 			],
 			[
+				'register_shutdown_function(fn() => exit());',
+				false,
+			],
+			[
 				'@exit();',
 				true,
 			],

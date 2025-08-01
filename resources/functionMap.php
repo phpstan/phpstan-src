@@ -9207,7 +9207,7 @@ return [
 'RedisCluster::sAdd' => ['int', 'key'=>'string', 'value1'=>'string', 'value2='=>'string', 'valueN='=>'string'],
 'RedisCluster::sAddArray' => ['int', 'key'=>'string', 'valueArray'=>'array'],
 'RedisCluster::save' => ['bool', 'nodeParams'=>'string'],
-'RedisCluster::scan' => ['array', '&iterator'=>'int', 'pattern='=>'string', 'count='=>'int'],
+'RedisCluster::scan' => ['array|bool', '&iterator'=>'int|null', 'key_or_address' => 'string|array', 'pattern='=>'string', 'count='=>'int'],
 'RedisCluster::sCard' => ['int', 'key'=>'string'],
 'RedisCluster::script' => ['mixed', 'nodeParams'=>'string', 'command'=>'string', 'script'=>'string'],
 'RedisCluster::sDiff' => ['list<string>', 'key1'=>'string', 'key2'=>'string', '...other_keys='=>'string'],

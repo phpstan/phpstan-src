@@ -176,7 +176,7 @@ final class TypeUtils
 			return $type;
 		}
 
-		if ($type instanceof UnionType || $type instanceof IntersectionType) {
+		if ($type instanceof UnionType) {
 			foreach ($type->getTypes() as $innerType) {
 				$callableType = self::findCallableType($innerType);
 				if ($callableType !== null) {

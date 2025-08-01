@@ -63,6 +63,11 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8236(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8236.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testBug5655b(): void
 	{

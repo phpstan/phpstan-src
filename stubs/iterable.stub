@@ -99,6 +99,13 @@ class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveI
 	 */
 	public function saveXML(?string $filename = null) {  }
 
+	/**
+	 * @param int|string|null $key
+	 * @param self|string|int|float|bool $value
+	 * @return void
+	 */
+	public function offsetSet($key, $value) {}
+
 }
 
 /**

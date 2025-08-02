@@ -84,7 +84,7 @@ Bar2
 		yield [
 			'message' => 'One file error with tip',
 			'exitCode' => 1,
-			'numFileErrors' => [5, 6],
+			'numFileErrors' => [5, 1],
 			'numGenericErrors' => 0,
 			'verbose' => false,
 			'expected' => '/data/folder/with space/and unicode 😃/project/foo.php:5:Foobar\Buz
@@ -94,7 +94,7 @@ Bar2
 		yield [
 			'message' => 'One file error with tip and verbose',
 			'exitCode' => 1,
-			'numFileErrors' => [5, 6],
+			'numFileErrors' => [5, 1],
 			'numGenericErrors' => 0,
 			'verbose' => true,
 			'expected' => '/data/folder/with space/and unicode 😃/project/foo.php:5:Foobar\Buz [identifier=foobar.buz]

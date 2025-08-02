@@ -74,13 +74,25 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 ::error ::second generic<error>
 ',
 		];
+
+		yield [
+			'One file, with @ tags',
+			1,
+			[6, 1],
+			0,
+			'::error file=bar.php,line=5,col=0::Error with `@param` or `@phpstan-param` and `@return` in the message.
+',
+		];
 	}
 
+	/**
+	 * @param array{int, int}|int $numFileErrors
+	 */
 	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
-		int $numFileErrors,
+		array|int $numFileErrors,
 		int $numGenericErrors,
 		string $expected,
 	): void

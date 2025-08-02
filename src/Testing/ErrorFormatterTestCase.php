@@ -89,8 +89,8 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			[$offsetFileErrors, $numFileErrors] = $numFileErrors;
 		}
 
-		if (!in_array($numFileErrors, range(0, 6), true) ||
-			!in_array($offsetFileErrors, range(0, 6), true) ||
+		if (!in_array($numFileErrors, range(0, 7), true) ||
+			!in_array($offsetFileErrors, range(0, 7), true) ||
 			!in_array($numGenericErrors, range(0, 2), true)
 		) {
 			throw new ShouldNotHappenException();
@@ -103,6 +103,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 2),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
 			new Error('Foobar\\Buz', self::DIRECTORY_PATH . '/foo.php', 5, tip: 'a tip', identifier: 'foobar.buz'),
+			new Error('Error with @param or @phpstan-param and @return in the message.', self::DIRECTORY_PATH . '/bar.php', 5),
 		], $offsetFileErrors, $numFileErrors);
 
 		$genericErrors = array_slice([

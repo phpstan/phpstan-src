@@ -40,9 +40,7 @@ final class GithubErrorFormatter implements ErrorFormatter
 			});
 
 			$message = $fileSpecificError->getMessage();
-			// newlines need to be encoded
-			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
-			$message = str_replace("\n", '%0A', $message);
+			$message = $this->formatMessage($message);
 
 			$line = sprintf('::error %s::%s', implode(',', $metas), $message);
 
@@ -51,9 +49,7 @@ final class GithubErrorFormatter implements ErrorFormatter
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
-			// newlines need to be encoded
-			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
-			$notFileSpecificError = str_replace("\n", '%0A', $notFileSpecificError);
+			$notFileSpecificError = $this->formatMessage($notFileSpecificError);
 
 			$line = sprintf('::error ::%s', $notFileSpecificError);
 
@@ -62,8 +58,7 @@ final class GithubErrorFormatter implements ErrorFormatter
 		}
 
 		foreach ($analysisResult->getWarnings() as $warning) {
-			// newlines need to be encoded
-			// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+			$warning = $this->formatMessage($warning);
 			$warning = str_replace("\n", '%0A', $warning);
 
 			$line = sprintf('::warning ::%s', $warning);
@@ -73,6 +68,15 @@ final class GithubErrorFormatter implements ErrorFormatter
 		}
 
 		return $analysisResult->hasErrors() ? 1 : 0;
+	}
+
+	private function formatMessage(string $message): string
+	{
+		// newlines need to be encoded
+		// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+		$message = str_replace("\n", '%0A', $message);
+
+		return preg_replace('/@([a-zA-Z0-9_\-]+)/', '`@$1`', $message) ?? $message;
 	}
 
 }

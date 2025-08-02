@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
 use function array_walk;
 use function implode;
+use function preg_replace;
 use function sprintf;
 use function str_replace;
 

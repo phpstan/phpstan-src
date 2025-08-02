@@ -282,6 +282,9 @@ jobs:
               cd e2e/ignore-error-extension
               composer install
               ../../bin/phpstan
+          - script: |
+              cd e2e/bug-10483
+              ../../bin/phpstan
 
     steps:
       - name: "Checkout"

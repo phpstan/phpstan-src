@@ -103,7 +103,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 2),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
 			new Error('Foobar\\Buz', self::DIRECTORY_PATH . '/foo.php', 5, tip: 'a tip', identifier: 'foobar.buz'),
-			new Error('Error with @param or @phpstan-param and @return in the message.', self::DIRECTORY_PATH . '/bar.php', 5),
+			new Error('Error with @param or @phpstan-param and class@anonymous in the message.', self::DIRECTORY_PATH . '/bar.php', 5),
 		], $offsetFileErrors, $numFileErrors);
 
 		$genericErrors = array_slice([

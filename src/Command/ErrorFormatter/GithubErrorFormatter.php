@@ -76,7 +76,7 @@ final class GithubErrorFormatter implements ErrorFormatter
 		// see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
 		$message = str_replace("\n", '%0A', $message);
 
-		return preg_replace('/@([a-zA-Z0-9_\-]+)/', '`@$1`', $message) ?? $message;
+		return preg_replace('/(^|\s)@([a-zA-Z0-9_\-]+)(\s|$)/', '$1`@$2`$3', $message) ?? $message;
 	}
 
 }

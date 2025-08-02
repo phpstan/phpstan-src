@@ -80,7 +80,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			[6, 1],
 			0,
-			'::error file=bar.php,line=5,col=0::Error with `@param` or `@phpstan-param` and `@return` in the message.
+			'::error file=bar.php,line=5,col=0::Error with `@param` or `@phpstan-param` and class@anonymous in the message.
 ',
 		];
 	}

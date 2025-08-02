@@ -105,7 +105,7 @@ final class FilterFunctionReturnTypeHelper
 
 		if ($filterType === null) {
 			$filterValue = $this->getConstant('FILTER_DEFAULT');
-			if (null === $filterValue) {
+			if ($filterValue === null) {
 				return $mixedType;
 			}
 		} else {
@@ -442,7 +442,7 @@ final class FilterFunctionReturnTypeHelper
 	private function hasFlag(string $flagName, ?Type $flagsType): bool
 	{
 		$flag = $this->getConstant($flagName);
-		if (null === $flag) {
+		if ($flag === null) {
 			return false;
 		}
 

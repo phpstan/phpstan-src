@@ -4143,6 +4143,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 				ObjectWithoutClassType::class,
 				'object',
 			],
+			[
+				[
+					new MixedType(subtractedType: new ObjectWithoutClassType(new ObjectType('stdClass'))),
+					new ObjectWithoutClassType(),
+				],
+				ObjectType::class,
+				'stdClass',
+			],
 		];
 
 		if (PHP_VERSION_ID < 80100) {

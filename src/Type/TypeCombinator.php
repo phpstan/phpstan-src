@@ -540,6 +540,18 @@ final class TypeCombinator
 			return $type;
 		}
 
+		if ($subtractedType instanceof SubtractableType) {
+			$withoutSubtracted = $subtractedType->getTypeWithoutSubtractedType();
+			if ($withoutSubtracted->isSuperTypeOf($type)->yes()) {
+				$subtractedSubtractedType = $subtractedType->getSubtractedType();
+				if ($subtractedSubtractedType === null) {
+					return new NeverType();
+				}
+
+				return self::intersect($type, $subtractedSubtractedType);
+			}
+		}
+
 		if ($type instanceof SubtractableType) {
 			$subtractedType = $type->getSubtractedType() === null
 				? $subtractedType

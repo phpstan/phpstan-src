@@ -145,7 +145,7 @@ final class ArrayColumnHelper
 		if (!$type->canAccessProperties()->no()) {
 			$propertyTypes = $offsetOrProperty->getConstantStrings();
 			if ($propertyTypes === []) {
-				return new MixedType();
+				return $allowMaybe ? new MixedType() : null;
 			}
 			foreach ($propertyTypes as $propertyType) {
 				$propertyName = $propertyType->getValue();

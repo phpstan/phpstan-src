@@ -207,6 +207,13 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12658.php'], []);
 	}
 
+	public function testBug10367(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10367.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testIssetAfterRememberedConstructor(): void
 	{

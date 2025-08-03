@@ -39,14 +39,10 @@ final class ArrayColumnHelper
 		}
 
 		$iterableValueType = $arrayType->getIterableValueType();
-		$returnValueType = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope, false);
+		[$returnValueType, $certainty] = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope);
 
-		if ($returnValueType === null) {
-			$returnValueType = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope, true);
+		if (!$certainty->yes()) {
 			$iterableAtLeastOnce = TrinaryLogic::createMaybe();
-			if ($returnValueType === null) {
-				throw new ShouldNotHappenException();
-			}
 		}
 
 		return [$returnValueType, $iterableAtLeastOnce];
@@ -57,15 +53,12 @@ final class ArrayColumnHelper
 		if (!$indexType->isNull()->yes()) {
 			$iterableValueType = $arrayType->getIterableValueType();
 
-			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
-			if ($type !== null) {
+			[$type, $certainty] = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope);
+			if ($certainty->yes()) {
 				return $type;
 			}
 
-			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, true);
-			if ($type !== null) {
-				return TypeCombinator::union($type, new IntegerType());
-			}
+			return TypeCombinator::union($type, new IntegerType());
 		}
 
 		return new IntegerType();
@@ -96,8 +89,8 @@ final class ArrayColumnHelper
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		foreach ($arrayType->getValueTypes() as $i => $iterableValueType) {
-			$valueType = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope, false);
-			if ($valueType === null) {
+			[$valueType, $certainty] = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope);
+			if (!$certainty->yes()) {
 				return null;
 			}
 			if ($valueType instanceof NeverType) {
@@ -105,16 +98,11 @@ final class ArrayColumnHelper
 			}
 
 			if (!$indexType->isNull()->yes()) {
-				$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
-				if ($type !== null) {
+				[$type, $certainty] = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope);
+				if ($certainty->yes()) {
 					$keyType = $type;
 				} else {
-					$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, true);
-					if ($type !== null) {
-						$keyType = TypeCombinator::union($type, new IntegerType());
-					} else {
-						$keyType = null;
-					}
+					$keyType = TypeCombinator::union($type, new IntegerType());
 				}
 			} else {
 				$keyType = null;
@@ -129,11 +117,14 @@ final class ArrayColumnHelper
 		return $builder->getArray();
 	}
 
-	private function getOffsetOrProperty(Type $type, Type $offsetOrProperty, Scope $scope, bool $allowMaybe): ?Type
+	/**
+	 * @return array{Type, TrinaryLogic}
+	 */
+	private function getOffsetOrProperty(Type $type, Type $offsetOrProperty, Scope $scope): array
 	{
 		$offsetIsNull = $offsetOrProperty->isNull();
 		if ($offsetIsNull->yes()) {
-			return $type;
+			return [$type, TrinaryLogic::createYes()];
 		}
 
 		$returnTypes = [];
@@ -145,13 +136,13 @@ final class ArrayColumnHelper
 		if (!$type->canAccessProperties()->no()) {
 			$propertyTypes = $offsetOrProperty->getConstantStrings();
 			if ($propertyTypes === []) {
-				return $allowMaybe ? new MixedType() : null;
+				return [new MixedType(), TrinaryLogic::createMaybe()];
 			}
 			foreach ($propertyTypes as $propertyType) {
 				$propertyName = $propertyType->getValue();
 				$hasProperty = $type->hasProperty($propertyName);
 				if ($hasProperty->maybe()) {
-					return $allowMaybe ? new MixedType() : null;
+					return [new MixedType(), TrinaryLogic::createMaybe()];
 				}
 				if (!$hasProperty->yes()) {
 					continue;
@@ -161,10 +152,11 @@ final class ArrayColumnHelper
 			}
 		}
 
+		$certainty = TrinaryLogic::createYes();
 		if ($type->isOffsetAccessible()->yes()) {
 			$hasOffset = $type->hasOffsetValueType($offsetOrProperty);
-			if (!$allowMaybe && $hasOffset->maybe()) {
-				return null;
+			if ($hasOffset->maybe()) {
+				$certainty = TrinaryLogic::createMaybe();
 			}
 			if (!$hasOffset->no()) {
 				$returnTypes[] = $type->getOffsetValueType($offsetOrProperty);
@@ -172,10 +164,10 @@ final class ArrayColumnHelper
 		}
 
 		if ($returnTypes === []) {
-			return new NeverType();
+			return [new NeverType(), TrinaryLogic::createYes()];
 		}
 
-		return TypeCombinator::union(...$returnTypes);
+		return [TypeCombinator::union(...$returnTypes), $certainty];
 	}
 
 	private function castToArrayKeyType(Type $type): Type

@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\ArrayDimFetch;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -11,6 +13,7 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -42,6 +45,10 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->isImplicitArrayCreation($node, $scope)->yes()) {
+			return [];
+		}
+
 		if ($node->dim !== null) {
 			$dimType = $scope->getType($node->dim);
 			$unknownClassPattern = sprintf('Access to offset %s on an unknown class %%s.', SprintfHelper::escapeFormatString($dimType->describe(VerbosityLevel::value())));
@@ -151,6 +158,24 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$unknownClassPattern,
 			$dimType,
 		);
+	}
+
+	private function isImplicitArrayCreation(Node\Expr\ArrayDimFetch $node, Scope $scope): TrinaryLogic
+	{
+		$varNode = $node->var;
+		while ($varNode instanceof ArrayDimFetch) {
+			$varNode = $varNode->var;
+		}
+
+		if (!$varNode instanceof Variable) {
+			return TrinaryLogic::createNo();
+		}
+
+		if (!is_string($varNode->name)) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $scope->hasVariableType($varNode->name)->negate();
 	}
 
 }

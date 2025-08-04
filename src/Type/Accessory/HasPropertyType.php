@@ -106,11 +106,6 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return sprintf('hasProperty(%s)', $this->propertyName);
 	}
 
-	public function isOffsetAccessLegal(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 	public function hasProperty(string $propertyName): TrinaryLogic
 	{
 		if ($this->propertyName === $propertyName) {

@@ -340,11 +340,6 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		);
 	}
 
-	public function isOffsetAccessLegal(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;

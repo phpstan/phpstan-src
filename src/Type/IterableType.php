@@ -256,11 +256,6 @@ class IterableType implements CompoundType
 		);
 	}
 
-	public function isOffsetAccessLegal(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

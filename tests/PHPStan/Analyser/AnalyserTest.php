@@ -467,6 +467,21 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
+	#[DataProvider('dataIgnoreErrorInTraitUsingClassFilePath')]
+	public function testIgnoreErrorInTraitUsingClassFilePathWithPartialAnalysis(string $pathToIgnore): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => $pathToIgnore,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [
+			__DIR__ . '/data/traits-ignore/Foo.php',
+		], true);
+		$this->assertNoErrors($result);
+	}
+
 	public function testIgnoredErrorMissingMessage(): void
 	{
 		$ignoreErrors = [

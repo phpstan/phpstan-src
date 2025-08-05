@@ -2,8 +2,6 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PHPStan\DependencyInjection\AutowiredParameter;
-use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
@@ -11,7 +9,6 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 
-#[AutowiredService]
 final class UniversalObjectCratesClassReflectionExtension
 	implements PropertiesClassReflectionExtension
 {
@@ -21,7 +18,6 @@ final class UniversalObjectCratesClassReflectionExtension
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
 		private array $classes,
 		private AnnotationsPropertiesClassReflectionExtension $annotationClassReflection,
 	)

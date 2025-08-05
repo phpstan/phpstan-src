@@ -12,6 +12,7 @@ use PHPStan\Reflection\Mixin\MixinMethodsClassReflectionExtension;
 use PHPStan\Reflection\Mixin\MixinPropertiesClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\Soap\SoapClientMethodsClassReflectionExtension;
+use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsMethodsClassReflectionExtension;
 use PHPStan\Reflection\RequireExtension\RequireExtendsPropertiesClassReflectionExtension;
 use function array_merge;
@@ -36,9 +37,10 @@ final class LazyClassReflectionExtensionRegistryProvider implements ClassReflect
 			$mixinMethodsClassReflectionExtension = $this->container->getByType(MixinMethodsClassReflectionExtension::class);
 			$mixinPropertiesClassReflectionExtension = $this->container->getByType(MixinPropertiesClassReflectionExtension::class);
 			$soapClientMethodsClassReflectionExtension = $this->container->getByType(SoapClientMethodsClassReflectionExtension::class);
+			$universalObjectCratesClassReflectionExtension = $this->container->getByType(UniversalObjectCratesClassReflectionExtension::class);
 
 			$this->registry = new ClassReflectionExtensionRegistry(
-				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension, $mixinPropertiesClassReflectionExtension]),
+				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension, $mixinPropertiesClassReflectionExtension, $universalObjectCratesClassReflectionExtension]),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsMethodsClassReflectionExtension, $mixinMethodsClassReflectionExtension, $soapClientMethodsClassReflectionExtension]),
 				$this->container->getServicesByTag(BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG),
 				$this->container->getByType(RequireExtendsPropertiesClassReflectionExtension::class),

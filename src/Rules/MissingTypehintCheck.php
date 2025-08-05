@@ -43,7 +43,7 @@ final class MissingTypehintCheck
 		Traversable::class,
 		Iterator::class,
 		IteratorAggregate::class,
-		Generator::class,
+		//Generator::class,
 	];
 
 	/**

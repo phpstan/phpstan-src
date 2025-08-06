@@ -7315,6 +7315,9 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
+	/**
+	 * @return Generator<string|int, array{string,string}>
+	 */
 	public static function dataFilterVar(): Generator
 	{
 		$typesAndFilters = [

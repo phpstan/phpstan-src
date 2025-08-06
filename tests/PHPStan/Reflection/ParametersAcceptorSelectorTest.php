@@ -39,6 +39,9 @@ use function count;
 class ParametersAcceptorSelectorTest extends PHPStanTestCase
 {
 
+	/**
+	 * @return Generator<int,array{Type[], ParametersAcceptor[], bool, ParametersAcceptor}>
+	 */
 	public static function dataSelectFromTypes(): Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';

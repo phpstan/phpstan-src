@@ -31,12 +31,12 @@ class DOMNode
 {
 
 	/**
-	 * @var DOMNamedNodeMap|null
+	 * @var DOMNamedNodeMap<DOMAttr>|null
 	 */
 	public $attributes;
 
 	/**
-	 * @phpstan-assert-if-true =DOMNamedNodeMap $this->attributes
+	 * @phpstan-assert-if-true =DOMNamedNodeMap<DOMAttr> $this->attributes
 	 * @return bool
 	 */
 	public function hasAttributes() {}
@@ -46,7 +46,7 @@ class DOMNode
 class DOMElement extends DOMNode
 {
 
-	/** @var DOMNamedNodeMap */
+	/** @var DOMNamedNodeMap<DOMAttr> */
 	public $attributes;
 
 	/** @var DOMDocument */
@@ -69,10 +69,9 @@ class DOMElement extends DOMNode
 
 /**
  * @template-covariant TNode as DOMNode
- * @implements Traversable<int, TNode>
  * @implements IteratorAggregate<int, TNode>
  */
-class DOMNodeList implements Traversable, IteratorAggregate, Countable
+class DOMNodeList implements IteratorAggregate, Countable
 {
 
 	/**
@@ -96,7 +95,7 @@ class DOMXPath
 
 }
 
-class DOMAttr
+class DOMAttr extends DOMNode
 {
 
 	/** @var DOMDocument */
@@ -155,11 +154,36 @@ class DOMProcessingInstruction
 }
 
 /**
+ * @template-covariant TNode as DOMNode
+ * @implements IteratorAggregate<int, TNode>
+ *
  * @property-read int $length
  */
-class DOMNamedNodeMap
+class DOMNamedNodeMap implements IteratorAggregate, Countable
 {
+	/**
+	 * @return Iterator<TNode>
+	 */
+	public function getIterator(): Iterator {}
 
+	/**
+	 * @param string $qualifiedName
+	 * @return TNode|null
+	 */
+	public function getNamedItem($qualifiedName): ?DOMNode {}
+
+	/**
+	 * @param string|null $namespace
+	 * @param string $localName
+	 * @return TNode|null
+	 */
+	public function getNamedItemNS($namespace, $localName): ?DOMNode {}
+
+	/**
+	 * @param int $index
+	 * @return TNode|null
+	 */
+	public function item($index): ?DOMNode {}
 }
 
 class DOMText

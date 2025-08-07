@@ -170,6 +170,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		];
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	#[DataProvider('dataIsAttributeClass')]
 	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = Attribute::TARGET_ALL): void
 	{

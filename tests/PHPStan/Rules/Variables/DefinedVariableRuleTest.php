@@ -1179,7 +1179,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13353.php'], [
 			[
 				'Variable $bar might not be defined.',
-				9,
+				11,
 			],
 		]);
 	}

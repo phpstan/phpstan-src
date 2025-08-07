@@ -132,4 +132,9 @@ class PropertyVarianceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9153.php'], []);
 	}
 
+	public function testBug13049(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13049.php'], []);
+	}
+
 }

@@ -1178,4 +1178,5 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/dynamic-variable.php'], []);
 	}
+
 }

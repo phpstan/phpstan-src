@@ -41,6 +41,11 @@ final class DefinedVariableRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];
+
+		if ($scope->isUndefinedExpressionAllowed($node)) {
+			return [];
+		}
+
 		if (is_string($node->name)) {
 			$variableNameScopes = [$node->name => $scope];
 		} else {
@@ -78,7 +83,7 @@ final class DefinedVariableRule implements Rule
 			}
 		}
 
-		if ($scope->isInExpressionAssign($node) || $scope->isUndefinedExpressionAllowed($node)) {
+		if ($scope->isInExpressionAssign($node)) {
 			return [];
 		}
 

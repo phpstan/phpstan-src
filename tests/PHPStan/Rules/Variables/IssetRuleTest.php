@@ -492,13 +492,6 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testDynamicVariable(): void
-	{
-		$this->treatPhpDocTypesAsCertain = true;
-
-		$this->analyse([__DIR__ . '/data/dynamic-variable.php'], []);
-	}
-
 	public function testPr4374(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

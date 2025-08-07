@@ -41,14 +41,6 @@ final class IssetCheck
 	 */
 	public function check(Expr $expr, Scope $scope, string $operatorDescription, string $identifier, callable $typeMessageCallback, ?IdentifierRuleError $error = null): ?IdentifierRuleError
 	{
-		// [FIX] Ignore isset($$foo): dynamic variable
-		if (
-			$expr instanceof Node\Expr\Variable &&
-			$expr->name instanceof Node\Expr\Variable
-		) {
-			return null;
-		}
-
 		// mirrored in PHPStan\Analyser\MutatingScope::issetCheck()
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			$hasVariable = $scope->hasVariableType($expr->name);

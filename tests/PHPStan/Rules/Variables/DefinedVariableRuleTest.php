@@ -1169,14 +1169,19 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8719.php'], []);
 	}
 
-	public function testDynamicVariable(): void
+	public function testDynamicVariableInsideIsset(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = true;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 
-		$this->analyse([__DIR__ . '/data/dynamic-variable.php'], []);
+		$this->analyse([__DIR__ . '/data/dynamic-variable-inside-isset.php'], [
+			[
+				'Variable $bar might not be defined.',
+				9,
+			],
+		]);
 	}
 
 }

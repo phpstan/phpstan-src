@@ -5,3 +5,5 @@ $foo = 'bar';
 if (!isset($$foo)) {
 	echo 'Wololo';
 }
+
+echo $$foo;

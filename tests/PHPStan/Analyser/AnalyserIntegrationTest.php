@@ -1507,6 +1507,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Parameter #2 $offset of function array_splice expects int, string given.', $errors[0]->getMessage());
 	}
 
+	public function testBug13310(): void
+	{
+		// require file to make sure the defined function is known
+		require_once __DIR__ . '/data/bug-13310.php';
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13310.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

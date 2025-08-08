@@ -27,6 +27,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		private ?array $namedArgumentsVariants,
 		private ?Type $selfOutType,
 		private ?Type $throwType,
+		private Assertions $assertions,
 	)
 	{
 	}
@@ -133,7 +134,7 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAsserts(): Assertions
 	{
-		return $this->reflection->getAsserts();
+		return $this->assertions;
 	}
 
 	public function acceptsNamedArguments(): TrinaryLogic

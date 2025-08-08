@@ -137,6 +137,7 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 			$namedArgumentVariants,
 			$selfOutType,
 			$throwType,
+			$method->getAsserts()->mapTypes($this->transformStaticTypeCallback),
 		);
 	}
 

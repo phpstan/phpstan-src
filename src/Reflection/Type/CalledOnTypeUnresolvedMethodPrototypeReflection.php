@@ -132,6 +132,7 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 			$namedArgumentsVariants,
 			$selfOutType,
 			$throwType,
+			$method->getAsserts()->mapTypes(fn (Type $type): Type => $this->transformStaticType($type)),
 		);
 	}
 

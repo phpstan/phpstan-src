@@ -30,7 +30,7 @@ class HelloWorld
 	public function sayHello4(string $s): void
 	{
 		if (preg_match('/data-(\d{6})\.json$/', $s, $matches) <= 0) {
-			assertType('array{}', $matches);
+			assertType('list{0?: string, 1?: non-falsy-string&numeric-string}', $matches);
 
 			return;
 		}
@@ -41,7 +41,7 @@ class HelloWorld
 	public function sayHello5(string $s): void
 	{
 		if (preg_match('/data-(\d{6})\.json$/', $s, $matches) < 1) {
-			assertType('array{}', $matches);
+			assertType('list{0?: string, 1?: non-falsy-string&numeric-string}', $matches);
 
 			return;
 		}
@@ -52,7 +52,7 @@ class HelloWorld
 	public function sayHello6(string $s): void
 	{
 		if (1 > preg_match('/data-(\d{6})\.json$/', $s, $matches)) {
-			assertType('array{}', $matches);
+			assertType('list{0?: string, 1?: non-falsy-string&numeric-string}', $matches);
 
 			return;
 		}

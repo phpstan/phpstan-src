@@ -339,13 +339,15 @@ final class TypeSpecifier
 				&& count($expr->right->getArgs()) >= 3
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
-				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+				&& (
+					IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
+					|| ($expr instanceof Expr\BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
+				)
 			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\NotIdentical($expr->right, new ConstFetch(new Name('false'))),
-					$context,
-				)->setRootExpr($expr);
+				// 0 < preg_match or 1 <= preg_match becomes 1 === preg_match
+				$newExpr = new Expr\BinaryOp\Identical($expr->right, new Node\Scalar\Int_(1));
+
+				return $this->specifyTypesInCondition($scope, $newExpr, $context)->setRootExpr($expr);
 			}
 
 			if (

@@ -342,6 +342,13 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10577.php'], []);
 	}
 
+	public function testBug11708(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11708.php'], []);
+	}
+
 	public function testBug10610(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

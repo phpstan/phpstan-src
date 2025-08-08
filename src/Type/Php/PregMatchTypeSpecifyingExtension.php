@@ -55,10 +55,18 @@ final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$flagsType = $scope->getType($flagsArg->value);
 		}
 
-		if ($functionReflection->getName() === 'preg_match') {
-			$matchedType = $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, TrinaryLogic::createFromBoolean($context->true()), $scope);
+		if ($context->true() && $context->falsey()) {
+			$wasMatched = TrinaryLogic::createMaybe();
+		} elseif ($context->true()) {
+			$wasMatched = TrinaryLogic::createYes();
 		} else {
-			$matchedType = $this->regexShapeMatcher->matchAllExpr($patternArg->value, $flagsType, TrinaryLogic::createFromBoolean($context->true()), $scope);
+			$wasMatched = TrinaryLogic::createNo();
+		}
+
+		if ($functionReflection->getName() === 'preg_match') {
+			$matchedType = $this->regexShapeMatcher->matchExpr($patternArg->value, $flagsType, $wasMatched, $scope);
+		} else {
+			$matchedType = $this->regexShapeMatcher->matchAllExpr($patternArg->value, $flagsType, $wasMatched, $scope);
 		}
 		if ($matchedType === null) {
 			return new SpecifiedTypes();

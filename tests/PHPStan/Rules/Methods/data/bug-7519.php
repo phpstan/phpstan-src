@@ -7,7 +7,7 @@ use FilterIterator;
 /**
  * @template TKey
  * @template T
- * @template TIterator as Iterator<TKey, T>
+ * @template TIterator as \Iterator<TKey, T>
  *
  * @extends FilterIterator<TKey, T, TIterator>
  */

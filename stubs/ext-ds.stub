@@ -82,6 +82,14 @@ final class Deque implements Sequence
 	}
 
 	/**
+	 * @param (callable(TValue, TValue): int)|null $comparator
+	 * @return Deque<TValue>
+	 */
+	public function sorted(?callable $comparator = null): Deque
+	{
+	}
+
+	/**
 	 * @return Deque<TValue>
 	 */
 	public function slice(int $offset, ?int $length = null): Deque

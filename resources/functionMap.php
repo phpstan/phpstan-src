@@ -10139,6 +10139,7 @@ return [
 'SolrDisMaxQuery::unserialize' => ['void', 'serialized'=>'string'],
 'SolrDisMaxQuery::useDisMaxQueryParser' => ['SolrDisMaxQuery'],
 'SolrDisMaxQuery::useEDisMaxQueryParser' => ['SolrDisMaxQuery'],
+'SolrDocument::__unset' => ['bool', 'fieldname'=>'string'],
 'SolrDocument::getField' => ['__benevolent<SolrDocumentField|false>', 'fieldname'=>'string'],
 'SolrDocument::getFieldCount' => ['__benevolent<int|false>'],
 'SolrDocument::getFieldNames' => ['__benevolent<array|false>'],

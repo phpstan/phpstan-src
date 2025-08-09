@@ -449,7 +449,7 @@ class X {
 
 function subtract($m) {
 	if ($m != 0) {
-		assertType("mixed~(0|0.0|'0'|false|null)", $m); // could be "mixed~(0|0.0|''|'0'|false|null)"
+		assertType("mixed~(0|-0.0|0.0|'0'|false|null)", $m); // could be "mixed~(0|-0.0|0.0|''|'0'|false|null)"
 		assertType('int', (int) $m);
 	}
 	if ($m !== 0) {
@@ -462,7 +462,7 @@ function subtract($m) {
 	}
 
 	if ($m != true) {
-		assertType("0|0.0|''|'0'|array{}|false|null", $m);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $m);
 		assertType('0', (int) $m);
 	}
 	if ($m !== true) {
@@ -471,7 +471,7 @@ function subtract($m) {
 	}
 
 	if ($m != false) {
-		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m);
+		assertType("mixed~(0|-0.0|0.0|''|'0'|array{}|false|null)", $m);
 		assertType('int', (int) $m);
 	}
 	if ($m !== false) {

@@ -1247,14 +1247,14 @@ final class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() === 0) {
 			if ($rightType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
+				return new UnionType([new ConstantFloatType(-0.0), new ConstantFloatType(0.0)]);
 			}
 			return new ConstantIntegerType(0);
 		}
 		$rightNumberType = $rightType->toNumber();
 		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() === 0) {
 			if ($leftType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
+				return new UnionType([new ConstantFloatType(-0.0), new ConstantFloatType(0.0)]);
 			}
 			return new ConstantIntegerType(0);
 		}

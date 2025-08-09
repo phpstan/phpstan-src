@@ -1990,6 +1990,7 @@ final class TypeSpecifier
 					new NullType(),
 					new ConstantBooleanType(false),
 					new ConstantIntegerType(0),
+					new ConstantFloatType(-0.0),
 					new ConstantFloatType(0.0),
 					new ConstantStringType(''),
 					new ConstantArrayType([], []),
@@ -2022,6 +2023,7 @@ final class TypeSpecifier
 						new NullType(),
 						new ConstantBooleanType(false),
 						new ConstantIntegerType(0),
+						new ConstantFloatType(-0.0),
 						new ConstantFloatType(0.0),
 						new StringType(),
 					];
@@ -2030,6 +2032,7 @@ final class TypeSpecifier
 						new NullType(),
 						new ConstantBooleanType(false),
 						new ConstantIntegerType(0),
+						new ConstantFloatType(-0.0),
 						new ConstantFloatType(0.0),
 						new ConstantStringType('0'),
 					];
@@ -2046,6 +2049,7 @@ final class TypeSpecifier
 						new NullType(),
 						new ConstantBooleanType(false),
 						new ConstantIntegerType(0),
+						new ConstantFloatType(-0.0),
 						new ConstantFloatType(0.0),
 						new ConstantStringType(''),
 					];
@@ -2474,16 +2478,21 @@ final class TypeSpecifier
 				&& !$rightType->equals($leftType)
 				&& $rightType->isSuperTypeOf($leftType)->yes())
 		) {
+			$typeToSet = $leftType;
+			if (in_array(0.0, $leftType->getConstantScalarValues(), true)) {
+				$typeToSet = TypeCombinator::union(new ConstantFloatType(-0.0), new ConstantFloatType(0.0), $typeToSet);
+			}
+
 			$types = $this->create(
 				$rightExpr,
-				$leftType,
+				$typeToSet,
 				$context,
 				$scope,
 			)->setRootExpr($expr);
 			if ($rightExpr instanceof AlwaysRememberedExpr) {
 				$types = $types->unionWith($this->create(
 					$unwrappedRightExpr,
-					$leftType,
+					$typeToSet,
 					$context,
 					$scope,
 				))->setRootExpr($expr);
@@ -2498,16 +2507,21 @@ final class TypeSpecifier
 				&& $leftType->isSuperTypeOf($rightType)->yes()
 			)
 		) {
+			$typeToSet = $rightType;
+			if (in_array(0.0, $rightType->getConstantScalarValues(), true)) {
+				$typeToSet = TypeCombinator::union(new ConstantFloatType(-0.0), new ConstantFloatType(0.0), $typeToSet);
+			}
+
 			$leftTypes = $this->create(
 				$leftExpr,
-				$rightType,
+				$typeToSet,
 				$context,
 				$scope,
 			)->setRootExpr($expr);
 			if ($leftExpr instanceof AlwaysRememberedExpr) {
 				$leftTypes = $leftTypes->unionWith($this->create(
 					$unwrappedLeftExpr,
-					$rightType,
+					$typeToSet,
 					$context,
 					$scope,
 				))->setRootExpr($expr);

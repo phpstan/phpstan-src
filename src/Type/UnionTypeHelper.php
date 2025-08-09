@@ -76,6 +76,12 @@ final class UnionTypeHelper
 				if ($b instanceof ConstantIntegerType && $a instanceof ConstantFloatType) {
 					return 1;
 				}
+				if ((string) $a->getValue() === '-0' && (string) $b->getValue() === '0') {
+					return -1;
+				}
+				if ((string) $b->getValue() === '-0' && (string) $a->getValue() === '0') {
+					return 1;
+				}
 				return 0;
 			}
 

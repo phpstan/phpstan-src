@@ -20,10 +20,10 @@ function assertNotEmpty(mixed $var): void
 
 function ($var) {
 	assertEmpty($var);
-	assertType("0|0.0|''|'0'|array{}|false|null", $var);
+	assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $var);
 };
 
 function ($var) {
 	assertNotEmpty($var);
-	assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $var);
+	assertType("mixed~(0|-0.0|0.0|''|'0'|array{}|false|null)", $var);
 };

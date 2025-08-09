@@ -1358,6 +1358,7 @@ class UnionTypeTest extends PHPStanTestCase
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),
 			new ConstantFloatType(-1.0),
+			new ConstantFloatType(-0.0),
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
 			new ConstantStringType(''),

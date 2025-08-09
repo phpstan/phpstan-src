@@ -45,8 +45,8 @@ class Foo
 		assertType('class-string<UnitEnum>', $enumString);
 		assertType('literal-string&non-empty-string', $nonEmptyLiteralString);
 		assertType('float|int<min, -1>|int<1, max>|non-falsy-string|true', $nonEmptyScalar);
-		assertType("0|0.0|''|'0'|false", $emptyScalar);
-		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $nonEmptyMixed);
+		assertType("0|-0.0|0.0|''|'0'|false", $emptyScalar);
+		assertType("mixed~(0|-0.0|0.0|''|'0'|array{}|false|null)", $nonEmptyMixed);
 		assertType('lowercase-string', $lowercaseString);
 		assertType('lowercase-string&non-empty-string', $nonEmptyLowercaseString);
 		assertType('uppercase-string', $uppercaseString);

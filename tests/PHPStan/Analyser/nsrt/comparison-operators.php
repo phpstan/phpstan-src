@@ -122,7 +122,7 @@ class ComparisonOperatorsInTypeSpecifier
 			assertType('*NEVER*', $f);
 		}
 		if ($f <= null) {
-			assertType('0.0|null', $f);
+			assertType('-0.0|0.0|null', $f);
 		}
 
 		if ($s > null) {

@@ -20,6 +20,7 @@ final class StaticTypeFactory
 				new NullType(),
 				new ConstantBooleanType(false),
 				new ConstantIntegerType(0),
+				new ConstantFloatType(-0.0),
 				new ConstantFloatType(0.0),
 				new ConstantStringType(''),
 				new ConstantStringType('0'),

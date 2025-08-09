@@ -1896,7 +1896,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					StaticTypeFactory::falsey(),
 				],
 				UnionType::class,
-				'0|0.0|\'\'|\'0\'|array{}|false|null',
+				'0|-0.0|0.0|\'\'|\'0\'|array{}|false|null',
 			],
 			[
 				[
@@ -1904,7 +1904,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					StaticTypeFactory::truthy(),
 				],
 				MixedType::class,
-				'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)=implicit',
+				'mixed~(0|-0.0|0.0|\'\'|\'0\'|array{}|false|null)=implicit',
 			],
 			[
 				[
@@ -4933,13 +4933,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				StaticTypeFactory::truthy(),
 				StaticTypeFactory::falsey(),
 				MixedType::class,
-				'mixed~(0|0.0|\'\'|\'0\'|array{}|false|null)',
+				'mixed~(0|-0.0|0.0|\'\'|\'0\'|array{}|false|null)',
 			],
 			[
 				StaticTypeFactory::falsey(),
 				StaticTypeFactory::truthy(),
 				UnionType::class,
-				'0|0.0|\'\'|\'0\'|array{}|false|null',
+				'0|-0.0|0.0|\'\'|\'0\'|array{}|false|null',
 			],
 			[
 				new BooleanType(),

@@ -11,21 +11,21 @@ namespace EqualTypeNarrowing;
 use function PHPStan\Testing\assertType;
 
 /**
- * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param 0|-0.0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
  * @param int|string|null $y
  * @param mixed $z
  */
 function doNull($x, $y, $z): void
 {
 	if ($x == null) {
-		assertType("0|0.0|''|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|array{}|false|null", $x);
 	} else {
 		assertType("1|'0'|'x'|object|true", $x);
 	}
 	if (null != $x) {
 		assertType("1|'0'|'x'|object|true", $x);
 	} else {
-		assertType("0|0.0|''|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|array{}|false|null", $x);
 	}
 
 	if ($y == null) {
@@ -35,32 +35,32 @@ function doNull($x, $y, $z): void
 	}
 
 	if ($z == null) {
-		assertType("0|0.0|''|array{}|false|null", $z);
+		assertType("0|-0.0|0.0|''|array{}|false|null", $z);
 	} else {
-		assertType("mixed~(0|0.0|''|array{}|false|null)", $z);
+		assertType("mixed~(0|-0.0|0.0|''|array{}|false|null)", $z);
 	}
 }
 
 /**
- * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param 0|-0.0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
  * @param int|string|null $y
  * @param mixed $z
  */
 function doFalse($x, $y, $z): void
 {
 	if ($x == false) {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	} else {
 		assertType("1|'x'|object|true", $x);
 	}
 	if (false != $x) {
 		assertType("1|'x'|object|true", $x);
 	} else {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	}
 
 	if (!$x) {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	} else {
 		assertType("1|'x'|object|true", $x);
 	}
@@ -72,14 +72,14 @@ function doFalse($x, $y, $z): void
 	}
 
 	if ($z == false) {
-		assertType("0|0.0|''|'0'|array{}|false|null", $z);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $z);
 	} else {
-		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $z);
+		assertType("mixed~(0|-0.0|0.0|''|'0'|array{}|false|null)", $z);
 	}
 }
 
 /**
- * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param 0|-0.0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
  * @param int|string|null $y
  * @param mixed $z
  */
@@ -88,10 +88,10 @@ function doTrue($x, $y, $z): void
 	if ($x == true) {
 		assertType("1|'x'|object|true", $x);
 	} else {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	}
 	if (true != $x) {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	} else {
 		assertType("1|'x'|object|true", $x);
 	}
@@ -99,7 +99,7 @@ function doTrue($x, $y, $z): void
 	if ($x) {
 		assertType("1|'x'|object|true", $x);
 	} else {
-		assertType("0|0.0|''|'0'|array{}|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $x);
 	}
 
 	if ($y == true) {
@@ -109,14 +109,14 @@ function doTrue($x, $y, $z): void
 	}
 
 	if ($z == true) {
-		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $z);
+		assertType("mixed~(0|-0.0|0.0|''|'0'|array{}|false|null)", $z);
 	} else {
-		assertType("0|0.0|''|'0'|array{}|false|null", $z);
+		assertType("0|-0.0|0.0|''|'0'|array{}|false|null", $z);
 	}
 }
 
 /**
- * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param 0|-0.0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
  * @param int|string|null $y
  * @param mixed $z
  */
@@ -124,14 +124,14 @@ function doZero($x, $y, $z): void
 {
 	// PHP 7.x/8.x compatibility: Keep zero in both cases
 	if ($x == 0) {
-		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|'x'|false|null", $x);
 	} else {
 		assertType("1|''|'x'|array{}|object|true", $x);
 	}
 	if (0 != $x) {
 		assertType("1|''|'x'|array{}|object|true", $x);
 	} else {
-		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+		assertType("0|-0.0|0.0|''|'0'|'x'|false|null", $x);
 	}
 
 	if ($y == 0) {
@@ -141,14 +141,14 @@ function doZero($x, $y, $z): void
 	}
 
 	if ($z == 0) {
-		assertType("0|0.0|string|false|null", $z);
+		assertType("0|-0.0|0.0|string|false|null", $z);
 	} else {
-		assertType("mixed~(0|0.0|'0'|false|null)", $z);
+		assertType("mixed~(0|-0.0|0.0|'0'|false|null)", $z);
 	}
 }
 
 /**
- * @param 0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
+ * @param 0|-0.0|0.0|1|''|'0'|'x'|array{}|bool|object|null $x
  * @param int|string|null $y
  * @param mixed $z
  */
@@ -156,14 +156,14 @@ function doEmptyString($x, $y, $z): void
 {
 	// PHP 7.x/8.x compatibility: Keep zero in both cases
 	if ($x == '') {
-		assertType("0|0.0|''|false|null", $x);
+		assertType("0|-0.0|0.0|''|false|null", $x);
 	} else {
-		assertType("0|0.0|1|'0'|'x'|array{}|object|true", $x);
+		assertType("0|-0.0|0.0|1|'0'|'x'|array{}|object|true", $x);
 	}
 	if ('' != $x) {
-		assertType("0|0.0|1|'0'|'x'|array{}|object|true", $x);
+		assertType("0|-0.0|0.0|1|'0'|'x'|array{}|object|true", $x);
 	} else {
-		assertType("0|0.0|''|false|null", $x);
+		assertType("0|-0.0|0.0|''|false|null", $x);
 	}
 
 	if ($y == '') {
@@ -173,7 +173,7 @@ function doEmptyString($x, $y, $z): void
 	}
 
 	if ($z == '') {
-		assertType("0|0.0|''|false|null", $z);
+		assertType("0|-0.0|0.0|''|false|null", $z);
 	} else {
 		assertType("mixed~(''|false|null)", $z);
 	}

@@ -40,7 +40,19 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self && ($this->value === $type->value || is_nan($this->value) && is_nan($type->value));
+		if (!$type instanceof self) {
+			return false;
+		}
+
+		if (is_nan($this->value)) {
+			return is_nan($type->value);
+		}
+
+		if ($this->value === 0.0 && $type->value === 0.0) {
+			return (string) $this->value === (string) $type->value;
+		}
+
+		return $this->value === $type->value;
 	}
 
 	private function castFloatToString(float $value): string

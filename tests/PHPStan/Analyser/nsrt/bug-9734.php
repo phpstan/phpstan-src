@@ -44,6 +44,19 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param mixed $a
+	 * @return void
+	 */
+	public function doFoo4($a): void
+	{
+		if (array_is_list($a)) {
+			assertType('list', $a);
+		} else {
+			assertType('mixed~list', $a);
+		}
+	}
+
 }
 
 class Bar

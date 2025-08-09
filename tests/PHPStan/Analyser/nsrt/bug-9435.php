@@ -29,11 +29,19 @@ trueCheck($a, allow_null: false);
 assertType('string', $a); // correct (string)
 
 $a = x();
+trueCheck(allow_null: false, input: $a);
+assertType('string', $a); // correct (string)
+
+$a = x();
 trueCheck($a, true);
 assertType('string|null', $a); // correct (string|null)
 
 $a = x();
 trueCheck($a, allow_null: true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+trueCheck(allow_null: true, input: $a);
 assertType('string|null', $a); // correct (string|null)
 
 /** @phpstan-assert ($allow_null is false ? string : string|null) $input */
@@ -54,11 +62,19 @@ falseCheck($a, allow_null: false);
 assertType('string', $a); // correct (string)
 
 $a = x();
+falseCheck(allow_null: false, input: $a);
+assertType('string', $a); // correct (string|null)
+
+$a = x();
 falseCheck($a, true);
 assertType('string|null', $a); // correct (string|null)
 
 $a = x();
 falseCheck($a, allow_null: true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+falseCheck(allow_null: true, input: $a);
 assertType('string|null', $a); // correct (string|null)
 
 /** @phpstan-assert ($allow_null is not true ? string : string|null) $input */
@@ -79,11 +95,19 @@ notTrueCheck($a, allow_null: false);
 assertType('string', $a); // correct (string)
 
 $a = x();
+notTrueCheck(allow_null: false, input: $a);
+assertType('string', $a); // correct (string|null)
+
+$a = x();
 notTrueCheck($a, true);
 assertType('string|null', $a); // correct (string|null)
 
 $a = x();
 notTrueCheck($a, allow_null: true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+notTrueCheck(allow_null: true, input: $a);
 assertType('string|null', $a); // correct (string|null)
 
 /** @phpstan-assert ($allow_null is not false ? string|null : string) $input */
@@ -104,9 +128,17 @@ notFalseCheck($a, allow_null: false);
 assertType('string', $a); // correct (string)
 
 $a = x();
+notFalseCheck(allow_null: false, input: $a);
+assertType('string', $a); // correct (string|null)
+
+$a = x();
 notFalseCheck($a, true);
 assertType('string|null', $a); // correct (string|null)
 
 $a = x();
 notFalseCheck($a, allow_null: true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+notFalseCheck(allow_null: true, input: $a);
 assertType('string|null', $a); // correct (string|null)

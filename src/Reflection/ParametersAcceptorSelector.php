@@ -267,8 +267,7 @@ final class ParametersAcceptorSelector
 
 			$closureBindToVar = $args[0]->getAttribute(ClosureBindToVarVisitor::ATTRIBUTE_NAME);
 			if (
-				$closureBindToVar !== null
-				&& $closureBindToVar instanceof Node\Expr\Variable
+				$closureBindToVar instanceof Node\Expr\Variable
 				&& is_string($closureBindToVar->name)
 			) {
 				$varType = $scope->getType($closureBindToVar);

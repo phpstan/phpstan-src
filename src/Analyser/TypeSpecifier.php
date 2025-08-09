@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
@@ -1450,6 +1451,14 @@ final class TypeSpecifier
 			}
 
 			$argsMap[$paramName][] = $arg->value;
+		}
+		foreach ($parameters as $parameter) {
+			$name = $parameter->getName();
+			$defaultValue = $parameter->getDefaultValue();
+			if (isset($argsMap[$name]) || $defaultValue === null) {
+				continue;
+			}
+			$argsMap[$name][] = new TypeExpr($defaultValue);
 		}
 
 		if ($call instanceof MethodCall) {

@@ -83,6 +83,11 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4455-static.php'], []);
 	}
 
+	public function testBug12224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12224.php'], []);
+	}
+
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-static-method-without-side-effect.php'], [

@@ -65,6 +65,10 @@ final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
+		if (count($function->getAsserts()->getAsserts()) > 0) {
+			return [];
+		}
+
 		$functionName = $function->getName();
 		$functionHasSideEffects = !$function->hasSideEffects()->no();
 

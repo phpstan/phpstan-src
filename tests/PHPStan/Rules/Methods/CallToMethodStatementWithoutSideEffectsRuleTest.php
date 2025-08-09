@@ -136,6 +136,11 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11503.php'], $errors);
 	}
 
+	public function testBug12224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12224.php'], []);
+	}
+
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-method-without-side-effect.php'], [

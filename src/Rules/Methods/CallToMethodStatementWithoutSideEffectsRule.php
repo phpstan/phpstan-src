@@ -69,6 +69,9 @@ final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
+		if (count($method->getAsserts()->getAsserts()) > 0) {
+			return [];
+		}
 
 		return [
 			RuleErrorBuilder::message(sprintf(

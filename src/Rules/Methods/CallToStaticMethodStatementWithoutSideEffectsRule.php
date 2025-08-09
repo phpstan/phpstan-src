@@ -87,6 +87,10 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
+		if (count($method->getAsserts()->getAsserts()) > 0) {
+			return [];
+		}
+
 		$methodResult = $scope->getType($staticCall);
 		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 			return [];

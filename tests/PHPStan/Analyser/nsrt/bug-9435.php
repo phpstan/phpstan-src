@@ -142,3 +142,36 @@ assertType('string|null', $a); // correct (string|null)
 $a = x();
 notFalseCheck(allow_null: true, input: $a);
 assertType('string|null', $a); // correct (string|null)
+
+/** @phpstan-assert ($allow_null is false ? string : string|null) $input */
+function checkWithVariadics(mixed $input, bool $allow_null = false, ...$more): void
+{
+}
+
+$a = x();
+checkWithVariadics($a);
+assertType('string', $a); // incorrect: should be string but is string|null
+
+$a = x();
+checkWithVariadics($a, false);
+assertType('string', $a); // correct (string)
+
+$a = x();
+checkWithVariadics($a, allow_null: false);
+assertType('string', $a); // correct (string)
+
+$a = x();
+checkWithVariadics(allow_null: false, input: $a);
+assertType('string', $a); // correct (string)
+
+$a = x();
+checkWithVariadics($a, true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+checkWithVariadics($a, allow_null: true);
+assertType('string|null', $a); // correct (string|null)
+
+$a = x();
+checkWithVariadics(allow_null: true, input: $a);
+assertType('string|null', $a); // correct (string|null)

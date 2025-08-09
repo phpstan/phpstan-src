@@ -71,7 +71,7 @@ function takesArrayIfTrue(array $arr) : void {
 	if (validateStringArrayIfTrue($arr)) {
 		assertType('array<string>', $arr);
 	} else {
-		assertType('array<mixed>', $arr);
+		assertType('non-empty-array<mixed>', $arr);
 	}
 }
 /**
@@ -81,7 +81,7 @@ function takesArrayIfTrue1(array $arr) : void {
 	assertType('array<mixed>', $arr);
 
 	if (!validateStringArrayIfTrue($arr)) {
-		assertType('array<mixed>', $arr);
+		assertType('non-empty-array<mixed>', $arr);
 	} else {
 		assertType('array<string>', $arr);
 	}
@@ -96,7 +96,7 @@ function takesArrayIfFalse(array $arr) : void {
 	if (!validateStringArrayIfFalse($arr)) {
 		assertType('array<string>', $arr);
 	} else {
-		assertType('array<mixed>', $arr);
+		assertType('non-empty-array<mixed>', $arr);
 	}
 }
 
@@ -107,7 +107,7 @@ function takesArrayIfFalse1(array $arr) : void {
 	assertType('array<mixed>', $arr);
 
 	if (validateStringArrayIfFalse($arr)) {
-		assertType('array<mixed>', $arr);
+		assertType('non-empty-array<mixed>', $arr);
 	} else {
 		assertType('array<string>', $arr);
 	}

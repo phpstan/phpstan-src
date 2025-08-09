@@ -609,6 +609,10 @@ class ArrayType implements Type
 			return TypeCombinator::intersect($this, new NonEmptyArrayType());
 		}
 
+		if ($typeToRemove->isSuperTypeOf(new ConstantArrayType([], []))->yes()) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
 		if ($typeToRemove instanceof NonEmptyArrayType) {
 			return new ConstantArrayType([], []);
 		}

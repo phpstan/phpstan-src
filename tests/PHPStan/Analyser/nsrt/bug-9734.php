@@ -17,7 +17,7 @@ class Foo
 		if (array_is_list($a)) {
 			assertType('list', $a);
 		} else {
-			assertType('array<mixed>', $a); // could be non-empty-array
+			assertType('non-empty-array<mixed>', $a);
 		}
 	}
 
@@ -43,5 +43,92 @@ class Foo
 			assertType('non-empty-array<mixed>', $a);
 		}
 	}
+
+}
+
+class Bar
+{
+	/**
+	 * @param array<array-key, mixed> $value
+	 * @return ($value is non-empty-list ? true : false)
+	 */
+	public function assertIsNonEmptyList($value): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @param array<array-key, mixed> $value
+	 * @return ($value is list<string> ? true : false)
+	 */
+	public function assertIsStringList($value): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @param array<array-key, mixed> $value
+	 * @return ($value is list{string, string} ? true : false)
+	 */
+	public function assertIsConstantList($value): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @param array<array-key, mixed> $value
+	 * @return ($value is list{0?: string, 1?: string} ? true : false)
+	 */
+	public function assertIsOptionalConstantList($value): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @param array<array-key, mixed> $value
+	 * @return ($value is array<string> ? true : false)
+	 */
+	public function assertIsStringArray($value): bool
+	{
+		return false;
+	}
+
+	/**
+	 * @param array<mixed> $a
+	 * @return void
+	 */
+	public function doFoo(array $a): void
+	{
+		if ($this->assertIsNonEmptyList($a)) {
+			assertType('non-empty-list', $a);
+		} else {
+			assertType('array<mixed>', $a);
+		}
+
+		if ($this->assertIsStringList($a)) {
+			assertType('list<string>', $a);
+		} else {
+			assertType('non-empty-array', $a);
+		}
+
+		if ($this->assertIsConstantList($a)) {
+			assertType('array{string, string}', $a);
+		} else {
+			assertType('array', $a);
+		}
+
+		if ($this->assertIsOptionalConstantList($a)) {
+			assertType('list{0?: string, 1?: string}', $a);
+		} else {
+			assertType('non-empty-array', $a);
+		}
+
+		if ($this->assertIsStringArray($a)) {
+			assertType('array<string>', $a);
+		} else {
+			assertType('non-empty-array', $a);
+		}
+	}
+
 
 }

@@ -8,7 +8,7 @@ function foo(array $foo) {
 	if (array_is_list($foo)) {
         assertType('list', $foo);
     } else {
-		assertType('array', $foo);
+		assertType('non-empty-array', $foo);
 	}
 }
 
@@ -51,7 +51,7 @@ if (array_is_list($bar)) {
 if (array_is_list($foo)) {
     assertType('list', $foo);
 } else {
-	assertType('array<int|string, mixed>', $foo);
+	assertType('non-empty-array<int|string, mixed>', $foo);
 }
 
 $baz = [];

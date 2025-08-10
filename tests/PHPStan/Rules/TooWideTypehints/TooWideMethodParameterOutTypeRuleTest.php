@@ -11,9 +11,11 @@ use PHPStan\Testing\RuleTestCase;
 class TooWideMethodParameterOutTypeRuleTest extends RuleTestCase
 {
 
+	private bool $checkProtectedAndPublicMethods = true;
+
 	protected function getRule(): TRule
 	{
-		return new TooWideMethodParameterOutTypeRule(new TooWideParameterOutTypeCheck());
+		return new TooWideMethodParameterOutTypeRule(new TooWideParameterOutTypeCheck(), $this->checkProtectedAndPublicMethods);
 	}
 
 	public function testRule(): void
@@ -37,6 +39,69 @@ class TooWideMethodParameterOutTypeRuleTest extends RuleTestCase
 				'Method TooWideMethodParameterOut\Foo::bug10699() never assigns 20 to &$out so it can be removed from the @param-out type.',
 				37,
 			],
+			[
+				'Method TooWideMethodParameterOut\Foo::finalDoBaz() never assigns null to &$p so it can be removed from the @param-out type.',
+				45,
+			],
+			[
+				'Method TooWideMethodParameterOut\Foo::doBazProtected() never assigns null to &$p so it can be removed from the @param-out type.',
+				53,
+			],
+			[
+				'Method TooWideMethodParameterOut\Foo::doBazPrivate() never assigns null to &$p so it can be removed from the @param-out type.',
+				61,
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doBar() never assigns null to &$p so it can be removed from the by-ref type.',
+				76,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doBaz() never assigns null to &$p so it can be removed from the @param-out type.',
+				84,
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doLorem() never assigns null to &$p so it can be removed from the by-ref type.',
+				89,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::bug10699() never assigns 20 to &$out so it can be removed from the @param-out type.',
+				100,
+			],
+		]);
+	}
+
+	public function testRuleWithoutProtectedAndPublic(): void
+	{
+		$this->checkProtectedAndPublicMethods = false;
+		$this->analyse([__DIR__ . '/data/too-wide-method-parameter-out.php'], [
+			[
+				'Method TooWideMethodParameterOut\Foo::finalDoBaz() never assigns null to &$p so it can be removed from the @param-out type.',
+				45,
+			],
+			[
+				'Method TooWideMethodParameterOut\Foo::doBazPrivate() never assigns null to &$p so it can be removed from the @param-out type.',
+				61,
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doBar() never assigns null to &$p so it can be removed from the by-ref type.',
+				76,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doBaz() never assigns null to &$p so it can be removed from the @param-out type.',
+				84,
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::doLorem() never assigns null to &$p so it can be removed from the by-ref type.',
+				89,
+				'You can narrow the parameter out type with @param-out PHPDoc tag.',
+			],
+			[
+				'Method TooWideMethodParameterOut\FinalFoo::bug10699() never assigns 20 to &$out so it can be removed from the @param-out type.',
+				100,
+			],
 		]);
 	}
 
@@ -48,6 +113,12 @@ class TooWideMethodParameterOutTypeRuleTest extends RuleTestCase
 	public function testBug10687(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10687.php'], []);
+	}
+
+	public function testBug12080(): void
+	{
+		$this->checkProtectedAndPublicMethods = false;
+		$this->analyse([__DIR__ . '/data/bug-12080.php'], []);
 	}
 
 }

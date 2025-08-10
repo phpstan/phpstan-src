@@ -58,6 +58,7 @@ parametersSchema:
 	checkPhpDocMethodSignatures: bool()
 	checkExtraArguments: bool()
 	checkMissingTypehints: bool()
+	checkTooWideParameterOutInProtectedAndPublicMethods: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	checkDynamicProperties: bool()

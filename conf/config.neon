@@ -54,6 +54,7 @@ parameters:
 	checkPhpDocMethodSignatures: false
 	checkExtraArguments: false
 	checkMissingTypehints: false
+	checkTooWideParameterOutInProtectedAndPublicMethods: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	checkDynamicProperties: false

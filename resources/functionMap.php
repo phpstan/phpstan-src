@@ -9050,6 +9050,7 @@ return [
 'ReflectionClass::implementsInterface' => ['bool', 'interface_name'=>'string|ReflectionClass'],
 'ReflectionClass::newInstance' => ['object', 'args='=>'mixed', '...args='=>'mixed'],
 'ReflectionClass::newInstanceArgs' => ['object', 'args='=>'array'],
+'ReflectionClassConstant::getName' => ['string'],
 'ReflectionExtension::getClasses' => ['array<string,ReflectionClass>'],
 'ReflectionExtension::getClassNames' => ['list<class-string>'],
 'ReflectionExtension::getConstants' => ['array<string,mixed>'],

@@ -19,6 +19,7 @@ use function implode;
 use function sha1;
 use function str_starts_with;
 use function substr;
+use const PHP_VERSION_ID;
 use const PREG_SPLIT_DELIM_CAPTURE;
 use const PREG_SPLIT_NO_EMPTY;
 
@@ -62,7 +63,9 @@ final class Patcher
 
 		$refMerge = new ReflectionClass(PhpMerge::class);
 		$refMergeMethod = $refMerge->getMethod('mergeHunks');
-		$refMergeMethod->setAccessible(true);
+		if (PHP_VERSION_ID < 80100) {
+			$refMergeMethod->setAccessible(true);
+		}
 
 		$result = Line::createArray(array_map(
 			static fn ($l) => [$l, Differ::OLD],

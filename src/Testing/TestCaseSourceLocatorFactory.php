@@ -68,7 +68,9 @@ final class TestCaseSourceLocatorFactory
 				),
 			];
 			$vendorDirProperty = $classLoaderReflection->getProperty('vendorDir');
-			$vendorDirProperty->setAccessible(true);
+			if (PHP_VERSION_ID < 80100) {
+				$vendorDirProperty->setAccessible(true);
+			}
 			foreach ($classLoaders as $classLoader) {
 				$composerProjectPath = dirname($vendorDirProperty->getValue($classLoader));
 				if (!is_file($composerProjectPath . '/composer.json')) {

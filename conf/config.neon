@@ -127,6 +127,7 @@ parameters:
 		- ../stubs/core.stub
 		- ../stubs/typeCheckingFunctions.stub
 		- ../stubs/Countable.stub
+		- ../stubs/file.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	resultCachePath: %tmpDir%/resultCache.php

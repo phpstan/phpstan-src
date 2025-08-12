@@ -275,6 +275,21 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12087b(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12087b.php'], [
+			[
+				'Call to method Bug12087b\MyAssert::is_null() with null will always evaluate to true.',
+				37,
+				$tipText,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

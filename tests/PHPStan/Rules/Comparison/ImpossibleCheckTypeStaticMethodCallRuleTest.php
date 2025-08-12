@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ImpossibleCheckTypeStaticMethodCallRule>
@@ -143,6 +144,21 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
 		$this->analyse([__DIR__ . '/data/impossible-static-method-report-always-true-last-condition.php'], $expectedErrors);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12087b(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12087b.php'], [
+			[
+				'Call to static method Bug12087b\MyAssert::static_is_null() with null will always evaluate to true.',
+				31,
+				$tipText,
+			],
+		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

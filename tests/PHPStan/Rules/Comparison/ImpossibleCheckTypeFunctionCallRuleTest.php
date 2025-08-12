@@ -1049,10 +1049,26 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6788.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug13268(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-13268.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug12087(): void
+	{
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12087.php'], [
+			[
+				'Call to function is_null() with null will always evaluate to true.',
+				14,
+				$tipText,
+			],
+		]);
 	}
 
 }

@@ -1966,7 +1966,7 @@ final class NodeScopeResolver
 				}
 
 				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
-				$scope->setVariableAsGlobal($var->name);
+				$scope = $scope->setVariableAsGlobal($var->name);
 
 				$vars[] = $var->name;
 			}

@@ -70,13 +70,6 @@ final class ImpossibleCheckTypeHelper
 			}
 			$args = $node->getArgs();
 			$argsCount = count($args);
-
-			foreach ($args as $arg) {
-				if ($arg->value instanceof Expr\Assign) {
-					return null;
-				}
-			}
-
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert' && $argsCount >= 1) {
@@ -286,6 +279,16 @@ final class ImpossibleCheckTypeHelper
 
 		$results = [];
 
+		$assignedInCallVars = [];
+		if ($node instanceof Expr\CallLike) {
+			foreach ($node->getArgs() as $arg) {
+				if (!$arg->value instanceof Expr\Assign) {
+					continue;
+				}
+
+				$assignedInCallVars[] = $arg->value;
+			}
+		}
 		foreach ($sureTypes as $sureType) {
 			if (self::isSpecified($typeSpecifierScope, $node, $sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
@@ -300,6 +303,14 @@ final class ImpossibleCheckTypeHelper
 
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
+
+			foreach ($assignedInCallVars as $assignedInCallVar) {
+				if ($sureType[0] !== $assignedInCallVar->var) {
+					continue;
+				}
+
+				$argumentType = $scope->getType($assignedInCallVar->expr);
+			}
 
 			$results[] = $resultType->isSuperTypeOf($argumentType)->result;
 		}

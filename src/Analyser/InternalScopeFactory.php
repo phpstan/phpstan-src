@@ -19,6 +19,7 @@ interface InternalScopeFactory
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<string> $globalVariables
 	 */
 	public function create(
 		ScopeContext $context,
@@ -37,6 +38,7 @@ interface InternalScopeFactory
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		array $globalVariables = [],
 	): MutatingScope;
 
 }

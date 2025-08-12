@@ -202,6 +202,7 @@ final class MutatingScope implements Scope
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<string> $globalVariables
 	 */
 	public function __construct(
 		private InternalScopeFactory $scopeFactory,
@@ -235,6 +236,7 @@ final class MutatingScope implements Scope
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
+		private array $globalVariables = [],
 	)
 	{
 		if ($namespace === '') {
@@ -363,6 +365,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -441,6 +444,7 @@ final class MutatingScope implements Scope
 			true,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -497,6 +501,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -579,13 +584,14 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
-		if ($this->isGlobalVariable($variableName)) {
+		if ($this->isSuperGlobalVariable($variableName)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -626,13 +632,25 @@ final class MutatingScope implements Scope
 
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
-			if ($this->isGlobalVariable($variableName)) {
+			if ($this->isSuperGlobalVariable($variableName)) {
 				return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
 			}
 			return new MixedType();
 		}
 
 		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+	}
+
+	public function setVariableAsGlobal(string $variableName): self
+	{
+		$this->globalVariables[] = $variableName;
+
+		return $this;
+	}
+
+	public function isGlobalVariable(string $variableName): bool
+	{
+		return in_array($variableName, $this->globalVariables, true);
 	}
 
 	/**
@@ -677,7 +695,7 @@ final class MutatingScope implements Scope
 		return $variables;
 	}
 
-	private function isGlobalVariable(string $variableName): bool
+	private function isSuperGlobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
 	}
@@ -2762,6 +2780,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			true,
+			$this->globalVariables,
 		);
 	}
 
@@ -2956,6 +2975,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -2981,6 +3001,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -3572,6 +3593,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -3635,6 +3657,7 @@ final class MutatingScope implements Scope
 			false,
 			$this,
 			$this->nativeTypesPromoted,
+			[],
 		);
 	}
 
@@ -3743,6 +3766,7 @@ final class MutatingScope implements Scope
 			false,
 			$this,
 			$this->nativeTypesPromoted,
+			[],
 		);
 	}
 
@@ -3811,6 +3835,7 @@ final class MutatingScope implements Scope
 			$scope->afterExtractCall,
 			$scope->parentScope,
 			$this->nativeTypesPromoted,
+			[],
 		);
 	}
 
@@ -3870,6 +3895,7 @@ final class MutatingScope implements Scope
 			$arrowFunctionScope->afterExtractCall,
 			$arrowFunctionScope->parentScope,
 			$this->nativeTypesPromoted,
+			[],
 		);
 	}
 
@@ -4033,6 +4059,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -4064,6 +4091,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -4106,6 +4134,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -4137,6 +4166,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -4284,6 +4314,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
@@ -4393,6 +4424,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -4493,6 +4525,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -4705,6 +4738,7 @@ final class MutatingScope implements Scope
 			$scope->afterExtractCall,
 			$scope->parentScope,
 			$scope->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -4732,6 +4766,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -4762,6 +4797,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -4799,6 +4835,9 @@ final class MutatingScope implements Scope
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
 		);
+
+		$mergedGlobalVariables = array_merge($this->globalVariables, $otherScope->globalVariables);
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -4816,6 +4855,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall && $otherScope->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$mergedGlobalVariables,
 		);
 	}
 
@@ -4929,7 +4969,7 @@ final class MutatingScope implements Scope
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
 		$intersectedVariableTypeHolders = [];
-		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name);
+		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isSuperGlobalVariable($node->name);
 		$nodeFinder = new NodeFinder();
 		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (isset($theirVariableTypeHolders[$exprString])) {
@@ -5020,6 +5060,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -5115,6 +5156,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -5164,6 +5206,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 
@@ -5195,6 +5238,7 @@ final class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 			$this->nativeTypesPromoted,
+			$this->globalVariables,
 		);
 	}
 

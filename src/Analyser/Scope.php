@@ -61,6 +61,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getVariableType(string $variableName): Type;
 
+	public function isGlobalVariable(string $variableName): bool;
+
 	public function canAnyVariableExist(): bool;
 
 	/**

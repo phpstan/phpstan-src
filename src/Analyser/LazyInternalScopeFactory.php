@@ -46,6 +46,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
 		bool $nativeTypesPromoted = false,
+		array $globalVariables = [],
 	): MutatingScope
 	{
 		return new MutatingScope(
@@ -80,6 +81,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$nativeTypesPromoted,
+			$globalVariables,
 		);
 	}
 

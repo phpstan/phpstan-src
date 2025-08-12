@@ -1085,6 +1085,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug9445(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

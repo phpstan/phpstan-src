@@ -256,7 +256,7 @@ function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count 
  * @param array<string>|string $replace
  * @param array<string>|string $subject
  * @param-out int $count
- * @return list<string>|string
+ * @return ($subject is array ? list<string> : string)
  */
 function str_replace($search, $replace, $subject, ?int &$count = null) {}
 
@@ -265,7 +265,7 @@ function str_replace($search, $replace, $subject, ?int &$count = null) {}
  * @param array<string>|string $replace
  * @param array<string>|string $subject
  * @param-out int $count
- * @return list<string>|string
+ * @return ($subject is array ? list<string> : string)
  */
 function str_ireplace($search, $replace, $subject, ?int &$count = null) {}
 

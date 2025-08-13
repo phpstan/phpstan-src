@@ -88,12 +88,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug5095(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5095.php'], [
-			[
-				'Method Bug5095\Parser::unaryOperatorFor() never returns \'not\' so it can be removed from the return type.',
-				21,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-5095.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0')]
@@ -197,6 +192,30 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				37,
 			],
 		]);
+	}
+
+	public function testBug10312(): void
+	{
+		$this->checkProtectedAndPublicMethods = true;
+		$this->analyse([__DIR__ . '/data/bug-10312.php'], []);
+	}
+
+	public function testBug10312b(): void
+	{
+		$this->checkProtectedAndPublicMethods = true;
+		$this->analyse([__DIR__ . '/data/bug-10312b.php'], []);
+	}
+
+	public function testBug10312c(): void
+	{
+		$this->checkProtectedAndPublicMethods = true;
+		$this->analyse([__DIR__ . '/data/bug-10312c.php'], []);
+	}
+
+	public function testBug10312d(): void
+	{
+		$this->checkProtectedAndPublicMethods = true;
+		$this->analyse([__DIR__ . '/data/bug-10312d.php'], []);
 	}
 
 }

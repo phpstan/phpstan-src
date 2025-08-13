@@ -98,6 +98,13 @@ final class TooWideTypeCheck
 
 		$returnType = TypeCombinator::union(...$returnTypes);
 
+		if (
+			$returnType->isConstantScalarValue()->yes()
+			&& $functionReturnType->isConstantScalarValue()->yes()
+		) {
+			return [];
+		}
+
 		// Do not require to have @return null/true/false in descendant classes
 		if (
 			$checkDescendantClass

@@ -18,6 +18,11 @@ class TooWideClosureReturnTypehintRuleTest extends RuleTestCase
 		);
 	}
 
+	public function testBug10312e(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10312e.php'], []);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/tooWideClosureReturnType.php'], [

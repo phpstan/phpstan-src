@@ -1720,25 +1720,7 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\BooleanType is error\-prone and deprecated\. Use Type\:\:isBoolean\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\CallableType is error\-prone and deprecated\. Use Type\:\:isCallable\(\) and Type\:\:getCallableParametersAcceptors\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ClassStringType is error\-prone and deprecated\. Use Type\:\:isClassStringType\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\ConstantScalarType is error\-prone and deprecated\. Use Type\:\:isConstantScalarValue\(\) or Type\:\:getConstantScalarTypes\(\) or Type\:\:getConstantScalarValues\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/TypeCombinator.php
@@ -1756,21 +1738,9 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\FloatType is error\-prone and deprecated\. Use Type\:\:isFloat\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\Generic\\GenericClassStringType is error\-prone and deprecated\. Use Type\:\:isClassStringType\(\) and Type\:\:getClassStringObjectType\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\IntegerType is error\-prone and deprecated\. Use Type\:\:isInteger\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
@@ -1795,12 +1765,6 @@ parameters:
 			message: '#^Doing instanceof PHPStan\\Type\\ObjectShapeType is error\-prone and deprecated\. Use Type\:\:isObject\(\) and Type\:\:hasProperty\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
-			message: '#^Doing instanceof PHPStan\\Type\\StringType is error\-prone and deprecated\. Use Type\:\:isString\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-

@@ -190,22 +190,22 @@ final class TypeCombinator
 		$enumCaseTypes = [];
 		$integerRangeTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i] instanceof ConstantScalarType) {
+			if ($types[$i]->isConstantScalarValue()->yes()) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
 				unset($types[$i]);
 				continue;
 			}
-			if ($types[$i] instanceof BooleanType) {
+			if ($types[$i]->isBoolean()->yes()) {
 				$hasGenericScalarTypes[ConstantBooleanType::class] = true;
 			}
-			if ($types[$i] instanceof FloatType) {
+			if ($types[$i]->isFloat()->yes()) {
 				$hasGenericScalarTypes[ConstantFloatType::class] = true;
 			}
-			if ($types[$i] instanceof IntegerType && !$types[$i] instanceof IntegerRangeType) {
+			if ($types[$i]->isInteger()->yes() && !$types[$i] instanceof IntegerRangeType) {
 				$hasGenericScalarTypes[ConstantIntegerType::class] = true;
 			}
-			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
+			if ($types[$i]->isString()->yes() && $types[$i]->isClassString()->no() && TypeUtils::getAccessoryTypes($types[$i]) === []) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			}
 			$enumCases = $types[$i]->getEnumCases();

@@ -182,4 +182,15 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8926.php'], []);
 	}
 
+	public function testBug13384b(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../TooWideTypehints/data/bug-13384b.php'], [
+			[
+				'If condition is always false.',
+				23,
+			],
+		]);
+	}
+
 }

@@ -59,4 +59,30 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11667.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testBug13384(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384.php'], [
+			[
+				'Static property Bug13384\ShutdownHandlerFalseDefault::$registered (bool) is never assigned true so it can be removed from the property type.',
+				9,
+			],
+			[
+				'Static property Bug13384\ShutdownHandlerTrueDefault::$registered (bool) is never assigned false so it can be removed from the property type.',
+				34,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.2')]
+	public function testBug13384NoStandaloneTrueFalse(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384.php'], []);
+	}
+
+	public function testBug13384b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384b.php'], []);
+	}
+
 }

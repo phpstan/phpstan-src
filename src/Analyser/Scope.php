@@ -57,6 +57,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getParentScope(): ?self;
 
+	public function isGlobalVariable(string $variableName): bool;
+
 	public function hasVariableType(string $variableName): TrinaryLogic;
 
 	public function getVariableType(string $variableName): Type;

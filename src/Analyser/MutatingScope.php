@@ -182,6 +182,8 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 
+	private const IS_GLOBAL_ATTRIBUTE_NAME = 'isGlobal';
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -620,9 +622,24 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/** @api */
+	public function isGlobalVariable(string $variableName): bool
+	{
+		if ($this->isSuperglobalVariable($variableName)) {
+			return true;
+		}
+
+		$varExprString = '$' . $variableName;
+		if (!isset($this->expressionTypes[$varExprString])) {
+			return false;
+		}
+
+		return $this->expressionTypes[$varExprString]->getExpr()->getAttribute(self::IS_GLOBAL_ATTRIBUTE_NAME) === true;
+	}
+
+	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
-		if ($this->isGlobalVariable($variableName)) {
+		if ($this->isSuperglobalVariable($variableName)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -663,7 +680,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
-			if ($this->isGlobalVariable($variableName)) {
+			if ($this->isSuperglobalVariable($variableName)) {
 				return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
 			}
 			return new MixedType();
@@ -714,7 +731,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		return $variables;
 	}
 
-	private function isGlobalVariable(string $variableName): bool
+	private function isSuperglobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
 	}
@@ -4292,9 +4309,13 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, bool $isGlobal = false): self
 	{
 		$node = new Variable($variableName);
+		if ($isGlobal || $this->isGlobalVariable($variableName)) {
+			$node->setAttribute(self::IS_GLOBAL_ATTRIBUTE_NAME, true);
+		}
+
 		$scope = $this->assignExpression($node, $type, $nativeType);
 		if ($certainty->no()) {
 			throw new ShouldNotHappenException();
@@ -5079,7 +5100,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
 		$intersectedVariableTypeHolders = [];
-		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isGlobalVariable($node->name);
+		$globalVariableCallback = fn (Node $node) => $node instanceof Variable && is_string($node->name) && $this->isSuperglobalVariable($node->name);
 		$nodeFinder = new NodeFinder();
 		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (isset($theirVariableTypeHolders[$exprString])) {

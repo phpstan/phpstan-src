@@ -28,6 +28,7 @@ use ValueError;
 use function abs;
 use function count;
 use function floor;
+use function intdiv;
 use function is_array;
 use function is_finite;
 use function is_numeric;
@@ -35,6 +36,7 @@ use function is_string;
 use function max;
 use function min;
 use function range;
+use const PHP_INT_MAX;
 
 #[AutowiredService]
 final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -186,11 +188,13 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			&& $endConstant instanceof ConstantIntegerType
 			&& $stepConstant instanceof ConstantIntegerType
 		) {
+			$low = min($startConstant->getValue(), $endConstant->getValue());
+			$high = max($startConstant->getValue(), $endConstant->getValue());
+
 			return self::getNonEmptyListOfType(
-				IntegerRangeType::fromInterval(
-					min($startConstant->getValue(), $endConstant->getValue()),
-					max($startConstant->getValue(), $endConstant->getValue()),
-				),
+				IntegerRangeType::fromInterval($low, $high),
+				// the keys stay unbounded when $high - $low overflows
+				$low >= 0 || $high <= PHP_INT_MAX + $low ? intdiv($high - $low, abs($stepConstant->getValue())) : null,
 			);
 		}
 
@@ -207,11 +211,11 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		);
 	}
 
-	private static function getNonEmptyListOfType(Type $type): IntersectionType
+	private static function getNonEmptyListOfType(Type $type, ?int $maxKey = null): IntersectionType
 	{
 		return new IntersectionType([
 			new ArrayType(
-				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+				IntegerRangeType::fromInterval(0, $maxKey),
 				$type,
 			),
 			new NonEmptyArrayType(),

@@ -93,7 +93,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 							}
 							return TypeCombinator::intersect(
 								new ArrayType(
-									new IntegerType(),
+									IntegerRangeType::fromInterval(0, (int) (($endConstant->getValue() - $startConstant->getValue()) / $stepConstant->getValue())),
 									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
 								),
 								new NonEmptyArrayType(),

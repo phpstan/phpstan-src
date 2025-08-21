@@ -177,13 +177,13 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAsserts(): Assertions
 	{
-		$mergedAssertions = Assertions::createEmpty();
+		$assertions = Assertions::createEmpty();
 
 		foreach ($this->methods as $method) {
-			$mergedAssertions = $mergedAssertions->intersectWith($method->getAsserts());
+			$assertions = $assertions->intersectWith($method->getAsserts());
 		}
 
-		return $mergedAssertions;
+		return $assertions;
 	}
 
 	public function acceptsNamedArguments(): TrinaryLogic

@@ -362,3 +362,8 @@ function header_register_callback(callable $callback): bool {}
  * @param-later-invoked-callable $callback
  */
 function register_tick_function(callable $callback, mixed ...$args): bool {}
+
+/**
+ * @param-out array<resource> $pipes
+ */
+function proc_open(array|string $command, array $descriptor_spec, &$pipes, ?string $cwd, ?array $env_vars, ?array $options): resource|false {}

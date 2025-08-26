@@ -13,7 +13,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TooWideFunctionReturnTypehintRule();
+		return new TooWideFunctionReturnTypehintRule(new TooWideReturnTypeCheck());
 	}
 
 	public function testRule(): void

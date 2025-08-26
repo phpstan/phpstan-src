@@ -17,7 +17,7 @@ final class TooWideArrowFunctionReturnTypehintRule implements Rule
 {
 
 	public function __construct(
-		private TooWideReturnTypeCheck $check,
+		private TooWideTypeCheck $check,
 	)
 	{
 	}

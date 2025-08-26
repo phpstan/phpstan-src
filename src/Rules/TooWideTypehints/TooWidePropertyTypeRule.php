@@ -10,11 +10,8 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
 
@@ -28,6 +25,7 @@ final class TooWidePropertyTypeRule implements Rule
 	public function __construct(
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private TooWideTypeCheck $check,
 	)
 	{
 	}
@@ -100,27 +98,9 @@ final class TooWidePropertyTypeRule implements Rule
 
 			$assignedType = TypeCombinator::union(...$assignedTypes);
 			$propertyDescription = $this->describePropertyByName($propertyReflection, $propertyName);
-			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedType);
-			foreach ($propertyType->getTypes() as $type) {
-				if (!$type->isSuperTypeOf($assignedType)->no()) {
-					continue;
-				}
-
-				if ($property->getNativeType() === null && (new NullType())->isSuperTypeOf($type)->yes()) {
-					continue;
-				}
-
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s (%s) is never assigned %s so it can be removed from the property type.',
-					$propertyDescription,
-					$propertyType->describe($verbosityLevel),
-					$type->describe($verbosityLevel),
-				))
-					->identifier('property.unusedType')
-					->line($property->getStartLine())
-					->build();
+			foreach ($this->check->checkProperty($property, $propertyType, $propertyDescription, $assignedType) as $error) {
+				$errors[] = $error;
 			}
-
 		}
 		return $errors;
 	}

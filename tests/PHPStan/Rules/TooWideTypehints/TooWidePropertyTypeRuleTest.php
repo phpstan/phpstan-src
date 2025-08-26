@@ -19,6 +19,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		return new TooWidePropertyTypeRule(
 			new DirectReadWritePropertiesExtensionProvider([]),
 			new PropertyReflectionFinder(),
+			new TooWideTypeCheck(),
 		);
 	}
 

@@ -20,7 +20,7 @@ final class TooWideMethodReturnTypehintRule implements Rule
 	public function __construct(
 		#[AutowiredParameter(ref: '%checkTooWideReturnTypesInProtectedAndPublicMethods%')]
 		private bool $checkProtectedAndPublicMethods,
-		private TooWideReturnTypeCheck $check,
+		private TooWideTypeCheck $check,
 	)
 	{
 	}

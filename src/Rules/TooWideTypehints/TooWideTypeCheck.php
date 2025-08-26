@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\TooWideTypehints;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\IdentifierRuleError;
@@ -17,12 +18,48 @@ use function count;
 use function sprintf;
 
 #[AutowiredService]
-final class TooWideReturnTypeCheck
+final class TooWideTypeCheck
 {
 
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
+	public function checkProperty(
+		ClassPropertyNode $property,
+		UnionType $propertyType,
+		string $propertyDescription,
+		Type $assignedType,
+	): array
+	{
+		$errors = [];
+
+		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedType);
+		foreach ($propertyType->getTypes() as $type) {
+			if (!$type->isSuperTypeOf($assignedType)->no()) {
+				continue;
+			}
+
+			if ($property->getNativeType() === null && $type->isNull()->yes()) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'%s (%s) is never assigned %s so it can be removed from the property type.',
+				$propertyDescription,
+				$propertyType->describe($verbosityLevel),
+				$type->describe($verbosityLevel),
+			))
+				->identifier('property.unusedType')
+				->line($property->getStartLine())
+				->build();
+		}
+
+		return $errors;
+	}
+
+		/**
+		 * @return list<IdentifierRuleError>
+		 */
 	public function checkFunction(
 		MethodReturnStatementsNode|FunctionReturnStatementsNode $node,
 		Type $functionReturnType,

@@ -105,6 +105,11 @@ lint:
 		--exclude tests/PHPStan/Rules/Constants/data/final-private-const.php \
 		--exclude tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php \
 		--exclude tests/PHPStan/Rules/Playground/data/promote-missing-override.php \
+		--exclude tests/PHPStan/Rules/Traits/data/trait-attributes.php \
+		--exclude tests/PHPStan/Rules/Classes/data/non-class-attribute-class.php \
+		--exclude tests/PHPStan/Rules/Classes/data/enum-cannot-be-attribute.php \
+		--exclude tests/PHPStan/Rules/Classes/data/class-attributes.php \
+		--exclude tests/PHPStan/Rules/Classes/data/enum-attributes.php \
 		src tests
 
 install-paratest:

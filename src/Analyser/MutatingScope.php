@@ -161,7 +161,6 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
-use function str_decrement;
 use function str_increment;
 use function str_starts_with;
 use function strlen;
@@ -1736,18 +1735,14 @@ final class MutatingScope implements Scope
 				foreach ($varScalars as $varValue) {
 					if ($node instanceof Expr\PreInc) {
 						if (!is_bool($varValue)) {
-							if (function_exists('str_increment')) {
+							if (function_exists('str_increment') && is_string($varValue)) {
 								$varValue = str_increment($varValue);
 							} else {
 								++$varValue;
 							}
 						}
 					} elseif (is_numeric($varValue)) {
-						if (function_exists('str_decrement')) {
-							$varValue = str_decrement($varValue);
-						} else {
-							--$varValue;
-						}
+						--$varValue;
 					}
 
 					$newTypes[] = $this->getTypeFromValue($varValue);

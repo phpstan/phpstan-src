@@ -365,10 +365,10 @@ function register_tick_function(callable $callback, mixed ...$args): bool {}
 
 /**
  * @param string|array<string> $command
- * @param array<mixed> $descriptor_spec
- * @param array<resource> $pipes
+ * @param list<list<string>|resource> $descriptor_spec
+ * @param list<resource> $pipes
  * @param array<mixed> $env_vars
- * @param array<mixed> $options
+ * @param array<string, bool> $options
  *
  * @param-out list<resource> $pipes
  *

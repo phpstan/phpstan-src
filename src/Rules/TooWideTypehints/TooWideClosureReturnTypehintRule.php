@@ -7,12 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VerbosityLevel;
 use function count;
-use function sprintf;
 
 /**
  * @implements Rule<ClosureReturnStatementsNode>
@@ -20,6 +17,12 @@ use function sprintf;
 #[RegisteredRule(level: 4)]
 final class TooWideClosureReturnTypehintRule implements Rule
 {
+
+	public function __construct(
+		private TooWideReturnTypeCheck $check,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -62,24 +65,7 @@ final class TooWideClosureReturnTypehintRule implements Rule
 			return [];
 		}
 
-		$returnType = TypeCombinator::union(...$returnTypes);
-		if ($returnType->isNull()->yes()) {
-			return [];
-		}
-
-		$messages = [];
-		foreach ($closureReturnType->getTypes() as $type) {
-			if (!$type->isSuperTypeOf($returnType)->no()) {
-				continue;
-			}
-
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Anonymous function never returns %s so it can be removed from the return type.',
-				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
-			))->identifier('return.unusedType')->build();
-		}
-
-		return $messages;
+		return $this->check->checkAnonymousFunction(TypeCombinator::union(...$returnTypes), $closureReturnType);
 	}
 
 }

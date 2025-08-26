@@ -57,9 +57,9 @@ final class TooWideTypeCheck
 		return $errors;
 	}
 
-		/**
-		 * @return list<IdentifierRuleError>
-		 */
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
 	public function checkFunction(
 		MethodReturnStatementsNode|FunctionReturnStatementsNode $node,
 		Type $functionReturnType,

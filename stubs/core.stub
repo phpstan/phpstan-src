@@ -364,6 +364,14 @@ function header_register_callback(callable $callback): bool {}
 function register_tick_function(callable $callback, mixed ...$args): bool {}
 
 /**
- * @param-out array<resource> $pipes
+ * @param string|array<string> $command
+ * @param array<mixed> $descriptor_spec
+ * @param array<resource> $pipes
+ * @param array<mixed> $env_vars
+ * @param array<mixed> $options
+ *
+ * @param-out list<resource> $pipes
+ *
+ * @return resource|false
  */
-function proc_open(array|string $command, array $descriptor_spec, &$pipes, ?string $cwd, ?array $env_vars, ?array $options): resource|false {}
+function proc_open(array|string $command, array $descriptor_spec, &$pipes, ?string $cwd, ?array $env_vars, ?array $options) {}

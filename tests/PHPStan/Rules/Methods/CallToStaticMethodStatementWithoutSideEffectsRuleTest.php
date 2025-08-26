@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
@@ -21,9 +22,25 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects.php'], [
+			[
+				'Call to method DateTime::format() on a separate line has no effect.',
+				23,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8')]
+	public function testRulePhp7(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-method-call-statement-no-side-effects.php'], [
+			[
+				'Call to static method DateTimeImmutable::createFromFormat() on a separate line has no effect.',
+				12,
+			],
 			[
 				'Call to method DateTime::format() on a separate line has no effect.',
 				23,

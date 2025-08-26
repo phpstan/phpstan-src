@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_merge;
 use const PHP_VERSION_ID;
 
@@ -19,12 +20,40 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		return new CallToMethodStatementWithoutSideEffectsRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true));
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [
 			[
 				'Call to method DateTimeImmutable::modify() on a separate line has no effect.',
 				15,
+			],
+			[
+				'Call to method Exception::getCode() on a separate line has no effect.',
+				21,
+			],
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bar::doPure() on a separate line has no effect.',
+				63,
+			],
+			[
+				'Call to method MethodCallStatementNoSideEffects\Bar::doPureWithThrowsVoid() on a separate line has no effect.',
+				64,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8')]
+	public function testRulePhp7(): void
+	{
+		$this->analyse([__DIR__ . '/data/method-call-statement-no-side-effects.php'], [
+			[
+				'Call to method DateTimeImmutable::modify() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to static method DateTimeImmutable::createFromFormat() on a separate line has no effect.',
+				16,
 			],
 			[
 				'Call to method Exception::getCode() on a separate line has no effect.',

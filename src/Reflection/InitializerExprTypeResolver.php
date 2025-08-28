@@ -34,6 +34,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -1077,6 +1078,16 @@ final class InitializerExprTypeResolver
 				$keyType,
 				TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
 			);
+
+			foreach ($leftType->getConstantArrays() as $type) {
+				foreach ($type->getKeyTypes() as $i => $offsetType) {
+					if ($type->isOptionalKey($i)) {
+						continue;
+					}
+					$valueType = $type->getValueTypes()[$i];
+					$arrayType = TypeCombinator::intersect($arrayType, new HasOffsetValueType($offsetType, $valueType));
+				}
+			}
 
 			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
 				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());

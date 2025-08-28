@@ -43,15 +43,7 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
 
-		$attributes = $function->getAttributes();
-		$hasNoDiscard = false;
-		foreach ($attributes as $attrib) {
-			if ($attrib->getName() === 'NoDiscard') {
-				$hasNoDiscard = true;
-				break;
-			}
-		}
-		if (!$hasNoDiscard) {
+		if (!$function->hasNoDiscardAttribute()->yes()) {
 			return [];
 		}
 

@@ -275,4 +275,14 @@ final class PhpFunctionReflection implements FunctionReflection
 		return $this->attributes;
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		foreach ($this->attributes as $attrib) {
+			if ($attrib->getName() === 'NoDiscard') {
+				return TrinaryLogic::createYes();
+			}
+		}
+		return TrinaryLogic::createNo();
+	}
+
 }

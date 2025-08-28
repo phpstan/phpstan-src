@@ -145,4 +145,9 @@ final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodRef
 		return $this->methodReflection->hasSideEffects();
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		return $this->methodReflection->hasNoDiscardAttribute();
+	}
+
 }

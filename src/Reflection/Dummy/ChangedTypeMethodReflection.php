@@ -172,4 +172,9 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getAttributes();
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		return $this->reflection->hasNoDiscardAttribute();
+	}
+
 }

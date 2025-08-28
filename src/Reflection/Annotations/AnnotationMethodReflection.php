@@ -183,4 +183,9 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

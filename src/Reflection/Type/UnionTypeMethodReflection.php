@@ -205,4 +205,9 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->methods[0]->getAttributes();
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->hasNoDiscardAttribute());
+	}
+
 }

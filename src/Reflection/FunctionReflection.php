@@ -62,4 +62,11 @@ interface FunctionReflection
 	 */
 	public function getAttributes(): array;
 
+	/**
+	 * Has the #[\NoDiscard] attribute - on PHP 8.5+ if the function's return
+	 * value is unused at runtime a warning is emitted, phpstan will emit the
+	 * warning during analysis and on older PHP versions too
+	 */
+	public function hasNoDiscardAttribute(): TrinaryLogic;
+
 }

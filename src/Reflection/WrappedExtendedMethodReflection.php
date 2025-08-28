@@ -173,4 +173,10 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function hasNoDiscardAttribute(): TrinaryLogic
+	{
+		// Align with the getAttributes() returning empty
+		return TrinaryLogic::createNo();
+	}
+
 }

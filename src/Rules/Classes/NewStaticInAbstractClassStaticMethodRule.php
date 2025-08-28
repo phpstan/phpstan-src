@@ -49,6 +49,15 @@ final class NewStaticInAbstractClassStaticMethodRule implements Rule
 			return [];
 		}
 
+		if ($classReflection->hasConstructor()) {
+			$constructor = $classReflection->getConstructor();
+			if (
+				$constructor->isFinal()->yes()
+			) {
+				return [];
+			}
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe usage of new static() in abstract class %s in static method %s().',

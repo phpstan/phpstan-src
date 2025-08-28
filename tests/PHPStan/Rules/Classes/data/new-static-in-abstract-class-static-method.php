@@ -31,3 +31,23 @@ abstract class Bar
 	}
 
 }
+
+abstract class FinalConstructFoo
+{
+	final function __construct() {
+
+	}
+
+	public function doFoo(): void
+	{
+		new static();
+	}
+
+	public static function staticDoFoo(): void
+	{
+		new static();
+	}
+
+}
+
+class Subclass extends FinalConstructFoo {}

@@ -435,4 +435,11 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13048(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13048.php'], []);
+	}
+
 }

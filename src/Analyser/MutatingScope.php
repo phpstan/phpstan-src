@@ -1734,7 +1734,11 @@ final class MutatingScope implements Scope
 
 				foreach ($varScalars as $varValue) {
 					if ($node instanceof Expr\PreInc) {
-						if (!is_bool($varValue)) {
+						// until PHP 8.5 it was valid to increment an empty string.
+						// see https://github.com/php/php-src/issues/19597
+						if ($varValue === '') {
+							$varValue = '1';
+						} elseif (!is_bool($varValue)) {
 							if (function_exists('str_increment') && is_string($varValue)) {
 								$varValue = str_increment($varValue);
 							} else {

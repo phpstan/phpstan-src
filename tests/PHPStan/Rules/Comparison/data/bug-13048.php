@@ -1,6 +1,6 @@
-<?php // lint >= 8.0
+<?php // lint >= 8.1
 
-namespace Bug11852;
+namespace Bug13048;
 
 enum IndexBy {
 	case A;
@@ -10,7 +10,6 @@ enum IndexBy {
 /**
  * @template T of IndexBy|null
  * @param T $indexBy
- * @return (T is null ? null : string)
  */
 function run(?IndexBy $indexBy = null): ?string
 {

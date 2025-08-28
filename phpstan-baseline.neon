@@ -1255,6 +1255,12 @@ parameters:
 			message: '#^Doing instanceof PHPStan\\Type\\IntersectionType is error\-prone and deprecated\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 3
+			path: src/Type/Generic/TemplateNullType.php
+
+		-
+			message: '#^Doing instanceof PHPStan\\Type\\IntersectionType is error\-prone and deprecated\.$#'
+			identifier: phpstanApi.instanceofType
+			count: 3
 			path: src/Type/Generic/TemplateObjectShapeType.php
 
 		-
@@ -1331,6 +1337,12 @@ parameters:
 
 		-
 			message: '#^Doing instanceof PHPStan\\Type\\IterableType is error\-prone and deprecated\. Use Type\:\:isIterable\(\) instead\.$#'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Generic/TemplateTypeFactory.php
+
+		-
+			message: '#^Doing instanceof PHPStan\\Type\\NullType is error\-prone and deprecated\. Use Type\:\:isNull\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/Generic/TemplateTypeFactory.php

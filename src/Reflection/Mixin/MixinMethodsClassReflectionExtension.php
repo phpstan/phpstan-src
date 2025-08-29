@@ -84,13 +84,11 @@ final class MixinMethodsClassReflectionExtension implements MethodsClassReflecti
 		}
 
 		$parentClass = $classReflection->getParentClass();
-		while ($parentClass !== null) {
+		if ($parentClass !== null) {
 			$method = $this->findMethod($parentClass, $methodName);
 			if ($method !== null) {
 				return $method;
 			}
-
-			$parentClass = $parentClass->getParentClass();
 		}
 
 		return null;

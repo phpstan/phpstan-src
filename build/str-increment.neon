@@ -1,0 +1,4 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Used function str_increment not found\.#'

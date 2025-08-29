@@ -38,6 +38,11 @@ if (PHP_VERSION_ID < 80200) {
 } else {
 	$includes[] = __DIR__ . '/new-phpunit.neon';
 }
+
+if (PHP_VERSION_ID < 80300) {
+	$includes[] = __DIR__ . '/str-increment.neon';
+}
+
 $config = [];
 $config['includes'] = $includes;
 

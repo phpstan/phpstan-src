@@ -35,9 +35,4 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		$this->default = $default;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

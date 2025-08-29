@@ -35,9 +35,4 @@ final class TemplateArrayType extends ArrayType implements TemplateType
 		$this->default = $default;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

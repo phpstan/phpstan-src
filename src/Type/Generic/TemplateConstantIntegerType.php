@@ -35,9 +35,4 @@ final class TemplateConstantIntegerType extends ConstantIntegerType implements T
 		$this->default = $default;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

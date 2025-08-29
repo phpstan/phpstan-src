@@ -35,9 +35,4 @@ final class TemplateObjectShapeType extends ObjectShapeType implements TemplateT
 		$this->default = $default;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

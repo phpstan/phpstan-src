@@ -35,9 +35,4 @@ final class TemplateStringType extends StringType implements TemplateType
 		$this->default = $default;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

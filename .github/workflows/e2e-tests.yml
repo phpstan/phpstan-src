@@ -394,7 +394,7 @@ jobs:
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/bug13425
-              ../bashunit -a exit_code "1" ../../bin/phpstan analyze src/ plugins/
+              timeout 15 ../bashunit -a exit_code "1" ../../bin/phpstan analyze src/ plugins/
 
     steps:
       - name: "Checkout"

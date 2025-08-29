@@ -13,7 +13,7 @@ function doFoo() {
 function doFoo2() {
 	$s = '123';
 	++$s;
-	assertType("'124'", $s);
+	assertType("124", $s);
 }
 
 function doFooBar() {

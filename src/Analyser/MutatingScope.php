@@ -1738,7 +1738,11 @@ final class MutatingScope implements Scope
 					if ($node instanceof Expr\PreInc) {
 						if ($varValue === '') {
 							$varValue = '1';
-						} elseif (is_string($varValue) && function_exists('str_increment')) {
+						} elseif (
+							is_string($varValue)
+							&& !is_numeric($varValue)
+							&& function_exists('str_increment')
+						) {
 							$varValue = str_increment($varValue);
 						} elseif (!is_bool($varValue)) {
 							++$varValue;

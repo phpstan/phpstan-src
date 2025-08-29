@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
@@ -13,6 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function chr;
 use function count;
+use function function_exists;
 use function implode;
 use function in_array;
 use function is_float;
@@ -21,6 +23,7 @@ use function is_numeric;
 use function is_string;
 use function ord;
 use function preg_match;
+use function str_increment;
 use function str_split;
 use function stripos;
 
@@ -101,6 +104,14 @@ final class StrIncrementDecrementFunctionReturnTypeExtension implements DynamicF
 
 				return $s;
 			}
+		}
+
+		if ($s === '') {
+			throw new ShouldNotHappenException();
+		}
+
+		if (function_exists('str_increment')) {
+			return str_increment($s);
 		}
 
 		return (string) ++$s;

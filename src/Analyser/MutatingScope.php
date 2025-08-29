@@ -150,6 +150,7 @@ use function array_slice;
 use function array_values;
 use function count;
 use function explode;
+use function function_exists;
 use function get_class;
 use function implode;
 use function in_array;
@@ -160,6 +161,7 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
+use function str_increment;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -1731,16 +1733,22 @@ final class MutatingScope implements Scope
 				$newTypes = [];
 
 				foreach ($varScalars as $varValue) {
+					// until PHP 8.5 it was valid to increment/decrement an empty string.
+					// see https://github.com/php/php-src/issues/19597
 					if ($node instanceof Expr\PreInc) {
-						// until PHP 8.5 it was valid to increment an empty string.
-						// see https://github.com/php/php-src/issues/19597
 						if ($varValue === '') {
 							$varValue = '1';
+						} elseif (is_string($varValue) && function_exists('str_increment')) {
+							$varValue = str_increment($varValue);
 						} elseif (!is_bool($varValue)) {
 							++$varValue;
 						}
-					} elseif (is_numeric($varValue)) {
-						--$varValue;
+					} else {
+						if ($varValue === '') {
+							$varValue = -1;
+						} elseif (is_numeric($varValue)) {
+							--$varValue;
+						}
 					}
 
 					$newTypes[] = $this->getTypeFromValue($varValue);

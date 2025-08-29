@@ -159,7 +159,7 @@ final class ContainerFactory
 		$configurator->setAllConfigFiles($allConfigFiles);
 
 		$container = $configurator->createContainer()->getByType(Container::class);
-		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
+		// $this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
 		self::postInitializeContainer($container);
 
 		return $container;

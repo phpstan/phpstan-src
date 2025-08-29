@@ -9,3 +9,5 @@ function withSideEffects(): int {
 }
 
 withSideEffects();
+
+(void)withSideEffects();

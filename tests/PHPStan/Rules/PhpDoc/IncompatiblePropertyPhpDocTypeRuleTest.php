@@ -187,10 +187,6 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				'PHPDoc tag @var template TNull of callable<TNull of null>(TNull): TNull with bound type null is not supported.',
-				31,
-			],
-			[
 				'PHPDoc tag @var template TInvalid of callable<TInvalid of GenericCallableProperties\Invalid>(TInvalid): TInvalid has invalid bound type GenericCallableProperties\Invalid.',
 				36,
 			],

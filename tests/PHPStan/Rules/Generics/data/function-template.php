@@ -65,7 +65,7 @@ function nakano()
 }
 
 /** @template T of null */
-function nullNotSupported()
+function nullSupported()
 {
 
 }

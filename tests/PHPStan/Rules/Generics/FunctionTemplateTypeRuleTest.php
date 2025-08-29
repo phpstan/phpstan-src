@@ -57,10 +57,6 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				50,
 			],
 			[
-				'PHPDoc tag @template T for function FunctionTemplateType\nullNotSupported() with bound type null is not supported.',
-				68,
-			],
-			[
 				'Call-site variance of covariant int in generic type FunctionTemplateType\GenericCovariant<covariant int> in PHPDoc tag @template U is redundant, template type T of class FunctionTemplateType\GenericCovariant has the same variance.',
 				94,
 				'You can safely remove the call-site variance annotation.',

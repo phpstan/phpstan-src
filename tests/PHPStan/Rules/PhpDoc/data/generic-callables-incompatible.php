@@ -27,9 +27,9 @@ function invalidBoundType(Closure $invalidBoundType): void
 }
 
 /**
- * @param Closure<T of null>(T $val): T $notSupported
+ * @param Closure<T of null>(T $val): T $closure
  */
-function notSupported(Closure $notSupported): void
+function testNull(Closure $closure): void
 {
 }
 
@@ -94,7 +94,7 @@ function invalidBoundTypeReturn(): Closure
 /**
  * @return Closure<T of null>(T $val): T
  */
-function notSupportedReturn(): Closure
+function nullReturn(): Closure
 {
 }
 
@@ -133,9 +133,9 @@ class Test2
 	}
 
 	/**
-	 * @param Closure<T of null>(T $val): T $notSupported
+	 * @param Closure<T of null>(T $val): T $closure
 	 */
-	public function notSupported(Closure $notSupported): void
+	public function nullType(Closure $closure): void
 	{
 	}
 
@@ -163,7 +163,7 @@ class Test2
 	/**
 	 * @return Closure<T of null>(T $val): T
 	 */
-	public function notSupportedReturn(): Closure
+	public function nullReturn(): Closure
 	{
 	}
 }

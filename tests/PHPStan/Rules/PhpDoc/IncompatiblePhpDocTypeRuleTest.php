@@ -321,10 +321,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				25,
 			],
 			[
-				'PHPDoc tag @param for parameter $notSupported template T of Closure<T of null>(T): T with bound type null is not supported.',
-				32,
-			],
-			[
 				'PHPDoc tag @param for parameter $shadows template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\testShadowFunction.',
 				40,
 			],
@@ -361,10 +357,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				90,
 			],
 			[
-				'PHPDoc tag @return template T of Closure<T of null>(T): T with bound type null is not supported.',
-				97,
-			],
-			[
 				'PHPDoc tag @return template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\testShadowFunctionReturn.',
 				105,
 			],
@@ -381,10 +373,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 				131,
 			],
 			[
-				'PHPDoc tag @param for parameter $notSupported template T of Closure<T of null>(T): T with bound type null is not supported.',
-				138,
-			],
-			[
 				'PHPDoc tag @return template of Closure<stdClass of mixed>(stdClass): stdClass cannot have existing class stdClass as its name.',
 				145,
 			],
@@ -395,10 +383,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @return template T of Closure<T of GenericCallablesIncompatible\Invalid>(T): T has invalid bound type GenericCallablesIncompatible\Invalid.',
 				159,
-			],
-			[
-				'PHPDoc tag @return template T of Closure<T of null>(T): T with bound type null is not supported.',
-				166,
 			],
 			[
 				'PHPDoc tag @param-out for parameter $existingClass template T of Closure<T of mixed>(T): T shadows @template T for function GenericCallablesIncompatible\shadowsParamOut.',

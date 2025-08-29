@@ -4,8 +4,8 @@ namespace PHPStan\Parser;
 
 use Override;
 use PhpParser\Node;
-use PhpParser\NodeVisitorAbstract;
 use PhpParser\Node\Expr\Cast\Void_;
+use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 
 #[AutowiredService]
@@ -17,7 +17,7 @@ final class VoidCastVisitor extends NodeVisitorAbstract
 	public const ATTRIBUTE_NAME = 'voidCastExpr';
 
 	#[Override]
-	public function enterNode(Node $node): null
+	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Void_) {
 			$this->pendingVoidCast = true;

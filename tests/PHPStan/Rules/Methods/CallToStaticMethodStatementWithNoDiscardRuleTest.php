@@ -17,7 +17,7 @@ class CallToStaticMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		return new CallToStaticMethodStatementWithNoDiscardRule(
 			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
-			$reflectionProvider
+			$reflectionProvider,
 		);
 	}
 

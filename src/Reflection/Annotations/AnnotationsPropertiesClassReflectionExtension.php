@@ -81,13 +81,11 @@ final class AnnotationsPropertiesClassReflectionExtension implements PropertiesC
 		}
 
 		$parentClass = $classReflection->getParentClass();
-		while ($parentClass !== null) {
+		if ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($parentClass, $parentClass, $propertyName);
 			if ($methodWithDeclaringClass !== null) {
 				return $methodWithDeclaringClass;
 			}
-
-			$parentClass = $parentClass->getParentClass();
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {

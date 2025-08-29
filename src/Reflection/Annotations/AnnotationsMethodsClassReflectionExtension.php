@@ -98,13 +98,11 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 		}
 
 		$parentClass = $classReflection->getParentClass();
-		while ($parentClass !== null) {
+		if ($parentClass !== null) {
 			$methodWithDeclaringClass = $this->findClassReflectionWithMethod($parentClass, $parentClass, $methodName);
 			if ($methodWithDeclaringClass !== null) {
 				return $methodWithDeclaringClass;
 			}
-
-			$parentClass = $parentClass->getParentClass();
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {

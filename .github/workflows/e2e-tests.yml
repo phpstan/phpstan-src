@@ -392,6 +392,9 @@ jobs:
               cd e2e/composer-version-config
               composer install
               ../../bin/phpstan analyze test.php --level=0
+          - script: |
+              cd e2e/bug13425
+              ../../bin/phpstan analyze src/ plugins/
 
     steps:
       - name: "Checkout"

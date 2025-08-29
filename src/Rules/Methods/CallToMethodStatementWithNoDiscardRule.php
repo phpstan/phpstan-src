@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -15,7 +16,7 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
- * @implements Rule<CallLike>
+ * @implements Rule<MethodCall>
  */
 #[RegisteredRule(level: 4)]
 final class CallToMethodStatementWithNoDiscardRule implements Rule
@@ -29,7 +30,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 	{
 		// We can ignore NullsafeMethodCall because a virtual MethodCall will
 		// also be processed
-		return Node\Expr\MethodCall::class;
+		return MethodCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array

@@ -19,7 +19,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 

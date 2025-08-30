@@ -55,14 +55,3 @@ class Dolor
 	}
 
 }
-
-class Sit
-{
-
-	public int $i {
-		#[\NoDiscard]
-		get {
-
-		}
-	}
-}

@@ -19,6 +19,7 @@
 		"../tests/PHPStan/Rules/Functions/data/function-call-statement-result-discarded.php",
 		"../tests/PHPStan/Rules/Methods/data/method-call-statement-result-discarded.php",
 		"../tests/PHPStan/Rules/Methods/data/static-method-call-statement-result-discarded.php",
-		"../tests/PHPStan/Rules/Properties/data/property-hook-attributes.php"
+		"../tests/PHPStan/Rules/Properties/data/property-hook-attributes-nodiscard.php",
+		"../tests/PHPStan/Rules/Cast/data/void-cast.php"
     ]
 }

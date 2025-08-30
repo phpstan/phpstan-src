@@ -55,9 +55,16 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 				'Attribute class PropertyHookAttributes\Foo does not have the method target.',
 				27,
 			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.5')]
+	public function testNoDiscard(): void
+	{
+		$this->analyse([__DIR__ . '/data/property-hook-attributes-nodiscard.php'], [
 			[
 				'Attribute class NoDiscard cannot be used on property hooks.',
-				63,
+				9,
 			],
 		]);
 	}

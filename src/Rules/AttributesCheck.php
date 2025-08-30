@@ -82,7 +82,7 @@ final class AttributesCheck
 						->identifier('attribute.target')
 						->line($attribute->getStartLine())
 						->build();
-				} elseif ($isPropertyHook && strtolower($name) === "nodiscard") {
+				} elseif ($isPropertyHook && strtolower($name) === 'nodiscard') {
 					// #[\NoDiscard] cannot be used on property hooks
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s cannot be used on property hooks.', $name))
 						->identifier('attribute.target')

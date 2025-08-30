@@ -364,13 +364,15 @@ function header_register_callback(callable $callback): bool {}
 function register_tick_function(callable $callback, mixed ...$args): bool {}
 
 /**
- * @param string|array<string> $command
- * @param list<list<string>|resource> $descriptor_spec
- * @param array<resource> $pipes
- * @param array<mixed> $env_vars
+ * @template P of int = int
+ *
+ * @param string|list<string> $command
+ * @param array<P, list<string>|resource> $descriptor_spec
+ * @param array<mixed> $pipes
+ * @param array<string, mixed> $env_vars
  * @param array<string, bool> $options
  *
- * @param-out list<resource> $pipes
+ * @param-out array<P, resource> $pipes
  *
  * @return resource|false
  */

@@ -25,7 +25,7 @@ function execute(string $command): ?array
 		$pipes
 	);
 
-	assertType('list<resource>', $pipes);
+	assertType('array<0|1|2, resource>', $pipes);
 
 	if (!is_resource($process)) {
 		return null;

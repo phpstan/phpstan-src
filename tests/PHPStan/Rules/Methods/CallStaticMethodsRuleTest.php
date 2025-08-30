@@ -885,6 +885,14 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13267(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/data/bug-13267.php'], []);
+	}
+
 	public function testRestrictedInternalClassNameUsage(): void
 	{
 		$this->checkThisOnly = false;

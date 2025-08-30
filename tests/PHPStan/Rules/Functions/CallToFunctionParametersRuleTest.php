@@ -2181,7 +2181,27 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug7772(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7772.php'], []);
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
+				'Parameter #2 $path of function session_set_cookie_params expects string, string|null given.',
+				12,
+			];
+			$errors[] = [
+				'Parameter #3 $domain of function session_set_cookie_params expects string, string|null given.',
+				12,
+			];
+			$errors[] = [
+				'Parameter #4 $secure of function session_set_cookie_params expects bool, bool|null given.',
+				12,
+			];
+			$errors[] = [
+				'Parameter #5 $httponly of function session_set_cookie_params expects bool, bool|null given.',
+				12,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7772.php'], $errors);
 	}
 
 	public function testBug13065(): void

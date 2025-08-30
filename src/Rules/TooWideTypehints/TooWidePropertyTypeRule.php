@@ -57,7 +57,7 @@ final class TooWidePropertyTypeRule implements Rule
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 			$propertyType = $propertyReflection->getWritableType();
-			if (!$propertyType instanceof UnionType) {
+			if (!$propertyType instanceof UnionType && !$propertyType->isBoolean()->yes()) {
 				continue;
 			}
 			foreach ($this->extensionProvider->getExtensions() as $extension) {

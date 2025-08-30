@@ -1,6 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			identifier: property.unusedType
-			message: '#\(bool\) is never assigned (false|true) so it can be removed from the property type#'
-			path: ../tests/PHPStan/*RuleTest.php

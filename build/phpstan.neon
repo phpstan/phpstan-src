@@ -115,7 +115,6 @@ parameters:
 			count: 1
 			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- '#^Short ternary operator is not allowed#'
-
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:

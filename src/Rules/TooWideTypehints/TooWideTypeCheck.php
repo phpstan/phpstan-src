@@ -26,7 +26,7 @@ final class TooWideTypeCheck
 	 */
 	public function checkProperty(
 		ClassPropertyNode $property,
-		UnionType $propertyType,
+		Type $propertyType,
 		string $propertyDescription,
 		Type $assignedType,
 	): array
@@ -34,7 +34,8 @@ final class TooWideTypeCheck
 		$errors = [];
 
 		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedType);
-		foreach ($propertyType->getTypes() as $type) {
+		$propertyTypes = $propertyType instanceof UnionType ? $propertyType->getTypes() : $propertyType->getFiniteTypes();
+		foreach ($propertyTypes as $type) {
 			if (!$type->isSuperTypeOf($assignedType)->no()) {
 				continue;
 			}

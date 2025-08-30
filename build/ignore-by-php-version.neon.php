@@ -11,10 +11,6 @@ if (PHP_VERSION_ID >= 80100) {
 	$includes[] = __DIR__ . '/readonly-property.neon';
 }
 
-if (PHP_VERSION_ID >= 80200) {
-	$includes[] = __DIR__ . '/never-assigned-true-false.neon';
-}
-
 if (PHP_VERSION_ID >= 70400) {
 	$includes[] = __DIR__ . '/ignore-gte-php7.4-errors.neon';
 }

@@ -218,4 +218,26 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312d.php'], []);
 	}
 
+	public function testBug13384c(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
+			[
+				'Method Bug13384c\Bug13384c::doBar() never returns true so it can be removed from the return type.',
+				33,
+			],
+			[
+				'Method Bug13384c\Bug13384c::doBar2() never returns false so it can be removed from the return type.',
+				37,
+			],
+			[
+				'Method Bug13384c\Bug13384Static::doBar() never returns true so it can be removed from the return type.',
+				50,
+			],
+			[
+				'Method Bug13384c\Bug13384Static::doBar2() never returns false so it can be removed from the return type.',
+				54,
+			],
+		]);
+	}
+
 }

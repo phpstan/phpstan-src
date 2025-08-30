@@ -66,4 +66,18 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312a.php'], []);
 	}
 
+	public function testBug13384c(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
+			[
+				'Function Bug13384c\doFoo() never returns true so it can be removed from the return type.',
+				5,
+			],
+			[
+				'Function Bug13384c\doFoo2() never returns false so it can be removed from the return type.',
+				9,
+			],
+		]);
+	}
+
 }

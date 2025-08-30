@@ -69,7 +69,7 @@ final class TooWideTypeCheck
 	): array
 	{
 		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
-		if (!$functionReturnType instanceof UnionType) {
+		if (!$functionReturnType instanceof UnionType && !$functionReturnType->isBoolean()->yes()) {
 			return [];
 		}
 		$statementResult = $node->getStatementResult();
@@ -82,22 +82,22 @@ final class TooWideTypeCheck
 			return [];
 		}
 
-		$returnTypes = [];
+		$functionReturnTypes = [];
 		foreach ($returnStatements as $returnStatement) {
 			$returnNode = $returnStatement->getReturnNode();
 			if ($returnNode->expr === null) {
-				$returnTypes[] = new VoidType();
+				$functionReturnTypes[] = new VoidType();
 				continue;
 			}
 
-			$returnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
+			$functionReturnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
 		}
 
 		if (!$statementResult->isAlwaysTerminating()) {
-			$returnTypes[] = new VoidType();
+			$functionReturnTypes[] = new VoidType();
 		}
 
-		$returnType = TypeCombinator::union(...$returnTypes);
+		$returnType = TypeCombinator::union(...$functionReturnTypes);
 
 		if (
 			$returnType->isConstantScalarValue()->yes()
@@ -115,7 +115,8 @@ final class TooWideTypeCheck
 		}
 
 		$messages = [];
-		foreach ($functionReturnType->getTypes() as $type) {
+		$functionReturnTypes = $functionReturnType instanceof UnionType ? $functionReturnType->getTypes() : $functionReturnType->getFiniteTypes();
+		foreach ($functionReturnTypes as $type) {
 			if (!$type->isSuperTypeOf($returnType)->no()) {
 				continue;
 			}

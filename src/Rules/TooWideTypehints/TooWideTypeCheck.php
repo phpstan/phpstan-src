@@ -86,22 +86,22 @@ final class TooWideTypeCheck
 			return [];
 		}
 
-		$functionReturnTypes = [];
+		$returnTypes = [];
 		foreach ($returnStatements as $returnStatement) {
 			$returnNode = $returnStatement->getReturnNode();
 			if ($returnNode->expr === null) {
-				$functionReturnTypes[] = new VoidType();
+				$returnTypes[] = new VoidType();
 				continue;
 			}
 
-			$functionReturnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
+			$returnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
 		}
 
 		if (!$statementResult->isAlwaysTerminating()) {
-			$functionReturnTypes[] = new VoidType();
+			$returnTypes[] = new VoidType();
 		}
 
-		$returnType = TypeCombinator::union(...$functionReturnTypes);
+		$returnType = TypeCombinator::union(...$returnTypes);
 
 		if (
 			$returnType->isConstantScalarValue()->yes()

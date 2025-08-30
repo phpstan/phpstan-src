@@ -66,11 +66,15 @@ final class TooWideTypeCheck
 		Type $functionReturnType,
 		string $functionDescription,
 		bool $checkDescendantClass,
+		bool $reportTooWideBool,
 	): array
 	{
 		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
-		if (!$functionReturnType instanceof UnionType && !$functionReturnType->isBoolean()->yes()) {
-			return [];
+
+		if (!$functionReturnType instanceof UnionType) {
+			if (!$functionReturnType->isBoolean()->yes() || !$reportTooWideBool) {
+				return [];
+			}
 		}
 		$statementResult = $node->getStatementResult();
 		if ($statementResult->hasYield()) {

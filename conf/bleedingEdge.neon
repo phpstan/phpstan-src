@@ -10,3 +10,4 @@ parameters:
 		internalTag: true
 		newStaticInAbstractClassStaticMethod: true
 		checkExtensionsForComparisonOperators: true
+		reportTooWideBool: true

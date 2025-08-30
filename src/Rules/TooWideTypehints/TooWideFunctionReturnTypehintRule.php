@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,8 @@ final class TooWideFunctionReturnTypehintRule implements Rule
 
 	public function __construct(
 		private TooWideTypeCheck $check,
+		#[AutowiredParameter(ref: '%featureToggles.reportTooWideBool%')]
+		private bool $reportTooWideBool,
 	)
 	{
 	}
@@ -40,6 +43,7 @@ final class TooWideFunctionReturnTypehintRule implements Rule
 				$function->getName(),
 			),
 			false,
+			$this->reportTooWideBool,
 		);
 	}
 

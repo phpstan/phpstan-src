@@ -37,6 +37,7 @@ parametersSchema:
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()
+		reportTooWideBool: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

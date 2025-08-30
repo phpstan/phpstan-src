@@ -13,6 +13,7 @@ function validateStringArray(array $arr) : void {}
 /**
  * @param mixed[] $arr
  * @phpstan-assert-if-true string[] $arr
+ * @return true
  */
 function validateStringArrayIfTrue(array $arr) : bool {
 	return true;

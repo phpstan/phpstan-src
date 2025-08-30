@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\PropertyReflection;
@@ -26,6 +27,8 @@ final class TooWidePropertyTypeRule implements Rule
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private TooWideTypeCheck $check,
+		#[AutowiredParameter(ref: '%featureToggles.reportTooWideBool%')]
+		private bool $reportTooWideBool,
 	)
 	{
 	}
@@ -57,8 +60,10 @@ final class TooWidePropertyTypeRule implements Rule
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 			$propertyType = $propertyReflection->getWritableType();
-			if (!$propertyType instanceof UnionType && !$propertyType->isBoolean()->yes()) {
-				continue;
+			if (!$propertyType instanceof UnionType) {
+				if (!$propertyType->isBoolean()->yes() || !$this->reportTooWideBool) {
+					continue;
+				}
 			}
 			foreach ($this->extensionProvider->getExtensions() as $extension) {
 				if ($extension->isAlwaysRead($propertyReflection, $propertyName)) {

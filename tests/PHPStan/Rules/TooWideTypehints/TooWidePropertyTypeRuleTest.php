@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  */
 class TooWidePropertyTypeRuleTest extends RuleTestCase
 {
+	private bool $reportTooWideBool = false;
 
 	protected function getRule(): Rule
 	{
@@ -20,6 +21,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 			new DirectReadWritePropertiesExtensionProvider([]),
 			new PropertyReflectionFinder(),
 			new TooWideTypeCheck(),
+			$this->reportTooWideBool,
 		);
 	}
 
@@ -81,6 +83,12 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 	}
 
 	public function testBug13384b(): void
+	{
+		$this->reportTooWideBool = true;
+		$this->analyse([__DIR__ . '/data/bug-13384b.php'], []);
+	}
+
+	public function testBug13384bOff(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13384b.php'], []);
 	}

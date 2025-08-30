@@ -21,6 +21,8 @@ final class TooWideMethodReturnTypehintRule implements Rule
 		#[AutowiredParameter(ref: '%checkTooWideReturnTypesInProtectedAndPublicMethods%')]
 		private bool $checkProtectedAndPublicMethods,
 		private TooWideTypeCheck $check,
+		#[AutowiredParameter(ref: '%featureToggles.reportTooWideBool%')]
+		private bool $reportTooWideBool,
 	)
 	{
 	}
@@ -59,6 +61,7 @@ final class TooWideMethodReturnTypehintRule implements Rule
 				$method->getName(),
 			),
 			!$isFirstDeclaration && !$method->isPrivate(),
+			$this->reportTooWideBool,
 		);
 	}
 

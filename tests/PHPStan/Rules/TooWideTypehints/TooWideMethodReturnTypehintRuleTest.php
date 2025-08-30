@@ -15,9 +15,11 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 
 	private bool $checkProtectedAndPublicMethods = true;
 
+	private bool $reportTooWideBool = false;
+
 	protected function getRule(): Rule
 	{
-		return new TooWideMethodReturnTypehintRule($this->checkProtectedAndPublicMethods, new TooWideTypeCheck());
+		return new TooWideMethodReturnTypehintRule($this->checkProtectedAndPublicMethods, new TooWideTypeCheck(), $this->reportTooWideBool);
 	}
 
 	public function testPrivate(): void
@@ -220,6 +222,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug13384c(): void
 	{
+		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
 			[
 				'Method Bug13384c\Bug13384c::doBar() never returns true so it can be removed from the return type.',
@@ -238,6 +241,11 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				54,
 			],
 		]);
+	}
+
+	public function testBug13384cOff(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], []);
 	}
 
 }

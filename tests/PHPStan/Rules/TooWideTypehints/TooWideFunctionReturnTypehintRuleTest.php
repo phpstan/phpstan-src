@@ -11,9 +11,11 @@ use PHPStan\Testing\RuleTestCase;
 class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 {
 
+	private bool $reportTooWideBool = false;
+
 	protected function getRule(): Rule
 	{
-		return new TooWideFunctionReturnTypehintRule(new TooWideTypeCheck());
+		return new TooWideFunctionReturnTypehintRule(new TooWideTypeCheck(), $this->reportTooWideBool);
 	}
 
 	public function testRule(): void
@@ -68,6 +70,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug13384c(): void
 	{
+		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
 			[
 				'Function Bug13384c\doFoo() never returns true so it can be removed from the return type.',
@@ -78,6 +81,11 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 				9,
 			],
 		]);
+	}
+
+	public function testBug13384cOff(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], []);
 	}
 
 }

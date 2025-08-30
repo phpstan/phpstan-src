@@ -440,11 +440,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug4734(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4734.php');
-		$this->assertCount(3, $errors);
+		$this->assertCount(5, $errors); // could be 3
 
-		$this->assertSame('Unsafe access to private property Bug4734\Foo::$httpMethodParameterOverride through static::.', $errors[0]->getMessage());
-		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[1]->getMessage());
-		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[2]->getMessage());
+		$this->assertSame('Static property Bug4734\Foo::$httpMethodParameterOverride (bool) is never assigned false so it can be removed from the property type.', $errors[0]->getMessage()); // should not error
+		$this->assertSame('Property Bug4734\Foo::$httpMethodParameterOverride2 (bool) is never assigned false so it can be removed from the property type.', $errors[1]->getMessage()); // should not error
+		$this->assertSame('Unsafe access to private property Bug4734\Foo::$httpMethodParameterOverride through static::.', $errors[2]->getMessage());
+		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[3]->getMessage());
+		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[4]->getMessage());
 	}
 
 	public function testBug5231(): void

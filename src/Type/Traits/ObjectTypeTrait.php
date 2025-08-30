@@ -271,7 +271,7 @@ trait ObjectTypeTrait
 
 	public function toArrayKey(): Type
 	{
-		return new StringType();
+		return new ErrorType();
 	}
 
 	public function toCoercedArgumentType(bool $strictTypes): Type

@@ -268,6 +268,9 @@ class ArrayType implements Type
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		$offsetType = $offsetType->toArrayKey();
+		if ($offsetType instanceof ErrorType) {
+			return TrinaryLogic::createNo();
+		}
 
 		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()
 			&& ($offsetType->isString()->no() || !$offsetType->isConstantScalarValue()->no())

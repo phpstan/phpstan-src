@@ -588,6 +588,10 @@ class ConstantArrayType implements Type
 
 	private function recursiveHasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		if ($offsetType instanceof ErrorType) {
+			return TrinaryLogic::createNo();
+		}
+
 		if ($offsetType instanceof UnionType) {
 			$results = [];
 			foreach ($offsetType->getTypes() as $innerType) {

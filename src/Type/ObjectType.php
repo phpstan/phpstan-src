@@ -702,7 +702,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toArrayKey(): Type
 	{
-		return $this->toString();
+		return new ErrorType();
 	}
 
 	public function toCoercedArgumentType(bool $strictTypes): Type

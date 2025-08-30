@@ -428,10 +428,6 @@ final class ConstantResolver
 	{
 		$lookupConstantName = sprintf('%s::%s', $className, $constantName);
 		if (array_key_exists($lookupConstantName, $this->dynamicConstantNames)) {
-			if ($nativeType !== null) {
-				return $nativeType;
-			}
-
 			if ($constantType->isConstantValue()->yes()) {
 				$phpdocTypes = $this->dynamicConstantNames[$lookupConstantName];
 				if ($this->container !== null) {
@@ -439,6 +435,12 @@ final class ConstantResolver
 					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], $className));
 				}
 			}
+
+			if ($nativeType !== null) {
+				return $nativeType;
+			}
+			
+			return $constantType;
 		}
 
 		if (in_array($lookupConstantName, $this->dynamicConstantNames, true)) {

@@ -4,9 +4,9 @@ namespace MethodCallStatementResultDiscarded;
 
 class ClassWithInstanceSideEffects {
 	#[\NoDiscard]
-	public function instanceMethod(): int {
+	public function instanceMethod(): array {
 		echo __METHOD__ . "\n";
-		return 2;
+		return [2];
 	}
 }
 
@@ -16,3 +16,7 @@ $o?->instanceMethod();
 
 (void)$o->instanceMethod();
 (void)$o?->instanceMethod();
+
+foreach ($o->instanceMethod() as $num) {
+	var_dump($num);
+}

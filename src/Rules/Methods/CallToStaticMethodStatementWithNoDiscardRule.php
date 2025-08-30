@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -18,7 +17,7 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
- * @implements Rule<StaticCall>
+ * @implements Rule<Node\Stmt\Expression>
  */
 #[RegisteredRule(level: 4)]
 final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
@@ -33,21 +32,26 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\StaticCall::class;
+		return Node\Stmt\Expression::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
-			return [];
-		}
-		if ($node->hasAttribute(VoidCastVisitor::ATTRIBUTE_NAME)) {
+		if (!$node->expr instanceof Node\Expr\StaticCall) {
 			return [];
 		}
 
-		$methodName = $node->name->toString();
-		if ($node->class instanceof Node\Name) {
-			$className = $scope->resolveName($node->class);
+		$funcCall = $node->expr;
+		if (!$funcCall->name instanceof Node\Identifier) {
+			return [];
+		}
+		if ($funcCall->hasAttribute(VoidCastVisitor::ATTRIBUTE_NAME)) {
+			return [];
+		}
+
+		$methodName = $funcCall->name->toString();
+		if ($funcCall->class instanceof Node\Name) {
+			$className = $scope->resolveName($funcCall->class);
 			if (!$this->reflectionProvider->hasClass($className)) {
 				return [];
 			}
@@ -56,7 +60,7 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 		} else {
 			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $funcCall->class),
 				'',
 				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);

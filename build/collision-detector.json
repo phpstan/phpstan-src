@@ -18,6 +18,7 @@
 		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
 		"../tests/PHPStan/Rules/Functions/data/function-call-statement-result-discarded.php",
 		"../tests/PHPStan/Rules/Methods/data/method-call-statement-result-discarded.php",
-		"../tests/PHPStan/Rules/Methods/data/static-method-call-statement-result-discarded.php"
+		"../tests/PHPStan/Rules/Methods/data/static-method-call-statement-result-discarded.php",
+		"../tests/PHPStan/Rules/Properties/data/property-hook-attributes.php"
     ]
 }

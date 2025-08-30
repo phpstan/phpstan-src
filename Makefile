@@ -110,6 +110,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/enum-cannot-be-attribute.php \
 		--exclude tests/PHPStan/Rules/Classes/data/class-attributes.php \
 		--exclude tests/PHPStan/Rules/Classes/data/enum-attributes.php \
+		--exclude tests/PHPStan/Rules/Cast/data/void-cast.php \
+		--exclude tests/PHPStan/Rules/Properties/data/property-hook-attributes.php \
 		src tests
 
 install-paratest:

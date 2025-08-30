@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -16,7 +15,7 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
- * @implements Rule<MethodCall>
+ * @implements Rule<Node\Stmt\Expression>
  */
 #[RegisteredRule(level: 4)]
 final class CallToMethodStatementWithNoDiscardRule implements Rule
@@ -28,24 +27,29 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 
 	public function getNodeType(): string
 	{
-		// We can ignore NullsafeMethodCall because a virtual MethodCall will
-		// also be processed
-		return MethodCall::class;
+		return Node\Stmt\Expression::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier) {
+		if (!$node->expr instanceof Node\Expr\MethodCall
+			&& !$node->expr instanceof Node\Expr\NullsafeMethodCall
+		) {
 			return [];
 		}
-		if ($node->hasAttribute(VoidCastVisitor::ATTRIBUTE_NAME)) {
+
+		$funcCall = $node->expr;
+		if (!$funcCall->name instanceof Node\Identifier) {
 			return [];
 		}
-		$methodName = $node->name->toString();
+		if ($funcCall->hasAttribute(VoidCastVisitor::ATTRIBUTE_NAME)) {
+			return [];
+		}
+		$methodName = $funcCall->name->toString();
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $funcCall->var),
 			'',
 			static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 		);

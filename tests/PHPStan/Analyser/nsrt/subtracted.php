@@ -7,7 +7,11 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
-	public function sayHello(mixed $date, bool $foo): void
+	/**
+	 * @param mixed $date
+	 * @param bool $foo
+	 */
+	public function sayHello($date, $foo): void
 	{
 		if(is_object($date)){
 

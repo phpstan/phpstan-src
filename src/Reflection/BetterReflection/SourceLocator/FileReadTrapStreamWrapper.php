@@ -212,6 +212,9 @@ final class FileReadTrapStreamWrapper
 		return $this->readFromFile;
 	}
 
+	/**
+	 * @return true
+	 */
 	public function stream_flush(): bool
 	{
 		return true;
@@ -254,6 +257,8 @@ final class FileReadTrapStreamWrapper
 	 * @param int  $option
 	 * @param int  $arg1
 	 * @param int  $arg2
+	 *
+	 * @return false
 	 */
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{

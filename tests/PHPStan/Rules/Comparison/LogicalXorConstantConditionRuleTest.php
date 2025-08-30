@@ -11,8 +11,6 @@ use PHPStan\Testing\RuleTestCase;
 class LogicalXorConstantConditionRuleTest extends RuleTestCase
 {
 
-	private bool $reportAlwaysTrueInLastCondition = false;
-
 	protected function getRule(): TRule
 	{
 		return new LogicalXorConstantConditionRule(
@@ -26,7 +24,7 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 				$this->shouldTreatPhpDocTypesAsCertain(),
 			),
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			$this->reportAlwaysTrueInLastCondition,
+			false,
 			true,
 		);
 	}

@@ -11,6 +11,7 @@ use PHPStan\Testing\RuleTestCase;
 class CompactVariablesRuleTest extends RuleTestCase
 {
 
+	/** @var true */
 	private bool $checkMaybeUndefinedVariables;
 
 	protected function getRule(): Rule

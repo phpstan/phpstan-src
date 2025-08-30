@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  */
 class TooWidePropertyTypeRuleTest extends RuleTestCase
 {
+
 	private bool $reportTooWideBool = false;
 
 	protected function getRule(): Rule
@@ -64,6 +65,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.2')]
 	public function testBug13384(): void
 	{
+		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384.php'], [
 			[
 				'Static property Bug13384\ShutdownHandlerFalseDefault::$registered (bool) is never assigned true so it can be removed from the property type.',

@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class TooWidePropertyHookThrowTypeRuleTest extends RuleTestCase
 {
 
+	/** @var true */
 	private bool $implicitThrows = true;
 
 	protected function getRule(): Rule

@@ -62,7 +62,6 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11667.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.2')]
 	public function testBug13384(): void
 	{
 		$this->reportTooWideBool = true;
@@ -76,12 +75,6 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 				34,
 			],
 		]);
-	}
-
-	#[RequiresPhp('< 8.2')]
-	public function testBug13384NoStandaloneTrueFalse(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-13384.php'], []);
 	}
 
 	public function testBug13384b(): void

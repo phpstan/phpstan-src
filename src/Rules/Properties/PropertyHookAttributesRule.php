@@ -33,6 +33,7 @@ final class PropertyHookAttributesRule implements Rule
 			$node->getOriginalNode()->attrGroups,
 			Attribute::TARGET_METHOD,
 			'method',
+			true,
 		);
 	}
 

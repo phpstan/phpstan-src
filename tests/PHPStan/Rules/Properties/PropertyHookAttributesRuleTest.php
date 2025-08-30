@@ -55,6 +55,10 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 				'Attribute class PropertyHookAttributes\Foo does not have the method target.',
 				27,
 			],
+			[
+				'Attribute class NoDiscard cannot be used on property hooks.',
+				63,
+			],
 		]);
 	}
 

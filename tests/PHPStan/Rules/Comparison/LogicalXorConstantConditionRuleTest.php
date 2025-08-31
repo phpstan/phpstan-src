@@ -11,8 +11,6 @@ use PHPStan\Testing\RuleTestCase;
 class LogicalXorConstantConditionRuleTest extends RuleTestCase
 {
 
-	private bool $treatPhpDocTypesAsCertain;
-
 	private bool $reportAlwaysTrueInLastCondition = false;
 
 	protected function getRule(): TRule
@@ -23,11 +21,11 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain,
+					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
-				$this->treatPhpDocTypesAsCertain,
+				$this->shouldTreatPhpDocTypesAsCertain(),
 			),
-			$this->treatPhpDocTypesAsCertain,
+			$this->shouldTreatPhpDocTypesAsCertain(),
 			$this->reportAlwaysTrueInLastCondition,
 			true,
 		);
@@ -36,7 +34,6 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/logical-xor.php'], [
 			[
 				'Left side of xor is always true.',

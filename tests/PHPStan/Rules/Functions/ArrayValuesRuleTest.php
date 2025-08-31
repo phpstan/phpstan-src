@@ -12,13 +12,11 @@ use const PHP_VERSION_ID;
 class ArrayValuesRuleTest extends RuleTestCase
 {
 
-	private bool $treatPhpDocTypesAsCertain = true;
-
 	protected function getRule(): Rule
 	{
 		return new ArrayValuesRule(
 			self::createReflectionProvider(),
-			$this->treatPhpDocTypesAsCertain,
+			$this->shouldTreatPhpDocTypesAsCertain(),
 			true,
 		);
 	}

@@ -11,8 +11,6 @@ use PHPStan\Testing\RuleTestCase;
 class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 {
 
-	private bool $treatPhpDocTypesAsCertain = true;
-
 	protected function getRule(): Rule
 	{
 		return new WhileLoopAlwaysTrueConditionRule(
@@ -21,18 +19,13 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain,
+					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
-				$this->treatPhpDocTypesAsCertain,
+				$this->shouldTreatPhpDocTypesAsCertain(),
 			),
-			$this->treatPhpDocTypesAsCertain,
+			$this->shouldTreatPhpDocTypesAsCertain(),
 			true,
 		);
-	}
-
-	protected function shouldTreatPhpDocTypesAsCertain(): bool
-	{
-		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void

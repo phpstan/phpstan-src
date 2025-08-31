@@ -16,21 +16,14 @@ use const PHP_VERSION_ID;
 class NullCoalesceRuleTest extends RuleTestCase
 {
 
-	private bool $treatPhpDocTypesAsCertain;
-
 	protected function getRule(): Rule
 	{
 		return new NullCoalesceRule(new IssetCheck(
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			$this->treatPhpDocTypesAsCertain,
+			$this->shouldTreatPhpDocTypesAsCertain(),
 		));
-	}
-
-	protected function shouldTreatPhpDocTypesAsCertain(): bool
-	{
-		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function shouldNarrowMethodScopeFromConstructor(): bool
@@ -40,7 +33,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testCoalesceRule(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$errors = [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -146,7 +138,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testCoalesceAssignRule(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',
@@ -209,13 +200,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
 				'Variable $scalar on left side of ?? always exists and is not nullable.',
@@ -234,7 +223,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testVariableCertaintyInNullCoalesceAssign(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
@@ -253,7 +241,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testNullCoalesceInGlobalScope(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
 				'Variable $bar on left side of ?? always exists and is not nullable.',
@@ -264,15 +251,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug5933(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug7109(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
@@ -299,8 +283,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7190(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7190.php'], [
 			[
 				'Offset int on array<int, int> on left side of ?? always exists and is not nullable.',
@@ -311,8 +293,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7318(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], [
 			[
 				"Offset 'unique' on array{unique: bool} on left side of ?? always exists and is not nullable.",
@@ -323,50 +303,37 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7968(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-7968.php'], []);
 	}
 
 	public function testBug8084(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-8084.php'], []);
 	}
 
 	public function testBug10577(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-10577.php'], []);
 	}
 
 	public function testBug11708(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-11708.php'], []);
 	}
 
 	public function testBug10610(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/bug-10610.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.4')]
 	public function testBug12553(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-12553.php'], []);
 	}
 
 	public function testIssetAfterRememberedConstructor(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
-
 		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [
 			[
 				'Property IssetOrCoalesceOnNonNullableInitializedProperty\User::$string on left side of ?? is not nullable nor uninitialized.',

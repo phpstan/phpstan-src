@@ -67,6 +67,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -272,6 +273,7 @@ final class NodeScopeResolver
 		private readonly TypeSpecifier $typeSpecifier,
 		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private readonly ParameterClosureThisExtensionProvider $parameterClosureThisExtensionProvider,
 		private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
 		private readonly ScopeFactory $scopeFactory,
 		#[AutowiredParameter]
@@ -5061,6 +5063,55 @@ final class NodeScopeResolver
 	}
 
 	/**
+	 * @param FunctionReflection|MethodReflection|null $calleeReflection
+	 */
+	public function resolveClosureThisType(
+		?CallLike $call,
+		$calleeReflection,
+		ParameterReflection $parameter,
+		MutatingScope $scope,
+	): ?Type
+	{
+		if ($call instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
+			foreach ($this->parameterClosureThisExtensionProvider->getFunctionParameterClosureThisExtensions() as $extension) {
+				if (! $extension->isFunctionSupported($calleeReflection, $parameter)) {
+					continue;
+				}
+				$type = $extension->getClosureThisTypeFromFunctionCall($calleeReflection, $call, $parameter, $scope);
+				if ($type !== null) {
+					return $type;
+				}
+			}
+		} elseif ($call instanceof StaticCall && $calleeReflection instanceof MethodReflection) {
+			foreach ($this->parameterClosureThisExtensionProvider->getStaticMethodParameterClosureThisExtensions() as $extension) {
+				if (! $extension->isStaticMethodSupported($calleeReflection, $parameter)) {
+					continue;
+				}
+				$type = $extension->getClosureThisTypeFromStaticMethodCall($calleeReflection, $call, $parameter, $scope);
+				if ($type !== null) {
+					return $type;
+				}
+			}
+		} elseif ($call instanceof MethodCall && $calleeReflection instanceof MethodReflection) {
+			foreach ($this->parameterClosureThisExtensionProvider->getMethodParameterClosureThisExtensions() as $extension) {
+				if (! $extension->isMethodSupported($calleeReflection, $parameter)) {
+					continue;
+				}
+				$type = $extension->getClosureThisTypeFromMethodCall($calleeReflection, $call, $parameter, $scope);
+				if ($type !== null) {
+					return $type;
+				}
+			}
+		}
+
+		if ($parameter instanceof ExtendedParameterReflection) {
+			return $parameter->getClosureThisType();
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -5163,11 +5214,13 @@ final class NodeScopeResolver
 				if (
 					$closureBindScope === null
 					&& $parameter instanceof ExtendedParameterReflection
-					&& $parameter->getClosureThisType() !== null
 					&& !$arg->value->static
 				) {
-					$restoreThisScope = $scopeToPass;
-					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
+					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
+					if ($closureThisType !== null) {
+						$restoreThisScope = $scopeToPass;
+						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+					}
 				}
 
 				if ($parameter !== null) {
@@ -5217,10 +5270,12 @@ final class NodeScopeResolver
 				if (
 					$closureBindScope === null
 					&& $parameter instanceof ExtendedParameterReflection
-					&& $parameter->getClosureThisType() !== null
 					&& !$arg->value->static
 				) {
-					$scopeToPass = $scopeToPass->assignVariable('this', $parameter->getClosureThisType(), new ObjectWithoutClassType(), TrinaryLogic::createYes());
+					$closureThisType = $this->resolveClosureThisType($callLike, $calleeReflection, $parameter, $scopeToPass);
+					if ($closureThisType !== null) {
+						$scopeToPass = $scopeToPass->assignVariable('this', $closureThisType, new ObjectWithoutClassType(), TrinaryLogic::createYes());
+					}
 				}
 
 				if ($parameter !== null) {

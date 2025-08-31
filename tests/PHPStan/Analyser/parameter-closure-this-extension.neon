@@ -1,0 +1,13 @@
+services:
+	-
+		class: ParameterClosureThisExtension\TestFunctionParameterClosureThisExtension
+		tags:
+			- phpstan.functionParameterClosureThisExtension
+	-
+		class: ParameterClosureThisExtension\TestMethodParameterClosureThisExtension
+		tags:
+			- phpstan.methodParameterClosureThisExtension
+	-
+		class: ParameterClosureThisExtension\TestStaticMethodParameterClosureThisExtension
+		tags:
+			- phpstan.staticMethodParameterClosureThisExtension

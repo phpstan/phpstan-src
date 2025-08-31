@@ -11,6 +11,7 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\DependencyInjection\Type\LazyDynamicThrowTypeExtensionProvider;
+use PHPStan\DependencyInjection\Type\LazyParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\LazyParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\LazyParameterOutTypeExtensionProvider;
 use PHPStan\Diagnose\DiagnoseExtension;
@@ -47,13 +48,16 @@ use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ExpressionTypeResolverExtension;
+use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
+use PHPStan\Type\StaticMethodParameterClosureThisExtension;
 use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
 use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
@@ -86,6 +90,9 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 		DynamicFunctionThrowTypeExtension::class => LazyDynamicThrowTypeExtensionProvider::FUNCTION_TAG,
 		DynamicMethodThrowTypeExtension::class => LazyDynamicThrowTypeExtensionProvider::METHOD_TAG,
 		DynamicStaticMethodThrowTypeExtension::class => LazyDynamicThrowTypeExtensionProvider::STATIC_METHOD_TAG,
+		FunctionParameterClosureThisExtension::class => LazyParameterClosureThisExtensionProvider::FUNCTION_TAG,
+		MethodParameterClosureThisExtension::class => LazyParameterClosureThisExtensionProvider::METHOD_TAG,
+		StaticMethodParameterClosureThisExtension::class => LazyParameterClosureThisExtensionProvider::STATIC_METHOD_TAG,
 		FunctionParameterClosureTypeExtension::class => LazyParameterClosureTypeExtensionProvider::FUNCTION_TAG,
 		MethodParameterClosureTypeExtension::class => LazyParameterClosureTypeExtensionProvider::METHOD_TAG,
 		StaticMethodParameterClosureTypeExtension::class => LazyParameterClosureTypeExtensionProvider::STATIC_METHOD_TAG,

@@ -14,6 +14,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
@@ -89,7 +90,7 @@ final class PrintfParameterTypeRule implements Rule
 
 		$formatString = $formatArgTypeStrings[0];
 		$format = $formatString->getValue();
-		$acceptingTypes = $this->printfHelper->getPrintfPlaceholderAcceptingTypes($format);
+		$placeholderMap = $this->printfHelper->getPrintfPlaceholders($format);
 		$errors = [];
 		$typeAllowedByCallToFunctionParametersRule = TypeCombinator::union(
 			new StringAlwaysAcceptingObjectWithToStringType(),
@@ -98,45 +99,54 @@ final class PrintfParameterTypeRule implements Rule
 			new BooleanType(),
 			new NullType(),
 		);
+		// Type on the left can go to the type on the right, but not vice versa.
+		$allowedTypeNameMap = [
+			'strict-int' => 'int',
+			'int' => 'castable to int',
+			'float' => 'castable to float',
+			// These are here just for completeness. They won't be used because, these types are already enforced by
+			// CallToFunctionParametersRule.
+			'string' => 'castable to string',
+			'mixed' => 'castable to string',
+		];
 
 		for ($i = $formatArgumentPosition + 1, $j = 0; $i < $argsCount; $i++, $j++) {
 			// Some arguments may be skipped entirely.
-			if (! array_key_exists($j, $acceptingTypes)) {
-				continue;
+			foreach ($placeholderMap[$j] ?? [] as $placeholder) {
+				$argType = $this->ruleLevelHelper->findTypeToCheck(
+					$scope,
+					$args[$i]->value,
+					'',
+					static fn (Type $t) => $placeholder->doesArgumentTypeMatchPlaceholder($t),
+				)->getType();
+
+				if ($argType instanceof ErrorType || $placeholder->doesArgumentTypeMatchPlaceholder($argType)) {
+					continue;
+				}
+
+				// This is already reported by CallToFunctionParametersRule
+				if (
+					!$this->ruleLevelHelper->accepts(
+						$typeAllowedByCallToFunctionParametersRule,
+						$argType,
+						$scope->isDeclareStrictTypes(),
+					)->result
+				) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(
+					sprintf(
+						'Parameter #%d of function %s is expected to be %s by placeholder #%d (%s), %s given.',
+						$i + 1,
+						$name,
+						$allowedTypeNameMap[$placeholder->acceptedType],
+						$placeholder->placeholderNumber,
+						$placeholder->label,
+						$argType->describe(VerbosityLevel::typeOnly()),
+					),
+				)->identifier('argument.type')->build();
 			}
-
-			[$acceptingName, $acceptingCb] = $acceptingTypes[$j];
-			$argType = $this->ruleLevelHelper->findTypeToCheck(
-				$scope,
-				$args[$i]->value,
-				'',
-				$acceptingCb,
-			)->getType();
-
-			if ($argType instanceof ErrorType || $acceptingCb($argType)) {
-				continue;
-			}
-
-			// This is already reported by CallToFunctionParametersRule
-			if (
-				!$this->ruleLevelHelper->accepts(
-					$typeAllowedByCallToFunctionParametersRule,
-					$argType,
-					$scope->isDeclareStrictTypes(),
-				)->result
-			) {
-				continue;
-			}
-
-			$errors[] = RuleErrorBuilder::message(
-				sprintf(
-					'Placeholder #%d of function %s expects %s, %s given',
-					$j + 1,
-					$name,
-					$acceptingName,
-					$argType->describe(VerbosityLevel::typeOnly()),
-				),
-			)->identifier('argument.type')->build();
 		}
 
 		return $errors;

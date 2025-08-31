@@ -5,21 +5,13 @@ namespace PHPStan\Rules\Functions;
 use Nette\Utils\Strings;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Type\ErrorType;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\Type;
 use function array_filter;
-use function array_flip;
 use function array_keys;
-use function array_map;
-use function array_reduce;
 use function count;
 use function in_array;
 use function max;
-use function sort;
 use function sprintf;
 use function strlen;
-use function usort;
 use const PREG_SET_ORDER;
 
 /** @phpstan-type AcceptingTypeString 'strict-int'|'int'|'float'|'string'|'mixed' */
@@ -38,63 +30,10 @@ final class PrintfHelper
 		return $this->getPlaceholdersCount(self::PRINTF_SPECIFIER_PATTERN, $format);
 	}
 
-	/** @return array<int, array{string, callable(Type): bool}> position => [type name, matches callback] */
-	public function getPrintfPlaceholderAcceptingTypes(string $format): array
+	/** @phpstan-return array<int, non-empty-list<PrintfPlaceholder>> parameter index => placeholders */
+	public function getPrintfPlaceholders(string $format): array
 	{
-		$placeholders = $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format);
-		$result = [];
-		// Type on the left can go to the type on the right, but not vice versa.
-		$typeSequenceMap = array_flip(['int', 'float', 'string', 'mixed']);
-
-		foreach ($placeholders as $position => $types) {
-			sort($types);
-			$typeNames = array_map(
-				static fn (string $t) => $t === 'strict-int'
-					? 'int'
-					: $t,
-				$types,
-			);
-			$typeName = array_reduce(
-				$typeNames,
-				static fn (string $carry, string $type) => $typeSequenceMap[$carry] < $typeSequenceMap[$type]
-					? $carry
-					: $type,
-				'mixed',
-			);
-			$result[$position] = [
-				$typeName,
-				static function (Type $t) use ($types): bool {
-					foreach ($types as $acceptingType) {
-						switch ($acceptingType) {
-							case 'strict-int':
-								$subresult = (new IntegerType())->accepts($t, true)->yes();
-								break;
-							case 'int':
-								$subresult = ! $t->toInteger() instanceof ErrorType;
-								break;
-							case 'float':
-								$subresult = ! $t->toFloat() instanceof ErrorType;
-								break;
-							// The function signature already limits the parameters to stringable types, so there's
-							// no point in checking string again here.
-							case 'string':
-							case 'mixed':
-							default:
-								$subresult = true;
-								break;
-						}
-
-						if (!$subresult) {
-							return false;
-						}
-					}
-
-					return true;
-				},
-			];
-		}
-
-		return $result;
+		return $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format);
 	}
 
 	public function getScanfPlaceholdersCount(string $format): int
@@ -102,7 +41,7 @@ final class PrintfHelper
 		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfinosuxX%s]|\[[^\]]+\])', $format);
 	}
 
-	/** @phpstan-return array<int, non-empty-list<AcceptingTypeString>> position => type */
+	/** @phpstan-return array<int, non-empty-list<PrintfPlaceholder>> parameter index => placeholders */
 	private function parsePlaceholders(string $specifiersPattern, string $format): array
 	{
 		$addSpecifier = '';
@@ -123,38 +62,49 @@ final class PrintfHelper
 		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
 
 		$result = [];
-		$positionalPlaceholders = [];
-		$idx = 0;
+		$parsedPlaceholders = [];
+		$parameterIdx = 0;
+		$placeholderNumber = 0;
 
 		foreach ($placeholders as $placeholder) {
+			$placeholderNumber++;
+			$showValueSuffix = false;
+
 			if (isset($placeholder['width']) && $placeholder['width'] !== '') {
-				$result[$idx++] = ['strict-int' => 1];
+				$parsedPlaceholders[] = new PrintfPlaceholder(
+					sprintf('"%s" (width)', $placeholder[0]),
+					$parameterIdx++,
+					$placeholderNumber,
+					'strict-int',
+				);
+				$showValueSuffix = true;
 			}
 
 			if (isset($placeholder['precision']) && $placeholder['precision'] !== '') {
-				$result[$idx++] = ['strict-int' => 1];
+				$parsedPlaceholders[] = new PrintfPlaceholder(
+					sprintf('"%s" (precision)', $placeholder[0]),
+					$parameterIdx++,
+					$placeholderNumber,
+					'strict-int',
+				);
+				$showValueSuffix = true;
 			}
 
-			if (isset($placeholder['position']) && $placeholder['position'] !== '') {
-				// It may reference future position, so we have to process them later.
-				$positionalPlaceholders[] = $placeholder;
-				continue;
-			}
-
-			$result[$idx++][$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? '')] = 1;
+			$parsedPlaceholders[] = new PrintfPlaceholder(
+				sprintf('"%s"', $placeholder[0]) . ($showValueSuffix ? ' (value)' : ''),
+				isset($placeholder['position']) && $placeholder['position'] !== ''
+					? $placeholder['position'] - 1
+					: $parameterIdx++,
+				$placeholderNumber,
+				$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? ''),
+			);
 		}
 
-		usort(
-			$positionalPlaceholders,
-			static fn (array $a, array $b) => (int) $a['position'] <=> (int) $b['position'],
-		);
-
-		foreach ($positionalPlaceholders as $placeholder) {
-			$idx = $placeholder['position'] - 1;
-			$result[$idx][$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? '')] = 1;
+		foreach ($parsedPlaceholders as $placeholder) {
+			$result[$placeholder->parameterIndex][] = $placeholder;
 		}
 
-		return array_map(static fn (array $a) => array_keys($a), $result);
+		return $result;
 	}
 
 	/** @phpstan-return 'string'|'int'|'float'|'mixed' */

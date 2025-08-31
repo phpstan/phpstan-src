@@ -27,6 +27,8 @@ printf('%2$s %3$.*s', '1', 5, 'a'); // * is the first ordinary placeholder, so i
 printf('%1$-\'X10.2f', new FooStringable());
 printf('%s %1$*.*f', new FooStringable(), 5, 2);
 printf('%3$f', 1, 2, new FooStringable());
+printf('%1$f %1$d', new FooStringable());
+printf('%1$*d', 5.5);
 
 // Strict error
 printf('%d', 1.23);

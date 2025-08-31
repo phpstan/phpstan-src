@@ -37,64 +37,76 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/printf-param-types.php'], [
 			[
-				'Placeholder #1 of function printf expects int, PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function printf is expected to be castable to int by placeholder #1 ("%d"), PrintfParamTypes\\FooStringable given.',
 				15,
 			],
 			[
-				'Placeholder #1 of function printf expects int, int|PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function printf is expected to be castable to int by placeholder #1 ("%d"), int|PrintfParamTypes\\FooStringable given.',
 				16,
 			],
 			[
-				'Placeholder #1 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function printf is expected to be castable to float by placeholder #1 ("%f"), PrintfParamTypes\\FooStringable given.',
 				17,
 			],
 			[
-				'Placeholder #1 of function sprintf expects int, PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function sprintf is expected to be castable to int by placeholder #1 ("%d"), PrintfParamTypes\\FooStringable given.',
 				18,
 			],
 			[
-				'Placeholder #1 of function fprintf expects float, PrintfParamTypes\\FooStringable given',
+				'Parameter #3 of function fprintf is expected to be castable to float by placeholder #1 ("%f"), PrintfParamTypes\\FooStringable given.',
 				19,
 			],
 			[
-				'Placeholder #1 of function printf expects int, string given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%*s" (width)), string given.',
 				20,
 			],
 			[
-				'Placeholder #1 of function printf expects int, float given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%*s" (width)), float given.',
 				21,
 			],
 			[
-				'Placeholder #1 of function printf expects int, SimpleXMLElement given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%*s" (width)), SimpleXMLElement given.',
 				22,
 			],
 			[
-				'Placeholder #1 of function printf expects int, null given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%*s" (width)), null given.',
 				23,
 			],
 			[
-				'Placeholder #1 of function printf expects int, true given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%*s" (width)), true given.',
 				24,
 			],
 			[
-				'Placeholder #1 of function printf expects int, string given',
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%.*s" (precision)), string given.',
 				25,
 			],
 			[
-				'Placeholder #1 of function printf expects int, string given',
+				'Parameter #2 of function printf is expected to be int by placeholder #2 ("%3$.*s" (precision)), string given.',
 				26,
 			],
 			[
-				'Placeholder #1 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function printf is expected to be castable to float by placeholder #1 ("%1$-\'X10.2f"), PrintfParamTypes\\FooStringable given.',
 				27,
 			],
 			[
-				'Placeholder #1 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				'Parameter #2 of function printf is expected to be castable to float by placeholder #2 ("%1$*.*f" (value)), PrintfParamTypes\\FooStringable given.',
 				28,
 			],
 			[
-				'Placeholder #3 of function printf expects float, PrintfParamTypes\\FooStringable given',
+				'Parameter #4 of function printf is expected to be castable to float by placeholder #1 ("%3$f"), PrintfParamTypes\\FooStringable given.',
 				29,
+			],
+			[
+				'Parameter #2 of function printf is expected to be castable to float by placeholder #1 ("%1$f"), PrintfParamTypes\\FooStringable given.',
+				30,
+			],
+			[
+				'Parameter #2 of function printf is expected to be castable to int by placeholder #2 ("%1$d"), PrintfParamTypes\\FooStringable given.',
+				30,
+			],
+			[
+				'Parameter #2 of function printf is expected to be int by placeholder #1 ("%1$*d" (width)), float given.',
+				31,
 			],
 		]);
 	}

@@ -29,6 +29,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	}
 	$devOrPharLoader->unregister();
 
+	// fix missing key for vendor/hoa/protocol/Wrapper.php
+	$existingComposerAutoloadFiles = $GLOBALS['__composer_autoload_files'] ?? [];
+	$GLOBALS['__composer_autoload_files'] = array_merge(
+		$existingComposerAutoloadFiles,
+		array_fill_keys(['3e76f7f02b41af8cea96018933f6b7e3'], true),
+	);
+
 	$autoloaderInWorkingDirectory = $vendorDirectory . '/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 

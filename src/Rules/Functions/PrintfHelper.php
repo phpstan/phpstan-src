@@ -14,7 +14,6 @@ use function sprintf;
 use function strlen;
 use const PREG_SET_ORDER;
 
-/** @phpstan-type AcceptingTypeString 'strict-int'|'int'|'float'|'string'|'mixed' */
 #[AutowiredService]
 final class PrintfHelper
 {

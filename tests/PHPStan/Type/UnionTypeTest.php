@@ -87,6 +87,9 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{Type}>
+	 */
 	public static function dataSelfCompare(): Iterator
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -166,6 +169,9 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{UnionType, Type, TrinaryLogic}>
+	 */
 	public static function dataIsSuperTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
@@ -460,6 +466,9 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{UnionType, Type, TrinaryLogic}>
+	 */
 	public static function dataIsSubTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([

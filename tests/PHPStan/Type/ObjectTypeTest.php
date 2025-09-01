@@ -557,6 +557,9 @@ class ObjectTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{ObjectType, string, TrinaryLogic}>
+	 */
 	public static function dataHasConstant(): Iterator
 	{
 		yield [

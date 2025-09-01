@@ -28,6 +28,9 @@ use const PHP_VERSION_ID;
 class IntersectionTypeTest extends PHPStanTestCase
 {
 
+	/**
+	 * @return Iterator<int, array{IntersectionType, Type, TrinaryLogic}>
+	 */
 	public static function dataAccepts(): Iterator
 	{
 		$intersectionType = new IntersectionType([
@@ -121,6 +124,9 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{IntersectionType, Type, TrinaryLogic}>
+	 */
 	public static function dataIsSuperTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
@@ -242,6 +248,9 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{IntersectionType, Type, TrinaryLogic}>
+	 */
 	public static function dataIsSubTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([

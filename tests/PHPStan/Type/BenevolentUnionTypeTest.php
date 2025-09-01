@@ -20,6 +20,9 @@ use function sprintf;
 class BenevolentUnionTypeTest extends PHPStanTestCase
 {
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataCanAccessProperties(): Iterator
 	{
 		yield [
@@ -49,6 +52,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, string, TrinaryLogic}>
+	 */
 	public static function dataHasProperty(): Iterator
 	{
 		yield [
@@ -87,6 +93,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataCanCallMethods(): Iterator
 	{
 		yield [
@@ -116,6 +125,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, string, TrinaryLogic}>
+	 */
 	public static function dataHasMethod(): Iterator
 	{
 		yield [
@@ -151,6 +163,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataCanAccessConstants(): Iterator
 	{
 		yield [
@@ -180,6 +195,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsIterable(): Iterator
 	{
 		yield [
@@ -215,6 +233,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsIterableAtLeastOnce(): Iterator
 	{
 		yield [
@@ -250,6 +271,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsArray(): Iterator
 	{
 		yield [
@@ -279,6 +303,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsString(): Iterator
 	{
 		yield [
@@ -311,6 +338,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsNumericString(): Iterator
 	{
 		yield [
@@ -342,6 +372,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsNonFalsyString(): Iterator
 	{
 		yield [
@@ -373,6 +406,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsLiteralString(): Iterator
 	{
 		yield [
@@ -404,6 +440,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsOffsetAccesible(): Iterator
 	{
 		yield [
@@ -439,6 +478,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, ConstantStringType, TrinaryLogic}>
+	 */
 	public static function dataHasOffsetValueType(): Iterator
 	{
 		yield [
@@ -477,6 +519,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsCallable(): Iterator
 	{
 		yield [
@@ -506,6 +551,9 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	/**
+	 * @return Iterator<int, array{BenevolentUnionType, TrinaryLogic}>
+	 */
 	public static function dataIsCloneable(): Iterator
 	{
 		yield [

@@ -15,7 +15,7 @@ class SetPropertyHookParameterRuleTest extends RuleTestCase
 
 	protected function getRule(): TRule
 	{
-		return new SetPropertyHookParameterRule(new MissingTypehintCheck(true, []), true, true);
+		return new SetPropertyHookParameterRule(new MissingTypehintCheck(true, [], true), true, true);
 	}
 
 	#[RequiresPhp('>= 8.4')]

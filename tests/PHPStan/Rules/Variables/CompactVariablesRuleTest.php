@@ -11,17 +11,13 @@ use PHPStan\Testing\RuleTestCase;
 class CompactVariablesRuleTest extends RuleTestCase
 {
 
-	/** @var true */
-	private bool $checkMaybeUndefinedVariables;
-
 	protected function getRule(): Rule
 	{
-		return new CompactVariablesRule($this->checkMaybeUndefinedVariables);
+		return new CompactVariablesRule(true);
 	}
 
 	public function testCompactVariables(): void
 	{
-		$this->checkMaybeUndefinedVariables = true;
 		$this->analyse([__DIR__ . '/data/compact-variables.php'], [
 			[
 				'Call to function compact() contains undefined variable $bar.',

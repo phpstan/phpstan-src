@@ -29,7 +29,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 {
 
 	/**
-	 * @return Iterator<int, array{IntersectionType, Type, TrinaryLogic}>
+	 * @return Iterator<int, array{Type, Type, TrinaryLogic}>
 	 */
 	public static function dataAccepts(): Iterator
 	{
@@ -73,7 +73,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataAccepts')]
-	public function testAccepts(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
 		$this->assertSame(

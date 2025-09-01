@@ -1181,6 +1181,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 				'Variable $bar might not be defined.',
 				11,
 			],
+			[
+				'Undefined variable: $bar',
+				20
+			]
 		]);
 	}
 

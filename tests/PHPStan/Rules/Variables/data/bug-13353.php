@@ -9,3 +9,13 @@ if (!isset($$foo)) {
 }
 
 echo $$foo;
+
+function () {
+	$foo = 'bar';
+
+	if (!isset($$foo)) {
+		echo 'Wololo';
+	}
+
+	echo $$foo;
+};

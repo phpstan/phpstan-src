@@ -1183,8 +1183,8 @@ class DefinedVariableRuleTest extends RuleTestCase
 			],
 			[
 				'Undefined variable: $bar',
-				20
-			]
+				20,
+			],
 		]);
 	}
 

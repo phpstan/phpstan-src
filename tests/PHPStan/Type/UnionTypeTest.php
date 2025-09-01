@@ -170,7 +170,7 @@ class UnionTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @return Iterator<int, array{UnionType, Type, TrinaryLogic}>
+	 * @return Iterator<array-key, array{UnionType, Type, TrinaryLogic}>
 	 */
 	public static function dataIsSuperTypeOf(): Iterator
 	{

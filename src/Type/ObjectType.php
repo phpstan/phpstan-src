@@ -46,6 +46,7 @@ use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use Stringable;
 use Throwable;
@@ -68,6 +69,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use SubstractableTypeTrait;
 
 	private const EXTRA_OFFSET_CLASSES = [
 		'DOMNamedNodeMap', // Only read and existence
@@ -504,16 +506,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return $reflectionProvider->getClassName($this->className);
 		};
 
-		$preciseWithSubtracted = function () use ($level): string {
-			$description = $this->className;
-			if ($this->subtractedType !== null) {
-				$description .= $this->subtractedType instanceof UnionType
-					? sprintf('~(%s)', $this->subtractedType->describe($level))
-					: sprintf('~%s', $this->subtractedType->describe($level));
-			}
-
-			return $description;
-		};
+		$preciseWithSubtracted = fn (): string => $this->className . $this->describeSubtractedType($this->subtractedType, $level);
 
 		return $level->handle(
 			$preciseNameCallback,
@@ -559,11 +552,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$description .= '<' . implode(', ', $typeDescriptions) . '>';
 		}
 
-		if ($this->subtractedType !== null) {
-			$description .= $this->subtractedType instanceof UnionType
-				? sprintf('~(%s)', $this->subtractedType->describe(VerbosityLevel::cache()))
-				: sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
-		}
+		$description .= $this->describeSubtractedType($this->subtractedType, VerbosityLevel::cache());
 
 		$reflection = $this->classReflection;
 		if ($reflection !== null) {

@@ -36,6 +36,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function get_class;
 use function sprintf;
@@ -47,6 +48,7 @@ class MixedType implements CompoundType, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use SubstractableTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -471,23 +473,9 @@ class MixedType implements CompoundType, SubtractableType
 		return $level->handle(
 			static fn (): string => 'mixed',
 			static fn (): string => 'mixed',
+			fn (): string => 'mixed' . $this->describeSubtractedType($this->subtractedType, $level),
 			function () use ($level): string {
-				$description = 'mixed';
-				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType
-						? sprintf('~(%s)', $this->subtractedType->describe($level))
-						: sprintf('~%s', $this->subtractedType->describe($level));
-				}
-
-				return $description;
-			},
-			function () use ($level): string {
-				$description = 'mixed';
-				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType
-						? sprintf('~(%s)', $this->subtractedType->describe($level))
-						: sprintf('~%s', $this->subtractedType->describe($level));
-				}
+				$description = 'mixed' . $this->describeSubtractedType($this->subtractedType, $level);
 
 				if ($this->isExplicitMixed) {
 					$description .= '=explicit';

@@ -21,7 +21,7 @@ class HelloWorld
 			if ($foo) {
 				$date = new \stdClass();
 			}
-			assertType('mixed~object~stdClass', $date);
+			assertType('mixed~(object~stdClass)', $date);
 
 			if (is_object($date)) {
 				assertType('stdClass', $date);

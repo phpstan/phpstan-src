@@ -7,8 +7,8 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
+use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use function sprintf;
 
 /** @api */
 class ObjectWithoutClassType implements SubtractableType
@@ -18,6 +18,7 @@ class ObjectWithoutClassType implements SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use SubstractableTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -120,16 +121,7 @@ class ObjectWithoutClassType implements SubtractableType
 		return $level->handle(
 			static fn (): string => 'object',
 			static fn (): string => 'object',
-			function () use ($level): string {
-				$description = 'object';
-				if ($this->subtractedType !== null) {
-					$description .= $this->subtractedType instanceof UnionType
-						? sprintf('~(%s)', $this->subtractedType->describe($level))
-						: sprintf('~%s', $this->subtractedType->describe($level));
-				}
-
-				return $description;
-			},
+			fn (): string => 'object' . $this->describeSubtractedType($this->subtractedType, $level),
 		);
 	}
 

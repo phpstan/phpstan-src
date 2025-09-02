@@ -5,14 +5,15 @@ namespace CurlGetinfo73;
 use CurlHandle;
 use function PHPStan\Testing\assertType;
 
-class Foo {
+class Foo
+{
 	public function bar()
 	{
 		$handle = new CurlHandle();
 		assertType('int', curl_getinfo($handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T));
 		assertType('int', curl_getinfo($handle, CURLINFO_CONTENT_LENGTH_UPLOAD_T));
 		assertType('int', curl_getinfo($handle, CURLINFO_HTTP_VERSION));
-		assertType('string', curl_getinfo($handle, CURLINFO_PROTOCOL));
+		assertType('int', curl_getinfo($handle, CURLINFO_PROTOCOL));
 		assertType('int', curl_getinfo($handle, CURLINFO_PROXY_SSL_VERIFYRESULT));
 		assertType('string', curl_getinfo($handle, CURLINFO_SCHEME));
 		assertType('int', curl_getinfo($handle, CURLINFO_SIZE_DOWNLOAD_T));

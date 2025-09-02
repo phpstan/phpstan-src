@@ -4,7 +4,11 @@ namespace BugDoctrine;
 
 class HelloWorld
 {
-	public function sayHello(string|array $a, array $b): void
+	/**
+	 * @param string|array $a
+	 * @param array        $b
+	 */
+	public function sayHello($a, $b): void
 	{
 			$b[$a] ?? 2;
 	}

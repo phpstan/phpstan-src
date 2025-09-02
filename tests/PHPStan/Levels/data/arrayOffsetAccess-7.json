@@ -10,7 +10,7 @@
         "ignorable": true
     },
     {
-        "message": "Invalid array key type DateTimeImmutable.",
+        "message": "Possibly invalid array key type DateTimeImmutable.",
         "line": 26,
         "ignorable": true
     },

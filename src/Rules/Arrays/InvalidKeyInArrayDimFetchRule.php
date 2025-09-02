@@ -47,7 +47,12 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			static fn (Type $varType): bool => $varType->isArray()->no(),
 		)->getType();
 
-		if ($varType instanceof ErrorType || $varType->isArray()->no()) {
+		if ($varType instanceof ErrorType) {
+			return [];
+		}
+
+		$isArray = $varType->isArray();
+		if ($isArray->no() || ($isArray->maybe() && !$this->reportMaybes)) {
 			return [];
 		}
 
@@ -68,7 +73,11 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('%s array key type %s.', $isSuperType->no() ? 'Invalid' : 'Possibly invalid', $dimensionType->describe(VerbosityLevel::typeOnly())),
+				sprintf(
+					'%s array key type %s.',
+					$isArray->yes() && $isSuperType->no() ? 'Invalid' : 'Possibly invalid',
+					$dimensionType->describe(VerbosityLevel::typeOnly()),
+				),
 			)->identifier('offsetAccess.invalidOffset')->build(),
 		];
 	}

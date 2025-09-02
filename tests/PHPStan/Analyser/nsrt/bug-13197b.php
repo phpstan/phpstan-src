@@ -16,8 +16,8 @@ function execute(string $command): void
 		$command,
 		[
 			['pipe', 'rb'],
-			3 => ['pipe', 'wb'], // stdout
-			5 => ['pipe', 'wb'], // stderr
+			3 => ['pipe', 'wb'], // https://stackoverflow.com/questions/28909347/is-it-possible-to-connect-more-than-the-two-standard-streams-to-a-terminal-in-li#28909376
+			5 => ['pipe', 'wb'],
 		],
 		$pipes
 	);

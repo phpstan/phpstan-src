@@ -5,6 +5,16 @@
         "ignorable": true
     },
     {
+      "message": "Method Levels\\ArrayOffsetAccess\\Foo::test() has parameter $arrayOrObject with generic interface ArrayAccess but does not specify its types: TKey, TValue",
+        "line": 13,
+        "ignorable": true
+    },
+    {
+      "message": "Method Levels\\ArrayOffsetAccess\\Foo::test() has parameter $arrayOrObject with no value type specified in iterable type array.",
+        "line": 13,
+        "ignorable": true
+    },
+    {
         "message": "Method Levels\\ArrayOffsetAccess\\Foo::test() has parameter $implicitlyMixed with no type specified.",
         "line": 13,
         "ignorable": true

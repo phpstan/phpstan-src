@@ -3,5 +3,50 @@
         "message": "Possibly invalid array key type mixed.",
         "line": 21,
         "ignorable": true
+    },
+    {
+        "message": "Possibly invalid array key type mixed.",
+        "line": 30,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset 42 on mixed.",
+        "line": 33,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset null on mixed.",
+        "line": 34,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset DateTimeImmutable on mixed.",
+        "line": 35,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset int|null on mixed.",
+        "line": 36,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset int|object on mixed.",
+        "line": 37,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset object|null on mixed.",
+        "line": 38,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset mixed on mixed.",
+        "line": 39,
+        "ignorable": true
+    },
+    {
+        "message": "Cannot access offset mixed on mixed.",
+        "line": 40,
+        "ignorable": true
     }
 ]

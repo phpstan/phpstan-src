@@ -376,4 +376,4 @@ function register_tick_function(callable $callback, mixed ...$args): bool {}
  *
  * @return resource|false
  */
-function proc_open($command, array $descriptor_spec, &$pipes, ?string $cwd, ?array $env_vars, ?array $options) {}
+function proc_open($command, array $descriptor_spec, &$pipes, ?string $cwd = null, ?array $env_vars = null, ?array $options = null) {}

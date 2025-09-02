@@ -11,6 +11,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
 use function ini_get;
@@ -69,6 +70,13 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	public function toString(): Type
 	{
+		if ($this->value === 0.0) {
+			return new UnionType([
+				new ConstantStringType('0'),
+				new ConstantStringType('-0'),
+			]);
+		}
+
 		return new ConstantStringType((string) $this->value);
 	}
 

@@ -1801,7 +1801,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$this->resource',
 			],
 			[
-				'*ERROR*',
+				'mixed',
 				'$this->yetAnotherAnotherMixedParameter',
 			],
 			[

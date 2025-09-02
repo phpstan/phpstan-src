@@ -193,10 +193,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset 12.34 might not exist on array|string.',
 				28,
 			],
-			[
-				'Offset int|object might not exist on array|string.',
-				32,
-			],
 		]);
 	}
 
@@ -931,10 +927,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset int|object does not exist on array{baz: 21}|array{foo: 17, bar: 19}.',
 				12,
-			],
-			[
-				'Offset object does not exist on array<string, int>.',
-				21,
 			],
 		]);
 	}

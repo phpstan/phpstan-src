@@ -19,6 +19,7 @@ use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
@@ -581,17 +582,14 @@ class ConstantArrayType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$offsetArrayKeyType = $offsetType->toArrayKey();
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType();
+		$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
 
 		return $this->recursiveHasOffsetValueType($offsetArrayKeyType);
 	}
 
 	private function recursiveHasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($offsetType instanceof ErrorType) {
-			return TrinaryLogic::createNo();
-		}
-
 		if ($offsetType instanceof UnionType) {
 			$results = [];
 			foreach ($offsetType->getTypes() as $innerType) {

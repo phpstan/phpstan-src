@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -267,10 +268,8 @@ class ArrayType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$offsetType = $offsetType->toArrayKey();
-		if ($offsetType instanceof ErrorType) {
-			return TrinaryLogic::createNo();
-		}
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType();
+		$offsetType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
 
 		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()
 			&& ($offsetType->isString()->no() || !$offsetType->isConstantScalarValue()->no())

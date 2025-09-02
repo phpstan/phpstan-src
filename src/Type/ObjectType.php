@@ -695,7 +695,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		} while ($classReflection !== null);
 
 		if (!$isFinal) {
-			if (count($arrayKeys) === 0) {
+			if (count($arrayKeys) === 0 || count($arrayKeys) > 16) {
 				return new ArrayType(new MixedType(), new MixedType());
 			}
 

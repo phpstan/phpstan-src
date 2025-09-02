@@ -10,11 +10,6 @@
         "ignorable": true
     },
     {
-        "message": "Offset int|object might not exist on array|string.",
-        "line": 35,
-        "ignorable": true
-    },
-    {
         "message": "Possibly invalid array key type int|object.",
         "line": 35,
         "ignorable": true

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\TooWideTypehints;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -20,6 +21,13 @@ use function sprintf;
 #[AutowiredService]
 final class TooWideTypeCheck
 {
+
+	public function __construct(
+		#[AutowiredParameter(ref: '%featureToggles.reportTooWideBool%')]
+		private bool $reportTooWideBool,
+	)
+	{
+	}
 
 	/**
 	 * @return list<IdentifierRuleError>
@@ -66,13 +74,12 @@ final class TooWideTypeCheck
 		Type $functionReturnType,
 		string $functionDescription,
 		bool $checkDescendantClass,
-		bool $reportTooWideBool,
 	): array
 	{
 		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
 
 		if (!$functionReturnType instanceof UnionType) {
-			if (!$functionReturnType->isBoolean()->yes() || !$reportTooWideBool) {
+			if (!$functionReturnType->isBoolean()->yes() || !$this->reportTooWideBool) {
 				return [];
 			}
 		}

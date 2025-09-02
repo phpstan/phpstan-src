@@ -14,7 +14,7 @@ class TooWideArrowFunctionReturnTypehintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new TooWideArrowFunctionReturnTypehintRule(
-			new TooWideTypeCheck(),
+			new TooWideTypeCheck(true),
 		);
 	}
 

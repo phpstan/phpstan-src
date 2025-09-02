@@ -19,7 +19,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TooWideMethodReturnTypehintRule($this->checkProtectedAndPublicMethods, new TooWideTypeCheck(), $this->reportTooWideBool);
+		return new TooWideMethodReturnTypehintRule($this->checkProtectedAndPublicMethods, new TooWideTypeCheck($this->reportTooWideBool));
 	}
 
 	public function testPrivate(): void

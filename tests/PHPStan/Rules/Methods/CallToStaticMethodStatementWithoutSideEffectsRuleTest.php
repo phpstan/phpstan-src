@@ -102,6 +102,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug10819(): void
 	{
 		$errors = [];

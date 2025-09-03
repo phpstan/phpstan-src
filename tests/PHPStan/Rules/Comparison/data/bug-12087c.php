@@ -16,3 +16,16 @@ function doFoo()
 
 	is_null($value = $foo = Button::tryFrom($value));
 }
+
+function doFoo2() {
+	$value = 10;
+
+	is_null($value ??= Button::tryFrom($value));
+}
+
+function doFoo3() {
+	$value = null;
+
+	is_null($value ??= Button::tryFrom($value));
+}
+

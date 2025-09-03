@@ -1083,6 +1083,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				17,
 				$tipText,
 			],
+			[
+				'Call to function is_null() with 10 will always evaluate to false.',
+				23,
+			],
+			[
+				'Call to function is_null() with null will always evaluate to true.',
+				29,
+			],
 		]);
 	}
 

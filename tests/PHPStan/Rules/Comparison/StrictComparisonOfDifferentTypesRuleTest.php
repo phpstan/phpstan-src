@@ -1019,6 +1019,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10884.php'], []);
 	}
 
+	public function testBug11609(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11609.php'], [
+			[
+				'Strict comparison using !== between string and null will always evaluate to true.',
+				16,
+			],
+		]);
+	}
+
 	public function testBug3761(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3761.php'], []);

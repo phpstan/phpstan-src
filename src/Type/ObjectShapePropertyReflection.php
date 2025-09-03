@@ -61,12 +61,12 @@ final class ObjectShapePropertyReflection implements ExtendedPropertyReflection
 
 	public function hasNativeType(): bool
 	{
-		return false;
+		return true;
 	}
 
 	public function getNativeType(): Type
 	{
-		return new MixedType();
+		return $this->type;
 	}
 
 	public function getReadableType(): Type

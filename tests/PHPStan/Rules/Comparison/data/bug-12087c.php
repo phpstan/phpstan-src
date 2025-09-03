@@ -9,14 +9,10 @@ enum Button: int
 	case Off = 0;
 }
 
-function doFoo() {
+function doFoo()
+{
+	$foo = 'abc';
 	$value = 10;
 
-	is_null($foo = $value = Button::tryFrom($value));
-}
-
-function doFoo2() {
-	$value = 10;
-
-	is_null($foo ??= Button::tryFrom($value));
+	is_null($value = $foo = Button::tryFrom($value));
 }

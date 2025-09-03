@@ -282,11 +282,22 @@ final class ImpossibleCheckTypeHelper
 		$assignedInCallVars = [];
 		if ($node instanceof Expr\CallLike) {
 			foreach ($node->getArgs() as $arg) {
-				if (!$arg->value instanceof Expr\Assign) {
-					continue;
+				$expr = $arg->value;
+				while ($expr instanceof Expr\Assign) {
+					$expr = $expr->expr;
 				}
+				$assignedExpr = $expr;
 
-				$assignedInCallVars[] = $arg->value;
+				$expr = $arg->value;
+				while ($expr instanceof Expr\Assign) {
+					$assignedInCallVars[] = new Expr\Assign(
+						$expr->var,
+						$assignedExpr,
+						$expr->getAttributes()
+					);
+
+					$expr = $expr->expr;
+				}
 			}
 		}
 		foreach ($sureTypes as $sureType) {

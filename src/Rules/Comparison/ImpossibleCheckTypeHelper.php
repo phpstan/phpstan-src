@@ -293,7 +293,7 @@ final class ImpossibleCheckTypeHelper
 					$assignedInCallVars[] = new Expr\Assign(
 						$expr->var,
 						$assignedExpr,
-						$expr->getAttributes()
+						$expr->getAttributes(),
 					);
 
 					$expr = $expr->expr;

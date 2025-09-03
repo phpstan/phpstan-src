@@ -10,6 +10,7 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\GlobalVariableExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -102,6 +103,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_IssetExpr(IssetExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanIssetExpr(%s)', $this->p($expr->getExpr()));
+	}
+
+	protected function pPHPStan_Node_GlobalVariableExpr(GlobalVariableExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanGlobalVariable(%s)', $this->p($expr->getVar()));
 	}
 
 }

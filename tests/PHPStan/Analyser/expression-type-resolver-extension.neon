@@ -1,6 +1,10 @@
 # config for ExpressionTypeResolverExtensionTest
 services:
 	-
+		class: ExpressionTypeResolverExtension\GlobalExpressionTypeResolverExtension
+		tags:
+			- phpstan.broker.expressionTypeResolverExtension
+	-
 		class: ExpressionTypeResolverExtension\MethodCallReturnsBoolExpressionTypeResolverExtension
 		tags:
 			- phpstan.broker.expressionTypeResolverExtension

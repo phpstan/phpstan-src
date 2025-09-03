@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\GlobalVariableExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -181,8 +182,6 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
 	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
-
-	private const IS_GLOBAL_ATTRIBUTE_NAME = 'isGlobal';
 
 	/** @var Type[] */
 	private array $resolvedTypes = [];
@@ -628,12 +627,8 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			return true;
 		}
 
-		$varExprString = '$' . $variableName;
-		if (!isset($this->expressionTypes[$varExprString])) {
-			return false;
-		}
-
-		return $this->expressionTypes[$varExprString]->getExpr()->getAttribute(self::IS_GLOBAL_ATTRIBUTE_NAME) === true;
+		$globalVariableExprString = $this->getNodeKey(new GlobalVariableExpr(new Variable($variableName)));
+		return array_key_exists($globalVariableExprString, $this->expressionTypes);
 	}
 
 	/** @api */
@@ -848,6 +843,10 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			return $propertyReflection->getReadableType();
+		}
+
+		if ($node instanceof GlobalVariableExpr) {
+			return $this->getType($node->getVar());
 		}
 
 		$key = $this->getNodeKey($node);
@@ -4309,13 +4308,9 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, bool $isGlobal = false): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
 		$node = new Variable($variableName);
-		if ($isGlobal || $this->isGlobalVariable($variableName)) {
-			$node->setAttribute(self::IS_GLOBAL_ATTRIBUTE_NAME, true);
-		}
-
 		$scope = $this->assignExpression($node, $type, $nativeType);
 		if ($certainty->no()) {
 			throw new ShouldNotHappenException();
@@ -4428,6 +4423,17 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 					);
 				}
 			}
+		}
+
+		if ($expr instanceof GlobalVariableExpr) {
+			foreach ($this->expressionTypeResolverExtensionRegistry->getExtensions() as $extension) {
+				$typeFromExtension = $extension->getType($expr, $this);
+				if ($typeFromExtension !== null) {
+					$type = $typeFromExtension;
+					break;
+				}
+			}
+			$scope = $scope->specifyExpressionType($expr->getVar(), $type, $nativeType, $certainty);
 		}
 
 		if ($certainty->no()) {

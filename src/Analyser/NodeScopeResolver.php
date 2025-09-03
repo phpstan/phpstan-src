@@ -90,6 +90,7 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\GlobalVariableExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -1978,7 +1979,7 @@ final class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType(), TrinaryLogic::createYes(), true);
+				$scope = $scope->assignExpression(new GlobalVariableExpr($var), new MixedType(), new MixedType());
 				$vars[] = $var->name;
 			}
 			$scope = $this->processVarAnnotation($scope, $vars, $stmt);

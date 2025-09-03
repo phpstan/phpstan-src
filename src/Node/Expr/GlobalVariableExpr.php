@@ -1,0 +1,37 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Node\Expr;
+
+use Override;
+use PhpParser\Node\Expr;
+use PHPStan\Node\VirtualNode;
+
+final class GlobalVariableExpr extends Expr implements VirtualNode
+{
+
+	public function __construct(private Expr $var)
+	{
+		parent::__construct([]);
+	}
+
+	public function getVar(): Expr
+	{
+		return $this->var;
+	}
+
+	#[Override]
+	public function getType(): string
+	{
+		return 'PHPStan_Node_GlobalVariableExpr';
+	}
+
+	/**
+	 * @return string[]
+	 */
+	#[Override]
+	public function getSubNodeNames(): array
+	{
+		return [];
+	}
+
+}

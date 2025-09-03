@@ -265,6 +265,12 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11761(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/bug-11761.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.4')]
 	public function testBug12586(): void
 	{

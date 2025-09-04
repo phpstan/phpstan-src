@@ -821,23 +821,28 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				34,
 				$tipText,
 			];
-			$errors[] = [
-				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
-				71,
-				$tipText,
-			];
 			if ($b) {
+				$errors[] = [
+					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+					71,
+					$tipText,
+				];
 				$errors[] = [
 					'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
 					78,
 					$tipText,
 				];
+				$errors[] = [
+					'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
+					112,
+					$tipText,
+				];
+				$errors[] = [
+					'Access to an undefined property Php82DynamicProperties\ReadonlyWithMagic::$foo.',
+					133,
+					$tipText,
+				];
 			}
-			$errors[] = [
-				'Access to an undefined property Php82DynamicProperties\FinalHelloWorld::$world.',
-				112,
-				$tipText,
-			];
 		} elseif ($b) {
 			$errors[] = [
 				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',

@@ -114,3 +114,24 @@ function (): void {
 		echo $hello->world;
 	}
 };
+
+readonly class ReadonlyWithMagic
+{
+	public function __set(string $name, mixed $value): void
+	{
+		var_dump('here');
+	}
+
+	public function __get(string $name): mixed
+	{
+		return 1;
+	}
+}
+
+function (): void {
+	$class = new ReadonlyWithMagic();
+	if(isset($class->foo))
+	{
+		echo $class->foo;
+	}
+};

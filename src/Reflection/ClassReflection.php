@@ -410,33 +410,6 @@ final class ClassReflection
 			return true;
 		}
 
-		if ($this->isReadOnly()) {
-			return false;
-		}
-
-		if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
-			$this->reflectionProvider,
-			$this,
-		)) {
-			return true;
-		}
-
-		$class = $this;
-		$attributes = $class->reflection->getAttributes('AllowDynamicProperties');
-		while (count($attributes) === 0 && $class->getParentClass() !== null) {
-			$attributes = $class->getParentClass()->reflection->getAttributes('AllowDynamicProperties');
-			$class = $class->getParentClass();
-		}
-
-		return count($attributes) > 0;
-	}
-
-	private function allowsDynamicPropertiesExtensions(): bool
-	{
-		if ($this->allowsDynamicProperties()) {
-			return true;
-		}
-
 		$hasMagicMethod = $this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset');
 		if ($hasMagicMethod) {
 			return true;
@@ -449,18 +422,31 @@ final class ClassReflection
 			}
 
 			$reflection = $type->getClassReflection();
-			if ($reflection === null) {
-				continue;
-			}
-
-			if (!$reflection->allowsDynamicPropertiesExtensions()) {
+			if ($reflection === null || !$reflection->allowsDynamicProperties()) {
 				continue;
 			}
 
 			return true;
 		}
 
-		return false;
+		if ($this->isReadOnly()) {
+			return false;
+		}
+
+		if (UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
+			$this->reflectionProvider,
+			$this,
+		)) {
+			return true;
+		}
+
+		$class = $this;
+		do {
+			$attributes = $class->reflection->getAttributes('AllowDynamicProperties');
+			$class = $class->getParentClass();
+		} while ($attributes === [] && $class !== null);
+
+		return $attributes !== [];
 	}
 
 	public function hasProperty(string $propertyName): bool
@@ -474,7 +460,7 @@ final class ClassReflection
 		}
 
 		foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-			if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
+			if ($i > 0 && !$this->allowsDynamicProperties()) {
 				break;
 			}
 			if ($extension->hasProperty($this, $propertyName)) {
@@ -656,7 +642,7 @@ final class ClassReflection
 
 		if (!isset($this->properties[$key])) {
 			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-				if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
+				if ($i > 0 && !$this->allowsDynamicProperties()) {
 					break;
 				}
 

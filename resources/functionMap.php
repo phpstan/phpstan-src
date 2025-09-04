@@ -8896,7 +8896,7 @@ return [
 'RedisCluster::mget' => ['array', 'array'=>'array'],
 'RedisCluster::mset' => ['bool', 'array'=>'array'],
 'RedisCluster::msetnx' => ['int', 'array'=>'array'],
-'RedisCluster::multi' => ['Redis', 'mode='=>'int'],
+'RedisCluster::multi' => ['__benevolent<RedisCluster|bool>', 'mode='=>'int'],
 'RedisCluster::object' => ['string', 'string='=>'string', 'key='=>'string'],
 'RedisCluster::persist' => ['bool', 'key'=>'string'],
 'RedisCluster::pExpire' => ['bool', 'key'=>'string', 'ttl'=>'int'],

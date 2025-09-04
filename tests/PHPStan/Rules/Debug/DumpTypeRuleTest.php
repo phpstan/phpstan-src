@@ -102,18 +102,4 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug13392(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-13392.php'], [
-			[
-				'Dumped type: RedisCluster',
-				15,
-			],
-			[
-				'Dumped type: (bool|RedisCluster)',
-				18,
-			],
-		]);
-	}
-
 }

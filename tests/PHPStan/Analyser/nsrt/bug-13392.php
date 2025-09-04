@@ -4,6 +4,8 @@ namespace Bug13392;
 
 use RedisCluster;
 
+use function PHPStan\Testing\assertType;
+
 interface Client
 {
 	public function get(): RedisCluster;
@@ -12,8 +14,8 @@ interface Client
 function func(Client $client): void
 {
 	$redisCluster = $client->get();
-	\PHPStan\dumpType($redisCluster);
+	assertType('RedisCluster',$redisCluster);
 
 	$transaction = $redisCluster->multi();
-	\PHPStan\dumpType($transaction);	
+	assertType('(bool|RedisCluster)',$transaction);	
 }

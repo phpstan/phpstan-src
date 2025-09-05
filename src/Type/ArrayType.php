@@ -268,8 +268,12 @@ class ArrayType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType();
-		$offsetType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
+		$offsetArrayKeyType = $offsetType->toArrayKey();
+		if ($offsetArrayKeyType instanceof ErrorType) {
+			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
+			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
+		}
+		$offsetType = $offsetArrayKeyType;
 
 		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()
 			&& ($offsetType->isString()->no() || !$offsetType->isConstantScalarValue()->no())

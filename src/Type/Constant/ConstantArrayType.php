@@ -582,8 +582,11 @@ class ConstantArrayType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType();
-		$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
+		$offsetArrayKeyType = $offsetType->toArrayKey();
+		if ($offsetArrayKeyType instanceof ErrorType) {
+			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
+			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
+		}
 
 		return $this->recursiveHasOffsetValueType($offsetArrayKeyType);
 	}

@@ -9,6 +9,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function sprintf;
@@ -44,6 +45,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$broker,
+				self::getContainer()->getByType(DynamicParameterTypeResolver::class),
 				checkArgumentTypes: true,
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,

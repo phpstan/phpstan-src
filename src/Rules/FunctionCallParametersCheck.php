@@ -12,6 +12,8 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -23,6 +25,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
@@ -55,6 +58,7 @@ final class FunctionCallParametersCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ReflectionProvider $reflectionProvider,
+		private DynamicParameterTypeResolver $dynamicParameterTypeResolver,
 		#[AutowiredParameter(ref: '%checkFunctionArgumentTypes%')]
 		private bool $checkArgumentTypes,
 		#[AutowiredParameter]
@@ -98,6 +102,7 @@ final class FunctionCallParametersCheck
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
+		MethodReflection|FunctionReflection|null $calleeReflection = null,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -390,6 +395,15 @@ final class FunctionCallParametersCheck
 
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
+
+				// judge the argument against the type the extensions announced for
+				// the parameter, which is what NodeScopeResolver walked it with
+				if (!$funcCall instanceof Node\Expr\New_) {
+					$overriddenType = $this->dynamicParameterTypeResolver->resolve($funcCall, $calleeReflection, $parameter, $scope);
+					if ($overriddenType !== null) {
+						$parameterType = $overriddenType;
+					}
+				}
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()

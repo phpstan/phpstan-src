@@ -9,19 +9,19 @@ use PHPStan\Type\Type;
 final class PrintfPlaceholder
 {
 
-	/** @phpstan-param 'strict-int'|'int'|'float'|'string'|'mixed' $acceptedType */
+	/** @phpstan-param 'strict-int'|'int'|'float'|'string'|'mixed' $acceptingType */
 	public function __construct(
 		public readonly string $label,
 		public readonly int $parameterIndex,
 		public readonly int $placeholderNumber,
-		public readonly string $acceptedType,
+		public readonly string $acceptingType,
 	)
 	{
 	}
 
 	public function doesArgumentTypeMatchPlaceholder(Type $argumentType): bool
 	{
-		switch ($this->acceptedType) {
+		switch ($this->acceptingType) {
 			case 'strict-int':
 				return (new IntegerType())->accepts($argumentType, true)->yes();
 			case 'int':
@@ -32,7 +32,6 @@ final class PrintfPlaceholder
 			// no point in checking string again here.
 			case 'string':
 			case 'mixed':
-			default:
 				return true;
 		}
 	}

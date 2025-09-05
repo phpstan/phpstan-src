@@ -140,7 +140,7 @@ final class PrintfParameterTypeRule implements Rule
 						'Parameter #%d of function %s is expected to be %s by placeholder #%d (%s), %s given.',
 						$i + 1,
 						$name,
-						$allowedTypeNameMap[$placeholder->acceptedType],
+						$allowedTypeNameMap[$placeholder->acceptingType],
 						$placeholder->placeholderNumber,
 						$placeholder->label,
 						$argType->describe(VerbosityLevel::typeOnly()),

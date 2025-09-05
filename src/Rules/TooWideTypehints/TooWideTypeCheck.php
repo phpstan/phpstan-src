@@ -10,6 +10,7 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -51,6 +52,23 @@ final class TooWideTypeCheck
 			}
 
 			if ($property->getNativeType() === null && $type->isNull()->yes()) {
+				continue;
+			}
+
+			if ($propertyType->isBoolean()->yes()) {
+				$suggestedType = $type->isTrue()->yes() ? new ConstantBooleanType(false) : new ConstantBooleanType(true);
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s (%s) is never assigned %s so the property type can be changed to %s.',
+					$propertyDescription,
+					$propertyType->describe($verbosityLevel),
+					$type->describe($verbosityLevel),
+					$suggestedType->describe($verbosityLevel),
+				))
+					->identifier('property.tooWideBool')
+					->line($property->getStartLine())
+					->build();
+
 				continue;
 			}
 
@@ -142,6 +160,19 @@ final class TooWideTypeCheck
 
 					continue 2;
 				}
+			}
+
+			if ($functionReturnType->isBoolean()->yes()) {
+				$suggestedType = $type->isTrue()->yes() ? new ConstantBooleanType(false) : new ConstantBooleanType(true);
+
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s never returns %s so the return type can be changed to %s.',
+					$functionDescription,
+					$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
+					$suggestedType->describe(VerbosityLevel::getRecommendedLevelByType($suggestedType)),
+				))->identifier('return.tooWideBool')->build();
+
+				continue;
 			}
 
 			$messages[] = RuleErrorBuilder::message(sprintf(

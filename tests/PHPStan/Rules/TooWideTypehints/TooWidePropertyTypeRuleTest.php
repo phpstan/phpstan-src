@@ -67,11 +67,11 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384.php'], [
 			[
-				'Static property Bug13384\ShutdownHandlerFalseDefault::$registered (bool) is never assigned true so it can be removed from the property type.',
+				'Static property Bug13384\ShutdownHandlerFalseDefault::$registered (bool) is never assigned true so the property type can be changed to false.',
 				9,
 			],
 			[
-				'Static property Bug13384\ShutdownHandlerTrueDefault::$registered (bool) is never assigned false so it can be removed from the property type.',
+				'Static property Bug13384\ShutdownHandlerTrueDefault::$registered (bool) is never assigned false so the property type can be changed to true.',
 				34,
 			],
 		]);
@@ -89,7 +89,7 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384-phpdoc.php'], [
 			[
-				'Static property Bug13384Phpdoc\ShutdownHandlerPhpdocTypes::$registered (bool) is never assigned true so it can be removed from the property type.',
+				'Static property Bug13384Phpdoc\ShutdownHandlerPhpdocTypes::$registered (bool) is never assigned true so the property type can be changed to false.',
 				12,
 			],
 		]);

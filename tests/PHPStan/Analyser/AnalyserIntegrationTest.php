@@ -443,8 +443,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4734.php');
 		$this->assertCount(5, $errors); // could be 3
 
-		$this->assertSame('Static property Bug4734\Foo::$httpMethodParameterOverride (bool) is never assigned false so it can be removed from the property type.', $errors[0]->getMessage()); // should not error
-		$this->assertSame('Property Bug4734\Foo::$httpMethodParameterOverride2 (bool) is never assigned false so it can be removed from the property type.', $errors[1]->getMessage()); // should not error
+		$this->assertSame('Static property Bug4734\Foo::$httpMethodParameterOverride (bool) is never assigned false so the property type can be changed to true.', $errors[0]->getMessage()); // should not error
+		$this->assertSame('Property Bug4734\Foo::$httpMethodParameterOverride2 (bool) is never assigned false so the property type can be changed to true.', $errors[1]->getMessage()); // should not error
 		$this->assertSame('Unsafe access to private property Bug4734\Foo::$httpMethodParameterOverride through static::.', $errors[2]->getMessage());
 		$this->assertSame('Access to an undefined static property static(Bug4734\Foo)::$httpMethodParameterOverride3.', $errors[3]->getMessage());
 		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[4]->getMessage());
@@ -1100,13 +1100,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
 		$this->assertCount(8, $errors);
-		$this->assertSame('Function AssertDocblock\validateStringArrayIfTrue() never returns false so it can be removed from the return type.', $errors[0]->getMessage());
+		$this->assertSame('Function AssertDocblock\validateStringArrayIfTrue() never returns false so the return type can be changed to true.', $errors[0]->getMessage());
 		$this->assertSame(17, $errors[0]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringArrayIfFalse() never returns true so it can be removed from the return type.', $errors[1]->getMessage());
+		$this->assertSame('Function AssertDocblock\validateStringArrayIfFalse() never returns true so the return type can be changed to false.', $errors[1]->getMessage());
 		$this->assertSame(25, $errors[1]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringOrIntArray() never returns true so it can be removed from the return type.', $errors[2]->getMessage());
+		$this->assertSame('Function AssertDocblock\validateStringOrIntArray() never returns true so the return type can be changed to false.', $errors[2]->getMessage());
 		$this->assertSame(34, $errors[2]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringOrNonEmptyIntArray() never returns true so it can be removed from the return type.', $errors[3]->getMessage());
+		$this->assertSame('Function AssertDocblock\validateStringOrNonEmptyIntArray() never returns true so the return type can be changed to false.', $errors[3]->getMessage());
 		$this->assertSame(44, $errors[3]->getLine());
 		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[4]->getMessage());
 		$this->assertSame(218, $errors[4]->getLine());

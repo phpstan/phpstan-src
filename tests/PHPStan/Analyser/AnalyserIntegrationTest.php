@@ -1095,7 +1095,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.2')]
 	public function testAssertDocblock(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');

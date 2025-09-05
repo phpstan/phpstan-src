@@ -44,6 +44,7 @@ final class Analyser
 		?Closure $postFileCallback = null,
 		bool $debug = false,
 		?array $allAnalysedFiles = null,
+		bool $stopOnFailure = false,
 	): AnalyserResult
 	{
 		if ($allAnalysedFiles === null) {
@@ -87,7 +88,8 @@ final class Analyser
 					$this->collectorRegistry,
 					null,
 				);
-				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$fileErrors = $fileAnalyserResult->getErrors();
+				$errors = array_merge($errors, $fileErrors);
 				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
 				$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
 
@@ -102,6 +104,11 @@ final class Analyser
 				if (count($fileExportedNodes) > 0) {
 					$exportedNodes[$file] = $fileExportedNodes;
 				}
+
+				// If stop-on-failure is enabled and we have errors, break the loop
+				if ($stopOnFailure && count($fileErrors) > 0) {
+					break;
+				}
 			} catch (Throwable $t) {
 				if ($debug) {
 					throw $t;
@@ -115,6 +122,10 @@ final class Analyser
 					]);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
+					break;
+				}
+				// If stop-on-failure is enabled and we have an internal error, break the loop
+				if ($stopOnFailure) {
 					break;
 				}
 			}

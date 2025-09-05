@@ -58,6 +58,7 @@ final class AnalyseApplication
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		bool $stopOnFailure = false,
 	): AnalysisResult
 	{
 		$isResultCacheUsed = false;
@@ -91,6 +92,7 @@ final class AnalyseApplication
 				$stdOutput,
 				$errorOutput,
 				$input,
+				$stopOnFailure,
 			);
 
 			$projectStubFiles = $this->stubFilesProvider->getProjectStubFiles();
@@ -212,6 +214,7 @@ final class AnalyseApplication
 		Output $stdOutput,
 		Output $errorOutput,
 		InputInterface $input,
+		bool $stopOnFailure = false,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -252,7 +255,7 @@ final class AnalyseApplication
 			}
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, $tmpFile, $insteadOfFile, $input, $stopOnFailure);
 
 		if (!$debug) {
 			$errorOutput->getStyle()->progressFinish();

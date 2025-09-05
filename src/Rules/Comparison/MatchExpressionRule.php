@@ -105,7 +105,8 @@ final class MatchExpressionRule implements Rule
 					continue;
 				}
 
-				if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+				$reportAlwaysTrueInLastCondition = $this->reportAlwaysTrueInLastCondition && $matchConditionType->getEnumCases() === [];
+				if ($i === $armsCount - 1 && !$reportAlwaysTrueInLastCondition) {
 					continue;
 				}
 				$errorBuilder = RuleErrorBuilder::message(sprintf(
@@ -113,7 +114,7 @@ final class MatchExpressionRule implements Rule
 					$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 					$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 				))->line($armLine);
-				if ($i !== $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+				if ($i !== $armsCount - 1 && !$reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
 

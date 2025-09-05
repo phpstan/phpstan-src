@@ -51,4 +51,12 @@ enum Foo
 		};
 	}
 
+	public function doNonEnum(bool $a): void
+	{
+		match ($a) {
+			true => 0,
+			false => 1,
+		};
+	}
+
 }

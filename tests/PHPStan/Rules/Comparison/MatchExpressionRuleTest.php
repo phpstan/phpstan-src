@@ -297,19 +297,17 @@ class MatchExpressionRuleTest extends RuleTestCase
 		yield [true, [
 			[
 				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				15,
-			],
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
 				23,
-			],
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				45,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
 				49,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Match arm comparison between false and false is always true.',
+				58,
 			],
 		]];
 	}

@@ -12,6 +12,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\DynamicParameterTypeResolver;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -32,7 +33,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new CallMethodsRule(
 				new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, self::getContainer()->getByType(DynamicParameterTypeResolver::class), true, true, true, true),
 			),
 			new OverridingMethodRule(
 				$phpVersion,

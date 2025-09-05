@@ -4,7 +4,6 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\PropertyReflection;
@@ -12,7 +11,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
 
@@ -27,8 +25,6 @@ final class TooWidePropertyTypeRule implements Rule
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private TooWideTypeCheck $check,
-		#[AutowiredParameter(ref: '%featureToggles.reportTooWideBool%')]
-		private bool $reportTooWideBool,
 	)
 	{
 	}
@@ -60,11 +56,13 @@ final class TooWidePropertyTypeRule implements Rule
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 			$propertyType = $propertyReflection->getWritableType();
-			if (!$propertyType instanceof UnionType) {
-				if (!$propertyType->isBoolean()->yes() || !$this->reportTooWideBool) {
-					continue;
-				}
+			$phpdocType = $propertyReflection->getPhpDocType();
+
+			$propertyType = $this->check->findTypeToCheck($propertyType, $phpdocType, $scope);
+			if ($propertyType === null) {
+				continue;
 			}
+
 			foreach ($this->extensionProvider->getExtensions() as $extension) {
 				if ($extension->isAlwaysRead($propertyReflection, $propertyName)) {
 					continue 2;

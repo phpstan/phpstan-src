@@ -31,15 +31,16 @@ final class TooWideFunctionReturnTypehintRule implements Rule
 	{
 		$function = $node->getFunctionReflection();
 
-		$functionReturnType = $function->getReturnType();
 		return $this->check->checkFunction(
 			$node,
-			$functionReturnType,
+			$function->getReturnType(),
+			$function->getPhpDocReturnType(),
 			sprintf(
 				'Function %s()',
 				$function->getName(),
 			),
 			false,
+			$scope,
 		);
 	}
 

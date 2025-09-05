@@ -44,6 +44,18 @@ class Bug13384c {
 		}
 		return false;
 	}
+
+	private function doBarMixed() {
+		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function doBarPhpdoc() {
+		return true;
+	}
+
 }
 
 class Bug13384Static {
@@ -61,4 +73,34 @@ class Bug13384Static {
 		}
 		return false;
 	}
+
+	private static function doBarMixed() {
+		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private static function doBarPhpdoc() {
+		return true;
+	}
+
+}
+
+/**
+ * @return bool
+ */
+function doFooPhpdoc() {
+	return true;
+}
+
+/**
+ * @return bool
+ */
+function doFooPhpdoc2() {
+	return false;
+}
+
+function doFooMixed() {
+	return true;
 }

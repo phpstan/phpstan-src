@@ -49,16 +49,17 @@ final class TooWideMethodReturnTypehintRule implements Rule
 			}
 		}
 
-		$methodReturnType = $method->getReturnType();
 		return $this->check->checkFunction(
 			$node,
-			$methodReturnType,
+			$method->getReturnType(),
+			$method->getPhpDocReturnType(),
 			sprintf(
 				'Method %s::%s()',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 			),
 			!$isFirstDeclaration && !$method->isPrivate(),
+			$scope,
 		);
 	}
 

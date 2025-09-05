@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\TooWideTypehints;
 
+use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ClassPropertyNode;
@@ -11,6 +12,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -71,18 +73,18 @@ final class TooWideTypeCheck
 	 */
 	public function checkFunction(
 		MethodReturnStatementsNode|FunctionReturnStatementsNode $node,
-		Type $functionReturnType,
+		Type $nativeFunctionReturnType,
+		Type $phpdocFunctionReturnType,
 		string $functionDescription,
 		bool $checkDescendantClass,
+		Scope $scope,
 	): array
 	{
-		$functionReturnType = TypeUtils::resolveLateResolvableTypes($functionReturnType);
-
-		if (!$functionReturnType instanceof UnionType) {
-			if (!$functionReturnType->isBoolean()->yes() || !$this->reportTooWideBool) {
-				return [];
-			}
+		$functionReturnType = $this->findTypeToCheck($nativeFunctionReturnType, $phpdocFunctionReturnType, $scope);
+		if ($functionReturnType === null) {
+			return [];
 		}
+
 		$statementResult = $node->getStatementResult();
 		if ($statementResult->hasYield()) {
 			return [];
@@ -176,6 +178,48 @@ final class TooWideTypeCheck
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * Returns null when type should not be checked, e.g. because it would be too annoying.
+	 */
+	public function findTypeToCheck(
+		Type $nativeType,
+		Type $phpdocType,
+		Scope $scope,
+	): ?Type
+	{
+		$combinedType = TypeUtils::resolveLateResolvableTypes(TypehintHelper::decideType($nativeType, $phpdocType));
+		if ($combinedType instanceof UnionType) {
+			return $combinedType;
+		}
+
+		if (!$this->reportTooWideBool) {
+			return null;
+		}
+
+		if (
+			$phpdocType->isBoolean()->yes()
+		) {
+			if (
+				!$phpdocType->isTrue()->yes()
+				&& !$phpdocType->isFalse()->yes()
+			) {
+				return $combinedType;
+			}
+		} elseif (
+			$scope->getPhpVersion()->supportsTrueAndFalseStandaloneType()->yes()
+			&& $nativeType->isBoolean()->yes()
+		) {
+			if (
+				!$nativeType->isTrue()->yes()
+				&& !$nativeType->isFalse()->yes()
+			) {
+				return $combinedType;
+			}
+		}
+
+		return null;
 	}
 
 }

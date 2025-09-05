@@ -4,6 +4,7 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<TooWideFunctionReturnTypehintRule>
@@ -68,7 +69,8 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312a.php'], []);
 	}
 
-	public function testBug13384c(): void
+	#[RequiresPhp('>= 8.2')]
+	public function testBug13384cPhp82(): void
 	{
 		$this->reportTooWideBool = true;
 		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
@@ -79,6 +81,30 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 			[
 				'Function Bug13384c\doFoo2() never returns false so it can be removed from the return type.',
 				9,
+			],
+			[
+				'Function Bug13384c\doFooPhpdoc() never returns false so it can be removed from the return type.',
+				93,
+			],
+			[
+				'Function Bug13384c\doFooPhpdoc2() never returns true so it can be removed from the return type.',
+				100,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.2')]
+	public function testBug13384cPrePhp82(): void
+	{
+		$this->reportTooWideBool = true;
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
+			[
+				'Function Bug13384c\doFooPhpdoc() never returns false so it can be removed from the return type.',
+				93,
+			],
+			[
+				'Function Bug13384c\doFooPhpdoc2() never returns true so it can be removed from the return type.',
+				100,
 			],
 		]);
 	}

@@ -220,6 +220,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312d.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testBug13384c(): void
 	{
 		$this->reportTooWideBool = true;
@@ -233,12 +234,36 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				37,
 			],
 			[
+				'Method Bug13384c\Bug13384c::doBarPhpdoc() never returns false so it can be removed from the return type.',
+				55,
+			],
+			[
 				'Method Bug13384c\Bug13384Static::doBar() never returns true so it can be removed from the return type.',
-				50,
+				62,
 			],
 			[
 				'Method Bug13384c\Bug13384Static::doBar2() never returns false so it can be removed from the return type.',
-				54,
+				66,
+			],
+			[
+				'Method Bug13384c\Bug13384Static::doBarPhpdoc() never returns false so it can be removed from the return type.',
+				84,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.2')]
+	public function testBug13384cPrePhp82(): void
+	{
+		$this->reportTooWideBool = true;
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
+			[
+				'Method Bug13384c\Bug13384c::doBarPhpdoc() never returns false so it can be removed from the return type.',
+				55,
+			],
+			[
+				'Method Bug13384c\Bug13384Static::doBarPhpdoc() never returns false so it can be removed from the return type.',
+				84,
 			],
 		]);
 	}

@@ -20,6 +20,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
@@ -1050,16 +1051,7 @@ final class TypeNodeResolver
 		}
 
 		foreach ($typeNode->items as $itemNode) {
-			$offsetType = null;
-			if ($itemNode->keyName instanceof ConstExprIntegerNode) {
-				$offsetType = new ConstantIntegerType((int) $itemNode->keyName->value);
-			} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
-				$offsetType = new ConstantStringType($itemNode->keyName->name);
-			} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
-				$offsetType = new ConstantStringType($itemNode->keyName->value);
-			} elseif ($itemNode->keyName !== null) {
-				throw new ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
-			}
+			$offsetType = $this->resolveArrayShapeOffsetType($itemNode, $nameScope);
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
@@ -1079,6 +1071,69 @@ final class TypeNodeResolver
 		}
 
 		return $arrayType;
+	}
+
+	private function resolveArrayShapeOffsetType(ArrayShapeItemNode $itemNode, NameScope $nameScope): ?Type
+	{
+		if ($itemNode->keyName instanceof ConstExprIntegerNode) {
+			return new ConstantIntegerType((int) $itemNode->keyName->value);
+		} elseif ($itemNode->keyName instanceof IdentifierTypeNode) {
+			return new ConstantStringType($itemNode->keyName->name);
+		} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
+			return new ConstantStringType($itemNode->keyName->value);
+		} elseif ($itemNode->keyName instanceof ConstFetchNode) {
+			$constExpr = $itemNode->keyName;
+			if ($constExpr->className === '') {
+				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
+			}
+
+			if ($nameScope->getClassName() !== null) {
+				switch (strtolower($constExpr->className)) {
+					case 'static':
+					case 'self':
+						$className = $nameScope->getClassName();
+						break;
+
+					case 'parent':
+						if ($this->getReflectionProvider()->hasClass($nameScope->getClassName())) {
+							$classReflection = $this->getReflectionProvider()->getClass($nameScope->getClassName());
+							if ($classReflection->getParentClass() === null) {
+								return new ErrorType();
+
+							}
+
+							$className = $classReflection->getParentClass()->getName();
+						}
+						break;
+				}
+			}
+
+			if (!isset($className)) {
+				$className = $nameScope->resolveStringName($constExpr->className);
+			}
+
+			if (!$this->getReflectionProvider()->hasClass($className)) {
+				return new ErrorType();
+			}
+			$classReflection = $this->getReflectionProvider()->getClass($className);
+
+			$constantName = $constExpr->name;
+			if (!$classReflection->hasConstant($constantName)) {
+				return new ErrorType();
+			}
+
+			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);
+			if ($reflectionConstant === false) {
+				return new ErrorType();
+			}
+			$declaringClass = $reflectionConstant->getDeclaringClass();
+
+			return $this->initializerExprTypeResolver->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($declaringClass->getName(), $declaringClass->getFileName() ?: null));
+		} elseif ($itemNode->keyName !== null) {
+			throw new ShouldNotHappenException('Unsupported key node type: ' . get_class($itemNode->keyName));
+		}
+
+		return null;
 	}
 
 	private function resolveObjectShapeNode(ObjectShapeNode $typeNode, NameScope $nameScope): Type

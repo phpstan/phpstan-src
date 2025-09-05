@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
@@ -33,6 +34,10 @@ final class PrintfPlaceholder
 			case 'string':
 			case 'mixed':
 				return true;
+			// Without this PHPStan with PHP 7.4 reports "...should return bool but return statement is missing."
+			// Presumably, because promoted properties are turned into regular properties and the phpdoc isn't applied to the property.
+			default:
+				throw new ShouldNotHappenException('Unexpected type ' . $this->acceptingType);
 		}
 	}
 

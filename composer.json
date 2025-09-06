@@ -24,7 +24,7 @@
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^5.6.0",
 		"ondram/ci-detector": "^3.4.0",
-		"ondrejmirtes/better-reflection": "6.61.0.1",
+		"ondrejmirtes/better-reflection": "6.62.0.0",
 		"ondrejmirtes/composer-attribute-collector": "^1.1.1",
 		"ondrejmirtes/php-merge": "^4.1",
 		"phpstan/php-8-stubs": "0.4.25",

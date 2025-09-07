@@ -2707,6 +2707,10 @@ final class NodeScopeResolver
 					$scope->getType($arrayArg)->shuffleArray(),
 					$scope->getNativeType($arrayArg)->shuffleArray(),
 				);
+
+				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
+				}
 			}
 
 			if (
@@ -2727,6 +2731,10 @@ final class NodeScopeResolver
 					$arrayArgType->spliceArray($offsetType, $lengthType, $replacementType),
 					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
 				);
+
+				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
+				}
 			}
 
 			if (
@@ -2740,6 +2748,10 @@ final class NodeScopeResolver
 					$this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)),
 					$this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg)),
 				);
+
+				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
+				}
 			}
 
 			if (
@@ -2753,6 +2765,10 @@ final class NodeScopeResolver
 					$this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)),
 					$this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg)),
 				);
+
+				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
+				}
 			}
 
 			if (

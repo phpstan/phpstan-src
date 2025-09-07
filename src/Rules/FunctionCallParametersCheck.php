@@ -100,6 +100,10 @@ final class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
 		/** @var array<int, array{Expr, Type|null, bool, string|null, int}> $arguments */
 		$arguments = [];
 		/** @var array<int, Node\Arg> $args */
@@ -112,6 +116,10 @@ final class FunctionCallParametersCheck
 			if ($arg->name !== null) {
 				$hasNamedArguments = true;
 				$argumentName = $arg->name->toString();
+			}
+
+			if ($arg->value instanceof Expr\Assign) {
+				$scope = $scope->assignExpression($arg->value->var, $scope->getType($arg->value->expr), $scope->getNativeType($arg->value->expr));
 			}
 
 			if ($hasNamedArguments && $arg->unpack) {
@@ -318,14 +326,9 @@ final class FunctionCallParametersCheck
 			}
 
 			if ($argumentValueType === null) {
-				if ($scope instanceof MutatingScope) {
-					$scope = $scope->pushInFunctionCall(null, $parameter);
-				}
+				$scope = $scope->pushInFunctionCall(null, $parameter);
 				$argumentValueType = $scope->getType($argumentValue);
-
-				if ($scope instanceof MutatingScope) {
-					$scope = $scope->popInFunctionCall();
-				}
+				$scope = $scope->popInFunctionCall();
 			}
 
 			if (!$acceptsNamedArguments->yes()) {

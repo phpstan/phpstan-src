@@ -161,7 +161,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type
 	{
-		return $this->getKeysArray();
+		return new ErrorType();
 	}
 
 	public function getKeysArray(): Type

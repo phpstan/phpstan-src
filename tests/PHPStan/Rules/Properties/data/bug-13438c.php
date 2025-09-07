@@ -1,0 +1,34 @@
+<?php
+
+namespace Bug13438c;
+
+use LogicException;
+
+class Test
+{
+	/**
+	 * @var list<int>
+	 */
+	private $queue;
+
+	/**
+	 * @param non-empty-list<int> $queue
+	 */
+	public function __construct(
+		array $queue,
+	)
+	{
+		$this->queue = $queue;
+	}
+
+	public function test1(): int
+	{
+		return array_shift($this->queue)
+			?? throw new LogicException('queue is empty');
+	}
+
+	public function test2(): int
+	{
+		return array_shift($this->queue);
+	}
+}

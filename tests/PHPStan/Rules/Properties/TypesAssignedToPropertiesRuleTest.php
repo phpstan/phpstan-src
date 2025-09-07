@@ -860,4 +860,26 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13438c.php'], []);
 	}
 
+	public function testBug13438d(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13438d.php'], [
+			[
+				'Property Bug13438d\Test::$queue (array{}) does not accept array{1}.',
+				18,
+			],
+		]);
+	}
+
+	public function testBug13438e(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13438e.php'], [
+			[
+				'Property Bug13438e\Test::$queue (array{}) does not accept array{1}.',
+				18,
+			],
+		]);
+	}
+
 }

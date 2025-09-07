@@ -2684,6 +2684,10 @@ final class NodeScopeResolver
 
 				$arrayArg = $expr->getArgs()[0]->value;
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayNativeType);
+
+				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
+					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
+				}
 			}
 
 			if (

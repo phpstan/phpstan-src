@@ -882,4 +882,23 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug2888(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-2888.php'], [
+			[
+				'Property Bug2888\MyClass::$prop (array<int>) does not accept array<int|string>.',
+				17,
+			],
+			[
+				'Property Bug2888\MyClass::$prop (array<int>) does not accept array<int|string>.',
+				18,
+			],
+			[
+				'Property Bug2888\MyClass::$prop (array<int>) does not accept array<int|string>.',
+				26,
+			],
+		]);
+	}
+
 }

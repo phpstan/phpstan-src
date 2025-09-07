@@ -2669,6 +2669,7 @@ final class NodeScopeResolver
 					$isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
 					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
 				);
+
 				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
 					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
 				}

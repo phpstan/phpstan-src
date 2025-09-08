@@ -91,17 +91,17 @@ class Foo
 		$arr1 = $arr;
 		sort($arr1);
 		assertType('list<string>', $arr1);
-		assertNativeType('list', $arr1);
+		assertNativeType('list<string>', $arr1);
 
 		$arr2 = $arr;
 		rsort($arr2);
 		assertType('list<string>', $arr2);
-		assertNativeType('list', $arr2);
+		assertNativeType('list<string>', $arr2);
 
 		$arr3 = $arr;
 		usort($arr3, fn(int $a, int $b) => $a <=> $b);
 		assertType('list<string>', $arr3);
-		assertNativeType('list', $arr3);
+		assertNativeType('list<string>', $arr3);
 	}
 
 	public function mixed($arr): void

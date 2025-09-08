@@ -96,6 +96,10 @@ class EmptyRuleTest extends RuleTestCase
 				'Variable $a in empty() always exists and is always falsy.',
 				12,
 			],
+			[
+				'Variable $a in empty() always exists and is not falsy.',
+				30,
+			],
 		]);
 	}
 

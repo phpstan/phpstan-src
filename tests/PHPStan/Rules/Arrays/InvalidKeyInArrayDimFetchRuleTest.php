@@ -106,4 +106,14 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12273(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12273.php'], [
+			[
+				'Possibly invalid array key type mixed.',
+				16,
+			],
+		]);
+	}
+
 }

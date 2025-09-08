@@ -32,7 +32,9 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use function array_diff_key;
+use function array_intersect;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -40,10 +42,12 @@ use function count;
 use function dirname;
 use function extension_loaded;
 use function getenv;
+use function implode;
 use function ini_get;
 use function is_array;
 use function is_file;
 use function is_readable;
+use function is_string;
 use function spl_object_id;
 use function sprintf;
 use function str_ends_with;
@@ -318,15 +322,35 @@ final class ContainerFactory
 		$processor->process($schema, $parameters);
 
 		if (
-			!array_key_exists('phpVersion', $parameters)
-			|| !is_array($parameters['phpVersion'])) {
-			return;
+			array_key_exists('phpVersion', $parameters)
+			&& is_array($parameters['phpVersion'])
+		) {
+			$phpVersion = $parameters['phpVersion'];
+
+			if ($phpVersion['max'] < $phpVersion['min']) {
+				throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+			}
 		}
 
-		$phpVersion = $parameters['phpVersion'];
+		foreach ($parameters['ignoreErrors'] ?? [] as $ignoreError) {
+			if (is_string($ignoreError)) {
+				continue;
+			}
 
-		if ($phpVersion['max'] < $phpVersion['min']) {
-			throw new InvalidPhpVersionException('Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.');
+			$atLeastOneOf = ['message', 'messages', 'identifier', 'identifiers', 'path', 'paths'];
+			if (array_intersect($atLeastOneOf, array_keys($ignoreError)) === []) {
+				throw new InvalidIgnoredErrorException('An ignoreErrors entry must contain at least one of the following fields: ' . implode(', ', $atLeastOneOf) . '.');
+			}
+
+			foreach (['message', 'identifier', 'path'] as $field) {
+				if (array_key_exists($field, $ignoreError) && array_key_exists($field . 's', $ignoreError)) {
+					throw new InvalidIgnoredErrorException(sprintf('An ignoreErrors entry cannot contain both %s and %s fields.', $field, $field . 's'));
+				}
+			}
+
+			if (array_key_exists('count', $ignoreError) && !array_key_exists('path', $ignoreError)) {
+				throw new InvalidIgnoredErrorException('An ignoreErrors entry with count field must also contain path field.');
+			}
 		}
 	}
 

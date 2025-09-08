@@ -257,4 +257,10 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12716.php'], []);
 	}
 
+	public function testBug3387(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3387.php'], []);
+	}
+
 }

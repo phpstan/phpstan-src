@@ -89,6 +89,7 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
@@ -2662,20 +2663,16 @@ final class NodeScopeResolver
 
 				$arrayArgType = $scope->getType($arrayArg);
 				$arrayArgNativeType = $scope->getNativeType($arrayArg);
-
 				$isArrayPop = $functionReflection->getName() === 'array_pop';
-				$newType = $isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray();
-				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
-					$arrayArg,
-					$newType,
-					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
-				);
 
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($newType),
+					new NativeTypeExpr(
+						$isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
+						$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
+					),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;
@@ -2694,17 +2691,16 @@ final class NodeScopeResolver
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
 				&& count($expr->getArgs()) >= 2
 			) {
-				$arrayType = $this->getArrayFunctionAppendingType($functionReflection, $scope, $expr);
-				$arrayNativeType = $this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $expr);
-
 				$arrayArg = $expr->getArgs()[0]->value;
-				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayNativeType);
 
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($arrayType),
+					new NativeTypeExpr(
+						$this->getArrayFunctionAppendingType($functionReflection, $scope, $expr),
+						$this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $expr),
+					),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;
@@ -2730,18 +2726,12 @@ final class NodeScopeResolver
 				&& $functionReflection->getName() === 'shuffle'
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$newType = $scope->getType($arrayArg)->shuffleArray();
-				$scope = $scope->assignExpression(
-					$arrayArg,
-					$newType,
-					$scope->getNativeType($arrayArg)->shuffleArray(),
-				);
 
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($newType),
+					new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;
@@ -2768,18 +2758,14 @@ final class NodeScopeResolver
 				$lengthType = isset($expr->getArgs()[2]) ? $scope->getType($expr->getArgs()[2]->value) : new NullType();
 				$replacementType = isset($expr->getArgs()[3]) ? $scope->getType($expr->getArgs()[3]->value) : new ConstantArrayType([], []);
 
-				$newType = $arrayArgType->spliceArray($offsetType, $lengthType, $replacementType);
-				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
-					$arrayArg,
-					$newType,
-					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
-				);
-
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($newType),
+					new NativeTypeExpr(
+						$arrayArgType->spliceArray($offsetType, $lengthType, $replacementType),
+						$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
+					),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;
@@ -2799,18 +2785,12 @@ final class NodeScopeResolver
 				&& count($expr->getArgs()) >= 1
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$newType = $this->getArraySortPreserveListFunctionType($scope->getType($arrayArg));
-				$scope = $scope->assignExpression(
-					$arrayArg,
-					$newType,
-					$this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg)),
-				);
 
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($newType),
+					new NativeTypeExpr($this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg))),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;
@@ -2830,18 +2810,12 @@ final class NodeScopeResolver
 				&& count($expr->getArgs()) >= 1
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$newType = $this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg));
-				$scope = $scope->assignExpression(
-					$arrayArg,
-					$newType,
-					$this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg)),
-				);
 
 				$scope = $this->processAssignVar(
 					$scope,
 					$stmt,
 					$arrayArg,
-					new TypeExpr($newType),
+					new NativeTypeExpr($this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg))),
 					static function (Node $node, Scope $scope) use ($nodeCallback): void {
 						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
 							return;

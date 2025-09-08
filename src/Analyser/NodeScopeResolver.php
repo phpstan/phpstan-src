@@ -2670,9 +2670,22 @@ final class NodeScopeResolver
 					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
 				);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (
@@ -2686,9 +2699,22 @@ final class NodeScopeResolver
 				$arrayArg = $expr->getArgs()[0]->value;
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayNativeType);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (
@@ -2709,9 +2735,22 @@ final class NodeScopeResolver
 					$scope->getNativeType($arrayArg)->shuffleArray(),
 				);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (
@@ -2733,9 +2772,22 @@ final class NodeScopeResolver
 					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
 				);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (
@@ -2750,9 +2802,22 @@ final class NodeScopeResolver
 					$this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg)),
 				);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (
@@ -2767,9 +2832,22 @@ final class NodeScopeResolver
 					$this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg)),
 				);
 
-				if ($arrayArg instanceof PropertyFetch || $arrayArg instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($arrayArg, new TypeExpr($scope->getType($arrayArg)), false), $scope);
-				}
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt,
+					$arrayArg,
+					$arrayArg,
+					static function (Node $node, Scope $scope) use ($nodeCallback): void {
+						if (!$node instanceof PropertyAssignNode && !$node instanceof VariableAssignNode) {
+							return;
+						}
+
+						$nodeCallback($node, $scope);
+					},
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					true,
+				)->getScope();
 			}
 
 			if (

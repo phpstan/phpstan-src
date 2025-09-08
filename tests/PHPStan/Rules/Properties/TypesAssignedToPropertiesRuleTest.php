@@ -882,6 +882,23 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13438f(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13438f.php'], [
+			[
+				'Property Bug13438f\Test::$queue (array<int, non-empty-list<int>>) does not accept non-empty-array<int, list<int>>.',
+				20,
+				'list<int> might be empty.',
+			],
+			[
+				'Property Bug13438f\Test::$queue (array<int, non-empty-list<int>>) does not accept non-empty-array<int, list<int>>.',
+				25,
+				'list<int> might be empty.',
+			],
+		]);
+	}
+
 	public function testBug2888(): void
 	{
 		$this->checkExplicitMixed = true;

@@ -807,4 +807,11 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10595(): void
+	{
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10595.php'], []);
+	}
+
 }

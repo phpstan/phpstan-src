@@ -1259,6 +1259,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7225(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7225.php'], []);

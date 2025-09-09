@@ -3738,41 +3738,21 @@ final class MutatingScope implements Scope
 		foreach ($this->invalidateStaticExpressions($this->expressionTypes) as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
 
-			if (
-				$expr instanceof PropertyFetch
-				&& $expr->name instanceof Node\Identifier
-				&& $expr->var instanceof Variable
-				&& is_string($expr->var->name)
-				&& $expr->var->name === 'this'
-				&& !$closure->static
-				&& $this->hasVariableType('this')->yes()
-				&& $this->phpVersion->supportsReadOnlyProperties()
-			) {
-				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-				if ($propertyReflection === null) {
-					continue;
-				}
-				$nativePropertyReflection = $propertyReflection->getNativeReflection();
-				if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
-					continue;
-				}
-			} else {
-				if ($expr instanceof Variable) {
-					continue;
-				}
+			if ($expr instanceof Variable) {
+				continue;
+			}
 
-				$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
-				if ($variables === [] && !$this->expressionTypeIsUnchangeable($typeHolder)) {
-					continue;
-				}
+			$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
+			if ($variables === [] && !$this->expressionTypeIsUnchangeable($typeHolder)) {
+				continue;
+			}
 
-				foreach ($variables as $variable) {
-					if (!is_string($variable->name)) {
-						continue 2;
-					}
-					if (!array_key_exists($variable->name, $nonRefVariableNames)) {
-						continue 2;
-					}
+			foreach ($variables as $variable) {
+				if (!is_string($variable->name)) {
+					continue 2;
+				}
+				if (!array_key_exists($variable->name, $nonRefVariableNames)) {
+					continue 2;
 				}
 			}
 
@@ -3783,6 +3763,34 @@ final class MutatingScope implements Scope
 			$node = new Variable('this');
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
 			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
+
+			if ($this->phpVersion->supportsReadOnlyProperties()) {
+				foreach ($this->invalidateStaticExpressions($this->expressionTypes) as $exprString => $typeHolder) {
+					$expr = $typeHolder->getExpr();
+
+					if (
+						!$expr instanceof PropertyFetch
+						|| !$expr->name instanceof Node\Identifier
+						|| !$expr->var instanceof Variable
+						|| !is_string($expr->var->name)
+						|| $expr->var->name !== 'this'
+					) {
+						continue;
+					}
+
+					$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+					if ($propertyReflection === null) {
+						continue;
+					}
+
+					$nativePropertyReflection = $propertyReflection->getNativeReflection();
+					if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+						continue;
+					}
+
+					$expressionTypes[$exprString] = $typeHolder;
+				}
+			}
 		}
 
 		return $this->scopeFactory->create(

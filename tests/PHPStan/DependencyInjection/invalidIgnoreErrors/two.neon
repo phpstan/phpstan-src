@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			path: ../IgnoreErrorsTest.php
+			paths: [../IgnoreErrorsTest.php]

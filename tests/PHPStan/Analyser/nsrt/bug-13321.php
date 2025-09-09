@@ -29,8 +29,15 @@ class Bar
 			return;
 		}
 
-		$test = function () {
+		(function () {
 			assertType(Foo::class, $this->foo);
+			assertType(Foo::class.'|null', $this->writableFoo);
+
+			echo $this->foo->value;
+		})();
+
+		$test = function () {
+			assertType(Foo::class.'|null', $this->foo);
 			assertType(Foo::class.'|null', $this->writableFoo);
 
 			echo $this->foo->value;

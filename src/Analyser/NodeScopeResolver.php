@@ -1202,6 +1202,7 @@ final class NodeScopeResolver
 			$condResult = $this->processExprNode($stmt, $stmt->expr, $scope, $nodeCallback, ExpressionContext::createDeep(), $context);
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
+			$exprType = $scope->getType($stmt->expr);
 			$scope = $condResult->getScope();
 			$arrayComparisonExpr = new BinaryOp\NotIdentical(
 				$stmt->expr,
@@ -1213,6 +1214,18 @@ final class NodeScopeResolver
 			$nodeCallback(new InForeachNode($stmt), $scope);
 			$originalScope = $scope;
 			$bodyScope = $scope;
+
+			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
+			if (!$context->isTopLevel() && $isIterableAtLeastOnce->no()) {
+				return new StatementResult(
+					$scope,
+					$condResult->hasYield(),
+					$condResult->isAlwaysTerminating(),
+					[],
+					$throwPoints,
+					$impurePoints,
+				);
+			}
 
 			if ($context->isTopLevel()) {
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
@@ -1250,8 +1263,6 @@ final class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			$exprType = $scope->getType($stmt->expr);
-			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 					new BinaryOp\Identical(

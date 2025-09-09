@@ -3737,19 +3737,40 @@ final class MutatingScope implements Scope
 
 		foreach ($this->invalidateStaticExpressions($this->expressionTypes) as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
-			if ($expr instanceof Variable) {
-				continue;
-			}
-			$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
-			if ($variables === [] && !$this->expressionTypeIsUnchangeable($typeHolder)) {
-				continue;
-			}
-			foreach ($variables as $variable) {
-				if (!is_string($variable->name)) {
-					continue 2;
+
+			if (
+				$expr instanceof PropertyFetch
+				&& $expr->name instanceof Node\Identifier
+				&& $expr->var instanceof Variable
+				&& is_string($expr->var->name)
+				&& $expr->var->name === 'this'
+				&& $this->phpVersion->supportsReadOnlyProperties()
+			) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+				if ($propertyReflection === null) {
+					continue;
 				}
-				if (!array_key_exists($variable->name, $nonRefVariableNames)) {
-					continue 2;
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+					continue;
+				}
+			} else {
+				if ($expr instanceof Variable) {
+					continue;
+				}
+
+				$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
+				if ($variables === [] && !$this->expressionTypeIsUnchangeable($typeHolder)) {
+					continue;
+				}
+
+				foreach ($variables as $variable) {
+					if (!is_string($variable->name)) {
+						continue 2;
+					}
+					if (!array_key_exists($variable->name, $nonRefVariableNames)) {
+						continue 2;
+					}
 				}
 			}
 

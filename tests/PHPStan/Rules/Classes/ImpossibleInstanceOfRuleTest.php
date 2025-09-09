@@ -556,4 +556,15 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13469(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-13469.php'], [
+			[
+				'Instanceof between Bug13469\Foo and Stringable will always evaluate to true.',
+				23,
+			],
+		]);
+	}
+
 }

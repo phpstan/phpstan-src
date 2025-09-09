@@ -1411,7 +1411,6 @@ return [
 	'ob_flush' => ['hasSideEffects' => true],
 	'ob_get_clean' => ['hasSideEffects' => true],
 	'ob_get_contents' => ['hasSideEffects' => true],
-	'ob_get_flush' => ['hasSideEffects' => true],
 	'ob_get_length' => ['hasSideEffects' => true],
 	'ob_get_level' => ['hasSideEffects' => true],
 	'ob_get_status' => ['hasSideEffects' => true],

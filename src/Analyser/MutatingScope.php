@@ -50,7 +50,6 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
-use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
@@ -3745,7 +3744,6 @@ final class MutatingScope implements Scope
 				&& $expr->var instanceof Variable
 				&& is_string($expr->var->name)
 				&& $expr->var->name === 'this'
-				&& $closure->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true
 				&& !$closure->static
 				&& $this->hasVariableType('this')->yes()
 				&& $this->phpVersion->supportsReadOnlyProperties()

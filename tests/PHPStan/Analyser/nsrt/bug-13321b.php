@@ -32,7 +32,7 @@ readonly class Bar
 		assertType('non-empty-string', $this->foo->value);
 
 		$test = function () {
-			assertType(Foo::class.'|null', $this->foo);
+			assertType(Foo::class, $this->foo);
 			assertType('string', $this->foo->value);
 		};
 

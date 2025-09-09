@@ -22,6 +22,13 @@ class Bar
 
 	public function bar(): void
 	{
+		(function () {
+			assertType(Foo::class.'|null', $this->foo);
+			assertType(Foo::class.'|null', $this->writableFoo);
+
+			echo $this->foo->value;
+		})();
+
 		if ($this->foo === null) {
 			return;
 		}
@@ -37,7 +44,7 @@ class Bar
 		})();
 
 		$test = function () {
-			assertType(Foo::class.'|null', $this->foo);
+			assertType(Foo::class, $this->foo);
 			assertType(Foo::class.'|null', $this->writableFoo);
 
 			echo $this->foo->value;

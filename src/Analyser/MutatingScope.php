@@ -3744,6 +3744,8 @@ final class MutatingScope implements Scope
 				&& $expr->var instanceof Variable
 				&& is_string($expr->var->name)
 				&& $expr->var->name === 'this'
+				&& !$closure->static
+				&& $this->hasVariableType('this')->yes()
 				&& $this->phpVersion->supportsReadOnlyProperties()
 			) {
 				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);

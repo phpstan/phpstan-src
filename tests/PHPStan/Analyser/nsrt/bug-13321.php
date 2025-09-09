@@ -37,6 +37,15 @@ class Bar
 		};
 
 		$test();
+
+		$test = static function () {
+			assertType('mixed', $this->foo);
+			assertType('mixed', $this->writableFoo);
+
+			echo $this->foo->value;
+		};
+
+		$test();
 	}
 
 }

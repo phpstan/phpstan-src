@@ -1494,6 +1494,25 @@ final class NodeScopeResolver
 				$bodyScope = $condResult->getTruthyScope();
 			}
 
+			if (!$context->isTopLevel() && $isIterableAtLeastOnce->no()) {
+				if (!isset($condResult)) {
+					throw new ShouldNotHappenException();
+				}
+				if ($this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $condResult->getFalseyScope()->mergeWith($initScope);
+				} else {
+					$finalScope = $condResult->getFalseyScope()->mergeWith($scope);
+				}
+				return new StatementResult(
+					$finalScope,
+					$hasYield,
+					false,
+					[],
+					$throwPoints,
+					$impurePoints,
+				);
+			}
+
 			if ($context->isTopLevel()) {
 				$count = 0;
 				do {

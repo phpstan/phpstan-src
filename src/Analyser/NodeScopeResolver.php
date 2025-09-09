@@ -1078,7 +1078,7 @@ final class NodeScopeResolver
 			}
 		} elseif ($stmt instanceof If_) {
 			$conditionType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
-			$ifAlwaysTrue = $conditionType->isTrue()->yes();
+			$ifAlwaysTrue = $conditionType->isTrue();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep(), $context);
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
@@ -1088,31 +1088,38 @@ final class NodeScopeResolver
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
 
-			$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
+			if ($context->isTopLevel() || !$conditionType->isTrue()->no()) {
+				$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
 
-			if (!$conditionType->isTrue()->no()) {
-				$exitPoints = $branchScopeStatementResult->getExitPoints();
-				$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
-				$branchScope = $branchScopeStatementResult->getScope();
-				$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? null : $branchScope;
-				$alwaysTerminating = $branchScopeStatementResult->isAlwaysTerminating();
-				if (count($branchScopeStatementResult->getEndStatements()) > 0) {
-					$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
-				} elseif (count($stmt->stmts) > 0) {
-					$endStatements[] = new EndStatementResult($stmt->stmts[count($stmt->stmts) - 1], $branchScopeStatementResult);
-				} else {
-					$endStatements[] = new EndStatementResult($stmt, $branchScopeStatementResult);
+				if (!$conditionType->isTrue()->no()) {
+					$exitPoints = $branchScopeStatementResult->getExitPoints();
+					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
+					$branchScope = $branchScopeStatementResult->getScope();
+					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? null : $branchScope;
+					$alwaysTerminating = $branchScopeStatementResult->isAlwaysTerminating();
+					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
+						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
+					} elseif (count($stmt->stmts) > 0) {
+						$endStatements[] = new EndStatementResult($stmt->stmts[count($stmt->stmts) - 1], $branchScopeStatementResult);
+					} else {
+						$endStatements[] = new EndStatementResult($stmt, $branchScopeStatementResult);
+					}
+					$hasYield = $branchScopeStatementResult->hasYield() || $hasYield;
 				}
-				$hasYield = $branchScopeStatementResult->hasYield() || $hasYield;
 			}
 
 			$scope = $condResult->getFalseyScope();
-			$lastElseIfConditionIsTrue = false;
+			$lastElseIfConditionIsTrue = TrinaryLogic::createNo();
 
 			$condScope = $scope;
 			foreach ($stmt->elseifs as $elseif) {
 				$nodeCallback($elseif, $scope);
+				if (!$context->isTopLevel()) {
+					if ($ifAlwaysTrue->yes() || $lastElseIfConditionIsTrue->yes()) {
+						continue;
+					}
+				}
 				$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condScope->getType($elseif->cond) : $scope->getNativeType($elseif->cond))->toBoolean();
 				$condResult = $this->processExprNode($stmt, $elseif->cond, $condScope, $nodeCallback, ExpressionContext::createDeep(), $context);
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
@@ -1120,9 +1127,14 @@ final class NodeScopeResolver
 				$condScope = $condResult->getScope();
 				$branchScopeStatementResult = $this->processStmtNodes($elseif, $elseif->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
 
+				if (!$context->isTopLevel() && $elseIfConditionType->isTrue()->no()) {
+					$scope = $condScope->filterByFalseyValue($elseif->cond);
+					continue;
+				}
+
 				if (
-					!$ifAlwaysTrue
-					&& !$lastElseIfConditionIsTrue
+					!$ifAlwaysTrue->yes()
+					&& !$lastElseIfConditionIsTrue->yes()
 					&& !$elseIfConditionType->isTrue()->no()
 				) {
 					$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
@@ -1141,40 +1153,40 @@ final class NodeScopeResolver
 					$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
 				}
 
-				if (
-					$elseIfConditionType->isTrue()->yes()
-				) {
-					$lastElseIfConditionIsTrue = true;
+				if ($elseIfConditionType->isTrue()->yes()) {
+					$lastElseIfConditionIsTrue = $elseIfConditionType->isTrue();
 				}
-
 				$condScope = $condScope->filterByFalseyValue($elseif->cond);
 				$scope = $condScope;
 			}
 
 			if ($stmt->else === null) {
-				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
+				if (!$ifAlwaysTrue->yes() && !$lastElseIfConditionIsTrue->yes()) {
 					$finalScope = $scope->mergeWith($finalScope);
 					$alwaysTerminating = false;
 				}
 			} else {
 				$nodeCallback($stmt->else, $scope);
-				$branchScopeStatementResult = $this->processStmtNodes($stmt->else, $stmt->else->stmts, $scope, $nodeCallback, $context);
 
-				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
-					$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
-					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
-					$branchScope = $branchScopeStatementResult->getScope();
-					$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
-					$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
-					if (count($branchScopeStatementResult->getEndStatements()) > 0) {
-						$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
-					} elseif (count($stmt->else->stmts) > 0) {
-						$endStatements[] = new EndStatementResult($stmt->else->stmts[count($stmt->else->stmts) - 1], $branchScopeStatementResult);
-					} else {
-						$endStatements[] = new EndStatementResult($stmt->else, $branchScopeStatementResult);
+				if ($context->isTopLevel() || (!$ifAlwaysTrue->yes() && !$lastElseIfConditionIsTrue->yes())) {
+					$branchScopeStatementResult = $this->processStmtNodes($stmt->else, $stmt->else->stmts, $scope, $nodeCallback, $context);
+
+					if (!$ifAlwaysTrue->yes() && !$lastElseIfConditionIsTrue->yes()) {
+						$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
+						$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
+						$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
+						$branchScope = $branchScopeStatementResult->getScope();
+						$finalScope = $branchScopeStatementResult->isAlwaysTerminating() ? $finalScope : $branchScope->mergeWith($finalScope);
+						$alwaysTerminating = $alwaysTerminating && $branchScopeStatementResult->isAlwaysTerminating();
+						if (count($branchScopeStatementResult->getEndStatements()) > 0) {
+							$endStatements = array_merge($endStatements, $branchScopeStatementResult->getEndStatements());
+						} elseif (count($stmt->else->stmts) > 0) {
+							$endStatements[] = new EndStatementResult($stmt->else->stmts[count($stmt->else->stmts) - 1], $branchScopeStatementResult);
+						} else {
+							$endStatements[] = new EndStatementResult($stmt->else, $branchScopeStatementResult);
+						}
+						$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
 					}
-					$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
 				}
 			}
 
@@ -1182,7 +1194,7 @@ final class NodeScopeResolver
 				$finalScope = $scope;
 			}
 
-			if ($stmt->else === null && !$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
+			if ($stmt->else === null && !$ifAlwaysTrue->yes() && !$lastElseIfConditionIsTrue->yes()) {
 				$endStatements[] = new EndStatementResult($stmt, new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPoints, $throwPoints, $impurePoints));
 			}
 

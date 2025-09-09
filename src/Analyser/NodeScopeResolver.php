@@ -171,7 +171,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
@@ -1091,7 +1090,7 @@ final class NodeScopeResolver
 
 			$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
 
-			if (!$conditionType instanceof ConstantBooleanType || $conditionType->getValue()) {
+			if (!$conditionType->isTrue()->no()) {
 				$exitPoints = $branchScopeStatementResult->getExitPoints();
 				$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $branchScopeStatementResult->getImpurePoints());
@@ -1123,13 +1122,8 @@ final class NodeScopeResolver
 
 				if (
 					!$ifAlwaysTrue
-					&& (
-						!$lastElseIfConditionIsTrue
-						&& (
-							!$elseIfConditionType instanceof ConstantBooleanType
-							|| $elseIfConditionType->getValue()
-						)
-					)
+					&& !$lastElseIfConditionIsTrue
+					&& !$elseIfConditionType->isTrue()->no()
 				) {
 					$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
 					$throwPoints = array_merge($throwPoints, $branchScopeStatementResult->getThrowPoints());

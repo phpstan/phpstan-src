@@ -43,12 +43,6 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantBooleanType is error\-prone and deprecated\. Use Type\:\:isTrue\(\) or Type\:\:isFalse\(\) instead\.$#'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Analyser/NodeScopeResolver.php
-
-		-
 			message: '#^Doing instanceof PHPStan\\Type\\Constant\\ConstantStringType is error\-prone and deprecated\. Use Type\:\:getConstantStrings\(\) instead\.$#'
 			identifier: phpstanApi.instanceofType
 			count: 1

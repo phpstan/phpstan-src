@@ -315,23 +315,8 @@ final class MutatingScope implements Scope
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (
-					!$expr->name instanceof Node\Identifier
-					|| !$expr->var instanceof Variable
-					|| $expr->var->name !== 'this'
-					|| !$this->phpVersion->supportsReadOnlyProperties()
-				) {
+				if (!$this->isReadonlyPropertyFetchOnThis($expr)) {
 					continue;
-				}
-
-				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-				if ($propertyReflection === null) {
-					continue;
-				}
-
-				$nativePropertyReflection = $propertyReflection->getNativeReflection();
-				if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
-						continue;
 				}
 			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
 				continue;
@@ -367,6 +352,30 @@ final class MutatingScope implements Scope
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	private function isReadonlyPropertyFetchOnThis(PropertyFetch $expr): bool
+	{
+		if (
+			!$expr->name instanceof Node\Identifier
+			|| !$expr->var instanceof Variable
+			|| $expr->var->name !== 'this'
+			|| !$this->phpVersion->supportsReadOnlyProperties()
+		) {
+			return false;
+		}
+
+		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+		if ($propertyReflection === null) {
+			return false;
+		}
+
+		$nativePropertyReflection = $propertyReflection->getNativeReflection();
+		if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/** @api */

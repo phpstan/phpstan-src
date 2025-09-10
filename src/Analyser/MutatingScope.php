@@ -1746,7 +1746,7 @@ final class MutatingScope implements Scope
 							++$varValue;
 						}
 					} else {
-						--$varValue;
+						--$varValue; // @phpstan-ignore preDec.nonNumeric
 					}
 
 					$newValues[] = $varValue;

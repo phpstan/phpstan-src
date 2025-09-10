@@ -195,7 +195,7 @@ final class PhpClassReflectionExtension
 	public function getStaticProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
 		if (!isset($this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName])) {
-			$this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, true);
+			$this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName] = $this->createProperty($classReflection, $propertyName, false);
 		}
 
 		return $this->staticPropertiesIncludingAnnotations[$classReflection->getCacheKey()][$propertyName];

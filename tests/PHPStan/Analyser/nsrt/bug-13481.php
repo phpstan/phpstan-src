@@ -1,6 +1,6 @@
-<?php // lint >= 8.3
+<?php
 
-namespace bug13481Php83;
+namespace bug13481;
 
 use function PHPStan\Testing\assertType;
 use function str_increment;

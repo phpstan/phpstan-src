@@ -139,7 +139,6 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use stdClass;
 use Throwable;
-use ValueError;
 use function abs;
 use function array_filter;
 use function array_key_exists;
@@ -152,18 +151,17 @@ use function array_slice;
 use function array_values;
 use function count;
 use function explode;
-use function function_exists;
 use function get_class;
 use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
-use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
+use function restore_error_handler;
+use function set_error_handler;
 use function sprintf;
-use function str_increment;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -1738,37 +1736,24 @@ final class MutatingScope implements Scope
 			$varScalars = $varType->getConstantScalarValues();
 
 			if (count($varScalars) > 0) {
-				$newTypes = [];
+				$newValues = [];
 
+				// silence string incrementing deprecation warnings
+				set_error_handler(static fn (): bool => true);
 				foreach ($varScalars as $varValue) {
-					// until PHP 8.5 it was valid to increment/decrement an empty string.
-					// see https://github.com/php/php-src/issues/19597
 					if ($node instanceof Expr\PreInc) {
-						if ($varValue === '') {
-							$varValue = '1';
-						} elseif (
-							is_string($varValue)
-							&& !is_numeric($varValue)
-							&& function_exists('str_increment')
-						) {
-							try {
-								$varValue = str_increment($varValue);
-							} catch (ValueError) {
-								return new ErrorType();
-							}
-						} elseif (!is_bool($varValue)) {
+						if (!is_bool($varValue)) {
 							++$varValue;
 						}
 					} else {
-						if ($varValue === '') {
-							$varValue = -1;
-						} elseif (is_numeric($varValue)) {
-							--$varValue;
-						}
+						--$varValue;
 					}
 
-					$newTypes[] = $this->getTypeFromValue($varValue);
+					$newValues[] = $varValue;
 				}
+				restore_error_handler();
+
+				$newTypes = array_map(fn ($value): Type => $this->getTypeFromValue($value), $newValues);
 				return TypeCombinator::union(...$newTypes);
 			} elseif ($varType->isString()->yes()) {
 				if ($varType->isLiteralString()->yes()) {

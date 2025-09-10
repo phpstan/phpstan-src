@@ -139,6 +139,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use stdClass;
 use Throwable;
+use ValueError;
 use function abs;
 use function array_filter;
 use function array_key_exists;
@@ -1750,7 +1751,11 @@ final class MutatingScope implements Scope
 							&& !is_numeric($varValue)
 							&& function_exists('str_increment')
 						) {
-							$varValue = str_increment($varValue);
+							try {
+								$varValue = str_increment($varValue);
+							} catch (ValueError) {
+								return new ErrorType();
+							}
 						} elseif (!is_bool($varValue)) {
 							++$varValue;
 						}

@@ -10,7 +10,7 @@ function bug13481() {
 	assertType("*ERROR*", str_increment($s));
 
 	++$s;
-	assertType("*ERROR*", $s);
+	assertType("'ab c2'", $s);
 }
 
 function bug13481b() {
@@ -18,6 +18,6 @@ function bug13481b() {
 	assertType("*ERROR*", str_increment($s));
 
 	++$s;
-	assertType("*ERROR*", $s);
+	assertType("'%'", $s);
 }
 

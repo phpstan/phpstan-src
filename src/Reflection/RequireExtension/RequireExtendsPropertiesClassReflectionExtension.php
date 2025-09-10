@@ -19,7 +19,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope()),
 		) !== null;
 	}
 
@@ -30,7 +30,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope()),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();
@@ -45,7 +45,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasInstanceProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope()),
 		) !== null;
 	}
 
@@ -55,7 +55,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasInstanceProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope()),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();
@@ -70,7 +70,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasStaticProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope()),
 		) !== null;
 	}
 
@@ -80,7 +80,7 @@ final class RequireExtendsPropertiesClassReflectionExtension
 			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasStaticProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope())
+			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope()),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();

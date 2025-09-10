@@ -10,7 +10,10 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 
 	private static string $configFile;
 
-	public static function dateValidateIgnoreErrors(): iterable
+	/**
+	 * @return iterable<array{string, string}>
+	 */
+	public static function dataValidateIgnoreErrors(): iterable
 	{
 		yield [
 			__DIR__ . '/invalidIgnoreErrors/message-and-messages.neon',
@@ -34,7 +37,7 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 		];
 	}
 
-	#[DataProvider('dateValidateIgnoreErrors')]
+	#[DataProvider('dataValidateIgnoreErrors')]
 	public function testValidateIgnoreErrors(string $file, string $expectedMessage): void
 	{
 		self::$configFile = $file;

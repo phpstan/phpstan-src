@@ -43,15 +43,15 @@ class InvalidCastRuleTest extends RuleTestCase
 			],
 			[
 				'Cannot cast object to string.',
-				35,
+				36,
 			],
 			[
 				'Cannot cast Test\\Foo to string.',
-				41,
+				42,
 			],
 			[
 				'Cannot cast array|float|int to string.',
-				48,
+				49,
 			],
 		]);
 	}

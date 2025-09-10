@@ -25,6 +25,7 @@ function (
 
 	(string) fopen('php://memory', 'r');
 	(int) fopen('php://memory', 'r');
+	(float) fopen('php://memory', 'r');
 };
 
 function (

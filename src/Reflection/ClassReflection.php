@@ -506,7 +506,7 @@ final class ClassReflection
 		}
 
 		foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-			if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
+			if ($i > 0 && !$this->allowsDynamicProperties()) {
 				break;
 			}
 			if ($extension->hasProperty($this, $propertyName)) {
@@ -772,7 +772,7 @@ final class ClassReflection
 
 		if (!isset($this->instanceProperties[$key])) {
 			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-				if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
+				if ($i > 0 && !$this->allowsDynamicProperties()) {
 					break;
 				}
 

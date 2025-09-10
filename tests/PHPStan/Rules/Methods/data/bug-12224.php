@@ -29,7 +29,22 @@ class Assert
 	}
 }
 
+class AssertConstructor
+{
+	/**
+	 * @phpstan-pure
+	 * @phpstan-assert string $value
+	 */
+	public function __construct(mixed $value)
+	{
+		if (!\is_string($value)) {
+			throw new \RuntimeException();
+		}
+	}
+}
+
 /** @var string|null $a */
 $a = '';
 Assert::staticString($a);
 (new Assert())->string($a);
+new AssertConstructor($a);

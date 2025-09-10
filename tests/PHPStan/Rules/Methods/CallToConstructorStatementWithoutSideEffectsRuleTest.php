@@ -51,4 +51,9 @@ class CallToConstructorStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4455-constructor.php'], []);
 	}
 
+	public function testBug12224(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12224.php'], []);
+	}
+
 }

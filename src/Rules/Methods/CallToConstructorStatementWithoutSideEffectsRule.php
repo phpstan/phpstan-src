@@ -10,6 +10,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
+use function count;
 use function sprintf;
 
 /**
@@ -57,6 +58,10 @@ final class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$constructor = $classReflection->getConstructor();
+		if (count($constructor->getAsserts()->getAsserts()) > 0) {
+			return [];
+		}
+
 		$methodResult = $scope->getType($instantiation);
 		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 			return [];

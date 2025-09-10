@@ -3771,22 +3771,34 @@ final class MutatingScope implements Scope
 
 					if (
 						!$expr instanceof PropertyFetch
-						|| !$expr->name instanceof Node\Identifier
-						|| !$expr->var instanceof Variable
-						|| !is_string($expr->var->name)
-						|| $expr->var->name !== 'this'
 					) {
 						continue;
 					}
 
-					$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-					if ($propertyReflection === null) {
-						continue;
-					}
+					while ($expr instanceof PropertyFetch) {
+						if ($expr->var instanceof Variable) {
+							if (
+							 ! $expr->name instanceof Node\Identifier
+							 || !is_string($expr->var->name)
+							 || $expr->var->name !== 'this'
+							) {
+								continue 2;
+							}
+						} elseif (!$expr->var instanceof PropertyFetch) {
+							continue 2;
+						}
 
-					$nativePropertyReflection = $propertyReflection->getNativeReflection();
-					if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
-						continue;
+						$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+						if ($propertyReflection === null) {
+							continue 2;
+						}
+
+						$nativePropertyReflection = $propertyReflection->getNativeReflection();
+						if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+							continue 2;
+						}
+
+						$expr = $expr->var;
 					}
 
 					$expressionTypes[$exprString] = $typeHolder;

@@ -6,7 +6,10 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
-	public function __construct(public string $value)
+	public function __construct(
+		public string $value,
+		readonly public string $readonlyValue,
+	)
 	{
 	}
 }
@@ -27,13 +30,18 @@ readonly class Bar
 		if ($this->foo->value === '') {
 			return;
 		}
+		if ($this->foo->readonlyValue === '') {
+			return;
+		}
 
 		assertType(Foo::class, $this->foo);
 		assertType('non-empty-string', $this->foo->value);
+		assertType('non-empty-string', $this->foo->readonlyValue);
 
 		$test = function () {
 			assertType(Foo::class, $this->foo);
 			assertType('string', $this->foo->value);
+			assertType('non-empty-string', $this->foo->readonlyValue);
 		};
 
 		$test();

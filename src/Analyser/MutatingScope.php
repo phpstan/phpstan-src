@@ -3769,36 +3769,12 @@ final class MutatingScope implements Scope
 				foreach ($nonStaticExpressions as $exprString => $typeHolder) {
 					$expr = $typeHolder->getExpr();
 
-					if (
-						!$expr instanceof PropertyFetch
-					) {
+					if (!$expr instanceof PropertyFetch) {
 						continue;
 					}
 
-					while ($expr instanceof PropertyFetch) {
-						if ($expr->var instanceof Variable) {
-							if (
-							 ! $expr->name instanceof Node\Identifier
-							 || !is_string($expr->var->name)
-							 || $expr->var->name !== 'this'
-							) {
-								continue 2;
-							}
-						} elseif (!$expr->var instanceof PropertyFetch) {
-							continue 2;
-						}
-
-						$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-						if ($propertyReflection === null) {
-							continue 2;
-						}
-
-						$nativePropertyReflection = $propertyReflection->getNativeReflection();
-						if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
-							continue 2;
-						}
-
-						$expr = $expr->var;
+					if (!$this->isReadonlyPropertyFetchOnThis($expr)) {
+						continue;
 					}
 
 					$expressionTypes[$exprString] = $typeHolder;

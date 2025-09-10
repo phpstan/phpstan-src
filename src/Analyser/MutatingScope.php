@@ -315,7 +315,7 @@ final class MutatingScope implements Scope
 					continue;
 				}
 			} elseif ($expr instanceof PropertyFetch) {
-				if (!$this->isReadonlyPropertyFetchOnThis($expr)) {
+				if (!$this->isReadonlyPropertyFetch($expr, true)) {
 					continue;
 				}
 			} elseif (!$expr instanceof ConstFetch && !$expr instanceof PropertyInitializationExpr) {
@@ -354,7 +354,7 @@ final class MutatingScope implements Scope
 		);
 	}
 
-	private function isReadonlyPropertyFetchOnThis(PropertyFetch $expr): bool
+	private function isReadonlyPropertyFetch(PropertyFetch $expr, bool $allowOnlyOnThis): bool
 	{
 		if (!$this->phpVersion->supportsReadOnlyProperties()) {
 			return false;
@@ -363,9 +363,12 @@ final class MutatingScope implements Scope
 		while ($expr instanceof PropertyFetch) {
 			if ($expr->var instanceof Variable) {
 				if (
-					! $expr->name instanceof Node\Identifier
-					|| !is_string($expr->var->name)
-					|| $expr->var->name !== 'this'
+					$allowOnlyOnThis
+					&& (
+						! $expr->name instanceof Node\Identifier
+						|| !is_string($expr->var->name)
+						|| $expr->var->name !== 'this'
+					)
 				) {
 					return false;
 				}
@@ -4460,14 +4463,12 @@ final class MutatingScope implements Scope
 			return false;
 		}
 
-		if ($this->phpVersion->supportsReadOnlyProperties() && $expr instanceof PropertyFetch && $expr->name instanceof Node\Identifier && $requireMoreCharacters) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-			if ($propertyReflection !== null) {
-				$nativePropertyReflection = $propertyReflection->getNativeReflection();
-				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-					return false;
-				}
-			}
+		if (
+			$expr instanceof PropertyFetch
+			&& $requireMoreCharacters
+			&& $this->isReadonlyPropertyFetch($expr, false)
+		) {
+			return false;
 		}
 
 		return true;

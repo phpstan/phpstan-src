@@ -3773,7 +3773,7 @@ final class MutatingScope implements Scope
 						continue;
 					}
 
-					if (!$this->isReadonlyPropertyFetchOnThis($expr)) {
+					if (!$this->isReadonlyPropertyFetch($expr, true)) {
 						continue;
 					}
 

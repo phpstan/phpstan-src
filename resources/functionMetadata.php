@@ -452,6 +452,8 @@ return [
 	'NumberFormatter::getPattern' => ['hasSideEffects' => false],
 	'NumberFormatter::getSymbol' => ['hasSideEffects' => false],
 	'NumberFormatter::getTextAttribute' => ['hasSideEffects' => false],
+	'Redis::connect' => ['hasSideEffects' => true],
+	'Redis::pconnect' => ['hasSideEffects' => true],
 	'ReflectionAttribute::getArguments' => ['hasSideEffects' => false],
 	'ReflectionAttribute::getName' => ['hasSideEffects' => false],
 	'ReflectionAttribute::getTarget' => ['hasSideEffects' => false],

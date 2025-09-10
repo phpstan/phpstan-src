@@ -106,4 +106,10 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13384b.php'], []);
 	}
 
+	public function testBugPR4318(): void
+	{
+		$this->reportTooWideBool = true;
+		$this->analyse([__DIR__ . '/data/bug-pr-4318.php'], []);
+	}
+
 }

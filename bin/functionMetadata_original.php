@@ -170,6 +170,10 @@ return [
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
 
+	// affects isConnected()
+	'Redis::connect' => ['hasSideEffects' => true],
+	'Redis::pconnect' => ['hasSideEffects' => true],
+
 	'SplDoublyLinkedList::pop' => ['hasSideEffects' => true],
 	'SplDoublyLinkedList::shift' => ['hasSideEffects' => true],
 

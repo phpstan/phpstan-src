@@ -62,7 +62,7 @@ final class InvalidComparisonOperationRule implements Rule
 
 		$isLeftNumberType = $this->isNumberType($scope, $node->left);
 		$isRightNumberType = $this->isNumberType($scope, $node->right);
-		if (($isLeftNumberType && $isRightNumberType) || (!$isLeftNumberType && !$isRightNumberType)) {
+		if ($isLeftNumberType === $isRightNumberType) {
 			return [];
 		}
 

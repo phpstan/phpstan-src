@@ -274,7 +274,7 @@ final class AccessPropertiesCheck
 		$types = [];
 		if ($type instanceof UnionType) {
 			foreach ($type->getTypes() as $innerType) {
-				if ($innerType->hasProperty($name)->no()) {
+				if ($innerType->hasInstanceProperty($name)->no()) {
 					continue;
 				}
 
@@ -284,7 +284,7 @@ final class AccessPropertiesCheck
 
 		if (count($types) === 0) {
 			try {
-				return $type->getProperty($name, $scope);
+				return $type->getInstanceProperty($name, $scope);
 			} catch (MissingPropertyFromReflectionException) {
 				return null;
 			}
@@ -292,7 +292,7 @@ final class AccessPropertiesCheck
 
 		if (count($types) === 1) {
 			try {
-				return $types[0]->getProperty($name, $scope);
+				return $types[0]->getInstanceProperty($name, $scope);
 			} catch (MissingPropertyFromReflectionException) {
 				return null;
 			}
@@ -301,7 +301,7 @@ final class AccessPropertiesCheck
 		$unionType = TypeCombinator::union(...$types);
 
 		try {
-			return $unionType->getProperty($name, $scope);
+			return $unionType->getInstanceProperty($name, $scope);
 		} catch (MissingPropertyFromReflectionException) {
 			return null;
 		}

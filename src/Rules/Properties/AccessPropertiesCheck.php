@@ -130,7 +130,8 @@ final class AccessPropertiesCheck
 		}
 
 		$has = $type->hasInstanceProperty($name);
-		if ($has->maybe()) {
+		$hasStatic = $type->hasStaticProperty($name);
+		if ($has->maybe() && !$hasStatic->yes()) {
 			if ($scope->isUndefinedExpressionAllowed($node)) {
 				if (!$this->checkDynamicProperties) {
 					return [];
@@ -202,7 +203,7 @@ final class AccessPropertiesCheck
 				}
 			}
 
-			if ($type->hasStaticProperty($name)->yes()) {
+			if ($hasStatic->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Non-static access to static property %s::$%s.',

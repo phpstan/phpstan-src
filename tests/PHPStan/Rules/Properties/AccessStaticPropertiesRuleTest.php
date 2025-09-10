@@ -317,4 +317,26 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12775.php'], []);
 	}
 
+	public function testBug8668Bis(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8668-bis.php'], [
+			[
+				'Static access to instance property Bug8668Bis\Sample::$sample.',
+				9,
+			],
+			[
+				'Static access to instance property Bug8668Bis\Sample::$sample.',
+				10,
+			],
+			[
+				'Static access to instance property Bug8668Bis\Sample2::$sample.',
+				20,
+			],
+			[
+				'Static access to instance property Bug8668Bis\Sample2::$sample.',
+				21,
+			],
+		]);
+	}
+
 }

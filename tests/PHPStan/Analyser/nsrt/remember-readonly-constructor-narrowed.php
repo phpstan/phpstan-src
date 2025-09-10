@@ -2,6 +2,7 @@
 
 namespace RememberReadOnlyConstructor;
 
+use LogicException;
 use function PHPStan\Testing\assertType;
 
 class HelloWorldReadonlyProperty {
@@ -105,5 +106,40 @@ class HelloWorldReadonlyPropertySometimesThrowing {
 
 	public function doFoo() {
 		assertType('4|10', $this->i);
+	}
+}
+
+class Foo {
+	public readonly int $readonly;
+	public int $writable;
+
+	public function __construct()
+	{
+		$this->readonly = 5;
+		$this->writable = rand(0,1) ? 5 : 10;
+	}
+}
+
+class DeepPropertyFetching {
+	public readonly ?Foo $prop;
+
+	public function __construct() {
+		$this->prop = new Foo();
+		if($this->prop->readonly != 5) {
+			throw new LogicException();
+		}
+		if ($this->prop->writable != 5) {
+			throw new LogicException();
+		}
+
+		assertType(Foo::class, $this->prop);
+		assertType('5', $this->prop->readonly);
+		assertType('5', $this->prop->writable);
+	}
+
+	public function doFoo() {
+		assertType(Foo::class, $this->prop);
+		assertType('5', $this->prop->readonly);
+		assertType('int', $this->prop->writable);
 	}
 }

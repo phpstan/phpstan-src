@@ -356,23 +356,30 @@ final class MutatingScope implements Scope
 
 	private function isReadonlyPropertyFetchOnThis(PropertyFetch $expr): bool
 	{
-		if (
-			!$expr->name instanceof Node\Identifier
-			|| !$expr->var instanceof Variable
-			|| $expr->var->name !== 'this'
-			|| !$this->phpVersion->supportsReadOnlyProperties()
-		) {
-			return false;
-		}
+		while ($expr instanceof PropertyFetch) {
+			if ($expr->var instanceof Variable) {
+				if (
+					! $expr->name instanceof Node\Identifier
+					|| !is_string($expr->var->name)
+					|| $expr->var->name !== 'this'
+				) {
+					return false;
+				}
+			} elseif (!$expr->var instanceof PropertyFetch) {
+				return false;
+			}
 
-		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-		if ($propertyReflection === null) {
-			return false;
-		}
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection === null) {
+				return false;
+			}
 
-		$nativePropertyReflection = $propertyReflection->getNativeReflection();
-		if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
-			return false;
+			$nativePropertyReflection = $propertyReflection->getNativeReflection();
+			if ($nativePropertyReflection === null || !$nativePropertyReflection->isReadOnly()) {
+				return false;
+			}
+
+			$expr = $expr->var;
 		}
 
 		return true;

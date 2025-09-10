@@ -356,6 +356,10 @@ final class MutatingScope implements Scope
 
 	private function isReadonlyPropertyFetchOnThis(PropertyFetch $expr): bool
 	{
+		if (!$this->phpVersion->supportsReadOnlyProperties()) {
+			return false;
+		}
+
 		while ($expr instanceof PropertyFetch) {
 			if ($expr->var instanceof Variable) {
 				if (

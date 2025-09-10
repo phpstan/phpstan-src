@@ -6,4 +6,5 @@ use function PHPStan\Testing\assertType;
 
 $dateInterval = (new \DateTimeImmutable('now -60 minutes'))->diff(new \DateTimeImmutable('now'));
 
-assertType('lowercase-string&non-empty-string&numeric-string&uppercase-string', $dateInterval->format('%a'));
+// Could be lowercase-string&non-falsy-string&numeric-string&uppercase-string
+assertType('lowercase-string&non-falsy-string', $dateInterval->format('%a'));

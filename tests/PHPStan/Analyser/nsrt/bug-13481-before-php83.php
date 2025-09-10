@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 function bug13481() {
 	$s = 'ab c1';
-	assertType("'ab c2'", str_increment($s));
+	assertType("*ERROR*", str_increment($s));
 
 	++$s;
 	assertType("'ab c2'", $s);
@@ -14,7 +14,7 @@ function bug13481() {
 
 function bug13481b() {
 	$s = '%';
-	assertType("'%'", str_increment($s));
+	assertType("*ERROR*", str_increment($s));
 
 	++$s;
 	assertType("'%'", $s);

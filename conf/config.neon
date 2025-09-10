@@ -35,6 +35,7 @@ parameters:
 		newStaticInAbstractClassStaticMethod: false
 		checkExtensionsForComparisonOperators: false
 		reportTooWideBool: false
+		rawMessageInBaseline: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

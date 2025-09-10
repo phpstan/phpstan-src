@@ -733,12 +733,13 @@ final class AnalyseCommand extends Command
 		$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
 		$baselineFileDirectory = dirname($generateBaselineFile);
 		$baselinePathHelper = new ParentDirectoryRelativePathHelper($baselineFileDirectory);
+		$rawMessageInBaseline = $inceptionResult->getContainer()->getParameter('featureToggles')['rawMessageInBaseline'];
 
 		if ($baselineExtension === 'php') {
-			$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper);
+			$baselineErrorFormatter = new BaselinePhpErrorFormatter($baselinePathHelper, $rawMessageInBaseline);
 			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
 		} else {
-			$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper);
+			$baselineErrorFormatter = new BaselineNeonErrorFormatter($baselinePathHelper, $rawMessageInBaseline);
 			$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
 			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
 		}

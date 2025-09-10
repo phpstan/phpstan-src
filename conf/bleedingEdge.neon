@@ -11,3 +11,4 @@ parameters:
 		newStaticInAbstractClassStaticMethod: true
 		checkExtensionsForComparisonOperators: true
 		reportTooWideBool: true
+		rawMessageInBaseline: true

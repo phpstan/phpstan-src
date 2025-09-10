@@ -38,6 +38,7 @@ parametersSchema:
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()
 		reportTooWideBool: bool()
+		rawMessageInBaseline: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

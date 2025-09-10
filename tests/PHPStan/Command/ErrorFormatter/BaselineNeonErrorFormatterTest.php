@@ -36,6 +36,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			0,
+			false,
 			[],
 		];
 
@@ -44,6 +45,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			1,
 			0,
+			false,
 			[
 				[
 					'message' => '#^Foo$#',
@@ -58,6 +60,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			0,
+			false,
 			[
 				[
 					'message' => "#^Bar\nBar2$#",
@@ -87,6 +90,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			2,
+			false,
 			[
 				[
 					'message' => "#^Bar\nBar2$#",
@@ -110,6 +114,36 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 				],
 			],
 		];
+
+		yield [
+			'Multiple file, multiple generic errors (raw messages)',
+			1,
+			4,
+			2,
+			true,
+			[
+				[
+					'rawMessage' => "Bar\nBar2",
+					'count' => 1,
+					'path' => 'folder with unicode 😃/file name with "spaces" and unicode 😃.php',
+				],
+				[
+					'rawMessage' => 'Foo',
+					'count' => 1,
+					'path' => 'folder with unicode 😃/file name with "spaces" and unicode 😃.php',
+				],
+				[
+					'rawMessage' => "Bar\nBar2",
+					'count' => 1,
+					'path' => 'foo.php',
+				],
+				[
+					'rawMessage' => 'Foo<Bar>',
+					'count' => 1,
+					'path' => 'foo.php',
+				],
+			],
+		];
 	}
 
 	/**
@@ -121,10 +155,11 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
+		bool $useRawMessage,
 		array $expected,
 	): void
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), $useRawMessage);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -137,7 +172,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testFormatErrorMessagesRegexEscape(): void
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), false);
 
 		$result = new AnalysisResult(
 			[new Error('Escape Regex with file # ~ \' ()', 'Testfile')],
@@ -176,11 +211,51 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		);
 	}
 
-	public function testEscapeDiNeon(): void
+	/**
+	 * @return iterable<int, array{Error, bool, array<string, string|int>}>
+	 */
+	public static function dataEscapeDiNeon(): iterable
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		yield [
+			new Error('Test %value%', 'Testfile'),
+			false,
+			[
+				'message' => '#^Test %%value%%$#',
+				'count' => 1,
+				'path' => 'Testfile',
+			],
+		];
+
+		yield [
+			new Error('Test %value%', 'Testfile'),
+			true,
+			[
+				'rawMessage' => 'Test %%value%%',
+				'count' => 1,
+				'path' => 'Testfile',
+			],
+		];
+
+		yield [
+			new Error('@Foo', 'Testfile'),
+			true,
+			[
+				'rawMessage' => '@@Foo',
+				'count' => 1,
+				'path' => 'Testfile',
+			],
+		];
+	}
+
+	/**
+	 * @param array<string, string|int> $expected
+	 */
+	#[DataProvider('dataEscapeDiNeon')]
+	public function testEscapeDiNeon(Error $error, bool $useRawMessage, array $expected): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), $useRawMessage);
 		$result = new AnalysisResult(
-			[new Error('Test %value%', 'Testfile')],
+			[$error],
 			[],
 			[],
 			[],
@@ -203,11 +278,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 				Neon::encode([
 					'parameters' => [
 						'ignoreErrors' => [
-							[
-								'message' => '#^Test %%value%%$#',
-								'count' => 1,
-								'path' => 'Testfile',
-							],
+							$expected,
 						],
 					],
 				], Neon::BLOCK),
@@ -245,7 +316,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	#[DataProvider('outputOrderingProvider')]
 	public function testOutputOrdering(array $errors): void
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), false);
 		$result = new AnalysisResult(
 			$errors,
 			[],
@@ -404,7 +475,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		int $expectedNewlinesCount,
 	): void
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), false);
 		$result = new AnalysisResult(
 			$errors,
 			[],
@@ -468,6 +539,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					6,
 				))->withIdentifier('argument.type'),
 			],
+			false,
 			[
 				'parameters' => [
 					'ignoreErrors' => [
@@ -515,6 +587,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					5,
 				))->withIdentifier('argument.type'),
 			],
+			false,
 			[
 				'parameters' => [
 					'ignoreErrors' => [
@@ -545,6 +618,49 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 				],
 			],
 		];
+
+		yield [
+			[
+				new Error(
+					'Foo',
+					__DIR__ . '/Foo.php',
+					5,
+				),
+				new Error(
+					'Foo',
+					__DIR__ . '/Foo.php',
+					5,
+				),
+				(new Error(
+					'Foo with identifier',
+					__DIR__ . '/Foo.php',
+					5,
+				))->withIdentifier('argument.type'),
+				(new Error(
+					'Foo with identifier',
+					__DIR__ . '/Foo.php',
+					6,
+				))->withIdentifier('argument.type'),
+			],
+			true,
+			[
+				'parameters' => [
+					'ignoreErrors' => [
+						[
+							'rawMessage' => 'Foo',
+							'count' => 2,
+							'path' => 'Foo.php',
+						],
+						[
+							'rawMessage' => 'Foo with identifier',
+							'identifier' => 'argument.type',
+							'count' => 2,
+							'path' => 'Foo.php',
+						],
+					],
+				],
+			],
+		];
 	}
 
 	/**
@@ -552,9 +668,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	 * @param mixed[] $expectedOutput
 	 */
 	#[DataProvider('dataFormatErrorsWithIdentifiers')]
-	public function testFormatErrorsWithIdentifiers(array $errors, array $expectedOutput): void
+	public function testFormatErrorsWithIdentifiers(array $errors, bool $useRawMessage, array $expectedOutput): void
 	{
-		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(__DIR__));
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(__DIR__), $useRawMessage);
 		$formatter->formatErrors(
 			new AnalysisResult(
 				$errors,

@@ -18,7 +18,7 @@ use const SORT_STRING;
 final class BaselineNeonErrorFormatter
 {
 
-	public function __construct(private RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper, private bool $useRawMessage)
 	{
 	}
 
@@ -42,6 +42,7 @@ final class BaselineNeonErrorFormatter
 		}
 		ksort($fileErrors, SORT_STRING);
 
+		$messageKey = $this->useRawMessage ? 'rawMessage' : 'message';
 		$errorsToOutput = [];
 		foreach ($fileErrors as $file => $errors) {
 			$fileErrorsByMessage = [];
@@ -72,11 +73,15 @@ final class BaselineNeonErrorFormatter
 			ksort($fileErrorsByMessage, SORT_STRING);
 
 			foreach ($fileErrorsByMessage as $message => [$totalCount, $identifiers]) {
+				if (!$this->useRawMessage) {
+					$message = '#^' . preg_quote($message, '#') . '$#';
+				}
+
 				ksort($identifiers, SORT_STRING);
 				if (count($identifiers) > 0) {
 					foreach ($identifiers as $identifier => $identifierCount) {
 						$errorsToOutput[] = [
-							'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
+							$messageKey => Helpers::escape($message),
 							'identifier' => $identifier,
 							'count' => $identifierCount,
 							'path' => Helpers::escape($file),
@@ -84,7 +89,7 @@ final class BaselineNeonErrorFormatter
 					}
 				} else {
 					$errorsToOutput[] = [
-						'message' => Helpers::escape('#^' . preg_quote($message, '#') . '$#'),
+						$messageKey => Helpers::escape($message),
 						'count' => $totalCount,
 						'path' => Helpers::escape($file),
 					];
@@ -98,7 +103,7 @@ final class BaselineNeonErrorFormatter
 	}
 
 	/**
-	 * @param array<int, array{message: string, count: int, path: string}> $ignoreErrors
+	 * @param array<int, array<string, string|int>> $ignoreErrors
 	 */
 	private function getNeon(array $ignoreErrors, string $existingBaselineContent): string
 	{

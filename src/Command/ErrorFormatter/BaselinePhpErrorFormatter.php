@@ -16,7 +16,7 @@ use const SORT_STRING;
 final class BaselinePhpErrorFormatter
 {
 
-	public function __construct(private RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper, private bool $useRawMessage)
 	{
 	}
 
@@ -76,12 +76,20 @@ final class BaselinePhpErrorFormatter
 			ksort($fileErrorsByMessage, SORT_STRING);
 
 			foreach ($fileErrorsByMessage as $message => [$totalCount, $identifiers]) {
+				if ($this->useRawMessage) {
+					$messageKey = 'rawMessage';
+				} else {
+					$messageKey = 'message';
+					$message = '#^' . preg_quote($message, '#') . '$#';
+				}
+
 				ksort($identifiers, SORT_STRING);
 				if (count($identifiers) > 0) {
 					foreach ($identifiers as $identifier => $identifierCount) {
 						$php .= sprintf(
-							"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'identifier' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
-							var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
+							"\$ignoreErrors[] = [\n\t%s => %s,\n\t'identifier' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+							var_export($messageKey, true),
+							var_export(Helpers::escape($message), true),
 							var_export(Helpers::escape($identifier), true),
 							var_export($identifierCount, true),
 							var_export(Helpers::escape($file), true),
@@ -89,8 +97,9 @@ final class BaselinePhpErrorFormatter
 					}
 				} else {
 					$php .= sprintf(
-						"\$ignoreErrors[] = [\n\t'message' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
-						var_export(Helpers::escape('#^' . preg_quote($message, '#') . '$#'), true),
+						"\$ignoreErrors[] = [\n\t%s => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+						var_export($messageKey, true),
+						var_export(Helpers::escape($message), true),
 						var_export($totalCount, true),
 						var_export(Helpers::escape($file), true),
 					);

@@ -191,7 +191,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 				continue;
 			}
 			$fileName = $fileInfo->getFilename();
-			if ($fileName === 'container.journal') {
+			if ($fileName === 'container.journal' || $fileName === 'container.lock') {
 				continue;
 			}
 			if (!str_ends_with($fileName, '.php')) {

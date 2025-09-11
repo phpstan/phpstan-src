@@ -32,19 +32,19 @@ final class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMet
 		return $methodReflection->getName() === '__construct';
 	}
 
-	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (!isset($methodCall->getArgs()[0])) {
-			return new ObjectType(DatePeriod::class);
-		}
-
 		if (!$methodCall->class instanceof Name) {
-			return new ObjectType(DatePeriod::class);
+			return null;
 		}
 
 		$className = $scope->resolveName($methodCall->class);
 		if (strtolower($className) !== 'dateperiod') {
-			return new ObjectType($className);
+			return null;
+		}
+
+		if (!isset($methodCall->getArgs()[0])) {
+			return null;
 		}
 
 		$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
@@ -80,7 +80,7 @@ final class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMet
 			]);
 		}
 
-		return new ObjectType(DatePeriod::class);
+		return null;
 	}
 
 }

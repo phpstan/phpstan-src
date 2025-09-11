@@ -357,6 +357,14 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13484(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkNullables = true;
+
+		$this->analyse([__DIR__ . '/data/bug-13484.php'], []);
+	}
+
 	public function testBug9401(): void
 	{
 		$this->checkExplicitMixed = true;

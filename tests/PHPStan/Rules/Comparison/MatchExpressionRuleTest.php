@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
@@ -14,8 +13,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 {
 
 	private bool $treatPhpDocTypesAsCertain = true;
-
-	private bool $reportAlwaysTrueInLastCondition = false;
 
 	protected function getRule(): Rule
 	{
@@ -29,7 +26,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->reportAlwaysTrueInLastCondition,
 			$this->treatPhpDocTypesAsCertain,
 		);
 	}
@@ -280,48 +276,22 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
-	public static function dataReportAlwaysTrueInLastCondition(): iterable
-	{
-		yield [false, [
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				23,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				49,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-		]];
-		yield [true, [
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				23,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-			[
-				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
-				49,
-				'Remove remaining cases below this one and this error will disappear too.',
-			],
-			[
-				'Match arm comparison between false and false is always true.',
-				58,
-			],
-		]];
-	}
-
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
-	 */
 	#[RequiresPhp('>= 8.1')]
-	#[DataProvider('dataReportAlwaysTrueInLastCondition')]
-	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	public function testLastCondition(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
-		$this->analyse([__DIR__ . '/data/match-always-true-last-arm.php'], $expectedErrors);
+		$this->analyse([__DIR__ . '/data/match-always-true-last-arm.php'], [
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				49,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0')]

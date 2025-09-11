@@ -215,3 +215,32 @@ class TestGetDebugType
 	}
 
 }
+
+class LastArm
+{
+	public const TYPE_A = 1;
+	public const TYPE_B = 2;
+
+
+	/**
+	 * @param self::TYPE_* $type
+	 */
+	public function doMatch(int $type): void
+	{
+		match ($type) {
+			self::TYPE_A => 'A',
+			self::TYPE_B => 'B',
+		};
+
+		$day = date('N');
+		match ($day) {
+			'1' => 'Mon',
+			'2' => 'Tue',
+			'3' => 'Wed',
+			'4' => 'Thu',
+			'5' => 'Fri',
+			'6' => 'Sat',
+			'7' => 'Sun',
+		};
+	}
+}

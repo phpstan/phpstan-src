@@ -31,8 +31,6 @@ final class MatchExpressionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		#[AutowiredParameter]
-		private bool $reportAlwaysTrueInLastCondition,
-		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
@@ -105,22 +103,20 @@ final class MatchExpressionRule implements Rule
 					continue;
 				}
 
-				$reportAlwaysTrueInLastCondition = $this->reportAlwaysTrueInLastCondition && $matchConditionType->getEnumCases() === [];
-				if ($i === $armsCount - 1 && !$reportAlwaysTrueInLastCondition) {
+				if ($i === $armsCount - 1) {
 					continue;
 				}
-				$errorBuilder = RuleErrorBuilder::message(sprintf(
+
+				$message = sprintf(
 					'Match arm comparison between %s and %s is always true.',
 					$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 					$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
-				))->line($armLine);
-				if ($i !== $armsCount - 1 && !$reportAlwaysTrueInLastCondition) {
-					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-				}
-
-				$errorBuilder->identifier('match.alwaysTrue');
-
-				$errors[] = $errorBuilder->build();
+				);
+				$errors[] = RuleErrorBuilder::message($message)
+					->line($armLine)
+					->identifier('match.alwaysTrue')
+					->tip('Remove remaining cases below this one and this error will disappear too.')
+					->build();
 			}
 		}
 

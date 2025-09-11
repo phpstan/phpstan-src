@@ -15,6 +15,9 @@ use function array_keys;
 use function count;
 use function error_reporting;
 use function explode;
+use function fclose;
+use function flock;
+use function fopen;
 use function implode;
 use function in_array;
 use function is_dir;
@@ -29,6 +32,8 @@ use function time;
 use function trim;
 use function unlink;
 use const E_USER_DEPRECATED;
+use const LOCK_EX;
+use const LOCK_UN;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
 
@@ -74,6 +79,15 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	#[Override]
 	public function loadContainer(): string
 	{
+		$directory = $this->getContainerCacheDirectory();
+		$locked = false;
+		if ($this->journalContainer && is_dir($directory)) {
+			$lockFile = $directory . '/container.lock';
+			$handle = fopen($lockFile, 'c'); // @ is escalated to exception
+			flock($handle, LOCK_EX);
+			$locked = true;
+		}
+
 		$loader = new ContainerLoader(
 			$this->getContainerCacheDirectory(),
 			$this->staticParameters['debugMode'],
@@ -95,6 +109,10 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 
 		if ($this->journalContainer) {
 			$this->journal($className);
+			if ($locked) {
+				flock($handle, LOCK_UN);
+				fclose($handle);
+			}
 		}
 
 		return $className;

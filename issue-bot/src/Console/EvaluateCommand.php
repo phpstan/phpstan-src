@@ -33,9 +33,9 @@ use function unserialize;
 class EvaluateCommand extends Command
 {
 
-	const EXIT_ERROR = 1;
-	const EXIT_AFFECTS_ISSUES = 2;
-	const EXIT_NO_AFFECTED_ISSUES = 0;
+	private const EXIT_ERROR = 1;
+	private const EXIT_AFFECTS_ISSUES = 2;
+	private const EXIT_NO_AFFECTED_ISSUES = 0;
 
 	public function __construct(
 		private TabCreator $tabCreator,

@@ -166,7 +166,7 @@ jobs:
           exit_code="$?"
 
           if [[ "$exit_code" == "2" ]]; then
-            echo "::notice file=.github/workflows/issue-bot.yml,line=1 ::Issue bot detected open issues which are affected by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "::notice ::Issue bot detected open issues which are affected by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             exit 0
           fi
 

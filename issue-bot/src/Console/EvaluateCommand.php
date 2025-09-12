@@ -142,8 +142,6 @@ class EvaluateCommand extends Command
 			$exitCode = self::EXIT_NO_AFFECTED_ISSUES;
 			$output->writeln(sprintf('No changes in results in %d code snippets from %d GitHub issues. :tada:', $totalCodeSnippets, count($issueCache->getIssues())));
 		}
-		// XXX debug  test
-		$exitCode = self::EXIT_AFFECTS_ISSUES;
 
 		foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
 			$text = sprintf(

@@ -166,7 +166,7 @@ jobs:
           exit_code="$?"
 
           if [[ "$exit_code" == "2" ]]; then
-            echo "##[info]Issue bot detected open issues which are affected by this pull request - see Issue bot job summary."
+            echo "::notice::Issue bot detected open issues which are affected by this pull request - see Issue bot job summary."
             exit 0
           fi
 

@@ -95,7 +95,7 @@ class ObjectShapeType implements Type
 			return TrinaryLogic::createNo();
 		}
 
-		if (in_array($propertyName, $this->optionalProperties, true)) {
+		if ($this->isOptionalProperty($propertyName)) {
 			return TrinaryLogic::createMaybe();
 		}
 
@@ -120,6 +120,11 @@ class ObjectShapeType implements Type
 			false,
 			static fn (Type $type): Type => $type,
 		);
+	}
+
+	public function isOptionalProperty(string $property): bool
+	{
+		return in_array($property, $this->optionalProperties, true);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
@@ -156,14 +161,14 @@ class ObjectShapeType implements Type
 				],
 			);
 			if ($hasProperty->no()) {
-				if (in_array($propertyName, $this->optionalProperties, true)) {
+				if ($this->isOptionalProperty($propertyName)) {
 					continue;
 				}
 				$result = $result->and($hasProperty);
 				continue;
 			}
 			if ($hasProperty->maybe()) {
-				if (!in_array($propertyName, $this->optionalProperties, true)) {
+				if (!$this->isOptionalProperty($propertyName)) {
 					$result = $result->and($hasProperty);
 					continue;
 
@@ -262,14 +267,14 @@ class ObjectShapeType implements Type
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$hasProperty = new IsSuperTypeOfResult($type->hasProperty((string) $propertyName), []);
 			if ($hasProperty->no()) {
-				if (in_array($propertyName, $this->optionalProperties, true)) {
+				if ($this->isOptionalProperty($propertyName)) {
 					continue;
 				}
 				$result = $result->and($hasProperty);
 				continue;
 			}
 			if ($hasProperty->maybe()) {
-				if (!in_array($propertyName, $this->optionalProperties, true)) {
+				if (!$this->isOptionalProperty($propertyName)) {
 					$result = $result->and($hasProperty);
 					continue;
 				}
@@ -339,7 +344,7 @@ class ObjectShapeType implements Type
 		}
 
 		foreach ($this->optionalProperties as $name) {
-			if (in_array($name, $type->optionalProperties, true)) {
+			if ($type->isOptionalProperty($name)) {
 				continue;
 			}
 
@@ -526,7 +531,7 @@ class ObjectShapeType implements Type
 			}
 			$items[] = new ObjectShapeItemNode(
 				$keyNode,
-				in_array($name, $this->optionalProperties, true),
+				$this->isOptionalProperty($name),
 				$type->toPhpDocNode(),
 			);
 		}

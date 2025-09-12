@@ -182,6 +182,7 @@ jobs:
         run: |
           set +e
           ./console.php evaluate --post-comments >> $GITHUB_STEP_SUMMARY
+          exit_code="$?"
 
           # its fine when issue-bot found affected issues
           if [[ "$exit_code" == "2" ]]; then

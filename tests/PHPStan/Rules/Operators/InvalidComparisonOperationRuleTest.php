@@ -205,4 +205,9 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7280Comment(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7280-comment.php'], []);
+	}
+
 }

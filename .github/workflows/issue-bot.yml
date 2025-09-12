@@ -160,7 +160,17 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        run: ./console.php evaluate >> $GITHUB_STEP_SUMMARY
+        run: |
+          set +e
+          ./console.php evaluate >> $GITHUB_STEP_SUMMARY
+          exit_code="$?"
+
+          if [[ "$exit_code" == "2" ]]; then
+            echo "##[info]Issue bot detected open issues which are affected by this pull request - see Issue bot job summary."
+            exit 0
+          fi
+
+          exit $exit_code
 
       - name: "Evaluate results - push"
         working-directory: "issue-bot"
@@ -169,4 +179,13 @@ jobs:
           GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           PHPSTAN_SRC_COMMIT_BEFORE: ${{ github.event.before }}
           PHPSTAN_SRC_COMMIT_AFTER: ${{ github.event.after }}
-        run: ./console.php evaluate --post-comments >> $GITHUB_STEP_SUMMARY
+        run: |
+          set +e
+          ./console.php evaluate --post-comments >> $GITHUB_STEP_SUMMARY
+
+          # its fine when issue-bot found affected issues
+          if [[ "$exit_code" == "2" ]]; then
+            exit 0
+          fi
+
+          exit $exit_code

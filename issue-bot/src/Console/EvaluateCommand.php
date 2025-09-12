@@ -33,6 +33,10 @@ use function unserialize;
 class EvaluateCommand extends Command
 {
 
+	const EXIT_ERROR = 1;
+	const EXIT_AFFECTS_ISSUES = 2;
+	const EXIT_NO_AFFECTED_ISSUES = 0;
+
 	public function __construct(
 		private TabCreator $tabCreator,
 		private PostGenerator $postGenerator,
@@ -133,7 +137,9 @@ class EvaluateCommand extends Command
 			}
 		}
 
+		$exitCode = self::EXIT_AFFECTS_ISSUES;
 		if (count($toPost) === 0) {
+			$exitCode = self::EXIT_NO_AFFECTED_ISSUES;
 			$output->writeln(sprintf('No changes in results in %d code snippets from %d GitHub issues. :tada:', $totalCodeSnippets, count($issueCache->getIssues())));
 		}
 
@@ -163,7 +169,7 @@ class EvaluateCommand extends Command
 		if ($postComments) {
 			if (count($toPost) > 20) {
 				$output->writeln('Too many comments to post, something is probably wrong.');
-				return 1;
+				return self::EXIT_ERROR;
 			}
 			foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
 				$text = sprintf(
@@ -191,7 +197,7 @@ class EvaluateCommand extends Command
 			}
 		}
 
-		return 0;
+		return $exitCode;
 	}
 
 	/**

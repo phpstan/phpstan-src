@@ -29,4 +29,7 @@ function test_mb_convert_encoding(
 	\PHPStan\Testing\assertType('list<int>|false', mb_convert_encoding($intList, 'UTF-8'));
 	\PHPStan\Testing\assertType('array{foo: string, bar: int, baz: string}|string|false', mb_convert_encoding($union, 'UTF-8'));
 	\PHPStan\Testing\assertType('array|string|false', mb_convert_encoding($int, 'UTF-8'));
+
+	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', 'auto'));
+	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', ' AUTO '));
 };

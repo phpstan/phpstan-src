@@ -42,4 +42,7 @@ function test_mb_convert_encoding(
 	\PHPStan\Testing\assertType('list<string>', mb_convert_encoding($stringList, 'UTF-8', ['FOO']));
 	\PHPStan\Testing\assertType('list<string>|false', mb_convert_encoding($stringList, 'UTF-8', ['FOO', 'BAR']));
 	\PHPStan\Testing\assertType('list<string>', mb_convert_encoding($stringList, 'UTF-8', ['FOO,BAR']));
+
+	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', 'auto'));
+	\PHPStan\Testing\assertType('string|false', mb_convert_encoding($string, 'UTF-8', ' AUTO '));
 };

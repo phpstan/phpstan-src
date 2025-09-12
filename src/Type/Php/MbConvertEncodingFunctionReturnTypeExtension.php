@@ -20,6 +20,8 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
 use function str_contains;
+use function strtolower;
+use function trim;
 
 #[AutowiredService]
 final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -81,7 +83,10 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 				$constantStrings = $fromEncodingArgType->getConstantStrings();
 				if (count($constantStrings) > 0) {
 					foreach ($constantStrings as $constantString) {
-						if (str_contains($constantString->getValue(), ',')) {
+						if (
+							str_contains($constantString->getValue(), ',')
+							|| trim(strtolower($constantString->getValue())) === 'auto'
+						) {
 							$returnFalseIfCannotDetectEncoding = true;
 							break;
 						}

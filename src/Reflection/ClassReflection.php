@@ -484,8 +484,11 @@ final class ClassReflection
 		}
 
 		// For BC purpose
-		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			return $this->hasPropertyCache[$propertyName] = true;
+		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
+			$property = $this->getPhpExtension()->getProperty($this, $propertyName);
+			if ($property->isStatic()) {
+				return $this->hasPropertyCache[$propertyName] = true;
+			}
 		}
 
 		if ($this->requireExtendsPropertiesClassReflectionExtension->hasProperty($this, $propertyName)) {
@@ -527,8 +530,11 @@ final class ClassReflection
 			return $this->hasStaticPropertyCache[$propertyName];
 		}
 
-		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			return $this->hasStaticPropertyCache[$propertyName] = true;
+		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
+			$property = $this->getPhpExtension()->getProperty($this, $propertyName);
+			if ($property->isStatic()) {
+				return $this->hasStaticPropertyCache[$propertyName] = true;
+			}
 		}
 
 		if ($this->requireExtendsPropertiesClassReflectionExtension->hasStaticProperty($this, $propertyName)) {
@@ -737,12 +743,14 @@ final class ClassReflection
 		}
 
 		// For BC purpose
-		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getStaticProperty($this, $propertyName));
-			if ($scope->canReadProperty($property)) {
-				return $this->properties[$key] = $property;
+		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
+			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getProperty($this, $propertyName));
+			if ($property->isStatic()) {
+				if ($scope->canReadProperty($property)) {
+					return $this->properties[$key] = $property;
+				}
+				$this->properties[$key] = $property;
 			}
-			$this->properties[$key] = $property;
 		}
 
 		if (!isset($this->properties[$key])) {
@@ -780,7 +788,12 @@ final class ClassReflection
 					continue;
 				}
 
-				$property = $this->wrapExtendedProperty($propertyName, $extension->getProperty($this, $propertyName));
+				$nakedProperty = $extension->getProperty($this, $propertyName);
+				if ($nakedProperty->isStatic()) {
+					continue;
+				}
+
+				$property = $this->wrapExtendedProperty($propertyName, $nakedProperty);
 				if ($scope->canReadProperty($property)) {
 					return $this->instanceProperties[$key] = $property;
 				}
@@ -809,9 +822,14 @@ final class ClassReflection
 			return $this->staticProperties[$key];
 		}
 
-		if ($this->getPhpExtension()->hasStaticProperty($this, $propertyName)) {
-			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getStaticProperty($this, $propertyName));
-			return $this->staticProperties[$key] = $property;
+		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
+			$nakedProperty = $this->getPhpExtension()->getProperty($this, $propertyName);
+			if ($nakedProperty->isStatic()) {
+				$property = $this->wrapExtendedProperty($propertyName, $nakedProperty);
+				if ($property->isStatic()) {
+					return $this->staticProperties[$key] = $property;
+				}
+			}
 		}
 
 		if ($this->requireExtendsPropertiesClassReflectionExtension->hasStaticProperty($this, $propertyName)) {
@@ -824,7 +842,7 @@ final class ClassReflection
 
 	public function hasNativeProperty(string $propertyName): bool
 	{
-		return $this->getPhpExtension()->hasNativeProperty($this, $propertyName);
+		return $this->getPhpExtension()->hasProperty($this, $propertyName);
 	}
 
 	public function getNativeProperty(string $propertyName): PhpPropertyReflection

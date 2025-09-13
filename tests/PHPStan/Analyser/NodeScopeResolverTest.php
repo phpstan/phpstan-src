@@ -236,7 +236,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public static function dataFile(): iterable
 	{
-		$base = dirname(__DIR__, 3) . '/';
+		$base = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR;
 		$baseLength = strlen($base);
 
 		$fileHelper = new FileHelper($base);

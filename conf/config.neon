@@ -37,6 +37,7 @@ parameters:
 		internalTag: false
 		newStaticInAbstractClassStaticMethod: false
 		checkExtensionsForComparisonOperators: false
+		checkGenericIterableClasses: false
 		reportTooWideBool: false
 		rawMessageInBaseline: false
 		reportNestedTooWideType: false

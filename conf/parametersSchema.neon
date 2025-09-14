@@ -39,6 +39,7 @@ parametersSchema:
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()
+		checkGenericIterableClasses: bool()
 		reportTooWideBool: bool()
 		rawMessageInBaseline: bool()
 		reportNestedTooWideType: bool()

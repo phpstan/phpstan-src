@@ -185,9 +185,9 @@ class ObjectShapeType implements Type
 					),
 				],
 			);
-			if (!$hasProperty->yes() && $type->hasStaticProperty($propertyName)->yes()) {
+			if (!$hasProperty->yes() && $type->hasStaticProperty((string) $propertyName)->yes()) {
 				$result = $result->and(new AcceptsResult(TrinaryLogic::createNo(), [
-					sprintf('Property %s::$%s is static.', $type->getStaticProperty($propertyName, $scope)->getDeclaringClass()->getDisplayName(), $propertyName),
+					sprintf('Property %s::$%s is static.', $type->getStaticProperty((string) $propertyName, $scope)->getDeclaringClass()->getDisplayName(), $propertyName),
 				]));
 				continue;
 			}

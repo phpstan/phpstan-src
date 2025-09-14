@@ -485,10 +485,7 @@ final class ClassReflection
 
 		// For BC purpose
 		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
-			$property = $this->getPhpExtension()->getProperty($this, $propertyName);
-			if ($property->isStatic()) {
-				return $this->hasPropertyCache[$propertyName] = true;
-			}
+			return $this->hasPropertyCache[$propertyName] = true;
 		}
 
 		if ($this->requireExtendsPropertiesClassReflectionExtension->hasProperty($this, $propertyName)) {
@@ -513,6 +510,10 @@ final class ClassReflection
 				break;
 			}
 			if ($extension->hasProperty($this, $propertyName)) {
+				$property = $extension->getProperty($this, $propertyName);
+				if ($property->isStatic()) {
+					continue;
+				}
 				return $this->hasInstancePropertyCache[$propertyName] = true;
 			}
 		}
@@ -744,13 +745,9 @@ final class ClassReflection
 
 		// For BC purpose
 		if ($this->getPhpExtension()->hasProperty($this, $propertyName)) {
-			$property = $this->wrapExtendedProperty($propertyName, $this->getPhpExtension()->getProperty($this, $propertyName));
-			if ($property->isStatic()) {
-				if ($scope->canReadProperty($property)) {
-					return $this->properties[$key] = $property;
-				}
-				$this->properties[$key] = $property;
-			}
+			$property = $this->getPhpExtension()->getProperty($this, $propertyName);
+
+			return $this->properties[$key] = $property;
 		}
 
 		if (!isset($this->properties[$key])) {

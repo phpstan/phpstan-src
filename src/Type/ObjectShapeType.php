@@ -296,7 +296,7 @@ class ObjectShapeType implements Type
 		$result = IsSuperTypeOfResult::createYes();
 		$scope = new OutOfClassScope();
 		foreach ($this->properties as $propertyName => $propertyType) {
-			$hasProperty = new IsSuperTypeOfResult($type->hasInstanceProperty((string)$propertyName), []);
+			$hasProperty = new IsSuperTypeOfResult($type->hasInstanceProperty((string) $propertyName), []);
 			if ($hasProperty->no()) {
 				if (in_array($propertyName, $this->optionalProperties, true)) {
 					continue;

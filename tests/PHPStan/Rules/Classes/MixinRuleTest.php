@@ -70,6 +70,10 @@ class MixinRuleTest extends RuleTestCase
 				50,
 			],
 			[
+				'PHPDoc tag @mixin contains generic interface Iterator but does not specify its types: TKey, TValue',
+				50,
+			],
+			[
 				'PHPDoc tag @mixin contains unknown class MixinRule\UnknownestClass.',
 				50,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',

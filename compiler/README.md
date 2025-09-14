@@ -4,7 +4,9 @@
 
 ```bash
 composer install
-php bin/compile
+php bin/prepare
+cd build
+php ../box/vendor/bin/box compile --no-parallel
 ```
 
 The compiled PHAR will be in `tmp/phpstan.phar`.

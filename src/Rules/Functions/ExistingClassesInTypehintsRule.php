@@ -53,6 +53,10 @@ final class ExistingClassesInTypehintsRule implements Rule
 				'Function %s() has unresolvable native return type.',
 				$functionName,
 			),
+			sprintf(
+				'Attribute NoDiscard cannot be used on void function %s().',
+				$functionName
+			),
 		);
 	}
 

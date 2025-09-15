@@ -54,6 +54,10 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
 				10,
 			],
+			[
+				'Attribute NoDiscard cannot be used on void anonymous function.',
+				12,
+			],
 		]);
 	}
 
@@ -322,6 +326,16 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-5206.php'], $errors);
+	}
+
+	public function testNoDiscardVoid(): void
+	{
+		$this->analyse([__DIR__ . '/data/arrow-function-typehints-nodiscard.php'], [
+			[
+				'Attribute NoDiscard cannot be used on void anonymous function.',
+				10,
+			],
+		]);
 	}
 
 }

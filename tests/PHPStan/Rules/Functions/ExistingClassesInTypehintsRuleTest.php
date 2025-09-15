@@ -489,4 +489,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNoDiscardVoid(): void
+	{
+		$this->analyse([__DIR__ . '/data/typehints-nodiscard.php'], [
+			[
+				'Attribute NoDiscard cannot be used on void function nothing().',
+				6,
+			],
+		]);
+	}
+
 }

@@ -10,6 +10,7 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -76,6 +77,7 @@ final class FunctionDefinitionCheck
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
+		string $noDiscardVoidReturnMessage,
 	): array
 	{
 		return $this->checkParametersAcceptor(
@@ -88,23 +90,27 @@ final class FunctionDefinitionCheck
 			$templateTypeMissingInParameterMessage,
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
+			$noDiscardVoidReturnMessage,
 		);
 	}
 
 	/**
 	 * @param Node\Param[] $parameters
 	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnTypeNode
+	 * @param Node\AttributeGroup[] $attribGroups
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkAnonymousFunction(
 		Scope $scope,
 		array $parameters,
 		$returnTypeNode,
+		array $attribGroups,
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
+		string $noDiscardVoidReturnMessage,
 	): array
 	{
 		$errors = [];
@@ -197,6 +203,19 @@ final class FunctionDefinitionCheck
 		if ($returnTypeNode === null) {
 			return $errors;
 		}
+		if ($returnTypeNode instanceof FullyQualified && $returnTypeNode->name === 'void') {
+			foreach ($attribGroupss as $attribGroup) {
+				foreach ($attribGroup->attrs as $attrib) {
+					if (strtolower($attrib->name) === 'nodiscard') {
+						$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
+							->line($returnTypeNode->getStartLine())
+							->identifier('attribute.target')
+							->build();
+						break 2;
+					}
+				}
+			}
+		}
 
 		if (
 			!$unionTypeReported
@@ -266,6 +285,7 @@ final class FunctionDefinitionCheck
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
 		string $selfOutMessage,
+		string $noDiscardVoidReturnMessage,
 	): array
 	{
 		$errors = $this->checkParametersAcceptor(
@@ -278,6 +298,7 @@ final class FunctionDefinitionCheck
 			$templateTypeMissingInParameterMessage,
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
+			$noDiscardVoidReturnMessage,
 		);
 
 		$selfOutType = $methodReflection->getSelfOutType();
@@ -329,6 +350,7 @@ final class FunctionDefinitionCheck
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
+		string $noDiscardVoidReturnMessage,
 	): array
 	{
 		$errors = [];
@@ -470,6 +492,17 @@ final class FunctionDefinitionCheck
 					->nonIgnorable()
 					->line($returnTypeNode->getStartLine())
 					->identifier('return.unresolvableNativeType')
+					->build();
+			}
+		}
+		if ($parametersAcceptor->hasNoDiscardAttribute()) {
+			$returnType = $functionNode->getReturnType();
+			if ($returnType instanceof FullyQualified
+				&& $returnType->name === 'void'
+			) {
+				$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
+					->line($returnTypeNode->getStartLine())
+					->identifier('attribute.target')
 					->build();
 			}
 		}

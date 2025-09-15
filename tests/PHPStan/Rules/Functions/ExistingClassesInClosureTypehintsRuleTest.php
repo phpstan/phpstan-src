@@ -353,4 +353,14 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testNoDiscardVoid(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-typehints-nodiscard.php'], [
+			[
+				'Attribute NoDiscard cannot be used on void anonymous function.',
+				17,
+			],
+		]);
+	}
+
 }

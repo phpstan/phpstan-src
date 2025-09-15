@@ -11,12 +11,12 @@ class Foo
 	public function doFoo(int $i): void
 	{
 		match ($i) {
-			'foo' => null, // always false
+			'foo' => null, // always false // error: Match arm comparison between 1|2|3 and 'foo' is always false.
 			default => null,
 		};
 
 		match ($i) {
-			0 => null,
+			0 => null, // error: Match arm comparison between 1|2|3 and 0 is always false.
 			1 => null,
 			2 => null,
 			3 => null, // always true, but do not report (it's the last one)
@@ -25,29 +25,29 @@ class Foo
 		match ($i) {
 			1 => null,
 			2 => null,
-			3 => null, // always true - report with strict-rules
+			3 => null, // always true - report with strict-rules // error: Match arm comparison between 3 and 3 is always true., tip: Remove remaining cases below this one and this error will disappear too.
 			4 => null, // unreachable
 		};
 
 		match ($i) {
 			1 => null,
 			2 => null,
-			3 => null, // always true - report with strict-rules
+			3 => null, // always true - report with strict-rules // error: Match arm comparison between 3 and 3 is always true., tip: Remove remaining cases below this one and this error will disappear too.
 			default => null, // unreachable
 		};
 
 		match (1) {
-			1 => null, // always true - report with strict-rules
+			1 => null, // always true - report with strict-rules // error: Match arm comparison between 1 and 1 is always true., tip: Remove remaining cases below this one and this error will disappear too.
 			2 => null, // unreachable
 			3 => null, // unreachable
 		};
 
 		match (1) {
-			1 => null, // always true - report with strict-rules
+			1 => null, // always true - report with strict-rules // error: Match arm comparison between 1 and 1 is always true., tip: Remove remaining cases below this one and this error will disappear too.
 			default => null, // unreachable
 		};
 
-		match ($i) {
+		match ($i) { // error: Match expression does not handle remaining value: 3
 			1, 2 => null,
 			// unhandled
 		};
@@ -58,7 +58,7 @@ class Foo
 		};
 
 		match ($i) {
-			3, 3 => null, // second 3 is always false
+			3, 3 => null, // second 3 is always false // error: Match arm comparison between 1|2 and 3 is always false.
 			default => null,
 		};
 
@@ -75,7 +75,7 @@ class Foo
 			1 => 2,
 		};
 
-		match ($i) {
+		match ($i) { // error: Match expression does not handle remaining values: 1|2|3
 			// unhandled
 		};
 	}
@@ -87,7 +87,7 @@ class Foo
 			default => null,
 		};
 
-		match (true) {
+		match (true) { // error: Match expression does not handle remaining value: true
 			$e instanceof \InvalidArgumentException => true,
 			$e instanceof \InvalidArgumentException => true, // reported by ImpossibleInstanceOfRule
 		};
@@ -165,7 +165,7 @@ class ThrowsTag {
 	 */
 	public function baz(int $bar): void
 	{
-		$str = match($bar) {
+		$str = match($bar) { // error: Match expression does not handle remaining values: int<min, 0>|int<2, max>
 			1 => 'test'
 		};
 	}

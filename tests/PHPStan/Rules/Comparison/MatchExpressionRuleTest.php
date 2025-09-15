@@ -37,57 +37,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
-		$this->analyse([__DIR__ . '/data/match-expr.php'], [
-			[
-				'Match arm comparison between 1|2|3 and \'foo\' is always false.',
-				14,
-			],
-			[
-				'Match arm comparison between 1|2|3 and 0 is always false.',
-				19,
-			],
-			[
-				'Match arm comparison between 3 and 3 is always true.',
-				28,
-				$tipText,
-			],
-			[
-				'Match arm comparison between 3 and 3 is always true.',
-				35,
-				$tipText,
-			],
-			[
-				'Match arm comparison between 1 and 1 is always true.',
-				40,
-				$tipText,
-			],
-			[
-				'Match arm comparison between 1 and 1 is always true.',
-				46,
-				$tipText,
-			],
-			[
-				'Match expression does not handle remaining value: 3',
-				50,
-			],
-			[
-				'Match arm comparison between 1|2 and 3 is always false.',
-				61,
-			],
-			[
-				'Match expression does not handle remaining values: 1|2|3',
-				78,
-			],
-			[
-				'Match expression does not handle remaining value: true',
-				90,
-			],
-			[
-				'Match expression does not handle remaining values: int<min, 0>|int<2, max>',
-				168,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/match-expr.php'], null);
 	}
 
 	public function testBug5161(): void

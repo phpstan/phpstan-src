@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
@@ -40,7 +41,9 @@ use PHPStan\Type\FileTypeMapper;
 use function array_map;
 use function array_merge;
 use function count;
+use function file;
 use function implode;
+use function preg_match;
 use function sprintf;
 use function str_replace;
 
@@ -142,10 +145,26 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
+	 * @param ?list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
 	 */
-	public function analyse(array $files, array $expectedErrors): void
+	public function analyse(array $files, ?array $expectedErrors): void
 	{
+		if ($expectedErrors === null) {
+			$expectedErrors = [];
+			foreach ($files as $file) {
+				$lines = file($file);
+				if ($lines === false) {
+					throw new LogicException('Error while reading data from ' . $file);
+				}
+				foreach ($lines as $n => $line) {
+					if (preg_match('~// error: (.+?)(?:, tip: (.+))?$~m', $line, $match) !== 1) {
+						continue;
+					}
+					$expectedErrors[] = [$match[1], $n + 1, $match[2] ?? null];
+				}
+			}
+		}
+
 		[$actualErrors, $delayedErrors] = $this->gatherAnalyserErrorsWithDelayedErrors($files);
 		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
 			$message = sprintf('%02d: %s', $line, $message);

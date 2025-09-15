@@ -346,20 +346,14 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	public static function dataBug4969(): iterable
 	{
 		yield [false, []];
-		yield [true, [
-			[
-				'Result of && is always false.',
-				15,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-			],
-		]];
+		yield [true, null];
 	}
 
 	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 * @param ?list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	#[DataProvider('dataBug4969')]
-	public function testBug4969(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
+	public function testBug4969(bool $treatPhpDocTypesAsCertain, ?array $expectedErrors): void
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/bug-4969.php'], $expectedErrors);

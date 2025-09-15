@@ -206,7 +206,7 @@ final class FunctionDefinitionCheck
 		if ($returnTypeNode instanceof FullyQualified && $returnTypeNode->name === 'void') {
 			foreach ($attribGroups as $attribGroup) {
 				foreach ($attribGroup->attrs as $attrib) {
-					if (strtolower($attrib->name) === 'nodiscard') {
+					if (strtolower($attrib->name->name) === 'nodiscard') {
 						$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
 							->line($returnTypeNode->getStartLine())
 							->identifier('attribute.target')

@@ -55,7 +55,7 @@ final class ExistingClassesInTypehintsRule implements Rule
 			),
 			sprintf(
 				'Attribute NoDiscard cannot be used on void function %s().',
-				$functionName
+				$functionName,
 			),
 		);
 	}

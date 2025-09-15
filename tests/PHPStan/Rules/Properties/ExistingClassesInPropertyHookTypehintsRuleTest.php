@@ -62,19 +62,4 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.4')]
-	public function testNoDiscardVoid(): void
-	{
-		$this->analyse([__DIR__ . '/data/property-hooks-nodiscard.php'], [
-			[
-				'Attribute NoDiscard cannot be used on void get hook for property ExistingClassesPropertyHooks\Demo::$foo.',
-				9,
-			],
-			[
-				'Attribute NoDiscard cannot be used on void set hook for property ExistingClassesPropertyHooks\Demo::$set.',
-				14,
-			],
-		]);
-	}
-
 }

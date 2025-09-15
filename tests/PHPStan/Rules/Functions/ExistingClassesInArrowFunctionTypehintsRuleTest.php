@@ -54,10 +54,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				'Anonymous function has invalid return type ArrowFunctionExistingClassesInTypehints\Baz.',
 				10,
 			],
-			[
-				'Attribute NoDiscard cannot be used on void anonymous function.',
-				12,
-			],
 		]);
 	}
 

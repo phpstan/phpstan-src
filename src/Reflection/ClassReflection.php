@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use LogicException;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
@@ -965,7 +966,11 @@ final class ClassReflection
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
 			if ($case instanceof ReflectionEnumBackedCase) {
-				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
+				try {
+					$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
+				} catch (LogicException) {
+					// Enum case does not have a value
+				}
 			}
 			$caseName = $case->getName();
 			$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
@@ -992,7 +997,11 @@ final class ClassReflection
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
 		if ($case instanceof ReflectionEnumBackedCase) {
-			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
+			try {
+				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
+			} catch (LogicException) {
+				// Enum case does not have a value
+			}
 		}
 
 		$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));

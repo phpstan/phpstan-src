@@ -1163,6 +1163,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug7927(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7927.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Enum case Bug7927\Test::One does not have a value but the enum is backed with the "int" type.', $errors[0]->getMessage());
+		$this->assertSame('Enum case Bug7927\Test::Two does not have a value but the enum is backed with the "int" type.', $errors[1]->getMessage());
+	}
+
 	public function testBug8146(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8146b.php');

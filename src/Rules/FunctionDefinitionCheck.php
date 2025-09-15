@@ -204,7 +204,7 @@ final class FunctionDefinitionCheck
 			return $errors;
 		}
 		if ($returnTypeNode instanceof FullyQualified && $returnTypeNode->name === 'void') {
-			foreach ($attribGroupss as $attribGroup) {
+			foreach ($attribGroups as $attribGroup) {
 				foreach ($attribGroup->attrs as $attrib) {
 					if (strtolower($attrib->name) === 'nodiscard') {
 						$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
@@ -495,7 +495,7 @@ final class FunctionDefinitionCheck
 					->build();
 			}
 		}
-		if ($parametersAcceptor->hasNoDiscardAttribute()) {
+		if ($parametersAcceptor->hasNoDiscardAttribute()->yes()) {
 			$returnType = $functionNode->getReturnType();
 			if ($returnType instanceof FullyQualified
 				&& $returnType->name === 'void'

@@ -8,6 +8,12 @@ class ClassWithStaticSideEffects {
 		echo __METHOD__ . "\n";
 		return [2];
 	}
+
+	#[\nOdISCArD]
+	public static function differentCase(): array {
+		echo __METHOD__ . "\n";
+		return [2];
+	}
 }
 
 ClassWithStaticSideEffects::staticMethod();
@@ -17,3 +23,5 @@ ClassWithStaticSideEffects::staticMethod();
 foreach (ClassWithStaticSideEffects::staticMethod() as $num) {
 	var_dump($num);
 }
+
+ClassWithStaticSideEffects::differentCase();

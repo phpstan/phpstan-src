@@ -40,7 +40,7 @@ final class AttributesCheck
 		array $attrGroups,
 		int $requiredTarget,
 		string $targetName,
-		bool $isPropertyHook = false,
+		bool $isPropertyHook,
 	): array
 	{
 		$errors = [];

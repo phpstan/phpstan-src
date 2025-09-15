@@ -163,7 +163,7 @@ final class EnumCasesMethodReflection implements ExtendedMethodReflection
 
 	public function hasNoDiscardAttribute(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createNo();
 	}
 
 }

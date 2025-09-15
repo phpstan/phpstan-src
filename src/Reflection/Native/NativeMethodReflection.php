@@ -230,7 +230,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	public function hasNoDiscardAttribute(): TrinaryLogic
 	{
 		foreach ($this->attributes as $attrib) {
-			if ($attrib->getName() === 'NoDiscard') {
+			if (strtolower($attrib->getName()) === 'nodiscard') {
 				return TrinaryLogic::createYes();
 			}
 		}

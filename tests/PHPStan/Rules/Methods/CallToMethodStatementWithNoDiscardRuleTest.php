@@ -22,11 +22,15 @@ class CallToMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-call-statement-result-discarded.php'], [
 			[
 				'Call to method MethodCallStatementResultDiscarded\ClassWithInstanceSideEffects::instanceMethod() on a separate line discards return value.',
-				14,
+				20,
 			],
 			[
 				'Call to method MethodCallStatementResultDiscarded\ClassWithInstanceSideEffects::instanceMethod() on a separate line discards return value.',
-				15,
+				21,
+			],
+			[
+				'Call to method MethodCallStatementResultDiscarded\ClassWithInstanceSideEffects::differentCase() on a separate line discards return value.',
+				30,
 			],
 		]);
 	}

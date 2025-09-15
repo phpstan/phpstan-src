@@ -39,6 +39,7 @@ final class ParamAttributesRule implements Rule
 			$node->attrGroups,
 			$targetType,
 			$targetName,
+			false,
 		);
 	}
 

@@ -33,6 +33,7 @@ final class MethodAttributesRule implements Rule
 			$node->getOriginalNode()->attrGroups,
 			Attribute::TARGET_METHOD,
 			'method',
+			false,
 		);
 	}
 

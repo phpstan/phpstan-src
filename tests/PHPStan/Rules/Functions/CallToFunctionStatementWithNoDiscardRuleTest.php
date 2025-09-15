@@ -23,6 +23,10 @@ class CallToFunctionStatementWithNoDiscardRuleTest extends RuleTestCase
 				'Call to function FunctionCallStatementResultDiscarded\withSideEffects() on a separate line discards return value.',
 				11,
 			],
+			[
+				'Call to function FunctionCallStatementResultDiscarded\differentCase() on a separate line discards return value.',
+				25,
+			],
 		]);
 	}
 

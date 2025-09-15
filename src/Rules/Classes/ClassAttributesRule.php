@@ -38,6 +38,7 @@ final class ClassAttributesRule implements Rule
 			$classLikeNode->attrGroups,
 			Attribute::TARGET_CLASS,
 			'class',
+			false,
 		);
 
 		$classReflection = $node->getClassReflection();

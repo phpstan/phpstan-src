@@ -8,6 +8,12 @@ class ClassWithInstanceSideEffects {
 		echo __METHOD__ . "\n";
 		return [2];
 	}
+
+	#[\nOdISCArD]
+	public function differentCase(): array {
+		echo __METHOD__ . "\n";
+		return [2];
+	}
 }
 
 $o = new ClassWithInstanceSideEffects();
@@ -20,3 +26,5 @@ $o?->instanceMethod();
 foreach ($o->instanceMethod() as $num) {
 	var_dump($num);
 }
+
+$o->differentCase();

@@ -10,7 +10,6 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
-use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -203,7 +202,7 @@ final class FunctionDefinitionCheck
 		if ($returnTypeNode === null) {
 			return $errors;
 		}
-		if ($returnTypeNode instanceof FullyQualified && $returnTypeNode->name === 'void') {
+		if ($returnTypeNode instanceof Identifier && $returnTypeNode->name === 'void') {
 			foreach ($attribGroups as $attribGroup) {
 				foreach ($attribGroup->attrs as $attrib) {
 					if (strtolower($attrib->name->name) === 'nodiscard') {
@@ -497,7 +496,7 @@ final class FunctionDefinitionCheck
 		}
 		if ($parametersAcceptor->hasNoDiscardAttribute()->yes()) {
 			$returnType = $functionNode->getReturnType();
-			if ($returnType instanceof FullyQualified
+			if ($returnType instanceof Identifier
 				&& $returnType->name === 'void'
 			) {
 				$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)

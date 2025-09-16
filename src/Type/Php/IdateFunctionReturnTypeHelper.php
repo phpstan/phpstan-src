@@ -29,13 +29,16 @@ final class IdateFunctionReturnTypeHelper
 
 	public function buildReturnTypeFromFormat(string $formatString): Type
 	{
-		// see https://www.php.net/idate
+		// see https://www.php.net/idate and https://www.php.net/manual/de/datetime.format
 		switch ($formatString) {
 			case 'd':
+			case 'j':
 				return IntegerRangeType::fromInterval(1, 31);
 			case 'h':
+			case 'g':
 				return IntegerRangeType::fromInterval(1, 12);
 			case 'H':
+			case 'G':
 				return IntegerRangeType::fromInterval(0, 23);
 			case 'i':
 				return IntegerRangeType::fromInterval(0, 59);
@@ -44,6 +47,7 @@ final class IdateFunctionReturnTypeHelper
 			case 'L':
 				return IntegerRangeType::fromInterval(0, 1);
 			case 'm':
+			case 'n':
 				return IntegerRangeType::fromInterval(1, 12);
 			case 'N':
 				return IntegerRangeType::fromInterval(1, 7);

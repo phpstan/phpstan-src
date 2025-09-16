@@ -13,6 +13,7 @@ class Foo
 	 */
 	public function doFoo(string $string, string $hour, string $format): void
 	{
+		assertType('int<1, 31>', idate('j'));
 		assertType('int<1, 7>', idate('N'));
 		assertType('int', idate('Y'));
 		assertType('false', idate('wrong'));

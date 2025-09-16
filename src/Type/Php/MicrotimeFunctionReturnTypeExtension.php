@@ -6,9 +6,11 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -26,8 +28,10 @@ final class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		$stringType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
+
 		if (count($functionCall->getArgs()) < 1) {
-			return new StringType();
+			return $stringType;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -38,14 +42,14 @@ final class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return new FloatType();
 		}
 		if ($compareTypes === $isFalseType) {
-			return new StringType();
+			return $stringType;
 		}
 
 		if ($argType instanceof MixedType) {
-			return new BenevolentUnionType([new StringType(), new FloatType()]);
+			return new BenevolentUnionType([$stringType, new FloatType()]);
 		}
 
-		return new UnionType([new StringType(), new FloatType()]);
+		return new UnionType([$stringType, new FloatType()]);
 	}
 
 }

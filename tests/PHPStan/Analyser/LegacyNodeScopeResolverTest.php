@@ -5193,11 +5193,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'string',
+				'non-falsy-string',
 				'$microtimeStringWithoutArg',
 			],
 			[
-				'string',
+				'non-falsy-string',
 				'$microtimeString',
 			],
 			[
@@ -5205,11 +5205,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$microtimeFloat',
 			],
 			[
-				'float|string',
+				'float|non-falsy-string',
 				'$microtimeDefault',
 			],
 			[
-				'(float|string)',
+				'(float|non-falsy-string)',
 				'$microtimeBenevolent',
 			],
 			[

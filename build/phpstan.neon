@@ -64,6 +64,7 @@ parameters:
 			- 'PHPStan\Reflection\MissingPropertyFromReflectionException'
 			- 'PHPStan\Reflection\MissingConstantFromReflectionException'
 			- 'PHPStan\Type\CircularTypeAliasDefinitionException'
+			- 'PHPStan\Reflection\MissingStaticAccessorInstanceException'
 			- 'LogicException'
 			- 'Error'
 		check:

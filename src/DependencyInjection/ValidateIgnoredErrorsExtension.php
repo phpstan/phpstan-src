@@ -24,6 +24,7 @@ use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
 use PHPStan\PhpDocParser\ParserConfig;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\MissingStaticAccessorInstanceException;
 use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
@@ -66,120 +67,143 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 		$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
-		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
-		PhpVersionStaticAccessor::registerInstance(new PhpVersion(PHP_VERSION_ID));
-		$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, $composerPhpVersionFactory, null);
 
-		$phpDocParserConfig = new ParserConfig([]);
-		$ignoredRegexValidator = new IgnoredRegexValidator(
-			$parser,
-			new TypeStringResolver(
-				new Lexer($phpDocParserConfig),
-				new TypeParser($phpDocParserConfig, new ConstExprParser($phpDocParserConfig)),
-				new TypeNodeResolver(
-					new DirectTypeNodeResolverExtensionRegistryProvider(
-						new class implements TypeNodeResolverExtensionRegistry {
-
-							public function getExtensions(): array
-							{
-								return [];
-							}
-
-						},
-					),
-					$reflectionProviderProvider,
-					new DirectTypeAliasResolverProvider(new class implements TypeAliasResolver {
-
-						public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool
-						{
-							return false;
-						}
-
-						public function resolveTypeAlias(string $aliasName, NameScope $nameScope): ?Type
-						{
-							return null;
-						}
-
-					}),
-					$constantResolver,
-					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new class implements OperatorTypeSpecifyingExtensionRegistryProvider {
-
-						public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
-						{
-							return new OperatorTypeSpecifyingExtensionRegistry([]);
-						}
-
-					}, new OversizedArrayBuilder(), true),
-				),
-			),
-		);
-
-		$errors = [];
-		foreach ($ignoreErrors as $ignoreError) {
-			if (is_array($ignoreError)) {
-				if (isset($ignoreError['count'])) {
-					continue; // ignoreError coming from baseline will be correct
-				}
-				if (isset($ignoreError['messages'])) {
-					$ignoreMessages = $ignoreError['messages'];
-				} elseif (isset($ignoreError['message'])) {
-					$ignoreMessages = [$ignoreError['message']];
-				} else {
-					continue;
-				}
-			} else {
-				$ignoreMessages = [$ignoreError];
-			}
-
-			foreach ($ignoreMessages as $ignoreMessage) {
-				$error = $this->validateMessage($ignoredRegexValidator, $ignoreMessage);
-				if ($error === null) {
-					continue;
-				}
-				$errors[] = $error;
-			}
+		try {
+			$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		} catch (MissingStaticAccessorInstanceException) {
+			$originalReflectionProvider = null;
 		}
 
-		$reportUnmatched = (bool) $builder->parameters['reportUnmatchedIgnoredErrors'];
+		try {
+			$originalPhpVersion = PhpVersionStaticAccessor::getInstance();
+		} catch (MissingStaticAccessorInstanceException) {
+			$originalPhpVersion = null;
+		}
 
-		if ($reportUnmatched) {
+		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
+		PhpVersionStaticAccessor::registerInstance(new PhpVersion(PHP_VERSION_ID));
+
+		try {
+			$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
+			$constantResolver = new ConstantResolver($reflectionProviderProvider, [], null, $composerPhpVersionFactory, null);
+
+			$phpDocParserConfig = new ParserConfig([]);
+			$ignoredRegexValidator = new IgnoredRegexValidator(
+				$parser,
+				new TypeStringResolver(
+					new Lexer($phpDocParserConfig),
+					new TypeParser($phpDocParserConfig, new ConstExprParser($phpDocParserConfig)),
+					new TypeNodeResolver(
+						new DirectTypeNodeResolverExtensionRegistryProvider(
+							new class implements TypeNodeResolverExtensionRegistry {
+
+								public function getExtensions(): array
+								{
+									return [];
+								}
+
+							},
+						),
+						$reflectionProviderProvider,
+						new DirectTypeAliasResolverProvider(new class implements TypeAliasResolver {
+
+							public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool
+							{
+								return false;
+							}
+
+							public function resolveTypeAlias(string $aliasName, NameScope $nameScope): ?Type
+							{
+								return null;
+							}
+
+						}),
+						$constantResolver,
+						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new class implements OperatorTypeSpecifyingExtensionRegistryProvider {
+
+							public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
+							{
+								return new OperatorTypeSpecifyingExtensionRegistry([]);
+							}
+
+						}, new OversizedArrayBuilder(), true),
+					),
+				),
+			);
+
+			$errors = [];
 			foreach ($ignoreErrors as $ignoreError) {
-				if (!is_array($ignoreError)) {
-					continue;
-				}
-
-				if (isset($ignoreError['path'])) {
-					$ignorePaths = [$ignoreError['path']];
-				} elseif (isset($ignoreError['paths'])) {
-					$ignorePaths = $ignoreError['paths'];
-				} else {
-					continue;
-				}
-
-				foreach ($ignorePaths as $ignorePath) {
-					if (FileExcluder::isAbsolutePath($ignorePath)) {
-						if (is_dir($ignorePath)) {
-							continue;
-						}
-						if (is_file($ignorePath)) {
-							continue;
-						}
+				if (is_array($ignoreError)) {
+					if (isset($ignoreError['count'])) {
+						continue; // ignoreError coming from baseline will be correct
 					}
-					if (FileExcluder::isFnmatchPattern($ignorePath)) {
+					if (isset($ignoreError['messages'])) {
+						$ignoreMessages = $ignoreError['messages'];
+					} elseif (isset($ignoreError['message'])) {
+						$ignoreMessages = [$ignoreError['message']];
+					} else {
+						continue;
+					}
+				} else {
+					$ignoreMessages = [$ignoreError];
+				}
+
+				foreach ($ignoreMessages as $ignoreMessage) {
+					$error = $this->validateMessage($ignoredRegexValidator, $ignoreMessage);
+					if ($error === null) {
+						continue;
+					}
+					$errors[] = $error;
+				}
+			}
+
+			$reportUnmatched = (bool) $builder->parameters['reportUnmatchedIgnoredErrors'];
+
+			if ($reportUnmatched) {
+				foreach ($ignoreErrors as $ignoreError) {
+					if (!is_array($ignoreError)) {
 						continue;
 					}
 
-					$errors[] = sprintf('Path "%s" is neither a directory, nor a file path, nor a fnmatch pattern.', $ignorePath);
+					if (isset($ignoreError['path'])) {
+						$ignorePaths = [$ignoreError['path']];
+					} elseif (isset($ignoreError['paths'])) {
+						$ignorePaths = $ignoreError['paths'];
+					} else {
+						continue;
+					}
+
+					foreach ($ignorePaths as $ignorePath) {
+						if (FileExcluder::isAbsolutePath($ignorePath)) {
+							if (is_dir($ignorePath)) {
+								continue;
+							}
+							if (is_file($ignorePath)) {
+								continue;
+							}
+						}
+						if (FileExcluder::isFnmatchPattern($ignorePath)) {
+							continue;
+						}
+
+						$errors[] = sprintf('Path "%s" is neither a directory, nor a file path, nor a fnmatch pattern.', $ignorePath);
+					}
 				}
 			}
-		}
 
-		if (count($errors) === 0) {
-			return;
-		}
+			if (count($errors) === 0) {
+				return;
+			}
 
-		throw new InvalidIgnoredErrorPatternsException($errors);
+			throw new InvalidIgnoredErrorPatternsException($errors);
+		} finally {
+			if ($originalReflectionProvider !== null) {
+				ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
+			}
+			if ($originalPhpVersion !== null) {
+				PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
+			}
+		}
 	}
 
 	private function validateMessage(IgnoredRegexValidator $ignoredRegexValidator, string $ignoreMessage): ?string

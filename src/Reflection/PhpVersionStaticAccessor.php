@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Php\PhpVersion;
-use PHPStan\ShouldNotHappenException;
 
 final class PhpVersionStaticAccessor
 {
@@ -22,7 +21,7 @@ final class PhpVersionStaticAccessor
 	public static function getInstance(): PhpVersion
 	{
 		if (self::$instance === null) {
-			throw new ShouldNotHappenException();
+			throw new MissingStaticAccessorInstanceException();
 		}
 		return self::$instance;
 	}

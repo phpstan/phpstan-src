@@ -30,7 +30,6 @@ use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ObjectType;
 use function array_diff_key;
 use function array_intersect;
 use function array_key_exists;
@@ -195,7 +194,6 @@ final class ContainerFactory
 
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		PhpVersionStaticAccessor::registerInstance($container->getByType(PhpVersion::class));
-		ObjectType::resetCaches();
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);

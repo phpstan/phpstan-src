@@ -97,7 +97,6 @@ use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
 use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\ObjectType;
 use Throwable;
 use function array_fill_keys;
 use function count;
@@ -125,55 +124,57 @@ final class StubValidator
 
 		$originalReflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		$originalPhpVersion = PhpVersionStaticAccessor::getInstance();
-		$container = $this->derivativeContainerFactory->create([
-			__DIR__ . '/../../conf/config.stubValidator.neon',
-		]);
 
-		$ruleRegistry = $this->getRuleRegistry($container);
-		$collectorRegistry = $this->getCollectorRegistry($container);
+		try {
+			$container = $this->derivativeContainerFactory->create([
+				__DIR__ . '/../../conf/config.stubValidator.neon',
+			]);
 
-		$fileAnalyser = $container->getByType(FileAnalyser::class);
+			$ruleRegistry = $this->getRuleRegistry($container);
+			$collectorRegistry = $this->getCollectorRegistry($container);
 
-		$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
-		$nodeScopeResolver->setAnalysedFiles($stubFiles);
+			$fileAnalyser = $container->getByType(FileAnalyser::class);
 
-		$pathRoutingParser = $container->getService('pathRoutingParser');
-		$pathRoutingParser->setAnalysedFiles($stubFiles);
+			$nodeScopeResolver = $container->getByType(NodeScopeResolver::class);
+			$nodeScopeResolver->setAnalysedFiles($stubFiles);
 
-		$analysedFiles = array_fill_keys($stubFiles, true);
+			$pathRoutingParser = $container->getService('pathRoutingParser');
+			$pathRoutingParser->setAnalysedFiles($stubFiles);
 
-		$errors = [];
-		foreach ($stubFiles as $stubFile) {
-			try {
-				$tmpErrors = $fileAnalyser->analyseFile(
-					$stubFile,
-					$analysedFiles,
-					$ruleRegistry,
-					$collectorRegistry,
-					static function (): void {
-					},
-				)->getErrors();
-				foreach ($tmpErrors as $tmpError) {
-					$errors[] = $tmpError->withoutTip()->doNotIgnore();
+			$analysedFiles = array_fill_keys($stubFiles, true);
+
+			$errors = [];
+			foreach ($stubFiles as $stubFile) {
+				try {
+					$tmpErrors = $fileAnalyser->analyseFile(
+						$stubFile,
+						$analysedFiles,
+						$ruleRegistry,
+						$collectorRegistry,
+						static function (): void {
+						},
+					)->getErrors();
+					foreach ($tmpErrors as $tmpError) {
+						$errors[] = $tmpError->withoutTip()->doNotIgnore();
+					}
+				} catch (Throwable $e) {
+					if ($debug) {
+						throw $e;
+					}
+
+					$internalErrorMessage = sprintf('Internal error: %s', $e->getMessage());
+					$errors[] = (new Error($internalErrorMessage, $stubFile, canBeIgnored: $e))
+						->withIdentifier('phpstan.internal')
+						->withMetadata([
+							InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+							InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+						]);
 				}
-			} catch (Throwable $e) {
-				if ($debug) {
-					throw $e;
-				}
-
-				$internalErrorMessage = sprintf('Internal error: %s', $e->getMessage());
-				$errors[] = (new Error($internalErrorMessage, $stubFile, canBeIgnored: $e))
-					->withIdentifier('phpstan.internal')
-					->withMetadata([
-						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
-						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
 			}
+		} finally {
+			ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
+			PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
 		}
-
-		ReflectionProviderStaticAccessor::registerInstance($originalReflectionProvider);
-		PhpVersionStaticAccessor::registerInstance($originalPhpVersion);
-		ObjectType::resetCaches();
 
 		return $errors;
 	}

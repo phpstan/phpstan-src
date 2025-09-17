@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ObjectType;
 
 final class ReflectionProviderStaticAccessor
 {
@@ -16,12 +16,13 @@ final class ReflectionProviderStaticAccessor
 	public static function registerInstance(ReflectionProvider $reflectionProvider): void
 	{
 		self::$instance = $reflectionProvider;
+		ObjectType::resetCaches();
 	}
 
 	public static function getInstance(): ReflectionProvider
 	{
 		if (self::$instance === null) {
-			throw new ShouldNotHappenException();
+			throw new MissingStaticAccessorInstanceException();
 		}
 		return self::$instance;
 	}

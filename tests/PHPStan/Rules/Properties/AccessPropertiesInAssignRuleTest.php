@@ -130,12 +130,16 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 
 	public function testConflictingAnnotationProperty(): void
 	{
-		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], [
-			[
-				'Access to private property ConflictingAnnotationProperty\PropertyWithAnnotation::$test.',
-				27,
-			],
-		]);
+		$errors = [];
+		if (PHP_VERSION_ID >= 80200) {
+			$errors = [
+				[
+					'Access to private property ConflictingAnnotationProperty\PropertyWithAnnotation::$test.',
+					27,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], $errors);
 	}
 
 	public function testBug10477(): void

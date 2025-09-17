@@ -6,6 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<WritingToReadOnlyPropertiesRule>
@@ -80,12 +81,16 @@ class WritingToReadOnlyPropertiesRuleTest extends RuleTestCase
 	public function testConflictingAnnotationProperty(): void
 	{
 		$this->checkThisOnly = false;
-		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], [
-			/*[
-				'Property ConflictingAnnotationProperty\PropertyWithAnnotation::$test is not writable.',
-				27,
-			],*/
-		]);
+		$errors = [];
+		if (PHP_VERSION_ID < 80200) {
+			$errors = [
+				[
+					'Property ConflictingAnnotationProperty\PropertyWithAnnotation::$test is not writable.',
+					27,
+				],
+			];
+		}
+		$this->analyse([__DIR__ . '/data/conflicting-annotation-property.php'], $errors);
 	}
 
 	#[RequiresPhp('>= 8.4')]

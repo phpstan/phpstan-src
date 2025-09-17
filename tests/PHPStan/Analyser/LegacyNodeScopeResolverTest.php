@@ -1841,7 +1841,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$this->overriddenReadOnlyProperty',
 			],
 			[
-				'DOMElement|null',
+				PHP_VERSION_ID < 80100 ? 'string' : 'DOMElement|null',
 				'$this->documentElement',
 			],
 		];

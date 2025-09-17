@@ -1303,6 +1303,26 @@ final class TypeSpecifier
 			)->setRootExpr($rootExpr);
 		}
 
+		if (
+			$context->false()
+			&& $exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& in_array(strtolower((string) $exprNode->name), ['trim', 'ltrim', 'rtrim'], true)
+			&& isset($exprNode->getArgs()[0])
+			&& $constantStringValue === ''
+		) {
+			$argType = $scope->getType($exprNode->getArgs()[0]->value);
+
+			if ($argType->isString()->yes()) {
+				return $this->create(
+					$exprNode->getArgs()[0]->value,
+					new AccessoryNonEmptyStringType(),
+					$context->negate(),
+					$scope,
+				)->setRootExpr($rootExpr);
+			}
+		}
+
 		return null;
 	}
 

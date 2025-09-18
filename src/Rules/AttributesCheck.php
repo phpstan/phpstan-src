@@ -40,7 +40,6 @@ final class AttributesCheck
 		array $attrGroups,
 		int $requiredTarget,
 		string $targetName,
-		bool $isPropertyHook,
 	): array
 	{
 		$errors = [];
@@ -79,12 +78,6 @@ final class AttributesCheck
 				$flags = $attributeClass->getAttributeClassFlags();
 				if (($flags & $requiredTarget) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))
-						->identifier('attribute.target')
-						->line($attribute->getStartLine())
-						->build();
-				} elseif ($isPropertyHook && strtolower($name) === 'nodiscard') {
-					// #[\NoDiscard] cannot be used on property hooks
-					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s cannot be used on property hooks.', $name))
 						->identifier('attribute.target')
 						->line($attribute->getStartLine())
 						->build();

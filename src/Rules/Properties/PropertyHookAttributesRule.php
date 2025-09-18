@@ -9,6 +9,9 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<InPropertyHookNode>
@@ -28,13 +31,29 @@ final class PropertyHookAttributesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return $this->attributesCheck->check(
+		$attrGroups = $node->getOriginalNode()->attrGroups;
+		$errors = $this->attributesCheck->check(
 			$scope,
-			$node->getOriginalNode()->attrGroups,
+			$attrGroups,
 			Attribute::TARGET_METHOD,
 			'method',
-			true,
 		);
+
+		foreach ($attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attribute) {
+				$name = $attribute->name->toString();
+				if (strtolower($name) === 'nodiscard') {
+					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s cannot be used on property hooks.', $name))
+						->identifier('attribute.target')
+						->line($attribute->getStartLine())
+						->nonIgnorable()
+						->build();
+					break;
+				}
+			}
+		}
+
+		return $errors;
 	}
 
 }

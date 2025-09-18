@@ -33,7 +33,6 @@ final class FunctionAttributesRule implements Rule
 			$node->getOriginalNode()->attrGroups,
 			Attribute::TARGET_FUNCTION,
 			'function',
-			false,
 		);
 	}
 

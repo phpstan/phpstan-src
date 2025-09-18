@@ -38,7 +38,6 @@ final class TraitAttributesRule implements Rule
 			$originalNode->attrGroups,
 			Attribute::TARGET_CLASS,
 			'class',
-			false,
 		);
 
 		if (count($node->getTraitReflection()->getNativeReflection()->getAttributes('AllowDynamicProperties')) > 0) {

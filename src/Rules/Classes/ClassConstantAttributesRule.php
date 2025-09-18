@@ -32,7 +32,6 @@ final class ClassConstantAttributesRule implements Rule
 			$node->attrGroups,
 			Attribute::TARGET_CLASS_CONSTANT,
 			'class constant',
-			false,
 		);
 	}
 

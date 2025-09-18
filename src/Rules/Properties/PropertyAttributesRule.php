@@ -32,7 +32,6 @@ final class PropertyAttributesRule implements Rule
 			$node->attrGroups,
 			Attribute::TARGET_PROPERTY,
 			'property',
-			false,
 		);
 	}
 

@@ -1307,7 +1307,10 @@ final class TypeSpecifier
 			$context->false()
 			&& $exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
-			&& in_array(strtolower((string) $exprNode->name), ['trim', 'ltrim', 'rtrim'], true)
+			&& in_array(strtolower((string) $exprNode->name), [
+				'trim', 'ltrim', 'rtrim',
+				'mb_trim', 'mb_ltrim', 'mb_rtrim',
+			], true)
 			&& isset($exprNode->getArgs()[0])
 			&& $constantStringValue === ''
 		) {

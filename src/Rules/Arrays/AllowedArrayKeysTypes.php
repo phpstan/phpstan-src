@@ -74,8 +74,8 @@ final class AllowedArrayKeysTypes
 			return TypeCombinator::intersect($varIterableKeyType->toString(), $keyType);
 		} elseif ($varType->isList()->yes()) {
 			return TypeCombinator::intersect(
-				IntegerRangeType::fromInterval(0, null),
 				$varIterableKeyType,
+				$keyType,
 			);
 		}
 

@@ -36,4 +36,13 @@ class Collection
 		assert(isset($this->list[$index]));
 		assertType('int<0, 5>', $index);
 	}
+
+	/**
+	 * @param int<5, 15> $index
+	 */
+	public function issetNotWidensIntRange(int $index, string $name): void
+	{
+		assert(isset($this->list[$index]));
+		assertType('int<5, 15>', $index);
+	}
 }

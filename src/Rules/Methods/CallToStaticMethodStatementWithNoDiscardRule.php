@@ -40,6 +40,10 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
+		if ($node->expr->isFirstClassCallable()) {
+			return [];
+		}
+
 		$funcCall = $node->expr;
 		if (!$funcCall->name instanceof Node\Identifier) {
 			return [];

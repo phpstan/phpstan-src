@@ -43,3 +43,5 @@ $arrowWithNoDiscard = #[\NoDiscard] fn () => 1;
 $b = $arrowWithNoDiscard();
 
 $arrowWithNoDiscard();
+
+withSideEffects(...);

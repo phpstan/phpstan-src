@@ -34,6 +34,10 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
+		if ($node->expr->isFirstClassCallable()) {
+			return [];
+		}
+
 		$funcCall = $node->expr;
 		if ($funcCall->name instanceof Node\Name) {
 			if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {

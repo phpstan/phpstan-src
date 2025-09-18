@@ -28,3 +28,5 @@ foreach ($o->instanceMethod() as $num) {
 }
 
 $o->differentCase();
+
+$o->instanceMethod(...);

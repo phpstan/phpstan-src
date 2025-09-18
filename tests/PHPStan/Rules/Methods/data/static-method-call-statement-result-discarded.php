@@ -25,3 +25,5 @@ foreach (ClassWithStaticSideEffects::staticMethod() as $num) {
 }
 
 ClassWithStaticSideEffects::differentCase();
+
+ClassWithStaticSideEffects::staticMethod(...);

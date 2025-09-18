@@ -2,23 +2,19 @@
 
 namespace PHPStan\Testing\PHPUnit;
 
+use PHPStan\DependencyInjection\InvalidIgnoredErrorExceptionTest;
 use function array_key_exists;
 
 final class ContainerInitializer
 {
-
-	/** @var array<string, true> */
-	private static array $initialized = [];
-
 	public static function initialize(string $testClassName): void
 	{
-		if (array_key_exists($testClassName, self::$initialized)) {
+		// This test expects an exception during container initialization
+		if ($testClassName === InvalidIgnoredErrorExceptionTest::class) {
 			return;
 		}
 
 		$testClassName::getContainer();
-
-		self::$initialized[$testClassName] = true;
 	}
 
 }

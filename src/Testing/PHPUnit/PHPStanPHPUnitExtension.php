@@ -18,8 +18,6 @@ final class PHPStanPHPUnitExtension implements Extension
 		ParameterCollection $parameters,
 	): void
 	{
-		// use multiple subscribers which all initialize the test-container.
-		// we need to make sure we only initialize once per test-class.
 		$facade->registerSubscriber(
 			new InitContainerBeforeDataProviderSubscriber(),
 		);

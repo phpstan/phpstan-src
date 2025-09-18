@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Parser\VoidCastVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -40,9 +39,6 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 
 		$funcCall = $node->expr;
 		if (!$funcCall->name instanceof Node\Identifier) {
-			return [];
-		}
-		if ($funcCall->hasAttribute(VoidCastVisitor::ATTRIBUTE_NAME)) {
 			return [];
 		}
 		$methodName = $funcCall->name->toString();

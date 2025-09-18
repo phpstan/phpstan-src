@@ -36,6 +36,7 @@ parameters:
 		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
 		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
 		- ../src/Command/IgnoredRegexValidator.php
+		- ../src/Testing/PHPUnit/*
 	exceptions:
 		uncheckedExceptionClasses:
 			- 'PHPStan\ShouldNotHappenException'

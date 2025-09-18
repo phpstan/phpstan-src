@@ -15,11 +15,6 @@
 		"../tests/PHPStan/Rules/Functions/data/define-bug-3349.php",
 		"../tests/PHPStan/Levels/data/stubs/function.php",
 		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
-		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
-		"../tests/PHPStan/Rules/Functions/data/function-call-statement-result-discarded.php",
-		"../tests/PHPStan/Rules/Methods/data/method-call-statement-result-discarded.php",
-		"../tests/PHPStan/Rules/Methods/data/static-method-call-statement-result-discarded.php",
-		"../tests/PHPStan/Rules/Properties/data/property-hook-attributes-nodiscard.php",
-		"../tests/PHPStan/Rules/Cast/data/void-cast.php"
+		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php"
     ]
 }

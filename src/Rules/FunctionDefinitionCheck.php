@@ -494,7 +494,7 @@ final class FunctionDefinitionCheck
 					->build();
 			}
 		}
-		if ($parametersAcceptor->hasNoDiscardAttribute()->yes()) {
+		if ($parametersAcceptor->mustUseReturnValue()->yes()) {
 			$returnType = $functionNode->getReturnType();
 			if ($returnType instanceof Identifier
 				&& $returnType->name === 'void'

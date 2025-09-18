@@ -151,7 +151,7 @@ final class NativeFunctionReflection implements FunctionReflection
 		return $this->attributes;
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
 		foreach ($this->attributes as $attrib) {
 			if (strtolower($attrib->getName()) === 'nodiscard') {

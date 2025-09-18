@@ -63,7 +63,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 
 		$method = $calledOnType->getMethod($methodName, $scope);
 
-		if (!$method->hasNoDiscardAttribute()->yes()) {
+		if (!$method->mustUseReturnValue()->yes()) {
 			return [];
 		}
 

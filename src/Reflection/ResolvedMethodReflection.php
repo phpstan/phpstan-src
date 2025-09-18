@@ -229,9 +229,9 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getAttributes();
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
-		return $this->reflection->hasNoDiscardAttribute();
+		return $this->reflection->mustUseReturnValue();
 	}
 
 }

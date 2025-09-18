@@ -43,7 +43,7 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
 
-		if (!$function->hasNoDiscardAttribute()->yes()) {
+		if (!$function->mustUseReturnValue()->yes()) {
 			return [];
 		}
 

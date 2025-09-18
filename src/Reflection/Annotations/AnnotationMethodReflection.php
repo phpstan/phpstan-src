@@ -183,7 +183,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

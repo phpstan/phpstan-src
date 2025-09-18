@@ -202,9 +202,9 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->getAttributes();
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
-		return $this->nativeMethodReflection->hasNoDiscardAttribute();
+		return $this->nativeMethodReflection->mustUseReturnValue();
 	}
 
 }

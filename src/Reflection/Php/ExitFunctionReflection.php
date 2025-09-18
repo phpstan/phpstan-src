@@ -143,7 +143,7 @@ final class ExitFunctionReflection implements FunctionReflection
 		return [];
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

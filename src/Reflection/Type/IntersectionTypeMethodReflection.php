@@ -228,9 +228,9 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->methods[0]->getAttributes();
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
-		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->hasNoDiscardAttribute());
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->mustUseReturnValue());
 	}
 
 }

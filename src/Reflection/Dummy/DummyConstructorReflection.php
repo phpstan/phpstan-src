@@ -157,7 +157,7 @@ final class DummyConstructorReflection implements ExtendedMethodReflection
 		return [];
 	}
 
-	public function hasNoDiscardAttribute(): TrinaryLogic
+	public function mustUseReturnValue(): TrinaryLogic
 	{
 		// Align with the getAttributes() returning empty
 		return TrinaryLogic::createNo();

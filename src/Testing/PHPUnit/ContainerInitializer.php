@@ -1,16 +1,16 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Testing\PHPUnit;
 
-final class ContainerInitializer {
-	/**
-	 * @var array<string, true>
-	 */
-	private static $initialized = [];
+use function array_key_exists;
 
-	static public function initialize(string $testClassName): void
+final class ContainerInitializer
+{
+
+	/** @var array<string, true> */
+	private static array $initialized = [];
+
+	public static function initialize(string $testClassName): void
 	{
 		if (array_key_exists($testClassName, self::$initialized)) {
 			return;
@@ -20,4 +20,5 @@ final class ContainerInitializer {
 
 		self::$initialized[$testClassName] = true;
 	}
+
 }

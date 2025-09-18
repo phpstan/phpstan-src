@@ -1311,8 +1311,6 @@ final class TypeSpecifier
 			&& isset($exprNode->getArgs()[0])
 			&& $constantStringValue === ''
 		) {
-			$argType = $scope->getType($exprNode->getArgs()[0]->value);
-
 			return $this->create(
 				$exprNode->getArgs()[0]->value,
 				TypeCombinator::intersect(

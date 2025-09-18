@@ -2,14 +2,16 @@
 
 namespace PHPStan\Testing\PHPUnit;
 
+use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Event\Test\DataProviderMethodCalled;
 use PHPUnit\Event\Test\DataProviderMethodCalledSubscriber;
 use function is_a;
 
-class InitContainerBeforeDataProviderSubscriber implements DataProviderMethodCalledSubscriber
+final class InitContainerBeforeDataProviderSubscriber implements DataProviderMethodCalledSubscriber
 {
 
+	#[Override]
 	public function notify(DataProviderMethodCalled $event): void
 	{
 		$testClassName = $event->testMethod()->className();

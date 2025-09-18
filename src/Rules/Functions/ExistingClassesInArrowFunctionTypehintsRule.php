@@ -52,7 +52,7 @@ final class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
 			'Parameter $%s of anonymous function has unresolvable native type.',
 			'Anonymous function has unresolvable native return type.',
-			'Attribute NoDiscard cannot be used on void anonymous function.',
+			'Attribute NoDiscard cannot be used on %s anonymous function.',
 		));
 	}
 

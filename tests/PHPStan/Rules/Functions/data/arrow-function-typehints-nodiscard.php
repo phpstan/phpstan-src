@@ -10,4 +10,9 @@ class Demo
 		#[\NoDiscard] fn(): void => true;
 	}
 
+	public function doBar()
+	{
+		#[\NoDiscard] fn(): never => true;
+	}
+
 }

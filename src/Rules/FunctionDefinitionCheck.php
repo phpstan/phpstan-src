@@ -31,6 +31,7 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
@@ -109,7 +110,7 @@ final class FunctionDefinitionCheck
 		string $unionTypesMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
-		string $noDiscardVoidReturnMessage,
+		string $noDiscardReturnTypeMessage,
 	): array
 	{
 		$errors = [];
@@ -202,11 +203,14 @@ final class FunctionDefinitionCheck
 		if ($returnTypeNode === null) {
 			return $errors;
 		}
-		if ($returnTypeNode instanceof Identifier && $returnTypeNode->name === 'void') {
+		if (
+			$returnTypeNode instanceof Identifier
+			&& in_array($returnTypeNode->toLowerString(), ['void', 'never'], true)
+		) {
 			foreach ($attribGroups as $attribGroup) {
 				foreach ($attribGroup->attrs as $attrib) {
 					if (strtolower($attrib->name->name) === 'nodiscard') {
-						$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
+						$errors[] = RuleErrorBuilder::message(sprintf($noDiscardReturnTypeMessage, $returnTypeNode->toString()))
 							->line($returnTypeNode->getStartLine())
 							->identifier('attribute.target')
 							->build();
@@ -349,7 +353,7 @@ final class FunctionDefinitionCheck
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
-		string $noDiscardVoidReturnMessage,
+		string $noDiscardReturnTypeMessage,
 	): array
 	{
 		$errors = [];
@@ -495,11 +499,12 @@ final class FunctionDefinitionCheck
 			}
 		}
 		if ($parametersAcceptor->mustUseReturnValue()->yes()) {
-			$returnType = $functionNode->getReturnType();
-			if ($returnType instanceof Identifier
-				&& $returnType->name === 'void'
+			$returnType = $parametersAcceptor->getReturnType();
+			if (
+				$returnType->isVoid()->yes()
+				|| ($returnType instanceof NeverType && $returnType->isExplicit())
 			) {
-				$errors[] = RuleErrorBuilder::message($noDiscardVoidReturnMessage)
+				$errors[] = RuleErrorBuilder::message(sprintf($noDiscardReturnTypeMessage, $returnType->describe(VerbosityLevel::typeOnly())))
 					->line($returnTypeNode->getStartLine())
 					->identifier('attribute.target')
 					->build();

@@ -610,6 +610,30 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::alsoNothing().',
 				12,
 			],
+			[
+				'Attribute NoDiscard cannot be used on never method TestMethodTypehints\Demo::returnNever().',
+				16,
+			],
+			[
+				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::__construct().',
+				19,
+			],
+			[
+				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::__destruct().',
+				25,
+			],
+			[
+				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::__unset().',
+				31,
+			],
+			[
+				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::__wakeup().',
+				37,
+			],
+			[
+				'Attribute NoDiscard cannot be used on void method TestMethodTypehints\Demo::__clone().',
+				43,
+			],
 		]);
 	}
 

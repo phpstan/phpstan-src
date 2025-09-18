@@ -331,6 +331,10 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				'Attribute NoDiscard cannot be used on void anonymous function.',
 				10,
 			],
+			[
+				'Attribute NoDiscard cannot be used on never anonymous function.',
+				15,
+			],
 		]);
 	}
 

@@ -360,6 +360,10 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				'Attribute NoDiscard cannot be used on void anonymous function.',
 				5,
 			],
+			[
+				'Attribute NoDiscard cannot be used on never anonymous function.',
+				10,
+			],
 		]);
 	}
 

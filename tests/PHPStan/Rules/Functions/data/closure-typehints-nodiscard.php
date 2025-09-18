@@ -6,3 +6,8 @@ $callback = #[\NoDiscard] function (): void
 {
 
 };
+
+$callbackNever = #[\NoDiscard] function (): never
+{
+
+};

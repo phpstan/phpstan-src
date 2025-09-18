@@ -496,6 +496,10 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				'Attribute NoDiscard cannot be used on void function TestFunctionTypehints\nothing().',
 				6,
 			],
+			[
+				'Attribute NoDiscard cannot be used on never function TestFunctionTypehints\returnNever().',
+				10,
+			],
 		]);
 	}
 

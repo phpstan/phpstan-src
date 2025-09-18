@@ -1,10 +1,5 @@
 <?php declare(strict_types = 1);
 
-use PHPStan\Testing\PHPStanTestCase;
-use PHPUnit\Event\Facade;
-use PHPUnit\Event\Test\DataProviderMethodCalled;
-use PHPUnit\Event\Test\DataProviderMethodCalledSubscriber;
-
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -24,22 +19,3 @@ eval('trait TraitInEval {
 	}
 
 }');
-
-class InitContainerBeforeDataProvider implements DataProviderMethodCalledSubscriber
-{
-
-	public function notify(DataProviderMethodCalled $event): void
-	{
-		$testClassName = $event->testMethod()->className();
-
-		if (!is_a($testClassName, PhpStanTestCase::class, true)) {
-			return;
-		}
-
-		$testClassName::getContainer();
-	}
-
-}
-
-
-Facade::instance()->registerSubscriber(new InitContainerBeforeDataProvider());

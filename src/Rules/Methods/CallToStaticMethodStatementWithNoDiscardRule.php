@@ -18,7 +18,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Expression>
  */
-#[RegisteredRule(level: 4)]
+#[RegisteredRule(level: 0)]
 final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 {
 

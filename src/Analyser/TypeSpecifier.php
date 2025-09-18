@@ -1313,14 +1313,15 @@ final class TypeSpecifier
 		) {
 			$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
-			if ($argType->isString()->yes()) {
-				return $this->create(
-					$exprNode->getArgs()[0]->value,
+			return $this->create(
+				$exprNode->getArgs()[0]->value,
+				TypeCombinator::intersect(
+					new StringType(),
 					new AccessoryNonEmptyStringType(),
-					$context->negate(),
-					$scope,
-				)->setRootExpr($rootExpr);
-			}
+				),
+				$context->negate(),
+				$scope,
+			)->setRootExpr($rootExpr);
 		}
 
 		return null;

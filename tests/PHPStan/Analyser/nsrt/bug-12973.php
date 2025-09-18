@@ -16,6 +16,17 @@ function nullIfBlank(?string $value): ?string
 	return null;
 }
 
+function trimMixed($value): void
+{
+	if (trim($value) === '') {
+		assertType('mixed', $value);
+	} else {
+		assertType('non-empty-string', $value);
+	}
+	assertType('mixed', $value);
+
+}
+
 function trimTypes(string $value): void
 {
 	if (trim($value) === '') {

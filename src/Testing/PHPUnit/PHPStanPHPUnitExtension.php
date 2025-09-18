@@ -21,6 +21,9 @@ final class PHPStanPHPUnitExtension implements Extension
 		$facade->registerSubscriber(
 			new InitContainerBeforeDataProviderSubscriber(),
 		);
+		$facade->registerSubscriber(
+			new InitContainerBeforeTestSubscriber(),
+		);
 	}
 
 }

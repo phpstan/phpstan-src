@@ -20,7 +20,7 @@ final class InitContainerBeforeDataProviderSubscriber implements DataProviderMet
 			return;
 		}
 
-		$testClassName::getContainer();
+		ContainerInitializer::initialize($testClassName);
 	}
 
 }

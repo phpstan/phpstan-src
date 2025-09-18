@@ -98,4 +98,9 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 		return TrinaryLogic::createYes();
 	}
 
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 }

@@ -295,6 +295,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return TrinaryLogic::createYes();
 	}
 
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

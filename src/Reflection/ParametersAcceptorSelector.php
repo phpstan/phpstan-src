@@ -639,6 +639,7 @@ final class ParametersAcceptorSelector
 		$invalidateExpressions = [];
 		$usedVariables = [];
 		$acceptsNamedArguments = TrinaryLogic::createNo();
+		$mustUseReturnValue = TrinaryLogic::createMaybe();
 
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
@@ -655,6 +656,7 @@ final class ParametersAcceptorSelector
 				$invalidateExpressions = array_merge($invalidateExpressions, $acceptor->getInvalidateExpressions());
 				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
 				$acceptsNamedArguments = $acceptsNamedArguments->or($acceptor->acceptsNamedArguments());
+				$mustUseReturnValue = $mustUseReturnValue->or($acceptor->mustUseReturnValue());
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
@@ -761,6 +763,7 @@ final class ParametersAcceptorSelector
 				$invalidateExpressions,
 				$usedVariables,
 				$acceptsNamedArguments,
+				$mustUseReturnValue,
 			);
 		}
 
@@ -797,6 +800,7 @@ final class ParametersAcceptorSelector
 				$acceptor->getInvalidateExpressions(),
 				$acceptor->getUsedVariables(),
 				$acceptor->acceptsNamedArguments(),
+				$acceptor->mustUseReturnValue(),
 			);
 		}
 

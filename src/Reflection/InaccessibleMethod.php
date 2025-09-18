@@ -88,4 +88,9 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return $this->methodReflection->acceptsNamedArguments();
 	}
 
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 }

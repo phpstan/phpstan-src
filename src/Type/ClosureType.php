@@ -80,6 +80,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TrinaryLogic $acceptsNamedArguments;
 
+	private TrinaryLogic $mustUseReturnValue;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -102,12 +104,17 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		private array $invalidateExpressions = [],
 		private array $usedVariables = [],
 		?TrinaryLogic $acceptsNamedArguments = null,
+		?TrinaryLogic $mustUseReturnValue = null,
 	)
 	{
 		if ($acceptsNamedArguments === null) {
 			$acceptsNamedArguments = TrinaryLogic::createYes();
 		}
 		$this->acceptsNamedArguments = $acceptsNamedArguments;
+		if ($mustUseReturnValue === null) {
+			$mustUseReturnValue = TrinaryLogic::createMaybe();
+		}
+		$this->mustUseReturnValue = $mustUseReturnValue;
 
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
@@ -269,6 +276,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					$this->impurePoints,
 					$this->invalidateExpressions,
 					$this->usedVariables,
+					$this->acceptsNamedArguments,
+					$this->mustUseReturnValue,
 				);
 
 				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
@@ -446,6 +455,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
+	}
+
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return $this->mustUseReturnValue;
 	}
 
 	public function isCloneable(): TrinaryLogic
@@ -627,6 +641,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->invalidateExpressions,
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
+			$this->mustUseReturnValue,
 		);
 	}
 
@@ -677,6 +692,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->invalidateExpressions,
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
+			$this->mustUseReturnValue,
 		);
 	}
 

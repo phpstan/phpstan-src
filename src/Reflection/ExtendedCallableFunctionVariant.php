@@ -36,6 +36,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 		private array $invalidateExpressions,
 		private array $usedVariables,
 		private TrinaryLogic $acceptsNamedArguments,
+		private TrinaryLogic $mustUseReturnValue,
 	)
 	{
 		parent::__construct(
@@ -78,6 +79,11 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 	public function acceptsNamedArguments(): TrinaryLogic
 	{
 		return $this->acceptsNamedArguments;
+	}
+
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return $this->mustUseReturnValue;
 	}
 
 }

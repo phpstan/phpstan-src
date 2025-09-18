@@ -1032,7 +1032,7 @@ final class TypeNodeResolver
 				),
 			]);
 		} elseif ($mainType instanceof ClosureType) {
-			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, impurePoints: $mainType->getImpurePoints(), invalidateExpressions: $mainType->getInvalidateExpressions(), usedVariables: $mainType->getUsedVariables(), acceptsNamedArguments: $mainType->acceptsNamedArguments());
+			$closure = new ClosureType($parameters, $returnType, $isVariadic, $templateTypeMap, templateTags: $templateTags, impurePoints: $mainType->getImpurePoints(), invalidateExpressions: $mainType->getInvalidateExpressions(), usedVariables: $mainType->getUsedVariables(), acceptsNamedArguments: $mainType->acceptsNamedArguments(), mustUseReturnValue: $mainType->mustUseReturnValue());
 			if ($closure->isPure()->yes() && $returnType->isVoid()->yes()) {
 				return new ErrorType();
 			}

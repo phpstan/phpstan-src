@@ -1442,6 +1442,16 @@ final class MutatingScope implements Scope
 				if (array_key_exists($cacheKey, $cachedTypes)) {
 					$cachedClosureData = $cachedTypes[$cacheKey];
 
+					$mustUseReturnValue = TrinaryLogic::createNo();
+					foreach ($node->attrGroups as $attrGroup) {
+						foreach ($attrGroup->attrs as $attr) {
+							if ($attr->name->toLowerString() === 'nodiscard') {
+								$mustUseReturnValue = TrinaryLogic::createYes();
+								break;
+							}
+						}
+					}
+
 					return new ClosureType(
 						$parameters,
 						$cachedClosureData['returnType'],
@@ -1454,6 +1464,7 @@ final class MutatingScope implements Scope
 						invalidateExpressions: $cachedClosureData['invalidateExpressions'],
 						usedVariables: $cachedClosureData['usedVariables'],
 						acceptsNamedArguments: TrinaryLogic::createYes(),
+						mustUseReturnValue: $mustUseReturnValue,
 					);
 				}
 				if (self::$resolveClosureTypeDepth >= 2) {
@@ -1656,6 +1667,16 @@ final class MutatingScope implements Scope
 			];
 			$node->setAttribute('phpstanCachedTypes', $cachedTypes);
 
+			$mustUseReturnValue = TrinaryLogic::createNo();
+			foreach ($node->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					if ($attr->name->toLowerString() === 'nodiscard') {
+						$mustUseReturnValue = TrinaryLogic::createYes();
+						break;
+					}
+				}
+			}
+
 			return new ClosureType(
 				$parameters,
 				$returnType,
@@ -1668,6 +1689,7 @@ final class MutatingScope implements Scope
 				invalidateExpressions: $invalidateExpressions,
 				usedVariables: $usedVariables,
 				acceptsNamedArguments: TrinaryLogic::createYes(),
+				mustUseReturnValue: $mustUseReturnValue,
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -2716,10 +2738,12 @@ final class MutatingScope implements Scope
 			$throwPoints = [];
 			$impurePoints = [];
 			$acceptsNamedArguments = TrinaryLogic::createYes();
+			$mustUseReturnValue = TrinaryLogic::createMaybe();
 			if ($variant instanceof CallableParametersAcceptor) {
 				$throwPoints = $variant->getThrowPoints();
 				$impurePoints = $variant->getImpurePoints();
 				$acceptsNamedArguments = $variant->acceptsNamedArguments();
+				$mustUseReturnValue = $variant->mustUseReturnValue();
 			} elseif ($function !== null) {
 				$returnTypeForThrow = $variant->getReturnType();
 				$throwType = $function->getThrowType();
@@ -2745,6 +2769,7 @@ final class MutatingScope implements Scope
 				}
 
 				$acceptsNamedArguments = $function->acceptsNamedArguments();
+				$mustUseReturnValue = $function->mustUseReturnValue();
 			}
 
 			$parameters = $variant->getParameters();
@@ -2759,6 +2784,7 @@ final class MutatingScope implements Scope
 				$throwPoints,
 				$impurePoints,
 				acceptsNamedArguments: $acceptsNamedArguments,
+				mustUseReturnValue: $mustUseReturnValue,
 			);
 		}
 

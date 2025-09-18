@@ -122,6 +122,7 @@ final class RuleLevelHelper
 					$acceptedType->getInvalidateExpressions(),
 					$acceptedType->getUsedVariables(),
 					$acceptedType->acceptsNamedArguments(),
+					$acceptedType->mustUseReturnValue(),
 				);
 			}
 

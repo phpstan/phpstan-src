@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.1
 
 namespace FunctionCallStatementResultDiscarded;
 
@@ -23,3 +23,23 @@ function differentCase(): array {
 }
 
 differentCase();
+
+$callable = 'FunctionCallStatementResultDiscarded\\withSideEffects';
+$callableResult = $callable();
+
+$callable();
+
+$firstClassCallable = withSideEffects(...);
+$firstClasCallableResult = $firstClassCallable();
+
+$firstClassCallable();
+
+$closureWithNoDiscard = #[\NoDiscard] function () { return 1; };
+$a = $closureWithNoDiscard();
+
+$closureWithNoDiscard();
+
+$arrowWithNoDiscard = #[\NoDiscard] fn () => 1;
+$b = $arrowWithNoDiscard();
+
+$arrowWithNoDiscard();

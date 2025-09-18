@@ -168,4 +168,9 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 		return $this->function->acceptsNamedArguments();
 	}
 
+	public function mustUseReturnValue(): TrinaryLogic
+	{
+		return $this->function->mustUseReturnValue();
+	}
+
 }

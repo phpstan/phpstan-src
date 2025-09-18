@@ -8,6 +8,8 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
@@ -33,25 +35,43 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 		}
 
 		$funcCall = $node->expr;
-		if (!($funcCall->name instanceof Node\Name)) {
+		if ($funcCall->name instanceof Node\Name) {
+			if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
+				return [];
+			}
+
+			$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
+			if (!$function->mustUseReturnValue()->yes()) {
+				return [];
+			}
+
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Call to function %s() on a separate line discards return value.',
+					$function->getName(),
+				))->identifier('function.resultDiscarded')->build(),
+			];
+		}
+
+		$callableType = $scope->getType($funcCall->name);
+		if (!$callableType->isCallable()->yes()) {
 			return [];
 		}
 
-		if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
-			return [];
+		$mustUseReturnValue = TrinaryLogic::createNo();
+		foreach ($callableType->getCallableParametersAcceptors($scope) as $callableParametersAcceptor) {
+			$mustUseReturnValue = $mustUseReturnValue->or($callableParametersAcceptor->mustUseReturnValue());
 		}
 
-		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
-
-		if (!$function->mustUseReturnValue()->yes()) {
+		if (!$mustUseReturnValue->yes()) {
 			return [];
 		}
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Call to function %s() on a separate line discards return value.',
-				$function->getName(),
-			))->identifier('function.resultDiscarded')->build(),
+				'Call to callable %s on a separate line discards return value.',
+				$callableType->describe(VerbosityLevel::value()),
+			))->identifier('callable.resultDiscarded')->build(),
 		];
 	}
 

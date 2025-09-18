@@ -324,6 +324,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5206.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testNoDiscardVoid(): void
 	{
 		$this->analyse([__DIR__ . '/data/arrow-function-typehints-nodiscard.php'], [

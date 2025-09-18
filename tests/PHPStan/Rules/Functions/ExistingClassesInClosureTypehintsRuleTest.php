@@ -353,6 +353,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testNoDiscardVoid(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-typehints-nodiscard.php'], [

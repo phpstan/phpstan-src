@@ -489,6 +489,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testNoDiscardVoid(): void
 	{
 		$this->analyse([__DIR__ . '/data/typehints-nodiscard.php'], [

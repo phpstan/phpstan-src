@@ -48,7 +48,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Transform source code"
-        if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
+        if: matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1'
         run: |
           composer install --no-interaction --no-progress --working-dir=compiler
           ./compiler/vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}

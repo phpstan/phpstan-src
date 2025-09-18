@@ -58,7 +58,7 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
+	#[RequiresPhp('>= 8.4')]
 	public function testNoDiscard(): void
 	{
 		$this->analyse([__DIR__ . '/data/property-hook-attributes-nodiscard.php'], [

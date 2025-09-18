@@ -32,6 +32,7 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
+          - "8.1"
           - "8.2"
           - "8.3"
           - "8.4"
@@ -54,6 +55,14 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
+
+      - name: "Transform source code"
+        if: matrix.php-version == '8.1'
+        shell: bash
+        run: |
+          composer install --no-interaction --no-progress --working-dir=compiler
+          ./compiler/vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}
+          composer dump
 
       - name: "Tests"
         run: "make tests"
@@ -159,7 +168,6 @@ jobs:
         php-version:
           - "7.4"
           - "8.0"
-          - "8.1"
         operating-system: [ ubuntu-latest, windows-latest ]
 
     steps:

@@ -30,7 +30,13 @@ class InitContainerBeforeDataProvider implements DataProviderMethodCalledSubscri
 
 	public function notify(DataProviderMethodCalled $event): void
 	{
-		PHPStanTestCase::getContainer();
+		$testClassName = $event->testMethod()->className();
+
+		if (!is_a($testClassName, PhpStanTestCase::class, true)) {
+			return;
+		}
+
+		$testClassName::getContainer();
 	}
 
 }

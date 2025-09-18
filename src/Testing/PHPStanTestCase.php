@@ -2,7 +2,6 @@
 
 namespace PHPStan\Testing;
 
-use Override;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
@@ -95,12 +94,6 @@ abstract class PHPStanTestCase extends TestCase
 		}
 
 		return self::$containers[$cacheKey];
-	}
-
-	#[Override]
-	public static function setUpBeforeClass(): void
-	{
-		self::getContainer();
 	}
 
 	/**

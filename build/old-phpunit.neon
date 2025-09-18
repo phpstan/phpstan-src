@@ -1,4 +1,7 @@
 parameters:
+	excludePaths:
+		- ../src/Testing/PHPUnit/*
+
 	ignoreErrors:
 			-
 				message: '#^Instanceof references internal interface PHPUnit\\Exception\.$#'

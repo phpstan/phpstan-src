@@ -8,7 +8,7 @@ use PHPUnit\Runner\Extension\Facade;
 use PHPUnit\Runner\Extension\ParameterCollection;
 use PHPUnit\TextUI\Configuration\Configuration;
 
-final class PHPUnitExtension implements Extension
+final class PHPStanPHPUnitExtension implements Extension
 {
 
 	#[Override]

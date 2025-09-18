@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" bootstrap="tests/bootstrap.php" cacheResult="false" colors="true" executionOrder="random" failOnRisky="true" failOnWarning="true" failOnEmptyTestSuite="true" beStrictAboutChangesToGlobalState="true" beStrictAboutOutputDuringTests="true" cacheDirectory="tmp/.phpunit.cache" beStrictAboutCoverageMetadata="true">
   <extensions>
-    <bootstrap class="PHPStan\Testing\PHPUnit\PHPUnitExtension"/>
+    <bootstrap class="PHPStan\Testing\PHPUnit\PHPStanPHPUnitExtension"/>
   </extensions>
   <testsuites>
     <testsuite name="PHPStan">

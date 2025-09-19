@@ -965,12 +965,8 @@ final class ClassReflection
 		$initializerExprContext = InitializerExprContext::fromClassReflection($this);
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
-			if ($case instanceof ReflectionEnumBackedCase) {
-				try {
-					$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
-				} catch (LogicException) {
-					// Enum case does not have a value
-				}
+			if ($case instanceof ReflectionEnumBackedCase && $case->hasValueExpression()) {
+				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
 			}
 			$caseName = $case->getName();
 			$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
@@ -996,12 +992,8 @@ final class ClassReflection
 
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
-		if ($case instanceof ReflectionEnumBackedCase) {
-			try {
-				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
-			} catch (LogicException) {
-				// Enum case does not have a value
-			}
+		if ($case instanceof ReflectionEnumBackedCase && $case->hasValueExpression()) {
+			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 
 		$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));

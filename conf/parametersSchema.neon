@@ -69,6 +69,7 @@ parametersSchema:
 	strictRulesInstalled: bool()
 	deprecationRulesInstalled: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
+	checkStrictPrintfPlaceholderTypes: bool()
 
 	tips: structure([
 		discoveringSymbols: bool()

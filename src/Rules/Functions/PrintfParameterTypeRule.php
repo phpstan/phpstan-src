@@ -42,6 +42,7 @@ final class PrintfParameterTypeRule implements Rule
 		private PrintfHelper $printfHelper,
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private bool $checkStrictPrintfPlaceholderTypes,
 	)
 	{
 	}
@@ -100,15 +101,23 @@ final class PrintfParameterTypeRule implements Rule
 			new NullType(),
 		);
 		// Type on the left can go to the type on the right, but not vice versa.
-		$allowedTypeNameMap = [
-			'strict-int' => 'int',
-			'int' => 'castable to int',
-			'float' => 'castable to float',
-			// These are here just for completeness. They won't be used because, these types are already enforced by
-			// CallToFunctionParametersRule.
-			'string' => 'castable to string',
-			'mixed' => 'castable to string',
-		];
+		$allowedTypeNameMap = $this->checkStrictPrintfPlaceholderTypes
+			? [
+				'strict-int' => 'int',
+				'int' => 'int',
+				'float' => 'float',
+				'string' => 'int|float|string|Stringable',
+				'mixed' => 'int|float|string|Stringable',
+			]
+			: [
+				'strict-int' => 'int',
+				'int' => 'castable to int',
+				'float' => 'castable to float',
+				// These are here just for completeness. They won't be used because, these types are already enforced by
+				// CallToFunctionParametersRule.
+				'string' => 'castable to string',
+				'mixed' => 'castable to string',
+			];
 
 		for ($i = $formatArgumentPosition + 1, $j = 0; $i < $argsCount; $i++, $j++) {
 			// Some arguments may be skipped entirely.
@@ -117,10 +126,10 @@ final class PrintfParameterTypeRule implements Rule
 					$scope,
 					$args[$i]->value,
 					'',
-					static fn (Type $t) => $placeholder->doesArgumentTypeMatchPlaceholder($t),
+					fn (Type $t) => $placeholder->doesArgumentTypeMatchPlaceholder($t, $this->checkStrictPrintfPlaceholderTypes),
 				)->getType();
 
-				if ($argType instanceof ErrorType || $placeholder->doesArgumentTypeMatchPlaceholder($argType)) {
+				if ($argType instanceof ErrorType || $placeholder->doesArgumentTypeMatchPlaceholder($argType, $this->checkStrictPrintfPlaceholderTypes)) {
 					continue;
 				}
 

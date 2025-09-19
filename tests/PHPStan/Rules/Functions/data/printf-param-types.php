@@ -39,7 +39,7 @@ printf('%d', null);
 printf('%d', true);
 printf('%d', new \SimpleXMLElement('<a>aaa</a>'));
 
-printf('%f', 'a');
+printf('%f', '1.2345678901234567890123456789013245678901234567989');
 printf('%f', null);
 printf('%f', true);
 printf('%f', new \SimpleXMLElement('<a>aaa</a>'));

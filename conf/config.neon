@@ -66,6 +66,7 @@ parameters:
 	strictRulesInstalled: false
 	deprecationRulesInstalled: false
 	inferPrivatePropertyTypeFromConstructor: false
+	checkStrictPrintfPlaceholderTypes: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
 	reportMaybesInPropertyPhpDocTypes: false

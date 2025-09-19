@@ -4,8 +4,11 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 final class PrintfPlaceholder
 {
@@ -20,20 +23,30 @@ final class PrintfPlaceholder
 	{
 	}
 
-	public function doesArgumentTypeMatchPlaceholder(Type $argumentType): bool
+	public function doesArgumentTypeMatchPlaceholder(Type $argumentType, bool $strictPlaceholderTypes): bool
 	{
 		switch ($this->acceptingType) {
 			case 'strict-int':
 				return (new IntegerType())->accepts($argumentType, true)->yes();
 			case 'int':
-				return ! $argumentType->toInteger() instanceof ErrorType;
+				return $strictPlaceholderTypes
+					? (new IntegerType())->accepts($argumentType, true)->yes()
+					: ! $argumentType->toInteger() instanceof ErrorType;
 			case 'float':
-				return ! $argumentType->toFloat() instanceof ErrorType;
-			// The function signature already limits the parameters to stringable types, so there's
-			// no point in checking string again here.
+				return $strictPlaceholderTypes
+					? (new FloatType())->accepts($argumentType, true)->yes()
+					: ! $argumentType->toFloat() instanceof ErrorType;
 			case 'string':
 			case 'mixed':
-				return true;
+				// The function signature already limits the parameters to stringable types, so there's
+				// no point in checking string again here.
+				return !$strictPlaceholderTypes
+					// Don't accept null or bool. It's likely to be a mistake.
+					|| TypeCombinator::union(
+						new StringAlwaysAcceptingObjectWithToStringType(),
+						// float also accepts int.
+						new FloatType(),
+					)->accepts($argumentType, true)->yes();
 			// Without this PHPStan with PHP 7.4 reports "...should return bool but return statement is missing."
 			// Presumably, because promoted properties are turned into regular properties and the phpdoc isn't applied to the property.
 			default:

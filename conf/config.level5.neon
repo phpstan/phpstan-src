@@ -20,3 +20,5 @@ services:
 		class: PHPStan\Rules\Functions\ParameterCastableToNumberRule
 	-
 		class: PHPStan\Rules\Functions\PrintfParameterTypeRule
+		arguments:
+			checkStrictPrintfPlaceholderTypes: %checkStrictPrintfPlaceholderTypes%

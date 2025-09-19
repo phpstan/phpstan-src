@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
-use LogicException;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;

@@ -4,56 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce39326567575644f63f099981a3cd73",
+    "content-hash": "421cae13caa4a836476ab23b026961de",
     "packages": [
-        {
-            "name": "jetbrains/phpstorm-stubs",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "dee3c94edb5adde5834e42c3d660a2cc89d367ea"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/dee3c94edb5adde5834e42c3d660a2cc89d367ea",
-                "reference": "dee3c94edb5adde5834e42c3d660a2cc89d367ea",
-                "shasum": ""
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^v3.64.0",
-                "nikic/php-parser": "^v5.3.1",
-                "phpdocumentor/reflection-docblock": "^5.6.0",
-                "phpunit/phpunit": "^11.4.3"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "PhpStormStubsMap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "description": "PHP runtime & extensions header files for PhpStorm",
-            "homepage": "https://www.jetbrains.com/phpstorm",
-            "keywords": [
-                "autocomplete",
-                "code",
-                "inference",
-                "inspection",
-                "jetbrains",
-                "phpstorm",
-                "stubs",
-                "type"
-            ],
-            "support": {
-                "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
-            },
-            "time": "2025-07-08T09:17:06+00:00"
-        },
         {
             "name": "nette/neon",
             "version": "v3.4.4",
@@ -267,95 +219,23 @@
             "time": "2025-07-27T20:03:57+00:00"
         },
         {
-            "name": "ondrejmirtes/better-reflection",
-            "version": "6.57.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "dcc22b90a63497f3450dd5eed62197bc46937297"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/dcc22b90a63497f3450dd5eed62197bc46937297",
-                "reference": "dcc22b90a63497f3450dd5eed62197bc46937297",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
-                "nikic/php-parser": "^5.4.0",
-                "php": "^7.4 || ^8.0"
-            },
-            "conflict": {
-                "thecodingmachine/safe": "<1.1.3"
-            },
-            "require-dev": {
-                "doctrine/coding-standard": "^12.0.0",
-                "phpstan/phpstan": "^1.10.60",
-                "phpstan/phpstan-phpunit": "^1.3.16",
-                "phpunit/phpunit": "^11.5.7",
-                "rector/rector": "1.2.10"
-            },
-            "suggest": {
-                "composer/composer": "Required to use the ComposerSourceLocator"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "PHPStan\\BetterReflection\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "James Titcumb",
-                    "email": "james@asgrim.com",
-                    "homepage": "https://github.com/asgrim"
-                },
-                {
-                    "name": "Marco Pivetta",
-                    "email": "ocramius@gmail.com",
-                    "homepage": "https://ocramius.github.io/"
-                },
-                {
-                    "name": "Gary Hockin",
-                    "email": "gary@roave.com",
-                    "homepage": "https://github.com/geeh"
-                },
-                {
-                    "name": "Jaroslav Hanslík",
-                    "email": "kukulich@kukulich.cz",
-                    "homepage": "https://github.com/kukulich"
-                }
-            ],
-            "description": "Better Reflection - an improved code reflection API",
-            "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.57.0.0"
-            },
-            "time": "2025-02-12T21:16:38+00:00"
-        },
-        {
             "name": "ondrejmirtes/simple-downgrader",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "f91211786fcb75966ccba69406926db89cea8956"
+                "reference": "5de54eaa47dac5142e36b4085a12e5103e93366c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/f91211786fcb75966ccba69406926db89cea8956",
-                "reference": "f91211786fcb75966ccba69406926db89cea8956",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/5de54eaa47dac5142e36b4085a12e5103e93366c",
+                "reference": "5de54eaa47dac5142e36b4085a12e5103e93366c",
                 "shasum": ""
             },
             "require": {
                 "nette/utils": "^3.2.5",
                 "nikic/php-parser": "^5.5.0",
-                "ondrejmirtes/better-reflection": "^6.57",
-                "php": "^7.4|^8.0",
+                "php": "^8.2",
                 "phpstan/phpdoc-parser": "^2.0",
                 "symfony/console": "^5.4.47",
                 "symfony/finder": "^5.4.45",
@@ -384,9 +264,9 @@
             "description": "Simple Downgrader",
             "support": {
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
-                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.2.1"
+                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.2.2"
             },
-            "time": "2025-07-13T11:49:36+00:00"
+            "time": "2025-09-20T18:37:56+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -3371,11 +3251,11 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.0"
+        "php": "^8.2"
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.0.99"
+        "php": "8.2.99"
     },
     "plugin-api-version": "2.6.0"
 }

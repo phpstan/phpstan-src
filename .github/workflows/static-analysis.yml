@@ -45,7 +45,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "${{ matrix.php-version }}"
+          php-version: "8.4"
           ini-file: development
           extensions: mbstring
 
@@ -64,6 +64,14 @@ jobs:
           composer install --no-interaction --no-progress --working-dir=compiler
           ./compiler/vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ matrix.php-version }}
           composer dump
+
+      - name: "Change to runtime PHP version"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          ini-file: development
+          extensions: mbstring
 
       - name: "PHPStan"
         run: "make phpstan"

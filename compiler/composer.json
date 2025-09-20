@@ -4,9 +4,9 @@
     "description": "PHAR Compiler for PHPStan",
     "license": ["MIT"],
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
         "nette/neon": "^3.0.0",
-        "ondrejmirtes/simple-downgrader": "^2.2.1",
+        "ondrejmirtes/simple-downgrader": "^2.2.2",
         "seld/phar-utils": "^1.2",
         "symfony/console": "^5.4.43",
         "symfony/filesystem": "^5.4.43",
@@ -30,7 +30,7 @@
     },
 	"config": {
 		"platform": {
-			"php": "8.0.99"
+			"php": "8.2.99"
 		},
 		"platform-check": false,
 		"sort-packages": true

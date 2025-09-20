@@ -5609,11 +5609,20 @@ final class NodeScopeResolver
 				} else {
 					$varForSetOffsetValue = $var->var;
 				}
-				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
-					$varForSetOffsetValue,
-					$var->dim,
-					$assignedPropertyExpr,
-				);
+
+				if ($scope->hasExpressionType($var)->yes()) {
+					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				} else {
+					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				}
 				$dimFetchStack[] = $var;
 				$var = $var->var;
 			}

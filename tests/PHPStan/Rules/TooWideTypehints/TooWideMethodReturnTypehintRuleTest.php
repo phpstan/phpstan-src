@@ -208,12 +208,14 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10312b.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10312c(): void
 	{
 		$this->checkProtectedAndPublicMethods = true;
 		$this->analyse([__DIR__ . '/data/bug-10312c.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug10312d(): void
 	{
 		$this->checkProtectedAndPublicMethods = true;

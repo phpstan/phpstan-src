@@ -41,6 +41,27 @@ class DOMNode
 	 */
 	public function hasAttributes() {}
 
+	/**
+	 * @template TNode of DOMNode
+	 * @param TNode $node
+	 * @return __benevolent<TNode|false>
+	 */
+	public function insertBefore(DOMNode $node, ?DOMNode $child = null) {}
+
+	/**
+	 * @template TNode of DOMNode
+	 * @param TNode $node
+	 * @return __benevolent<TNode|false>
+	 */
+	public function removeChild(DOMNode $node) {}
+
+	/**
+	 * @template TNode of DOMNode
+	 * @param TNode $node
+	 * @return __benevolent<TNode|false>
+	 */
+	public function appendChild(DOMNode $node) {}
+
 }
 
 class DOMElement extends DOMNode

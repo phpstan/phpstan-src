@@ -5610,7 +5610,10 @@ final class NodeScopeResolver
 					$varForSetOffsetValue = $var->var;
 				}
 
-				if ($scope->hasExpressionType($var)->yes()) {
+				if (
+					$var === $originalVar
+					&& $scope->hasExpressionType($var)->yes()
+				) {
 					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
 						$varForSetOffsetValue,
 						$var->dim,

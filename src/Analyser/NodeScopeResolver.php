@@ -5705,11 +5705,13 @@ final class NodeScopeResolver
 			}
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;
+			$additionalExpressions = [];
 
-			$valueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope);
+			$valueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope, $additionalExpressions);
 
 			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
-				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
+				$additionalExpressions = [];
+				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $additionalExpressions);
 			} else {
 				$rewritten = false;
 				foreach ($offsetTypes as $i => $offsetType) {
@@ -5779,6 +5781,12 @@ final class NodeScopeResolver
 						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
 					}
 				}
+			}
+
+			foreach($additionalExpressions as $additionalExpression) {
+				[$expr, $type] = $additionalExpression;
+
+				$scope = $scope->assignExpression($expr, $type, $type);
 			}
 
 			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
@@ -6134,8 +6142,9 @@ final class NodeScopeResolver
 	/**
 	 * @param list<ArrayDimFetch> $dimFetchStack
 	 * @param list<Type|null> $offsetTypes
+	 * @param-out array<Expr, Type> $additionalExpressions
 	 */
-	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope): Type
+	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope, array &$additionalExpressions = []): Type
 	{
 		$offsetValueTypeStack = [$offsetValueType];
 		foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
@@ -6168,6 +6177,11 @@ final class NodeScopeResolver
 					$types[] = new StringType();
 				}
 				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
+			}
+
+			$reverseDimFetch = $dimFetchStack[count($dimFetchStack) - 1 - $i] ?? null;
+			if ($reverseDimFetch !== null) {
+				$additionalExpressions[] = [$reverseDimFetch, $valueToWrite];
 			}
 
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;

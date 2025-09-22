@@ -8075,7 +8075,7 @@ return [
 'php_logo_guid' => ['string'],
 'php_sapi_name' => ['__benevolent<non-empty-string|false>'],
 'php_strip_whitespace' => ['string', 'file_name'=>'string'],
-'php_uname' => ['string', 'mode='=>'string'],
+'php_uname' => ['"a"|"s"|"n"|"r"|"v"|"m"', 'mode='=>'string'],
 'php_user_filter::filter' => ['int', 'in'=>'resource', 'out'=>'resource', '&rw_consumed'=>'int', 'closing'=>'bool'],
 'php_user_filter::onClose' => ['void'],
 'php_user_filter::onCreate' => ['bool'],

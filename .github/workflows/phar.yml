@@ -38,15 +38,16 @@ jobs:
           php-version: "8.2"
           extensions: mbstring, intl
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install compiler dependencies"
-        run: "composer install --no-interaction --no-progress --working-dir=compiler"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "compiler"
 
       - name: "Compiler tests"
         working-directory: "compiler"
@@ -64,8 +65,9 @@ jobs:
         run: "composer dump"
 
       - name: "Install Box dependencies"
-        working-directory: "compiler/box"
-        run: "composer install"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "compiler/box"
 
       - name: "Compile PHAR"
         working-directory: "compiler/build"
@@ -86,8 +88,7 @@ jobs:
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
-      - name: "Composer dump"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
         env:
           COMPOSER_ROOT_VERSION: "2.1.x-dev"
 
@@ -250,12 +251,12 @@ jobs:
           coverage: "none"
           php-version: "8.2"
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Install Box dependencies"
-        working-directory: "compiler/box"
-        run: "composer install"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "compiler/box"
 
       - name: "Extract old phpstan.phar"
         run: "php compiler/box/vendor/bin/box extract phar-file-checksum-base/phpstan.phar phar-old"

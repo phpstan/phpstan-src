@@ -35,12 +35,12 @@ jobs:
           coverage: "none"
           php-version: "8.2"
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Install Changelog Generator dependencies"
-        working-directory: "changelog-generator"
-        run: "composer install --no-interaction --no-progress"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "changelog-generator"
 
       - name: "PHPStan"
         working-directory: "changelog-generator"

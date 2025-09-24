@@ -52,8 +52,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=2G
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Tests"
         run: "make tests"
@@ -82,8 +81,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=1G
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Tests"
         run: "make tests-integration"
@@ -107,8 +105,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=1G
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - id: set-matrix
         run: echo "matrix=$(php .github/workflows/tests-levels-matrix.php)" >> $GITHUB_OUTPUT
@@ -142,8 +139,7 @@ jobs:
           ini-file: development
           ini-values: memory_limit=1G
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Tests"
         run: "${{ matrix.script }}"
@@ -180,8 +176,7 @@ jobs:
         shell: bash
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
       - name: "Downgrade PHPUnit with Paratest"
         shell: bash

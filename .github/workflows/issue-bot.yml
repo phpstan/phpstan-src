@@ -40,9 +40,10 @@ jobs:
           coverage: "none"
           php-version: "8.3"
 
-      - name: "Install Issue Bot dependencies"
-        working-directory: "issue-bot"
-        run: "composer install --no-interaction --no-progress"
+      - name: "Install issue-bot dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "issue-bot"
 
       - name: "Cache downloads"
         uses: actions/cache@v4
@@ -90,12 +91,14 @@ jobs:
           coverage: "none"
           php-version: "8.3"
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-dev"
+      - uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--no-dev"
 
-      - name: "Install Issue Bot dependencies"
-        working-directory: "issue-bot"
-        run: "composer install --no-interaction --no-progress"
+      - name: "Install issue-bot dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "issue-bot"
 
       - uses: Wandalen/wretry.action@v3.8.0
         with:
@@ -132,9 +135,10 @@ jobs:
           coverage: "none"
           php-version: "8.3"
 
-      - name: "Install Issue Bot dependencies"
-        working-directory: "issue-bot"
-        run: "composer install --no-interaction --no-progress"
+      - name: "Install issue-bot dependencies"
+        uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "issue-bot"
 
       - uses: actions/download-artifact@v4
         with:

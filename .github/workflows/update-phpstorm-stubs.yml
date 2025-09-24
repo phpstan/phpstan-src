@@ -24,8 +24,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.2"
-      - name: "Install dependencies"
-        run: "composer install  --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
       - name: "Checkout stubs"
         uses: actions/checkout@v4
         with:

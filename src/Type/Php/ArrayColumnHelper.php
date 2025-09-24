@@ -147,7 +147,15 @@ final class ArrayColumnHelper
 					continue;
 				}
 
-				$returnTypes[] = $type->getInstanceProperty($propertyName, $scope)->getReadableType();
+				$property = $type->getInstanceProperty($propertyName, $scope);
+				if (!$property->isPublic()) {
+					if (!$type->hasMethod('__isset')->no() && !$type->hasMethod('__get')->no()) {
+						$returnTypes[] = new MixedType();
+					}
+					continue;
+				}
+
+				$returnTypes[] = $property->getReadableType();
 			}
 		}
 

@@ -244,11 +244,69 @@ class ArrayColumnTest
 final class Foo
 {
 
+	public int $publicProperty;
+	protected int $protectedProperty;
+	private int $privateProperty;
+
+	/** @param array<int, self> $a */
+	public function doFoo(array $a): void
+	{
+		assertType('array{}', array_column($a, 'nodeName'));
+		assertType('array{}', array_column($a, 'nodeName', 'tagName'));
+		assertType('list<int>', array_column($a, 'publicProperty'));
+		assertType('array{}', array_column($a, 'protectedProperty'));
+		assertType('array{}', array_column($a, 'privateProperty'));
+	}
+
+}
+
+
+class FooNotFinal
+{
+
+	public int $publicProperty;
+	protected int $protectedProperty;
+	private int $privateProperty;
+
 	/** @param array<int, self> $a */
 	public function doFoo(array $a): void
 	{
 		assertType('list', array_column($a, 'nodeName'));
 		assertType('array', array_column($a, 'nodeName', 'tagName'));
+		assertType('list<int>', array_column($a, 'publicProperty'));
+		assertType('list', array_column($a, 'protectedProperty'));
+		assertType('list', array_column($a, 'privateProperty'));
 	}
 
 }
+
+
+final class Magic
+{
+
+	public int $publicProperty;
+	protected int $protectedProperty;
+	private int $privateProperty;
+
+	public function __get($prop)
+	{
+		return $this->$prop;
+	}
+
+	public function __isset($prop) : bool
+	{
+		return isset($this->$prop);
+	}
+
+	/** @param array<int, self> $a */
+	public function doFoo(array $a): void
+	{
+		assertType('list', array_column($a, 'nodeName'));
+		assertType('array', array_column($a, 'nodeName', 'tagName'));
+		assertType('list<int>', array_column($a, 'publicProperty'));
+		assertType('list', array_column($a, 'protectedProperty'));
+		assertType('list', array_column($a, 'privateProperty'));
+	}
+
+}
+

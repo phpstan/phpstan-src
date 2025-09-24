@@ -49,6 +49,10 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		$precisionBackup = ini_get('precision');
 		ini_set('precision', '-1');
 		try {
+			if (is_nan($value)) {
+				return 'NAN';
+			}
+
 			$valueStr = (string) $value;
 			if (is_finite($value) && !str_contains($valueStr, '.')) {
 				$valueStr .= '.0';

@@ -15,6 +15,7 @@
  */
 return [
 	'new' => [
+		'bcround' => ['numeric-string', 'num'=>'numeric-string', 'precision='=>'int', 'mode='=>'RoundingMode'],
 		'http_get_last_response_headers' => ['list<string>|null'],
 		'http_clear_last_response_headers' => ['void'],
 		'mb_lcfirst' => ['string', 'string'=>'string', 'encoding='=>'string'],

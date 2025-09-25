@@ -17,10 +17,15 @@ use function sprintf;
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 
+	private string|false $terminalEmulator;
+
 	#[Override]
 	protected function setUp(): void
 	{
 		putenv('GITHUB_ACTIONS');
+
+		$this->terminalEmulator = getenv('TERMINAL_EMULATOR');
+		putenv('TERMINAL_EMULATOR');
 	}
 
 	#[Override]
@@ -28,6 +33,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		putenv('COLUMNS');
 		putenv('TERM_PROGRAM');
+		putenv('TERMINAL_EMULATOR' . ($this->terminalEmulator !== false ? '=' . $this->terminalEmulator : ''));
 	}
 
 	public static function dataFormatterOutputProvider(): iterable
@@ -228,6 +234,33 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 ',
 		];
+
+		yield [
+			'message' => 'Errors in JetBrains',
+			'exitCode' => 1,
+			'numFileErrors' => [5, 1],
+			'numGenericErrors' => 1,
+			'verbose' => true,
+			'extraEnvVars' => ['TERMINAL_EMULATOR=JetBrains-JediTerm'],
+			'expected' => ' ------ ----------------
+  Line   foo.php
+ ------ ----------------
+  5      Foobar\Buz
+         🪪  foobar.buz
+         💡  a tip
+         at foo.php:5
+ ------ ----------------
+
+ -- ---------------------
+     Error
+ -- ---------------------
+     first generic error
+ -- ---------------------
+
+ [ERROR] Found 2 errors
+
+',
+		];
 	}
 
 	/**
@@ -271,10 +304,6 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithRelativePath(): void
 	{
-		if (getenv('TERMINAL_EMULATOR') === 'JetBrains-JediTerm') {
-			$this->markTestSkipped('PhpStorm console does not support links in console.');
-		}
-
 		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));

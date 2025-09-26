@@ -5710,8 +5710,8 @@ final class NodeScopeResolver
 			$valueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope, $additionalExpressions);
 
 			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
-				$additionalExpressions = [];
-				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $additionalExpressions);
+				$additionalNativeExpressions = [];
+				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $additionalNativeExpressions);
 			} else {
 				$rewritten = false;
 				foreach ($offsetTypes as $i => $offsetType) {
@@ -5783,10 +5783,14 @@ final class NodeScopeResolver
 				}
 			}
 
-			foreach ($additionalExpressions as $additionalExpression) {
+			foreach ($additionalExpressions as $k => $additionalExpression) {
 				[$expr, $type] = $additionalExpression;
+				$nativeType = $type;
+				if (isset($additionalNativeExpressions[$k])) {
+					[, $nativeType] = $additionalNativeExpressions[$k];
+				}
 
-				$scope = $scope->assignExpression($expr, $type, $type);
+				$scope = $scope->assignExpression($expr, $type, $nativeType);
 			}
 
 			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {

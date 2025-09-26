@@ -6179,11 +6179,6 @@ final class NodeScopeResolver
 				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
 			}
 
-			$reverseDimFetch = $dimFetchStack[count($dimFetchStack) - 1 - $i] ?? null;
-			if ($reverseDimFetch !== null && $reverseDimFetch->dim !== null) {
-				$additionalExpressions[] = [$reverseDimFetch, $valueToWrite];
-			}
-
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;
 			if (
 				$offsetType !== null
@@ -6237,6 +6232,13 @@ final class NodeScopeResolver
 					$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 				}
 			}
+		}
+
+		$iterableValueType = $valueToWrite->getIterableValueType();
+		foreach($dimFetchStack as $dimFetch) {
+			$additionalExpressions[] = [$dimFetch, $iterableValueType];
+
+			$iterableValueType = $iterableValueType->getIterableValueType();
 		}
 
 		return $valueToWrite;

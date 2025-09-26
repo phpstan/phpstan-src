@@ -6236,6 +6236,11 @@ final class NodeScopeResolver
 
 		$iterableValueType = $valueToWrite->getIterableValueType();
 		foreach($dimFetchStack as $dimFetch) {
+			if ($dimFetch->dim === null) {
+				$additionalExpressions = [];
+				break;
+			}
+
 			$additionalExpressions[] = [$dimFetch, $iterableValueType];
 
 			$iterableValueType = $iterableValueType->getIterableValueType();

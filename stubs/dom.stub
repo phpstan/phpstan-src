@@ -65,7 +65,7 @@ class DOMElement extends DOMNode
 }
 
 /**
- * @template-covariant TNode as DOMNode
+ * @template-covariant TNode as DOMNameSpaceNode|DOMNode
  * @implements IteratorAggregate<int, TNode>
  */
 class DOMNodeList implements IteratorAggregate, Countable
@@ -76,19 +76,6 @@ class DOMNodeList implements IteratorAggregate, Countable
 	 * @return TNode|null
 	 */
 	public function item ($index) {}
-
-}
-
-class DOMXPath
-{
-
-    /**
-     * @param string $expression
-     * @param DOMNode|null $contextNode
-     * @param boolean $registerNodeNS
-     * @return DOMNodeList<DOMNode>|false
-     */
-    public function query($expression, $contextNode, $registerNodeNS) {}
 
 }
 

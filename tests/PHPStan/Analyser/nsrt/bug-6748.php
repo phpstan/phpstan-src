@@ -17,6 +17,6 @@ class Foo
 	/** @param \DOMXPath $path */
 	public function xPathQuery ($path)
 	{
-		assertType('DOMNodeList<DOMNode>|false', $path->query(''));
+		assertType('DOMNodeList<DOMNameSpaceNode|DOMNode>|false', $path->query(''));
 	}
 }

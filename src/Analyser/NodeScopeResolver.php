@@ -6243,7 +6243,7 @@ final class NodeScopeResolver
 		if (count($dimFetchStack) === 1) {
 			$dimFetch = $dimFetchStack[0];
 			if ($dimFetch->dim !== null) {
-				$additionalExpressions[] = [$dimFetchStack[0], $originalValueToWrite];
+				$additionalExpressions[] = [$dimFetch, $originalValueToWrite];
 			}
 		} else {
 			$offsetValueType = $valueToWrite;

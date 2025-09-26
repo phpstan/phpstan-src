@@ -102,7 +102,7 @@ final class CallStaticMethodsRule implements Rule
 			'%s of ' . $lowercasedMethodName . ' expects %s, %s given.',
 			'Result of ' . $lowercasedMethodName . ' (void) is used.',
 			'%s of ' . $lowercasedMethodName . ' is passed by reference, so it expects variables only.',
-			'Unable to resolve the template type %s in call to method ' . $lowercasedMethodName,
+			'Unable to resolve the template type %s in call to ' . $lowercasedMethodName,
 			'Missing parameter $%s in call to ' . $lowercasedMethodName . '.',
 			'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
 			'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',

@@ -568,7 +568,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				"Offset 'wrapperClass' (class-string<TemplateTypeInOneBranchOfConditional\Connection>) does not accept type string.",
 			],
 			[
-				'Unable to resolve the template type T in call to method static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection()',
+				'Unable to resolve the template type T in call to static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection()',
 				27,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],

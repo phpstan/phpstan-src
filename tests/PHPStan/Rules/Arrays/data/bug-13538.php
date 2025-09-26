@@ -3,19 +3,31 @@
 namespace Bug13538;
 
 use LogicException;
+use function PHPStan\Testing\assertType;
 
 /** @param list<string> $arr */
-function doFoo(array $arr, string $s): void
+function doFoo(array $arr, int $i, int $i2): void
 {
 	$logs = [];
-	$logs[$s] = '';
+	$logs[$i] = '';
+	echo $logs[$i2];
+
+	assertType("non-empty-array<int, ''>", $logs);
+	assertType("''", $logs[$i]);
+	assertType("string", $logs[$i2]);
+
 	foreach ($arr as $value) {
-		echo $logs[$s];
+		echo $logs[$i];
+		echo $logs[$i2];
+
+		assertType("non-empty-array<int, ''>", $logs);
+		assertType("''", $logs[$i]);
+		assertType("string", $logs[$i2]);
 	}
 }
 
 /** @param list<string> $arr */
-function doFooBar(array $arr): void
+function doFooBar(array $arr, int $i): void
 {
 	if (!defined('LOG_DIR')) {
 		throw new LogicException();
@@ -23,8 +35,18 @@ function doFooBar(array $arr): void
 
 	$logs = [];
 	$logs[LOG_DIR] = '';
+
+	assertType("non-empty-array<''>", $logs);
+	assertType("''", $logs[LOG_DIR]);
+	assertType("string", $logs[$i]);
+
 	foreach ($arr as $value) {
 		echo $logs[LOG_DIR];
+		echo $logs[$i];
+
+		assertType("non-empty-array<''>", $logs);
+		assertType("''", $logs[LOG_DIR]);
+		assertType("string", $logs[$i]);
 	}
 }
 
@@ -32,7 +54,13 @@ function doBar(array $arr, int $i, string $s): void
 {
 	$logs = [];
 	$logs[$i][$s] = '';
+	assertType("non-empty-array<int, non-empty-array<string, ''>>", $logs);
+	assertType("non-empty-array<string, ''>", $logs[$i]);
+	assertType("''", $logs[$i][$s]);
 	foreach ($arr as $value) {
+		assertType("non-empty-array<int, non-empty-array<string, ''>>", $logs);
+		assertType("non-empty-array<string, ''>", $logs[$i]);
+		assertType("''", $logs[$i][$s]);
 		echo $logs[$i][$s];
 	}
 }

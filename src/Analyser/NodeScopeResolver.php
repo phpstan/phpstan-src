@@ -6142,7 +6142,7 @@ final class NodeScopeResolver
 	/**
 	 * @param list<ArrayDimFetch> $dimFetchStack
 	 * @param list<Type|null> $offsetTypes
-	 * @param-out array<Expr, Type> $additionalExpressions
+	 * @param-out list<array{Expr, Type}> $additionalExpressions
 	 */
 	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope, array &$additionalExpressions = []): Type
 	{
@@ -6236,7 +6236,7 @@ final class NodeScopeResolver
 
 		$iterableValueType = $valueToWrite->getIterableValueType();
 		foreach($dimFetchStack as $dimFetch) {
-			if ($dimFetch->dim === null) {
+			if ($dimFetch->dim === null || $dimFetch->dim instanceof Node\Scalar) {
 				$additionalExpressions = [];
 				break;
 			}

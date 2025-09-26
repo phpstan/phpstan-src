@@ -6146,6 +6146,8 @@ final class NodeScopeResolver
 	 */
 	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope, array &$additionalExpressions = []): Type
 	{
+		$originalValueToWrite = $valueToWrite;
+
 		$offsetValueTypeStack = [$offsetValueType];
 		foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
 			if ($offsetType === null) {
@@ -6234,7 +6236,12 @@ final class NodeScopeResolver
 			}
 		}
 
-		if (count($dimFetchStack) > 1) {
+		if (count($dimFetchStack) === 1) {
+			$dimFetch = $dimFetchStack[0];
+			if ($dimFetch->dim !== null) {
+				$additionalExpressions[] = [$dimFetchStack[0], $originalValueToWrite];
+			}
+		} else {
 			$offsetValueType = $valueToWrite;
 			foreach ($dimFetchStack as $dimFetch) {
 				if ($dimFetch->dim === null) {
@@ -6243,12 +6250,10 @@ final class NodeScopeResolver
 				}
 
 				$offsetType = $scope->getType($dimFetch->dim);
-				if (!$offsetValueType->hasOffsetValueType($offsetType)->yes()) {
-					$additionalExpressions = [];
-					break;
-				}
-
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+				if ($offsetValueType instanceof ErrorType) {
+					$offsetValueType = new ConstantArrayType([], []);
+				}
 				$additionalExpressions[] = [$dimFetch, $offsetValueType];
 			}
 		}

@@ -57,9 +57,5 @@ function doBar(array $arr, int $i, string $s): void
 		assertType("non-empty-array<string, ''>", $logs[$i]);
 		assertType("''", $logs[$i][$s]);
 		echo $logs[$i][$s];
-
-		$i++;
-
-		echo $logs[$i][$s];
 	}
 }

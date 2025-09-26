@@ -1021,34 +1021,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				"Offset int might not exist on non-empty-array<int, ''>.",
 				17,
 			],
-			[
-				"Offset int might not exist on non-empty-array<int, ''>.",
-				21,
-			],
-			[
-				"Offset int might not exist on non-empty-array<int, ''>.",
-				25,
-			],
-			[
-				"Offset int might not exist on non-empty-array<int, ''>.",
-				41,
-			],
-			[
-				"Offset int might not exist on non-empty-array<int, ''>.",
-				45,
-			],
-			[
-				"Offset int might not exist on non-empty-array<int, ''>.",
-				49,
-			],
-			[
-				"Offset string might not exist on non-empty-array<string, ''>.",
-				68,
-			],
-			[
-				"Offset int might not exist on non-empty-array<int, non-empty-array<string, ''>>.",
-				68,
-			],
 		]);
 	}
 

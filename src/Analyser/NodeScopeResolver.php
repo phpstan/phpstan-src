@@ -6180,7 +6180,7 @@ final class NodeScopeResolver
 			}
 
 			$reverseDimFetch = $dimFetchStack[count($dimFetchStack) - 1 - $i] ?? null;
-			if ($reverseDimFetch !== null) {
+			if ($reverseDimFetch !== null && $reverseDimFetch->dim !== null) {
 				$additionalExpressions[] = [$reverseDimFetch, $valueToWrite];
 			}
 

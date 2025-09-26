@@ -5783,7 +5783,7 @@ final class NodeScopeResolver
 				}
 			}
 
-			foreach($additionalExpressions as $additionalExpression) {
+			foreach ($additionalExpressions as $additionalExpression) {
 				[$expr, $type] = $additionalExpression;
 
 				$scope = $scope->assignExpression($expr, $type, $type);

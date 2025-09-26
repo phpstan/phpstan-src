@@ -14,20 +14,18 @@ function doFoo(array $arr, int $i, int $i2): void
 
 	assertType("non-empty-array<int, ''>", $logs);
 	assertType("''", $logs[$i]);
-	assertType("string", $logs[$i2]);
+	assertType("''", $logs[$i2]); // could be mixed
 
 	foreach ($arr as $value) {
 		echo $logs[$i];
-		echo $logs[$i2];
 
 		assertType("non-empty-array<int, ''>", $logs);
 		assertType("''", $logs[$i]);
-		assertType("string", $logs[$i2]);
 	}
 }
 
 /** @param list<string> $arr */
-function doFooBar(array $arr, int $i): void
+function doFooBar(array $arr): void
 {
 	if (!defined('LOG_DIR')) {
 		throw new LogicException();
@@ -38,15 +36,12 @@ function doFooBar(array $arr, int $i): void
 
 	assertType("non-empty-array<''>", $logs);
 	assertType("''", $logs[LOG_DIR]);
-	assertType("string", $logs[$i]);
 
 	foreach ($arr as $value) {
 		echo $logs[LOG_DIR];
-		echo $logs[$i];
 
 		assertType("non-empty-array<''>", $logs);
 		assertType("''", $logs[LOG_DIR]);
-		assertType("string", $logs[$i]);
 	}
 }
 

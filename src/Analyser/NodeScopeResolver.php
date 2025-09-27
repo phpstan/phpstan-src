@@ -6240,26 +6240,25 @@ final class NodeScopeResolver
 			}
 		}
 
-		if (count($dimFetchStack) === 1) {
-			$dimFetch = $dimFetchStack[0];
-			if ($dimFetch->dim !== null) {
-				$additionalExpressions[] = [$dimFetch, $originalValueToWrite];
+		$offsetValueType = $valueToWrite;
+		$lastDimKey = array_key_last($dimFetchStack);
+		foreach ($dimFetchStack as $key => $dimFetch) {
+			if ($dimFetch->dim === null) {
+				$additionalExpressions = [];
+				break;
 			}
-		} else {
-			$offsetValueType = $valueToWrite;
-			foreach ($dimFetchStack as $dimFetch) {
-				if ($dimFetch->dim === null) {
-					$additionalExpressions = [];
-					break;
-				}
 
+			if ($key === $lastDimKey) {
+				$offsetValueType = $originalValueToWrite;
+			} else {
 				$offsetType = $scope->getType($dimFetch->dim);
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 				if ($offsetValueType instanceof ErrorType) {
 					$offsetValueType = new ConstantArrayType([], []);
 				}
-				$additionalExpressions[] = [$dimFetch, $offsetValueType];
 			}
+
+			$additionalExpressions[] = [$dimFetch, $offsetValueType];
 		}
 
 		return $valueToWrite;

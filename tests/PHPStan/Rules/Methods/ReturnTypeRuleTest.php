@@ -1265,4 +1265,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7225.php'], []);
 	}
 
+	public function testDeepDimFetch(): void
+	{
+		$this->analyse([__DIR__ . '/data/deep-dim-fetch.php'], []);
+	}
+
 }

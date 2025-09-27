@@ -25,7 +25,7 @@ final class AnnotationsPropertiesClassReflectionExtension implements PropertiesC
 			$this->properties[$classReflection->getCacheKey()][$propertyName] = $property;
 		}
 
-		return isset($this->properties[$classReflection->getCacheKey()][$propertyName]);
+		return true;
 	}
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection

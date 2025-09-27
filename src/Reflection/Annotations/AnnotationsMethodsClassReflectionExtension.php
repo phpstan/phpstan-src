@@ -31,7 +31,7 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 			$this->methods[$classReflection->getCacheKey()][$methodName] = $method;
 		}
 
-		return isset($this->methods[$classReflection->getCacheKey()][$methodName]);
+		return true;
 	}
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection

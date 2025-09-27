@@ -6253,9 +6253,6 @@ final class NodeScopeResolver
 			} else {
 				$offsetType = $scope->getType($dimFetch->dim);
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-				if ($offsetValueType instanceof ErrorType) {
-					$offsetValueType = new ConstantArrayType([], []);
-				}
 			}
 
 			$additionalExpressions[] = [$dimFetch, $offsetValueType];

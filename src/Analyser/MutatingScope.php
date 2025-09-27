@@ -4308,7 +4308,14 @@ final class MutatingScope implements Scope
 		}
 
 		$scope = $this;
-		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+		if (
+			$expr instanceof Expr\ArrayDimFetch
+			&& $expr->dim !== null
+			&& !$expr->dim instanceof Expr\PreInc
+			&& !$expr->dim instanceof Expr\PreDec
+			&& !$expr->dim instanceof Expr\PostDec
+			&& !$expr->dim instanceof Expr\PostInc
+		) {
 			$dimType = $scope->getType($expr->dim)->toArrayKey();
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);

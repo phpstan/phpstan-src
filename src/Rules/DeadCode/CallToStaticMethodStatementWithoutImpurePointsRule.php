@@ -30,10 +30,6 @@ final class CallToStaticMethodStatementWithoutImpurePointsRule implements Rule
 		foreach ($node->get(MethodWithoutImpurePointsCollector::class) as $collected) {
 			foreach ($collected as [$className, $methodName, $classDisplayName]) {
 				$lowerClassName = strtolower($className);
-
-				if (!array_key_exists($lowerClassName, $methods)) {
-					$methods[$lowerClassName] = [];
-				}
 				$methods[$lowerClassName][strtolower($methodName)] = $classDisplayName . '::' . $methodName;
 			}
 		}

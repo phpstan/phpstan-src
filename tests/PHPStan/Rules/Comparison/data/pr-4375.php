@@ -1,6 +1,6 @@
 <?php
 
-namespace PR2375;
+namespace PR4375;
 
 final class Foo
 {

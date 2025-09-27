@@ -1121,4 +1121,15 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7773.php'], []);
 	}
 
+	public function testPr4375(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/pr-4375.php'], [
+			[
+				'Call to function array_key_exists() with string and array<string, *NEVER*> will always evaluate to false.',
+				14,
+			],
+		]);
+	}
+
 }

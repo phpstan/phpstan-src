@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -21,15 +22,22 @@ use PHPStan\Type\UnionType;
 final class AllowedArrayKeysTypes
 {
 
-	public static function getType(): Type
+	public static function getType(PhpVersion $phpVersion): Type
 	{
-		return new UnionType([
+		$allowedTypes = [
 			new IntegerType(),
 			new StringType(),
-			new FloatType(),
 			new BooleanType(),
-			new NullType(),
-		]);
+		];
+
+		if (!$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {
+			$allowedTypes[] = new FloatType();
+		}
+		if (!$phpVersion->deprecatesNullArrayOffset()) {
+			$allowedTypes[] = new NullType();
+		}
+
+		return new UnionType($allowedTypes);
 	}
 
 	public static function narrowOffsetKeyType(Type $varType, Type $keyType): ?Type

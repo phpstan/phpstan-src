@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
@@ -12,9 +13,15 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 {
 
+	private bool $checkExplicitMixed = false;
+
+	private bool $checkImplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
-		return new InvalidKeyInArrayItemRule(true);
+		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+
+		return new InvalidKeyInArrayItemRule($ruleLevelHelper);
 	}
 
 	public function testInvalidKey(): void
@@ -31,6 +38,31 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 			[
 				'Possibly invalid array key type stdClass|string.',
 				15,
+			],
+		]);
+	}
+
+	public function testInvalidMixedKey(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
+			[
+				'Invalid array key type DateTimeImmutable.',
+				13,
+			],
+			[
+				'Invalid array key type array.',
+				14,
+			],
+			[
+				'Possibly invalid array key type stdClass|string.',
+				15,
+			],
+			[
+				'Possibly invalid array key type mixed.',
+				22,
 			],
 		]);
 	}

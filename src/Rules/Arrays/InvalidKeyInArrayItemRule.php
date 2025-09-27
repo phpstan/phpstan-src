@@ -4,11 +4,12 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\MixedType;
+use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -20,8 +21,7 @@ final class InvalidKeyInArrayItemRule implements Rule
 {
 
 	public function __construct(
-		#[AutowiredParameter]
-		private bool $reportMaybes,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 	}
@@ -37,23 +37,28 @@ final class InvalidKeyInArrayItemRule implements Rule
 			return [];
 		}
 
-		$dimensionType = $scope->getType($node->key);
-		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
-		if ($isSuperType->no()) {
-			return [
-				RuleErrorBuilder::message(
-					sprintf('Invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
-				)->identifier('array.invalidKey')->build(),
-			];
-		} elseif ($this->reportMaybes && $isSuperType->maybe() && !$dimensionType instanceof MixedType) {
-			return [
-				RuleErrorBuilder::message(
-					sprintf('Possibly invalid array key type %s.', $dimensionType->describe(VerbosityLevel::typeOnly())),
-				)->identifier('array.invalidKey')->build(),
-			];
+		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->key,
+			'',
+			static fn (Type $dimType): bool => AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimType)->yes(),
+		)->getType();
+		if ($dimensionType instanceof ErrorType) {
+			return [];
 		}
 
-		return [];
+		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
+		if ($isSuperType->yes()) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'%s array key type %s.',
+				$isSuperType->no() ? 'Invalid' : 'Possibly invalid',
+				$dimensionType->describe(VerbosityLevel::typeOnly()),
+			))->identifier('array.invalidKey')->build(),
+		];
 	}
 
 }

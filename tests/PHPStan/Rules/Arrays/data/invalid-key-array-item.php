@@ -14,3 +14,10 @@ $a = [
 	[] => 'bbb',
 	$stringOrObject => 'aaa',
 ];
+
+/** @var mixed $mixed */
+$mixed = doFoo();
+
+$b = [
+	$mixed => 'foo',
+];

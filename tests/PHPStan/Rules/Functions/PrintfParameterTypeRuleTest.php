@@ -239,11 +239,11 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 				45,
 			],
 			[
-				'Parameter #2 of function printf is expected to be __stringandstringable by placeholder #1 ("%s"), null given.',
+				'Parameter #2 of function printf is expected to be string by placeholder #1 ("%s"), null given.',
 				47,
 			],
 			[
-				'Parameter #2 of function printf is expected to be __stringandstringable by placeholder #1 ("%s"), true given.',
+				'Parameter #2 of function printf is expected to be string by placeholder #1 ("%s"), true given.',
 				48,
 			],
 		]);

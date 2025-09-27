@@ -106,8 +106,8 @@ final class PrintfParameterTypeRule implements Rule
 				'strict-int' => 'int',
 				'int' => 'int',
 				'float' => 'float',
-				'string' => '__stringandstringable',
-				'mixed' => '__stringandstringable',
+				'string' => 'string',
+				'mixed' => 'string',
 			]
 			: [
 				'strict-int' => 'int',

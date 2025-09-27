@@ -492,4 +492,16 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPr4374(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/pr-4374.php'], [
+			[
+				'Offset string on array<PR4374\Foo> in isset() always exists and is not nullable.',
+				23,
+			],
+		]);
+	}
+
 }

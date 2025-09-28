@@ -6521,6 +6521,23 @@ final class NodeScopeResolver
 			}
 		}
 
+		if (
+			$stmt->expr instanceof FuncCall
+			&& $stmt->expr->name instanceof Name
+			&& $stmt->expr->name->toLowerString() === 'array_keys'
+			&& $stmt->valueVar instanceof Variable
+		) {
+			$args = $stmt->expr->getArgs();
+			if (count($args) >= 1) {
+				$arrayArg = $args[0]->value;
+				$scope = $scope->assignExpression(
+					new ArrayDimFetch($arrayArg, $stmt->valueVar),
+					$scope->getType($arrayArg)->getIterableValueType(),
+					$scope->getNativeType($arrayArg)->getIterableValueType(),
+				);
+			}
+		}
+
 		return $this->processVarAnnotation($scope, $vars, $stmt);
 	}
 

@@ -687,7 +687,7 @@ final class TypeSpecifier
 			if ($context->null()) {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
 
-				// infer $arr[$key] after $arr[array_rand($arr)]
+				// infer $arr[$key] after $key = array_rand($arr)
 				if (
 					$expr->expr instanceof FuncCall
 					&& $expr->expr->name instanceof Name

@@ -269,4 +269,36 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public static function dataHasOffsetValueType(): array
+	{
+		return [
+			[
+				new ArrayType(new BenevolentUnionType([
+					new IntegerType(),
+					new StringType(),
+				]), new IntegerType()),
+				new ArrayType(new BenevolentUnionType([
+					new IntegerType(),
+					new StringType(),
+				]), new IntegerType()),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	#[DataProvider('dataHasOffsetValueType')]
+	public function testHasOffsetValueType(
+		ArrayType $type,
+		Type $offsetType,
+		TrinaryLogic $expectedResult,
+	): void
+	{
+		$actualResult = $type->hasOffsetValueType($offsetType);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> hasOffsetValueType(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),
+		);
+	}
+
 }

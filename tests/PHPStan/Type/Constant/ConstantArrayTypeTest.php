@@ -1044,4 +1044,30 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame($expectedType->getNextAutoIndexes(), $actualType->getNextAutoIndexes());
 	}
 
+	public static function dataHasOffsetValueType(): array
+	{
+		return [
+			[
+				new ConstantArrayType([new ConstantIntegerType(0)], [new ConstantStringType('a')]),
+				new ConstantArrayType([new ConstantIntegerType(0)], [new ConstantStringType('a')]),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	#[DataProvider('dataHasOffsetValueType')]
+	public function testHasOffsetValueType(
+		ConstantArrayType $type,
+		Type $offsetType,
+		TrinaryLogic $expectedResult,
+	): void
+	{
+		$actualResult = $type->hasOffsetValueType($offsetType);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> hasOffsetValueType(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),
+		);
+	}
+
 }

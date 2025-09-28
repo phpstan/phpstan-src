@@ -1,7 +1,17 @@
 [
     {
+        "message": "Offset int|object might not exist on array.",
+        "line": 19,
+        "ignorable": true
+    },
+    {
         "message": "Possibly invalid array key type int|object.",
         "line": 19,
+        "ignorable": true
+    },
+    {
+        "message": "Offset object|null might not exist on array.",
+        "line": 20,
         "ignorable": true
     },
     {
@@ -10,13 +20,28 @@
         "ignorable": true
     },
     {
+        "message": "Offset DateTimeImmutable might not exist on array|ArrayAccess.",
+        "line": 26,
+        "ignorable": true
+    },
+    {
         "message": "Possibly invalid array key type DateTimeImmutable.",
         "line": 26,
         "ignorable": true
     },
     {
+        "message": "Offset int|object might not exist on array|ArrayAccess.",
+        "line": 28,
+        "ignorable": true
+    },
+    {
         "message": "Possibly invalid array key type int|object.",
         "line": 28,
+        "ignorable": true
+    },
+    {
+        "message": "Offset object|null might not exist on array|ArrayAccess.",
+        "line": 29,
         "ignorable": true
     },
     {

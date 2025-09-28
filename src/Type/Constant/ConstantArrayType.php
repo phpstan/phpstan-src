@@ -586,6 +586,9 @@ class ConstantArrayType implements Type
 		if ($offsetArrayKeyType instanceof ErrorType) {
 			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
 			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
+			if ($offsetArrayKeyType instanceof NeverType) {
+				return TrinaryLogic::createNo();
+			}
 		}
 
 		return $this->recursiveHasOffsetValueType($offsetArrayKeyType);

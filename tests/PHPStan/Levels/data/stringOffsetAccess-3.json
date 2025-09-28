@@ -18,5 +18,10 @@
         "message": "Invalid array key type stdClass.",
         "line": 59,
         "ignorable": true
+    },
+    {
+        "message": "Offset stdClass does not exist on array{baz: 21}|array{foo: 17, bar: 19}.",
+        "line": 59,
+        "ignorable": true
     }
 ]

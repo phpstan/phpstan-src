@@ -3,5 +3,10 @@
         "message": "Invalid array key type DateTimeImmutable.",
         "line": 17,
         "ignorable": true
+    },
+    {
+        "message": "Offset DateTimeImmutable does not exist on array.",
+        "line": 17,
+        "ignorable": true
     }
 ]

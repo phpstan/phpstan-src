@@ -8,8 +8,8 @@ final class CombinationsHelper
 {
 
 	/**
-	 * @param array<mixed> $arrays
-	 * @return iterable<mixed>
+	 * @param array<iterable<mixed>> $arrays
+	 * @return iterable<list<mixed>>
 	 */
 	public static function combinations(array $arrays): iterable
 	{

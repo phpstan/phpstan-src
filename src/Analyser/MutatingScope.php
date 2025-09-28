@@ -4310,7 +4310,7 @@ final class MutatingScope implements Scope
 		$scope = $this;
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$dimType = $scope->getType($expr->dim)->toArrayKey();
-			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
 					$types = [
@@ -4318,16 +4318,21 @@ final class MutatingScope implements Scope
 						new ObjectType(ArrayAccess::class),
 						new NullType(),
 					];
-					if ($dimType instanceof ConstantIntegerType) {
+					if ($dimType->isInteger()->yes()) {
 						$types[] = new StringType();
+					}
+					$offsetValueType = TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types));
+
+					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+						$offsetValueType = TypeCombinator::intersect(
+							$offsetValueType,
+							new HasOffsetValueType($dimType, $type),
+						);
 					}
 
 					$scope = $scope->specifyExpressionType(
 						$expr->var,
-						TypeCombinator::intersect(
-							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
-							new HasOffsetValueType($dimType, $type),
-						),
+						$offsetValueType,
 						$scope->getNativeType($expr->var),
 						$certainty,
 					);

@@ -9,8 +9,6 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use function array_combine;
-use function array_map;
 use function array_merge;
 use function in_array;
 use function is_array;
@@ -43,20 +41,18 @@ final class UnusedFunctionParametersCheck
 		string $identifier,
 	): array
 	{
-		$parameterNames = array_map(static function (Variable $variable): string {
+		$unusedParameters = [];
+		foreach ($parameterVars as $variable) {
 			if (!is_string($variable->name)) {
 				throw new ShouldNotHappenException();
 			}
-			return $variable->name;
-		}, $parameterVars);
-		$unusedParameters = array_combine($parameterNames, $parameterVars);
-		foreach ($this->getUsedVariables($scope, $statements) as $variableName) {
-			if (!isset($unusedParameters[$variableName])) {
-				continue;
-			}
 
+			$unusedParameters[$variable->name] = $variable;
+		}
+		foreach ($this->getUsedVariables($scope, $statements) as $variableName) {
 			unset($unusedParameters[$variableName]);
 		}
+
 		$errors = [];
 		foreach ($unusedParameters as $name => $variable) {
 			$errorBuilder = RuleErrorBuilder::message(sprintf($unusedParameterMessage, $name))->identifier($identifier);

@@ -5705,13 +5705,11 @@ final class NodeScopeResolver
 			}
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;
-			$additionalExpressions = [];
 
-			$valueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope, $additionalExpressions);
+			[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope);
 
 			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
-				$additionalNativeExpressions = [];
-				$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $additionalNativeExpressions);
+				[$nativeValueToWrite, $additionalNativeExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
 			} else {
 				$rewritten = false;
 				foreach ($offsetTypes as $i => $offsetType) {
@@ -5730,7 +5728,7 @@ final class NodeScopeResolver
 						continue;
 					}
 
-					$nativeValueToWrite = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
+					[$nativeValueToWrite] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
 					$rewritten = true;
 					break;
 				}
@@ -6146,9 +6144,10 @@ final class NodeScopeResolver
 	/**
 	 * @param list<ArrayDimFetch> $dimFetchStack
 	 * @param list<Type|null> $offsetTypes
-	 * @param list<array{Expr, Type}> $additionalExpressions
+	 *
+	 * @return array{Type, list<array{Expr, Type}>}
 	 */
-	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope, array &$additionalExpressions = []): Type
+	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope): array
 	{
 		$originalValueToWrite = $valueToWrite;
 
@@ -6240,6 +6239,7 @@ final class NodeScopeResolver
 			}
 		}
 
+		$additionalExpressions = [];
 		$offsetValueType = $valueToWrite;
 		$lastDimKey = array_key_last($dimFetchStack);
 		foreach ($dimFetchStack as $key => $dimFetch) {
@@ -6258,7 +6258,7 @@ final class NodeScopeResolver
 			$additionalExpressions[] = [$dimFetch, $offsetValueType];
 		}
 
-		return $valueToWrite;
+		return [$valueToWrite, $additionalExpressions];
 	}
 
 	private function unwrapAssign(Expr $expr): Expr

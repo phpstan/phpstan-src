@@ -14,6 +14,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -124,6 +125,30 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 				&& $arrayArg->name === $node->var->name
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
+			) {
+				return [];
+			}
+		}
+
+		if (
+			$node->dim instanceof Node\Expr\FuncCall
+			&& $node->dim->name instanceof Node\Name
+			&& $node->dim->name->toLowerString() === 'array_rand'
+			&& count($node->dim->getArgs()) >= 1
+		) {
+			$arrayArg = $node->dim->getArgs()[0]->value;
+			$numArg = $node->dim->getArgs()[1]->value;
+
+			$one = new ConstantIntegerType(1);
+			$arrayType = $scope->getType($arrayArg);
+			if (
+				$arrayArg instanceof Node\Expr\Variable
+				&& $node->var instanceof Node\Expr\Variable
+				&& is_string($arrayArg->name)
+				&& $arrayArg->name === $node->var->name
+				&& $arrayType->isArray()->yes()
+				&& $arrayType->isIterableAtLeastOnce()->yes()
+				&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
 			) {
 				return [];
 			}

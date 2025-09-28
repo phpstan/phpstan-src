@@ -44,3 +44,17 @@ class Foo
 	}
 
 }
+
+/**
+ * @return mixed[]
+ */
+function bug12931():array {
+	/** @var array<string, array<string, int>> $data */
+	$data = [];
+	$data['attr'] = [];
+	$data['attr']['first'] = 1;
+	$data['attr']['second'] = 2;
+	$data['attr']['third'] = 3;
+
+	return $data;
+}

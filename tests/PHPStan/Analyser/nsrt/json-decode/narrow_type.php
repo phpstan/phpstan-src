@@ -33,11 +33,22 @@ function ($mixed) {
 	assertType('mixed', $value);
 };
 
-function(string $json): void {
+function ($mixed, $asArray) {
+	$value = json_decode($mixed, $asArray);
+	assertType('mixed', $value);
+};
+
+function(string $json, ?bool $asArray): void {
 	/** @var '{}'|'null' $json */
 	$value = json_decode($json);
 	assertType('stdClass|null', $value);
 
 	$value = json_decode($json, true);
 	assertType('array{}|null', $value);
+
+	$value = json_decode($json, $asArray);
+	assertType('array{}|stdClass|null', $value);
+
+	$value = json_decode($json, 'foo');
+	assertType('stdClass|null', $value);
 };

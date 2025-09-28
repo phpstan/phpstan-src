@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -17,7 +18,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 use function is_bool;
 use function json_decode;
 
@@ -97,7 +97,7 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 			return TypeCombinator::union(...$types);
 		}
 
-		if ($isForceArray) {
+		if ($isForceArray->yes()) {
 			return TypeCombinator::remove($fallbackType, new ObjectWithoutClassType());
 		}
 
@@ -107,33 +107,55 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 	/**
 	 * Is "json_decode(..., true)"?
 	 */
-	private function isForceArray(FuncCall $funcCall, Scope $scope): bool
+	private function isForceArray(FuncCall $funcCall, Scope $scope): TrinaryLogic
 	{
 		$args = $funcCall->getArgs();
+		$flagValue = $this->getFlagValue($funcCall, $scope);
 		if (!isset($args[1])) {
-			return false;
+			return TrinaryLogic::createNo();
 		}
 
 		$secondArgType = $scope->getType($args[1]->value);
-		$secondArgValue = count($secondArgType->getConstantScalarValues()) === 1 ? $secondArgType->getConstantScalarValues()[0] : null;
-
-		if (is_bool($secondArgValue)) {
-			return $secondArgValue;
+		$secondArgValues = [];
+		foreach ($secondArgType->getConstantScalarValues() as $value) {
+			if ($value === null) {
+				$secondArgValues[] = $flagValue;
+				continue;
+			}
+			if (!is_bool($value)) {
+				return TrinaryLogic::createNo();
+			}
+			$secondArgValues[] = TrinaryLogic::createFromBoolean($value);
 		}
 
-		if ($secondArgValue !== null || !isset($args[3])) {
-			return false;
+		if ($secondArgValues === []) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::extremeIdentity(...$secondArgValues);
+	}
+
+	private function resolveConstantStringType(ConstantStringType $constantStringType, TrinaryLogic $isForceArray): Type
+	{
+		$types = [];
+		/** @var bool $asArray */
+		foreach ($isForceArray->toBooleanType()->getConstantScalarValues() as $asArray) {
+			$decodedValue = json_decode($constantStringType->getValue(), $asArray);
+			$types[] = ConstantTypeHelper::getTypeFromValue($decodedValue);
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	private function getFlagValue(FuncCall $funcCall, Scope $scope): TrinaryLogic
+	{
+		$args = $funcCall->getArgs();
+		if (!isset($args[3])) {
+			return TrinaryLogic::createNo();
 		}
 
 		// depends on used constants, @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
-		return $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($args[3]->value, $scope, 'JSON_OBJECT_AS_ARRAY')->yes();
-	}
-
-	private function resolveConstantStringType(ConstantStringType $constantStringType, bool $isForceArray): Type
-	{
-		$decodedValue = json_decode($constantStringType->getValue(), $isForceArray);
-
-		return ConstantTypeHelper::getTypeFromValue($decodedValue);
+		return $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($args[3]->value, $scope, 'JSON_OBJECT_AS_ARRAY');
 	}
 
 }

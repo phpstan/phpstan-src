@@ -31,3 +31,10 @@ function ($mixed, $unknownFlags) {
 	$value = json_decode($mixed, null, 512, $unknownFlags);
 	assertType('mixed', $value);
 };
+
+function(string $json, ?bool $asArray): void {
+	/** @var '{}'|'null' $json */
+
+	$value = json_decode($json, null, 512, JSON_OBJECT_AS_ARRAY);
+	assertType('array{}|null', $value);
+};

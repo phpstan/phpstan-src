@@ -6219,24 +6219,24 @@ final class NodeScopeResolver
 				continue;
 			}
 
-			if ($scope->hasExpressionType($arrayDimFetch)->yes()) { // keep list for $list[$index] assignments
+			if (!$arrayDimFetch->dim instanceof BinaryOp\Plus) {
+				continue;
+			}
+
+			if ( // keep list for $list[$index + 1] assignments
+				$arrayDimFetch->dim->right instanceof Variable
+				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->left->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
+			) {
 				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
-			} elseif ($arrayDimFetch->dim instanceof BinaryOp\Plus) {
-				if ( // keep list for $list[$index + 1] assignments
-					$arrayDimFetch->dim->right instanceof Variable
-					&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
-					&& $arrayDimFetch->dim->left->value === 1
-					&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
-				) {
-					$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
-				} elseif ( // keep list for $list[1 + $index] assignments
-					$arrayDimFetch->dim->left instanceof Variable
-					&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-					&& $arrayDimFetch->dim->right->value === 1
-					&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
-				) {
-					$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
-				}
+			} elseif ( // keep list for $list[1 + $index] assignments
+				$arrayDimFetch->dim->left instanceof Variable
+				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->right->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
+			) {
+				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 			}
 		}
 

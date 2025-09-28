@@ -7025,6 +7025,23 @@ final class NodeScopeResolver
 			return $phpDocReturnType;
 		}
 
+		if ($phpDocReturnType instanceof UnionType) {
+			$types = [];
+			foreach ($phpDocReturnType->getTypes() as $innerType) {
+				if (!$nativeReturnType->isSuperTypeOf($innerType)->yes()) {
+					continue;
+				}
+
+				$types[] = $innerType;
+			}
+
+			if (count($types) === 0) {
+				return null;
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
 		return null;
 	}
 

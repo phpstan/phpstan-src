@@ -118,4 +118,9 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9657.php'], []);
 	}
 
+	public function testInheritPhpDocReturnTypeWithNarrowerNativeReturnType(): void
+	{
+		$this->analyse([__DIR__ . '/data/inherit-phpdoc-return-type-with-narrower-native-return-type.php'], []);
+	}
+
 }

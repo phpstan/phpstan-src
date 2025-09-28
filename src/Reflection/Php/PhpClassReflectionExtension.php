@@ -53,6 +53,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -1241,8 +1242,29 @@ final class PhpClassReflectionExtension
 			TemplateTypeVariance::createCovariant(),
 		);
 
-		if ($returnTag->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
+		if ($returnTag->isExplicit()) {
 			return $phpDocReturnType;
+		}
+
+		if ($nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
+			return $phpDocReturnType;
+		}
+
+		if ($phpDocReturnType instanceof UnionType) {
+			$types = [];
+			foreach ($phpDocReturnType->getTypes() as $innerType) {
+				if (!$nativeReturnType->isSuperTypeOf($innerType)->yes()) {
+					continue;
+				}
+
+				$types[] = $innerType;
+			}
+
+			if (count($types) === 0) {
+				return null;
+			}
+
+			return TypeCombinator::union(...$types);
 		}
 
 		return null;

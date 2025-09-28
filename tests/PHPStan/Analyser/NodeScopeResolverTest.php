@@ -172,6 +172,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield __DIR__ . '/../Rules/Arrays/data/slevomat-foreach-unset-bug.php';
 		yield __DIR__ . '/../Rules/Arrays/data/slevomat-foreach-array-key-exists-bug.php';
 
+		yield __DIR__ . '/../Rules/Methods/data/inherit-phpdoc-return-type-with-narrower-native-return-type.php';
+
 		if (PHP_VERSION_ID >= 80000) {
 			yield __DIR__ . '/../Rules/Comparison/data/bug-7898.php';
 		}

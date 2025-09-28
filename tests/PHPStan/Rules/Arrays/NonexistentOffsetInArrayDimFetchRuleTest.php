@@ -940,15 +940,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12981.php'], [
 			[
 				'Offset array<int, int|string> might not exist on non-empty-array<bool|float|int|string>.',
-				31
+				31,
 			],
 			[
 				'Offset array<int, int|string> might not exist on non-empty-array<bool|float|int|string>.',
-				33
+				33,
 			],
 		]);
 	}
-
 
 	public function testBugObject(): void
 	{

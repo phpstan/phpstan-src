@@ -136,11 +136,14 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& $node->dim->name->toLowerString() === 'array_rand'
 			&& count($node->dim->getArgs()) >= 1
 		) {
+			$numArg = null;
 			$arrayArg = $node->dim->getArgs()[0]->value;
-			$numArg = $node->dim->getArgs()[1]->value;
-
+			if (count($node->dim->getArgs()) > 1) {
+				$numArg = $node->dim->getArgs()[1]->value;
+			}
 			$one = new ConstantIntegerType(1);
 			$arrayType = $scope->getType($arrayArg);
+
 			if (
 				$arrayArg instanceof Node\Expr\Variable
 				&& $node->var instanceof Node\Expr\Variable

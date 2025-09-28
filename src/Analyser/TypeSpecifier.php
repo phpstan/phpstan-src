@@ -694,8 +694,11 @@ final class TypeSpecifier
 					&& in_array($expr->expr->name->toLowerString(), ['array_rand'], true)
 					&& count($expr->expr->getArgs()) >= 1
 				) {
+					$numArg = null;
 					$arrayArg = $expr->expr->getArgs()[0]->value;
-					$numArg = $expr->expr->getArgs()[1]->value;
+					if (count($expr->expr->getArgs()) > 1) {
+						$numArg = $expr->expr->getArgs()[1]->value;
+					}
 					$one = new ConstantIntegerType(1);
 					$arrayType = $scope->getType($arrayArg);
 

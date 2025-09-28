@@ -949,10 +949,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset int|object does not exist on array{baz: 21}|array{foo: 17, bar: 19}.',
 				12,
 			],
-			[
-				'Offset object does not exist on array<string, int>.',
-				21,
-			],
 		]);
 	}
 
@@ -1045,6 +1041,55 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				"Offset int might not exist on non-empty-array<int, ''>.",
 				17,
+			],
+		]);
+	}
+
+	public function testPR4385(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+		$this->reportPossiblyNonexistentConstantArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/pr-4385.php'], [
+			[
+				'Offset int might not exist on array<int>.',
+				24,
+			],
+			[
+				'Offset string might not exist on array<int>.',
+				25,
+			],
+			[
+				'Offset array<int>|int might not exist on array<int>.',
+				28,
+			],
+			[
+				'Offset array<int>|string might not exist on array<int>.',
+				29,
+			],
+			[
+				'Offset 0|array<int> might not exist on array<int>.',
+				30,
+			],
+			[
+				'Offset int might not exist on array{string}.',
+				33,
+			],
+			[
+				'Offset string might not exist on array{string}.',
+				34,
+			],
+			[
+				'Offset array<int>|int might not exist on array{string}.',
+				37,
+			],
+			[
+				'Offset array<int>|string might not exist on array{string}.',
+				38,
+			],
+			[
+				'Offset array<int>|int might not exist on array<int>|string.',
+				41,
 			],
 		]);
 	}

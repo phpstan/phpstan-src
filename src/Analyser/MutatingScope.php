@@ -5296,14 +5296,35 @@ final class MutatingScope implements Scope
 		array $otherVariableTypeHolders,
 	): array
 	{
+		$sortByExprStringLength = static function (string $exprA, string $exprB): int {
+			return strlen($exprA) <=> strlen($exprB);
+		};
+
+		uksort($variableTypeHolders, $sortByExprStringLength);
+		uksort($otherVariableTypeHolders, $sortByExprStringLength);
+
+		$changedArrays = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				continue;
 			}
 
+			foreach($changedArrays as $changedExpr) {
+				if (str_starts_with($variableExprString, $changedExpr)) {
+					continue 2;
+				}
+			}
+
+			$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
+			if (
+				$generalizedType->isArray()->yes() &&
+				!$generalizedType->equals($variableTypeHolder->getType()))
+			{
+				$changedArrays[] = $variableExprString;
+			}
 			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),
-				$this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0),
+				$generalizedType,
 				$variableTypeHolder->getCertainty(),
 			);
 		}

@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @param-out int $error_code
+ * @param-out string $error_message
+ */
+function stream_socket_server(
+    string $address,
+    int $error_code = null,
+    string $error_message = null,
+    int $flags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
+    resource $context = null
+): resource|false {
+}

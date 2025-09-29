@@ -1,16 +1,17 @@
 <?php
 
 /**
- * @param-out int $error_code
- * @param-out string $error_message
+ * @param-out int|null $error_code
+ * @param-out string|null $error_message
+ * @param float|null $timeout
  * @param resource|null $context
  * @return resource|false
  */
 function stream_socket_client(
     string $address,
-    int &$error_code = null,
-    string &$error_message = null,
-    float $timeout = null,
+    &$error_code = null,
+    &$error_message = null,
+    $timeout = null,
     int $flags = STREAM_CLIENT_CONNECT,
     $context = null
 ) {

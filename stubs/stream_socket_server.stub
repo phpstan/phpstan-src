@@ -1,15 +1,15 @@
 <?php
 
 /**
- * @param-out int $error_code
- * @param-out string $error_message
+ * @param-out int|null $error_code
+ * @param-out string|null $error_message
  * @param resource|null $context
  * @return resource|false
  */
 function stream_socket_server(
     string $address,
-    int &$error_code = null,
-    string &$error_message = null,
+    &$error_code = null,
+    &$error_message = null,
     int $flags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
     $context = null
 ) {

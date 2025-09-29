@@ -6,8 +6,8 @@
  */
 function stream_socket_client(
     string $address,
-    int $error_code = null,
-    string $error_message = null,
+    int &$error_code = null,
+    string &$error_message = null,
     float $timeout = null,
     int $flags = STREAM_CLIENT_CONNECT,
     resource $context = null

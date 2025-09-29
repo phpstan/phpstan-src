@@ -1,6 +1,6 @@
 <?php
 
-namespace PR4372;
+namespace PR4390;
 
 use function PHPStan\debugScope;
 use function PHPStan\Testing\assertType;
@@ -15,5 +15,5 @@ function (string $s): void {
 	}
 
 	assertType('non-empty-array<int<0, 9>, non-empty-array<int<0, 9>, string>>', $locations);
-	assertType('non-empty-array<int<0, 9>, string>>', $locations[0]);
+	assertType('non-empty-array<int<0, 9>, string>', $locations[0]);
 };

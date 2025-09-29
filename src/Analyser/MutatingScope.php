@@ -162,12 +162,14 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
+use function str_contains;
 use function str_decrement;
 use function str_increment;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
+use function uksort;
 use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
@@ -5296,12 +5298,7 @@ final class MutatingScope implements Scope
 		array $otherVariableTypeHolders,
 	): array
 	{
-		$sortByExprStringLength = static function (string $exprA, string $exprB): int {
-			return strlen($exprA) <=> strlen($exprB);
-		};
-
-		uksort($variableTypeHolders, $sortByExprStringLength);
-		uksort($otherVariableTypeHolders, $sortByExprStringLength);
+		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
 
 		$changedArrays = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
@@ -5309,17 +5306,20 @@ final class MutatingScope implements Scope
 				continue;
 			}
 
-			foreach($changedArrays as $changedExpr) {
-				if (str_starts_with($variableExprString, $changedExpr)) {
+			foreach ($changedArrays as $changedExpr) {
+				if (
+					str_contains($variableExprString, $changedExpr . '[')
+					|| str_contains($variableExprString, '[' . $changedExpr . ']')
+				) {
+					unset($variableTypeHolders[$variableExprString]);
 					continue 2;
 				}
 			}
 
 			$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
 			if (
-				$generalizedType->isArray()->yes() &&
-				!$generalizedType->equals($variableTypeHolder->getType()))
-			{
+				!$generalizedType->equals($variableTypeHolder->getType())
+			) {
 				$changedArrays[] = $variableExprString;
 			}
 			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(

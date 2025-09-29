@@ -1,7 +1,9 @@
 <?php
 
 /**
+ * @param int|null $error_code
  * @param-out int|null $error_code
+ * @param string|null $error_message
  * @param-out string|null $error_message
  * @param resource|null $context
  * @return resource|false

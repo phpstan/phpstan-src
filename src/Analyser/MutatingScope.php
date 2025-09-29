@@ -5300,13 +5300,13 @@ final class MutatingScope implements Scope
 	{
 		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
 
-		$changedArrays = [];
+		$generalizedExpressions = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				continue;
 			}
 
-			foreach ($changedArrays as $changedExpr) {
+			foreach ($generalizedExpressions as $changedExpr) {
 				if (
 					str_contains($variableExprString, $changedExpr . '[')
 					|| str_contains($variableExprString, '[' . $changedExpr . ']')
@@ -5320,7 +5320,7 @@ final class MutatingScope implements Scope
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
 			) {
-				$changedArrays[] = $variableExprString;
+				$generalizedExpressions[] = $variableExprString;
 			}
 			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),

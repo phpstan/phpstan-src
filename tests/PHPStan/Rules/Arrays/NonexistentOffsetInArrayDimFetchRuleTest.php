@@ -946,6 +946,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset array<int, int|string> might not exist on non-empty-array<bool|float|int|string>.',
 				33,
 			],
+			[
+				'Offset array<int, int|string>|int|string might not exist on non-empty-array<bool|float|int|string>.',
+				39,
+			],
+			[
+				'Offset array<int, int|string>|int|string might not exist on non-empty-array<bool|float|int|string>.',
+				41,
+			],
 		]);
 	}
 

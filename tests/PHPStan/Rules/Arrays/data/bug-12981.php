@@ -32,4 +32,12 @@ class HelloWorld
 		$randIndex = array_rand($arr, $num);
 		echo $arr[$randIndex];
 	}
+
+	/** @param non-empty-array<scalar> $arr */
+	public function sayHello4(array $arr, int $num): void
+	{
+		echo $arr[array_rand($arr, $num)];
+		$randIndex = array_rand($arr, $num);
+		echo $arr[$randIndex];
+	}
 }

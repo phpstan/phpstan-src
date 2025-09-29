@@ -136,6 +136,8 @@ parameters:
 		- ../stubs/typeCheckingFunctions.stub
 		- ../stubs/Countable.stub
 		- ../stubs/file.stub
+		- ../stubs/stream_socket_client.stub
+		- ../stubs/stream_socket_server.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	resultCachePath: %tmpDir%/resultCache.php

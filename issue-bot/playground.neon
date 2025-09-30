@@ -9,73 +9,10 @@ conditionalTags:
 	PHPStan\Rules\Playground\StaticVarWithoutTypeRule:
 		phpstan.rules.rule: %checkImplicitMixed%
 
+parameters:
+	reportPossiblyNonexistentGeneralArrayOffset: true
+	reportPossiblyNonexistentConstantArrayOffset: true
+
 services:
 	-
 		class: PHPStan\Rules\Playground\StaticVarWithoutTypeRule
-
-	-
-		class: PHPStan\Rules\Playground\PromoteParameterRule
-		arguments:
-			rule: @uninitializedPropertyRule
-			nodeType: PHPStan\Node\ClassPropertiesNode
-			parameterValue: %checkUninitializedProperties%
-			parameterName: checkUninitializedProperties
-		tags:
-			- phpstan.rules.rule
-		autowired: false
-
-	-
-		class: PHPStan\Rules\Playground\PromoteParameterRule
-		arguments:
-			rule: @nonexistentOffsetInArrayDimFetchGeneralArrayRule
-			nodeType: PhpParser\Node\Expr\ArrayDimFetch
-			parameterValue: %reportPossiblyNonexistentGeneralArrayOffset%
-			parameterName: reportPossiblyNonexistentGeneralArrayOffset
-		tags:
-			- phpstan.rules.rule
-		autowired: false
-
-	-
-		class: PHPStan\Rules\Playground\PromoteParameterRule
-		arguments:
-			rule: @nonexistentOffsetInArrayDimFetchConstantArrayRule
-			nodeType: PhpParser\Node\Expr\ArrayDimFetch
-			parameterValue: %reportPossiblyNonexistentConstantArrayOffset%
-			parameterName: reportPossiblyNonexistentConstantArrayOffset
-		tags:
-			- phpstan.rules.rule
-		autowired: false
-
-	nonexistentOffsetInArrayDimFetchGeneralArrayRule:
-		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
-		arguments:
-			nonexistentOffsetInArrayDimFetchCheck: @nonexistentOffsetInArrayDimFetchCheckGeneralArrayOffset
-			reportMaybes: %reportMaybes%
-		autowired: false
-
-	nonexistentOffsetInArrayDimFetchConstantArrayRule:
-		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchRule
-		arguments:
-			nonexistentOffsetInArrayDimFetchCheck: @nonexistentOffsetInArrayDimFetchCheckConstantArrayOffset
-			reportMaybes: %reportMaybes%
-		autowired: false
-
-	nonexistentOffsetInArrayDimFetchCheckGeneralArrayOffset:
-		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck
-		arguments:
-			reportMaybes: %reportMaybes%
-			reportPossiblyNonexistentGeneralArrayOffset: true
-			reportPossiblyNonexistentConstantArrayOffset: false
-		autowired: false
-
-	nonexistentOffsetInArrayDimFetchCheckConstantArrayOffset:
-		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck
-		arguments:
-			reportMaybes: %reportMaybes%
-			reportPossiblyNonexistentGeneralArrayOffset: false
-			reportPossiblyNonexistentConstantArrayOffset: true
-		autowired: false
-
-	uninitializedPropertyRule:
-		class: PHPStan\Rules\Properties\UninitializedPropertyRule
-		autowired: false

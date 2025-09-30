@@ -5302,8 +5302,8 @@ final class MutatingScope implements Scope
 		$generalizedExpressions = [];
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
-			foreach ($generalizedExpressions as $generalizedExprString => $generalizedTypeHolder) {
-				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedTypeHolder->getExpr(), $variableTypeHolder->getExpr())) {
+			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
+				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr())) {
 					continue;
 				}
 
@@ -5318,7 +5318,7 @@ final class MutatingScope implements Scope
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
 			) {
-				$generalizedExpressions[$variableExprString] = $variableTypeHolder;
+				$generalizedExpressions[$variableExprString] = $variableTypeHolder->getExpr();
 			}
 			$newVariableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),

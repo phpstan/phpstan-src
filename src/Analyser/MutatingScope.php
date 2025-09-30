@@ -162,7 +162,6 @@ use function is_string;
 use function ltrim;
 use function md5;
 use function sprintf;
-use function str_contains;
 use function str_decrement;
 use function str_increment;
 use function str_starts_with;
@@ -5301,35 +5300,34 @@ final class MutatingScope implements Scope
 		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
 
 		$generalizedExpressions = [];
+		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
-			if (!isset($otherVariableTypeHolders[$variableExprString])) {
-				continue;
-			}
-
-			foreach ($generalizedExpressions as $changedExpr) {
-				if (
-					str_contains($variableExprString, $changedExpr . '[')
-					|| str_contains($variableExprString, '[' . $changedExpr . ']')
-				) {
-					unset($variableTypeHolders[$variableExprString]);
-					continue 2;
+			foreach ($generalizedExpressions as $generalizedExprString => $generalizedTypeHolder) {
+				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedTypeHolder->getExpr(), $variableTypeHolder->getExpr())) {
+					continue;
 				}
+
+				continue 2;
+			}
+			if (!isset($otherVariableTypeHolders[$variableExprString])) {
+				$newVariableTypeHolders[$variableExprString] = $variableTypeHolder;
+				continue;
 			}
 
 			$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
 			) {
-				$generalizedExpressions[] = $variableExprString;
+				$generalizedExpressions[$variableExprString] = $variableTypeHolder;
 			}
-			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
+			$newVariableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),
 				$generalizedType,
 				$variableTypeHolder->getCertainty(),
 			);
 		}
 
-		return $variableTypeHolders;
+		return $newVariableTypeHolders;
 	}
 
 	private function generalizeType(Type $a, Type $b, int $depth): Type

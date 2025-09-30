@@ -2,7 +2,6 @@
 
 namespace PR4390;
 
-use function PHPStan\debugScope;
 use function PHPStan\Testing\assertType;
 
 function (string $s): void {

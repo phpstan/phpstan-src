@@ -12,6 +12,7 @@ conditionalTags:
 parameters:
 	reportPossiblyNonexistentGeneralArrayOffset: true
 	reportPossiblyNonexistentConstantArrayOffset: true
+	checkUninitializedProperties: true
 
 services:
 	-

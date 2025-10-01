@@ -80,7 +80,7 @@ final class Printer extends Standard
 
 	protected function pPHPStan_Node_AlwaysRememberedExpr(AlwaysRememberedExpr $expr): string // phpcs:ignore
 	{
-		return sprintf('__phpstanRembered(%s)', $this->p($expr->getExpr()));
+		return sprintf('__phpstanRemembered(%s)', $this->p($expr->getExpr()));
 	}
 
 	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore

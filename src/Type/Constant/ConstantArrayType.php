@@ -977,7 +977,7 @@ class ConstantArrayType implements Type
 		if ($offset < 0) {
 			/*
 			 * Transforms the problem with the negative offset in one with a positive offset using array reversion.
-			 * The reason is belows handling of optional keys which works only from left to right.
+			 * The reason is below handling of optional keys which works only from left to right.
 			 *
 			 * e.g.
 			 * array{a: 0, b: 1, c: 2, d: 3, e: 4}

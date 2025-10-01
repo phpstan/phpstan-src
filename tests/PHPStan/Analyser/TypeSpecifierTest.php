@@ -123,11 +123,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Expr\ClassConstFetch(new Name('Bug9499\\FooEnum'), 'A'),
 				),
 				[
-					'__phpstanRembered($foo->bar)' => 'Bug9499\FooEnum::A',
+					'__phpstanRemembered($foo->bar)' => 'Bug9499\FooEnum::A',
 					'$foo->bar' => 'Bug9499\FooEnum::A',
 				],
 				[
-					'__phpstanRembered($foo->bar)' => '~Bug9499\FooEnum::A',
+					'__phpstanRemembered($foo->bar)' => '~Bug9499\FooEnum::A',
 					'$foo->bar' => '~Bug9499\FooEnum::A',
 				],
 			];

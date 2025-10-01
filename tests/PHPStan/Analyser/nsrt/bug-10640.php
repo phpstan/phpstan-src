@@ -23,3 +23,9 @@ foreach ($changes as $changeSet) {
 		doAdd($changeSet['add']);
 	}
 }
+
+function doSomething($s) {}
+function toAdd($s) {}
+function toRem($s) {}
+function doDel($s) {}
+function doAdd($s) {}

@@ -1378,6 +1378,28 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCurlSetOptArray(): void
+	{
+		$this->analyse([__DIR__ . '/data/curl-setopt-array.php'], [
+			[
+				"Parameter #2 \$options of function curl_setopt_array expects array{19913: bool, 10102: string, 68: int, 13: int, 84: int, 10036: non-empty-string|null}, array{19913: true, 10102: '', 68: 10, 13: 30, 84: 2, 10036: CurlSetOptArray\RequestMethod::POST} given.",
+				30,
+				"Offset 10036 (non-empty-string|null) does not accept type CurlSetOptArray\RequestMethod::POST."
+			],
+			[
+				"Parameter #2 \$options of function curl_setopt_array expects array{19913: bool, 10102: string, 68: int, 13: int, 84: int, 10036: non-empty-string|null}, array{19913: true, 10102: '', 68: 10, 13: 30, 84: 2, 10036: CurlSetOptArray\BackedRequestMethod::POST} given.",
+				42,
+				"Offset 10036 (non-empty-string|null) does not accept type CurlSetOptArray\BackedRequestMethod::POST."
+			],
+			[
+				"Parameter #2 \$options of function curl_setopt_array expects array{19913: bool, 10102: string, 68: int, 13: int, 84: int}, array{19913: '123', 10102: '', 68: 10, 13: 30, 84: false} given.",
+				54,
+				"Offset 19913 (bool) does not accept type string."
+			],
+
+		]);
+	}
+
 	public function testBug8280(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8280.php'], []);

@@ -15,6 +15,7 @@ use PHPStan\Parser\ArrayWalkArgVisitor;
 use PHPStan\Parser\ClosureBindArgVisitor;
 use PHPStan\Parser\ClosureBindToVarVisitor;
 use PHPStan\Parser\CurlSetOptArgVisitor;
+use PHPStan\Parser\CurlSetOptArrayArgVisitor;
 use PHPStan\Parser\ImplodeArgVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -26,6 +27,8 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -153,6 +156,54 @@ final class ParametersAcceptorSelector
 							),
 						];
 					}
+				}
+			}
+
+			if (count($args) >= 2 && (bool) $args[1]->getAttribute(CurlSetOptArrayArgVisitor::ATTRIBUTE_NAME)) {
+				$optArrayType = $scope->getType($args[1]->value);
+
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach($optArrayType->getIterableKeyType()->getConstantScalarValues() as $optValue) {
+					if (!is_int($optValue)) {
+						$builder = null;
+						break;
+					}
+
+					$optValueType = self::getCurlOptValueType($optValue);
+					if ($optValueType === null) {
+						$builder = null;
+						break;
+					}
+
+					$builder->setOffsetValueType(
+						new ConstantIntegerType($optValue),
+						$optValueType
+					);
+				}
+
+				if ($builder !== null) {
+					$acceptor = $parametersAcceptors[0];
+					$parameters = $acceptor->getParameters();
+
+					$parameters[1] = new NativeParameterReflection(
+						$parameters[1]->getName(),
+						$parameters[1]->isOptional(),
+						$builder->getArray(),
+						$parameters[1]->passedByReference(),
+						$parameters[1]->isVariadic(),
+						$parameters[1]->getDefaultValue(),
+					);
+
+					$parametersAcceptors = [
+						new FunctionVariant(
+							$acceptor->getTemplateTypeMap(),
+							$acceptor->getResolvedTemplateTypeMap(),
+							array_values($parameters),
+							$acceptor->isVariadic(),
+							$acceptor->getReturnType(),
+							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						),
+					];
 				}
 			}
 

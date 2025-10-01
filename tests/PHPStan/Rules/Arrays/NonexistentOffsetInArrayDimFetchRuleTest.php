@@ -867,16 +867,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
 
-		$this->analyse([__DIR__ . '/data/bug-12406b.php'], [
-			[
-				'Offset int<0, max> might not exist on non-empty-list<array{0: string, 1: non-empty-string, 2: non-falsy-string, 3: numeric-string, 4?: numeric-string, 5?: numeric-string}>.',
-				22,
-			],
-			[
-				'Offset int<0, max> might not exist on non-empty-list<array{0: string, 1: non-empty-string, 2: non-falsy-string, 3: numeric-string, 4?: numeric-string, 5?: numeric-string}>.',
-				23,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-12406b.php'], []);
 	}
 
 	public function testBug11679(): void

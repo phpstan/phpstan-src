@@ -1487,6 +1487,8 @@ final class NodeScopeResolver
 				$initScope = $condResult->getScope();
 				$condResultScope = $condResult->getScope();
 
+				// only the last condition expression is relevant whether the loop continues
+				// see https://www.php.net/manual/en/control-structures.for.php
 				if ($condExpr === $lastCondExpr) {
 					$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
 					$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
@@ -1513,6 +1515,7 @@ final class NodeScopeResolver
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 					}
+
 					foreach ($stmt->loop as $loopExpr) {
 						$exprResult = $this->processExprNode($stmt, $loopExpr, $bodyScope, static function (): void {
 						}, ExpressionContext::createTopLevel());
@@ -1539,6 +1542,7 @@ final class NodeScopeResolver
 			if ($lastCondExpr !== null) {
 				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
 				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
+				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
 			}
 
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
@@ -7114,6 +7118,68 @@ final class NodeScopeResolver
 				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
 			],
 		);
+	}
+
+	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope
+	{
+		// infer $items[$i] type from for ($i = 0; $i < count($items); $i++) {...}
+
+		if (
+			// $i = 0
+			count($stmt->init) === 1
+			&& $stmt->init[0] instanceof Assign
+			&& $stmt->init[0]->var instanceof Variable
+			&& $stmt->init[0]->expr instanceof Node\Scalar\Int_
+			&& $stmt->init[0]->expr->value === 0
+			// $i++ or ++$i
+			&& count($stmt->loop) === 1
+			&& ($stmt->loop[0] instanceof Expr\PreInc || $stmt->loop[0] instanceof Expr\PostInc)
+			&& $stmt->loop[0]->var instanceof Variable
+		) {
+			// $i < count($items)
+			if (
+				$lastCondExpr instanceof BinaryOp\Smaller
+				&& $lastCondExpr->left instanceof Variable
+				&& $lastCondExpr->right instanceof FuncCall
+				&& $lastCondExpr->right->name instanceof Name
+				&& $lastCondExpr->right->name->toLowerString() === 'count'
+				&& count($lastCondExpr->right->getArgs()) > 0
+				&& $lastCondExpr->right->getArgs()[0]->value instanceof Variable
+				&& is_string($stmt->init[0]->var->name)
+				&& $stmt->init[0]->var->name === $stmt->loop[0]->var->name
+				&& $stmt->init[0]->var->name === $lastCondExpr->left->name
+			) {
+				$arrayArg = $lastCondExpr->right->getArgs()[0]->value;
+				$bodyScope = $bodyScope->assignExpression(
+					new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
+					$bodyScope->getType($arrayArg)->getIterableValueType(),
+					$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+				);
+			}
+
+			// count($items) > $i
+			if (
+				$lastCondExpr instanceof BinaryOp\Greater
+				&& $lastCondExpr->right instanceof Variable
+				&& $lastCondExpr->left instanceof FuncCall
+				&& $lastCondExpr->left->name instanceof Name
+				&& $lastCondExpr->left->name->toLowerString() === 'count'
+				&& count($lastCondExpr->left->getArgs()) > 0
+				&& $lastCondExpr->left->getArgs()[0]->value instanceof Variable
+				&& is_string($stmt->init[0]->var->name)
+				&& $stmt->init[0]->var->name === $stmt->loop[0]->var->name
+				&& $stmt->init[0]->var->name === $lastCondExpr->right->name
+			) {
+				$arrayArg = $lastCondExpr->left->getArgs()[0]->value;
+				$bodyScope = $bodyScope->assignExpression(
+					new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
+					$bodyScope->getType($arrayArg)->getIterableValueType(),
+					$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
+				);
+			}
+		}
+
+		return $bodyScope;
 	}
 
 }

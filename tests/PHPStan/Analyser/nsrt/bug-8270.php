@@ -13,7 +13,7 @@ function (): void {
 			'value' => rand(),
 		];
 	}
-	assertType('list<array{test: false, value: int<0, max>}>', $list);
+	assertType('non-empty-list<array{test: false, value: int<0, max>}>', $list);
 
 	// TODO: sort list by value asc...
 	$k = array_key_first($list);
@@ -24,6 +24,6 @@ function (): void {
 			echo $item['value'];
 		}
 	}
-	assertType('array{test: true, value?: int<0, max>}', $list);
+	assertType('non-empty-list<array{test: bool, value: int<0, max>}>&hasOffsetValue(0, array{test: true, value: int<0, max>})', $list);
 
 };

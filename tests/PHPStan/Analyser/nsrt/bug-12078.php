@@ -57,11 +57,11 @@ function main()
 	]
 	*/
 
-	assertType("array<non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}>", $arrDataByKey);
+	assertType("array<string, non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}>", $arrDataByKey);
 	foreach ($arrDataByKey as $key => $arrDataByKeyForKey) {
-		assertType("array<non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}>", $arrDataByKeyForKey);
+		assertType("non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}", $arrDataByKeyForKey);
 		echo [] === ($arrDataByKeyForKey['6M'] ?? []) ? 'No 6M data for key ' . $key . "\n" : 'We got 6M data for key ' . $key . "\n";
 		echo [] === ($arrDataByKeyForKey['3M'] ?? []) ? 'No 3M data for key ' . $key . "\n" : 'We got 3M data for key ' . $key . "\n";
-		assertType("array<non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}>", $arrDataByKeyForKey);
+		assertType("non-empty-array{'6M'?: non-empty-list<string>, '3M'?: non-empty-list<string>}", $arrDataByKeyForKey);
 	}
 }

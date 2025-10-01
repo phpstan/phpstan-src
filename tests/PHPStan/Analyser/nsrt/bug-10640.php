@@ -8,12 +8,12 @@ $changes = [];
 foreach (toAdd() as $add) {
 	$changes[$add['id']]['add'][] = doSomething($add);
 }
-assertType('array<int, array{add: non-empty-array<int<0, max>, 1>}>', $changes);
+assertType('array<array{add: non-empty-list}>', $changes);
 
 foreach (toRem() as $del) {
 	$changes[$add['id']]['del'][] = doSomething($del);
 }
-assertType('array<int, array{add: non-empty-array<int<0, max>, 1>, del?: non-empty-array<int<0, max>, 2>}>', $changes);
+assertType('array<non-empty-array{add?: non-empty-list, del?: non-empty-list}>', $changes);
 
 foreach ($changes as $changeSet) {
 	if (isset($changeSet['del'])) {

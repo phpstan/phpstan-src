@@ -128,35 +128,30 @@ final class ParametersAcceptorSelector
 			if (count($args) >= 3 && (bool) $args[0]->getAttribute(CurlSetOptArgVisitor::ATTRIBUTE_NAME)) {
 				$optType = $scope->getType($args[1]->value);
 
-				$optValueType = null;
+				$valueTypes = [];
 				foreach ($optType->getConstantScalarValues() as $scalarValue) {
 					if (!is_int($scalarValue)) {
-						$optValueType = null;
+						$valueTypes = [];
 						break;
 					}
 
 					$valueType = self::getCurlOptValueType($scalarValue);
 					if ($valueType === null) {
-						$optValueType = null;
+						$valueTypes = [];
 						break;
 					}
 
-					if ($optValueType === null) {
-						$optValueType = $valueType;
-						continue;
-					}
-
-					$optValueType = TypeCombinator::union($optValueType, $valueType);
+					$valueTypes[] = $valueType;
 				}
 
-				if ($optValueType !== null) {
+				if (count($valueTypes) !== 0) {
 					$acceptor = $parametersAcceptors[0];
 					$parameters = $acceptor->getParameters();
 
 					$parameters[2] = new NativeParameterReflection(
 						$parameters[2]->getName(),
 						$parameters[2]->isOptional(),
-						$optValueType,
+						TypeCombinator::union(...$valueTypes),
 						$parameters[2]->passedByReference(),
 						$parameters[2]->isVariadic(),
 						$parameters[2]->getDefaultValue(),

@@ -1375,6 +1375,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Parameter #3 $value of function curl_setopt expects array<int, string>, array<string, string> given.',
 				77,
 			],
+			[
+				'Parameter #3 $value of function curl_setopt expects bool|int, int|string given.',
+				96,
+			],
 		]);
 	}
 

@@ -81,4 +81,18 @@ class HelloWorld
 		];
 		curl_setopt($curl, CURLOPT_HTTPHEADER, $header_list);
 	}
+
+	public function unionType() {
+		$curl = curl_init();
+
+		if (rand(0,1)) {
+			$var = CURLOPT_AUTOREFERER;
+			$value = 'yes'; // invalid, should be bool
+		} else {
+			$var = CURLOPT_TIMEOUT;
+			$value = 1;
+		}
+
+		curl_setopt($curl, $var, $value);
+	}
 }

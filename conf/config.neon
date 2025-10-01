@@ -38,6 +38,7 @@ parameters:
 		rawMessageInBaseline: false
 		reportNestedTooWideType: false
 		assignToByRefForeachExpr: false
+		curlSetOptArrayTypes: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

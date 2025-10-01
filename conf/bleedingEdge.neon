@@ -14,3 +14,4 @@ parameters:
 		rawMessageInBaseline: true
 		reportNestedTooWideType: false
 		assignToByRefForeachExpr: true
+		curlSetOptArrayTypes: true

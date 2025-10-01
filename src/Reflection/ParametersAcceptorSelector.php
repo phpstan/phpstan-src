@@ -27,7 +27,6 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
@@ -53,6 +52,7 @@ use function array_values;
 use function constant;
 use function count;
 use function defined;
+use function is_int;
 use function is_string;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
@@ -163,7 +163,7 @@ final class ParametersAcceptorSelector
 				$optArrayType = $scope->getType($args[1]->value);
 
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach($optArrayType->getIterableKeyType()->getConstantScalarValues() as $optValue) {
+				foreach ($optArrayType->getIterableKeyType()->getConstantScalarValues() as $optValue) {
 					if (!is_int($optValue)) {
 						$builder = null;
 						break;
@@ -177,7 +177,7 @@ final class ParametersAcceptorSelector
 
 					$builder->setOffsetValueType(
 						new ConstantIntegerType($optValue),
-						$optValueType
+						$optValueType,
 					);
 				}
 

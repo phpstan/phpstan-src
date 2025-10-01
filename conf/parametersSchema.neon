@@ -41,6 +41,7 @@ parametersSchema:
 		rawMessageInBaseline: bool()
 		reportNestedTooWideType: bool()
 		assignToByRefForeachExpr: bool()
+		curlSetOptArrayTypes: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

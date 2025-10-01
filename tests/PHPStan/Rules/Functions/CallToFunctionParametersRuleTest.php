@@ -1378,6 +1378,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testCurlSetOptArray(): void
 	{
 		$this->analyse([__DIR__ . '/data/curl-setopt-array.php'], [

@@ -162,26 +162,28 @@ final class ParametersAcceptorSelector
 			if (count($args) >= 2 && (bool) $args[1]->getAttribute(CurlSetOptArrayArgVisitor::ATTRIBUTE_NAME)) {
 				$optArrayType = $scope->getType($args[1]->value);
 
+				$hasTypes = false;
 				$builder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($optArrayType->getIterableKeyType()->getConstantScalarValues() as $optValue) {
 					if (!is_int($optValue)) {
-						$builder = null;
+						$hasTypes = false;
 						break;
 					}
 
 					$optValueType = self::getCurlOptValueType($optValue);
 					if ($optValueType === null) {
-						$builder = null;
+						$hasTypes = false;
 						break;
 					}
 
+					$hasTypes = true;
 					$builder->setOffsetValueType(
 						new ConstantIntegerType($optValue),
 						$optValueType,
 					);
 				}
 
-				if ($builder !== null) {
+				if ($hasTypes) {
 					$acceptor = $parametersAcceptors[0];
 					$parameters = $acceptor->getParameters();
 

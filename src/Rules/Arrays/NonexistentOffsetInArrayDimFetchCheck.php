@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -86,7 +87,9 @@ final class NonexistentOffsetInArrayDimFetchCheck
 				$flattenedTypes = TypeUtils::flattenTypes($type);
 			}
 
-			$validArrayDimType = TypeCombinator::intersect(AllowedArrayKeysTypes::getType(), $dimType);
+			$validArrayDimType = $dimType instanceof MixedType
+				? $dimType
+				: TypeCombinator::intersect(AllowedArrayKeysTypes::getType(), $dimType);
 
 			foreach ($flattenedTypes as $innerType) {
 				$dimTypeToCheck = $innerType->isArray()->yes() ? $validArrayDimType : $dimType;

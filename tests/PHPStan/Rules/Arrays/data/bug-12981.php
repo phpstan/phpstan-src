@@ -2,7 +2,6 @@
 
 namespace Bug12981;
 
-use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 
 class HelloWorld

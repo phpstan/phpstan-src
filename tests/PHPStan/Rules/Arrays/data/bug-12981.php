@@ -12,6 +12,7 @@ class HelloWorld
 	{
 		echo $arr[array_rand($arr)];
 		$randIndex = array_rand($arr);
+		assertType('bool|float|int|string', $arr[$randIndex]);
 		echo $arr[$randIndex];
 	}
 
@@ -39,5 +40,22 @@ class HelloWorld
 		echo $arr[array_rand($arr, $num)];
 		$randIndex = array_rand($arr, $num);
 		echo $arr[$randIndex];
+	}
+
+	public function sayHello5(): void
+	{
+		$arr = [
+			1 => true,
+			2 => false,
+			'a' => 'hello',
+		];
+		assertType("'hello'|bool", $arr[array_rand($arr)]);
+
+		$arr = [
+			1 => true,
+			2 => null,
+			'a' => 'hello',
+		];
+		assertType("'hello'|true|null", $arr[array_rand($arr)]);
 	}
 }

@@ -708,10 +708,9 @@ final class TypeSpecifier
 						&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
 					) {
 						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-						$iterableValueType = $arrayType->getFirstIterableValueType();
 
 						return $specifiedTypes->unionWith(
-							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
+							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 						);
 					}
 				}

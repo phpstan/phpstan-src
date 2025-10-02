@@ -116,4 +116,26 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12981(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12981.php'], [
+			[
+				'Invalid array key type array<int, int|string>.',
+				31,
+			],
+			[
+				'Invalid array key type array<int, int|string>.',
+				33,
+			],
+			[
+				'Possibly invalid array key type array<int, int|string>|int|string.',
+				39,
+			],
+			[
+				'Possibly invalid array key type array<int, int|string>|int|string.',
+				41,
+			],
+		]);
+	}
+
 }

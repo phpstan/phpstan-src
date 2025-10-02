@@ -2371,16 +2371,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.0')]
 	public function testArrayRand(): void
 	{
-		$this->analyse([__DIR__ . '/data/array-rand.php'], [
+		$this->analyse([__DIR__ . '/data/array_rand.php'], [
 			[
 				'Parameter #1 $input of function array_rand expects non-empty-array, array{} given.',
 				7,
-				'array{} is empty.'
+				'array{} is empty.',
 			],
 			[
 				'Parameter #1 $input of function array_rand expects non-empty-array, array{} given.',
 				8,
-				'array{} is empty.'
+				'array{} is empty.',
 			],
 			[
 				'Parameter #2 $num_req of function array_rand expects int<1, max>, int given.',
@@ -2393,14 +2393,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $num_req of function array_rand expects int<1, max>, 0 given.',
 				14,
-			]
+			],
 		]);
 	}
 
 	#[RequiresPhp('< 8.0')]
 	public function testArrayRandPhp7(): void
 	{
-		$this->analyse([__DIR__ . '/data/array-rand.php'], []);
+		$this->analyse([__DIR__ . '/data/array_rand.php'], []);
 	}
 
 }

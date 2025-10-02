@@ -24,6 +24,7 @@ return [
 		'iterator_count' => ['0|positive-int', 'iterator'=>'iterable'],
 		'iterator_to_array' => ['array', 'iterator'=>'iterable', 'use_keys='=>'bool'],
 		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
+		'Random\Randomizer::pickArrayKeys' => ['non-empty-array<int|string>', 'array'=>'non-empty-array', 'num'=>'positive-int'],
 	],
 	'old' => [
 

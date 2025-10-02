@@ -3675,4 +3675,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13511.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testRandomizer(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/randomizer.php'], [
+			[
+				'Parameter #2 $num of method Random\Randomizer::pickArrayKeys() expects int<1, max>, 0 given.',
+				7,
+			],
+			[
+				'Parameter #1 $array of method Random\Randomizer::pickArrayKeys() expects non-empty-array, array{} given.',
+				8,
+				'array{} is empty.',
+			],
+		]);
+	}
+
 }

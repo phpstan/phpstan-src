@@ -2368,4 +2368,27 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13556.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testArrayRand(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-rand.php'], [
+			[
+				'Parameter #1 $input of function array_rand expects non-empty-array, array{} given.',
+				7,
+				'array{} is empty.'
+			],
+			[
+				'Parameter #1 $input of function array_rand expects non-empty-array, array{} given.',
+				8,
+				'array{} is empty.'
+			]
+		]);
+	}
+
+	#[RequiresPhp('< 8.0')]
+	public function testArrayRandPhp7(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-rand.php'], []);
+	}
+
 }

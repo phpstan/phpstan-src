@@ -39,12 +39,12 @@ printf('%d', null);
 printf('%d', true);
 printf('%d', new \SimpleXMLElement('<a>aaa</a>'));
 
-printf('%f', '1.2345678901234567890123456789013245678901234567989');
+
 printf('%f', null);
 printf('%f', true);
 printf('%f', new \SimpleXMLElement('<a>aaa</a>'));
 
-printf('%s', null);
+
 printf('%s', true);
 
 // Error, but already reported by CallToFunctionParametersRule
@@ -54,6 +54,10 @@ printf('%s', []);
 // Error, but already reported by PrintfParametersRule
 printf('%s');
 printf('%s', 1, 2);
+
+// Arguable
+printf('%f', '1.2345678901234567890123456789013245678901234567989');
+printf('%s', null);
 
 // OK
 printf('%s', 'a');

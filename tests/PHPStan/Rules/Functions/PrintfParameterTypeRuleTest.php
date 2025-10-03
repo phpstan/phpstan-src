@@ -223,10 +223,6 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 				40,
 			],
 			[
-				'Parameter #2 of function printf is expected to be float by placeholder #1 ("%f"), string given.',
-				42,
-			],
-			[
 				'Parameter #2 of function printf is expected to be float by placeholder #1 ("%f"), null given.',
 				43,
 			],
@@ -237,10 +233,6 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 			[
 				'Parameter #2 of function printf is expected to be float by placeholder #1 ("%f"), SimpleXMLElement given.',
 				45,
-			],
-			[
-				'Parameter #2 of function printf is expected to be string by placeholder #1 ("%s"), null given.',
-				47,
 			],
 			[
 				'Parameter #2 of function printf is expected to be string by placeholder #1 ("%s"), true given.',

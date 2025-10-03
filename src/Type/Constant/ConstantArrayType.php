@@ -216,6 +216,8 @@ class ConstantArrayType implements Type
 		} else {
 			$optionalKeysCombinations = [
 				[],
+				array_slice($this->optionalKeys, 0, 1, true),
+				array_slice($this->optionalKeys, -1, 1, true),
 				$this->optionalKeys,
 			];
 		}

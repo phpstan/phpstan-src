@@ -3,13 +3,14 @@
 namespace PHPStan\Internal;
 
 use function array_pop;
+use Traversable;
 
 final class CombinationsHelper
 {
 
 	/**
 	 * @param array<iterable<mixed>> $arrays
-	 * @return iterable<list<mixed>>
+	 * @return Traversable<list<mixed>>
 	 */
 	public static function combinations(array $arrays): iterable
 	{

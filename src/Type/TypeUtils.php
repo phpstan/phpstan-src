@@ -11,7 +11,10 @@ use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traverser\LateResolvableTraverser;
+use function array_filter;
+use function array_map;
 use function array_merge;
+use function iterator_to_array;
 
 /**
  * @api

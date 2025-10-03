@@ -21,9 +21,9 @@ function getItemsWithForLoop(array $items): array
 }
 
 /**
- * @param non-empty-list<string> $items
+ * @param list<string> $items
  *
- * @return non-empty-list<string>
+ * @return list<string>
  */
 function getItemsWithForLoopInvertLastCond(array $items): array
 {
@@ -31,6 +31,22 @@ function getItemsWithForLoopInvertLastCond(array $items): array
 		$items[$i] = 'hello';
 	}
 
-	assertType('non-empty-list<string>', $items);
+	assertType('list<string>', $items);
+	return $items;
+}
+
+
+/**
+ * @param array<string> $items
+ *
+ * @return array<string>
+ */
+function getItemsArray(array $items): array
+{
+	for ($i = 0; count($items) > $i; ++$i) {
+		$items[$i] = 'hello';
+	}
+
+	assertType('array<string>', $items);
 	return $items;
 }

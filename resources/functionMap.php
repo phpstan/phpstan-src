@@ -2098,7 +2098,7 @@ return [
 'explode' => ['list<string>|false', 'separator'=>'string', 'str'=>'string', 'limit='=>'int'],
 'expm1' => ['float', 'number'=>'float'],
 'extension_loaded' => ['bool', 'extension_name'=>'string'],
-'extract' => ['0|positive-int', 'array'=>'array', 'flags='=>'EXTR_OVERWRITE|EXTR_SKIP|EXTR_PREFIX_SAME|EXTR_PREFIX_ALL|EXTR_PREFIX_INVALID|EXTR_IF_EXISTS|EXTR_PREFIX_IF_EXISTS|EXTR_REFS', 'prefix='=>'string|null'],
+'extract' => ['0|positive-int', 'array'=>'array', 'flags='=>'int-mask<EXTR_OVERWRITE|EXTR_SKIP|EXTR_PREFIX_SAME|EXTR_PREFIX_ALL|EXTR_PREFIX_INVALID|EXTR_IF_EXISTS|EXTR_PREFIX_IF_EXISTS|EXTR_REFS>', 'prefix='=>'string|null'],
 'ezmlm_hash' => ['int', 'addr'=>'string'],
 'fam_cancel_monitor' => ['bool', 'fam'=>'resource', 'fam_monitor'=>'resource'],
 'fam_close' => ['void', 'fam'=>'resource'],

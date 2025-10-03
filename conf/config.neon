@@ -66,6 +66,7 @@ parameters:
 		unusedVariable: false
 		unusedParameters: false
 		reuseCollectedDataRuleErrors: false
+		checkTypeCoercions: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -267,6 +268,8 @@ parameters:
 		- [parameters, tmpDir]
 		- [parameters, pro]
 		- parametersSchema
+	allowedTypeCoercions:
+		boolToString: true
 
 autowiredAttributeServices:
 	level: null

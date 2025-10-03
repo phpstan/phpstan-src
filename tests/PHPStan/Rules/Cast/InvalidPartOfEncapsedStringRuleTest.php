@@ -6,6 +6,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\TypeCoercionRuleHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
@@ -14,6 +15,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  */
 class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 {
+
+	private ?TypeCoercionRuleHelper $typeCoercionRuleHelper = null;
 
 	protected function getRule(): Rule
 	{
@@ -29,6 +32,7 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
+			$this->typeCoercionRuleHelper ?? new TypeCoercionRuleHelper(true, true),
 		);
 	}
 
@@ -46,6 +50,37 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 			[
 				'Part $std (stdClass|string) of encapsed string cannot be cast to string.',
 				56,
+			],
+			[
+				'Part $array (array|string) of encapsed string cannot be cast to string.',
+				60,
+			],
+		]);
+	}
+
+	public function testRuleWithStrictCoercions(): void
+	{
+		$this->typeCoercionRuleHelper = new TypeCoercionRuleHelper(true, false);
+		$this->analyse([__DIR__ . '/data/invalid-encapsed-part.php'], [
+			[
+				'Part $std (stdClass) of encapsed string cannot be cast to string.',
+				26,
+			],
+			[
+				'Part $bool (bool) of encapsed string cannot be cast to string.',
+				27,
+			],
+			[
+				'Part $array (array) of encapsed string cannot be cast to string.',
+				30,
+			],
+			[
+				'Part $std (stdClass|string) of encapsed string cannot be cast to string.',
+				56,
+			],
+			[
+				'Part $bool (bool|string) of encapsed string cannot be cast to string.',
+				57,
 			],
 			[
 				'Part $array (array|string) of encapsed string cannot be cast to string.',

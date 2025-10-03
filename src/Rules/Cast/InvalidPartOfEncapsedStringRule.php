@@ -9,6 +9,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\TypeCoercionRuleHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -24,6 +25,7 @@ final class InvalidPartOfEncapsedStringRule implements Rule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
+		private TypeCoercionRuleHelper $typeCoercionRuleHelper,
 	)
 	{
 	}
@@ -45,14 +47,14 @@ final class InvalidPartOfEncapsedStringRule implements Rule
 				$scope,
 				$part,
 				'',
-				static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
+				fn (Type $type): bool => !$this->typeCoercionRuleHelper->coerceToString($type) instanceof ErrorType,
 			);
 			$partType = $typeResult->getType();
 			if ($partType instanceof ErrorType) {
 				continue;
 			}
 
-			$stringPartType = $partType->toString();
+			$stringPartType = $this->typeCoercionRuleHelper->coerceToString($partType);
 			if (!$stringPartType instanceof ErrorType) {
 				continue;
 			}

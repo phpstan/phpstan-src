@@ -63,6 +63,7 @@ parametersSchema:
 		unusedVariable: bool()
 		unusedParameters: bool()
 		reuseCollectedDataRuleErrors: bool()
+		checkTypeCoercions: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -199,6 +200,9 @@ parametersSchema:
 		string(),
 		listOf(string()),
 	)))
+	allowedTypeCoercions: structure([
+		boolToString: bool()
+	])
 
 	# playground mode
 	sourceLocatorPlaygroundMode: bool()

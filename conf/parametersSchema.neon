@@ -41,6 +41,7 @@ parametersSchema:
 		rawMessageInBaseline: bool()
 		reportNestedTooWideType: bool()
 		assignToByRefForeachExpr: bool()
+		checkTypeCoercions: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -163,6 +164,9 @@ parametersSchema:
 		string(),
 		listOf(string()),
 	)))
+	allowedTypeCoercions: structure([
+		boolToString: bool()
+	])
 
 	# playground mode
 	sourceLocatorPlaygroundMode: bool()

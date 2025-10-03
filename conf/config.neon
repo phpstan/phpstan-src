@@ -38,6 +38,7 @@ parameters:
 		rawMessageInBaseline: false
 		reportNestedTooWideType: false
 		assignToByRefForeachExpr: false
+		checkTypeCoercions: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -221,6 +222,8 @@ parameters:
 		- [parameters, memoryLimitFile]
 		- [parameters, pro]
 		- parametersSchema
+	allowedTypeCoercions:
+		boolToString: true
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -134,17 +135,28 @@ final class TypeUtils
 			return $type->getAllArrays();
 		}
 
+		if ($type instanceof IntersectionType && $type->isConstantArray()->yes()) {
+			$newTypes = [];
+			foreach ($type->getTypes() as $innerType) {
+				$newTypes[] = self::flattenTypes($innerType);
+			}
+
+			return array_filter(
+				array_map(
+					static fn (array $types): Type => TypeCombinator::intersect(...$types),
+					iterator_to_array(CombinationsHelper::combinations($newTypes)),
+				),
+				static fn (Type $type): bool => !$type instanceof NeverType,
+			);
+		}
+
 		if ($type instanceof UnionType) {
 			$types = [];
 			foreach ($type->getTypes() as $innerType) {
-				if ($innerType instanceof ConstantArrayType) {
-					foreach ($innerType->getAllArrays() as $array) {
-						$types[] = $array;
-					}
-					continue;
+				$flattenTypes = self::flattenTypes($innerType);
+				foreach ($flattenTypes as $flattenType) {
+					$types[] = $flattenType;
 				}
-
-				$types[] = $innerType;
 			}
 
 			return $types;

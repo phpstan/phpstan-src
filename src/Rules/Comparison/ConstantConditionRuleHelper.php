@@ -22,7 +22,7 @@ final class ConstantConditionRuleHelper
 	{
 	}
 
-	public function shouldSkip(Scope $scope, Expr $expr): bool
+	private function shouldSkip(Scope $scope, Expr $expr): bool
 	{
 		if (
 			$expr instanceof Expr\BinaryOp\Equal

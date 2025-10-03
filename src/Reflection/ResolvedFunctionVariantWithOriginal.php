@@ -145,7 +145,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 			);
 	}
 
-	public function getPhpDocReturnTypeWithUnresolvableTemplateTypes(): Type
+	private function getPhpDocReturnTypeWithUnresolvableTemplateTypes(): Type
 	{
 		return $this->phpDocReturnTypeWithUnresolvableTemplateTypes ??=
 			$this->resolveConditionalTypesForParameter(

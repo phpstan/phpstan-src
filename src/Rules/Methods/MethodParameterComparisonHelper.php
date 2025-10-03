@@ -362,7 +362,7 @@ final class MethodParameterComparisonHelper
 		return $messages;
 	}
 
-	public function isParameterTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
+	private function isParameterTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
 	{
 		return $this->isTypeCompatible($methodParameterType, $prototypeParameterType, $supportsContravariance, false);
 	}

@@ -5089,7 +5089,7 @@ final class NodeScopeResolver
 	/**
 	 * @param FunctionReflection|MethodReflection|null $calleeReflection
 	 */
-	public function resolveClosureThisType(
+	private function resolveClosureThisType(
 		?CallLike $call,
 		$calleeReflection,
 		ParameterReflection $parameter,
@@ -7095,7 +7095,7 @@ final class NodeScopeResolver
 	/**
 	 * @param array<Expr> $conditions
 	 */
-	public function getFilteringExprForMatchArm(Expr\Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
+	private function getFilteringExprForMatchArm(Expr\Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
 	{
 		if (count($conditions) === 1) {
 			return new BinaryOp\Identical($expr->cond, $conditions[0]);

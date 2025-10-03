@@ -17,7 +17,7 @@ use function tmpfile;
 final class Process
 {
 
-	public \React\ChildProcess\Process $process;
+	private \React\ChildProcess\Process $process;
 
 	private ?WritableStreamInterface $in = null;
 

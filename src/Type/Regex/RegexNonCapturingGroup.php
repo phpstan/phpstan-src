@@ -15,7 +15,7 @@ final class RegexNonCapturingGroup
 	}
 
 	/** @phpstan-assert-if-true !null $this->getAlternationId() */
-	public function inAlternation(): bool
+	private function inAlternation(): bool
 	{
 		return $this->alternation !== null;
 	}

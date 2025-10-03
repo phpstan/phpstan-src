@@ -61,7 +61,7 @@ final class OrChainIdenticalComparisonToInArrayRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function processConditionNode(Expr $condNode, Scope $scope): array
+	private function processConditionNode(Expr $condNode, Scope $scope): array
 	{
 		$comparisons = $this->unpackOrChain($condNode);
 		if (count($comparisons) < 2) {

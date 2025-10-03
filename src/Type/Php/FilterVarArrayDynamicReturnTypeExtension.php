@@ -176,7 +176,7 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 	}
 
 	/** @return array{?Type, ?Type} */
-	public function fetchFilter(Type $type): array
+	private function fetchFilter(Type $type): array
 	{
 		if (!$type->isArray()->yes()) {
 			return [$type, null];

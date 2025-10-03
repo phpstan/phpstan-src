@@ -46,7 +46,7 @@ final class DateFunctionReturnTypeHelper
 		return $type;
 	}
 
-	public function buildReturnTypeFromFormat(string $formatString, bool $useMicrosec): Type
+	private function buildReturnTypeFromFormat(string $formatString, bool $useMicrosec): Type
 	{
 		// see see https://www.php.net/manual/en/datetime.format.php
 		switch ($formatString) {

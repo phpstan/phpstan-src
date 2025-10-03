@@ -22,7 +22,7 @@ final class OperatorTypeSpecifyingExtensionRegistry
 	/**
 	 * @return OperatorTypeSpecifyingExtension[]
 	 */
-	public function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
+	private function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
 	{
 		return array_values(array_filter($this->extensions, static fn (OperatorTypeSpecifyingExtension $extension): bool => $extension->isOperatorSupported($operator, $leftType, $rightType)));
 	}

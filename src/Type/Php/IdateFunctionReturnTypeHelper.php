@@ -27,7 +27,7 @@ final class IdateFunctionReturnTypeHelper
 		return TypeCombinator::union(...$types);
 	}
 
-	public function buildReturnTypeFromFormat(string $formatString): Type
+	private function buildReturnTypeFromFormat(string $formatString): Type
 	{
 		// see https://www.php.net/idate and https://www.php.net/manual/de/datetime.format
 		switch ($formatString) {

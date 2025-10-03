@@ -1401,7 +1401,7 @@ final class TypeSpecifier
 	/**
 	 * @param array<string, Expr> $argsMap
 	 */
-	public function getConditionalSpecifiedTypes(
+	private function getConditionalSpecifiedTypes(
 		ConditionalTypeForParameter $conditionalType,
 		Type $leftType,
 		Type $rightType,

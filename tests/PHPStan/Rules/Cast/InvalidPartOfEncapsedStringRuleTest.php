@@ -37,7 +37,19 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/invalid-encapsed-part.php'], [
 			[
 				'Part $std (stdClass) of encapsed string cannot be cast to string.',
-				8,
+				26,
+			],
+			[
+				'Part $array (array) of encapsed string cannot be cast to string.',
+				30,
+			],
+			[
+				'Part $std (stdClass|string) of encapsed string cannot be cast to string.',
+				56,
+			],
+			[
+				'Part $array (array|string) of encapsed string cannot be cast to string.',
+				60,
 			],
 		]);
 	}
@@ -49,6 +61,25 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 			[
 				'Part $bar?->obj (stdClass|null) of encapsed string cannot be cast to string.',
 				11,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testRuleWithEnum(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-encapsed-part-enum.php'], [
+			[
+				'Part $unitEnum (InvalidEncapsedPartEnum\\FooUnitEnum) of encapsed string cannot be cast to string.',
+				21,
+			],
+			[
+				'Part $intEnum (InvalidEncapsedPartEnum\\IntEnum) of encapsed string cannot be cast to string.',
+				22,
+			],
+			[
+				'Part $stringEnum (InvalidEncapsedPartEnum\\StringEnum) of encapsed string cannot be cast to string.',
+				23,
 			],
 		]);
 	}

@@ -51,14 +51,11 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 		$constantKeysArrays = $keysParamType->getConstantArrays();
 		$constantValuesArrays = $valuesParamType->getConstantArrays();
-		if ($constantKeysArrays !== [] && $constantValuesArrays !== []) {
-			if (count($constantKeysArrays) !== count($constantValuesArrays)) {
-				if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
-					return new NeverType();
-				}
-				return new ConstantBooleanType(false);
-			}
-
+		if (
+			$constantKeysArrays !== []
+			&& $constantValuesArrays !== []
+			&& count($constantKeysArrays) === count($constantValuesArrays)
+		) {
 			$results = [];
 			foreach ($constantKeysArrays as $k => $constantKeysArray) {
 				$constantValueArrays = $constantValuesArrays[$k];

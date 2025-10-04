@@ -20,6 +20,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function count;
 use function is_int;
 use function is_string;
@@ -77,6 +78,10 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 				$builder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($keyTypes as $i => $keyType) {
+					if (!array_key_exists($i, $valueTypes)) {
+						$results = [];
+						break 2;
+					}
 					$valueType = $valueTypes[$i];
 					$builder->setOffsetValueType($keyType, $valueType);
 				}

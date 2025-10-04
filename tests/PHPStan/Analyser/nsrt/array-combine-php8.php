@@ -113,6 +113,19 @@ function withUnionConstArraysDifferentArraysCount(): void
 	assertType("non-empty-array<1|'2'|'3', 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
 }
 
+function withUnionConstArraysAndInvalidKeys(bool $bool): void
+{
+	if (rand(0, 1)) {
+		$a = [$bool];
+		$b = ['avocado'];
+	} else {
+		$a = ["2", $bool];
+		$b = ['apple', 'banana'];
+	}
+
+	assertType("non-empty-array<''|'1'|'2', 'apple'|'avocado'|'banana'>", array_combine($a, $b));
+}
+
 /**
  * @param non-empty-array<int, 'foo'|'bar'|'baz'> $a
  * @param non-empty-array<int, 'apple'|'avocado'|'banana'> $b

@@ -5331,6 +5331,12 @@ class TypeCombinatorTest extends PHPStanTestCase
 				ObjectShapeType::class,
 				'object{foo?: int}',
 			],
+			[
+				new IntersectionType([new ArrayType(new StringType(), new StringType()), new OversizedArrayType()]),
+				new ConstantArrayType([], []),
+				IntersectionType::class,
+				'non-empty-array<string, string>&oversized-array',
+			],
 		];
 	}
 

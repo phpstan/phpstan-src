@@ -116,10 +116,10 @@ function withUnionConstArraysDifferentArraysCount(): void
 function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
 {
 	if (rand(0, 1)) {
-		$a = [$bool];
+		$a = [$bool]; // translates to [true, false]
 		$b = ['avocado'];
 	} else {
-		$a = ["2", $bool];
+		$a = ["2", $bool]; // translates to ["2", true, false]
 		$b = ['apple', 'banana'];
 	}
 

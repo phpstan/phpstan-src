@@ -113,7 +113,7 @@ function withUnionConstArraysDifferentArraysCount(): void
 	assertType("non-empty-array<1|'2'|'3', 'apple'|'avocado'|'banana'|'pear'>", array_combine($a, $b));
 }
 
-function withUnionConstArraysAndInvalidKeys(bool $bool): void
+function withUnionConstArraysAndDifferentFiniteKeysCount(bool $bool): void
 {
 	if (rand(0, 1)) {
 		$a = [$bool];

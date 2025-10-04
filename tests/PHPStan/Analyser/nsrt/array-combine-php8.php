@@ -70,6 +70,19 @@ function withObjectKey() : void
 	assertType("*NEVER*", array_combine([new Baz, 'red', 'yellow'], $b));
 }
 
+function withUnionConstArrays(): void
+{
+	if (rand(0, 1)) {
+		$a = [1];
+		$b = ['avocado'];
+	} else {
+		$a = ["2", "3"];
+		$b = ['apple', 'banana'];
+	}
+
+	assertType("array{1: 'avocado'}|array{2: 'apple', 3: 'banana'}", array_combine($a, $b));
+}
+
 /**
  * @param non-empty-array<int, 'foo'|'bar'|'baz'> $a
  * @param non-empty-array<int, 'apple'|'avocado'|'banana'> $b

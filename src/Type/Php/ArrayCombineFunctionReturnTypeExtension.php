@@ -10,7 +10,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
@@ -50,29 +49,46 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 		$keysParamType = $scope->getType($firstArg);
 		$valuesParamType = $scope->getType($secondArg);
 
-		if (
-			$keysParamType instanceof ConstantArrayType
-			&& $valuesParamType instanceof ConstantArrayType
-		) {
-			$keyTypes = $keysParamType->getValueTypes();
-			$valueTypes = $valuesParamType->getValueTypes();
-
-			if (count($keyTypes) !== count($valueTypes)) {
+		$constantKeysArrays = $keysParamType->getConstantArrays();
+		$constantValuesArrays = $valuesParamType->getConstantArrays();
+		if ($constantKeysArrays !== [] && $constantValuesArrays !== []) {
+			if (count($constantKeysArrays) !== count($constantValuesArrays)) {
 				if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 					return new NeverType();
 				}
 				return new ConstantBooleanType(false);
 			}
 
-			$keyTypes = $this->sanitizeConstantArrayKeyTypes($keyTypes);
-			if ($keyTypes !== null) {
+			$results = [];
+			foreach ($constantKeysArrays as $k => $constantKeysArray) {
+				$constantValueArrays = $constantValuesArrays[$k];
+
+				$keyTypes = $constantKeysArray->getValueTypes();
+				$valueTypes = $constantValueArrays->getValueTypes();
+
+				if (count($keyTypes) !== count($valueTypes)) {
+					if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+						return new NeverType();
+					}
+					return new ConstantBooleanType(false);
+				}
+
+				$keyTypes = $this->sanitizeConstantArrayKeyTypes($keyTypes);
+				if ($keyTypes === null) {
+					continue;
+				}
+
 				$builder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($keyTypes as $i => $keyType) {
 					$valueType = $valueTypes[$i];
 					$builder->setOffsetValueType($keyType, $valueType);
 				}
 
-				return $builder->getArray();
+				$results[] = $builder->getArray();
+			}
+
+			if ($results !== []) {
+				return TypeCombinator::union(...$results);
 			}
 		}
 

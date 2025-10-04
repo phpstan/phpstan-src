@@ -3,18 +3,18 @@
 namespace InvalidKeyArrayDimFetch;
 
 $a = [];
-$foo = $a[null];
+
 $foo = $a[new \DateTimeImmutable()];
 $a[[]] = $foo;
 $a[1];
-$a[1.0];
+
 $a['1'];
 $a[true];
 $a[false];
 
-/** @var string|null $stringOrNull */
-$stringOrNull = doFoo();
-$a[$stringOrNull];
+/** @var string|int $stringOrInt */
+$stringOrInt = doFoo();
+$a[$stringOrInt];
 
 $obj = new \SplObjectStorage();
 $obj[new \stdClass()] = 1;
@@ -46,3 +46,11 @@ $array[new \DateTimeImmutable()][5];
 $array[5][new \DateTimeImmutable()];
 $array[new \stdClass()][new \DateTimeImmutable()];
 $array[new \DateTimeImmutable()][] = 5;
+
+// Php version dependant
+$a[1.0];
+$foo = $a[null];
+
+/** @var string|null $stringOrNull */
+$stringOrNull = doFoo();
+$a[$stringOrNull];

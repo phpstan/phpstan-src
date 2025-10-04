@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -23,6 +24,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
@@ -56,17 +58,18 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			return [];
 		}
 
+		$phpVersion = $this->phpVersion;
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->dim,
 			'',
-			static fn (Type $dimType): bool => AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimType)->yes(),
+			static fn (Type $dimType): bool => AllowedArrayKeysTypes::getType($phpVersion)->isSuperTypeOf($dimType)->yes(),
 		)->getType();
 		if ($dimensionType instanceof ErrorType) {
 			return [];
 		}
 
-		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
+		$isSuperType = AllowedArrayKeysTypes::getType($phpVersion)->isSuperTypeOf($dimensionType);
 		if ($isSuperType->yes() || ($isSuperType->maybe() && !$this->reportMaybes)) {
 			return [];
 		}

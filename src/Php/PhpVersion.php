@@ -414,4 +414,14 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function deprecatesImplicitlyFloatConversionToInt(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
+	public function deprecatesNullArrayOffset(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 }

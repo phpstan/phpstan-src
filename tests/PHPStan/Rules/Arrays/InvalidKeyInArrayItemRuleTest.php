@@ -2,10 +2,12 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidKeyInArrayItemRule>
@@ -21,25 +23,43 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 	{
 		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
 
-		return new InvalidKeyInArrayItemRule($ruleLevelHelper);
+		return new InvalidKeyInArrayItemRule(
+			$ruleLevelHelper,
+			self::getContainer()->getByType(PhpVersion::class),
+		);
 	}
 
 	public function testInvalidKey(): void
 	{
-		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
+		$errors = [
 			[
 				'Invalid array key type DateTimeImmutable.',
-				13,
+				12,
 			],
 			[
 				'Invalid array key type array.',
-				14,
+				13,
 			],
 			[
 				'Possibly invalid array key type stdClass|string.',
-				15,
+				14,
 			],
-		]);
+		];
+
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
+				'Invalid array key type float.',
+				26,
+			];
+		}
+		if (PHP_VERSION_ID >= 80500) {
+			$errors[] = [
+				'Invalid array key type null.',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], $errors);
 	}
 
 	public function testInvalidMixedKey(): void
@@ -47,24 +67,39 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 
-		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
+		$errors = [
 			[
 				'Invalid array key type DateTimeImmutable.',
-				13,
+				12,
 			],
 			[
 				'Invalid array key type array.',
-				14,
+				13,
 			],
 			[
 				'Possibly invalid array key type stdClass|string.',
-				15,
+				14,
 			],
 			[
 				'Possibly invalid array key type mixed.',
-				22,
+				21,
 			],
-		]);
+		];
+
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
+				'Invalid array key type float.',
+				26,
+			];
+		}
+		if (PHP_VERSION_ID >= 80500) {
+			$errors[] = [
+				'Invalid array key type null.',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], $errors);
 	}
 
 	public function testInvalidKeyInList(): void

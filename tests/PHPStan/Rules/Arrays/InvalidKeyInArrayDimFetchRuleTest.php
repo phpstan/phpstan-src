@@ -2,10 +2,12 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<InvalidKeyInArrayDimFetchRule>
@@ -16,12 +18,16 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, true, true, false, true);
-		return new InvalidKeyInArrayDimFetchRule($ruleLevelHelper, true);
+		return new InvalidKeyInArrayDimFetchRule(
+			$ruleLevelHelper,
+			self::getContainer()->getByType(PhpVersion::class),
+			true,
+		);
 	}
 
 	public function testInvalidKey(): void
 	{
-		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch.php'], [
+		$errors = [
 			[
 				'Invalid array key type DateTimeImmutable.',
 				7,
@@ -62,7 +68,26 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type DateTimeImmutable.',
 				48,
 			],
-		]);
+		];
+
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
+				'Invalid array key type float.',
+				51,
+			];
+		}
+		if (PHP_VERSION_ID >= 80500) {
+			$errors[] = [
+				'Invalid array key type null.',
+				52,
+			];
+			$errors[] = [
+				'Possibly invalid array key type string|null.',
+				56,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/invalid-key-array-dim-fetch.php'], $errors);
 	}
 
 	#[RequiresPhp('>= 8.1')]

@@ -15,6 +15,8 @@ use function array_keys;
 use function array_search;
 use function count;
 use function implode;
+use function is_bool;
+use function is_float;
 use function is_int;
 use function max;
 use function sprintf;
@@ -128,6 +130,13 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 			}
 
 			foreach ($keyValues as $value) {
+				// Prevent php warning by manually casting array keys
+				if (is_bool($value) || is_float($value)) {
+					$value = (int) $value;
+				} elseif ($value === null) {
+					$value = (string) $value;
+				}
+
 				$printedValue = $key !== null
 					? $this->exprPrinter->printExpr($key)
 					: $value;

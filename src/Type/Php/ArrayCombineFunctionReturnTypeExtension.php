@@ -13,8 +13,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
@@ -23,6 +22,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function count;
+use function is_int;
+use function is_string;
 
 #[AutowiredService]
 final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -114,7 +115,7 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 	/**
 	 * @param array<int, Type> $types
 	 *
-	 * @return array<int, ConstantIntegerType|ConstantStringType>|null
+	 * @return list<ConstantScalarType>|null
 	 */
 	private function sanitizeConstantArrayKeyTypes(array $types): ?array
 	{
@@ -125,14 +126,19 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 				$type = $type->toString();
 			}
 
-			if (
-				!$type instanceof ConstantIntegerType
-				&& !$type instanceof ConstantStringType
-			) {
+			$scalars = $type->getConstantScalarTypes();
+			if (count($scalars) === 0) {
 				return null;
 			}
 
-			$sanitizedTypes[] = $type;
+			foreach ($scalars as $scalar) {
+				$value = $scalar->getValue();
+				if (!is_int($value) && !is_string($value)) {
+					return null;
+				}
+
+				$sanitizedTypes[] = $scalar;
+			}
 		}
 
 		return $sanitizedTypes;

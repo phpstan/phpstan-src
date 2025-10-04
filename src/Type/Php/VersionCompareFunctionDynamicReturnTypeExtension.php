@@ -29,7 +29,7 @@ use function version_compare;
 final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private const VALID_OPERATORS = [
+	public const VALID_OPERATORS = [
 		'<',
 		'lt',
 		'<=',

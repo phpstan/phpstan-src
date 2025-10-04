@@ -97,4 +97,11 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/throws-void-function.php'], $errors);
 	}
 
+	public function testBug13515(): void
+	{
+		$this->missingCheckedExceptionInThrows = false;
+		$this->checkedExceptionClasses = [];
+		$this->analyse([__DIR__ . '/data/bug-13515.php'], []);
+	}
+
 }

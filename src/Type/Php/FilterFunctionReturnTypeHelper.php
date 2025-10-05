@@ -139,10 +139,11 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($inputType->isScalar()->no() && $inputType->isNull()->no()) {
-			return $defaultType;
+			$exactType = $defaultType;
+		} else {
+			$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		}
 
-		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 		$type = $this->applyRangeOptions($type, $options, $defaultType);
 
@@ -156,12 +157,15 @@ final class FilterFunctionReturnTypeHelper
 			$type = TypeCombinator::intersect($type, $accessory);
 		}
 
-		if ($hasRequireArrayFlag) {
-			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-		}
-
 		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
 			if ($defaultType->isSuperTypeOf($type)->no()) {
+				$type = TypeCombinator::union($type, $defaultType);
+			}
+		}
+
+		if ($hasRequireArrayFlag) {
+			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
+			if (!$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}

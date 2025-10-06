@@ -5,14 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -37,8 +32,8 @@ final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThr
 		$firstArg = $funcCall->getArgs()[0]->value;
 		$secondArg = $funcCall->getArgs()[1]->value;
 
-		$hasError = $this->arrayCombineHelper->getArrayAndThrowType($firstArg, $secondArg, $scope)[1];
-		if (!$hasError->no()) {
+		$hasValueError = $this->arrayCombineHelper->getReturnAndThrowType($firstArg, $secondArg, $scope)[1];
+		if (!$hasValueError->no()) {
 			return $functionReflection->getThrowType();
 		}
 

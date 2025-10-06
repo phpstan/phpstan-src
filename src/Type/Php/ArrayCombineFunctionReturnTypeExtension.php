@@ -20,7 +20,7 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function __construct(
 		private ArrayCombineHelper $arrayCombineHelper,
-		private PhpVersion $phpVersion
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -40,25 +40,24 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 		$firstArg = $args[0]->value;
 		$secondArg = $args[1]->value;
 
-		[$arrayType, $hasError] = $this->arrayCombineHelper->getArrayAndThrowType($firstArg, $secondArg, $scope);
-
-		if ($hasError->no()) {
-			return $arrayType;
+		[$returnType, $hasValueError] = $this->arrayCombineHelper->getReturnAndThrowType($firstArg, $secondArg, $scope);
+		if ($hasValueError->no()) {
+			return $returnType;
 		}
 
-		if ($hasError->yes()) {
-			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+		if ($hasValueError->yes()) {
+			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 				return new NeverType();
 			}
 
 			return new ConstantBooleanType(false);
 		}
 
-		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
-			return $arrayType;
+		if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			return $returnType;
 		}
 
-		return new UnionType([$arrayType, new ConstantBooleanType(false)]);
+		return new UnionType([$returnType, new ConstantBooleanType(false)]);
 	}
 
 }

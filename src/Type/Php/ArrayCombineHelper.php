@@ -26,9 +26,9 @@ final class ArrayCombineHelper
 {
 
 	/**
-	 * @return array{Type, TrinaryLogic} The array result and if an error may occur.
+	 * @return array{Type, TrinaryLogic} The return type and if a ValueError may occur on PHP8 (and a warning on PHP7).
 	 */
-	public function getArrayAndThrowType(Expr $firstArg, Expr $secondArg, Scope $scope): array
+	public function getReturnAndThrowType(Expr $firstArg, Expr $secondArg, Scope $scope): array
 	{
 		$keysParamType = $scope->getType($firstArg);
 		$valuesParamType = $scope->getType($secondArg);
@@ -79,7 +79,7 @@ final class ArrayCombineHelper
 
 			if ($itemType->isInteger()->no()) {
 				if ($itemType->toString() instanceof ErrorType) {
-					return [new NeverType(), TrinaryLogic::createYes()];
+					return [new NeverType(), TrinaryLogic::createNo()];
 				}
 
 				$keyType = $itemType->toString();

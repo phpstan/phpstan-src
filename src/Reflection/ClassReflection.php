@@ -964,7 +964,7 @@ final class ClassReflection
 		$initializerExprContext = InitializerExprContext::fromClassReflection($this);
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
-			if ($case instanceof ReflectionEnumBackedCase && $case->hasValueExpression()) {
+			if ($case instanceof ReflectionEnumBackedCase && $case->hasBackingValue()) {
 				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
 			}
 			$caseName = $case->getName();
@@ -991,7 +991,7 @@ final class ClassReflection
 
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
-		if ($case instanceof ReflectionEnumBackedCase && $case->hasValueExpression()) {
+		if ($case instanceof ReflectionEnumBackedCase && $case->hasBackingValue()) {
 			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 

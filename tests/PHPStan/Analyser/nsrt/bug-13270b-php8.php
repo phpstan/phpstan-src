@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bug13270b;
+namespace Bug13270bPhp8;
 
 use function PHPStan\Testing\assertType;
 

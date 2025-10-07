@@ -59,3 +59,20 @@ class AppendToArrayAccess
 		$this->collection2[] = 2;
 	}
 }
+
+class TestList
+{
+
+	/**
+	 * @var list<int>
+	 */
+	public array $list = [];
+
+	public function setKnownOffset(int $offset): void
+	{
+		if (isset($this->list[$offset])) {
+			$this->list[$offset] = 123;
+		}
+	}
+
+}

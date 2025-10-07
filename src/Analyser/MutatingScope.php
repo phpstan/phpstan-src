@@ -778,6 +778,13 @@ final class MutatingScope implements Scope
 			return $this->getType($node->getVar())->unsetOffset($this->getType($node->getDim()));
 		}
 		if ($node instanceof SetOffsetValueTypeExpr) {
+			$var = $node->getVar() instanceof OriginalPropertyTypeExpr ? $node->getVar()->getPropertyFetch() : $node->getVar();
+			if ($node->getDim() !== null && $this->hasExpressionType(new Expr\ArrayDimFetch($var, $node->getDim()))->yes()) {
+				return $this->getType($node->getVar())->setExistingOffsetValueType(
+					$this->getType($node->getDim()),
+					$this->getType($node->getValue()),
+				);
+			}
 			return $this->getType($node->getVar())->setOffsetValueType(
 				$node->getDim() !== null ? $this->getType($node->getDim()) : null,
 				$this->getType($node->getValue()),

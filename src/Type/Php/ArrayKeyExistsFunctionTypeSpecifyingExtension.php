@@ -119,11 +119,9 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			);
 		} elseif (
 			$this->phpVersion->throwsValueErrorForInternalFunctions()
-			&& $arrayType instanceof MixedType
+			&& !$arrayType->isArray()->yes()
 		) {
-			$type = TypeCombinator::intersect(
-				new ArrayType(new MixedType(), new MixedType()),
-			);
+			$type = new ArrayType(new MixedType(), new MixedType());
 			$context = $context->negate();
 		} else {
 			$type = new HasOffsetType($keyType);

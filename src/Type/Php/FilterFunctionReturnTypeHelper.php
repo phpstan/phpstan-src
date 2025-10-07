@@ -197,7 +197,7 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($hasRequireArrayFlag->yes()) {
-			$type = new ArrayType($inputArrayKeyType ?? new MixedType(), $type);
+			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
 			if (!$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}

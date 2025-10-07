@@ -7354,8 +7354,8 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 		$typeAndFlags = [
 			['%s|false', ''],
-			['%s|false', ', $mixed'],
-			['%s|false', ', ["flags" => $mixed]'],
+			['mixed', ', $mixed'],
+			['mixed', ', ["flags" => $mixed]'],
 			['%s|null', ', FILTER_NULL_ON_FAILURE'],
 			['%s|null', ', ["flags" => FILTER_NULL_ON_FAILURE]'],
 			['%s|null', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4]'],
@@ -7384,8 +7384,8 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 		$boolFlags = [
 			['bool', ''],
-			['bool', ', $mixed'],
-			['bool', ', ["flags" => $mixed]'],
+			['mixed', ', $mixed'],
+			['mixed', ', ["flags" => $mixed]'],
 			['bool|null', ', FILTER_NULL_ON_FAILURE'],
 			['bool|null', ', ["flags" => FILTER_NULL_ON_FAILURE]'],
 			['bool|null', ', ["flags" => FILTER_NULL_ON_FAILURE | FILTER_FLAG_IPV4]'],

@@ -26,6 +26,10 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
+
+use PHPStan\Type\VerbosityLevel;
+
 use function array_key_exists;
 use function array_merge;
 use function hexdec;
@@ -57,9 +61,14 @@ final class FilterFunctionReturnTypeHelper
 
 	private function getOffsetValueType(Type $inputType, Type $offsetType, ?Type $filterType, ?Type $flagsType): Type
 	{
-		$inexistentOffsetType = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
-			? new ConstantBooleanType(false)
-			: new NullType();
+		$hasNullOnFailure = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType);
+		if ($hasNullOnFailure->yes()) {
+			$inexistentOffsetType = new ConstantBooleanType(false);
+		} elseif ($hasNullOnFailure->no()) {
+			$inexistentOffsetType = new NullType();
+		} else {
+			$inexistentOffsetType = new UnionType([new ConstantBooleanType(false), new NullType()]);
+		}
 
 		$hasOffsetValueType = $inputType->hasOffsetValueType($offsetType);
 		if ($hasOffsetValueType->no()) {
@@ -121,16 +130,36 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		$hasOptions = $this->hasOptions($flagsType);
+		if ($hasOptions->maybe()) {
+			// Too complicated
+			return $mixedType;
+		}
+
 		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
 
-		$defaultType = $options['default'] ?? ($this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType)
-			? new NullType()
-			: new ConstantBooleanType(false));
+		if (isset($options['default'])) {
+			$defaultType = $options['default'];
+		} else {
+			$hasNullOnFailure = $this->hasFlag('FILTER_NULL_ON_FAILURE', $flagsType);
+			if ($hasNullOnFailure->yes()) {
+				$defaultType = new NullType();
+			} elseif ($hasNullOnFailure->no()) {
+				$defaultType = new ConstantBooleanType(false);
+			} else {
+				$defaultType = new UnionType([new ConstantBooleanType(false), new NullType()]);
+			}
+		}
+
+		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
+		if ($hasRequireArrayFlag->maybe()) {
+			// Too complicated
+			return $mixedType;
+		}
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
-		if ($inputIsArray->no() && $hasRequireArrayFlag) {
-			if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)) {
+		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
+			if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
 				return new ErrorType();
 			}
 
@@ -138,7 +167,12 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		$hasForceArrayFlag = $this->hasFlag('FILTER_FORCE_ARRAY', $flagsType);
-		if ($inputIsArray->yes() && ($hasRequireArrayFlag || $hasForceArrayFlag)) {
+		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->maybe()) {
+			// Too complicated
+			return $mixedType;
+		}
+
+		if ($inputIsArray->yes() && ($hasRequireArrayFlag->yes() || $hasForceArrayFlag->yes())) {
 			$inputArrayKeyType = $inputType->getIterableKeyType();
 			$inputType = $inputType->getIterableValueType();
 		}
@@ -152,9 +186,11 @@ final class FilterFunctionReturnTypeHelper
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 		$type = $this->applyRangeOptions($type, $options, $defaultType);
 
-		if ($inputType->isNonEmptyString()->yes()
+		if (
+			$inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
-			&& !$this->canStringBeSanitized($filterValue, $flagsType)) {
+			&& $this->canStringBeSanitized($filterValue, $flagsType)->no()
+		) {
 			$accessory = new AccessoryNonEmptyStringType();
 			if ($inputType->isNonFalsyString()->yes()) {
 				$accessory = new AccessoryNonFalsyStringType();
@@ -168,18 +204,18 @@ final class FilterFunctionReturnTypeHelper
 			}
 		}
 
-		if ($hasRequireArrayFlag) {
-			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
+		if ($hasRequireArrayFlag->yes()) {
+			$type = new ArrayType($inputArrayKeyType ?? new MixedType(), $type);
 			if (!$inputIsArray->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}
 
-		if (!$hasRequireArrayFlag && $hasForceArrayFlag) {
+		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
 			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
 		}
 
-		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)) {
+		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
 			$type = TypeCombinator::remove($type, $defaultType);
 		}
 
@@ -338,16 +374,19 @@ final class FilterFunctionReturnTypeHelper
 			}
 
 			if ($in instanceof ConstantStringType) {
-				$value = $in->getValue();
 				$allowOctal = $this->hasFlag('FILTER_FLAG_ALLOW_OCTAL', $flagsType);
 				$allowHex = $this->hasFlag('FILTER_FLAG_ALLOW_HEX', $flagsType);
+				if ($allowOctal->maybe() || $allowHex->maybe()) {
+					return null;
+				}
 
-				if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
+				$value = $in->getValue();
+				if ($allowOctal->yes() && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
 					$octalValue = octdec($value);
 					return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
 				}
 
-				if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
+				if ($allowHex->yes() && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
 					$hexValue = hexdec($value);
 					return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
 				}
@@ -357,7 +396,7 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			if (!$this->canStringBeSanitized($filterValue, $flagsType) && $in->isString()->yes()) {
+			if ($this->canStringBeSanitized($filterValue, $flagsType)->no() && $in->isString()->yes()) {
 				return $in;
 			}
 
@@ -452,20 +491,23 @@ final class FilterFunctionReturnTypeHelper
 	/**
 	 * @param non-empty-string $flagName
 	 */
-	private function hasFlag(string $flagName, ?Type $flagsType): bool
+	private function hasFlag(string $flagName, ?Type $flagsType): TrinaryLogic
 	{
 		$flag = $this->getConstant($flagName);
 		if ($flag === null) {
-			return false;
+			return TrinaryLogic::createNo();
 		}
 
-		if ($flagsType === null) {
-			return false;
+		if ($flagsType === null) { // Will default to 0
+			return TrinaryLogic::createNo();
 		}
 
 		$type = $this->getFlagsValue($flagsType);
+		if (!$type instanceof ConstantIntegerType) {
+			return TrinaryLogic::createMaybe();
+		}
 
-		return $type instanceof ConstantIntegerType && ($type->getValue() & $flag) === $flag;
+		return TrinaryLogic::createFromBoolean(($type->getValue() & $flag) === $flag);
 	}
 
 	private function getFlagsValue(Type $exprType): Type
@@ -474,25 +516,36 @@ final class FilterFunctionReturnTypeHelper
 			return $exprType;
 		}
 
-		return $exprType->getOffsetValueType($this->flagsString);
+		$hasOffsetValue = $exprType->hasOffsetValueType($this->flagsString);
+		if ($hasOffsetValue->no()) {
+			return new ConstantIntegerType(0);
+		}
+		if ($hasOffsetValue->yes()) {
+			return $exprType->getOffsetValueType($this->flagsString);
+		}
+
+		return TypeCombinator::union(
+			new ConstantIntegerType(0),
+			$exprType->getOffsetValueType($this->flagsString),
+		);
 	}
 
-	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): bool
+	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): TrinaryLogic
 	{
 		// If it is a validation filter, the string will not be changed
 		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
-			return false;
+			return TrinaryLogic::createNo();
 		}
 
 		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
 		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
 			return $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
-				|| $this->hasFlag('FILTER_FLAG_STRIP_HIGH', $flagsType)
-				|| $this->hasFlag('FILTER_FLAG_STRIP_BACKTICK', $flagsType);
+				->or($this->hasFlag('FILTER_FLAG_STRIP_HIGH', $flagsType))
+				->or($this->hasFlag('FILTER_FLAG_STRIP_BACKTICK', $flagsType));
 		}
 
-		return true;
+		return TrinaryLogic::createYes();
 	}
 
 }

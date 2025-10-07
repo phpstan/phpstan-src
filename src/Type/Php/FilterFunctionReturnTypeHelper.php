@@ -27,9 +27,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-
-use PHPStan\Type\VerbosityLevel;
-
 use function array_key_exists;
 use function array_merge;
 use function hexdec;
@@ -130,11 +127,6 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		$hasOptions = $this->hasOptions($flagsType);
-		if ($hasOptions->maybe()) {
-			// Too complicated
-			return $mixedType;
-		}
-
 		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
 
 		if (isset($options['default'])) {

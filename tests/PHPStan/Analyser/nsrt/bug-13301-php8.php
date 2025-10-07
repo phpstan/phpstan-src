@@ -15,13 +15,38 @@ function doFoo($mixed) {
 	assertType('array', $mixed);
 }
 
+function doFooTrue($mixed) {
+	if (array_key_exists('a', $mixed) === true) {
+		assertType("non-empty-array&hasOffset('a')", $mixed);
+	} else {
+		assertType('array', $mixed); // could be array~hasOffset('a') after arrays got subtractable
+	}
+	assertType('array', $mixed);
+}
+
+function doFooTruethy($mixed) {
+	if (array_key_exists('a', $mixed) == true) {
+		assertType("non-empty-array&hasOffset('a')", $mixed);
+	} else {
+		assertType('array', $mixed); // could be array~hasOffset('a') after arrays got subtractable
+	}
+	assertType('array', $mixed);
+}
+
+function doFooFalsey($mixed) {
+	if (array_key_exists('a', $mixed) == 0) {
+		assertType("array", $mixed);
+	} else {
+		assertType("non-empty-array&hasOffset('a')", $mixed); // could be array~hasOffset('a') after arrays got subtractable
+	}
+	assertType('array', $mixed);
+}
+
 function doArray(array $arr) {
 	if (array_key_exists('a', $arr)) {
 		assertType("non-empty-array&hasOffset('a')", $arr);
-		echo "has-a";
 	} else {
 		assertType('array', $arr);
-		echo "NO-a";
 	}
 	assertType('array', $arr);
 }

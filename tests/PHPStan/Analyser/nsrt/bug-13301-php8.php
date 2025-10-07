@@ -37,7 +37,7 @@ function doFooFalsey($mixed) {
 	if (array_key_exists('a', $mixed) == 0) {
 		assertType("array", $mixed);
 	} else {
-		assertType("non-empty-array&hasOffset('a')", $mixed); // could be array~hasOffset('a') after arrays got subtractable
+		assertType("non-empty-array&hasOffset('a')", $mixed);
 	}
 	assertType('array', $mixed);
 }

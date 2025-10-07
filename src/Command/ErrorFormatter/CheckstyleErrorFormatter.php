@@ -43,10 +43,15 @@ final class CheckstyleErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 
 			foreach ($errors as $error) {
+
+				$identifier = null !== $error->getIdentifier()
+					? "  // @phpstan-ignore {$error->getIdentifier()}" :
+					'';
+
 				$output->writeRaw(sprintf(
 					'  <error line="%d" column="1" severity="error" message="%s"%s />',
 					$this->escape((string) $error->getLine()),
-					$this->escape($error->getMessage()),
+					$this->escape($error->getMessage() . $identifier),
 					$error->getIdentifier() !== null ? sprintf(' source="%s"', $this->escape($error->getIdentifier())) : '',
 				));
 				$output->writeLineFormatted('');

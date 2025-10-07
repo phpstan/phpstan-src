@@ -186,7 +186,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 		), $this->getOutput());
 		$this->assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="Foo.php">
-		<error column="1" line="5" message="Foo" severity="error" source="argument.type" />
+		<error column="1" line="5" message="Foo  // @phpstan-ignore argument.type" severity="error" source="argument.type" />
 	</file>
 </checkstyle>', $this->getOutputContent());
 	}

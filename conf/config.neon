@@ -120,6 +120,7 @@ parameters:
 	universalObjectCratesClasses:
 		- stdClass
 	stubFiles:
+		- ../stubs/Redis.stub
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClassConstant.stub
 		- ../stubs/ReflectionFunctionAbstract.stub

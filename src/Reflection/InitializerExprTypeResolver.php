@@ -1008,8 +1008,13 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
-		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+		$leftIsString = $leftType->isString();
+		$rightIsString = $rightType->isString();
+		if ($leftIsString->yes() && $rightIsString->yes()) {
 			return new StringType();
+		}
+		if ($leftIsString->maybe() && $rightIsString->maybe()) {
+			return new ErrorType();
 		}
 
 		$leftNumberType = $leftType->toNumber();
@@ -1082,8 +1087,13 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
-		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+		$leftIsString = $leftType->isString();
+		$rightIsString = $rightType->isString();
+		if ($leftIsString->yes() && $rightIsString->yes()) {
 			return new StringType();
+		}
+		if ($leftIsString->maybe() && $rightIsString->maybe()) {
+			return new ErrorType();
 		}
 
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
@@ -1146,8 +1156,13 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
-		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+		$leftIsString = $leftType->isString();
+		$rightIsString = $rightType->isString();
+		if ($leftIsString->yes() && $rightIsString->yes()) {
 			return new StringType();
+		}
+		if ($leftIsString->maybe() && $rightIsString->maybe()) {
+			return new ErrorType();
 		}
 
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {

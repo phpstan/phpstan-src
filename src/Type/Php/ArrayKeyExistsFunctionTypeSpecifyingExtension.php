@@ -122,6 +122,7 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& !$arrayType->isArray()->yes()
 		) {
 			$type = new ArrayType(new MixedType(), new MixedType());
+			$type = $type->unsetOffset($keyType);
 			$context = $context->negate();
 		} else {
 			$type = new HasOffsetType($keyType);

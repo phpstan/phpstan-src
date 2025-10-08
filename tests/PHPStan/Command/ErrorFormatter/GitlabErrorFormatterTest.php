@@ -7,7 +7,7 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
-class GitlabFormatterTest extends ErrorFormatterTestCase
+class GitlabErrorFormatterTest extends ErrorFormatterTestCase
 {
 
 	public static function dataFormatterOutputProvider(): iterable
@@ -28,6 +28,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			'[
     {
         "description": "Foo",
+        "check_name": null,
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "severity": "major",
         "location": {
@@ -68,6 +69,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			'[
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "034b4afbfb347494c14e396ed8327692f58be4cd27e8aff5f19f4194934db7c9",
         "severity": "major",
         "location": {
@@ -79,6 +81,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo",
+        "check_name": null,
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "severity": "major",
         "location": {
@@ -90,6 +93,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo<Bar>",
+        "check_name": null,
         "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
@@ -101,6 +105,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "829f6c782152fdac840b39208c5b519d18e51bff2c601b6197812fffb8bcd9ed",
         "severity": "major",
         "location": {
@@ -121,6 +126,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			'[
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "034b4afbfb347494c14e396ed8327692f58be4cd27e8aff5f19f4194934db7c9",
         "severity": "major",
         "location": {
@@ -132,6 +138,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo",
+        "check_name": null,
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "severity": "major",
         "location": {
@@ -143,6 +150,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "52d22d9e64bd6c6257b7a0d170ed8c99482043aeedd68c52bac081a80da9800a",
         "severity": "major",
         "location": {
@@ -154,6 +162,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo<Bar>",
+        "check_name": null,
         "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
@@ -165,6 +174,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "829f6c782152fdac840b39208c5b519d18e51bff2c601b6197812fffb8bcd9ed",
         "severity": "major",
         "location": {
@@ -216,6 +226,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 			'[
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "034b4afbfb347494c14e396ed8327692f58be4cd27e8aff5f19f4194934db7c9",
         "severity": "major",
         "location": {
@@ -227,6 +238,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo",
+        "check_name": null,
         "fingerprint": "e82b7e1f1d4255352b19ecefa9116a12f129c7edb4351cf2319285eccdb1565e",
         "severity": "major",
         "location": {
@@ -238,6 +250,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Foo<Bar>",
+        "check_name": null,
         "fingerprint": "d7002959fc192c81d51fc41b0a3f240617a1aa35361867b5e924ae8d7fec39cb",
         "severity": "major",
         "location": {
@@ -249,6 +262,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     },
     {
         "description": "Bar\nBar2",
+        "check_name": null,
         "fingerprint": "829f6c782152fdac840b39208c5b519d18e51bff2c601b6197812fffb8bcd9ed",
         "severity": "major",
         "location": {
@@ -282,13 +296,37 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
     }
 ]',
 		];
+
+		yield [
+			'File error with identifier',
+			1,
+			[5, 1],
+			0,
+			'[
+    {
+        "description": "Foobar\\\\Buz",
+        "check_name": "foobar.buz",
+        "fingerprint": "5543f2fd4c455f26c1500342ec5045b08c99b7827ab35595151dd6e7715c079c",
+        "severity": "major",
+        "location": {
+            "path": "with space/and unicode \ud83d\ude03/project/foo.php",
+            "lines": {
+                "begin": 5
+            }
+        }
+    }
+]',
+		];
 	}
 
+	/**
+	 * @param array{int, int}|int $numFileErrors
+	 */
 	#[DataProvider('dataFormatterOutputProvider')]
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
-		int $numFileErrors,
+		array|int $numFileErrors,
 		int $numGenericErrors,
 		string $expected,
 	): void

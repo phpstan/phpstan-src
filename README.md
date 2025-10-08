@@ -21,11 +21,11 @@ If you are using macOS and are using an older version of `patch`, you may have p
 
 ### Building
 
-PHPStan's source code is developed on PHP 8.1. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.2 and higher.
+PHPStan's source code is developed on PHP 8.2. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.2 and higher.
 
 Initially you need to run `composer install` in case you aren't working in a directory which was built before.
 
-Afterwards you can either run the whole build including linting and coding standards using
+Afterward you can run the whole build including linting and coding standards:
 
 ```bash
 make

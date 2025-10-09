@@ -26,7 +26,7 @@ final class InvalidKeyInArrayItemRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
-		private bool $reportArrayKeyCast,
+		private bool $allowFloatBoolNullAsArrayKey,
 	)
 	{
 	}
@@ -42,7 +42,7 @@ final class InvalidKeyInArrayItemRule implements Rule
 			return [];
 		}
 
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion, $this->reportArrayKeyCast);
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion, $this->allowFloatBoolNullAsArrayKey);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->key,

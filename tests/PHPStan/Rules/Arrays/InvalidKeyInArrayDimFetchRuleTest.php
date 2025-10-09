@@ -15,7 +15,7 @@ use const PHP_VERSION_ID;
 class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 {
 
-	private bool $reportCastedArrayKey = false;
+	private bool $allowFloatBoolNullAsArrayKey = true;
 
 	protected function getRule(): Rule
 	{
@@ -24,7 +24,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			$ruleLevelHelper,
 			self::getContainer()->getByType(PhpVersion::class),
 			true,
-			$this->reportCastedArrayKey,
+			$this->allowFloatBoolNullAsArrayKey,
 		);
 	}
 
@@ -168,7 +168,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testUnsetFalseKey(): void
 	{
-		$this->reportCastedArrayKey = true;
+		$this->allowFloatBoolNullAsArrayKey = false;
 
 		$this->analyse([__DIR__ . '/data/unset-false-key.php'], [
 			[

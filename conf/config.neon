@@ -80,7 +80,7 @@ parameters:
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
 	reportAnyTypeWideningInVarTag: false
-	reportArrayKeyCast: false
+	allowFloatBoolNullAsArrayKey: true
 	reportPossiblyNonexistentGeneralArrayOffset: false
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false

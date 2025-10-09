@@ -29,7 +29,7 @@ final class AllowedArrayKeysTypes
 			new StringType(),
 		];
 
-		if (!$allowFloatBoolNull) {
+		if ($allowFloatBoolNull) {
 			$types[] = new BooleanType();
 
 			if ($phpVersion === null || !$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {

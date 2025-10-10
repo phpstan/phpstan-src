@@ -1100,6 +1100,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10394.php'], []);
 	}
 
+	public function testBug13628(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13628.php'], []);
+	}
+
 	public function testBug9666(): void
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';

@@ -580,7 +580,7 @@ final class TypeCombinator
 		Type $b,
 	): Type
 	{
-		if ($a->getSubtractedType() === null) {
+		if ($a->getSubtractedType() === null || $b instanceof NeverType) {
 			return $a;
 		}
 
@@ -621,7 +621,10 @@ final class TypeCombinator
 			} elseif ($isBAlreadySubtracted->yes()) {
 				$subtractedType = self::remove($a->getSubtractedType(), $b);
 
-				if ($subtractedType instanceof NeverType) {
+				if (
+					$subtractedType instanceof NeverType
+					|| !$subtractedType->isSuperTypeOf($b)->no()
+				) {
 					$subtractedType = null;
 				}
 

@@ -2133,6 +2133,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 				MixedType::class,
 				'mixed=implicit',
 			],
+			[
+				[
+					new ArrayType(new MixedType(), new StringType()),
+					new MixedType(false, new ArrayType(new MixedType(), new MixedType())),
+				],
+				MixedType::class,
+				'mixed=implicit',
+			],
 		];
 
 		if (PHP_VERSION_ID < 80100) {

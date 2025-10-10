@@ -234,7 +234,7 @@ final class ResultCacheManager
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
 
-		foreach (array_keys($this->getStubFiles()) as $stubFile) {
+		foreach ($this->getStubFiles() as $stubFile) {
 			if (!array_key_exists($stubFile, $errors)) {
 				continue;
 			}

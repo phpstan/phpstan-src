@@ -12,7 +12,7 @@ parameters:
 		checkExtensionsForComparisonOperators: true
 		reportTooWideBool: true
 		rawMessageInBaseline: true
-		reportNestedTooWideType: false
+		reportNestedTooWideType: true
 		assignToByRefForeachExpr: true
 		curlSetOptArrayTypes: true
 		tooWideImplicitThrows: true

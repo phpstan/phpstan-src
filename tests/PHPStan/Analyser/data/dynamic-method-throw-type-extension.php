@@ -28,11 +28,11 @@ class MethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 		}
 
 		$argType = $scope->getType($methodCall->args[0]->value);
-		if ((new ConstantBooleanType(true))->isSuperTypeOf($argType)->yes()) {
-			return $methodReflection->getThrowType();
+		if ((new ConstantBooleanType(false))->isSuperTypeOf($argType)->yes()) {
+			return null;
 		}
 
-		return null;
+		return $methodReflection->getThrowType();
 	}
 
 }
@@ -52,11 +52,11 @@ class StaticMethodThrowTypeExtension implements DynamicStaticMethodThrowTypeExte
 		}
 
 		$argType = $scope->getType($methodCall->args[0]->value);
-		if ((new ConstantBooleanType(true))->isSuperTypeOf($argType)->yes()) {
-			return $methodReflection->getThrowType();
+		if ((new ConstantBooleanType(false))->isSuperTypeOf($argType)->yes()) {
+			return null;
 		}
 
-		return null;
+		return $methodReflection->getThrowType();
 	}
 
 }
@@ -88,6 +88,8 @@ class Foo
 	{
 		try {
 			$result = $this->throwOrNot(true);
+		} catch (\Exception) {
+
 		} finally {
 			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
 		}
@@ -97,6 +99,8 @@ class Foo
 	{
 		try {
 			$result = $this->throwOrNot(false);
+		} catch (\Exception) { // DeadCatch
+
 		} finally {
 			assertVariableCertainty(TrinaryLogic::createYes(), $result);
 		}
@@ -106,6 +110,8 @@ class Foo
 	{
 		try {
 			$result = self::staticThrowOrNot(true);
+		} catch (\Exception) {
+
 		} finally {
 			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
 		}
@@ -115,6 +121,56 @@ class Foo
 	{
 		try {
 			$result = self::staticThrowOrNot(false);
+		} catch (\Exception) { // DeadCatch
+
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	/** @param true $value */
+	public function doFooPhpdoc1(bool $value)
+	{
+		try {
+			$result = $this->throwOrNot($value);
+		} catch (\Exception) {
+
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
+		}
+	}
+
+	/** @param false $value */
+	public function doFooPhpdoc2(bool $value)
+	{
+		try {
+			$result = $this->throwOrNot($value);
+		} catch (\Exception) { // DeadCatch if phpdoc is trusted
+
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	/** @param true $value */
+	public function doFooPhpdoc3(bool $value)
+	{
+		try {
+			$result = self::staticThrowOrNot($value);
+		} catch (\Exception) {
+
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
+		}
+	}
+
+	/** @param false $value */
+	public function doFooPhpdoc4(bool $value)
+	{
+		try {
+			$result = self::staticThrowOrNot($value);
+		} catch (\Exception) { // DeadCatch if phpdoc is trusted
+
 		} finally {
 			assertVariableCertainty(TrinaryLogic::createYes(), $result);
 		}

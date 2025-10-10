@@ -4305,7 +4305,16 @@ final class NodeScopeResolver
 
 				$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
 				if ($throwType === null) {
-					return null;
+					if ($this->treatPhpDocTypesAsCertain) {
+						return null;
+					}
+
+					$nativeThrowType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope->doNotTreatPhpDocTypesAsCertain());
+					if ($nativeThrowType === null) {
+						return null;
+					}
+
+					return ThrowPoint::createImplicit($scope, $funcCall);
 				}
 
 				return ThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
@@ -4363,7 +4372,16 @@ final class NodeScopeResolver
 
 				$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
 				if ($throwType === null) {
-					return null;
+					if ($this->treatPhpDocTypesAsCertain) {
+						return null;
+					}
+
+					$nativeThrowType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope->doNotTreatPhpDocTypesAsCertain());
+					if ($nativeThrowType === null) {
+						return null;
+					}
+
+					return ThrowPoint::createImplicit($scope, $methodCall);
 				}
 
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
@@ -4407,7 +4425,16 @@ final class NodeScopeResolver
 
 				$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $normalizedMethodCall, $scope);
 				if ($throwType === null) {
-					return null;
+					if ($this->treatPhpDocTypesAsCertain) {
+						return null;
+					}
+
+					$nativeThrowType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $normalizedMethodCall, $scope->doNotTreatPhpDocTypesAsCertain());
+					if ($nativeThrowType === null) {
+						return null;
+					}
+
+					return ThrowPoint::createImplicit($scope, $new);
 				}
 
 				return ThrowPoint::createExplicit($scope, $throwType, $new, false);
@@ -4439,7 +4466,16 @@ final class NodeScopeResolver
 
 				$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
 				if ($throwType === null) {
-					return null;
+					if ($this->treatPhpDocTypesAsCertain) {
+						return null;
+					}
+
+					$nativeThrowType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope->doNotTreatPhpDocTypesAsCertain());
+					if ($nativeThrowType === null) {
+						return null;
+					}
+
+					return ThrowPoint::createImplicit($scope, $methodCall);
 				}
 
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);

@@ -2136,7 +2136,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			[
 				[
 					new ArrayType(new MixedType(), new StringType()),
-					new MixedType(false, new ArrayType(new MixedType(), new MixedType())),
+					new MixedType(subtractedType: new ArrayType(new MixedType(), new MixedType())),
 				],
 				MixedType::class,
 				'mixed=implicit',

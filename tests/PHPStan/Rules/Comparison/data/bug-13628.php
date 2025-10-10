@@ -2,7 +2,11 @@
 
 namespace Bug13628;
 
-function test(mixed $param): string {
+/**
+ * @param mixed $param
+ * @return string
+ */
+function test($param) {
 
 	$a = is_array($param) ? array_filter($param) : $param;
 	if ($a && is_array($a)) {

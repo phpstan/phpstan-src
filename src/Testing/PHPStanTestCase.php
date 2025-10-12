@@ -3,7 +3,7 @@
 namespace PHPStan\Testing;
 
 use PHPStan\Analyser\ConstantResolver;
-use PHPStan\Analyser\DirectInternalScopeFactory;
+use PHPStan\Analyser\DirectInternalScopeFactoryFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
@@ -152,7 +152,7 @@ abstract class PHPStanTestCase extends TestCase
 		);
 
 		return new ScopeFactory(
-			new DirectInternalScopeFactory(
+			new DirectInternalScopeFactoryFactory(
 				$reflectionProvider,
 				$initializerExprTypeResolver,
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),

@@ -173,7 +173,7 @@ use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-final class MutatingScope implements Scope
+final class MutatingScope implements Scope, NodeCallbackInvoker
 {
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
@@ -200,6 +200,7 @@ final class MutatingScope implements Scope
 
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
+	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param list<string> $inClosureBindScopeClasses
@@ -225,6 +226,7 @@ final class MutatingScope implements Scope
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private int|array|null $configPhpVersion,
+		private $nodeCallback = null,
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
@@ -6454,6 +6456,16 @@ final class MutatingScope implements Scope
 			return new PhpVersions(IntegerRangeType::fromInterval($this->configPhpVersion['min'], $this->configPhpVersion['max']));
 		}
 		return new PhpVersions(new ConstantIntegerType($this->phpVersion->getVersionId()));
+	}
+
+	public function invokeNodeCallback(Node $node): void
+	{
+		$nodeCallback = $this->nodeCallback;
+		if ($nodeCallback === null) {
+			throw new ShouldNotHappenException('Node callback is not present in this scope');
+		}
+
+		$nodeCallback($node, $this);
 	}
 
 }

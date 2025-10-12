@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 
 /**
@@ -34,6 +35,6 @@ interface Rule
 	 * @param TNodeType $node
 	 * @return list<IdentifierRuleError>
 	 */
-	public function processNode(Node $node, Scope $scope): array;
+	public function processNode(Node $node, Scope&NodeCallbackInvoker $scope): array;
 
 }

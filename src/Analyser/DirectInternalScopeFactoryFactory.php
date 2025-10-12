@@ -10,17 +10,14 @@ use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
-final class DirectInternalScopeFactory implements InternalScopeFactory
+final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFactory
 {
 
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
-	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -36,64 +33,32 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private PhpVersion $phpVersion,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private int|array|null $configPhpVersion,
-		private $nodeCallback,
 		private ConstantResolver $constantResolver,
 	)
 	{
 	}
 
-	public function create(
-		ScopeContext $context,
-		bool $declareStrictTypes = false,
-		PhpFunctionFromParserNodeReflection|null $function = null,
-		?string $namespace = null,
-		array $expressionTypes = [],
-		array $nativeExpressionTypes = [],
-		array $conditionalExpressions = [],
-		array $inClosureBindScopeClasses = [],
-		?ParametersAcceptor $anonymousFunctionReflection = null,
-		bool $inFirstLevelStatement = true,
-		array $currentlyAssignedExpressions = [],
-		array $currentlyAllowedUndefinedExpressions = [],
-		array $inFunctionCallsStack = [],
-		bool $afterExtractCall = false,
-		?Scope $parentScope = null,
-		bool $nativeTypesPromoted = false,
-	): MutatingScope
+	/**
+	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
+	 */
+	public function create(?callable $nodeCallback): DirectInternalScopeFactory
 	{
-		return new MutatingScope(
-			$this,
+		return new DirectInternalScopeFactory(
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
-			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
-			$this->expressionTypeResolverExtensionRegistryProvider->getRegistry(),
+			$this->dynamicReturnTypeExtensionRegistryProvider,
+			$this->expressionTypeResolverExtensionRegistryProvider,
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->parser,
 			$this->nodeScopeResolver,
 			$this->richerScopeGetTypeHelper,
-			$this->constantResolver,
-			$context,
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
 			$this->configPhpVersion,
-			$this->nodeCallback,
-			$declareStrictTypes,
-			$function,
-			$namespace,
-			$expressionTypes,
-			$nativeExpressionTypes,
-			$conditionalExpressions,
-			$inClosureBindScopeClasses,
-			$anonymousFunctionReflection,
-			$inFirstLevelStatement,
-			$currentlyAssignedExpressions,
-			$currentlyAllowedUndefinedExpressions,
-			$inFunctionCallsStack,
-			$afterExtractCall,
-			$parentScope,
-			$nativeTypesPromoted,
+			$nodeCallback,
+			$this->constantResolver,
 		);
 	}
 

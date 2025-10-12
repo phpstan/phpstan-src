@@ -2,8 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\DependencyInjection\AutowiredService;
+use PhpParser\Node;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -15,15 +16,19 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 
-#[AutowiredService(as: InternalScopeFactory::class)]
+#[GenerateFactory(interface: InternalScopeFactoryFactory::class, resultType: LazyInternalScopeFactory::class)]
 final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
 	/** @var int|array{min: int, max: int}|null */
 	private int|array|null $phpVersion;
 
+	/**
+	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
+	 */
 	public function __construct(
 		private Container $container,
+		private $nodeCallback,
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
@@ -65,6 +70,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(PhpVersion::class),
 			$this->container->getByType(AttributeReflectionFactory::class),
 			$this->phpVersion,
+			$this->nodeCallback,
 			$declareStrictTypes,
 			$function,
 			$namespace,

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 
 /**
@@ -11,13 +12,16 @@ use PHPStan\DependencyInjection\AutowiredService;
 final class ScopeFactory
 {
 
-	public function __construct(private InternalScopeFactory $internalScopeFactory)
+	public function __construct(private InternalScopeFactoryFactory $internalScopeFactoryFactory)
 	{
 	}
 
-	public function create(ScopeContext $context): MutatingScope
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function create(ScopeContext $context, ?callable $nodeCallback = null): MutatingScope
 	{
-		return $this->internalScopeFactory->create($context);
+		return $this->internalScopeFactoryFactory->create($nodeCallback)->create($context);
 	}
 
 }

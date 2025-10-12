@@ -98,7 +98,8 @@ final class FileAnalyser
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, $parserNodes): void {
+				$nodeCallback = function (Node $node, $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, $parserNodes): void {
+					/** @var Scope&NodeCallbackInvoker $scope */
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -242,7 +243,7 @@ final class FileAnalyser
 					}
 				};
 
-				$scope = $this->scopeFactory->create(ScopeContext::create($file));
+				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);
 				$this->nodeScopeResolver->processNodes(
 					$parserNodes,

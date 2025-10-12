@@ -121,9 +121,21 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			$this->phpVersion->throwsValueErrorForInternalFunctions()
 			&& !$arrayType->isArray()->yes()
 		) {
+			$specifiedTypes = $this->typeSpecifier->create(
+				$array,
+				new HasOffsetType($keyType),
+				$context,
+				$scope,
+			);
+
 			$type = new ArrayType(new MixedType(), new MixedType());
 			$type = $type->unsetOffset($keyType);
-			$context = $context->negate();
+			return $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$array,
+				$type,
+				$context->negate(),
+				$scope,
+			));
 		} else {
 			$type = new HasOffsetType($keyType);
 		}

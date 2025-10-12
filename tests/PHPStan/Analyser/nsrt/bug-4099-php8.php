@@ -1,6 +1,6 @@
-<?php // lint < 8.0
+<?php // lint >= 8.0
 
-namespace Bug4099;
+namespace Bug4099Php8;
 
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
@@ -18,7 +18,7 @@ class Foo
 
 		if (!array_key_exists('key', $arr)) {
 			assertType('*NEVER*', $arr);
-			assertNativeType('array', $arr);
+			assertNativeType("array<mixed~'key', mixed>", $arr);
 			throw new \Exception('no key "key" found.');
 		}
 		assertType('array{key: array{inner: mixed}}', $arr);
@@ -30,7 +30,7 @@ class Foo
 			assertType('*NEVER*', $arr);
 			assertNativeType('non-empty-array&hasOffset(\'key\')', $arr);
 			assertType('*NEVER*', $arr['key']);
-			assertNativeType("mixed~hasOffset('inner')", $arr['key']);
+			assertNativeType("array<mixed~'inner', mixed>", $arr['key']);
 			throw new \Exception('need key.inner');
 		}
 

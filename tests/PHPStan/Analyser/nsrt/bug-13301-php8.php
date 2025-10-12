@@ -46,7 +46,7 @@ function doArray(array $arr) {
 	if (array_key_exists('a', $arr)) {
 		assertType("non-empty-array&hasOffset('a')", $arr);
 	} else {
-		assertType('array', $arr);
+		assertType("array<mixed~'a', mixed>", $arr);
 	}
 	assertType('array', $arr);
 }

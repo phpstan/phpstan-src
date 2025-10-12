@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace ConditionalVars;
+namespace ConditionalVarsPhp8;
 
 use function PHPStan\Testing\assertType;
 

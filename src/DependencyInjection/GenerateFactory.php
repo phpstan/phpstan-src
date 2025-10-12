@@ -22,8 +22,9 @@ final class GenerateFactory
 
 	/**
 	 * @param class-string $interface
+	 * @param class-string $resultType
 	 */
-	public function __construct(public string $interface)
+	public function __construct(public string $interface, public ?string $resultType = null)
 	{
 	}
 

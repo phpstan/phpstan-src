@@ -2635,7 +2635,7 @@ final class InitializerExprTypeResolver
 				return new IntersectionType([new StringType(), ...$accessories]);
 			}
 			if ($type instanceof ConstantIntegerType || $type instanceof ConstantFloatType) {
-				return new ConstantIntegerType(~$type->getValue());
+				return new ConstantIntegerType(~ (int) $type->getValue());
 			}
 			if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
 				return new IntegerType();

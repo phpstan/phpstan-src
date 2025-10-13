@@ -3215,9 +3215,16 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			if ($methodReflection !== null) {
-				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
+				$hasSideEffects = $methodReflection->hasSideEffects()->yes();
+				if ($hasSideEffects || $methodReflection->getName() === '__construct') {
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
+					if ($hasSideEffects) {
+						$classNames = $scope->getType($normalizedExpr->var)->getObjectClassNames();
+						foreach ($classNames as $className) {
+							$scope = $scope->invalidateStaticMembers($className);
+						}
+					}
 				}
 				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();

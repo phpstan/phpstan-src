@@ -87,7 +87,7 @@ final class OverridingMethodRule implements Rule
 				}
 			}
 
-			if ($this->phpVersion->supportsOverrideAttribute() && $this->hasOverrideAttribute($node->getOriginalNode())) {
+			if ($this->hasOverrideAttribute($node->getOriginalNode())) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Method %s::%s() has #[\Override] attribute but does not override any method.',
@@ -111,8 +111,7 @@ final class OverridingMethodRule implements Rule
 
 		$messages = [];
 		if (
-			$this->phpVersion->supportsOverrideAttribute()
-			&& $this->checkMissingOverrideMethodAttribute
+			$this->checkMissingOverrideMethodAttribute
 			&& !$scope->isInTrait()
 			&& !$this->hasOverrideAttribute($node->getOriginalNode())
 		) {

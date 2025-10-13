@@ -726,7 +726,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-trait-methods.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
 	public function testOverrideAttribute(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
@@ -745,7 +744,16 @@ class OverridingMethodRuleTest extends RuleTestCase
 	public static function dataCheckMissingOverrideAttribute(): iterable
 	{
 		yield [false, 80000, []];
-		yield [true, 80000, []];
+		yield [true, 80000, [
+			[
+				'Method CheckMissingOverrideAttr\Bar::doFoo() overrides method CheckMissingOverrideAttr\Foo::doFoo() but is missing the #[\Override] attribute.',
+				18,
+			],
+			[
+				'Method CheckMissingOverrideAttr\ChildOfParentWithAbstractConstructor::__construct() overrides method CheckMissingOverrideAttr\ParentWithAbstractConstructor::__construct() but is missing the #[\Override] attribute.',
+				49,
+			],
+		]];
 		yield [false, 80300, []];
 		yield [true, 80300, [
 			[
@@ -785,7 +793,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10153.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
 	public function testBug12471(): void
 	{
 		$this->checkMissingOverrideMethodAttribute = true;
@@ -812,7 +819,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/simple-xml-element-child.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.3')]
 	public function testFixOverride(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
@@ -820,7 +826,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/fix-override-attribute.php', __DIR__ . '/data/fix-override-attribute.php.fixed');
 	}
 
-	#[RequiresPhp('>= 8.3')]
 	public function testFixWithTabs(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

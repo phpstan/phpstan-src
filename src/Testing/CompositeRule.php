@@ -21,9 +21,14 @@ final class CompositeRule implements Rule
 
 	private DirectRegistry $registry;
 
-	public function __construct(DirectRegistry $ruleRegistry)
+	/**
+	 * @param array<Rule<Node>> $rules
+	 *
+	 * @api
+	 */
+	public function __construct(array $rules)
 	{
-		$this->registry = $ruleRegistry;
+		$this->registry = new DirectRegistry($rules);
 	}
 
 	public function getNodeType(): string

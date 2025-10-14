@@ -22,7 +22,7 @@ final class CompositeRule implements Rule
 	private DirectRegistry $registry;
 
 	/**
-	 * @template T of Node
+	 * @template-covariant T of Node
 	 * @param array<Rule<T>> $rules
 	 *
 	 * @api

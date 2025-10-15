@@ -12,6 +12,8 @@ use function get_class;
 /**
  * Allows testing of rules which delegate work to NodeCallbackInvoker.
  *
+ * @template-covariant N of Node = Node
+ * @template-covariant R = Rule<N>
  * @implements Rule<Node>
  *
  * @api
@@ -22,8 +24,7 @@ final class CompositeRule implements Rule
 	private DirectRegistry $registry;
 
 	/**
-	 * @template T of Node
-	 * @param array<Rule<T>> $rules
+	 * @param array<R> $rules
 	 *
 	 * @api
 	 */

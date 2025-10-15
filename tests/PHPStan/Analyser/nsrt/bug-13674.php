@@ -26,5 +26,10 @@ class HelloWorld
 			assertType('list<int>', $listA);
 		}
 		assertType('list<int>', $listA);
+
+		if (!isset($listA[$i])) {
+			return;
+		}
+		assertType('non-empty-list<int>', $listA);
 	}
 }

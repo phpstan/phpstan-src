@@ -2,8 +2,6 @@
 
 namespace Bug7000b;
 
-use function array_key_exists;
-
 class Foo
 {
 	public function doBar(): void

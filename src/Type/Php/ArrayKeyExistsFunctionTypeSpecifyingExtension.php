@@ -66,13 +66,15 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& !$keyType instanceof ConstantStringType
 		) {
 			if ($context->true()) {
+				$specifiedTypes = $this->typeSpecifier->create(
+					$array,
+					new NonEmptyArrayType(),
+					$context,
+					$scope,
+				);
+
 				if ($arrayType->isIterableAtLeastOnce()->no()) {
-					return $this->typeSpecifier->create(
-						$array,
-						new NonEmptyArrayType(),
-						$context,
-						$scope,
-					);
+					return $specifiedTypes;
 				}
 
 				$arrayKeyType = $arrayType->getIterableKeyType();
@@ -82,12 +84,12 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 					$arrayKeyType = TypeCombinator::union($arrayKeyType, $arrayKeyType->toString());
 				}
 
-				$specifiedTypes = $this->typeSpecifier->create(
+				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 					$key,
 					$arrayKeyType,
 					$context,
 					$scope,
-				);
+				));
 
 				$arrayDimFetch = new ArrayDimFetch(
 					$array,

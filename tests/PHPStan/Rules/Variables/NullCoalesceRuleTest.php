@@ -280,7 +280,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7190.php'], [
 			[
-				'Offset int on array<int, int> on left side of ?? always exists and is not nullable.',
+				'Offset int on non-empty-array<int, int> on left side of ?? always exists and is not nullable.',
 				20,
 			],
 		]);

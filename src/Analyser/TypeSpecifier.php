@@ -1065,6 +1065,18 @@ final class TypeSpecifier
 					&& !$scope->getType($var->var) instanceof MixedType
 				) {
 					$dimType = $scope->getType($var->dim);
+					$varType = $scope->getType($var->var);
+
+					if ($varType->isArray()->yes()) {
+						$types = $types->unionWith(
+							$this->create(
+								$var->var,
+								new NonEmptyArrayType(),
+								$context,
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 						$types = $types->unionWith(

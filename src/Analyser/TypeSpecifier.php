@@ -1078,7 +1078,7 @@ final class TypeSpecifier
 					} else {
 						$varType = $scope->getType($var->var);
 
-						if ($varType->isArray()->yes() && $dimType->isConstantScalarValue()->no()) {
+						if ($varType->isArray()->yes() && count($dimType->getConstantScalarTypes()) <= 1) {
 							$types = $types->unionWith(
 								$this->create(
 									$var->var,

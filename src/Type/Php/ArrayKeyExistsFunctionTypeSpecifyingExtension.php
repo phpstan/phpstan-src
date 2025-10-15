@@ -66,12 +66,16 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& !$keyType instanceof ConstantStringType
 		) {
 			if ($context->true()) {
-				$specifiedTypes = $this->typeSpecifier->create(
-					$array,
-					new NonEmptyArrayType(),
-					$context,
-					$scope,
-				);
+				$specifiedTypes = new SpecifiedTypes();
+
+				if (count($keyType->getConstantScalarTypes()) <= 1) {
+					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+						$array,
+						new NonEmptyArrayType(),
+						$context,
+						$scope,
+					));
+				}
 
 				if ($arrayType->isIterableAtLeastOnce()->no()) {
 					return $specifiedTypes;

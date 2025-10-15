@@ -56,17 +56,20 @@ final class DateIntervalFormatDynamicReturnTypeExtension implements DynamicMetho
 		}
 
 		// The worst case scenario for the non-falsy-string check is that every number is 0.
+		// `%a` format gives `(unknown)` and removes numeric and uppercase accessory but then
+		// we'll have to manually check for the non-falsy one.
 		$dateInterval = new DateInterval('P0D');
 
 		$possibleReturnTypes = [];
 		foreach ($constantStrings as $string) {
-			$value = $dateInterval->format($string->getValue());
+			$formatString = $string->getValue();
+			$value = $dateInterval->format($formatString);
 
 			$accessories = [];
 			if (is_numeric($value)) {
 				$accessories[] = new AccessoryNumericStringType();
 			}
-			if ($value !== '0' && $value !== '') {
+			if ($value !== '0' && $value !== '' && $formatString !== '%a') {
 				$accessories[] = new AccessoryNonFalsyStringType();
 			} elseif ($value !== '') {
 				$accessories[] = new AccessoryNonEmptyStringType();

@@ -18,7 +18,7 @@ class AnalyserWithCheckDynamicPropertiesTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @return Error[]
+	 * @return list<Error>
 	 */
 	private function runAnalyse(string $file): array
 	{

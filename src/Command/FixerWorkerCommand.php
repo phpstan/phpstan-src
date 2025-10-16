@@ -355,7 +355,7 @@ final class FixerWorkerCommand extends Command
 
 	/**
 	 * @param string[] $inceptionFiles
-	 * @param array<Error> $errors
+	 * @param list<Error> $errors
 	 * @return array{list<Error>, list<array{Error, mixed[]|string}>}
 	 */
 	private function filterErrors(array $errors, IgnoredErrorHelperResult $ignoredErrorHelperResult, bool $onlyFiles, array $inceptionFiles, bool $hasInternalErrors): array

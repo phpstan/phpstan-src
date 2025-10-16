@@ -42,7 +42,7 @@ final class IgnoredErrorHelperResult
 	}
 
 	/**
-	 * @param Error[] $errors
+	 * @param list<Error> $errors
 	 * @param string[] $analysedFiles
 	 */
 	public function process(

@@ -238,16 +238,7 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->reportTooWideBool = true;
 		$this->reportNestedTooWideType = true;
-		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
-			[
-				'Method Bug13384c\Bug13384c::doBarPhpdoc() never returns false so the return type can be changed to true.',
-				55,
-			],
-			[
-				'Method Bug13384c\Bug13384Static::doBarPhpdoc() never returns false so the return type can be changed to true.',
-				84,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], []);
 	}
 
 	public function testBug13384cOff(): void

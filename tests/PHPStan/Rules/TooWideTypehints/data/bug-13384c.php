@@ -105,7 +105,10 @@ function doFooMixed() {
 	return true;
 }
 
-function returnsTrue(): true {
+/**
+ * @return true
+ */
+function returnsTrue(): bool {
 	return true;
 }
 

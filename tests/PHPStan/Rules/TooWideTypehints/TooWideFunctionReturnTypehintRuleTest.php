@@ -80,7 +80,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
 			[
 				'Function Bug13384c\callsReturnsTrue() never returns false so the return type can be changed to true.',
-				112,
+				115,
 			],
 		]);
 	}
@@ -90,16 +90,7 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 	{
 		$this->reportTooWideBool = true;
 		$this->reportNestedTooWideType = true;
-		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
-			[
-				'Function Bug13384c\doFooPhpdoc() never returns false so the return type can be changed to true.',
-				93,
-			],
-			[
-				'Function Bug13384c\doFooPhpdoc2() never returns true so the return type can be changed to false.',
-				100,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], []);
 	}
 
 	public function testBug13384cOff(): void

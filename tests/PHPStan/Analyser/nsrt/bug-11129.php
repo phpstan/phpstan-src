@@ -48,7 +48,7 @@ class HelloWorld
 		assertType('lowercase-string&non-falsy-string', $i.$maybeNonNumericConstStrings);
 		assertType('lowercase-string&non-falsy-string', $maybeNonNumericConstStrings.$i);
 
-		assertType('lowercase-string&non-falsy-string&uppercase-string', $i.$maybeFloatConstStrings); // could be 'lowercase-string&non-falsy-string&numeric-string'
+		assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $i.$maybeFloatConstStrings);
 		assertType('lowercase-string&non-falsy-string&uppercase-string', $maybeFloatConstStrings.$i);
 
 		assertType('lowercase-string&non-empty-string&numeric-string&uppercase-string', $i.$bool);
@@ -68,7 +68,7 @@ class HelloWorld
 		assertType('non-falsy-string&numeric-string&uppercase-string', $float.$positiveInt);
 		assertType('non-falsy-string&uppercase-string', $float.$negativeInt);
 		assertType('non-falsy-string&uppercase-string', $float.$i);
-		assertType('non-falsy-string&uppercase-string', $i.$float); // could be 'non-falsy-string&numeric-string&uppercase-string'
+		assertType('non-falsy-string&uppercase-string', $i.$float);
 		assertType('non-falsy-string', $numericString.$float);
 		assertType('non-falsy-string', $numericString.$maybeFloatConstStrings);
 

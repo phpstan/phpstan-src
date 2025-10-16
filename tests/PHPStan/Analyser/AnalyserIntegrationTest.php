@@ -1107,23 +1107,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testAssertDocblock(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/assert-docblock.php');
-		$this->assertCount(8, $errors);
-		$this->assertSame('Function AssertDocblock\validateStringArrayIfTrue() never returns false so the return type can be changed to true.', $errors[0]->getMessage());
-		$this->assertSame(17, $errors[0]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringArrayIfFalse() never returns true so the return type can be changed to false.', $errors[1]->getMessage());
-		$this->assertSame(25, $errors[1]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringOrIntArray() never returns true so the return type can be changed to false.', $errors[2]->getMessage());
-		$this->assertSame(34, $errors[2]->getLine());
-		$this->assertSame('Function AssertDocblock\validateStringOrNonEmptyIntArray() never returns true so the return type can be changed to false.', $errors[3]->getMessage());
-		$this->assertSame(44, $errors[3]->getLine());
-		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[4]->getMessage());
-		$this->assertSame(218, $errors[4]->getLine());
-		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with string will always evaluate to true.', $errors[5]->getMessage());
-		$this->assertSame(224, $errors[5]->getLine());
-		$this->assertSame('Call to method AssertDocblock\A::testInt() with int will always evaluate to true.', $errors[6]->getMessage());
-		$this->assertSame(232, $errors[6]->getLine());
-		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with int will always evaluate to false.', $errors[7]->getMessage());
-		$this->assertSame(238, $errors[7]->getLine());
+		$this->assertCount(4, $errors);
+		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
+		$this->assertSame(218, $errors[0]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with string will always evaluate to true.', $errors[1]->getMessage());
+		$this->assertSame(224, $errors[1]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testInt() with int will always evaluate to true.', $errors[2]->getMessage());
+		$this->assertSame(232, $errors[2]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with int will always evaluate to false.', $errors[3]->getMessage());
+		$this->assertSame(238, $errors[3]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0')]

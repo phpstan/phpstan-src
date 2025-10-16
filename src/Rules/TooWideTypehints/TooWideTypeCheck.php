@@ -176,6 +176,9 @@ final class TooWideTypeCheck
 		if (count($returnStatements) === 0) {
 			return [];
 		}
+		if (count($returnStatements) === 1 && $nativeFunctionReturnType->isBoolean()->yes()) {
+			return [];
+		}
 
 		$returnTypes = [];
 		foreach ($returnStatements as $returnStatement) {

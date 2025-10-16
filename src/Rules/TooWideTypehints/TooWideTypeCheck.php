@@ -182,21 +182,11 @@ final class TooWideTypeCheck
 		}
 
 		$returnTypes = [];
-		$returnsLiteralTrueFalse = [];
 		foreach ($returnStatements as $returnStatement) {
 			$returnNode = $returnStatement->getReturnNode();
 			if ($returnNode->expr === null) {
 				$returnTypes[] = new VoidType();
 				continue;
-			}
-
-			if (
-				$returnNode->expr instanceof ConstFetch
-				&& in_array(strtolower($returnNode->expr->name->toString()), ['true', 'false'], true)
-			) {
-				$returnsLiteralTrueFalse[] = TrinaryLogic::createYes();
-			} else {
-				$returnsLiteralTrueFalse[] = TrinaryLogic::createNo();
 			}
 
 			$returnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
@@ -221,8 +211,8 @@ final class TooWideTypeCheck
 
 		if (
 			count($returnStatements) === 1
-			&& $returnsLiteralTrueFalse !== []
-			&& TrinaryLogic::extremeIdentity(...$returnsLiteralTrueFalse)->yes()
+			&& $returnStatements[0]->getReturnNode()->expr instanceof ConstFetch
+			&& in_array(strtolower($returnStatements[0]->getReturnNode()->expr->name->toString()), ['true', 'false'], true)
 			&& (
 				$nativeFunctionReturnType->isBoolean()->yes()
 				|| $phpDocFunctionReturnType->isBoolean()->yes()

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\TooWideTypehints;
 
+use PhpParser\Node\Expr\ConstFetch;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -13,6 +14,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -25,8 +27,10 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function count;
+use function in_array;
 use function lcfirst;
 use function sprintf;
+use function strtolower;
 
 #[AutowiredService]
 final class TooWideTypeCheck
@@ -176,22 +180,23 @@ final class TooWideTypeCheck
 		if (count($returnStatements) === 0) {
 			return [];
 		}
-		if (
-			count($returnStatements) === 1
-			&& (
-				$nativeFunctionReturnType->isBoolean()->yes()
-				|| $phpDocFunctionReturnType->isBoolean()->yes()
-			)
-		) {
-			return [];
-		}
 
 		$returnTypes = [];
+		$returnsLiteralTrueFalse = [];
 		foreach ($returnStatements as $returnStatement) {
 			$returnNode = $returnStatement->getReturnNode();
 			if ($returnNode->expr === null) {
 				$returnTypes[] = new VoidType();
 				continue;
+			}
+
+			if (
+				$returnNode->expr instanceof ConstFetch
+				&& in_array(strtolower($returnNode->expr->name->toString()), ['true', 'false'], true)
+			) {
+				$returnsLiteralTrueFalse[] = TrinaryLogic::createYes();
+			} else {
+				$returnsLiteralTrueFalse[] = TrinaryLogic::createNo();
 			}
 
 			$returnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
@@ -213,6 +218,18 @@ final class TooWideTypeCheck
 		}
 
 		$returnType = TypeCombinator::union(...$returnTypes);
+
+		if (
+			count($returnStatements) === 1
+			&& $returnsLiteralTrueFalse !== []
+			&& TrinaryLogic::extremeIdentity(...$returnsLiteralTrueFalse)->yes()
+			&& (
+				$nativeFunctionReturnType->isBoolean()->yes()
+				|| $phpDocFunctionReturnType->isBoolean()->yes()
+			)
+		) {
+			return [];
+		}
 
 		$unionMessagePattern = sprintf('%s never returns %%s so it can be removed from the return type.', $functionDescription);
 		$boolMessagePattern = sprintf('%s never returns %%s so the return type can be changed to %%s.', $functionDescription);

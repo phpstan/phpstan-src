@@ -104,3 +104,11 @@ function doFooPhpdoc2() {
 function doFooMixed() {
 	return true;
 }
+
+function returnsTrue(): true {
+	return true;
+}
+
+function callsReturnsTrue(): bool {
+	return returnsTrue();
+}

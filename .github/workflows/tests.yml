@@ -50,7 +50,7 @@ jobs:
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
-          ini-values: memory_limit=2G
+          ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@v3"
 
@@ -82,7 +82,7 @@ jobs:
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@v3"
 
@@ -143,7 +143,7 @@ jobs:
           tools: pecl
           extensions: ds,mbstring
           ini-file: development
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@v3"
 

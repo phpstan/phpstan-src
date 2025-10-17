@@ -3072,7 +3072,17 @@ class NodeScopeResolver
 					}
 					foreach ($properties as $name => $type) {
 						$optional = in_array($name, $optionalProperties, true) || $refCount[$name] < count($constantArrays);
-						$scope = $scope->assignVariable($name, $type, $type, $optional ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes());
+
+						if (!$optional) {
+							$scope = $scope->assignVariable($name, $type, $type, TrinaryLogic::createYes());
+						} else {
+							$hasVariable = $scope->hasVariableType($name);
+							if (!$hasVariable->no()) {
+								$type = TypeCombinator::union($scope->getVariableType($name), $type);
+							}
+
+							$scope = $scope->assignVariable($name, $type, $type, $scope->hasVariableType($name)->or(TrinaryLogic::createMaybe()));
+						}
 					}
 				} else {
 					$scope = $scope->afterExtractCall();

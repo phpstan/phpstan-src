@@ -54,6 +54,9 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
+      - name: "Check PHP configuration"
+        run: "vendor/bin/phpunit --check-php-configuration"
+
       - name: "Tests"
         run: "make tests"
 
@@ -82,6 +85,9 @@ jobs:
           ini-values: memory_limit=1G
 
       - uses: "ramsey/composer-install@v3"
+
+      - name: "Check PHP configuration"
+        run: "vendor/bin/phpunit --check-php-configuration"
 
       - name: "Tests"
         run: "make tests-integration"
@@ -140,6 +146,9 @@ jobs:
           ini-values: memory_limit=1G
 
       - uses: "ramsey/composer-install@v3"
+
+      - name: "Check PHP configuration"
+        run: "vendor/bin/phpunit --check-php-configuration"
 
       - name: "Tests"
         run: "${{ matrix.script }}"

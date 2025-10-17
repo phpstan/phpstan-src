@@ -588,7 +588,7 @@ final class InitializerExprTypeResolver
 
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
 		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
-			$allowedPattern = $left->isInteger()->yes() ? '#^[0-9.]+$#' : '#^[0-9]+$#';
+			$allowedRightPattern = $left->isInteger()->yes() ? '#^[0-9.]+$#' : '#^[0-9]+$#';
 
 			$allRightConstantsZeroOrMore = false;
 			foreach ($rightConstantStrings as $rightConstantString) {
@@ -598,7 +598,7 @@ final class InitializerExprTypeResolver
 
 				if (
 					!is_numeric($rightConstantString->getValue())
-					|| Strings::match($rightConstantString->getValue(), $allowedPattern) === null
+					|| Strings::match($rightConstantString->getValue(), $allowedRightPattern) === null
 				) {
 					$allRightConstantsZeroOrMore = false;
 					break;

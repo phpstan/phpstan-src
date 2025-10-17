@@ -588,7 +588,9 @@ final class InitializerExprTypeResolver
 
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
 		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
-			$allowedRightPattern = $left->isInteger()->yes() ? '#^[0-9.]+$#' : '#^[0-9]+$#';
+			$allowedRightPattern = $left->isInteger()->yes()
+				? '#^(\d+|\d+.\d+)([eE][+-]?\d+)?$#' // non-negative integer, float or scientific string
+				: '#^\d+$#'; // non-negative integer string
 
 			$allRightConstantsZeroOrMore = false;
 			foreach ($rightConstantStrings as $rightConstantString) {

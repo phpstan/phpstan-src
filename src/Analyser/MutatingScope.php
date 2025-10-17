@@ -477,6 +477,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	public function afterClearstatcacheCall(): self
 	{
 		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		foreach (array_keys($expressionTypes) as $exprString) {
 			// list from https://www.php.net/manual/en/function.clearstatcache.php
 
@@ -507,16 +508,18 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 
 				unset($expressionTypes[$exprString]);
+				unset($nativeExpressionTypes[$exprString]);
 				continue 2;
 			}
 		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			$this->nativeExpressionTypes,
+			$nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -533,6 +536,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	public function afterOpenSslCall(string $openSslFunctionName): self
 	{
 		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
 		if (in_array($openSslFunctionName, [
 			'openssl_cipher_iv_length',
@@ -590,6 +594,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			'openssl_x509_verify',
 		], true)) {
 			unset($expressionTypes['\openssl_error_string()']);
+			unset($nativeExpressionTypes['\openssl_error_string()']);
 		}
 
 		return $this->scopeFactory->create(
@@ -598,7 +603,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			$this->nativeExpressionTypes,
+			$nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,

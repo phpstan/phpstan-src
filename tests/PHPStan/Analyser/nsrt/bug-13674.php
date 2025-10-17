@@ -32,5 +32,8 @@ class HelloWorld
 			return;
 		}
 		assertType('non-empty-list<int>', $listA);
+
+		$emptyArray = [];
+		assertType('false', isset($emptyArray[$i]));
 	}
 }

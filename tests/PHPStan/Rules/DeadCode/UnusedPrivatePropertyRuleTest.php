@@ -186,6 +186,24 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/private-property-trait.php'], []);
 	}
 
+	public function testProtected(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/unused-protected-property.php'], [
+			[
+				'Property UnusedProtectedProperty\Bar::$bar is unused.',
+				31,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+			[
+				'Property UnusedProtectedProperty\Bar::$baz is unused.',
+				33,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+		]);
+	}
+
 	public function testBug3636(): void
 	{
 		$this->alwaysWrittenTags = [];

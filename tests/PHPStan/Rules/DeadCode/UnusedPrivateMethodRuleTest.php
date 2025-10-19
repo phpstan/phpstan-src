@@ -62,6 +62,20 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testProtected(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-protected-method.php'], [
+			[
+				'Method UnusedProtectedMethod\Bar::unused1() is unused.',
+				30,
+			],
+			[
+				'Method UnusedProtectedMethod\Bar::unused2() is unused.',
+				35,
+			],
+		]);
+	}
+
 	public function testBug3630(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3630.php'], []);

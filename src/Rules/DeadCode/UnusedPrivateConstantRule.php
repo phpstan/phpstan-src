@@ -35,11 +35,12 @@ final class UnusedPrivateConstantRule implements Rule
 		}
 
 		$classReflection = $node->getClassReflection();
+		$isClassFinal = $classReflection->isFinalByKeyword();
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 
 		$constants = [];
 		foreach ($node->getConstants() as $constant) {
-			if (!$constant->isPrivate()) {
+			if ($constant->isPublic() || ($constant->isProtected() && !$isClassFinal)) {
 				continue;
 			}
 

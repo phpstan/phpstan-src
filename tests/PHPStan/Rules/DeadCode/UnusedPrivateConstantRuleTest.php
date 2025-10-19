@@ -49,6 +49,22 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testProtected(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-protected-constant.php'], [
+			[
+				'Constant UnusedProtectedConstant\Bar::BAR_CONST is unused.',
+				26,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+			[
+				'Constant UnusedProtectedConstant\Bar::BAZ_CONST is unused.',
+				28,
+				'See: https://phpstan.org/developing-extensions/always-used-class-constants',
+			],
+		]);
+	}
+
 	public function testBug5651(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5651.php'], []);

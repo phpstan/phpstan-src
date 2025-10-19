@@ -40,6 +40,7 @@ final class UnusedPrivateMethodRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
+		$isClassFinal = $classReflection->isFinalByKeyword();
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 		$constructor = null;
 		if ($classReflection->hasConstructor()) {
@@ -48,13 +49,15 @@ final class UnusedPrivateMethodRule implements Rule
 
 		$methods = [];
 		foreach ($node->getMethods() as $method) {
-			if (!$method->getNode()->isPrivate()) {
+			$methodNode = $method->getNode();
+			if ($methodNode->isPublic() || ($methodNode->isProtected() && !$isClassFinal)) {
 				continue;
 			}
 			if ($method->isDeclaredInTrait()) {
 				continue;
 			}
-			$methodName = $method->getNode()->name->toString();
+
+			$methodName = $methodNode->name->toString();
 			if ($constructor !== null && $constructor->getName() === $methodName) {
 				continue;
 			}

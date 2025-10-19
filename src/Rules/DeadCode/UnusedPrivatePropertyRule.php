@@ -56,10 +56,11 @@ final class UnusedPrivatePropertyRule implements Rule
 			return [];
 		}
 		$classReflection = $node->getClassReflection();
+		$isClassFinal = $classReflection->isFinalByKeyword();
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 		$properties = [];
 		foreach ($node->getProperties() as $property) {
-			if (!$property->isPrivate()) {
+			if ($property->isPublic() || ($property->isProtected() && !$isClassFinal)) {
 				continue;
 			}
 			if ($property->isDeclaredInTrait()) {

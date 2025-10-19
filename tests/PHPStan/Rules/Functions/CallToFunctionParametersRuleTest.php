@@ -2451,6 +2451,54 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6560(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$varName = PHP_VERSION_ID < 80000 ? '$var' : '$value';
+		$stringableName = PHP_VERSION_ID < 80000 ? 'class' : 'Stringable';
+
+		$this->analyse([__DIR__ . '/data/bug-6560.php'], [
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
+				20,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $varName),
+				74,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				77,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				80,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				86,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				89,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
+				92,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				95,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				98,
+			],
+		]);
+	}
+
 	#[RequiresPhp('< 8.0')]
 	public function testArrayRandPhp7(): void
 	{

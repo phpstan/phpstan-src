@@ -158,4 +158,18 @@ class NoopRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13067.php'], []);
 	}
 
+	public function testBug13698(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13698.php'], [
+			[
+				'Expression "new class extends \Bug13698\NoConstructorClass…" on a separate line does not do anything.',
+				47,
+			],
+			[
+				'Expression "new class…" on a separate line does not do anything.',
+				50,
+			],
+		]);
+	}
+
 }

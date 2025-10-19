@@ -3653,31 +3653,6 @@ final class NodeScopeResolver
 
 			} else {
 				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
-				$constructorResult = null;
-				$this->processStmtNode($expr->class, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
-					$nodeCallback($node, $scope);
-					if (!$node instanceof MethodReturnStatementsNode) {
-						return;
-					}
-					if ($constructorResult !== null) {
-						return;
-					}
-					$currentClassReflection = $node->getClassReflection();
-					if ($currentClassReflection->getName() !== $classReflection->getName()) {
-						return;
-					}
-					if (!$currentClassReflection->hasConstructor()) {
-						return;
-					}
-					if ($currentClassReflection->getConstructor()->getName() !== $node->getMethodReflection()->getName()) {
-						return;
-					}
-					$constructorResult = $node;
-				}, StatementContext::createTopLevel());
-				if ($constructorResult !== null) {
-					$throwPoints = array_merge($throwPoints, $constructorResult->getStatementResult()->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $constructorResult->getImpurePoints());
-				}
 				if ($classReflection->hasConstructor()) {
 					$constructorReflection = $classReflection->getConstructor();
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -3686,6 +3661,54 @@ final class NodeScopeResolver
 						$constructorReflection->getVariants(),
 						$constructorReflection->getNamedArgumentsVariants(),
 					);
+
+					if ($constructorReflection->getDeclaringClass()->getName() === $classReflection->getName()) {
+						$constructorResult = null;
+						$this->processStmtNode($expr->class, $scope, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
+							$nodeCallback($node, $scope);
+							if (!$node instanceof MethodReturnStatementsNode) {
+								return;
+							}
+							if ($constructorResult !== null) {
+								return;
+							}
+							$currentClassReflection = $node->getClassReflection();
+							if ($currentClassReflection->getName() !== $classReflection->getName()) {
+								return;
+							}
+							if (!$currentClassReflection->hasConstructor()) {
+								return;
+							}
+							if ($currentClassReflection->getConstructor()->getName() !== $node->getMethodReflection()->getName()) {
+								return;
+							}
+							$constructorResult = $node;
+						}, StatementContext::createTopLevel());
+						if ($constructorResult !== null) {
+							$throwPoints = $constructorResult->getStatementResult()->getThrowPoints();
+							$impurePoints = $constructorResult->getImpurePoints();
+						}
+					} else {
+						$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
+						$declaringClass = $constructorReflection->getDeclaringClass();
+						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($declaringClass->getName()), $expr->getArgs(), $scope);
+						if ($constructorThrowPoint !== null) {
+							$throwPoints[] = $constructorThrowPoint;
+						}
+
+						if (!$constructorReflection->hasSideEffects()->no()) {
+							$certain = $constructorReflection->isPure()->no();
+							$impurePoints[] = new ImpurePoint(
+								$scope,
+								$expr,
+								'new',
+								sprintf('instantiation of class %s', $declaringClass->getDisplayName()),
+								$certain,
+							);
+						}
+					}
+				} else {
+					$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
 				}
 			}
 

@@ -457,7 +457,7 @@ final class InitializerExprTypeResolver
 		$combinedConstantStringsCount = count($leftConstantStrings) * count($rightConstantStrings);
 
 		// we limit the number of union-types for performance reasons
-		if ($combinedConstantStringsCount > 0 && $combinedConstantStringsCount <= 16) {
+		if ($combinedConstantStringsCount > 0 && $combinedConstantStringsCount <= self::CALCULATE_SCALARS_LIMIT) {
 			$strings = [];
 
 			foreach ($leftConstantStrings as $leftConstantString) {

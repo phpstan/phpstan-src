@@ -39,18 +39,18 @@ final class InvalidKeyInArrayItemRule implements Rule
 			return [];
 		}
 
-		$phpVersion = $this->phpVersion;
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->key,
 			'',
-			static fn (Type $dimType): bool => AllowedArrayKeysTypes::getType($phpVersion)->isSuperTypeOf($dimType)->yes(),
+			static fn (Type $dimType): bool => $allowedArrayKeys->isSuperTypeOf($dimType)->yes(),
 		)->getType();
 		if ($dimensionType instanceof ErrorType) {
 			return [];
 		}
 
-		$isSuperType = AllowedArrayKeysTypes::getType($phpVersion)->isSuperTypeOf($dimensionType);
+		$isSuperType = $allowedArrayKeys->isSuperTypeOf($dimensionType);
 		if ($isSuperType->yes()) {
 			return [];
 		}

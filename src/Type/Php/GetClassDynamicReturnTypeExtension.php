@@ -14,11 +14,12 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
@@ -66,30 +67,35 @@ final class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnT
 					return new GenericClassStringType(new ObjectType($type->getClassName()));
 				}
 
-				$objectClassNames = $type->getObjectClassNames();
-				if ($type instanceof TemplateType && $objectClassNames === []) {
-					if ($type instanceof ObjectWithoutClassType) {
-						return new GenericClassStringType($type);
-					}
-
-					return new UnionType([
-						new GenericClassStringType($type),
-						new ConstantBooleanType(false),
-					]);
-				} elseif ($type instanceof MixedType) {
-					return new UnionType([
-						new ClassStringType(),
-						new ConstantBooleanType(false),
-					]);
-				} elseif ($type instanceof StaticType) {
-					return new GenericClassStringType($type->getStaticObjectType());
-				} elseif ($objectClassNames !== []) {
-					return new GenericClassStringType($type);
-				} elseif ($type instanceof ObjectWithoutClassType) {
+				if ($type instanceof ObjectShapeType) {
 					return new ClassStringType();
 				}
 
-				return new ConstantBooleanType(false);
+				$isObject = $type->isObject();
+				if ($isObject->no()) {
+					return new ConstantBooleanType(false);
+				}
+
+				if ($type instanceof StaticType) {
+					$objectType = $type->getStaticObjectType();
+				} else {
+					$objectType = TypeCombinator::intersect($type, new ObjectWithoutClassType());
+				}
+
+				if (!$objectType instanceof TemplateType && $objectType instanceof ObjectWithoutClassType) {
+					$classStringType = new ClassStringType();
+				} else {
+					$classStringType = new GenericClassStringType($objectType);
+				}
+
+				if ($isObject->yes()) {
+					return $classStringType;
+				}
+
+				return new UnionType([
+					$classStringType,
+					new ConstantBooleanType(false),
+				]);
 			},
 		);
 	}

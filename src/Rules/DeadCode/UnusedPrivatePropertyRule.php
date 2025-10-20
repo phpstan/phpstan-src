@@ -97,6 +97,9 @@ final class UnusedPrivatePropertyRule implements Rule
 				}
 
 				$propertyReflection = $classReflection->getNativeProperty($propertyName);
+				if ($propertyReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+					continue;
+				}
 
 				foreach ($this->extensionProvider->getExtensions() as $extension) {
 					if ($alwaysRead && $alwaysWritten) {

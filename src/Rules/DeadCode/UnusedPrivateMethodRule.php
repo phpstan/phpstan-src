@@ -66,6 +66,10 @@ final class UnusedPrivateMethodRule implements Rule
 			}
 
 			$methodReflection = $classReflection->getNativeMethod($methodName);
+			if ($methodReflection->getDeclaringClass()->getName() !== $classReflection->getName()) {
+				continue;
+			}
+
 			foreach ($this->extensionProvider->getExtensions() as $extension) {
 				if ($extension->isAlwaysUsed($methodReflection)) {
 					continue 2;

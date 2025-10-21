@@ -44,7 +44,7 @@ final class CheckstyleErrorFormatter implements ErrorFormatter
 
 			foreach ($errors as $error) {
 				$output->writeRaw(sprintf(
-					'  <error line="%d" column="1" severity="error" message="%s"%s />',
+					'  <error line="%s" column="1" severity="error" message="%s"%s />',
 					$this->escape((string) $error->getLine()),
 					$this->escape($error->getMessage()),
 					$error->getIdentifier() !== null ? sprintf(' source="%s"', $this->escape($error->getIdentifier())) : '',

@@ -101,6 +101,8 @@ final class FileCacheStorage implements CacheStorage
 	}
 
 	/**
+	 * @param non-empty-string $key
+	 *
 	 * @return array{string, string, string}
 	 */
 	private function getFilePaths(string $key): array

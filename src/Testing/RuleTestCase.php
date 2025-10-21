@@ -258,7 +258,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		if ($this->shouldFailOnPhpErrors() && count($analyserResult->getAllPhpErrors()) > 0) {
 			$this->fail(implode("\n", array_map(
-				static fn (Error $error): string => sprintf('%s on %s:%d', $error->getMessage(), $error->getFile(), $error->getLine()),
+				static fn (Error $error): string => sprintf('%s on %s:%d', $error->getMessage(), $error->getFile(), $error->getLine() ?? 0),
 				$analyserResult->getAllPhpErrors(),
 			)));
 		}

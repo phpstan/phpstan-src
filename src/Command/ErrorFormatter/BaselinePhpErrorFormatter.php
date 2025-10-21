@@ -87,7 +87,7 @@ final class BaselinePhpErrorFormatter
 				if (count($identifiers) > 0) {
 					foreach ($identifiers as $identifier => $identifierCount) {
 						$php .= sprintf(
-							"\$ignoreErrors[] = [\n\t%s => %s,\n\t'identifier' => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+							"\$ignoreErrors[] = [\n\t%s => %s,\n\t'identifier' => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n];\n",
 							var_export($messageKey, true),
 							var_export(Helpers::escape($message), true),
 							var_export(Helpers::escape($identifier), true),
@@ -97,7 +97,7 @@ final class BaselinePhpErrorFormatter
 					}
 				} else {
 					$php .= sprintf(
-						"\$ignoreErrors[] = [\n\t%s => %s,\n\t'count' => %d,\n\t'path' => __DIR__ . %s,\n];\n",
+						"\$ignoreErrors[] = [\n\t%s => %s,\n\t'count' => %s,\n\t'path' => __DIR__ . %s,\n];\n",
 						var_export($messageKey, true),
 						var_export(Helpers::escape($message), true),
 						var_export($totalCount, true),

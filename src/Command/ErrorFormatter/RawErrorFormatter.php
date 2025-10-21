@@ -30,7 +30,7 @@ final class RawErrorFormatter implements ErrorFormatter
 
 			$output->writeRaw(
 				sprintf(
-					'%s:%d:%s%s',
+					'%s:%s:%s%s',
 					$fileSpecificError->getFile(),
 					$fileSpecificError->getLine() ?? '?',
 					$fileSpecificError->getMessage(),

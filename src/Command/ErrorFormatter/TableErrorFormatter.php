@@ -64,8 +64,8 @@ final class TableErrorFormatter implements ErrorFormatter
 					$output->writeLineFormatted('💡 Tip of the Day:');
 					$output->writeLineFormatted(sprintf(
 						"PHPStan is performing only the most basic checks.\nYou can pass a higher rule level through the <fg=cyan>--%s</> option\n(the default and current level is %d) to analyse code more thoroughly.",
-						AnalyseCommand::OPTION_LEVEL,
-						AnalyseCommand::DEFAULT_LEVEL,
+						(int) AnalyseCommand::OPTION_LEVEL,
+						(int) AnalyseCommand::DEFAULT_LEVEL,
 					));
 					$output->writeLineFormatted('');
 				}
@@ -111,7 +111,7 @@ final class TableErrorFormatter implements ErrorFormatter
 
 				if (getenv('TERMINAL_EMULATOR') === 'JetBrains-JediTerm') {
 					$title = $this->relativePathHelper->getRelativePath($filePath);
-					$message .= sprintf("\nat %s:%d", $title, $error->getLine());
+					$message .= sprintf("\nat %s:%d", $title, $error->getLine() ?? 0);
 
 				} elseif (is_string($this->editorUrl)) {
 					$url = str_replace(

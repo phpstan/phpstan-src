@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -82,6 +83,10 @@ final class InvalidCastRule implements Rule
 		if ($castType instanceof ErrorType) {
 			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
+			if ($shortName === '') {
+				throw new ShouldNotHappenException();
+			}
+
 			$shortName = strtolower($shortName);
 			if ($shortName === 'double') {
 				$shortName = 'float';

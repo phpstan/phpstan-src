@@ -101,6 +101,12 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 				if ($replaceArgumentType->isArray()->yes()) {
 					$replaceArgumentType = $replaceArgumentType->getIterableValueType();
 				}
+			} elseif ($functionReflection->getName() === 'strtr' && isset($functionCall->getArgs()[1])) {
+				// `strtr` has two signatures: `strtr($string1, $string2, $string3)` and `strtr($string1, $array)`
+				$secondArgumentType = $scope->getType($functionCall->getArgs()[1]->value);
+				if ($secondArgumentType->isArray()->yes()) {
+					$replaceArgumentType = $secondArgumentType->getIterableValueType();
+				}
 			}
 		}
 

@@ -83,14 +83,11 @@ final class InvalidCastRule implements Rule
 		if ($castType instanceof ErrorType) {
 			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
-			if ($shortName === '') {
-				throw new ShouldNotHappenException();
-			}
 
 			$shortName = strtolower($shortName);
 			if ($shortName === 'double') {
 				$shortName = 'float';
-			} else {
+			} elseif ($shortName !== '') {
 				$shortName = substr($shortName, 0, -1);
 			}
 

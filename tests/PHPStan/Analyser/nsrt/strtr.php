@@ -24,4 +24,16 @@ function doFoo(string $s, $nonEmptyString, $nonFalseyString) {
 	assertType('non-empty-string', strtr($nonFalseyString, $s, $nonEmptyString));
 	assertType('non-falsy-string', strtr($nonFalseyString, $nonEmptyString, $nonFalseyString));
 	assertType('non-falsy-string', strtr($nonFalseyString, $nonFalseyString, $nonFalseyString));
+
+	assertType('string', strtr($s, [$s => $nonEmptyString]));
+	assertType('string', strtr($s, [$nonEmptyString => $nonEmptyString]));
+	assertType('string', strtr($s, [$nonFalseyString => $nonFalseyString]));
+
+	assertType('non-empty-string', strtr($nonEmptyString, [$s => $nonEmptyString]));
+	assertType('non-empty-string', strtr($nonEmptyString, [$nonEmptyString => $nonEmptyString]));
+	assertType('non-empty-string', strtr($nonEmptyString, [$nonFalseyString => $nonFalseyString]));
+
+	assertType('non-empty-string', strtr($nonFalseyString, [$s => $nonEmptyString]));
+	assertType('non-falsy-string', strtr($nonFalseyString, [$nonEmptyString => $nonFalseyString]));
+	assertType('non-falsy-string', strtr($nonFalseyString, [$nonFalseyString => $nonFalseyString]));
 }

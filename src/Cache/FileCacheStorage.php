@@ -38,6 +38,9 @@ final class FileCacheStorage implements CacheStorage
 
 	private const CACHED_CLEARED_VERSION = 'v2-new';
 
+	/**
+	 * @param non-empty-string $directory
+	 */
 	public function __construct(private string $directory)
 	{
 	}

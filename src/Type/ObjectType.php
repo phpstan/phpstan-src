@@ -444,6 +444,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getReferencedClasses(): array
 	{
+		if ($this->className === '') {
+			return [];
+		}
+
 		return [$this->className];
 	}
 

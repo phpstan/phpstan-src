@@ -704,7 +704,7 @@ final class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @return string[]
+	 * @return non-empty-string[]
 	 */
 	private function getParameterReferencedClasses(ParameterReflection $parameter): array
 	{
@@ -732,7 +732,7 @@ final class FunctionDefinitionCheck
 	}
 
 	/**
-	 * @return string[]
+	 * @return non-empty-string[]
 	 */
 	private function getReturnTypeReferencedClasses(ParametersAcceptor $parametersAcceptor): array
 	{

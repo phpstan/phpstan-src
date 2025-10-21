@@ -28,7 +28,7 @@ interface Type
 {
 
 	/**
-	 * @return list<string>
+	 * @return list<non-empty-string>
 	 */
 	public function getReferencedClasses(): array;
 

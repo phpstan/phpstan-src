@@ -116,6 +116,10 @@ final class NamedArgumentsRule implements Rule
 
 		$errorBuilders = [];
 		$parameters = $acceptor->getParameters();
+		if (count($parameters) !== count($normalizedArgs)) {
+			return [];
+		}
+
 		$defaultValueWasPassed = [];
 		foreach ($normalizedArgs as $i => $normalizedArg) {
 			if ($normalizedArg->unpack) {

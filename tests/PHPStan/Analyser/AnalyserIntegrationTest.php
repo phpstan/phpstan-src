@@ -1556,6 +1556,19 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug13714(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13714.php');
+		$this->assertCount(7, $errors);
+		$this->assertSame('Function Bug13714\curl_setopt invoked with 3 parameters, 0 required.', $errors[0]->getMessage());
+		$this->assertSame('Function Bug13714\curl_setopt_array invoked with 2 parameters, 0 required.', $errors[1]->getMessage());
+		$this->assertSame('Function Bug13714\implode invoked with 2 parameters, 0 required.', $errors[2]->getMessage());
+		$this->assertSame('Function Bug13714\array_map invoked with 2 parameters, 0 required.', $errors[3]->getMessage());
+		$this->assertSame('Function Bug13714\array_filter invoked with 2 parameters, 0 required.', $errors[4]->getMessage());
+		$this->assertSame('Function Bug13714\array_walk invoked with 2 parameters, 0 required.', $errors[5]->getMessage());
+		$this->assertSame('Function Bug13714\array_find invoked with 2 parameters, 0 required.', $errors[6]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

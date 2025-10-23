@@ -70,7 +70,7 @@ class HelloWorld
 	 * @param array<int> $arrA
 	 * @param array<string> $arrB
 	 */
-	public function sayUnknownArray($arrA, array $arrB): void
+	public function sayUnknownSizeArray($arrA, array $arrB): void
 	{
 		if (count($arrA) == count($arrB)) {
 			assertType('array<int>', $arrA);

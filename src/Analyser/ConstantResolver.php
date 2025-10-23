@@ -159,6 +159,13 @@ final class ConstantResolver
 
 			return $this->createInteger($minVersion, $maxVersion);
 		}
+		// added in PHP 8.5
+		if ($resolvedConstantName === 'PHP_BUILD_DATE') {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
+			]);
+		}
 		if ($resolvedConstantName === 'PHP_ZTS') {
 			return new UnionType([
 				new ConstantIntegerType(0),

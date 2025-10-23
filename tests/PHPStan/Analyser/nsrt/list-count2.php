@@ -78,4 +78,16 @@ class HelloWorld
 		}
 		assertType('array<string>', $arrB);
 	}
+
+	/**
+	 * @param array{int, int, int} $arrA
+	 * @param list $arrB
+	 */
+	function sayEqualArrayShape($arrA, array $arrB): void
+	{
+		if (count($arrA) == count($arrB)) {
+			assertType('array{mixed, mixed, mixed}', $arrB);
+		}
+		assertType('list', $arrB);
+	}
 }

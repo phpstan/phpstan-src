@@ -2328,11 +2328,13 @@ final class TypeSpecifier
 						}
 					}
 
-					if ($leftArrayType->isIterableAtLeastOnce()->yes() || $rightArrayType->isIterableAtLeastOnce()->yes()) {
-						$arrayTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr);
-						return $arrayTypes->unionWith(
-							$this->create($unwrappedRightExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
-						);
+					if (!$rightType->isConstantScalarValue()->yes()) {
+						if ($leftArrayType->isIterableAtLeastOnce()->yes() || $rightArrayType->isIterableAtLeastOnce()->yes()) {
+							$arrayTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr);
+							return $arrayTypes->unionWith(
+								$this->create($unwrappedRightExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
+							);
+						}
 					}
 				}
 			}

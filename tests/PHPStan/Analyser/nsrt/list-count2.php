@@ -90,4 +90,16 @@ class HelloWorld
 		}
 		assertType('list', $arrB);
 	}
+
+	/**
+	 * @param list $arrA
+	 * @param array{int, int, int} $arrB
+	 */
+	function sayEqualArrayShapeReversed($arrA, array $arrB): void
+	{
+		if (count($arrA) == count($arrB)) {
+			assertType('array{mixed, mixed, mixed}', $arrA);
+		}
+		assertType('list', $arrA);
+	}
 }

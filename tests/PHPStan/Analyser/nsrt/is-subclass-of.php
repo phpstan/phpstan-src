@@ -4,7 +4,7 @@ namespace IsSubclassOf;
 
 function (Bar $a, Bar $b, Bar $c, Bar $d) {
 	if (is_subclass_of($a, Bar::class)) {
-		\PHPStan\Testing\assertType('*NEVER*', $a);
+		\PHPStan\Testing\assertType('IsSubclassOf\Bar', $a); // Can still be a Bar child
 	}
 
 	if (is_subclass_of($b, Foo::class)) {

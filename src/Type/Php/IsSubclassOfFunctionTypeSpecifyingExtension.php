@@ -54,7 +54,7 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false);
 
 		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
-		if ($classType->getConstantStrings() === [] && $resultType->isSuperTypeOf($objectOrClassType)->yes()) {
+		if ($resultType->isSuperTypeOf($objectOrClassType)->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 

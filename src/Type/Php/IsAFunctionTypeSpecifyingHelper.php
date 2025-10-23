@@ -38,13 +38,18 @@ final class IsAFunctionTypeSpecifyingHelper
 
 		return TypeTraverser::map(
 			$classType,
-			static function (Type $type, callable $traverse) use ($objectOrClassTypeClassNames, $allowString, $allowSameClass): Type {
+			static function (Type $type, callable $traverse) use ($objectOrClassType, $objectOrClassTypeClassNames, $allowString, $allowSameClass): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 				if ($type instanceof ConstantStringType) {
 					if (!$allowSameClass && $objectOrClassTypeClassNames === [$type->getValue()]) {
-						return new NeverType();
+						// For objectType we cannot be sure since 'Foo' is used for both
+						// - the Foo class
+						// - a child of foo class
+						if ($objectOrClassType->isString()->yes()) {
+							return new NeverType();
+						}
 					}
 					if ($allowString) {
 						return new UnionType([

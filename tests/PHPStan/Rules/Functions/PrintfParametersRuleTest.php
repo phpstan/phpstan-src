@@ -123,4 +123,18 @@ class PrintfParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug1889(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1889.php'], [
+			[
+				'Call to printf contains an invalid placeholder.',
+				3,
+			],
+			[
+				'Call to printf contains an invalid placeholder.',
+				5,
+			],
+		]);
+	}
+
 }

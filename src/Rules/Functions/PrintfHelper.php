@@ -24,24 +24,26 @@ final class PrintfHelper
 	{
 	}
 
-	public function getPrintfPlaceholdersCount(string $format): int
+	public function getPrintfPlaceholdersCount(string $format): ?int
 	{
 		return $this->getPlaceholdersCount(self::PRINTF_SPECIFIER_PATTERN, $format);
 	}
 
 	/** @phpstan-return array<int, non-empty-list<PrintfPlaceholder>> parameter index => placeholders */
-	public function getPrintfPlaceholders(string $format): array
+	public function getPrintfPlaceholders(string $format): ?array
 	{
 		return $this->parsePlaceholders(self::PRINTF_SPECIFIER_PATTERN, $format);
 	}
 
-	public function getScanfPlaceholdersCount(string $format): int
+	public function getScanfPlaceholdersCount(string $format): ?int
 	{
 		return $this->getPlaceholdersCount('(?<specifier>[cdDeEfinosuxX%s]|\[[^\]]+\])', $format);
 	}
 
-	/** @phpstan-return array<int, non-empty-list<PrintfPlaceholder>> parameter index => placeholders */
-	private function parsePlaceholders(string $specifiersPattern, string $format): array
+	/**
+	 * @phpstan-return array<int, non-empty-list<PrintfPlaceholder>>|null parameter index => placeholders
+	 */
+	private function parsePlaceholders(string $specifiersPattern, string $format): ?array
 	{
 		$addSpecifier = '';
 		if ($this->phpVersion->supportsHhPrintfSpecifier()) {
@@ -50,7 +52,7 @@ final class PrintfHelper
 
 		$specifiers = sprintf($specifiersPattern, $addSpecifier);
 
-		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?(?<width>\*)?-?\d*(?:\.(?:\d+|(?<precision>\*))?)?' . $specifiers . '~';
+		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?(?<width>\*)?-?\d*(?:\.(?:\d+|(?<precision>\*))?)?' . $specifiers . '?~';
 
 		$matches = Strings::matchAll($format, $pattern, PREG_SET_ORDER);
 
@@ -89,13 +91,19 @@ final class PrintfHelper
 				$showValueSuffix = true;
 			}
 
+			$specifier = $placeholder['specifier'] ?? '';
+			if ($specifier === '') {
+				// A placeholder is invalid.
+				return null;
+			}
+
 			$parsedPlaceholders[] = new PrintfPlaceholder(
 				sprintf('"%s"', $placeholder[0]) . ($showValueSuffix ? ' (value)' : ''),
 				isset($placeholder['position']) && $placeholder['position'] !== ''
 					? $placeholder['position'] - 1
 					: $parameterIdx++,
 				$placeholderNumber,
-				$this->getAcceptingTypeBySpecifier($placeholder['specifier'] ?? ''),
+				$this->getAcceptingTypeBySpecifier($specifier),
 			);
 		}
 
@@ -124,9 +132,14 @@ final class PrintfHelper
 		return 'mixed';
 	}
 
-	private function getPlaceholdersCount(string $specifiersPattern, string $format): int
+	private function getPlaceholdersCount(string $specifiersPattern, string $format): ?int
 	{
-		$paramIndices = array_keys($this->parsePlaceholders($specifiersPattern, $format));
+		$placeholdersMap = $this->parsePlaceholders($specifiersPattern, $format);
+		if ($placeholdersMap === null) {
+			return null;
+		}
+
+		$paramIndices = array_keys($placeholdersMap);
 
 		return $paramIndices === []
 			? 0

@@ -66,7 +66,17 @@ final class PrintfArrayParametersRule implements Rule
 		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();
 
-			$placeHoldersCounts[] = $this->printfHelper->getPrintfPlaceholdersCount($format);
+			$count = $this->printfHelper->getPrintfPlaceholdersCount($format);
+			if ($count === null) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Call to %s contains an invalid placeholder.',
+						$name,
+					))->identifier(sprintf('argument.%s', $name))->build(),
+				];
+			}
+
+			$placeHoldersCounts[] = $count;
 		}
 
 		if ($placeHoldersCounts === []) {

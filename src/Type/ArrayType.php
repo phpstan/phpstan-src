@@ -375,13 +375,33 @@ class ArrayType implements Type
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
 	{
 		if ($this->itemType->isConstantArray()->yes() && $valueType->isConstantArray()->yes()) {
-			$newItemType = $this->itemType;
+			$newItemTypes = [];
+
 			foreach ($valueType->getConstantArrays() as $constArray) {
-				foreach ($constArray->getKeyTypes() as $keyType) {
+				$newItemType = $this->itemType;
+				$optionalKeyTypes = [];
+				foreach ($constArray->getKeyTypes() as $i => $keyType) {
 					$newItemType = $newItemType->setExistingOffsetValueType($keyType, $constArray->getOffsetValueType($keyType));
+
+					if (!$constArray->isOptionalKey($i)) {
+						continue;
+					}
+
+					$optionalKeyTypes[] = $keyType;
 				}
+				$newItemTypes[] = $newItemType;
+
+				if ($optionalKeyTypes === []) {
+					continue;
+				}
+
+				foreach ($optionalKeyTypes as $keyType) {
+					$newItemType = $newItemType->unsetOffset($keyType);
+				}
+				$newItemTypes[] = $newItemType;
 			}
 
+			$newItemType = TypeCombinator::union(...$newItemTypes);
 			if ($newItemType !== $this->itemType) {
 				return new self(
 					$this->keyType,

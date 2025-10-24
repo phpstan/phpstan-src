@@ -337,6 +337,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12553.php'], []);
 	}
 
+	public function testBugMultiDimLoop(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-nullCoalesceMultiDimLoop.php'], []);
+	}
+
 	public function testIssetAfterRememberedConstructor(): void
 	{
 		$this->analyse([__DIR__ . '/data/isset-after-remembered-constructor.php'], [

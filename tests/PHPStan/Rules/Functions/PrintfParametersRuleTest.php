@@ -103,7 +103,7 @@ class PrintfParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Call to sprintf contains 1 placeholder, 2 values given.',
+				'Call to sprintf contains an invalid placeholder.',
 				5,
 			],
 		];

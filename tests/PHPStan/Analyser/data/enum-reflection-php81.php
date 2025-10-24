@@ -2,6 +2,7 @@
 
 namespace EnumReflection81;
 
+use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
@@ -21,3 +22,16 @@ function testNarrowGetBackingTypeAfterIsBacked() {
 		assertType('ReflectionType', $r->getBackingType());
 	}
 }
+
+function testNarrowClassAfterIsEnum() {
+	/**
+	 * @var class-string
+	 */
+	$classString = Foo::class;
+	$r = new ReflectionClass($classString);
+	assertType('class-string', $classString);
+	if ($r->isEnum()) {
+		assertType('class-string<\UnitEnum>', $classString);
+	}
+}
+

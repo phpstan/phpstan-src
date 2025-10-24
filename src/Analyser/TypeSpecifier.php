@@ -667,7 +667,6 @@ final class TypeSpecifier
 			if ($context->true()) {
 				if (
 					$scope->getType($expr->left)->isFalse()->yes()
-					|| $scope->getType($expr->right)->isTrue()->yes()
 				) {
 					$types = $rightTypes->normalize($rightScope);
 				} elseif (

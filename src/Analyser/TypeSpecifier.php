@@ -2314,28 +2314,26 @@ final class TypeSpecifier
 				&& in_array($unwrappedRightExpr->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($unwrappedRightExpr->getArgs()) >= 1
 			) {
+				$argType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
+				$sizeType = $scope->getType($leftExpr);
+
+				$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedRightExpr, $argType, $sizeType, $context, $scope, $expr);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+
 				$leftArrayType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 				$rightArrayType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
-
-				if ($leftArrayType->isArray()->yes() && $rightArrayType->isArray()->yes()) {
-					$argType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
-					$sizeType = $scope->getType($leftExpr);
-
-					if ($sizeType instanceof IntegerRangeType || $sizeType->isConstantScalarValue()->yes()) {
-						$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedRightExpr, $argType, $sizeType, $context, $scope, $expr);
-						if ($specifiedTypes !== null) {
-							return $specifiedTypes;
-						}
-					}
-
-					if (!$rightType->isConstantScalarValue()->yes()) {
-						if ($leftArrayType->isIterableAtLeastOnce()->yes() || $rightArrayType->isIterableAtLeastOnce()->yes()) {
-							$arrayTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr);
-							return $arrayTypes->unionWith(
-								$this->create($unwrappedRightExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
-							);
-						}
-					}
+				if (
+					$leftArrayType->isArray()->yes()
+					&& $rightArrayType->isArray()->yes()
+					&& !$rightType->isConstantScalarValue()->yes()
+					&& ($leftArrayType->isIterableAtLeastOnce()->yes() || $rightArrayType->isIterableAtLeastOnce()->yes())
+				) {
+					$arrayTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr);
+					return $arrayTypes->unionWith(
+						$this->create($unwrappedRightExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
+					);
 				}
 			}
 

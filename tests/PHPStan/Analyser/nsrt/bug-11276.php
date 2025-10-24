@@ -42,7 +42,7 @@ function doFoo(int $i, int $j, $arr): void
 	}
 }
 
-function doBar($j, $arr) {
+function doBar($j, array $arr) {
 	$i = 1;
 	if (!array_key_exists($i, $arr)) {
 		if (array_key_exists($i, $arr) || array_key_exists($j, $arr)) {

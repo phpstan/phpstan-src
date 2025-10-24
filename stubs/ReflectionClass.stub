@@ -50,7 +50,9 @@ class ReflectionClass
     }
 
     /**
-     * @phpstan-assert-if-true class-string<UnitEnum> $this->getName()
+     * @phpstan-assert-if-true class-string<\UnitEnum> $this->name
+     * @phpstan-assert-if-true ReflectionClass<\UnitEnum> $this
+	 * @phpstan-assert-if-false !class-string<\UnitEnum> $this->name
      */
     public function isEnum(): bool
     {

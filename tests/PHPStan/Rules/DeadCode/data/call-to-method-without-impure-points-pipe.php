@@ -15,5 +15,5 @@ class Foo
 function (): void {
 	$foo = new Foo();
 	5 |> $foo->maybePure(...);
-	5 |> fn ($x) => $foo->maybePure($x);
+	5 |> (fn ($x) => $foo->maybePure($x));
 };

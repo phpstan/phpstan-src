@@ -7,4 +7,4 @@ function myFunc()
 }
 
 5 |> myFunc(...);
-5 |> fn ($x) => myFunc($x);
+5 |> (fn ($x) => myFunc($x));

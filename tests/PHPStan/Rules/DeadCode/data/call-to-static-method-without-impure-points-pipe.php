@@ -14,5 +14,5 @@ class Foo
 
 function (): void {
 	5 |> Foo::doFoo(...);
-	5 |> fn ($x) => Foo::doFoo($x);
+	5 |> (fn ($x) => Foo::doFoo($x));
 };

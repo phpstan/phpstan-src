@@ -353,7 +353,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					self::createFunctionCall('is_int', 'foo'),
 					self::createFunctionCall('is_string', 'bar'),
 				),
-				[],
+				['$foo' => 'int'],
 				['$foo' => '~int', '$bar' => '~string'],
 			],
 			[
@@ -652,7 +652,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				new Expr\Empty_(new Variable('array')),
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
@@ -664,7 +664,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
 				[
-					'$array' => 'array{}|null',
+					'$array' => 'array{}',
 				],
 			],
 			[

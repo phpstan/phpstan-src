@@ -663,7 +663,25 @@ final class TypeSpecifier
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByFalseyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
-			$types = $context->true() ? $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope)) : $leftTypes->unionWith($rightTypes);
+
+			if ($context->true()) {
+				if (
+					$scope->getType($expr->left)->isFalse()->yes()
+					|| $scope->getType($expr->right)->isTrue()->yes()
+				) {
+					$types = $rightTypes->normalize($rightScope);
+				} elseif (
+					$scope->getType($expr->left)->isTrue()->yes()
+					|| $scope->getType($expr->right)->isFalse()->yes()
+				) {
+					$types = $leftTypes->normalize($scope);
+				} else {
+					$types = $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
+				}
+			} else {
+				$types = $leftTypes->unionWith($rightTypes);
+			}
+
 			if ($context->true()) {
 				return (new SpecifiedTypes(
 					$types->getSureTypes(),

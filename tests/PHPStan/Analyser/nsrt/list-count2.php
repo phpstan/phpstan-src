@@ -102,4 +102,21 @@ class HelloWorld
 		}
 		assertType('list', $arrA);
 	}
+
+	/**
+	 * @param array{int, int, int} $arrA
+	 * @param list $arrB
+	 */
+	function sayEqualArrayShapeAfterNarrowedCount($arrA, array $arrB): void
+	{
+		if (count($arrB) < 2) {
+			return;
+		}
+
+		if (count($arrA) == count($arrB)) {
+			assertType('array{mixed, mixed, mixed}', $arrB);
+		}
+		assertType('non-empty-list', $arrB);
+	}
+
 }

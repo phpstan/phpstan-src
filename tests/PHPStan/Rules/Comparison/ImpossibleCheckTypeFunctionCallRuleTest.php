@@ -389,10 +389,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
-			// [
-			//	'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\A\' will always evaluate to true.',
-			//	11,
-			// ],
+			[
+				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\A\' will always evaluate to true.',
+				11,
+			],
 			// [
 			//	'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\B\' will always evaluate to false.',
 			//	14,
@@ -409,7 +409,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	public function testBug13713(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-13713.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13713.php'], [
+			[
+				"Call to function is_subclass_of() with arguments Bug13713\\test, 'stdClass' and false will always evaluate to true.",
+				12,
+			],
+			[
+				"Call to function is_subclass_of() with arguments class-string<Bug13713\\test>, 'stdClass' and true will always evaluate to true.",
+				25,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
 	}
 
 	public function testBug6698(): void

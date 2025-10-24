@@ -12,7 +12,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
 use function count;
 use function strtolower;
 
@@ -46,15 +45,8 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 		$allowStringType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
-		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
-		if ($objectOrClassType instanceof GenericClassStringType && $classType instanceof GenericClassStringType) {
-			return new SpecifiedTypes([], []);
-		}
-
 		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false);
-
-		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
-		if ($resultType->isSuperTypeOf($objectOrClassType)->yes()) {
+		if ($resultType === null) {
 			return new SpecifiedTypes([], []);
 		}
 

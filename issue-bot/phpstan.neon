@@ -11,3 +11,4 @@ parameters:
 		- src
 		- tests
 		- console.php
+	phpVersion: 80500

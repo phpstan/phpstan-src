@@ -38,7 +38,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.3"
+          php-version: "8.5"
 
       - name: "Install issue-bot dependencies"
         uses: "ramsey/composer-install@v3"
@@ -89,7 +89,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.3"
+          php-version: "8.5"
 
       - uses: "ramsey/composer-install@v3"
         with:
@@ -133,7 +133,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.3"
+          php-version: "8.5"
 
       - name: "Install issue-bot dependencies"
         uses: "ramsey/composer-install@v3"

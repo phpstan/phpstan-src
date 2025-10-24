@@ -2,6 +2,8 @@
 
 namespace PHPStan\IssueBot\Playground;
 
+// phpcs:ignoreFile
+
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -28,22 +30,23 @@ class TabCreator
 		$last = null;
 
 		foreach ($versionedErrors as $phpVersion => $errors) {
-			$errors = array_values(array_filter($errors, static fn (PlaygroundError $error) => $error->getIdentifier() !== 'phpstanPlayground.configParameter'));
-			$errors = array_map(static function (PlaygroundError $error): PlaygroundError {
-				if ($error->getIdentifier() === null) {
-					return $error;
-				}
+			$errors = array_filter($errors, static fn (PlaygroundError $error) => $error->getIdentifier() !== 'phpstanPlayground.configParameter')
+				|> array_values(...)
+				|> (static fn ($errors) => array_map(static function (PlaygroundError $error): PlaygroundError {
+					if ($error->getIdentifier() === null) {
+						return $error;
+					}
 
-				if (!str_starts_with($error->getIdentifier(), 'phpstanPlayground.')) {
-					return $error;
-				}
+					if (!str_starts_with($error->getIdentifier(), 'phpstanPlayground.')) {
+						return $error;
+					}
 
-				return new PlaygroundError(
-					$error->getLine(),
-					sprintf('Tip: %s', $error->getMessage()),
-					$error->getIdentifier(),
-				);
-			}, $errors);
+					return new PlaygroundError(
+						$error->getLine(),
+						sprintf('Tip: %s', $error->getMessage()),
+						$error->getIdentifier(),
+					);
+				}, $errors));
 			$current = [
 				'versions' => [$phpVersion],
 				'errors' => $errors,

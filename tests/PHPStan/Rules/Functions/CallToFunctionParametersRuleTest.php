@@ -539,12 +539,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-13719.php'], [
 			[
-				'Unknown parameter $greetings in call to function non_variadic.',
-				18,
+				'Unknown parameter $greetings in call to function Bug13719\non_variadic.',
+				20,
 			],
 			[
-				'Unknown parameter $greetings in call to function implicit_variadic.',
-				25,
+				'Unknown parameter $greetings in call to function Bug13719\implicit_variadic.',
+				27,
 			],
 		]);
 	}

@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug13719;
+
 function non_variadic(string $name, ?string $greeting = null): void {
 	var_dump($name);
 }

@@ -110,7 +110,7 @@ final class TableErrorFormatter implements ErrorFormatter
 				}
 
 				if (getenv('TERMINAL_EMULATOR') === 'JetBrains-JediTerm') {
-					$title = $this->relativePathHelper->getRelativePath($filePath);
+					$title = $this->simpleRelativePathHelper->getRelativePath($filePath);
 					$message .= sprintf("\nat %s:%d", $title, $error->getLine() ?? 0);
 
 				} elseif (is_string($this->editorUrl)) {

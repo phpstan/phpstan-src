@@ -424,6 +424,30 @@ TABLE,
 		);
 	}
 
+	public function testJetBrainsTerminalRelativePath(): void
+	{
+		putenv('TERMINAL_EMULATOR=JetBrains-JediTerm');
+
+		// FuzzyRelativePathHelper trims path segments based on analysed paths.
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [self::DIRECTORY_PATH . '/rel'], '/');
+
+		$formatter = new TableErrorFormatter(
+			$relativePathHelper,
+			new SimpleRelativePathHelper(self::DIRECTORY_PATH),
+			new CiDetectedErrorFormatter(
+				new GithubErrorFormatter($relativePathHelper),
+				new TeamcityErrorFormatter($relativePathHelper),
+			),
+			false,
+			null,
+			null,
+		);
+		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
+
+		$this->assertStringContainsString('at rel/Foo.php:12', $this->getOutputContent(true));
+	}
+
 	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');

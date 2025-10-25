@@ -267,11 +267,6 @@ jobs:
         working-directory: "build-infection"
         run: "composer install --no-interaction --no-progress"
 
-      - uses: "actions/download-artifact@v4"
-        with:
-          name: "result-cache-${{ matrix.php-version }}${{ matrix.operating-system-packages}}"
-          path: "tmp/"
-
       - name: "Run infection"
         run: |
           git fetch --depth=1 origin $GITHUB_BASE_REF

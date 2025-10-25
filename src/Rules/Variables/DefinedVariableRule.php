@@ -45,6 +45,15 @@ final class DefinedVariableRule implements Rule
 			$variableNameScopes = [$node->name => $scope];
 		} else {
 			$nameType = $scope->getType($node->name);
+
+			// testing stuff
+			$obj = (new ObjectType('SomeClass'))->isSuperTypeOf($nameType);
+			if ($obj->yes()) {
+				$x = 1;
+			} else {
+				$x = 2;
+			}
+
 			$variableNameScopes = [];
 			foreach ($nameType->getConstantStrings() as $constantString) {
 				$name = $constantString->getValue();

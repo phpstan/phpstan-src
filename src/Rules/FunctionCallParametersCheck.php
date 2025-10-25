@@ -562,11 +562,13 @@ final class FunctionCallParametersCheck
 		$originalParametersByName = [];
 		$unusedParametersByName = [];
 		$errors = [];
+		$isNativelyVariadic = false;
 		foreach ($parameters as $i => $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
 			$originalParametersByName[$parameter->getName()] = $originalParameters[$i];
 
 			if ($parameter->isVariadic()) {
+				$isNativelyVariadic = true;
 				continue;
 			}
 
@@ -603,7 +605,7 @@ final class FunctionCallParametersCheck
 
 				$parametersCount = count($parameters);
 				if (
-					!$parametersAcceptor->isVariadic()
+					!$isNativelyVariadic
 					|| $parametersCount <= 0
 					|| $isBuiltin
 				) {

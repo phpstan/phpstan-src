@@ -19,10 +19,7 @@ final class PhpDocStringResolver
 	public function resolve(string $phpDocString): PhpDocNode
 	{
 		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
-		$phpDocNode = $this->phpDocParser->parse($tokens);
-		$tokens->consumeTokenType(Lexer::TOKEN_END); // @phpstan-ignore missingType.checkedException
-
-		return $phpDocNode;
+		return $this->phpDocParser->parse($tokens);
 	}
 
 }

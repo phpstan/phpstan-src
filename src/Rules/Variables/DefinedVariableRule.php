@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use function array_merge;
 use function in_array;
 use function is_string;

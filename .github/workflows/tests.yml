@@ -226,7 +226,8 @@ jobs:
   mutation-testing:
     name: "Mutation Testing"
     runs-on: "ubuntu-latest"
-    needs: ["tests", "tests-levels"]
+    needs: ["tests"]
+    if: github.event_name == 'pull_request'
 
     strategy:
       fail-fast: false
@@ -241,24 +242,20 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v5
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "pcov"
-          php-version: "${{ matrix.php-version }}"
-          ini-file: development
-          extensions: ds,mbstring
-          tools: infection:0.31.7
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
-
       - name: "Checkout build-infection"
         uses: actions/checkout@v5
         with:
           repository: "phpstan/build-infection"
           path: "build-infection"
           ref: "1.x"
+
+      - uses: ./build-infection/.github/actions/setup-php
+        with:
+          php-version: "${{ matrix.php-version }}"
+          extensions: ds,mbstring
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Install build-infection dependencies"
         working-directory: "build-infection"

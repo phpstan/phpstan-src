@@ -603,12 +603,7 @@ final class FunctionCallParametersCheck
 			} else {
 				$namedArgumentAlreadyOccurred = true;
 
-				$parametersCount = count($parameters);
-				if (
-					!$isNativelyVariadic
-					|| $parametersCount <= 0
-					|| $isBuiltin
-				) {
+				if (!$isNativelyVariadic || $isBuiltin) {
 					$errors[] = RuleErrorBuilder::message(sprintf($unknownParameterMessage, $argumentName))
 						->identifier('argument.unknown')
 						->line($argumentLine)
@@ -617,6 +612,7 @@ final class FunctionCallParametersCheck
 					continue;
 				}
 
+				$parametersCount = count($parameters);
 				$parameter = $parameters[$parametersCount - 1];
 				$originalParameter = $originalParameters[$parametersCount - 1];
 			}

@@ -246,23 +246,16 @@ jobs:
         with:
           coverage: "pcov"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, infection:0.31.7
-          extensions: ds,mbstring
           ini-file: development
-          ini-values: memory_limit=-1
+          extensions: ds,mbstring
+          tools: infection:0.31.7
 
-      - uses: "ramsey/composer-install@v3"
+      - name: "Allow installing on PHP 8.4"
+        if: matrix.php-version == '8.4'
+        run: "composer config platform.php 8.3.99"
 
-      - name: "Cache Result cache"
-        uses: actions/cache@v4
-        with:
-          path: ./tmp
-          key: "result-cache-v14-${{ matrix.php-version }}-${{ github.run_id }}"
-          restore-keys: |
-            result-cache-v14-${{ matrix.php-version }}-
-
-      - name: "Check PHP configuration"
-        run: "vendor/bin/phpunit --check-php-configuration"
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Checkout build-infection"
         uses: actions/checkout@v5
@@ -274,6 +267,20 @@ jobs:
       - name: "Install build-infection dependencies"
         working-directory: "build-infection"
         run: "composer install --no-interaction --no-progress"
+
+      - name: "Configure infection"
+        run: |
+          php build-infection/bin/infection-config.php \
+          > infection.json5
+          cat infection.json5 | jq
+
+      - name: "Cache Result cache"
+        uses: actions/cache@v4
+        with:
+          path: ./tmp
+          key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
+          restore-keys: |
+            result-cache-v1-${{ matrix.php-version }}-
 
       - name: "Run infection"
         run: |

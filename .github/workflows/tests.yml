@@ -267,8 +267,8 @@ jobs:
           > infection.json5
           cat infection.json5 | jq
 
-      - name: "Cache Result cache"
-        uses: actions/cache@v4
+      - name: "Restore result cache"
+        uses: actions/cache/restore@v4
         with:
           path: ./tmp
           key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
@@ -287,3 +287,10 @@ jobs:
             --log-verbosity=all \
             --debug \
             --logger-text=php://stdout
+
+      - name: "Save result cache"
+        uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: ./tmp
+          key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"

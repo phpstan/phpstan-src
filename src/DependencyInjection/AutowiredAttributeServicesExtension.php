@@ -18,7 +18,7 @@ use PHPStan\Rules\LazyRegistry;
 use ReflectionClass;
 use stdClass;
 use function explode;
-use function strtolower;
+use function strcasecmp;
 use function substr;
 
 final class AutowiredAttributeServicesExtension extends CompilerExtension
@@ -135,10 +135,10 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 		foreach ($autowiredParameters as $autowiredParameter) {
-			if (strtolower($autowiredParameter->method) !== '__construct') {
+			if (strcasecmp($autowiredParameter->method, '__construct') !== 0) {
 				continue;
 			}
-			if (strtolower($autowiredParameter->class) !== strtolower($className)) {
+			if (strcasecmp($autowiredParameter->class, $className) !== 0) {
 				continue;
 			}
 			$ref = $autowiredParameter->attribute->ref;

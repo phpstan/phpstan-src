@@ -1216,6 +1216,14 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/private-property-with-allowed-property-tag-is-public.php'], []);
 	}
 
+	public function testDomExtensionLegacyTemplateNodes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/dom-legacy-ext-template-nodes.php'], []);
+	}
+
 	public function testBug13537(): void
 	{
 		$this->checkThisOnly = false;

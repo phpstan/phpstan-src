@@ -264,6 +264,7 @@ jobs:
       - name: "Configure infection"
         run: |
           php build-infection/bin/infection-config.php \
+            --source-directory='build/PHPStan/Build' \
           > infection.json5
           cat infection.json5 | jq
 

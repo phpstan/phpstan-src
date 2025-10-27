@@ -22,8 +22,9 @@ use PHPStan\File\FileWriter;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use ReflectionClass;
+use ReflectionException;
 use Throwable;
 use function array_diff;
 use function array_fill_keys;
@@ -82,7 +83,6 @@ final class ResultCacheManager
 		private ExportedNodeFetcher $exportedNodeFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $scanFileFinder,
-		private ReflectionProvider $reflectionProvider,
 		private StubFilesProvider $stubFilesProvider,
 		private FileHelper $fileHelper,
 		#[AutowiredParameter(ref: '%resultCachePath%')]
@@ -936,13 +936,15 @@ return [
 
 			$classes = ProjectConfigHelper::getServiceClassNames($projectConfig);
 			foreach ($classes as $class) {
-				if (!$this->reflectionProvider->hasClass($class)) {
+				try {
+					// does not use static reflection to reduce file-parsing
+					$classReflection = new ReflectionClass($class); /** @phpstan-ignore argument.type */
+				} catch (ReflectionException) {
 					continue;
 				}
 
-				$classReflection = $this->reflectionProvider->getClass($class);
 				$fileName = $classReflection->getFileName();
-				if ($fileName === null) {
+				if ($fileName === false) {
 					continue;
 				}
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "287b52923d083c465ffea8ba6a6441fb",
+    "content-hash": "705e6180fbf3795d593a6ae20635b5aa",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1698,25 +1698,25 @@
         },
         {
             "name": "nette/neon",
-            "version": "v3.3.4",
+            "version": "v3.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/neon.git",
-                "reference": "bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda"
+                "reference": "3411aa86b104e2d5b7e760da4600865ead963c3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/neon/zipball/bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda",
-                "reference": "bb88bf3a54dd21bf4dbddb5cd525d7b0c61b7cda",
+                "url": "https://api.github.com/repos/nette/neon/zipball/3411aa86b104e2d5b7e760da4600865ead963c3c",
+                "reference": "3411aa86b104e2d5b7e760da4600865ead963c3c",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": "7.1 - 8.4"
+                "php": "8.0 - 8.4"
             },
             "require-dev": {
-                "nette/tester": "^2.0",
-                "phpstan/phpstan": "^0.12",
+                "nette/tester": "^2.4",
+                "phpstan/phpstan": "^1.0",
                 "tracy/tracy": "^2.7"
             },
             "bin": [
@@ -1725,7 +1725,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.3-dev"
+                    "dev-master": "3.4-dev"
                 }
             },
             "autoload": {
@@ -1760,9 +1760,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/neon/issues",
-                "source": "https://github.com/nette/neon/tree/v3.3.4"
+                "source": "https://github.com/nette/neon/tree/v3.4.4"
             },
-            "time": "2024-10-04T22:17:24+00:00"
+            "time": "2024-10-04T22:00:08+00:00"
         },
         {
             "name": "nette/php-generator",

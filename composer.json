@@ -18,7 +18,7 @@
 		"jetbrains/phpstorm-stubs": "dev-master#62d3fa7da6c780a35204df11bb0381ee12ef1df0",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.4",
-		"nette/neon": "3.3.4",
+		"nette/neon": "3.4.4",
 		"nette/php-generator": "3.6.9",
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",

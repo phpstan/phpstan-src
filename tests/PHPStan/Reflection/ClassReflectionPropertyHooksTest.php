@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
@@ -226,6 +227,9 @@ class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 		];
 
 		$specificFooGenerics = (new GenericObjectType('PropertyHooksTypes\\FooGenerics', [new IntegerType()]))->getClassReflection();
+		if ($specificFooGenerics === null) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$specificFooGenerics,
@@ -291,6 +295,9 @@ class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 		];
 
 		$specificFooGenericsConstructor = (new GenericObjectType('PropertyHooksTypes\\FooGenericsConstructor', [new IntegerType()]))->getClassReflection();
+		if ($specificFooGenericsConstructor === null) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$specificFooGenericsConstructor,

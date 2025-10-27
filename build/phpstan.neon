@@ -75,7 +75,6 @@ parameters:
 		- '#^Dynamic call to static method PHPUnit\\Framework\\\S+\(\)\.$#'
 		- '#should be contravariant with parameter \$node \(PhpParser\\Node\) of method PHPStan\\Rules\\Rule<PhpParser\\Node>::processNode\(\)$#'
 		- '#Variable property access on PhpParser\\Node#'
-		- '#Test::data[a-zA-Z0-9_]+\(\) return type has no value type specified in iterable type#'
 		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?Factory::create#' # likely used in DIC

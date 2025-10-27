@@ -63,7 +63,7 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Closure(): mixed $closure
+	 * @param Closure(mixed): mixed $closure
 	 */
 	#[DataProvider('dataFromClosureObjectParameter')]
 	public function testFromClosureObjectParameter(Closure $closure, int $index, string $type): void
@@ -75,7 +75,7 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Closure(): mixed $closure
+	 * @param Closure(mixed): mixed $closure
 	 */
 	private function getClosureType(Closure $closure): ClosureType
 	{

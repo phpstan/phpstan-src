@@ -96,13 +96,13 @@ class StringTypeTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataIsSuperTypeOf')]
-	public function testIsSuperTypeOf(StringType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testIsSuperTypeOf(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $type->isSuperTypeOf($otherType);
+		$actualResult = $stringType->isSuperTypeOf($otherType);
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+			sprintf('%s -> isSuperTypeOf(%s)', $stringType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -174,13 +174,13 @@ class StringTypeTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataAccepts')]
-	public function testAccepts(StringType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	public function testAccepts(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$actualResult = $type->accepts($otherType, true)->result;
+		$actualResult = $stringType->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+			sprintf('%s -> accepts(%s)', $stringType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

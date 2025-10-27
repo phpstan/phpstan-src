@@ -235,7 +235,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param class-string[] $expectedIdentifiers
+	 * @param array<string> $expectedIdentifiers
 	 */
 	#[DataProvider('dataForIdenifiersByType')]
 	public function testLocateIdentifiersByType(

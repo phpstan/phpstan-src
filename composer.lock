@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "287b52923d083c465ffea8ba6a6441fb",
+    "content-hash": "7a8129b9f491fdfb4736ccea93ce4b01",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -4777,17 +4777,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-phpunit.git",
-                "reference": "9a9b161baee88a5f5c58d816943cff354ff233dc"
+                "reference": "5c89d749a03a8efc333b097407ba9f99692f589f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/9a9b161baee88a5f5c58d816943cff354ff233dc",
-                "reference": "9a9b161baee88a5f5c58d816943cff354ff233dc",
+                "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/5c89d749a03a8efc333b097407ba9f99692f589f",
+                "reference": "5c89d749a03a8efc333b097407ba9f99692f589f",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
-                "phpstan/phpstan": "^2.1.18"
+                "phpstan/phpstan": "^2.1.32"
             },
             "conflict": {
                 "phpunit/phpunit": "<7.0"
@@ -4823,7 +4823,7 @@
                 "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
                 "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.0.x"
             },
-            "time": "2025-07-13T11:31:46+00:00"
+            "time": "2025-10-27T11:04:54+00:00"
         },
         {
             "name": "phpstan/phpstan-strict-rules",

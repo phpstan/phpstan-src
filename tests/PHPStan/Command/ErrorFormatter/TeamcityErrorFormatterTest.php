@@ -19,7 +19,6 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			'',
-			'',
 		];
 
 		yield [

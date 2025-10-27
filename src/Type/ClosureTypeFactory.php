@@ -46,7 +46,7 @@ final class ClosureTypeFactory
 	}
 
 	/**
-	 * @param Closure(): mixed $closure
+	 * @param Closure(mixed): mixed $closure
 	 */
 	public function fromClosureObject(Closure $closure): ClosureType
 	{

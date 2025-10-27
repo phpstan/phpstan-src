@@ -60,7 +60,7 @@
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^2.0.2",
 		"phpstan/phpstan-nette": "^2.0",
-		"phpstan/phpstan-phpunit": "^2.0.7",
+		"phpstan/phpstan-phpunit": "^2.0.8",
 		"phpstan/phpstan-strict-rules": "^2.0",
 		"phpunit/phpunit": "^11.5.23",
 		"shipmonk/composer-dependency-analyser": "^1.5",

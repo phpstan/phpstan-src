@@ -285,7 +285,7 @@ class CommandHelperTest extends TestCase
 	}
 
 	/**
-	 * @param array<string, string> $expectedParameters
+	 * @param array<string, mixed> $expectedParameters
 	 * @throws InceptionNotSuccessfulException
 	 */
 	#[DataProvider('dataParameters')]

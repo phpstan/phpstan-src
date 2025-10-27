@@ -40,7 +40,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 		$autowiredParameters = Attributes::findTargetMethodParameters(AutowiredParameter::class);
 		$constructorParameters = [];
-		foreach($autowiredParameters as $parameter) {
+		foreach ($autowiredParameters as $parameter) {
 			if (strcasecmp($parameter->method, '__construct') !== 0) {
 				continue;
 			}
@@ -142,7 +142,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	private function processParameters(string $className, ServiceDefinition $definition, array $constructorParameters): void
 	{
 		$builder = $this->getContainerBuilder();
-		foreach($constructorParameters[$className] ?? [] as $autowiredParameter) {
+		foreach ($constructorParameters[$className] ?? [] as $autowiredParameter) {
 			$ref = $autowiredParameter->attribute->ref;
 			if ($ref === null) {
 				$argument = Helpers::expand(

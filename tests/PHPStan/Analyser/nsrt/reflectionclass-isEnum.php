@@ -14,6 +14,8 @@ function testNarrowClassAfterIsEnum(string $class): void {
 		assertType('class-string<UnitEnum>', $r->name);
 		assertType('class-string<UnitEnum>', $r->getName());
 
+		assertType('UnitEnum', $r->newInstance());
+
 
 		// Todo:
 		//assertType('ReflectionClass<UnitEnum>', $r);

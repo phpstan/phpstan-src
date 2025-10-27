@@ -135,7 +135,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 		foreach ($autowiredParameters as $autowiredParameter) {
-			if ($autowiredParameter->method === '' || $autowiredParameter->method[0] !== '_') {
+			if ($autowiredParameter->method[0] !== '_') {
 				continue;
 			}
 

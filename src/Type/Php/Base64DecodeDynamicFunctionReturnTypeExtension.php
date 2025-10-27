@@ -6,13 +6,15 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function base64_decode;
 
 #[AutowiredService]
 final class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -30,32 +32,41 @@ final class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFun
 	): Type
 	{
 		$args = $functionCall->getArgs();
-		if (!isset($args[1])) {
+		if (!isset($args[0])) {
 			return new StringType();
 		}
 
-		$argType = $scope->getType($args[1]->value);
+		$stringArgNode = $args[0]->value;
+		$constantStrings = $scope->getType($stringArgNode)->getConstantStrings();
+		if ($constantStrings !== []) {
+			$isValidBase64 = TrinaryLogic::lazyExtremeIdentity(
+				$constantStrings,
+				static function (ConstantStringType $constantString): TrinaryLogic {
+					$isValid = base64_decode($constantString->getValue(), true) !== false;
+					return TrinaryLogic::createFromBoolean($isValid);
+				},
+			);
+		} else {
+			$isValidBase64 = TrinaryLogic::createMaybe();
+		}
 
-		if ($argType instanceof MixedType) {
+		if (isset($functionCall->getArgs()[1])) {
+			$strictArgNode = $functionCall->getArgs()[1]->value;
+			$isStrict = $scope->getType($strictArgNode)->toBoolean()->toTrinaryLogic();
+		} else {
+			$isStrict = TrinaryLogic::createNo();
+		}
+
+		if ($isStrict->no() || $isValidBase64->yes()) {
+			return new StringType();
+		}
+		if ($isStrict->yes() && $isValidBase64->no()) {
+			return new ConstantBooleanType(false);
+		}
+		if ($isStrict->maybe() && $isValidBase64->maybe()) {
 			return new BenevolentUnionType([new StringType(), new ConstantBooleanType(false)]);
 		}
-
-		$isTrueType = $argType->isTrue();
-		$isFalseType = $argType->isFalse();
-		$compareTypes = $isTrueType->compareTo($isFalseType);
-		if ($compareTypes === $isTrueType) {
-			return new UnionType([new StringType(), new ConstantBooleanType(false)]);
-		}
-		if ($compareTypes === $isFalseType) {
-			return new StringType();
-		}
-
-		// second argument could be interpreted as true
-		if (!$isTrueType->no()) {
-			return new UnionType([new StringType(), new ConstantBooleanType(false)]);
-		}
-
-		return new StringType();
+		return new UnionType([new StringType(), new ConstantBooleanType(false)]);
 	}
 
 }

@@ -39,6 +39,14 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 		$builder = $this->getContainerBuilder();
 
 		$autowiredParameters = Attributes::findTargetMethodParameters(AutowiredParameter::class);
+		$constructorParameters = [];
+		foreach($autowiredParameters as $parameter) {
+			if (strcasecmp($parameter->method, '__construct') !== 0) {
+				continue;
+			}
+			$constructorParameters[$parameter->class] ??= [];
+			$constructorParameters[$parameter->class][] = $parameter;
+		}
 
 		foreach (Attributes::findTargetClasses(AutowiredService::class) as $class) {
 			$reflection = new ReflectionClass($class->name);
@@ -53,7 +61,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
 			}
 
-			$this->processParameters($class->name, $definition, $autowiredParameters);
+			$this->processParameters($class->name, $definition, $constructorParameters);
 
 			foreach (ValidateServiceTagsExtension::INTERFACE_TAG_MAPPING as $interface => $tag) {
 				if (!$reflection->implementsInterface($interface)) {
@@ -76,7 +84,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
 			}
 
-			$this->processParameters($class->name, $definition, $autowiredParameters);
+			$this->processParameters($class->name, $definition, $constructorParameters);
 		}
 
 		foreach (Attributes::findTargetClasses(GenerateFactory::class) as $class) {
@@ -89,7 +97,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			}
 
 			$resultDefinition = $definition->getResultDefinition();
-			$this->processParameters($class->name, $resultDefinition, $autowiredParameters);
+			$this->processParameters($class->name, $resultDefinition, $constructorParameters);
 		}
 
 		/** @var stdClass&object{level: int|null} $config */
@@ -109,7 +117,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				->setAutowired($class->name)
 				->addTag(LazyRegistry::RULE_TAG);
 
-			$this->processParameters($class->name, $definition, $autowiredParameters);
+			$this->processParameters($class->name, $definition, $constructorParameters);
 		}
 
 		foreach (Attributes::findTargetClasses(RegisteredCollector::class) as $class) {
@@ -123,28 +131,18 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 				->setAutowired($class->name)
 				->addTag(RegistryFactory::COLLECTOR_TAG);
 
-			$this->processParameters($class->name, $definition, $autowiredParameters);
+			$this->processParameters($class->name, $definition, $constructorParameters);
 		}
 	}
 
 	/**
 	 * @param class-string $className
-	 * @param TargetMethodParameter<AutowiredParameter>[] $autowiredParameters
+	 * @param array<class-string, non-empty-list<TargetMethodParameter<AutowiredParameter>>> $constructorParameters
 	 */
-	private function processParameters(string $className, ServiceDefinition $definition, array $autowiredParameters): void
+	private function processParameters(string $className, ServiceDefinition $definition, array $constructorParameters): void
 	{
 		$builder = $this->getContainerBuilder();
-		foreach ($autowiredParameters as $autowiredParameter) {
-			if ($autowiredParameter->method[0] !== '_') {
-				continue;
-			}
-
-			if (strcasecmp($autowiredParameter->method, '__construct') !== 0) {
-				continue;
-			}
-			if (strcasecmp($autowiredParameter->class, $className) !== 0) {
-				continue;
-			}
+		foreach($constructorParameters[$className] ?? [] as $autowiredParameter) {
 			$ref = $autowiredParameter->attribute->ref;
 			if ($ref === null) {
 				$argument = Helpers::expand(

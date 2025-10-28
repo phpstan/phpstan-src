@@ -79,6 +79,8 @@ class UnionTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(Type $unionType, TrinaryLogic $expectedResult): void
 	{
+		$this->assertInstanceOf(UnionType::class, $unionType);
+
 		$actualResult = $unionType->isCallable();
 		$this->assertSame(
 			$expectedResult->describe(),
@@ -701,6 +703,8 @@ class UnionTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsScalar')]
 	public function testIsScalar(Type $unionType, TrinaryLogic $expectedResult): void
 	{
+		$this->assertInstanceOf(UnionType::class, $unionType);
+
 		$actualResult = $unionType->isScalar();
 		$this->assertSame(
 			$expectedResult->describe(),

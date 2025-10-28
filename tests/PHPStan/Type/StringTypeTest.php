@@ -98,6 +98,8 @@ class StringTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
+		$this->assertInstanceOf(StringType::class, $stringType);
+
 		$actualResult = $stringType->isSuperTypeOf($otherType);
 		$this->assertSame(
 			$expectedResult->describe(),
@@ -176,6 +178,8 @@ class StringTypeTest extends PHPStanTestCase
 	#[DataProvider('dataAccepts')]
 	public function testAccepts(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
+		$this->assertInstanceOf(StringType::class, $stringType);
+
 		$actualResult = $stringType->accepts($otherType, true)->result;
 		$this->assertSame(
 			$expectedResult->describe(),

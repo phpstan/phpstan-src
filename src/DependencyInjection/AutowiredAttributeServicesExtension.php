@@ -19,6 +19,7 @@ use ReflectionClass;
 use stdClass;
 use function explode;
 use function strcasecmp;
+use function strtolower;
 use function substr;
 
 final class AutowiredAttributeServicesExtension extends CompilerExtension
@@ -44,8 +45,9 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			if (strcasecmp($parameter->method, '__construct') !== 0) {
 				continue;
 			}
-			$constructorParameters[$parameter->class] ??= [];
-			$constructorParameters[$parameter->class][] = $parameter;
+			$lowerClass = strtolower($parameter->class);
+			$constructorParameters[$lowerClass] ??= [];
+			$constructorParameters[$lowerClass][] = $parameter;
 		}
 
 		foreach (Attributes::findTargetClasses(AutowiredService::class) as $class) {
@@ -137,12 +139,12 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 	/**
 	 * @param class-string $className
-	 * @param array<class-string, non-empty-list<TargetMethodParameter<AutowiredParameter>>> $constructorParameters
+	 * @param array<lowercase-string, non-empty-list<TargetMethodParameter<AutowiredParameter>>> $constructorParameters
 	 */
 	private function processConstructorParameters(string $className, ServiceDefinition $definition, array $constructorParameters): void
 	{
 		$builder = $this->getContainerBuilder();
-		foreach ($constructorParameters[$className] ?? [] as $autowiredParameter) {
+		foreach ($constructorParameters[strtolower($className)] ?? [] as $autowiredParameter) {
 			$ref = $autowiredParameter->attribute->ref;
 			if ($ref === null) {
 				$argument = Helpers::expand(

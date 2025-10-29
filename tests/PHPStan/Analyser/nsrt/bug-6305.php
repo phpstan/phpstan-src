@@ -15,5 +15,5 @@ if (is_subclass_of($b, A::class)) {
 }
 
 if (is_subclass_of($b, B::class)) {
-	assertType('Bug6305Types\B', $b); // Could be NEVER
+	assertType('*NEVER*', $b);
 }

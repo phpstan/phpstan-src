@@ -47,14 +47,18 @@ final class IsAFunctionTypeSpecifyingHelper
 				}
 				if ($type instanceof ConstantStringType) {
 					if (!$allowSameClass) {
-						// For objectType we cannot be sure since 'Foo' is used for both
-						// - the Foo class
-						// - a child of foo class
-						if (
-							$objectOrClassTypeClassNames === [$type->getValue()]
-							&& $objectOrClassType->isString()->yes()
-						) {
-							return new NeverType();
+						if ($objectOrClassTypeClassNames === [$type->getValue()]) {
+							$isSameClass = true;
+							foreach ($objectOrClassType->getObjectClassReflections() as $classReflection) {
+								if (!$classReflection->isFinal()) {
+									$isSameClass = false;
+									break;
+								}
+							}
+
+							if ($isSameClass) {
+								return new NeverType();
+							}
 						}
 
 						if (

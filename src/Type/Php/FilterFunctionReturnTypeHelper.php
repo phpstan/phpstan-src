@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -129,6 +130,10 @@ final class FilterFunctionReturnTypeHelper
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
 		if ($inputIsArray->no() && $hasRequireArrayFlag) {
+			if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)) {
+				return new ErrorType();
+			}
+
 			return $defaultType;
 		}
 
@@ -172,6 +177,10 @@ final class FilterFunctionReturnTypeHelper
 
 		if (!$hasRequireArrayFlag && $hasForceArrayFlag) {
 			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
+		}
+
+		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)) {
+			$type = TypeCombinator::remove($type, $defaultType);
 		}
 
 		return $type;

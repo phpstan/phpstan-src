@@ -240,6 +240,7 @@ jobs:
         run: |
           php build-infection/bin/infection-config.php \
             --source-directory='build/PHPStan/Build' \
+            --timeout=180 \
           > infection.json5
           cat infection.json5 | jq
 

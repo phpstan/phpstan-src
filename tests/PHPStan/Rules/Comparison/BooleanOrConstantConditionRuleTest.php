@@ -239,7 +239,6 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 			[
 				'Right side of || is always true.',
 				33,
-				$tipText,
 			],
 		]);
 	}

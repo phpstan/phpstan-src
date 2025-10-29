@@ -666,12 +666,12 @@ final class TypeSpecifier
 
 			if ($context->true()) {
 				if (
-					$scope->getType($expr->left)->isFalse()->yes()
+					$scope->getType($expr->left)->toBoolean()->isFalse()->yes()
 				) {
 					$types = $rightTypes->normalize($rightScope);
 				} elseif (
-					$scope->getType($expr->left)->isTrue()->yes()
-					|| $scope->getType($expr->right)->isFalse()->yes()
+					$scope->getType($expr->left)->toBoolean()->isTrue()->yes()
+					|| $scope->getType($expr->right)->toBoolean()->isFalse()->yes()
 				) {
 					$types = $leftTypes->normalize($scope);
 				} else {

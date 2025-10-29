@@ -3117,7 +3117,11 @@ final class NodeScopeResolver
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
-				$scope = $scope->invalidateExpression(new Variable('this'), true);
+				if ($methodReflection->isStatic()) {
+					$scope = $scope->invalidateMethodsOnExpression(new Variable('this'));
+				} else {
+					$scope = $scope->invalidateExpression(new Variable('this'), true);
+				}
 			}
 
 			if (

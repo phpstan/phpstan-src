@@ -4597,7 +4597,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		return true;
 	}
 
-	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
+	public function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$expressionTypes = $this->expressionTypes;

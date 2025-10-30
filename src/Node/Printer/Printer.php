@@ -4,6 +4,7 @@ namespace PHPStan\Node\Printer;
 
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\AfterStaticMethodCall;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
@@ -30,6 +31,11 @@ use function sprintf;
 #[AutowiredService(as: Printer::class)]
 final class Printer extends Standard
 {
+
+	protected function pPHPStan_Node_AfterStaticMethodCall(AfterStaticMethodCall $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanAfterStaticMethodCall');
+	}
 
 	protected function pPHPStan_Node_TypeExpr(TypeExpr $expr): string // phpcs:ignore
 	{

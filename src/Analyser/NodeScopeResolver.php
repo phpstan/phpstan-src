@@ -84,6 +84,7 @@ use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\AfterStaticMethodCall;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
@@ -3263,7 +3264,11 @@ final class NodeScopeResolver
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
-				$scope = $scope->invalidateExpression(new Variable('this'), true);
+				if ($methodReflection->isStatic()) {
+					$scope = $scope->invalidateExpression(new AfterStaticMethodCall(), true);
+				} else {
+					$scope = $scope->invalidateExpression(new Variable('this'), true);
+				}
 			}
 
 			if (

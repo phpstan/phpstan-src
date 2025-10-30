@@ -512,6 +512,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Unknown parameter $a in call to function array_merge.',
 				14,
 			],
+			[
+				'Named parameter $var overwrites previous argument.',
+				19,
+			],
 		];
 
 		require_once __DIR__ . '/data/named-arguments-define.php';

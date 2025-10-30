@@ -578,6 +578,7 @@ final class FunctionCallParametersCheck
 		$newArguments = [];
 
 		$namedArgumentAlreadyOccurred = false;
+		$namedArgumentsForVariadicParameter = [];
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($argumentName === null) {
 				if (!isset($parameters[$i])) {
@@ -615,6 +616,14 @@ final class FunctionCallParametersCheck
 				$parametersCount = count($parameters);
 				$parameter = $parameters[$parametersCount - 1];
 				$originalParameter = $originalParameters[$parametersCount - 1];
+
+				if (isset($namedArgumentsForVariadicParameter[$argumentName])) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Named parameter $%s overwrites previous argument.', $argumentName))
+						->identifier('argument.duplicate')
+						->line($argumentLine)
+						->build();
+				}
+				$namedArgumentsForVariadicParameter[$argumentName] = true;
 			}
 
 			if ($namedArgumentAlreadyOccurred && $argumentName === null && !$unpack) {

@@ -690,12 +690,12 @@ class IntersectionType implements CompoundType
 
 	public function getFirstIterableKeyType(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getFirstIterableKeyType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
 	public function getLastIterableKeyType(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getLastIterableKeyType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
 	public function getIterableValueType(): Type
@@ -705,12 +705,12 @@ class IntersectionType implements CompoundType
 
 	public function getFirstIterableValueType(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getFirstIterableValueType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
 	public function getLastIterableValueType(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getLastIterableValueType());
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
 	public function isArray(): TrinaryLogic

@@ -45,8 +45,8 @@ final class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFu
 		}
 
 		$itemType = $functionReflection->getName() === 'reset'
-			? $argType->getFirstIterableValueType()
-			: $argType->getLastIterableValueType();
+			? $argType->getIterableValueType()
+			: $argType->getIterableValueType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $itemType;
 		}

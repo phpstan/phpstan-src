@@ -933,7 +933,7 @@ final class TypeCombinator
 			$valueTypes = [];
 			foreach ($results as $result) {
 				$keyTypes[] = $result->getIterableKeyType();
-				$valueTypes[] = $result->getLastIterableValueType();
+				$valueTypes[] = $result->getIterableValueType();
 				if ($result->isList()->yes()) {
 					continue;
 				}

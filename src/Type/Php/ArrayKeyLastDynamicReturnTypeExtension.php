@@ -32,7 +32,7 @@ final class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionRet
 			return new NullType();
 		}
 
-		$keyType = $argType->getLastIterableKeyType();
+		$keyType = $argType->getIterableKeyType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $keyType;
 		}

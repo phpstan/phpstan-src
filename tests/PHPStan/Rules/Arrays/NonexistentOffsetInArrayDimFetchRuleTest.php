@@ -852,7 +852,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/array-dim-fetch-on-array-key-first-last.php'], [
 			[
-				'Offset 0|null might not exist on list<string>.',
+				'Offset int<0, max>|null might not exist on list<string>.',
 				12,
 			],
 			[

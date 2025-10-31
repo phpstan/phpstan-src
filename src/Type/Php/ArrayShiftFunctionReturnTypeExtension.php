@@ -32,7 +32,7 @@ final class ArrayShiftFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return new NullType();
 		}
 
-		$itemType = $argType->getFirstIterableValueType();
+		$itemType = $argType->getIterableValueType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $itemType;
 		}

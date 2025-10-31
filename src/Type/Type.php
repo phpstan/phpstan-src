@@ -117,14 +117,18 @@ interface Type
 
 	public function getIterableKeyType(): Type;
 
+	/** @deprecated use getIterableKeyType */
 	public function getFirstIterableKeyType(): Type;
 
+	/** @deprecated use getIterableKeyType */
 	public function getLastIterableKeyType(): Type;
 
 	public function getIterableValueType(): Type;
 
+	/** @deprecated use getIterableValueType */
 	public function getFirstIterableValueType(): Type;
 
+	/** @deprecated use getIterableValueType */
 	public function getLastIterableValueType(): Type;
 
 	public function isArray(): TrinaryLogic;

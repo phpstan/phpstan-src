@@ -4790,7 +4790,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_map(function (): \stdClass {}, $conditionalKeysArray)',
 			],
 			[
-				'stdClass',
+				'\'foo\'|stdClass',
 				'array_pop($stringKeys)',
 			],
 			[
@@ -4802,7 +4802,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_pop($stdClassesWithIsset)',
 			],
 			[
-				'\'foo\'',
+				'\'foo\'|stdClass',
 				'array_shift($stringKeys)',
 			],
 			[
@@ -7169,23 +7169,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'reset($emptyConstantArray)',
 			],
 			[
-				'1',
+				'1|2',
 				'reset($constantArray)',
 			],
 			[
-				'\'baz\'|\'foo\'',
+				'\'bar\'|\'baz\'|\'foo\'',
 				'reset($conditionalArray)',
 			],
 			[
-				'0|1',
+				'0|1|2',
 				'reset($constantArrayOptionalKeys1)',
 			],
 			[
-				'0',
+				'0|1|2',
 				'reset($constantArrayOptionalKeys2)',
 			],
 			[
-				'0',
+				'0|1|2',
 				'reset($constantArrayOptionalKeys3)',
 			],
 			[
@@ -7205,23 +7205,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'end($emptyConstantArray)',
 			],
 			[
-				'2',
+				'1|2',
 				'end($constantArray)',
 			],
 			[
-				'\'bar\'|\'baz\'',
+				'\'bar\'|\'baz\'|\'foo\'',
 				'end($secondConditionalArray)',
 			],
 			[
-				'2',
+				'0|1|2',
 				'end($constantArrayOptionalKeys1)',
 			],
 			[
-				'2',
+				'0|1|2',
 				'end($constantArrayOptionalKeys2)',
 			],
 			[
-				'1|2',
+				'0|1|2',
 				'end($constantArrayOptionalKeys3)',
 			],
 		];
@@ -8644,43 +8644,43 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_last($emptyArray)',
 			],
 			[
-				'0',
+				'0|1|2',
 				'array_key_first($literalArray)',
 			],
 			[
-				'2',
+				'0|1|2',
 				'array_key_last($literalArray)',
 			],
 			[
-				'0',
+				'0|1|2|3',
 				'array_key_first($anotherLiteralArray)',
 			],
 			[
-				'2|3',
+				'0|1|2|3',
 				'array_key_last($anotherLiteralArray)',
 			],
 			[
-				"'a'|'b'",
+				"'a'|'b'|'c'",
 				'array_key_first($constantArrayOptionalKeys1)',
 			],
 			[
-				"'c'",
+				"'a'|'b'|'c'",
 				'array_key_last($constantArrayOptionalKeys1)',
 			],
 			[
-				"'a'",
+				"'a'|'b'|'c'",
 				'array_key_first($constantArrayOptionalKeys2)',
 			],
 			[
-				"'c'",
+				"'a'|'b'|'c'",
 				'array_key_last($constantArrayOptionalKeys2)',
 			],
 			[
-				"'a'",
+				"'a'|'b'|'c'",
 				'array_key_first($constantArrayOptionalKeys3)',
 			],
 			[
-				"'b'|'c'",
+				"'a'|'b'|'c'",
 				'array_key_last($constantArrayOptionalKeys3)',
 			],
 			[

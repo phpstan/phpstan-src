@@ -14,7 +14,7 @@ class Bug8084
 	 */
 	public function run(array $arr): void
 	{
-		assertType('0', array_shift($arr) ?? throw new Exception());
+		assertType('0|1', array_shift($arr) ?? throw new Exception());
 		assertType('1|null', array_shift($arr));
 	}
 }

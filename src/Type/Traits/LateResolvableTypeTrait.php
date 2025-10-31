@@ -200,12 +200,12 @@ trait LateResolvableTypeTrait
 
 	public function getFirstIterableKeyType(): Type
 	{
-		return $this->resolve()->getFirstIterableKeyType();
+		return $this->resolve()->getIterableKeyType();
 	}
 
 	public function getLastIterableKeyType(): Type
 	{
-		return $this->resolve()->getLastIterableKeyType();
+		return $this->resolve()->getIterableKeyType();
 	}
 
 	public function getIterableValueType(): Type
@@ -215,12 +215,12 @@ trait LateResolvableTypeTrait
 
 	public function getFirstIterableValueType(): Type
 	{
-		return $this->resolve()->getFirstIterableValueType();
+		return $this->resolve()->getIterableValueType();
 	}
 
 	public function getLastIterableValueType(): Type
 	{
-		return $this->resolve()->getLastIterableValueType();
+		return $this->resolve()->getIterableValueType();
 	}
 
 	public function isArray(): TrinaryLogic

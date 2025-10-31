@@ -639,12 +639,12 @@ class UnionType implements CompoundType
 
 	public function getFirstIterableKeyType(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getFirstIterableKeyType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
 	public function getLastIterableKeyType(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getLastIterableKeyType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
 	public function getIterableValueType(): Type
@@ -654,12 +654,12 @@ class UnionType implements CompoundType
 
 	public function getFirstIterableValueType(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getFirstIterableValueType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
 	public function getLastIterableValueType(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getLastIterableValueType());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
 	public function isArray(): TrinaryLogic

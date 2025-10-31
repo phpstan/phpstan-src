@@ -32,7 +32,7 @@ final class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturn
 			return new NullType();
 		}
 
-		$itemType = $argType->getLastIterableValueType();
+		$itemType = $argType->getIterableValueType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $itemType;
 		}

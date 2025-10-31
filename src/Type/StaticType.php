@@ -401,12 +401,12 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function getFirstIterableKeyType(): Type
 	{
-		return $this->getStaticObjectType()->getFirstIterableKeyType();
+		return $this->getStaticObjectType()->getIterableKeyType();
 	}
 
 	public function getLastIterableKeyType(): Type
 	{
-		return $this->getStaticObjectType()->getLastIterableKeyType();
+		return $this->getStaticObjectType()->getIterableKeyType();
 	}
 
 	public function getIterableValueType(): Type
@@ -416,12 +416,12 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function getFirstIterableValueType(): Type
 	{
-		return $this->getStaticObjectType()->getFirstIterableValueType();
+		return $this->getStaticObjectType()->getIterableValueType();
 	}
 
 	public function getLastIterableValueType(): Type
 	{
-		return $this->getStaticObjectType()->getLastIterableValueType();
+		return $this->getStaticObjectType()->getIterableValueType();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

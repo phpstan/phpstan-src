@@ -71,7 +71,7 @@ jobs:
 
       - name: "Compile PHAR"
         working-directory: "compiler/build"
-        run: "php ../box/vendor/bin/box compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel --sort-compiled-files"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -94,7 +94,7 @@ jobs:
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
-        run: "php ../box/vendor/bin/box compile --no-parallel"
+        run: "php ../box/vendor/bin/box compile --no-parallel --sort-compiled-files"
         env:
           PHAR_CHECKSUM: "1"
           COMPOSER_ROOT_VERSION: "2.1.x-dev"

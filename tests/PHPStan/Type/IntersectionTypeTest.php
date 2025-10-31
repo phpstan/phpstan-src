@@ -22,6 +22,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
 use Traversable;
+use function array_key_exists;
 use function count;
 use function sprintf;
 use const PHP_VERSION_ID;

@@ -34,7 +34,6 @@ use stdClass;
 use function array_merge;
 use function array_reverse;
 use function get_class;
-use function PHPStan\dumpType;
 use function sprintf;
 use const PHP_VERSION_ID;
 

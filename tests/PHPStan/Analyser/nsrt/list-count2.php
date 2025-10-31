@@ -119,4 +119,25 @@ class HelloWorld
 		assertType('non-empty-list', $arrB);
 	}
 
+	/**
+	 * @param non-empty-array $arrB
+	 */
+	function dontNarrowEmpty(array $arrB): void
+	{
+		$arrA = [];
+		assertType('array{}', $arrA);
+		
+		if (count($arrA) == count($arrB)) {
+			assertType('*NEVER*', $arrA);
+			assertType('non-empty-array', $arrB);
+		}
+		assertType('array{}', $arrA);
+
+		if (count($arrB) == count($arrA)) {
+			assertType('*NEVER*', $arrA);
+			assertType('non-empty-array', $arrB);
+		}
+		assertType('array{}', $arrA);
+	}
+
 }

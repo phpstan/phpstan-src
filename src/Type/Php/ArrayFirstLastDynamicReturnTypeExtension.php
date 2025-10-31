@@ -11,14 +11,15 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function in_array;
 
 #[AutowiredService]
-final class ArrayLastDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
+final class ArrayFirstLastDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'array_last' && $functionReflection->isBuiltin();
+		return in_array($functionReflection->getName(), ['array_first', 'array_last'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
@@ -36,7 +37,7 @@ final class ArrayLastDynamicReturnTypeExtension implements DynamicFunctionReturn
 			return new NullType();
 		}
 
-		$valueType = $argType->getLastIterableValueType();
+		$valueType = $argType->getIterableValueType();
 
 		if ($iterableAtLeastOnce->yes()) {
 			return $valueType;

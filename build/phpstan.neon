@@ -124,6 +124,7 @@ parameters:
 		- stubs/ReactStreams.stub
 		- stubs/NetteDIContainer.stub
 		- stubs/PhpParserName.stub
+		- stubs/PhpParserExpr.stub
 		- stubs/Identifier.stub
 
 rules:

@@ -14,6 +14,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function PHPStan\dumpType;
 
 final class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -32,6 +33,7 @@ final class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTy
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
+		dumpType($methodCall->getArgs());
 		if (count($methodCall->getArgs()) === 0) {
 			return ParametersAcceptorSelector::selectFromArgs(
 				$scope,
@@ -39,6 +41,7 @@ final class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTy
 				$methodReflection->getVariants(),
 			)->getReturnType();
 		}
+		dumpType($methodCall->getArgs());
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		if (!$argType instanceof ConstantStringType) {
 			return ParametersAcceptorSelector::selectFromArgs(

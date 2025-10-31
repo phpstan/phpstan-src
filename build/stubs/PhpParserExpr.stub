@@ -1,0 +1,102 @@
+<?php
+
+namespace PhpParser\Node\Expr;
+
+use PhpParser\Node;
+use PhpParser\NodeAbstract;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\VariadicPlaceholder;
+
+abstract class CallLike extends Expr {
+	/**
+	 * Return raw arguments, which may be actual Args, or VariadicPlaceholders for first-class
+	 * callables.
+	 *
+	 * @return list<Arg|VariadicPlaceholder>
+	 */
+	abstract public function getRawArgs(): array;
+	/**
+	 * Assert that this is not a first-class callable and return only ordinary Args.
+	 *
+	 * @return list<Arg>
+	 */
+	public function getArgs(): array {
+		assert(!$this->isFirstClassCallable());
+		return $this->getRawArgs();
+	}
+}
+
+class FuncCall extends CallLike {
+	/** @var list<Node\Arg|Node\VariadicPlaceholder> Arguments */
+	public array $args;
+
+	/**
+	 * Constructs a function call node.
+	 *
+	 * @param Node\Name|Expr $name Function name
+	 * @param list<Node\Arg|Node\VariadicPlaceholder> $args Arguments
+	 * @param array<string, mixed> $attributes Additional attributes
+	 */
+	public function __construct(Node $name, array $args = [], array $attributes = []) {}
+}
+
+class MethodCall extends CallLike {
+	/** @var list<Node\Arg|Node\VariadicPlaceholder> Arguments */
+	public array $args;
+
+	/**
+	 * Constructs a function call node.
+	 *
+	 * @param Expr $var Variable holding object
+	 * @param string|Identifier|Expr $name Method name
+	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param array<string, mixed> $attributes Additional attributes
+	 */
+	public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {}
+}
+
+class New_ extends CallLike {
+	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	public array $args;
+
+	/**
+	 * Constructs a function call node.
+	 *
+	 * @param Node\Name|Expr|Node\Stmt\Class_ $class Class name (or class node for anonymous classes)
+	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param array<string, mixed> $attributes Additional attributes
+	 */
+	public function __construct(Node $class, array $args = [], array $attributes = []) {}
+}
+
+class NullsafeMethodCall extends CallLike {
+	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	public array $args;
+
+	/**
+	 * Constructs a nullsafe method call node.
+	 *
+	 * @param Expr $var Variable holding object
+	 * @param string|Identifier|Expr $name Method name
+	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param array<string, mixed> $attributes Additional attributes
+	 */
+	public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {}
+}
+
+class StaticCall extends CallLike {
+	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	public array $args;
+
+	/**
+	 * Constructs a static method call node.
+	 *
+	 * @param Node\Name|Expr $class Class name
+	 * @param string|Identifier|Expr $name Method name
+	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param array<string, mixed> $attributes Additional attributes
+	 */
+	public function __construct(Node $class, $name, array $args = [], array $attributes = []) {}
+}

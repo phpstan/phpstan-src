@@ -100,3 +100,8 @@ class StaticCall extends CallLike {
 	 */
 	public function __construct(Node $class, $name, array $args = [], array $attributes = []) {}
 }
+
+class Closure extends Expr implements FunctionLike {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}

@@ -1,0 +1,10 @@
+<?php
+
+namespace PhpParser\Node;
+
+use PhpParser\NodeAbstract;
+
+class PropertyHook extends NodeAbstract implements FunctionLike {
+    /** @var null|Expr|list<Stmt> Hook body */
+    public $body;
+}

@@ -50,8 +50,8 @@ final class CleaningVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @param Node\Stmt[] $stmts
-	 * @return Node\Stmt[]
+	 * @param list<Node\Stmt|Node\Expr> $stmts
+	 * @return list<Node\Stmt>
 	 */
 	private function keepVariadicsAndYields(array $stmts, ?string $hookedPropertyName): array
 	{

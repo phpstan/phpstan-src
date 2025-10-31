@@ -31,7 +31,7 @@ final class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return null;
 		}
 
-		$delimiterType = $scope->getType($functionCall->getArgs()[0]->value);
+		$delimiterType = $scope->getType($args[0]->value);
 		$isEmptyString = (new ConstantStringType(''))->isSuperTypeOf($delimiterType);
 		if ($isEmptyString->yes()) {
 			return new ConstantBooleanType(false);

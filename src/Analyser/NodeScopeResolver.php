@@ -4455,7 +4455,7 @@ final class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param list<Node\Arg> $args
 	 */
 	private function getConstructorThrowPoint(MethodReflection $constructorReflection, ParametersAcceptor $parametersAcceptor, ClassReflection $classReflection, New_ $new, Name $className, array $args, MutatingScope $scope): ?ThrowPoint
 	{

@@ -49,11 +49,9 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(2, $reorderedArgs);
 
-		$this->assertArrayHasKey(0, $reorderedArgs);
 		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
 		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
-		$this->assertArrayHasKey(1, $reorderedArgs);
 		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
 		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
 		$this->assertSame(0, $reorderedArgs[1]->value->value);
@@ -90,17 +88,14 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(3, $reorderedArgs);
 
-		$this->assertArrayHasKey(0, $reorderedArgs);
 		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
 		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
-		$this->assertArrayHasKey(1, $reorderedArgs);
 		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
 		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
 		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
 		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue(), 'flags-arg with default value');
 
-		$this->assertArrayHasKey(2, $reorderedArgs);
 		$this->assertNull($reorderedArgs[2]->name, 'named-arg turned into regular numeric arg');
 		$this->assertInstanceOf(LNumber::class, $reorderedArgs[2]->value, 'depth-arg at the right position');
 		$this->assertSame(128, $reorderedArgs[2]->value->value);
@@ -153,10 +148,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(2, $reorderedArgs);
 
-		$this->assertArrayHasKey(0, $reorderedArgs);
 		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at unchanged position');
-
-		$this->assertArrayHasKey(1, $reorderedArgs);
 		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at unchanged position');
 		$this->assertSame(0, $reorderedArgs[1]->value->value);
 	}

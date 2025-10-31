@@ -471,6 +471,9 @@ final class ParametersAcceptorSelector
 		$parameters = null;
 		$singleParametersAcceptor = null;
 		if (count($parametersAcceptors) === 1) {
+			if (!array_is_list($args)) {
+				throw new ShouldNotHappenException('args is expected to be a list');
+			}
 			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptors[0], $args);
 			$singleParametersAcceptor = $parametersAcceptors[0];
 		}

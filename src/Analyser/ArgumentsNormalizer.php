@@ -182,8 +182,8 @@ final class ArgumentsNormalizer
 	}
 
 	/**
-	 * @param Arg[] $callArgs
-	 * @return ?array<int, Arg>
+	 * @param list<Arg> $callArgs
+	 * @return ?list<Arg>
 	 */
 	public static function reorderArgs(ParametersAcceptor $parametersAcceptor, array $callArgs): ?array
 	{
@@ -320,6 +320,10 @@ final class ArgumentsNormalizer
 
 		foreach ($appendArgs as $arg) {
 			$reorderedArgs[] = $arg;
+		}
+
+		if (!array_is_list($reorderedArgs)) {
+			throw new ShouldNotHappenException();
 		}
 
 		return $reorderedArgs;

@@ -49,7 +49,7 @@ final class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		$args = array_values($node->getArgs());
+		$args = $node->getArgs();
 		if (count($args) < 2) {
 			return [];
 		}

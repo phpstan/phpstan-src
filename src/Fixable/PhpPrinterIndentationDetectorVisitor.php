@@ -7,9 +7,9 @@ use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
+use function array_is_list;
 use function count;
 use function in_array;
-use function is_array;
 use function preg_match;
 use function preg_match_all;
 use function property_exists;
@@ -37,7 +37,7 @@ final class PhpPrinterIndentationDetectorVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		if (!is_array($node->stmts) || count($node->stmts) === 0) {
+		if (!array_is_list($node->stmts) || count($node->stmts) === 0) {
 			return null;
 		}
 

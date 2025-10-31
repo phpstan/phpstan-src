@@ -13,6 +13,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function count;

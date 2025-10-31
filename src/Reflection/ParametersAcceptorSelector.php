@@ -43,6 +43,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
 use function array_map;

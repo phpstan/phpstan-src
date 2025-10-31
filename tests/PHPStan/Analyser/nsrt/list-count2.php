@@ -201,10 +201,10 @@ class HelloWorld
 
 		if (count($arrA) == count($arrB, COUNT_RECURSIVE)) {
 			assertType('array{int, int, int}', $arrA);
-			assertType('non-empty-list', $arrB);
+			assertType('non-empty-list&hasOffsetValue(1, mixed)', $arrB);
 		}
 		assertType('array{int, int, int}', $arrA);
-		assertType('non-empty-list', $arrB);
+		assertType('non-empty-list&hasOffsetValue(1, mixed)', $arrB);
 	}
 
 	/**

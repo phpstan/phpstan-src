@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
+use function array_values;
 use function count;
 use function ksort;
 use function max;
@@ -324,7 +325,7 @@ final class ArgumentsNormalizer
 		}
 
 		if (!array_is_list($reorderedArgs)) {
-			throw new ShouldNotHappenException();
+			$reorderedArgs = array_values($reorderedArgs);
 		}
 
 		return $reorderedArgs;

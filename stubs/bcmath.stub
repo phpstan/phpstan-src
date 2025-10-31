@@ -1,0 +1,8 @@
+<?php
+
+namespace BcMath;
+
+class Number {
+    /** @var numeric-string */
+    public readonly string $value;
+}

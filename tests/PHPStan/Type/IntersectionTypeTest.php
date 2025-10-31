@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use DoctrineIntersectionTypeIsSupertypeOf\Collection;
 use Iterator;
 use ObjectTypeEnums\FooEnum;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -398,6 +399,9 @@ class IntersectionTypeTest extends PHPStanTestCase
 		$enumCases = $type->getEnumCases();
 		$this->assertCount(count($expectedEnumCases), $enumCases);
 		foreach ($enumCases as $i => $enumCase) {
+			if (!array_key_exists($i, $expectedEnumCases)) {
+				throw new ShouldNotHappenException();
+			}
 			$expectedEnumCase = $expectedEnumCases[$i];
 			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
 		}

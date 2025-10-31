@@ -8,6 +8,7 @@ use Exception;
 use Iterator;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -33,6 +34,7 @@ use stdClass;
 use function array_merge;
 use function array_reverse;
 use function get_class;
+use function PHPStan\dumpType;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -180,6 +182,12 @@ class UnionTypeTest extends PHPStanTestCase
 			new IntegerType(),
 			new StringType(),
 		]);
+		if (
+			!isset($unionTypeA->getTypes()[0])
+			|| !isset($unionTypeA->getTypes()[1])
+		) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$unionTypeA,
@@ -266,6 +274,12 @@ class UnionTypeTest extends PHPStanTestCase
 			]),
 			new ArrayType(new MixedType(), new ObjectType('DatePeriod')),
 		]);
+		if (
+			!isset($unionTypeB->getTypes()[0])
+			|| !isset($unionTypeB->getTypes()[1])
+		) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$unionTypeB,
@@ -477,6 +491,12 @@ class UnionTypeTest extends PHPStanTestCase
 			new IntegerType(),
 			new StringType(),
 		]);
+		if (
+			!isset($unionTypeA->getTypes()[0])
+			|| !isset($unionTypeA->getTypes()[1])
+		) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$unionTypeA,
@@ -570,6 +590,12 @@ class UnionTypeTest extends PHPStanTestCase
 			]),
 			new ArrayType(new MixedType(), new ObjectType('Item')),
 		]);
+		if (
+			!isset($unionTypeB->getTypes()[0])
+			|| !isset($unionTypeB->getTypes()[1])
+		) {
+			throw new ShouldNotHappenException();
+		}
 
 		yield [
 			$unionTypeB,

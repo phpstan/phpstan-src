@@ -6,17 +6,77 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\FunctionLike;
 
+class Block extends Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Case_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Catch_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Do_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class ElseIf_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Else_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Finally_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class For_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Foreach_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class If_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class Namespace_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class TryCatch extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
+class While_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}
+
 class ClassMethod extends Node\Stmt implements FunctionLike {
     /** @var list<Node\Stmt>|null Statements */
     public ?array $stmts;
 }
 
 class Function_ extends Node\Stmt implements FunctionLike {
-    /** @var list<Node\Stmt> Statements */
-    public array $stmts;
-}
-
-class If_ extends Node\Stmt {
     /** @var list<Node\Stmt> Statements */
     public array $stmts;
 }

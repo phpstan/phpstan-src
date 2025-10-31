@@ -24,7 +24,7 @@ final class PhpPrinter extends Standard
 		if (count($nodes) === 0) {
 			return $result;
 		}
-		$last = $nodes[count($nodes) - 1];
+		$last = array_last($nodes);
 
 		$trailingComma = $last->getAttribute(self::FUNC_ARGS_TRAILING_COMMA_ATTRIBUTE);
 		if ($trailingComma === false) {

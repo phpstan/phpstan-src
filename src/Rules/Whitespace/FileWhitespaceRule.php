@@ -56,13 +56,13 @@ final class FileWhitespaceRule implements Rule
 			{
 				if ($node instanceof Node\Stmt\Declare_) {
 					if ($node->stmts !== null && count($node->stmts) > 0) {
-						$this->lastNodes[] = $node->stmts[count($node->stmts) - 1];
+						$this->lastNodes[] = array_last($node->stmts);
 					}
 					return null;
 				}
 				if ($node instanceof Node\Stmt\Namespace_) {
 					if (count($node->stmts) > 0) {
-						$this->lastNodes[] = $node->stmts[count($node->stmts) - 1];
+						$this->lastNodes[] = array_last($node->stmts);
 					}
 					return null;
 				}
@@ -82,7 +82,7 @@ final class FileWhitespaceRule implements Rule
 		$nodeTraverser->traverse($nodes);
 
 		$lastNodes = $visitor->getLastNodes();
-		$lastNodes[] = $nodes[count($nodes) - 1];
+		$lastNodes[] = array_last($nodes);
 		foreach ($lastNodes as $lastNode) {
 			if (!$lastNode instanceof Node\Stmt\InlineHTML || Strings::match($lastNode->value, '#^(\s+)$#') === null) {
 				continue;

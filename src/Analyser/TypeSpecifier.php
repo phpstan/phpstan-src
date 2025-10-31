@@ -1517,7 +1517,7 @@ final class TypeSpecifier
 			} elseif (isset($parameters[$i])) {
 				$paramName = $parameters[$i]->getName();
 			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-				$lastParameter = $parameters[count($parameters) - 1];
+				$lastParameter = array_last($parameters);
 				$paramName = $lastParameter->getName();
 			} else {
 				continue;

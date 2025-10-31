@@ -309,8 +309,8 @@ final class FileTypeMapper
 					}
 				}
 
-				$className = $classStack[count($classStack) - 1] ?? null;
-				$functionName = $functionStack[count($functionStack) - 1] ?? null;
+				$className = array_last($classStack) ?? null;
+				$functionName = array_last($functionStack) ?? null;
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$docComment = GetLastDocComment::forNode($node);
@@ -378,7 +378,7 @@ final class FileTypeMapper
 							continue;
 						}
 
-						$className = $classStack[count($classStack) - 1] ?? null;
+						$className = array_last($classStack) ?? null;
 						if ($className === null) {
 							throw new ShouldNotHappenException();
 						}
@@ -531,8 +531,8 @@ final class FileTypeMapper
 					}
 				}
 
-				$className = $classStack[count($classStack) - 1] ?? null;
-				$functionName = $functionStack[count($functionStack) - 1] ?? null;
+				$className = array_last($classStack) ?? null;
+				$functionName = array_last($functionStack) ?? null;
 				$nameScopeKey = $this->getNameScopeKey($originalClassFileName, $className, $lookForTrait, $functionName);
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
@@ -540,9 +540,9 @@ final class FileTypeMapper
 					if (array_key_exists($nameScopeKey, $phpDocNodeMap)) {
 						$phpDocNode = $phpDocNodeMap[$nameScopeKey];
 						$typeMapStack[] = function () use ($namespace, $uses, $className, $lookForTrait, $functionName, $phpDocNode, $typeMapStack, $typeAliasStack, $constUses): TemplateTypeMap {
-							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+							$typeMapCb = array_last($typeMapStack) ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
-							$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
+							$typeAliasesMap = array_last($typeAliasStack) ?? [];
 							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, $typeAliasesMap, constUses: $constUses, typeAliasClassName: $lookForTrait);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
@@ -562,8 +562,8 @@ final class FileTypeMapper
 					}
 				}
 
-				$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
-				$typeAliasesMap = $typeAliasStack[count($typeAliasStack) - 1] ?? [];
+				$typeMapCb = array_last($typeMapStack) ?? null;
+				$typeAliasesMap = array_last($typeAliasStack) ?? [];
 
 				if (
 					(
@@ -671,7 +671,7 @@ final class FileTypeMapper
 							continue;
 						}
 
-						$className = $classStack[count($classStack) - 1] ?? null;
+						$className = array_last($classStack) ?? null;
 						if ($className === null) {
 							throw new ShouldNotHappenException();
 						}

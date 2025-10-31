@@ -490,7 +490,7 @@ final class ParametersAcceptorSelector
 				if (isset($parameters[$i])) {
 					$parameter = $parameters[$i];
 				} elseif (count($parameters) > 0 && $singleParametersAcceptor->isVariadic()) {
-					$parameter = $parameters[count($parameters) - 1];
+					$parameter = array_last($parameters);
 				}
 			}
 

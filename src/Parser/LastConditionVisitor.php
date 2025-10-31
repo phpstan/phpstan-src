@@ -87,7 +87,7 @@ final class LastConditionVisitor extends NodeVisitorAbstract
 			}
 
 			$if = $statements[$statementCount - 2];
-			$cond = count($if->elseifs) > 0 ? $if->elseifs[count($if->elseifs) - 1]->cond : $if->cond;
+			$cond = count($if->elseifs) > 0 ? array_last($if->elseifs)->cond : $if->cond;
 			$cond->setAttribute(self::ATTRIBUTE_NAME, true);
 		}
 

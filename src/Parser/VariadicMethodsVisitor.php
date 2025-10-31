@@ -11,7 +11,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use function array_key_exists;
 use function array_pop;
-use function count;
 use function in_array;
 use function sprintf;
 
@@ -74,7 +73,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			$this->inMethodStack[] = $node->name->name;
 		}
 
-		$lastMethod = $this->inMethodStack[count($this->inMethodStack) - 1] ?? null;
+		$lastMethod = array_last($this->inMethodStack) ?? null;
 
 		if (
 			$lastMethod !== null
@@ -82,7 +81,7 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 			&& $node->name instanceof Name
 			&& in_array((string) $node->name, ParametersAcceptor::VARIADIC_FUNCTIONS, true)
 		) {
-			$lastClass = $this->classStack[count($this->classStack) - 1] ?? null;
+			$lastClass = array_last($this->classStack) ?? null;
 			if ($lastClass !== null) {
 				if (
 					!array_key_exists($lastClass, $this->variadicMethods)
@@ -101,8 +100,8 @@ final class VariadicMethodsVisitor extends NodeVisitorAbstract
 	public function leaveNode(Node $node): ?Node
 	{
 		if ($node instanceof ClassMethod) {
-			$lastClass = $this->classStack[count($this->classStack) - 1] ?? null;
-			$lastMethod = $this->inMethodStack[count($this->inMethodStack) - 1] ?? null;
+			$lastClass = array_last($this->classStack) ?? null;
+			$lastMethod = array_last($this->inMethodStack) ?? null;
 			if ($lastClass !== null && $lastMethod !== null) {
 				$this->variadicMethods[$lastClass][$lastMethod] ??= false;
 			}

@@ -1481,7 +1481,7 @@ final class NodeScopeResolver
 
 			$bodyScope = $initScope;
 			$isIterableAtLeastOnce = TrinaryLogic::createYes();
-			$lastCondExpr = $stmt->cond[count($stmt->cond) - 1] ?? null;
+			$lastCondExpr = array_last($stmt->cond) ?? null;
 			foreach ($stmt->cond as $condExpr) {
 				$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep());
@@ -5239,7 +5239,7 @@ final class NodeScopeResolver
 					}
 					$parameter = $parameters[$i];
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-					$lastParameter = $parameters[count($parameters) - 1];
+					$lastParameter = array_last($parameters);
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
 
@@ -5432,7 +5432,7 @@ final class NodeScopeResolver
 			if (isset($parameters[$i])) {
 				$currentParameter = $parameters[$i];
 			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-				$currentParameter = $parameters[count($parameters) - 1];
+				$currentParameter = array_last($parameters);
 			}
 
 			if ($currentParameter !== null) {

@@ -39,7 +39,7 @@ final class GenericParametersAcceptorResolver
 					continue;
 				}
 				if (count($parameters) > 0) {
-					$lastParameter = $parameters[count($parameters) - 1];
+					$lastParameter = array_last($parameters);
 					if ($lastParameter->isVariadic()) {
 						$parameterName = $lastParameter->getName();
 						if (array_key_exists($parameterName, $namedArgTypes)) {

@@ -47,6 +47,7 @@
 		"symfony/polyfill-php80": "^1.23",
 		"symfony/polyfill-php81": "^1.27",
 		"symfony/polyfill-php83": "^1.33",
+		"symfony/polyfill-php85": "^1.33",
 		"symfony/process": "^5.4.3",
 		"symfony/service-contracts": "^2.5.0",
 		"symfony/string": "^5.4.3"

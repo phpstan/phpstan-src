@@ -3779,7 +3779,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 				if (isset($callableParameters[$i])) {
 					$parameterType = self::intersectButNotNever($parameterType, $callableParameters[$i]->getType());
 				} elseif (count($callableParameters) > 0) {
-					$lastParameter = $callableParameters[count($callableParameters) - 1];
+					$lastParameter = array_last($callableParameters);
 					if ($lastParameter->isVariadic()) {
 						$parameterType = self::intersectButNotNever($parameterType, $lastParameter->getType());
 					} else {
@@ -3972,7 +3972,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 				if (isset($callableParameters[$i])) {
 					$parameterType = self::intersectButNotNever($parameterType, $callableParameters[$i]->getType());
 				} elseif (count($callableParameters) > 0) {
-					$lastParameter = $callableParameters[count($callableParameters) - 1];
+					$lastParameter = array_last($callableParameters);
 					if ($lastParameter->isVariadic()) {
 						$parameterType = self::intersectButNotNever($parameterType, $lastParameter->getType());
 					} else {

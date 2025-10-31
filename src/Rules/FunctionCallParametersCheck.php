@@ -586,8 +586,8 @@ final class FunctionCallParametersCheck
 						break;
 					}
 
-					$parameter = $parameters[count($parameters) - 1];
-					$originalParameter = $originalParameters[count($originalParameters) - 1];
+					$parameter = array_last($parameters);
+					$originalParameter = array_last($originalParameters);
 					if (!$parameter->isVariadic()) {
 						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null, null];
 						break; // func_get_args

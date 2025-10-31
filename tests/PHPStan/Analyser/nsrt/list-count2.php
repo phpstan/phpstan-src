@@ -15,8 +15,10 @@ class HelloWorld
 	public function sayIdenticalLists($listA, array $listB): void
 	{
 		if (count($listA) === count($listB)) {
+			assertType('non-empty-list<int>', $listA);
 			assertType('non-empty-list<int>', $listB);
 		}
+		assertType('non-empty-list<int>', $listA);
 		assertType('list<int>', $listB);
 	}
 
@@ -26,8 +28,10 @@ class HelloWorld
 	public function sayIdenticalList($listA, array $arrB): void
 	{
 		if (count($listA) === count($arrB)) {
+			assertType('non-empty-list<int>', $listA);
 			assertType('non-empty-array', $arrB);
 		}
+		assertType('non-empty-list<int>', $listA);
 		assertType('array', $arrB);
 	}
 
@@ -37,8 +41,10 @@ class HelloWorld
 	public function sayEqualArray($arrA, array $arrB): void
 	{
 		if (count($arrA) == count($arrB)) {
+			assertType('non-empty-array<int>', $arrA);
 			assertType('non-empty-array', $arrB);
 		}
+		assertType('non-empty-array<int>', $arrA);
 		assertType('array', $arrB);
 	}
 
@@ -49,8 +55,10 @@ class HelloWorld
 	public function sayEqualIntArray($arrA, array $arrB): void
 	{
 		if (count($arrA) == count($arrB)) {
+			assertType('non-empty-array<int>', $arrA);
 			assertType('non-empty-array<int>', $arrB);
 		}
+		assertType('non-empty-array<int>', $arrA);
 		assertType('array<int>', $arrB);
 	}
 
@@ -61,8 +69,10 @@ class HelloWorld
 	public function sayEqualStringArray($arrA, array $arrB): void
 	{
 		if (count($arrA) == count($arrB)) {
+			assertType('non-empty-array<int>', $arrA);
 			assertType('non-empty-array<string>', $arrB);
 		}
+		assertType('non-empty-array<int>', $arrA);
 		assertType('array<string>', $arrB);
 	}
 
@@ -76,6 +86,7 @@ class HelloWorld
 			assertType('array<int>', $arrA);
 			assertType('array<string>', $arrB);
 		}
+		assertType('array<int>', $arrA);
 		assertType('array<string>', $arrB);
 	}
 
@@ -86,8 +97,10 @@ class HelloWorld
 	function sayEqualArrayShape($arrA, array $arrB): void
 	{
 		if (count($arrA) == count($arrB)) {
+			assertType('array{int, int, int}', $arrA);
 			assertType('array{mixed, mixed, mixed}', $arrB);
 		}
+		assertType('array{int, int, int}', $arrA);
 		assertType('list', $arrB);
 	}
 
@@ -99,8 +112,10 @@ class HelloWorld
 	{
 		if (count($arrA) == count($arrB)) {
 			assertType('array{mixed, mixed, mixed}', $arrA);
+			assertType('array{int, int, int}', $arrB);
 		}
 		assertType('list', $arrA);
+		assertType('array{int, int, int}', $arrB);
 	}
 
 	/**
@@ -114,8 +129,10 @@ class HelloWorld
 		}
 
 		if (count($arrA) == count($arrB)) {
+			assertType('array{int, int, int}', $arrA);
 			assertType('array{mixed, mixed, mixed}', $arrB);
 		}
+		assertType('array{int, int, int}', $arrA);
 		assertType('non-empty-list', $arrB);
 	}
 
@@ -126,16 +143,16 @@ class HelloWorld
 	{
 		$arrA = [];
 		assertType('array{}', $arrA);
-		
+
 		if (count($arrA) == count($arrB)) {
 			assertType('*NEVER*', $arrA);
-			assertType('non-empty-array', $arrB);
+			assertType('non-empty-array', $arrB); // could be '*NEVER*'
 		}
 		assertType('array{}', $arrA);
 
 		if (count($arrB) == count($arrA)) {
 			assertType('*NEVER*', $arrA);
-			assertType('non-empty-array', $arrB);
+			assertType('non-empty-array', $arrB); // could be '*NEVER*'
 		}
 		assertType('array{}', $arrA);
 	}

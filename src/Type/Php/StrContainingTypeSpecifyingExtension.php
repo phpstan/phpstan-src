@@ -15,6 +15,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -65,7 +66,11 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		$args = $node->getArgs();
 
 		if (count($args) >= 2) {
-			[$hackstackArg, $needleArg] = self::STR_CONTAINING_FUNCTIONS[strtolower($functionReflection->getName())];
+			$lowerFunctionName = strtolower($functionReflection->getName());
+			if (!array_key_exists($lowerFunctionName, self::STR_CONTAINING_FUNCTIONS)) {
+				throw new ShouldNotHappenException();
+			}
+			[$hackstackArg, $needleArg] = self::STR_CONTAINING_FUNCTIONS[$lowerFunctionName];
 
 			$haystackType = $scope->getType($args[$hackstackArg]->value);
 			$needleType = $scope->getType($args[$needleArg]->value)->toString();

@@ -8,10 +8,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function array_key_exists;
 use function in_array;
 
 #[AutowiredService]
@@ -50,6 +52,9 @@ final class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		Scope $scope,
 	): ?Type
 	{
+		if (!array_key_exists($functionReflection->getName(), self::ARGUMENTS_POSITIONS)) {
+			throw new ShouldNotHappenException();
+		}
 		$argumentPosition = self::ARGUMENTS_POSITIONS[$functionReflection->getName()];
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {
 			return null;

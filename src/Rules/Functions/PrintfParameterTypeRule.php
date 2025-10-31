@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -142,6 +143,10 @@ final class PrintfParameterTypeRule implements Rule
 					)->result
 				) {
 					continue;
+				}
+
+				if (!array_key_exists($placeholder->acceptingType, $allowedTypeNameMap)) {
+					throw new ShouldNotHappenException();
 				}
 
 				$errors[] = RuleErrorBuilder::message(

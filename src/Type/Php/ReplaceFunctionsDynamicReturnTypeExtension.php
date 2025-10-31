@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -196,6 +197,10 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): ?Type
 	{
+		if (!array_key_exists($functionReflection->getName(), self::FUNCTIONS_SUBJECT_POSITION)) {
+			throw new ShouldNotHappenException();
+		}
+
 		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
 		if (count($functionCall->getArgs()) <= $argumentPosition) {
 			return null;

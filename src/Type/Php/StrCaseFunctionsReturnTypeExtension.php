@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -19,10 +20,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_diff;
+use function array_key_exists;
 use function array_map;
 use function count;
 use function in_array;
-use function is_callable;
 use function mb_check_encoding;
 use const MB_CASE_LOWER;
 use const MB_CASE_UPPER;
@@ -62,14 +63,15 @@ final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturn
 		$fnName = $functionReflection->getName();
 		$args = $functionCall->getArgs();
 
-		if (count($args) < self::FUNCTIONS[$fnName]) {
-			return null;
+		if (!array_key_exists($fnName, self::FUNCTIONS)) {
+			throw new ShouldNotHappenException();
 		}
+		$requiredArgs = self::FUNCTIONS[$fnName];
 
-		$argType = $scope->getType($args[0]->value);
-		if (!is_callable($fnName)) {
+		if (count($args) < $requiredArgs) {
 			return null;
 		}
+		$argType = $scope->getType($args[0]->value);
 
 		$modes = [];
 		$keepLowercase = false;

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -18,6 +19,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
 use function array_map;
 use function count;
 use function hash_algos;
@@ -101,7 +103,11 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 			return null;
 		}
 
-		$functionData = self::SUPPORTED_FUNCTIONS[strtolower($functionReflection->getName())];
+		$lowerFunctionName = strtolower($functionReflection->getName());
+		if (!array_key_exists($lowerFunctionName, self::SUPPORTED_FUNCTIONS)) {
+			throw new ShouldNotHappenException();
+		}
+		$functionData = self::SUPPORTED_FUNCTIONS[$lowerFunctionName];
 		if (is_bool($functionData['binary'])) {
 			$binaryType = new ConstantBooleanType($functionData['binary']);
 		} elseif (isset($functionCall->getArgs()[$functionData['binary']])) {

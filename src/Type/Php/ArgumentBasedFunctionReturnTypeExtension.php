@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -44,6 +45,9 @@ final class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionR
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
+		if (!array_key_exists($functionReflection->getName(), self::FUNCTION_NAMES)) {
+			throw new ShouldNotHappenException();
+		}
 		$argumentPosition = self::FUNCTION_NAMES[$functionReflection->getName()];
 
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {

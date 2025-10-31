@@ -23,6 +23,7 @@ parameters:
 		nodesByStringCountMax: 128
 	checkUninitializedProperties: true
 	checkMissingCallableSignature: true
+	reportPossiblyNonexistentConstantArrayOffset: true
 	excludePaths:
 		- ../tests/*/data/*
 		- ../tests/tmp/*

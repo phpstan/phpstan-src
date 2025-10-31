@@ -1,0 +1,17 @@
+<?php
+
+namespace PhpParser\Node\Stmt;
+
+use PhpParser\Modifiers;
+use PhpParser\Node;
+use PhpParser\Node\FunctionLike;
+
+class ClassMethod extends Node\Stmt implements FunctionLike {
+    /** @var list<Node\Stmt>|null Statements */
+    public ?array $stmts;
+}
+
+class If_ extends Node\Stmt {
+    /** @var list<Node\Stmt> Statements */
+    public array $stmts;
+}

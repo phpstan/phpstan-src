@@ -16,6 +16,7 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../stubs',
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
+	// when adding new polyfills, don't forget to also append them in 'exclude-namespaces' below
 	'../../vendor/symfony/polyfill-php80',
 	'../../vendor/symfony/polyfill-php81',
 	'../../vendor/symfony/polyfill-php83',
@@ -248,6 +249,8 @@ return [
 		'Symfony\Polyfill\Php80',
 		'Symfony\Polyfill\Php81',
 		'Symfony\Polyfill\Php83',
+		'Symfony\Polyfill\Php84',
+		'Symfony\Polyfill\Php85',
 		'Symfony\Polyfill\Mbstring',
 		'Symfony\Polyfill\Intl\Normalizer',
 		'Symfony\Polyfill\Intl\Grapheme',

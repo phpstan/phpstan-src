@@ -6,7 +6,7 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\FunctionLike;
 
-class Block extends Stmt {
+class Block extends Node\Stmt {
     /** @var list<Node\Stmt> Statements */
     public array $stmts;
 }

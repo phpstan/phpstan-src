@@ -28,7 +28,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     outputs:
-      matrix: ${{ steps.download-data.outputs.matrix }}
+      matrix: ${{ steps.shards.outputs.shards }}
 
     steps:
       - name: "Checkout"
@@ -55,11 +55,15 @@ jobs:
 
       - name: "Download data"
         working-directory: "issue-bot"
-        id: download-data
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "matrix=$(./console.php download)" >> $GITHUB_OUTPUT
+        run: ./console.php download > matrix.json
 
+      - name: "Output shards"
+        id: shards
+        working-directory: "issue-bot"
+        run: |
+          echo "shards=$(jq -c '{include: [range(length) | {shard: .}]}' matrix.json)" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
@@ -70,6 +74,11 @@ jobs:
         with:
           name: issue-cache
           path: issue-bot/tmp/issueCache.tmp
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: matrix
+          path: issue-bot/matrix.json
 
   analyse:
     name: "Analyse"
@@ -109,15 +118,32 @@ jobs:
           attempt_limit: 5
           attempt_delay: 1000
 
+      - uses: Wandalen/wretry.action@v3.8.0
+        with:
+          action: actions/download-artifact@v4
+          with: |
+            name: matrix
+            path: issue-bot
+          attempt_limit: 5
+          attempt_delay: 1000
+
+      - name: "Extract shard"
+        working-directory: "issue-bot"
+        id: chunk
+        run: |
+          echo "phpVersion=$(jq -r '.[${{ matrix.shard }}].phpVersion' matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "playgroundExamples=$(jq -r '.[${{ matrix.shard }}].playgroundExamples' matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "chunkNumber=$(jq -r '.[${{ matrix.shard }}].chunkNumber' matrix.json)" >> "$GITHUB_OUTPUT"
+
       - name: "Run PHPStan"
         working-directory: "issue-bot"
         timeout-minutes: 5
-        run: ./console.php run ${{ matrix.phpVersion }} ${{ matrix.playgroundExamples }}
+        run: ./console.php run ${{ steps.chunk.outputs.phpVersion }} ${{ steps.chunk.outputs.playgroundExamples }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: results-${{ matrix.phpVersion }}-${{ matrix.chunkNumber }}
-          path: issue-bot/tmp/results-${{ matrix.phpVersion }}-*.tmp
+          name: results-${{ steps.chunk.outputs.phpVersion }}-${{ steps.chunk.outputs.chunkNumber }}
+          path: issue-bot/tmp/results-${{ steps.chunk.outputs.phpVersion }}-*.tmp
 
   evaluate:
     name: "Evaluate results"

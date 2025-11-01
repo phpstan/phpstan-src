@@ -141,7 +141,7 @@ class DownloadCommand extends Command
 			}
 		}
 
-		$output->writeln(Json::encode(['include' => $matrix]));
+		$output->writeln(Json::encode($matrix));
 
 		return 0;
 	}

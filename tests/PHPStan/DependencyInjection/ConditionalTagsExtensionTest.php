@@ -16,10 +16,14 @@ class ConditionalTagsExtensionTest extends PHPStanTestCase
 		$enabledServices = array_map(static fn ($service) => get_class($service), $enabledServices);
 		$this->assertNotContains(TestedConditionalServiceDisabled::class, $enabledServices);
 		$this->assertContains(TestedConditionalServiceEnabled::class, $enabledServices);
+		$this->assertContains(TestedConditionalServiceNotDisabled::class, $enabledServices);
+		$this->assertNotContains(TestedConditionalServiceNotEnabled::class, $enabledServices);
 		$this->assertNotContains(TestedConditionalServiceDisabledDisabled::class, $enabledServices);
 		$this->assertNotContains(TestedConditionalServiceDisabledEnabled::class, $enabledServices);
 		$this->assertNotContains(TestedConditionalServiceEnabledDisabled::class, $enabledServices);
 		$this->assertContains(TestedConditionalServiceEnabledEnabled::class, $enabledServices);
+		$this->assertContains(TestedConditionalServiceEnabledNotDisabled::class, $enabledServices);
+		$this->assertNotContains(TestedConditionalServiceEnabledNotEnabled::class, $enabledServices);
 	}
 
 	/**

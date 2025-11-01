@@ -11,6 +11,10 @@ conditionalTags:
 		phpstan.rules.rule: %disabled%
 	PHPStan\DependencyInjection\TestedConditionalServiceEnabled:
 		phpstan.rules.rule: %enabled%
+	PHPStan\DependencyInjection\TestedConditionalServiceNotDisabled:
+		phpstan.rules.rule: not(%disabled%)
+	PHPStan\DependencyInjection\TestedConditionalServiceNotEnabled:
+		phpstan.rules.rule: not(%enabled%)
 	PHPStan\DependencyInjection\TestedConditionalServiceDisabledDisabled:
 		phpstan.rules.rule: [%disabled%, %disabled%]
 	PHPStan\DependencyInjection\TestedConditionalServiceDisabledEnabled:
@@ -19,11 +23,19 @@ conditionalTags:
 		phpstan.rules.rule: [%enabled%, %disabled%]
 	PHPStan\DependencyInjection\TestedConditionalServiceEnabledEnabled:
 		phpstan.rules.rule: [%enabled%, %enabled%]
+	PHPStan\DependencyInjection\TestedConditionalServiceEnabledNotEnabled:
+		phpstan.rules.rule: [%enabled%, not(%enabled%)]
+	PHPStan\DependencyInjection\TestedConditionalServiceEnabledNotDisabled:
+		phpstan.rules.rule: [%enabled%, not(%disabled%)]
 
 services:
 	- PHPStan\DependencyInjection\TestedConditionalServiceDisabled
 	- PHPStan\DependencyInjection\TestedConditionalServiceEnabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceNotDisabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceNotEnabled
 	- PHPStan\DependencyInjection\TestedConditionalServiceDisabledDisabled
 	- PHPStan\DependencyInjection\TestedConditionalServiceDisabledEnabled
 	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledDisabled
 	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledEnabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledNotEnabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledNotDisabled

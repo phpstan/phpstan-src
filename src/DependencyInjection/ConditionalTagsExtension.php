@@ -2,8 +2,10 @@
 
 namespace PHPStan\DependencyInjection;
 
+use InvalidArgumentException;
 use Nette;
 use Nette\DI\CompilerExtension;
+use Nette\DI\Definitions\Statement;
 use Nette\Schema\Expect;
 use Override;
 use PHPStan\ShouldNotHappenException;
@@ -23,7 +25,11 @@ final class ConditionalTagsExtension extends CompilerExtension
 		$tags = array_values(ValidateServiceTagsExtension::INTERFACE_TAG_MAPPING);
 
 		return Expect::arrayOf(Expect::structure(
-			array_fill_keys($tags, Expect::anyOf(Expect::bool(), Expect::listOf(Expect::bool()))),
+			array_fill_keys($tags, Expect::anyOf(
+				Expect::bool(),
+				Expect::type(Statement::class),
+				Expect::listOf(Expect::anyOf(Expect::bool(), Expect::type(Statement::class))),
+			)),
 		)->min(1));
 	}
 
@@ -41,16 +47,30 @@ final class ConditionalTagsExtension extends CompilerExtension
 			}
 			foreach ($services as $service) {
 				foreach ($tags as $tag => $parameter) {
-					if (is_array($parameter)) {
-						$parameter = array_reduce($parameter, static fn ($carry, $item) => $carry && (bool) $item, true);
-					}
-					if ((bool) $parameter) {
+					$parameter = is_array($parameter)
+						? array_reduce($parameter, fn ($carry, $item) => $carry && $this->resolveValue($item), true)
+						: $this->resolveValue($parameter);
+
+					if ($parameter) {
 						$service->addTag($tag);
 						continue;
 					}
 				}
 			}
 		}
+	}
+
+	public function resolveValue(mixed $parameter): bool
+	{
+		if (!$parameter instanceof Statement) {
+			return (bool) $parameter;
+		}
+
+		if ($parameter->getEntity() === 'not') {
+			return ! (bool) $parameter->arguments[0];
+		}
+
+		throw new InvalidArgumentException('Unsupported Statement.');
 	}
 
 }

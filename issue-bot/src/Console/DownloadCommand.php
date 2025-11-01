@@ -116,6 +116,9 @@ class DownloadCommand extends Command
 				if (!in_array(80400, $resultPhpVersions, true)) {
 					$resultPhpVersions[] = 80400;
 				}
+				if (!in_array(80500, $resultPhpVersions, true)) {
+					$resultPhpVersions[] = 80500;
+				}
 
 				if (!in_array($phpVersion, $resultPhpVersions, true)) {
 					continue;

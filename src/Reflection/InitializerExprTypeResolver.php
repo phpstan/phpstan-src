@@ -1080,21 +1080,26 @@ final class InitializerExprTypeResolver
 				TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
 			);
 
+			$accessories = [];
 			foreach ($leftType->getConstantArrays() as $type) {
 				foreach ($type->getKeyTypes() as $i => $offsetType) {
 					if ($type->isOptionalKey($i)) {
 						continue;
 					}
 					$valueType = $type->getValueTypes()[$i];
-					$arrayType = TypeCombinator::intersect($arrayType, new HasOffsetValueType($offsetType, $valueType));
+					$accessories[] = new HasOffsetValueType($offsetType, $valueType);
 				}
 			}
 
 			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+				$accessories[] = new NonEmptyArrayType();
 			}
 			if ($leftType->isList()->yes() && $rightType->isList()->yes()) {
-				$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+				$accessories[] = new AccessoryArrayListType();
+			}
+
+			if (count($accessories) > 0) {
+				$arrayType = TypeCombinator::intersect($arrayType, ...$accessories);
 			}
 
 			return $arrayType;

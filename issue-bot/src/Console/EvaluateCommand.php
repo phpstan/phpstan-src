@@ -105,10 +105,7 @@ class EvaluateCommand extends Command
 				$originalPhpVersions = array_keys($originalErrors);
 				$newResult = $newResults[$hash];
 				if (array_key_exists(70100, $originalErrors) || $originalPhpVersions === [70400]) {
-					$newResult[70100] = $newResult[70300];
-				}
-				if (array_key_exists(70200, $originalErrors)) {
-					$newResult[70200] = $newResult[70300];
+					$newResult[70100] = $newResult[70200];
 				}
 
 				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResult));

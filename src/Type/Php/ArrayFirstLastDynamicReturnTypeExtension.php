@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -19,7 +20,12 @@ final class ArrayFirstLastDynamicReturnTypeExtension implements DynamicFunctionR
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return in_array($functionReflection->getName(), ['array_first', 'array_last'], true);
+		return in_array($functionReflection->getName(), [
+			'array_key_first',
+			'array_key_last',
+			'array_first',
+			'array_last',
+		], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
@@ -37,13 +43,24 @@ final class ArrayFirstLastDynamicReturnTypeExtension implements DynamicFunctionR
 			return new NullType();
 		}
 
-		$valueType = $argType->getIterableValueType();
-
-		if ($iterableAtLeastOnce->yes()) {
-			return $valueType;
+		switch ($functionReflection->getName()) {
+			case 'array_key_first':
+			case 'array_key_last':
+				$resultType = $argType->getIterableKeyType();
+				break;
+			case 'array_first':
+			case 'array_last':
+				$resultType = $argType->getIterableValueType();
+				break;
+			default:
+				throw new ShouldNotHappenException();
 		}
 
-		return TypeCombinator::union($valueType, new NullType());
+		if ($iterableAtLeastOnce->yes()) {
+			return $resultType;
+		}
+
+		return TypeCombinator::union($resultType, new NullType());
 	}
 
 }

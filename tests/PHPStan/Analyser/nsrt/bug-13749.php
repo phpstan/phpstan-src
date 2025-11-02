@@ -46,4 +46,24 @@ class HelloWorld
 		}
 	}
 
+	/**
+	 * @param non-empty-array $nonEmptyArr
+	 */
+	public function sayCount(array $arr, array $nonEmptyArr): void
+	{
+		if (count($arr) === count($nonEmptyArr)) {
+			assertType('non-empty-array', $arr);
+			assertType('non-empty-array', $nonEmptyArr);
+		}
+		assertType('array', $arr);
+		assertType('non-empty-array', $nonEmptyArr);
+
+		if (count($nonEmptyArr) === count($arr)) {
+			assertType('non-empty-array', $arr);
+			assertType('non-empty-array', $nonEmptyArr);
+		}
+		assertType('array', $arr);
+		assertType('non-empty-array', $nonEmptyArr);
+	}
+
 }

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<WhileLoopAlwaysTrueConditionRule>
@@ -45,6 +46,12 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 				65,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testRulePHP81(): void
+	{
+		$this->analyse([__DIR__ . '/data/while-loop-true-php81.php'], []);
 	}
 
 }

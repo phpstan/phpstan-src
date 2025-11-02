@@ -2250,6 +2250,25 @@ final class TypeSpecifier
 
 	public function resolveIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
+		$specifiedTypes = $this->resolveNormalizedIdentical($expr, $scope, $context);
+
+		// merge result of fn1() === fn2() and fn2() === fn1()
+		$leftExpr = $expr->left;
+		$rightExpr = $expr->right;
+		if ($rightExpr instanceof FuncCall && $leftExpr instanceof FuncCall) {
+			return $specifiedTypes->unionWith(
+				$this->resolveNormalizedIdentical(new Expr\BinaryOp\Identical(
+					$rightExpr,
+					$leftExpr,
+				), $scope, $context),
+			);
+		}
+
+		return $specifiedTypes;
+	}
+
+	private function resolveNormalizedIdentical(Expr\BinaryOp\Identical $expr, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
+	{
 		// Normalize to: fn() === expr
 		$leftExpr = $expr->left;
 		$rightExpr = $expr->right;

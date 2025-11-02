@@ -2464,7 +2464,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'count($arrayOfIntegers)',
 			],
 			[
-				'int<0, max>',
+				'3',
 				'count($arrayOfIntegers, \COUNT_RECURSIVE)',
 			],
 			[

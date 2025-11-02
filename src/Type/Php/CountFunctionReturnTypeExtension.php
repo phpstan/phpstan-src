@@ -13,7 +13,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use function count;
 use function in_array;
-use const COUNT_RECURSIVE;
+use const COUNT_NORMAL;
 
 #[AutowiredService]
 final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -30,11 +30,12 @@ final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
+		$arrayType = $scope->getType($args[0]->value);
 		if (!$this->isNormalCount($functionCall, $arrayType, $scope)->yes()) {
 			if ($arrayType->isIterableAtLeastOnce()->yes()) {
 				return IntegerRangeType::fromInterval(1, null);
@@ -42,10 +43,10 @@ final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return null;
 		}
 
-		return $scope->getType($functionCall->getArgs()[0]->value)->getArraySize();
+		return $scope->getType($args[0]->value)->getArraySize();
 	}
 
-	private function isNormalCount(FuncCall $countFuncCall, Type $countedType, Scope $scope,): TrinaryLogic
+	private function isNormalCount(FuncCall $countFuncCall, Type $countedType, Scope $scope): TrinaryLogic
 	{
 		if (count($countFuncCall->getArgs()) === 1) {
 			$isNormalCount = TrinaryLogic::createYes();

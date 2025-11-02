@@ -1,5 +1,7 @@
 <?php
 
+namespace CountRecursive;
+
 use function PHPStan\Testing\assertType;
 
 class HelloWorld

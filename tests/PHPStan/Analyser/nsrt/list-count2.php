@@ -157,4 +157,68 @@ class HelloWorld
 		assertType('array{}', $arrA);
 	}
 
+	/**
+	 * @param non-empty-list<int> $listA
+	 * @param list<int> $listB
+	 */
+	public function supportsNormalCount($listA, array $listB): void
+	{
+		if (count($listA, COUNT_NORMAL) === count($listB)) {
+			assertType('non-empty-list<int>', $listA);
+			assertType('non-empty-list<int>', $listB);
+		}
+		assertType('non-empty-list<int>', $listA);
+		assertType('list<int>', $listB);
+	}
+
+	/**
+	 * @param array{int, int, int} $arrA
+	 * @param list $arrB
+	 */
+	function skipRecursiveLeftCount($arrA, array $arrB): void
+	{
+		if (count($arrB) < 2) {
+			return;
+		}
+
+		if (count($arrA, COUNT_RECURSIVE) == count($arrB)) {
+			assertType('array{int, int, int}', $arrA);
+			assertType('non-empty-list', $arrB);
+		}
+		assertType('array{int, int, int}', $arrA);
+		assertType('non-empty-list', $arrB);
+	}
+
+	/**
+	 * @param array{int, int, int} $arrA
+	 * @param list $arrB
+	 */
+	function skipRecursiveRightCount($arrA, array $arrB): void
+	{
+		if (count($arrB) < 2) {
+			return;
+		}
+
+		if (count($arrA) == count($arrB, COUNT_RECURSIVE)) {
+			assertType('array{int, int, int}', $arrA);
+			assertType('non-empty-list', $arrB);
+		}
+		assertType('array{int, int, int}', $arrA);
+		assertType('non-empty-list', $arrB);
+	}
+
+	/**
+	 * @param non-empty-array<int> $arrA
+	 * @param array<int> $arrB
+	 */
+	public function skipRecursiveCount($arrA, array $arrB): void
+	{
+		if (count($arrA, COUNT_RECURSIVE) == count($arrB)) {
+			assertType('non-empty-array<int>', $arrA);
+			assertType('non-empty-array<int>', $arrB);
+		}
+		assertType('non-empty-array<int>', $arrA);
+		assertType('array<int>', $arrB);
+	}
+
 }

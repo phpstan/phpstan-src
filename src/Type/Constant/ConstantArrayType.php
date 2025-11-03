@@ -693,6 +693,20 @@ class ConstantArrayType implements Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
+		if ($offsetType !== null) {
+			$constantScalars = $offsetType->getConstantScalarTypes();
+			$constantScalarsCount = count($constantScalars);
+			if ($constantScalarsCount > 1 && $constantScalarsCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				$arrays = [];
+				foreach ($constantScalars as $constantScalar) {
+					$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+					$builder->setOffsetValueType($constantScalar, $valueType);
+					$arrays[] = $builder->getArray();
+				}
+
+				return TypeCombinator::union(...$arrays);
+			}
+		}
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 		$builder->setOffsetValueType($offsetType, $valueType);
 
@@ -701,6 +715,19 @@ class ConstantArrayType implements Type
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
 	{
+		$constantScalars = $offsetType->getConstantScalarTypes();
+		$constantScalarsCount = count($constantScalars);
+		if ($constantScalarsCount > 1 && $constantScalarsCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			$arrays = [];
+			foreach ($constantScalars as $constantScalar) {
+				$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+				$builder->setOffsetValueType($constantScalar, $valueType);
+				$arrays[] = $builder->getArray();
+			}
+
+			return TypeCombinator::union(...$arrays);
+		}
+
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 		$builder->setOffsetValueType($offsetType, $valueType);
 

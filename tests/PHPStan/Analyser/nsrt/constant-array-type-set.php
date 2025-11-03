@@ -33,7 +33,7 @@ class Foo
 		/** @var 0|1|2|3 $offset3 */
 		$offset3 = doFoo();
 		$e[$offset3] = true;
-		assertType('non-empty-array<0|1|2|3, bool>', $e);
+		assertType('array{0: bool, 1: bool, 2: bool, 3?: true}', $e);
 
 		$f = [false, false, false];
 		/** @var 0|1 $offset4 */

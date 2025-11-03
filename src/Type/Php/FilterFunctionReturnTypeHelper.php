@@ -191,7 +191,7 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
-			if ($defaultType->isSuperTypeOf($type)->no()) {
+			if (!$defaultType->isSuperTypeOf($type)->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}

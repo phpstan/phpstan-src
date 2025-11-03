@@ -36,6 +36,17 @@ class HelloWorld
 		}
 	}
 
+	public function countArrayUnionMode(array $arr): void
+	{
+		$mode = rand(0,1) ? COUNT_NORMAL : COUNT_RECURSIVE;
+		if (count($arr, $mode) > 2) {
+			assertType('non-empty-array', $arr);
+			assertType('int<3, max>', count($arr, $mode));
+			assertType('int<1, max>', count($arr, COUNT_NORMAL));
+			assertType('int<1, max>', count($arr, COUNT_RECURSIVE));
+		}
+	}
+
 	/** @param list<int> $list */
 	public function countList($list): void
 	{

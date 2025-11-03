@@ -22,7 +22,7 @@ class TypeExpression
 			$seenGlues[$glue] = true;
 
 			assertType("'&'|'|'", $glue);
-			assertType("array{'|': bool, '&': bool}", $seenGlues);
+			assertType("array{'|': false, '&': true}|array{'|': true, '&': false}", $seenGlues);
 		} else {
 			assertType("''", $glue);
 		}

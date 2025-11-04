@@ -167,3 +167,21 @@ name-collision:
 
 composer-dependency-analyser:
 	php vendor/bin/composer-dependency-analyser --config build/composer-dependency-analyser.php
+
+.PHONY: infection
+infection:
+	git -C build-infection pull || git clone https://github.com/phpstan/build-infection.git
+	git -C build-infection fetch origin && git -C build-infection reset --hard origin/1.x
+	composer install --working-dir build-infection --no-interaction --no-progress
+	php build-infection/bin/infection-config.php --source-directory='build/PHPStan/Build'> infection.json5
+	XDEBUG_MODE=coverage php tests/vendor/bin/paratest \
+		--coverage-xml=tmp/coverage/coverage-xml \
+		--log-junit=tmp/coverage/junit.xml
+	php build-infection/vendor/bin/infection \
+		--configuration=infection.json5 \
+		--git-diff-base=origin/HEAD \
+		--git-diff-lines \
+		--coverage=tmp/coverage \
+		--skip-initial-tests \
+		--ignore-msi-with-no-mutations \
+		--logger-text=php://stdout

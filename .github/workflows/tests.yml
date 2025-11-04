@@ -265,7 +265,6 @@ jobs:
         run: |
           php -d pcov.enabled=1 tests/vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
-            --runner WrapperRunner \
             --coverage-xml=tmp/coverage/coverage-xml --log-junit=tmp/coverage/junit.xml
 
       - name: "Run infection"

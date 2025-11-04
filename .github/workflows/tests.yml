@@ -259,10 +259,10 @@ jobs:
 
       - name: "Create coverage"
         run: |
-          php -d pcov.enabled=1 tests/vendor/bin/paratest \
+          php -d pcov.enabled=1 vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
             --runner WrapperRunner \
-            --coverage-xml=coverage.xml
+            --coverage-xml=coverage-xml
 
       - name: "Run infection"
         run: |
@@ -270,7 +270,7 @@ jobs:
           infection \
             --git-diff-base=origin/${{ steps.default-branch.outputs.name }} \
             --git-diff-lines \
-            --coverage=coverage.xml \
+            --coverage=coverage-xml \
             --skip-initial-tests \
             --ignore-msi-with-no-mutations \
             --min-msi=100 \

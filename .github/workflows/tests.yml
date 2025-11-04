@@ -232,6 +232,10 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Install Tests dependencies"
+        working-directory: "tests"
+        run: "composer install --no-interaction --no-progress"
+
       - name: "Install build-infection dependencies"
         working-directory: "build-infection"
         run: "composer install --no-interaction --no-progress"
@@ -259,7 +263,7 @@ jobs:
 
       - name: "Create coverage in parallel"
         run: |
-          php -d pcov.enabled=1 vendor/bin/paratest \
+          php -d pcov.enabled=1 tests/vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
             --runner WrapperRunner \
             --coverage-xml=coverage-xml

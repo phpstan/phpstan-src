@@ -257,12 +257,16 @@ jobs:
           restore-keys: |
             result-cache-v1-${{ matrix.php-version }}-
 
+      - name: "Create coverage"
+        run: php -d pcov.enabled=1 tests/vendor/bin/paratest --passthru-php="'-d' 'pcov.enabled=1'" --runner WrapperRunner
+
       - name: "Run infection"
         run: |
           git fetch --depth=1 origin ${{ steps.default-branch.outputs.name }}
           infection \
             --git-diff-base=origin/${{ steps.default-branch.outputs.name }} \
             --git-diff-lines \
+            --skip-initial-tests \
             --ignore-msi-with-no-mutations \
             --min-msi=100 \
             --min-covered-msi=100 \

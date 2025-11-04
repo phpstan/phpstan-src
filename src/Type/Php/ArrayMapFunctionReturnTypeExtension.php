@@ -41,6 +41,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if ($numArgs < 2) {
 			return null;
 		}
+		$x=1;
 
 		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
 		$callback = $functionCall->getArgs()[0]->value;

@@ -46,6 +46,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$callback = $functionCall->getArgs()[0]->value;
 		$callableType = $scope->getType($callback);
 		$callableIsNull = $callableType->isNull()->yes();
+		$x = $callableType->isNull()->yes();
 
 		if ($callableType->isCallable()->yes()) {
 			$valueType = $scope->getType(new FuncCall(

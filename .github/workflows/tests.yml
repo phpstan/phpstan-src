@@ -229,16 +229,15 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: ds,mbstring
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
 
-      - name: "Install Tests dependencies"
-        working-directory: "tests"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "tests/"
 
-      - name: "Install build-infection dependencies"
-        working-directory: "build-infection"
-        run: "composer install --no-interaction --no-progress"
+      - uses: "ramsey/composer-install@v3"
+        with:
+          working-directory: "build-infection/"
 
       - name: "Configure infection"
         run: |
@@ -261,12 +260,13 @@ jobs:
           restore-keys: |
             result-cache-v1-${{ matrix.php-version }}-
 
+      # see https://infection.github.io/guide/command-line-options.html#coverage
       - name: "Create coverage in parallel"
         run: |
           php -d pcov.enabled=1 tests/vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
             --runner WrapperRunner \
-            --coverage-xml=coverage-xml
+            --coverage-xml=tmp/coverage/coverage-xml --log-junit=tmp/coverage/junit.xml
 
       - name: "Run infection"
         run: |
@@ -274,7 +274,7 @@ jobs:
           infection \
             --git-diff-base=origin/${{ steps.default-branch.outputs.name }} \
             --git-diff-lines \
-            --coverage=coverage-xml \
+            --coverage=tmp/coverage \
             --skip-initial-tests \
             --ignore-msi-with-no-mutations \
             --min-msi=100 \

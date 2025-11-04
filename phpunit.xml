@@ -15,5 +15,10 @@
       <group>levels</group>
     </exclude>
   </groups>
+  <source ignoreIndirectDeprecations="true" restrictNotices="true" restrictWarnings="true">
+    <include>
+      <directory>src</directory>
+    </include>
+  </source>
   <logging/>
 </phpunit>

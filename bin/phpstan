@@ -20,12 +20,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
 	require_once __DIR__ . '/../preload.php';
+	$composerJsonPath = ComposerHelper::getComposerJsonPath(getcwd());
 	$composer = ComposerHelper::getComposerConfig(getcwd());
 
 	if ($composer !== null) {
 		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig(getcwd(), $composer);
 	} else {
-		$vendorDirectory = getcwd() . '/' . 'vendor';
+		$vendorDirectory = getcwd() . '/vendor';
 	}
 	$devOrPharLoader->unregister();
 
@@ -43,7 +44,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	$autoloadFunctionsBefore = spl_autoload_functions();
 
 	if (@is_file($autoloaderInWorkingDirectory)) {
-		$composerAutoloaderProjectPaths[] = dirname($autoloaderInWorkingDirectory, 2);
+		if ($composerJsonPath !== null) {
+			$composerAutoloaderProjectPaths[] = dirname($composerJsonPath);
+		}
 
 		require_once $autoloaderInWorkingDirectory;
 	}

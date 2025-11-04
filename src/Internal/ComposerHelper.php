@@ -25,8 +25,7 @@ final class ComposerHelper
 	public static function getComposerConfig(string $root): ?array
 	{
 		$composerJsonPath = self::getComposerJsonPath($root);
-
-		if (!is_file($composerJsonPath)) {
+		if ($composerJsonPath === null) {
 			return null;
 		}
 
@@ -39,13 +38,18 @@ final class ComposerHelper
 		}
 	}
 
-	private static function getComposerJsonPath(string $root): string
+	public static function getComposerJsonPath(string $root): ?string
 	{
 		$envComposer = getenv('COMPOSER');
 		$fileName = is_string($envComposer) ? $envComposer : 'composer.json';
 		$fileName = basename(trim($fileName));
 
-		return $root . '/' . $fileName;
+		$path = $root . '/' . $fileName;
+		if (!is_file($path)) {
+			return null;
+		}
+
+		return $path;
 	}
 
 	/**

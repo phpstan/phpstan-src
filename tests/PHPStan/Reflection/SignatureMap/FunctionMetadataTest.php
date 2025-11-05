@@ -5,7 +5,9 @@ namespace PHPStan\Reflection\SignatureMap;
 use Nette\Schema\Expect;
 use Nette\Schema\Processor;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class FunctionMetadataTest extends PHPStanTestCase
 {
 

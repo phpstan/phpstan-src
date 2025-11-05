@@ -6,7 +6,9 @@ use PHPStan\DependencyInjection\MissingServiceException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class NetteContainerTest extends PHPStanTestCase
 {
 

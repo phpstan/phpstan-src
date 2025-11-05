@@ -5,10 +5,12 @@ namespace PHPStan\PhpDoc;
 use Override;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use function dirname;
 use function sprintf;
 use const DIRECTORY_SEPARATOR;
 
+#[CoversNothing]
 class DefaultStubFilesProviderTest extends PHPStanTestCase
 {
 

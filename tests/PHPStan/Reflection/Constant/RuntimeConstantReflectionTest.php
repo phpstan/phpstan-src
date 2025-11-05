@@ -5,9 +5,11 @@ namespace PHPStan\Reflection\Constant;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class RuntimeConstantReflectionTest extends PHPStanTestCase
 {
 

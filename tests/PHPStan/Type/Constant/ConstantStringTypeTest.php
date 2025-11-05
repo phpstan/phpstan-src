@@ -17,11 +17,13 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Throwable;
 use function sprintf;
 
+#[CoversNothing]
 class ConstantStringTypeTest extends PHPStanTestCase
 {
 

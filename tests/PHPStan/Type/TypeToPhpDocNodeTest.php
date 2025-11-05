@@ -20,12 +20,14 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function sprintf;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
+#[CoversNothing]
 class TypeToPhpDocNodeTest extends PHPStanTestCase
 {
 

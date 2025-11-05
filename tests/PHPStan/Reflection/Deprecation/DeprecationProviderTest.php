@@ -15,8 +15,10 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
+#[CoversNothing]
 class DeprecationProviderTest extends PHPStanTestCase
 {
 

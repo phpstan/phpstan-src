@@ -6,6 +6,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use ThrowsAnnotations\BarTrait;
@@ -14,6 +15,7 @@ use ThrowsAnnotations\FooInterface;
 use ThrowsAnnotations\FooTrait;
 use ThrowsAnnotations\PhpstanFoo;
 
+#[CoversNothing]
 class ThrowsAnnotationsTest extends PHPStanTestCase
 {
 

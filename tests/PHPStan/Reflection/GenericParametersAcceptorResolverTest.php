@@ -17,11 +17,13 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
 use function sprintf;
 
+#[CoversNothing]
 class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 {
 

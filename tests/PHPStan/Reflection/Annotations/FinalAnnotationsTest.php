@@ -6,8 +6,10 @@ use FinalAnnotations\FinalFoo;
 use FinalAnnotations\Foo;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class FinalAnnotationsTest extends PHPStanTestCase
 {
 

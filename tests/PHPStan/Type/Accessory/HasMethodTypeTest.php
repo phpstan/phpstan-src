@@ -17,9 +17,11 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
+#[CoversNothing]
 class HasMethodTypeTest extends PHPStanTestCase
 {
 

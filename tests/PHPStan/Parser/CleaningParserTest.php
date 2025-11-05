@@ -9,9 +9,11 @@ use PHPStan\File\FileReader;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class CleaningParserTest extends PHPStanTestCase
 {
 

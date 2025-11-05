@@ -12,11 +12,13 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_merge;
 use function count;
 use function sprintf;
 
+#[CoversNothing]
 class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 {
 

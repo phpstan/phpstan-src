@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use Override;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function array_merge;
@@ -12,6 +13,7 @@ use function array_unique;
 use function sprintf;
 use function usort;
 
+#[CoversNothing]
 class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
 

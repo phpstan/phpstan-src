@@ -11,11 +11,13 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function extension_loaded;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class AnalyserIntegrationTest extends PHPStanTestCase
 {
 

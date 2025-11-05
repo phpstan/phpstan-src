@@ -4,7 +4,9 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class PhpDocStringResolverTest extends PHPStanTestCase
 {
 

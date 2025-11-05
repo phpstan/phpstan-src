@@ -7,11 +7,13 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function count;
 
 #[RequiresPhp('>= 8.4')]
+#[CoversNothing]
 class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 {
 

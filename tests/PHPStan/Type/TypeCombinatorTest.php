@@ -48,6 +48,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RecursionCallable\Foo;
 use stdClass;
@@ -63,6 +64,7 @@ use function implode;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class TypeCombinatorTest extends PHPStanTestCase
 {
 

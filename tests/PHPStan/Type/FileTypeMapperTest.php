@@ -6,9 +6,11 @@ use DependentPhpDocs\Foo;
 use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use RuntimeException;
 use function realpath;
 
+#[CoversNothing]
 class FileTypeMapperTest extends PHPStanTestCase
 {
 

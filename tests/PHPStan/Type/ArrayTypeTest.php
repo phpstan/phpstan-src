@@ -12,10 +12,12 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function sprintf;
 
+#[CoversNothing]
 class ArrayTypeTest extends PHPStanTestCase
 {
 

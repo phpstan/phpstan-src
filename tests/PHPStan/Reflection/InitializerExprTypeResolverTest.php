@@ -10,8 +10,10 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class InitializerExprTypeResolverTest extends PHPStanTestCase
 {
 

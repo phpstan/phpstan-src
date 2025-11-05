@@ -11,9 +11,11 @@ use AnnotationsProperties\FooInterface;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
+#[CoversNothing]
 class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 {
 

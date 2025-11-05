@@ -6,9 +6,11 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class FunctionReflectionTest extends PHPStanTestCase
 {
 

@@ -10,12 +10,14 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use SingleFileSourceLocatorTestClass;
 use TestSingleFileSourceLocator\AFoo;
 use function array_map;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
 

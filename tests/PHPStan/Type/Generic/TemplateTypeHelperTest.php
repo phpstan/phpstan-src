@@ -7,7 +7,9 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class TemplateTypeHelperTest extends PHPStanTestCase
 {
 

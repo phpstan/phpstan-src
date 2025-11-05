@@ -21,6 +21,7 @@ use PHPStan\Type\Test\E;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use stdClass;
@@ -29,6 +30,7 @@ use function array_map;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class GenericObjectTypeTest extends PHPStanTestCase
 {
 

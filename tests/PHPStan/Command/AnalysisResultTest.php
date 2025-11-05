@@ -4,7 +4,9 @@ namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 final class AnalysisResultTest extends PHPStanTestCase
 {
 

@@ -10,9 +10,11 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
+#[CoversNothing]
 class StatementResultTest extends PHPStanTestCase
 {
 

@@ -7,10 +7,12 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function sprintf;
 
+#[CoversNothing]
 class ClassStringTypeTest extends PHPStanTestCase
 {
 

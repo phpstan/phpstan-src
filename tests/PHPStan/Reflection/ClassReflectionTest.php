@@ -30,6 +30,7 @@ use NestedTraits\NoTrait;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +39,7 @@ use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
 
+#[CoversNothing]
 class ClassReflectionTest extends PHPStanTestCase
 {
 

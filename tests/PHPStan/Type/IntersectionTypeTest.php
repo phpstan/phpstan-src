@@ -17,6 +17,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Test\ClassWithToString;
@@ -25,6 +26,7 @@ use function count;
 use function sprintf;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class IntersectionTypeTest extends PHPStanTestCase
 {
 

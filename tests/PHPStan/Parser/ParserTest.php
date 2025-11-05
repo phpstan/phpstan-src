@@ -3,9 +3,11 @@
 namespace PHPStan\Parser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 
+#[CoversNothing]
 class ParserTest extends PHPStanTestCase
 {
 

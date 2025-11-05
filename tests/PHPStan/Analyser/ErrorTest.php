@@ -3,8 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class ErrorTest extends PHPStanTestCase
 {
 

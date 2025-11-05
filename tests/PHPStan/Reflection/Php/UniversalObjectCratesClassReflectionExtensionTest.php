@@ -6,8 +6,10 @@ use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use stdClass;
 
+#[CoversNothing]
 class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 {
 

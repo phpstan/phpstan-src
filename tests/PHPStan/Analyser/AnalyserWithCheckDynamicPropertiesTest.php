@@ -3,9 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use function array_merge;
 use function array_unique;
 
+#[CoversNothing]
 class AnalyserWithCheckDynamicPropertiesTest extends PHPStanTestCase
 {
 

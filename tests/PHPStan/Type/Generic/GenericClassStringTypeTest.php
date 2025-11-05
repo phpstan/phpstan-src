@@ -20,11 +20,13 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Throwable;
 use function sprintf;
 
+#[CoversNothing]
 class GenericClassStringTypeTest extends PHPStanTestCase
 {
 

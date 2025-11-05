@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use Throwable;
@@ -21,6 +22,7 @@ use function array_map;
 use function assert;
 use function sprintf;
 
+#[CoversNothing]
 class TemplateTypeTest extends PHPStanTestCase
 {
 

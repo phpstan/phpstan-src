@@ -4,9 +4,11 @@ namespace PHPStan\Type;
 
 use PHPStan\Fixture\TestDecimal;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 
+#[CoversNothing]
 class TestDecimalOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 {
 

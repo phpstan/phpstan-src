@@ -5,9 +5,11 @@ namespace PHPStan\Type;
 use InvalidArgumentException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
 
+#[CoversNothing]
 class ObjectWithoutClassTypeTest extends PHPStanTestCase
 {
 

@@ -6,8 +6,10 @@ use NativeMixedType\Foo;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\MixedType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class MixedTypeTest extends PHPStanTestCase
 {
 

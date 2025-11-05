@@ -8,9 +8,11 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 
+#[CoversNothing]
 class CachedParserTest extends PHPStanTestCase
 {
 

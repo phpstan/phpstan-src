@@ -6,8 +6,10 @@ use Hoa\Compiler\Llk\Llk;
 use Hoa\File\Read;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class IgnoredRegexValidatorTest extends PHPStanTestCase
 {
 

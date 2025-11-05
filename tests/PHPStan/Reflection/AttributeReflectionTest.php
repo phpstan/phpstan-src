@@ -7,11 +7,13 @@ use AttributeReflectionTest\MyAttr;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function count;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class AttributeReflectionTest extends PHPStanTestCase
 {
 

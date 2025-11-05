@@ -28,6 +28,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionParameter;
 use Throwable;
@@ -37,6 +38,7 @@ use function explode;
 use function sprintf;
 use function strpos;
 
+#[CoversNothing]
 class SignatureMapParserTest extends PHPStanTestCase
 {
 

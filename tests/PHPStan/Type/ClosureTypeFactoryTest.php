@@ -4,12 +4,14 @@ namespace PHPStan\Type;
 
 use Closure;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
 /**
  * @phpstan-consistent-constructor
  */
+#[CoversNothing]
 class ClosureTypeFactoryTest extends PHPStanTestCase
 {
 

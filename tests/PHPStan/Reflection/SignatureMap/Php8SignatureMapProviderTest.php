@@ -34,12 +34,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_map;
 use function array_merge;
 use function count;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
 

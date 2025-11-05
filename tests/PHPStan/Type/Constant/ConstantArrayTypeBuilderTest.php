@@ -8,7 +8,9 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 {
 

@@ -3,7 +3,9 @@
 namespace PHPStan\DependencyInjection;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class IgnoreErrorsTest extends PHPStanTestCase
 {
 

@@ -11,8 +11,10 @@ use InternalAnnotations\InternalFooTrait;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class InternalAnnotationsTest extends PHPStanTestCase
 {
 

@@ -31,6 +31,7 @@ use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_map;
@@ -44,6 +45,7 @@ use function strtoupper;
 use function substr;
 use const PHP_OS;
 
+#[CoversNothing]
 class AnalyserTest extends PHPStanTestCase
 {
 

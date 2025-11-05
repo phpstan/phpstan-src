@@ -3,8 +3,10 @@
 namespace PHPStan\Type\Regex;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class RegexExpressionHelperTest extends PHPStanTestCase
 {
 

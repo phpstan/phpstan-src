@@ -3,9 +3,11 @@
 namespace PHPStan\Parser;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_EOL;
 
+#[CoversNothing]
 class RichParserTest extends PHPStanTestCase
 {
 

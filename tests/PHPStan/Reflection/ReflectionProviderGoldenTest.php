@@ -13,6 +13,7 @@ use PHPStan\Php8StubsMap;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
@@ -39,6 +40,7 @@ use function trim;
 use const PHP_INT_MAX;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class ReflectionProviderGoldenTest extends PHPStanTestCase
 {
 

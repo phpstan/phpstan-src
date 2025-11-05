@@ -5,7 +5,9 @@ namespace PHPStan\Collectors;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class RegistryTest extends PHPStanTestCase
 {
 

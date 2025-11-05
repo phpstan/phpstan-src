@@ -4,9 +4,11 @@ namespace PHPStan\DependencyInjection;
 
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use function array_map;
 use function get_class;
 
+#[CoversNothing]
 class ConditionalTagsExtensionTest extends PHPStanTestCase
 {
 

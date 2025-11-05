@@ -10,11 +10,13 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function count;
 use function get_class;
 use function sprintf;
 
+#[CoversNothing]
 class ExpressionResultTest extends PHPStanTestCase
 {
 

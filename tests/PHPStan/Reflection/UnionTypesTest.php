@@ -7,7 +7,9 @@ use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class UnionTypesTest extends PHPStanTestCase
 {
 

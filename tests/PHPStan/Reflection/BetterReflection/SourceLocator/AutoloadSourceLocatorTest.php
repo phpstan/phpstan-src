@@ -17,6 +17,7 @@ function testFunctionForLocator(): void // phpcs:disable
 	echo 'test';
 }
 
+#[\PHPUnit\Framework\Attributes\CoversNothing]
 class AutoloadSourceLocatorTest extends PHPStanTestCase
 {
 

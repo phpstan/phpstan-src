@@ -36,6 +36,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function implode;
 use function sprintf;
@@ -43,6 +44,7 @@ use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class TypeSpecifierTest extends PHPStanTestCase
 {
 

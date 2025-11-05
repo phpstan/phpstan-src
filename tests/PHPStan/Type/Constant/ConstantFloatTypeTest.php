@@ -4,8 +4,10 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class ConstantFloatTypeTest extends PHPStanTestCase
 {
 

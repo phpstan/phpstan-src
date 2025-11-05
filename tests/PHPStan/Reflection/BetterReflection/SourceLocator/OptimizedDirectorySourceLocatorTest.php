@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use TestDirectorySourceLocator\AFoo;
 use TestDirectorySourceLocator\EmptyClass;
@@ -15,6 +16,7 @@ use function array_map;
 use function basename;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 {
 

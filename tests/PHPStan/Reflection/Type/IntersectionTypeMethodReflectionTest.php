@@ -5,7 +5,9 @@ namespace PHPStan\Reflection\Type;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class IntersectionTypeMethodReflectionTest extends PHPStanTestCase
 {
 

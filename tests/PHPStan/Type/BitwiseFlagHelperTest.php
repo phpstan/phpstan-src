@@ -12,10 +12,12 @@ use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function defined;
 use function sprintf;
 
+#[CoversNothing]
 final class BitwiseFlagHelperTest extends PHPStanTestCase
 {
 

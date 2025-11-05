@@ -3,8 +3,10 @@
 namespace PHPStan\File;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class FileExcluderTest extends PHPStanTestCase
 {
 

@@ -266,6 +266,11 @@ class FloatType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
+
 /** @api */
 class ErrorType extends MixedType
 {
@@ -34,6 +36,11 @@ class ErrorType extends MixedType
 	public function subtract(Type $type): Type
 	{
 		return new self();
+	}
+
+	public function isError(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function equals(Type $type): bool

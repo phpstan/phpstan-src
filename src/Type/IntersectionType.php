@@ -828,6 +828,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getObjectTypeOrClassStringObjectType());
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isError());
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

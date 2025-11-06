@@ -529,6 +529,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getObjectTypeOrClassStringObjectType();
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return $this->resolve()->isError();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return $this->resolve()->isVoid();

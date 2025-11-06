@@ -1327,6 +1327,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

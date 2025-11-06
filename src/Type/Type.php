@@ -411,6 +411,8 @@ interface Type
 
 	public function isScalar(): TrinaryLogic;
 
+	public function isError(): TrinaryLogic;
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
 	/**

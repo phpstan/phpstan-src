@@ -720,6 +720,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return new ObjectWithoutClassType();
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

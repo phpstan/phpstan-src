@@ -732,6 +732,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->getObjectTypeOrClassStringObjectType());
 	}
 
+	public function isError(): TrinaryLogic
+	{
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isError());
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isVoid());

@@ -20,7 +20,6 @@ use function in_array;
 use function is_float;
 use function max;
 use function min;
-use function range;
 
 /**
  * @api
@@ -211,21 +210,13 @@ final class ConstantArrayTypeBuilder
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 				if (count($integerRanges) > 0) {
 					foreach ($integerRanges as $integerRange) {
-						if ($integerRange->getMin() === null) {
-							break;
-						}
-						if ($integerRange->getMax() === null) {
-							break;
-						}
-
-						$rangeLength = $integerRange->getMax() - $integerRange->getMin();
-						if ($rangeLength >= self::ARRAY_COUNT_LIMIT) {
-							$scalarTypes = [];
+						$finiteTypes = $integerRange->getFiniteTypes();
+						if (count($finiteTypes) === 0) {
 							break;
 						}
 
-						foreach (range($integerRange->getMin(), $integerRange->getMax()) as $rangeValue) {
-							$scalarTypes[] = new ConstantIntegerType($rangeValue);
+						foreach ($finiteTypes as $finiteType) {
+							$scalarTypes[] = $finiteType;
 						}
 					}
 				}

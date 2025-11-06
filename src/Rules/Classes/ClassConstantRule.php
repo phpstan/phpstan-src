@@ -21,7 +21,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -77,7 +76,7 @@ final class ClassConstantRule implements Rule
 				);
 
 				$nameType = $nameTypeResult->getType();
-				if (!$nameType instanceof ErrorType && !$nameType->isString()->yes()) {
+				if (!$nameType->isError()->yes() && !$nameType->isString()->yes()) {
 					$className = $node->class instanceof Name
 						? $scope->resolveName($node->class)
 						: $scope->getType($node->class)->describe(VerbosityLevel::typeOnly());
@@ -205,7 +204,7 @@ final class ClassConstantRule implements Rule
 				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);
 			$classType = $classTypeResult->getType();
-			if ($classType instanceof ErrorType) {
+			if ($classType->isError()->yes()) {
 				return $classTypeResult->getUnknownClassErrors();
 			}
 

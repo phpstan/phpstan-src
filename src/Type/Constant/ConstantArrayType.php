@@ -589,7 +589,7 @@ class ConstantArrayType implements Type
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		$offsetArrayKeyType = $offsetType->toArrayKey();
-		if ($offsetArrayKeyType instanceof ErrorType) {
+		if ($offsetArrayKeyType->isError()->yes()) {
 			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
 			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
 			if ($offsetArrayKeyType instanceof NeverType) {
@@ -683,7 +683,7 @@ class ConstantArrayType implements Type
 
 		if (count($matchingValueTypes) > 0) {
 			$type = TypeCombinator::union(...$matchingValueTypes);
-			if ($type instanceof ErrorType) {
+			if ($type->isError()->yes()) {
 				return new MixedType();
 			}
 
@@ -824,7 +824,7 @@ class ConstantArrayType implements Type
 		foreach ($this->valueTypes as $i => $keyType) {
 			if ($keyType->isInteger()->no()) {
 				$stringKeyType = $keyType->toString();
-				if ($stringKeyType instanceof ErrorType) {
+				if ($stringKeyType->isError()->yes()) {
 					return $stringKeyType;
 				}
 

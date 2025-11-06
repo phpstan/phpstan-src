@@ -15,7 +15,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -65,7 +64,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			static fn (Type $type): bool => $type->isOffsetAccessible()->yes(),
 		);
 		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
-		if ($isOffsetAccessibleType instanceof ErrorType) {
+		if ($isOffsetAccessibleType->isError()->yes()) {
 			return $isOffsetAccessibleTypeResult->getUnknownClassErrors();
 		}
 

@@ -13,7 +13,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -98,7 +97,7 @@ final class FunctionCallableRule implements Rule
 			static fn (Type $type): bool => $type->isCallable()->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

@@ -12,7 +12,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
 /**
@@ -65,7 +64,7 @@ final class RestrictedClassConstantUsageRule implements Rule
 				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);
 
-			if ($classTypeResult->getType() instanceof ErrorType) {
+			if ($classTypeResult->getType()->isError()->yes()) {
 				return [];
 			}
 

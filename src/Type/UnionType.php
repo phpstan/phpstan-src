@@ -774,7 +774,7 @@ class UnionType implements CompoundType
 		$types = [];
 		foreach ($this->types as $innerType) {
 			$valueType = $innerType->getOffsetValueType($offsetType);
-			if ($valueType instanceof ErrorType) {
+			if ($valueType->isError()->yes()) {
 				continue;
 			}
 

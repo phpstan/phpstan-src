@@ -1666,7 +1666,7 @@ final class ClassReflection
 		if ($resolved !== null) {
 			$templateTypeMap = $this->getTemplateTypeMap();
 			return $this->activeTemplateTypeMap = $resolved->map(static function (string $name, Type $type) use ($templateTypeMap): Type {
-				if ($type instanceof ErrorType) {
+				if ($type->isError()->yes()) {
 					$templateType = $templateTypeMap->getType($name);
 					if ($templateType !== null) {
 						return TemplateTypeHelper::resolveToDefaults($templateType);

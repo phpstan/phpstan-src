@@ -12,7 +12,6 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -84,7 +83,7 @@ final class MissingReturnRule implements Rule
 		if ($statementResult->hasYield()) {
 			if ($this->checkPhpDocMissingReturn) {
 				$generatorReturnType = $returnType->getTemplateType(Generator::class, 'TReturn');
-				if (!$generatorReturnType instanceof ErrorType) {
+				if (!$generatorReturnType->isError()->yes()) {
 					$returnType = $generatorReturnType;
 					if ($returnType->isVoid()->yes()) {
 						return [];

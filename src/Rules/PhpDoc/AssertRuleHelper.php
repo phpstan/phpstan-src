@@ -20,7 +20,6 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
@@ -83,7 +82,7 @@ final class AssertRuleHelper
 			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
 			$assertedExprType = $scope->getType($assertedExpr);
 			$assertedExprString = $assert->getParameter()->describe();
-			if ($assertedExprType instanceof ErrorType) {
+			if ($assertedExprType->isError()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown %s.', $assertedExprString))
 					->identifier('assert.unknownExpr')
 					->build();

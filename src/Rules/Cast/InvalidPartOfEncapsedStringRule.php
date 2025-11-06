@@ -9,7 +9,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -45,15 +44,15 @@ final class InvalidPartOfEncapsedStringRule implements Rule
 				$scope,
 				$part,
 				'',
-				static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
+				static fn (Type $type): bool => !$type->toString()->isError()->yes(),
 			);
 			$partType = $typeResult->getType();
-			if ($partType instanceof ErrorType) {
+			if ($partType->isError()->yes()) {
 				continue;
 			}
 
 			$stringPartType = $partType->toString();
-			if (!$stringPartType instanceof ErrorType) {
+			if (!$stringPartType->isError()->yes()) {
 				continue;
 			}
 			$messages[] = RuleErrorBuilder::message(sprintf(

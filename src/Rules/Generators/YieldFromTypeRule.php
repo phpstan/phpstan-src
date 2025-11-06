@@ -11,7 +11,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -118,7 +117,7 @@ final class YieldFromTypeRule implements Rule
 		$currentReturnType = $scopeFunction->getReturnType();
 		$exprSendType = $exprType->getTemplateType(Generator::class, 'TSend');
 		$thisSendType = $currentReturnType->getTemplateType(Generator::class, 'TSend');
-		if ($exprSendType instanceof ErrorType || $thisSendType instanceof ErrorType) {
+		if ($exprSendType->isError()->yes() || $thisSendType->isError()->yes()) {
 			return $messages;
 		}
 

@@ -11,7 +11,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -54,7 +53,7 @@ final class NonexistentOffsetInArrayDimFetchCheck
 			static fn (Type $type): bool => $type->hasOffsetValueType($dimType)->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

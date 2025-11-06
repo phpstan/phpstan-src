@@ -86,7 +86,7 @@ class StringType implements Type
 		}
 
 		$valueStringType = $valueType->toString();
-		if ($valueStringType instanceof ErrorType) {
+		if ($valueStringType->isError()->yes()) {
 			return new ErrorType();
 		}
 

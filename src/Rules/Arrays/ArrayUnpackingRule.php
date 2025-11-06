@@ -11,7 +11,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -46,7 +45,7 @@ final class ArrayUnpackingRule implements Rule
 		);
 
 		$keyType = $typeResult->getType();
-		if ($keyType instanceof ErrorType) {
+		if ($keyType->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

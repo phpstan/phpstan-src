@@ -11,7 +11,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -68,7 +67,7 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);
 			$calledOnType = $typeResult->getType();
-			if ($calledOnType instanceof ErrorType) {
+			if ($calledOnType->isError()->yes()) {
 				return [];
 			}
 		}

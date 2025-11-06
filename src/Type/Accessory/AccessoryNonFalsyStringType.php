@@ -157,7 +157,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 	{
 		$stringOffset = (new StringType())->setOffsetValueType($offsetType, $valueType, $unionValues);
 
-		if ($stringOffset instanceof ErrorType) {
+		if ($stringOffset->isError()->yes()) {
 			return $stringOffset;
 		}
 

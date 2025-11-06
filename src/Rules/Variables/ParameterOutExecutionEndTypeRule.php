@@ -14,7 +14,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -102,7 +101,7 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

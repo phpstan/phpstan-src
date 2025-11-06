@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
@@ -50,13 +49,13 @@ final class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionRe
 				return $argType->toString();
 			case 'intval':
 				$type = $argType->toInteger();
-				return $type instanceof ErrorType ? new IntegerType() : $type;
+				return $type->isError()->yes() ? new IntegerType() : $type;
 			case 'boolval':
 				return $argType->toBoolean();
 			case 'floatval':
 			case 'doubleval':
 				$type = $argType->toFloat();
-				return $type instanceof ErrorType ? new FloatType() : $type;
+				return $type->isError()->yes() ? new FloatType() : $type;
 			default:
 				throw new ShouldNotHappenException();
 		}

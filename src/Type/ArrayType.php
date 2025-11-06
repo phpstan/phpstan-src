@@ -269,7 +269,7 @@ class ArrayType implements Type
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
 		$offsetArrayKeyType = $offsetType->toArrayKey();
-		if ($offsetArrayKeyType instanceof ErrorType) {
+		if ($offsetArrayKeyType->isError()->yes()) {
 			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
 			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
 			if ($offsetArrayKeyType instanceof NeverType) {
@@ -297,7 +297,7 @@ class ArrayType implements Type
 		}
 
 		$type = $this->getItemType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return new MixedType();
 		}
 
@@ -440,7 +440,7 @@ class ArrayType implements Type
 		$itemType = $this->getItemType();
 		if ($itemType->isInteger()->no()) {
 			$stringKeyType = $itemType->toString();
-			if ($stringKeyType instanceof ErrorType) {
+			if ($stringKeyType->isError()->yes()) {
 				return $stringKeyType;
 			}
 

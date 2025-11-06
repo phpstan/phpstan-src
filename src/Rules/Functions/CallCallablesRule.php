@@ -16,7 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -61,7 +60,7 @@ final class CallCallablesRule implements Rule
 			static fn (Type $type): bool => $type->isCallable()->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

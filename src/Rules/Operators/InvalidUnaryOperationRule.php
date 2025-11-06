@@ -9,7 +9,6 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -45,7 +44,7 @@ final class InvalidUnaryOperationRule implements Rule
 		if ($node instanceof Node\Expr\BitwiseNot) {
 			$callback = static fn (Type $type): bool => $type->isString()->yes() || $type->isInteger()->yes() || $type->isFloat()->yes();
 		} else {
-			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
+			$callback = static fn (Type $type): bool => !$type->toNumber()->isError()->yes();
 		}
 
 		$exprType = $this->ruleLevelHelper->findTypeToCheck(
@@ -54,14 +53,14 @@ final class InvalidUnaryOperationRule implements Rule
 			'',
 			$callback,
 		)->getType();
-		if ($exprType instanceof ErrorType) {
+		if ($exprType->isError()->yes()) {
 			return [];
 		}
 
 		$newNode = clone $node;
 		$newNode->setAttribute('phpstan_cache_printer', null);
 		$newNode->expr = new TypeExpr($exprType);
-		if (!$scope->getType($newNode) instanceof ErrorType) {
+		if (!$scope->getType($newNode)->isError()->yes()) {
 			return [];
 		}
 

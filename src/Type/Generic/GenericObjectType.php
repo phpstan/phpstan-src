@@ -174,7 +174,7 @@ class GenericObjectType extends ObjectType
 			if (!isset($this->types[$i])) {
 				continue;
 			}
-			if ($templateType instanceof ErrorType) {
+			if ($templateType->isError()->yes()) {
 				continue;
 			}
 			if (!$templateType instanceof TemplateType) {

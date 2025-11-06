@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
@@ -48,7 +47,7 @@ final class TemplateTypeHelper
 					return $traverse($type);
 				}
 
-				if ($newType instanceof ErrorType && !$keepErrorTypes) {
+				if ($newType->isError()->yes() && !$keepErrorTypes) {
 					return $traverse($type->getDefault() ?? $type->getBound());
 				}
 

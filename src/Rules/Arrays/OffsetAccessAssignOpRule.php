@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -50,7 +49,7 @@ final class OffsetAccessAssignOpRule implements Rule
 			'',
 			static function (Type $varType) use ($potentialDimType): bool {
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
-				return !($arrayDimType instanceof ErrorType);
+				return !($arrayDimType->isError()->yes());
 			},
 		);
 		$varType = $varTypeResult->getType();
@@ -62,7 +61,7 @@ final class OffsetAccessAssignOpRule implements Rule
 				'',
 				static function (Type $dimType) use ($varType): bool {
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
-					return !($arrayDimType instanceof ErrorType);
+					return !($arrayDimType->isError()->yes());
 				},
 			);
 			$dimType = $dimTypeResult->getType();
@@ -74,7 +73,7 @@ final class OffsetAccessAssignOpRule implements Rule
 		}
 
 		$resultType = $varType->setOffsetValueType($dimType, new MixedType());
-		if (!($resultType instanceof ErrorType)) {
+		if (!($resultType->isError()->yes())) {
 			return [];
 		}
 

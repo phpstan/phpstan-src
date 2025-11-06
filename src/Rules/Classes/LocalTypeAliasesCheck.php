@@ -21,7 +21,6 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\CircularTypeAliasErrorType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -359,7 +358,7 @@ final class LocalTypeAliasesCheck
 				return $type;
 			}
 
-			if ($type instanceof ErrorType) {
+			if ($type->isError()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Invalid type definition detected in type alias %s.', $aliasName))
 					->identifier('typeAlias.invalidType')
 					->build();

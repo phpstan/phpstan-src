@@ -4,7 +4,6 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Type\ConditionalTypeForParameter;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
@@ -211,7 +210,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				&& $type->getScope()->getFunctionName() !== null
 			) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
-				if ($newType === null || $newType instanceof ErrorType) {
+				if ($newType === null || $newType->isError()->yes()) {
 					return $traverse($type);
 				}
 
@@ -252,7 +251,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
-				if ($newType === null || $newType instanceof ErrorType) {
+				if ($newType === null || $newType->isError()->yes()) {
 					return $traverse($type);
 				}
 

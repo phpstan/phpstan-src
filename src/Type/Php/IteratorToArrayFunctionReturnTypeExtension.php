@@ -9,7 +9,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
@@ -48,7 +47,7 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 
 		$arrayKeyType = $traversableType->getIterableKeyType()->toArrayKey();
 
-		if ($arrayKeyType instanceof ErrorType) {
+		if ($arrayKeyType->isError()->yes()) {
 			return new NeverType(true);
 		}
 

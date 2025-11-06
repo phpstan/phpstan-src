@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
@@ -61,7 +60,7 @@ final class ImpossibleInstanceOfRule implements Rule
 				'',
 				static fn (Type $type): bool => !$allowed->isSuperTypeOf($type)->yes(),
 			);
-			if (!$typeResult->getType() instanceof ErrorType && !$allowed->isSuperTypeOf($typeResult->getType())->yes()) {
+			if (!$typeResult->getType()->isError()->yes() && !$allowed->isSuperTypeOf($typeResult->getType())->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',

@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -35,7 +34,7 @@ final class PrintfPlaceholder
 			case 'int':
 				return $strictPlaceholderTypes
 					? (new IntegerType())->accepts($argumentType, true)->yes()
-					: ! $argumentType->toInteger() instanceof ErrorType;
+					: ! $argumentType->toInteger()->isError()->yes();
 			case 'float':
 				return $strictPlaceholderTypes
 					? (new UnionType([
@@ -43,7 +42,7 @@ final class PrintfPlaceholder
 						// numeric-string is allowed for consistency with phpstan-strict-rules.
 						new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
 					]))->accepts($argumentType, true)->yes()
-					: ! $argumentType->toFloat() instanceof ErrorType;
+					: ! $argumentType->toFloat()->isError()->yes();
 			case 'string':
 			case 'mixed':
 				// The function signature already limits the parameters to stringable types, so there's

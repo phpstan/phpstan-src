@@ -39,7 +39,7 @@ class BenevolentUnionType extends UnionType
 		$resultTypes = [];
 		foreach ($this->getTypes() as $type) {
 			$result = $getType($type);
-			if ($result instanceof ErrorType) {
+			if ($result->isError()->yes()) {
 				continue;
 			}
 
@@ -78,7 +78,7 @@ class BenevolentUnionType extends UnionType
 		$types = [];
 		foreach ($this->getTypes() as $innerType) {
 			$valueType = $innerType->getOffsetValueType($offsetType);
-			if ($valueType instanceof ErrorType) {
+			if ($valueType->isError()->yes()) {
 				continue;
 			}
 

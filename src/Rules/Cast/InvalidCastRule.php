@@ -9,7 +9,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function get_class;
@@ -64,11 +63,11 @@ final class InvalidCastRule implements Rule
 
 				[$castType] = $castResult;
 
-				return !$castType instanceof ErrorType;
+				return !$castType->isError()->yes();
 			},
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return [];
 		}
 
@@ -79,7 +78,7 @@ final class InvalidCastRule implements Rule
 
 		[$castType, $castIdentifier] = $castResult;
 
-		if ($castType instanceof ErrorType) {
+		if ($castType->isError()->yes()) {
 			$classReflection = $this->reflectionProvider->getClass(get_class($node));
 			$shortName = $classReflection->getNativeReflection()->getShortName();
 			$shortName = strtolower($shortName);

@@ -1323,7 +1323,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			$returnType = $functionReflection->getReturnType();
 			$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
-			if ($generatorSendType instanceof ErrorType) {
+			if ($generatorSendType->isError()->yes()) {
 				return new MixedType();
 			}
 
@@ -1331,7 +1331,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		} elseif ($node instanceof Expr\YieldFrom) {
 			$yieldFromType = $this->getType($node->expr);
 			$generatorReturnType = $yieldFromType->getTemplateType(Generator::class, 'TReturn');
-			if ($generatorReturnType instanceof ErrorType) {
+			if ($generatorReturnType->isError()->yes()) {
 				return new MixedType();
 			}
 

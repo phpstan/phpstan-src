@@ -41,7 +41,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -1178,7 +1177,7 @@ final class PhpClassReflectionExtension
 			}
 
 			$propertyType = $methodScope->getType($expr->expr);
-			if ($propertyType instanceof ErrorType || $propertyType instanceof NeverType) {
+			if ($propertyType->isError()->yes() || $propertyType instanceof NeverType) {
 				continue;
 			}
 

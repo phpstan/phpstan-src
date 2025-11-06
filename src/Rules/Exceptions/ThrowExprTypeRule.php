@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -44,7 +43,7 @@ final class ThrowExprTypeRule implements Rule
 		);
 
 		$foundType = $typeResult->getType();
-		if ($foundType instanceof ErrorType) {
+		if ($foundType->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

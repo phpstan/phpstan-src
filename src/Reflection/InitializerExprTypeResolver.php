@@ -521,7 +521,7 @@ final class InitializerExprTypeResolver
 		if (TypeCombinator::union(
 			$leftStringType,
 			$rightStringType,
-		) instanceof ErrorType) {
+		)->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1020,7 +1020,7 @@ final class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1075,7 +1075,7 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
+		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber())->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1136,7 +1136,7 @@ final class InitializerExprTypeResolver
 					$leftNumberType = $leftTypeInner->toNumber();
 					$rightNumberType = $rightTypeInner->toNumber();
 
-					if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+					if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 						return new ErrorType();
 					}
 
@@ -1183,7 +1183,7 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
+		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber())->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1254,7 +1254,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1310,7 +1310,7 @@ final class InitializerExprTypeResolver
 			return $extensionSpecified;
 		}
 
-		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
+		if ($leftType->toNumber()->isError()->yes() || $rightType->toNumber()->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1327,7 +1327,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1431,7 +1431,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1634,7 +1634,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1683,7 +1683,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1741,7 +1741,7 @@ final class InitializerExprTypeResolver
 		}
 
 		$exponentiatedTyped = $leftType->exponentiate($rightType);
-		if (!$exponentiatedTyped instanceof ErrorType) {
+		if (!$exponentiatedTyped->isError()->yes()) {
 			return $exponentiatedTyped;
 		}
 
@@ -1778,7 +1778,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1805,7 +1805,7 @@ final class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -1842,7 +1842,7 @@ final class InitializerExprTypeResolver
 						$leftNumberType = $leftTypeInner->toNumber();
 						$rightNumberType = $rightTypeInner->toNumber();
 
-						if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 							return new ErrorType();
 						}
 
@@ -1869,7 +1869,7 @@ final class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 			return new ErrorType();
 		}
 
@@ -2087,7 +2087,7 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+		if ($leftNumberType->isError()->yes() || $rightNumberType->isError()->yes()) {
 			return new ErrorType();
 		}
 		if ($leftNumberType instanceof NeverType || $rightNumberType instanceof NeverType) {

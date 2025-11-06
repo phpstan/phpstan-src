@@ -1086,7 +1086,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($type === null) {
 			return new ErrorType();
 		}
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			$templateTypeMap = $ancestorClassReflection->getTemplateTypeMap();
 			$templateType = $templateTypeMap->getType($templateTypeName);
 			if ($templateType === null) {
@@ -1148,7 +1148,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if (!$extraOffsetAccessible && $this->isInstanceOf(Traversable::class)->yes()) {
 			$isTraversable = true;
 			$tKey = $this->getTemplateType(Traversable::class, 'TKey');
-			if (!$tKey instanceof ErrorType) {
+			if (!$tKey->isError()->yes()) {
 				if (!$tKey instanceof MixedType || $tKey->isExplicitMixed()) {
 					return $tKey;
 				}
@@ -1195,7 +1195,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if (!$extraOffsetAccessible && $this->isInstanceOf(Traversable::class)->yes()) {
 			$isTraversable = true;
 			$tValue = $this->getTemplateType(Traversable::class, 'TValue');
-			if (!$tValue instanceof ErrorType) {
+			if (!$tValue->isError()->yes()) {
 				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
 					return $tValue;
 				}

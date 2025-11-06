@@ -10,7 +10,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
@@ -130,7 +129,7 @@ final class PrintfParameterTypeRule implements Rule
 					fn (Type $t) => $placeholder->doesArgumentTypeMatchPlaceholder($t, $this->checkStrictPrintfPlaceholderTypes),
 				)->getType();
 
-				if ($argType instanceof ErrorType || $placeholder->doesArgumentTypeMatchPlaceholder($argType, $this->checkStrictPrintfPlaceholderTypes)) {
+				if ($argType->isError()->yes() || $placeholder->doesArgumentTypeMatchPlaceholder($argType, $this->checkStrictPrintfPlaceholderTypes)) {
 					continue;
 				}
 

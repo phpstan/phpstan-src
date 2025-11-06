@@ -12,7 +12,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
@@ -111,7 +110,7 @@ final class SortParameterCastableToStringRule implements Rule
 			$castFn = static function (Type $t): Type {
 				$float = $t->toFloat();
 
-				return $float instanceof ErrorType
+				return $float->isError()->yes()
 					? $float
 					: $t->toString();
 			};

@@ -12,7 +12,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -145,7 +144,7 @@ final class InvalidIncDecOperationRule implements Rule
 			static fn (Type $type): bool => $allowedTypes->isSuperTypeOf($type)->yes(),
 		)->getType();
 
-		if ($varType instanceof ErrorType || $allowedTypes->isSuperTypeOf($varType)->yes()) {
+		if ($varType->isError()->yes() || $allowedTypes->isSuperTypeOf($varType)->yes()) {
 			return [];
 		}
 

@@ -10,7 +10,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -53,7 +52,7 @@ final class DynamicClassConstantFetchRule implements Rule
 			static fn (Type $type): bool => $type->isString()->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return [];
 		}
 		if ($type->isString()->yes()) {

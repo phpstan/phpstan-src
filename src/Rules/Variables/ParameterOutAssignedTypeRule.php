@@ -10,7 +10,6 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -85,7 +84,7 @@ final class ParameterOutAssignedTypeRule implements Rule
 			static fn (Type $type): bool => $outType->isSuperTypeOf($type)->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

@@ -24,7 +24,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
@@ -190,7 +189,7 @@ final class StaticMethodCallCheck
 				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);
 			$classType = $classTypeResult->getType();
-			if ($classType instanceof ErrorType) {
+			if ($classType->isError()->yes()) {
 				return [$classTypeResult->getUnknownClassErrors(), null];
 			}
 		}

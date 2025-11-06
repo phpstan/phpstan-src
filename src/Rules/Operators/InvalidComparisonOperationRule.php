@@ -13,7 +13,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -73,7 +72,7 @@ final class InvalidComparisonOperationRule implements Rule
 		);
 
 		if ($result !== null) {
-			if (! $result instanceof ErrorType) {
+			if (! $result->isError()->yes()) {
 				return [];
 			}
 
@@ -104,7 +103,7 @@ final class InvalidComparisonOperationRule implements Rule
 		$type = $this->ruleLevelHelper->findTypeToCheck($scope, $expr, '', $onlyNumber)->getType();
 
 		if (
-			$type instanceof ErrorType
+			$type->isError()->yes()
 			|| !$type->equals($scope->getType($expr))
 		) {
 			return false;

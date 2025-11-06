@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -58,11 +57,11 @@ final class InvalidBinaryOperationRule implements Rule
 		}
 
 		if ($node instanceof Node\Expr\AssignOp\Concat || $node instanceof Node\Expr\BinaryOp\Concat) {
-			$callback = static fn (Type $type): bool => !$type->toString() instanceof ErrorType;
+			$callback = static fn (Type $type): bool => !$type->toString()->isError()->yes();
 		} elseif ($node instanceof Node\Expr\AssignOp\Plus || $node instanceof Node\Expr\BinaryOp\Plus) {
-			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType || $type->isArray()->yes();
+			$callback = static fn (Type $type): bool => !$type->toNumber()->isError()->yes() || $type->isArray()->yes();
 		} else {
-			$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
+			$callback = static fn (Type $type): bool => !$type->toNumber()->isError()->yes();
 		}
 
 		$leftType = $this->ruleLevelHelper->findTypeToCheck(
@@ -71,7 +70,7 @@ final class InvalidBinaryOperationRule implements Rule
 			'',
 			$callback,
 		)->getType();
-		if ($leftType instanceof ErrorType) {
+		if ($leftType->isError()->yes()) {
 			return [];
 		}
 
@@ -81,7 +80,7 @@ final class InvalidBinaryOperationRule implements Rule
 			'',
 			$callback,
 		)->getType();
-		if ($rightType instanceof ErrorType) {
+		if ($rightType->isError()->yes()) {
 			return [];
 		}
 
@@ -101,7 +100,7 @@ final class InvalidBinaryOperationRule implements Rule
 			$newRight = $newNode->right;
 		}
 
-		if (!$scope->getType($newNode) instanceof ErrorType) {
+		if (!$scope->getType($newNode)->isError()->yes()) {
 			return [];
 		}
 

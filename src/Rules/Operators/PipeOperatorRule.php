@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use function sprintf;
 
@@ -36,7 +35,7 @@ final class PipeOperatorRule implements Rule
 			'',
 			static fn (Type $type) => $type->isCallable()->yes(),
 		)->getType();
-		if ($rightType instanceof ErrorType) {
+		if ($rightType->isError()->yes()) {
 			return [];
 		}
 		if (!$rightType->isCallable()->yes()) {

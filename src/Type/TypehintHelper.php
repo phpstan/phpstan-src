@@ -85,7 +85,7 @@ final class TypehintHelper
 			return $type;
 		}
 
-		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {
+		if ($phpDocType !== null && !$phpDocType->isError()->yes()) {
 			if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
 				return $phpDocType;
 			}

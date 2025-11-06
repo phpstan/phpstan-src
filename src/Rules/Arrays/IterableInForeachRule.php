@@ -9,7 +9,6 @@ use PHPStan\Node\InForeachNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -40,7 +39,7 @@ final class IterableInForeachRule implements Rule
 			static fn (Type $type): bool => $type->isIterable()->yes(),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 		if ($type->isIterable()->yes()) {

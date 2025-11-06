@@ -7,7 +7,6 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -38,12 +37,12 @@ final class ParameterCastableToStringCheck
 			$scope,
 			$parameter->value,
 			'',
-			static fn (Type $type): bool => $type->isArray()->yes() && !$castFn($type->getIterableValueType()) instanceof ErrorType,
+			static fn (Type $type): bool => $type->isArray()->yes() && !$castFn($type->getIterableValueType())->isError()->yes(),
 		);
 
 		if (
 			! $typeResult->getType()->isArray()->yes()
-			|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType
+			|| !$castFn($typeResult->getType()->getIterableValueType())->isError()->yes()
 		) {
 			return null;
 		}

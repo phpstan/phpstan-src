@@ -11,7 +11,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -65,11 +64,11 @@ final class OffsetAccessValueAssignmentRule implements Rule
 			'',
 			static function (Type $varType) use ($assignedValueType): bool {
 				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType);
-				return !($result instanceof ErrorType);
+				return !($result->isError()->yes());
 			},
 		);
 		$arrayType = $arrayTypeResult->getType();
-		if ($arrayType instanceof ErrorType) {
+		if ($arrayType->isError()->yes()) {
 			return [];
 		}
 		$isOffsetAccessible = $arrayType->isOffsetAccessible();
@@ -77,7 +76,7 @@ final class OffsetAccessValueAssignmentRule implements Rule
 			return [];
 		}
 		$resultType = $arrayType->setOffsetValueType(new MixedType(), $assignedValueType);
-		if (!$resultType instanceof ErrorType) {
+		if (!$resultType->isError()->yes()) {
 			return [];
 		}
 

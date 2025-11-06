@@ -404,7 +404,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		$valueStringType = $valueType->toString();
-		if ($valueStringType instanceof ErrorType) {
+		if ($valueStringType->isError()->yes()) {
 			return new ErrorType();
 		}
 		if (

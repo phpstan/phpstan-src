@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -35,11 +34,11 @@ final class PrintRule implements Rule
 			$scope,
 			$node->expr,
 			'',
-			static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
+			static fn (Type $type): bool => !$type->toString()->isError()->yes(),
 		);
 
-		if (!$typeResult->getType() instanceof ErrorType
-			&& $typeResult->getType()->toString() instanceof ErrorType
+		if (!$typeResult->getType()->isError()->yes()
+			&& $typeResult->getType()->toString()->isError()->yes()
 		) {
 			return [RuleErrorBuilder::message(sprintf(
 				'Parameter %s of print cannot be converted to string.',

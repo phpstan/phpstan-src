@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
@@ -35,7 +34,7 @@ final class AbsFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 
 		$outputType = $inputType->toAbsoluteNumber();
 
-		if ($outputType instanceof ErrorType) {
+		if ($outputType->isError()->yes()) {
 			return null;
 		}
 

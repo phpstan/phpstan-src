@@ -19,7 +19,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
@@ -311,7 +310,7 @@ final class FunctionCallParametersCheck
 				);
 				$iterableTypeResultType = $iterableTypeResult->getType();
 				if (
-					!$iterableTypeResultType instanceof ErrorType
+					!$iterableTypeResultType->isError()->yes()
 					&& !$iterableTypeResultType->isIterable()->yes()
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -361,7 +360,7 @@ final class FunctionCallParametersCheck
 
 				if (
 					!$parameter->passedByReference()->createsNewVariable()
-					|| (!$isBuiltin && !$argumentValueType instanceof ErrorType)
+					|| (!$isBuiltin && !$argumentValueType->isError()->yes())
 				) {
 					$accepts = $this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
 
@@ -515,7 +514,7 @@ final class FunctionCallParametersCheck
 
 				foreach ($resolvedTypes as $name => $type) {
 					if (
-						!($type instanceof ErrorType)
+						!($type->isError()->yes())
 						&& (
 							!$type instanceof NeverType
 							|| $type->isExplicit()

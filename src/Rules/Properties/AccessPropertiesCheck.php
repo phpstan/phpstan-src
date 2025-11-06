@@ -21,7 +21,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -65,13 +64,13 @@ final class AccessPropertiesCheck
 					$scope,
 					$node->name,
 					'',
-					static fn (Type $type) => !$type->toString() instanceof ErrorType && $type->toString()->isString()->yes(),
+					static fn (Type $type) => !$type->toString()->isError()->yes() && $type->toString()->isString()->yes(),
 				);
 				$nameType = $nameTypeResult->getType();
 				if (
-					!$nameType instanceof ErrorType
+					!$nameType->isError()->yes()
 					&& (
-						$nameType->toString() instanceof ErrorType
+						$nameType->toString()->isError()->yes()
 						|| !$nameType->toString()->isString()->yes()
 					)
 				) {
@@ -106,7 +105,7 @@ final class AccessPropertiesCheck
 			),
 		);
 		$type = $typeResult->getType();
-		if ($type instanceof ErrorType) {
+		if ($type->isError()->yes()) {
 			return $typeResult->getUnknownClassErrors();
 		}
 

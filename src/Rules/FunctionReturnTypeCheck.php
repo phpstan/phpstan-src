@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -50,7 +49,7 @@ final class FunctionReturnTypeCheck
 
 		if ($isGenerator) {
 			$returnType = $returnType->getTemplateType(Generator::class, 'TReturn');
-			if ($returnType instanceof ErrorType) {
+			if ($returnType->isError()->yes()) {
 				return [];
 			}
 		}

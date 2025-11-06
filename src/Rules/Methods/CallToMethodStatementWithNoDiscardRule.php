@@ -10,7 +10,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use function sprintf;
 
@@ -79,7 +78,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 			static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 		);
 		$calledOnType = $typeResult->getType();
-		if ($calledOnType instanceof ErrorType) {
+		if ($calledOnType->isError()->yes()) {
 			return [];
 		}
 		if (!$calledOnType->canCallMethods()->yes()) {

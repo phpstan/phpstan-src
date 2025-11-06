@@ -10,7 +10,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -51,7 +50,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			static fn (Type $varType): bool => $varType->isArray()->no(),
 		)->getType();
 
-		if ($varType instanceof ErrorType) {
+		if ($varType->isError()->yes()) {
 			return [];
 		}
 
@@ -67,7 +66,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			'',
 			static fn (Type $dimType): bool => $allowedArrayKeys->isSuperTypeOf($dimType)->yes(),
 		)->getType();
-		if ($dimensionType instanceof ErrorType) {
+		if ($dimensionType->isError()->yes()) {
 			return [];
 		}
 

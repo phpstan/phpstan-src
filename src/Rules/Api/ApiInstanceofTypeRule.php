@@ -32,6 +32,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -80,6 +81,7 @@ final class ApiInstanceofTypeRule implements Rule
 		IntersectionType::class => null,
 		ConstantScalarType::class => 'Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()',
 		ObjectShapeType::class => 'Type::isObject() and Type::hasProperty()',
+		ErrorType::class => 'Type::isError()',
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

@@ -163,7 +163,7 @@ final class ImpossibleCheckTypeHelper
 											continue;
 										}
 
-										foreach ($haystackArrayValueType->getConstantScalarTypes() as $constantScalarType) {
+										foreach ($haystackArrayValueConstantScalarTypes as $constantScalarType) {
 											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
 												continue 3;
 											}

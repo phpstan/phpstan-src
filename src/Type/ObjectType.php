@@ -159,7 +159,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasProperty($propertyName));
-		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
+		if ($classHasProperty !== false) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -265,7 +265,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasInstanceProperty($propertyName));
-		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
+		if ($classHasProperty !== false) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -371,7 +371,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$classHasProperty = RecursionGuard::run($this, static fn (): bool => $classReflection->hasStaticProperty($propertyName));
-		if ($classHasProperty === true || $classHasProperty instanceof ErrorType) {
+		if ($classHasProperty !== false) {
 			return TrinaryLogic::createYes();
 		}
 

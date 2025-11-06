@@ -19,7 +19,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -164,7 +163,7 @@ final class AccessStaticPropertiesCheck
 				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasStaticProperty($name)->yes(),
 			);
 			$classType = $classTypeResult->getType();
-			if ($classType instanceof ErrorType) {
+			if ($classType->isError()->yes()) {
 				return $classTypeResult->getUnknownClassErrors();
 			}
 		}

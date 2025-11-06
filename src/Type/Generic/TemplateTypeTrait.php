@@ -6,7 +6,6 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -18,6 +17,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
 use function sprintf;
 
 /**
@@ -74,7 +74,7 @@ trait TemplateTypeTrait
 			$defaultDescription = '';
 			if ($this->default !== null) {
 				$recursionGuard = RecursionGuard::runOnObjectIdentity($this->default, fn () => $this->default->describe($level));
-				if (!$recursionGuard instanceof ErrorType) {
+				if (is_string($recursionGuard)) {
 					$defaultDescription .= sprintf(' = %s', $recursionGuard);
 				}
 			}

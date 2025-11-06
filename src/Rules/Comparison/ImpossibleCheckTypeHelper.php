@@ -154,7 +154,7 @@ final class ImpossibleCheckTypeHelper
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								if ($haystackArrayType instanceof ConstantArrayType) {
 									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
-										if (count($haystackArrayValueType->getFiniteTypes()) > 1 || $haystackArrayType->isOptionalKey($i)) {
+										if ($haystackArrayType->isOptionalKey($i)) {
 											continue;
 										}
 

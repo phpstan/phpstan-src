@@ -21,7 +21,7 @@ class Foo
 		/** @var 0|1|2 $offset */
 		$offset = doFoo();
 		$c[$offset] = true;
-		assertType('array{bool, bool, bool}', $c);
+		assertType('array{false, false, true}|array{false, true, false}|array{true, false, false}', $c);
 
 		$d = [false, false, false];
 		/** @var int<0, 2> $offset2 */
@@ -33,13 +33,13 @@ class Foo
 		/** @var 0|1|2|3 $offset3 */
 		$offset3 = doFoo();
 		$e[$offset3] = true;
-		assertType('array{0: bool, 1: bool, 2: bool, 3?: true}', $e);
+		assertType('array{false, false, false, true}|array{false, false, true}|array{false, true, false}|array{true, false, false}', $e);
 
 		$f = [false, false, false];
 		/** @var 0|1 $offset4 */
 		$offset4 = doFoo();
 		$f[$offset4] = true;
-		assertType('array{bool, bool, false}', $f);
+		assertType('array{false, true, false}|array{true, false, false}', $f);
 	}
 
 	/**
@@ -101,7 +101,7 @@ class Foo
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('array{bool, bool, false}', $a);
+		assertType('array{false, true, false}|array{true, false, false}', $a);
 	}
 
 	/**

@@ -1,0 +1,13 @@
+parameters:
+	ignoreErrors:
+		-
+			rawMessage: 'Call to deprecated method setAccessible() of class ReflectionMethod.'
+			identifier: method.deprecated
+			count: 1
+			path: ../src/Fixable/Patcher.php
+
+		-
+			rawMessage: 'Call to deprecated method setAccessible() of class ReflectionProperty.'
+			identifier: method.deprecated
+			count: 1
+			path: ../src/Testing/TestCaseSourceLocatorFactory.php

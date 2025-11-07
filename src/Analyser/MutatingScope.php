@@ -34,6 +34,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
+use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
@@ -3949,13 +3950,19 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$iterateeType = $originalScope->getType($iteratee);
 		$nativeIterateeType = $originalScope->getNativeType($iteratee);
+
+		$keyType = $originalScope->getIterableKeyType($iterateeType);
+		$nativeKeyType = $originalScope->getIterableKeyType($nativeIterateeType);
+
 		$scope = $this->assignVariable(
 			$keyName,
-			$originalScope->getIterableKeyType($iterateeType),
-			$originalScope->getIterableKeyType($nativeIterateeType),
+			$keyType,
+			$nativeKeyType,
 			TrinaryLogic::createYes(),
 		);
 
+		$originalForeachKeyExpr = new OriginalForeachKeyExpr($keyName);
+		$scope = $scope->assignExpression($originalForeachKeyExpr, $keyType, $nativeKeyType);
 		if ($iterateeType->isArray()->yes()) {
 			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
@@ -4138,6 +4145,10 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		$parameterOriginalValueExprString = $this->getNodeKey(new ParameterVariableOriginalValueExpr($variableName));
 		unset($scope->expressionTypes[$parameterOriginalValueExprString]);
 		unset($scope->nativeExpressionTypes[$parameterOriginalValueExprString]);
+
+		$originalForeachKeyExpr = $this->getNodeKey(new OriginalForeachKeyExpr($variableName));
+		unset($scope->expressionTypes[$originalForeachKeyExpr]);
+		unset($scope->nativeExpressionTypes[$originalForeachKeyExpr]);
 
 		return $scope;
 	}

@@ -15,7 +15,7 @@ function getItems(array $items): array
 		$items[$index] = 1;
 	}
 
-	assertType('non-empty-list<int>', $items);
+	assertType('non-empty-list<1>', $items);
 	return $items;
 }
 

@@ -91,6 +91,7 @@ use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
+use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
@@ -1247,14 +1248,94 @@ final class NodeScopeResolver
 			$bodyScope = $this->enterForeach($bodyScope, $originalScope, $stmt, $nodeCallback);
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
-			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
+			$scopesWithIterableValueType = [];
+
+			$originalKeyVarExpr = null;
+			$continueExitPointHasUnoriginalKeyType = false;
+			if ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
+				$originalKeyVarExpr = new OriginalForeachKeyExpr($stmt->keyVar->name);
+				if ($finalScope->hasExpressionType($originalKeyVarExpr)->yes()) {
+					$scopesWithIterableValueType[] = $finalScope;
+				} else {
+					$continueExitPointHasUnoriginalKeyType = true;
+				}
 			}
-			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+
+			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$continueScope = $continueExitPoint->getScope();
+				$finalScope = $continueScope->mergeWith($finalScope);
+				if ($originalKeyVarExpr === null || !$continueScope->hasExpressionType($originalKeyVarExpr)->yes()) {
+					$continueExitPointHasUnoriginalKeyType = true;
+					continue;
+				}
+				$scopesWithIterableValueType[] = $continueScope;
+			}
+			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
+			foreach ($breakExitPoints as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
 			$exprType = $scope->getType($stmt->expr);
+			$hasExpr = $scope->hasExpressionType($stmt->expr);
+			if (
+				count($breakExitPoints) === 0
+				&& count($scopesWithIterableValueType) > 0
+				&& !$continueExitPointHasUnoriginalKeyType
+				&& $stmt->keyVar !== null
+				&& $exprType->isArray()->yes()
+				&& $exprType->isConstantArray()->no()
+				&& !$hasExpr->no()
+			) {
+				$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $stmt->keyVar);
+				$arrayDimFetchLoopTypes = [];
+				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+					$arrayDimFetchLoopTypes[] = $scopeWithIterableValueType->getType($arrayExprDimFetch);
+				}
+
+				$arrayDimFetchLoopType = TypeCombinator::union(...$arrayDimFetchLoopTypes);
+
+				$arrayDimFetchLoopNativeTypes = [];
+				foreach ($scopesWithIterableValueType as $scopeWithIterableValueType) {
+					$arrayDimFetchLoopNativeTypes[] = $scopeWithIterableValueType->getNativeType($arrayExprDimFetch);
+				}
+
+				$arrayDimFetchLoopNativeType = TypeCombinator::union(...$arrayDimFetchLoopNativeTypes);
+
+				if (!$arrayDimFetchLoopType->equals($exprType->getIterableValueType())) {
+					$newExprType = TypeTraverser::map($exprType, static function (Type $type, callable $traverse) use ($arrayDimFetchLoopType): Type {
+						if ($type instanceof UnionType || $type instanceof IntersectionType) {
+							return $traverse($type);
+						}
+
+						if (!$type instanceof ArrayType) {
+							return $type;
+						}
+
+						return new ArrayType($type->getKeyType(), $arrayDimFetchLoopType);
+					});
+					$newExprNativeType = TypeTraverser::map($scope->getNativeType($stmt->expr), static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType): Type {
+						if ($type instanceof UnionType || $type instanceof IntersectionType) {
+							return $traverse($type);
+						}
+
+						if (!$type instanceof ArrayType) {
+							return $type;
+						}
+
+						return new ArrayType($type->getKeyType(), $arrayDimFetchLoopNativeType);
+					});
+
+					if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+						$finalScope = $finalScope->assignVariable(
+							$stmt->expr->name,
+							$newExprType,
+							$newExprNativeType,
+							$hasExpr,
+						);
+					}
+				}
+			}
+
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
 			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(

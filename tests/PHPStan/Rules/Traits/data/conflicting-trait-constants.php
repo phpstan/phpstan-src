@@ -103,3 +103,21 @@ class Bar10
 
 	final public const PUBLIC_FINAL_CONSTANT = 1;
 }
+
+trait Foo1
+{
+	protected const ARR1 = [
+		self::KEY => 'int',
+	];
+}
+
+class Bar11
+{
+	use Foo1;
+
+	protected const KEY = 'k1';
+
+	protected const ARR = self::ARR1 + [
+		'a.b' => 'int',
+	];
+}

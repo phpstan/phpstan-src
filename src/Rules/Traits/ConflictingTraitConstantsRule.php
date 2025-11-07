@@ -43,6 +43,12 @@ final class ConflictingTraitConstantsRule implements Rule
 			return [];
 		}
 
+		// Even though isInClass() is true, we still need to check isInTrait() because
+		// both can be true simultaneously when analyzing trait code.
+		if ($scope->isInTrait()) {
+			return [];
+		}
+
 		$classReflection = $scope->getClassReflection();
 		$traitConstants = [];
 		foreach ($classReflection->getTraits(true) as $trait) {

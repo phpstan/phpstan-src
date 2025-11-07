@@ -6,6 +6,24 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
+	public function countUnknownArray(array $arr): void
+	{
+		assertType('array', $arr);
+		assertType('int<0, max>', count($arr));
+		assertType('int<0, max>', count($arr, COUNT_NORMAL));
+		assertType('int<0, max>', count($arr, COUNT_RECURSIVE));
+	}
+
+	public function countEmptyArray(array $arr): void
+	{
+		if (count($arr) == 0) {
+			assertType('array{}', $arr);
+			assertType('0', count($arr));
+			assertType('0', count($arr, COUNT_NORMAL));
+			assertType('0', count($arr, COUNT_RECURSIVE));
+		}
+	}
+
 	public function countArray(array $arr): void
 	{
 		if (count($arr) > 2) {

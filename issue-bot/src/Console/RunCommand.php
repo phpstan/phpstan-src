@@ -73,6 +73,7 @@ class RunCommand extends Command
 	{
 		$configFiles = [
 			__DIR__ . '/../../playground.neon',
+			__DIR__ . '/../../vendor/phpstan/phpstan-deprecation-rules/rules.neon',
 		];
 		if ($result->isBleedingEdge()) {
 			$configFiles[] = __DIR__ . '/../../../conf/bleedingEdge.neon';

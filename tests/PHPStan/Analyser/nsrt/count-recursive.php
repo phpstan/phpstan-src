@@ -6,6 +6,20 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
+	/**
+	 * @param array<array<mixed>> $muliDimArr
+	 * @return void
+	 */
+	public function countMultiDim(array $muliDimArr, $mixed): void
+	{
+		if (count($muliDimArr, $mixed) > 2) {
+			assertType('int<1, max>', count($muliDimArr));
+			assertType('int<3, max>', count($muliDimArr, $mixed));
+			assertType('int<1, max>', count($muliDimArr, COUNT_NORMAL));
+			assertType('int<1, max>', count($muliDimArr, COUNT_RECURSIVE));
+		}
+	}
+
 	public function countUnknownArray(array $arr): void
 	{
 		assertType('array', $arr);

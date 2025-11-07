@@ -6699,6 +6699,7 @@ final class NodeScopeResolver
 				$stmt->expr,
 				$stmt->valueVar->name,
 				$keyVarName,
+				$stmt->byRef,
 			);
 			$vars = [$stmt->valueVar->name];
 			if ($keyVarName !== null) {

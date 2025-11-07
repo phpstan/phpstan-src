@@ -9,9 +9,12 @@ use PHPStan\Node\VirtualNode;
 final class ParameterVariableOriginalValueExpr extends Expr implements VirtualNode
 {
 
+	public Expr\Variable $var;
+
 	public function __construct(private string $variableName)
 	{
 		parent::__construct([]);
+		$this->var = new Expr\Variable($this->variableName);
 	}
 
 	public function getVariableName(): string
@@ -31,7 +34,7 @@ final class ParameterVariableOriginalValueExpr extends Expr implements VirtualNo
 	#[Override]
 	public function getSubNodeNames(): array
 	{
-		return [];
+		return ['var'];
 	}
 
 }

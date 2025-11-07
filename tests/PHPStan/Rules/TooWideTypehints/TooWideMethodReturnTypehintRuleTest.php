@@ -302,4 +302,11 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13676(): void
+	{
+		$this->reportTooWideBool = true;
+		$this->reportNestedTooWideType = true;
+		$this->analyse([__DIR__ . '/data/bug-13676.php'], []);
+	}
+
 }

@@ -33,6 +33,7 @@ use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
@@ -3929,18 +3930,39 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->assignExpression($condExpr, $type, $nativeType);
 	}
 
-	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName): self
+	public function enterForeach(self $originalScope, Expr $iteratee, string $valueName, ?string $keyName, bool $valueByRef): self
 	{
 		$iterateeType = $originalScope->getType($iteratee);
 		$nativeIterateeType = $originalScope->getNativeType($iteratee);
+		$valueType = $originalScope->getIterableValueType($iterateeType);
+		$nativeValueType = $originalScope->getIterableValueType($nativeIterateeType);
 		$scope = $this->assignVariable(
 			$valueName,
-			$originalScope->getIterableValueType($iterateeType),
-			$originalScope->getIterableValueType($nativeIterateeType),
+			$valueType,
+			$nativeValueType,
 			TrinaryLogic::createYes(),
 		);
+		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+			$scope = $scope->assignExpression(
+				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetOffsetValueTypeExpr(
+					$iteratee,
+					new GetIterableKeyTypeExpr($iteratee),
+					new Variable($valueName),
+				)),
+				$valueType,
+				$nativeValueType,
+			);
+		}
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($originalScope, $iteratee, $keyName);
+
+			if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
+				$scope = $scope->assignExpression(
+					new IntertwinedVariableByReferenceWithExpr($valueName, new Expr\ArrayDimFetch($iteratee, new Variable($keyName)), new Variable($valueName)),
+					$valueType,
+					$nativeValueType,
+				);
+			}
 		}
 
 		return $scope;
@@ -4142,13 +4164,38 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
-		$parameterOriginalValueExprString = $this->getNodeKey(new ParameterVariableOriginalValueExpr($variableName));
-		unset($scope->expressionTypes[$parameterOriginalValueExprString]);
-		unset($scope->nativeExpressionTypes[$parameterOriginalValueExprString]);
+		foreach ($scope->expressionTypes as $expressionType) {
+			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
+				continue;
+			}
+			if (!$expressionType->getCertainty()->yes()) {
+				continue;
+			}
+			if ($expressionType->getExpr()->getVariableName() !== $variableName) {
+				continue;
+			}
 
-		$originalForeachKeyExpr = $this->getNodeKey(new OriginalForeachKeyExpr($variableName));
-		unset($scope->expressionTypes[$originalForeachKeyExpr]);
-		unset($scope->nativeExpressionTypes[$originalForeachKeyExpr]);
+			$has = $scope->hasExpressionType($expressionType->getExpr()->getExpr());
+			if (
+				$expressionType->getExpr()->getExpr() instanceof Variable
+				&& is_string($expressionType->getExpr()->getExpr()->name)
+				&& !$has->no()
+			) {
+				$scope = $scope->assignVariable(
+					$expressionType->getExpr()->getExpr()->name,
+					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
+					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
+					$has,
+				);
+			} else {
+				$scope = $scope->assignExpression(
+					$expressionType->getExpr()->getExpr(),
+					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
+					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
+				);
+			}
+
+		}
 
 		return $scope;
 	}

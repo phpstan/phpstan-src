@@ -36,7 +36,7 @@ function last(array $array): void
 	assertType('array<int>', $array);
 }
 
-function maybeArray(array $array, mixed $mixed): void
+function maybeArray(array $array, $mixed): void
 {
 	$arrayOrMixed = rand(0, 1) ? $array : $mixed;
 
@@ -48,7 +48,7 @@ function maybeArray(array $array, mixed $mixed): void
 	assertType('mixed', $arrayOrMixed);
 }
 
-function mixedLast(mixed $mixed): void
+function mixedLast($mixed): void
 {
 	if (is_array($mixed)) {
 		return;

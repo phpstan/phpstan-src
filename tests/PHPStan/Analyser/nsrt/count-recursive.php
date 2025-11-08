@@ -121,6 +121,14 @@ class HelloWorld
 		assertType('4', count($arr, COUNT_NORMAL));
 		assertType('int<1, max>', count($arr, COUNT_RECURSIVE)); // could be int<4, max>
 
+		if (rand(0,1)) {
+			$arr[] = 10;
+		}
+		assertType('array{0: 1, 1: 2, 2: 3, 3: array, 4?: 10}', $arr);
+		assertType('int<4, 5>', count($arr));
+		assertType('int<4, 5>', count($arr, COUNT_NORMAL));
+		assertType('int<1, max>', count($arr, COUNT_RECURSIVE)); // could be int<4, max>
+
 		$arr = [1, 2, 3] + $anotherArray;
 		assertType('non-empty-array&hasOffsetValue(0, 1)&hasOffsetValue(1, 2)&hasOffsetValue(2, 3)', $arr);
 		assertType('int<3, max>', count($arr));

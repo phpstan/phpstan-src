@@ -108,4 +108,22 @@ class HelloWorld
 			assertType('int<3, max>', count($list, COUNT_RECURSIVE));
 		}
 	}
+
+	public function countConstantArray(array $anotherArray): void {
+		$arr = [1, 2, 3, [4, 5]];
+		assertType('4', count($arr));
+		assertType('4', count($arr, COUNT_NORMAL));
+		assertType('int<1, max>', count($arr, COUNT_RECURSIVE));
+
+		$arr = [1, 2, 3, $anotherArray];
+		assertType('4', count($arr));
+		assertType('4', count($arr, COUNT_NORMAL));
+		assertType('int<1, max>', count($arr, COUNT_RECURSIVE)); // could be int<4, max>
+
+		$arr = [1, 2, 3] + $anotherArray;
+		assertType('non-empty-array&hasOffsetValue(0, 1)&hasOffsetValue(1, 2)&hasOffsetValue(2, 3)', $arr);
+		assertType('int<1, max>', count($arr)); // could be int<3, max>
+		assertType('int<1, max>', count($arr, COUNT_NORMAL));  // could be int<3, max>
+		assertType('int<1, max>', count($arr, COUNT_RECURSIVE));
+	}
 }

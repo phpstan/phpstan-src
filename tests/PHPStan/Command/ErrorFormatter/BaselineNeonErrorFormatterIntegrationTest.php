@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Utils\Json;
 use PHPStan\ShouldNotHappenException;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use function array_sum;
@@ -17,6 +18,7 @@ use function unlink;
 use const PHP_BINARY;
 
 #[Group('exec')]
+#[CoversNothing]
 class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 {
 

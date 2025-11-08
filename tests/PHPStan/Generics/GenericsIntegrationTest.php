@@ -3,9 +3,11 @@
 namespace PHPStan\Generics;
 
 use PHPStan\Testing\LevelsTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 
 #[Group('levels')]
+#[CoversNothing]
 class GenericsIntegrationTest extends LevelsTestCase
 {
 

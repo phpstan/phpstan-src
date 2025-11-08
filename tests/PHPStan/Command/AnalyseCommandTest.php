@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -17,6 +18,7 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 
 #[Group('exec')]
+#[CoversNothing]
 class AnalyseCommandTest extends PHPStanTestCase
 {
 

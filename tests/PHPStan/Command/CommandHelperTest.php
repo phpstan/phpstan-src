@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\ShouldNotHappenException;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +17,7 @@ use function stream_get_contents;
 use const DIRECTORY_SEPARATOR;
 
 #[Group('exec')]
+#[CoversNothing]
 class CommandHelperTest extends TestCase
 {
 

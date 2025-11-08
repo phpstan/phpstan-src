@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\Group;
 use const PHP_VERSION_ID;
 
 #[Group('levels')]
+#[CoversNothing]
 class LevelsIntegrationTest extends LevelsTestCase
 {
 

@@ -6,6 +6,7 @@ use Nette\Utils\FileSystem;
 use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,7 @@ use function uniqid;
 use const PHP_BINARY;
 
 #[Group('exec')]
+#[CoversNothing]
 class ParallelAnalyserIntegrationTest extends TestCase
 {
 

@@ -3,9 +3,11 @@
 namespace PHPStan\Levels;
 
 use PHPStan\Testing\LevelsTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 
 #[Group('levels')]
+#[CoversNothing]
 class StubValidatorIntegrationTest extends LevelsTestCase
 {
 

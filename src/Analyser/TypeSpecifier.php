@@ -307,7 +307,7 @@ final class TypeSpecifier
 							$argType->getIterableValueType(),
 							TypeSpecifierContext::createTrue(),
 							$scope,
-						)->setRootExpr($expr)
+						)
 					);
 				}
 

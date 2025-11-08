@@ -53,6 +53,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function ksort;
+use function max;
 use function md5;
 use function sprintf;
 use function strcasecmp;
@@ -680,7 +681,25 @@ class IntersectionType implements CompoundType
 
 	public function getArraySize(): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getArraySize());
+		$arraySize = $this->intersectTypes(static fn (Type $type): Type => $type->getArraySize());
+
+		if ($arraySize instanceof IntegerRangeType) {
+			$knownOffsets = [];
+			foreach ($this->types as $type) {
+				if ($type instanceof HasOffsetValueType) {
+					$knownOffsets[$type->getOffsetType()->getValue()] = true;
+				}
+				if (!($type instanceof HasOffsetType)) {
+					continue;
+				}
+
+				$knownOffsets[$type->getOffsetType()->getValue()] = true;
+			}
+
+			return IntegerRangeType::fromInterval(max(count($knownOffsets), $arraySize->getMin()), $arraySize->getMax());
+		}
+
+		return $arraySize;
 	}
 
 	public function getIterableKeyType(): Type

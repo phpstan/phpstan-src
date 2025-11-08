@@ -116,14 +116,36 @@ class HelloWorld
 		assertType('int<1, max>', count($arr, COUNT_RECURSIVE));
 
 		$arr = [1, 2, 3, $anotherArray];
+		assertType('array{1, 2, 3, array}', $arr);
 		assertType('4', count($arr));
 		assertType('4', count($arr, COUNT_NORMAL));
 		assertType('int<1, max>', count($arr, COUNT_RECURSIVE)); // could be int<4, max>
 
 		$arr = [1, 2, 3] + $anotherArray;
 		assertType('non-empty-array&hasOffsetValue(0, 1)&hasOffsetValue(1, 2)&hasOffsetValue(2, 3)', $arr);
-		assertType('int<1, max>', count($arr)); // could be int<3, max>
-		assertType('int<1, max>', count($arr, COUNT_NORMAL));  // could be int<3, max>
-		assertType('int<1, max>', count($arr, COUNT_RECURSIVE));
+		assertType('int<3, max>', count($arr));
+		assertType('int<3, max>', count($arr, COUNT_NORMAL));
+		assertType('int<1, max>', count($arr, COUNT_RECURSIVE)); // could be int<3, max>
+	}
+
+	public function countAfterKeyExists(array $array, int $i): void {
+		if (array_key_exists(5, $array)) {
+			assertType('non-empty-array&hasOffset(5)', $array);
+			assertType('int<1, max>', count($array));
+		}
+
+		if ($array !== []) {
+			assertType('non-empty-array', $array);
+			assertType('int<1, max>', count($array));
+			if (array_key_exists(5, $array)) {
+				assertType('non-empty-array&hasOffset(5)', $array);
+				assertType('int<1, max>', count($array));
+
+				if (array_key_exists(15, $array)) {
+					assertType('non-empty-array&hasOffset(15)&hasOffset(5)', $array);
+					assertType('int<2, max>', count($array));
+				}
+			}
+		}
 	}
 }

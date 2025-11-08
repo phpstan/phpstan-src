@@ -72,3 +72,15 @@ function firstInCondition(array $array): mixed
 	assertType('list<string>', $array);
 	return null;
 }
+
+/** @param list<string> $array */
+function maybeNull(array $array, ?int $nullOrInt, ?string $nullOrString): void
+{
+	if (array_key_first($array) !== $nullOrInt) {
+		assertType('list<string>', $array);
+	}
+	if (array_key_first($array) !== $nullOrString) {
+		assertType('list<string>', $array);
+	}
+	assertType('list<string>', $array);
+}

@@ -35,3 +35,29 @@ function last(array $array): void
 	}
 	assertType('array<int>', $array);
 }
+
+function maybeArray(array $array, mixed $mixed): void
+{
+	$arrayOrMixed = rand(0, 1) ? $array : $mixed;
+
+	if (array_key_last($arrayOrMixed) !== null) {
+		assertType('mixed', $arrayOrMixed);
+	} else {
+		assertType('mixed', $arrayOrMixed);
+	}
+	assertType('mixed', $arrayOrMixed);
+}
+
+function mixedLast(mixed $mixed): void
+{
+	if (is_array($mixed)) {
+		return;
+	}
+
+	if (array_key_last($mixed) !== null) {
+		assertType('mixed~array<mixed, mixed>', $mixed);
+	} else {
+		assertType('mixed~array<mixed, mixed>', $mixed);
+	}
+	assertType('mixed~array<mixed, mixed>', $mixed);
+}

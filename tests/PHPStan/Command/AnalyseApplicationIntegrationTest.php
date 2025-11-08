@@ -13,6 +13,7 @@ use PHPStan\File\NullRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,6 +23,7 @@ use function sprintf;
 use function stream_get_contents;
 use const DIRECTORY_SEPARATOR;
 
+#[CoversNothing]
 class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 {
 

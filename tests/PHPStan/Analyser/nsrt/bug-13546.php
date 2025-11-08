@@ -61,3 +61,14 @@ function mixedLast(mixed $mixed): void
 	}
 	assertType('mixed~array<mixed, mixed>', $mixed);
 }
+
+/** @param list<string> $array */
+function firstInCondition(array $array): mixed
+{
+	if (($key = array_key_first($array)) !== null) {
+		assertType('list<string>', $array); // could be 'non-empty-list<string>'
+		return $array[$key];
+	}
+	assertType('list<string>', $array);
+	return null;
+}

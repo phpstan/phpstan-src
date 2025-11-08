@@ -291,6 +291,25 @@ final class TypeSpecifier
 				if ($specifiedTypes !== null) {
 					$result = $result->unionWith($specifiedTypes);
 				}
+				if (
+					$context->true()
+					&& $expr instanceof Node\Expr\BinaryOp\Smaller
+				    && $argType->isList()->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+				) {
+					$dimFetch = new ArrayDimFetch(
+						$expr->right->getArgs()[0]->value,
+						$expr->left,
+					);
+					$result = $result->unionWith(
+						$this->create(
+							$dimFetch,
+							$argType->getIterableValueType(),
+							TypeSpecifierContext::createTrue(),
+							$scope,
+						)->setRootExpr($expr)
+					);
+				}
 
 				if (
 					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())

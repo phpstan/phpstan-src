@@ -57,4 +57,25 @@ class Feature7553
 		echo $a[0];
 	}
 
+	/**
+	 * @param list<int> $array
+	 * @param positive-int $index
+	 */
+	public function guard(array $array, int $index) {
+		if ($index < count($array)) {
+			return $array[$index];
+		}
+		return null;
+	}
+
+
+	/**
+	 * @param list<int> $array
+	 */
+	public function guardNotSafe(array $array, int $index) {
+		if ($index < count($array)) {
+			return $array[$index];
+		}
+		return null;
+	}
 }

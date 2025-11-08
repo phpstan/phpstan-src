@@ -700,6 +700,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				"Offset 'foo' might not exist on array.",
 				9,
 			],
+			[
+				'Offset int might not exist on list<int>.',
+				77
+			],
 		]];
 		yield [true, true, [
 			[
@@ -709,6 +713,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset string might not exist on array{foo: 1}.',
 				20,
+			],
+			[
+				'Offset int might not exist on list<int>.',
+				77
 			],
 		]];
 	}

@@ -3,6 +3,7 @@
 namespace PHPStan\Levels;
 
 use PHPStan\Testing\LevelsTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\Group;
 use const PHP_VERSION_ID;
 

@@ -686,10 +686,7 @@ class IntersectionType implements CompoundType
 		if ($arraySize instanceof IntegerRangeType) {
 			$knownOffsets = [];
 			foreach ($this->types as $type) {
-				if ($type instanceof HasOffsetValueType) {
-					$knownOffsets[$type->getOffsetType()->getValue()] = true;
-				}
-				if (!($type instanceof HasOffsetType)) {
+				if (!($type instanceof HasOffsetValueType) && !($type instanceof HasOffsetType)) {
 					continue;
 				}
 

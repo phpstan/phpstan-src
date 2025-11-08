@@ -50,3 +50,24 @@ function getItemsArray(array $items): array
 	assertType('array<string>', $items);
 	return $items;
 }
+
+/**
+ * @param array<string> $items
+ */
+function skipFirstElement(array $items): void
+{
+	for ($i = 1; count($items) > $i; ++$i) {
+		$items[$i] = 'hello';
+	}
+}
+
+/**
+ * @param positive-int $skip
+ * @param array<string> $items
+ */
+function skipByX(int $skip, array $items): void
+{
+	for ($i = $skip; count($items) > $i; ++$i) {
+		$items[$i] = 'hello';
+	}
+}

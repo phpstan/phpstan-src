@@ -182,6 +182,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -1631,7 +1632,7 @@ final class NodeScopeResolver
 			if ($lastCondExpr !== null) {
 				$alwaysIterates = $alwaysIterates->and($bodyScope->getType($lastCondExpr)->toBoolean()->isTrue());
 				$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope);
+				$bodyScope = $this->inferForLoopExpressions($stmt, $lastCondExpr, $bodyScope, $initScope);
 			}
 
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
@@ -7308,17 +7309,22 @@ final class NodeScopeResolver
 		);
 	}
 
-	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope
+	private function inferForLoopExpressions(
+		For_ $stmt,
+		Expr $lastCondExpr,
+		MutatingScope $bodyScope,
+		MutatingScope $initScope,
+	): MutatingScope
 	{
 		// infer $items[$i] type from for ($i = 0; $i < count($items); $i++) {...}
 
+		$positiveInt = IntegerRangeType::fromInterval(0, null);
 		if (
 			// $i = 0
 			count($stmt->init) === 1
 			&& $stmt->init[0] instanceof Assign
 			&& $stmt->init[0]->var instanceof Variable
-			&& $stmt->init[0]->expr instanceof Node\Scalar\Int_
-			&& $stmt->init[0]->expr->value === 0
+			&& $positiveInt->isSuperTypeOf($initScope->getType($stmt->init[0]->expr))->yes()
 			// $i++ or ++$i
 			&& count($stmt->loop) === 1
 			&& ($stmt->loop[0] instanceof Expr\PreInc || $stmt->loop[0] instanceof Expr\PostInc)

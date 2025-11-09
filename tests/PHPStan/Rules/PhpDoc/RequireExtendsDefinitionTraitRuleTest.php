@@ -56,11 +56,6 @@ class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 				192,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
-			[
-				'PHPDoc tag @phpstan-require-extends contains unknown class IncompatibleRequireExtends\SomeClass.',
-				192,
-				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-			],
 		]);
 	}
 

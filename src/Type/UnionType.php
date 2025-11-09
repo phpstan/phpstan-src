@@ -162,10 +162,14 @@ class UnionType implements CompoundType
 
 	public function getObjectClassReflections(): array
 	{
-		return $this->pickFromTypes(
-			static fn (Type $type) => $type->getObjectClassReflections(),
-			static fn (Type $type) => $type->isObject()->yes(),
-		);
+		$reflections = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getObjectClassReflections() as $reflection) {
+				$reflections[] = $reflection;
+			}
+		}
+
+		return $reflections;
 	}
 
 	public function getArrays(): array

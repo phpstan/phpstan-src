@@ -12,7 +12,6 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_column;
 use function array_map;
@@ -67,17 +66,7 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 				continue;
 			}
 
-			if ($type instanceof UnionType) {
-				$classReflections = [];
-				foreach ($type->getTypes() as $subType) {
-					$classReflections[] = $subType->getObjectClassReflections();
-				}
-				$classReflections = array_merge(...$classReflections);
-			} else {
-				$classReflections = $type->getObjectClassReflections();
-			}
-
-			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $classReflections);
+			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $type->getObjectClassReflections());
 			$referencedClassReflectionsMap = array_column($referencedClassReflections, 0, 1);
 			foreach ($classNames as $class) {
 				$referencedClassReflection = $referencedClassReflectionsMap[$class] ?? null;

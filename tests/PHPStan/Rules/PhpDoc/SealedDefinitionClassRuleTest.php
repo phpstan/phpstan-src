@@ -50,6 +50,11 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 				26,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
+			[
+				'PHPDoc tag @phpstan-sealed contains unknown class IncompatibleSealed\UnknownClass.',
+				46,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		]);
 	}
 

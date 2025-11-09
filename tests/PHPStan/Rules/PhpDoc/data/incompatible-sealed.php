@@ -39,3 +39,8 @@ interface ValidInterface {}
  * @phpstan-sealed SomeInterface
  */
 interface ValidInterface2 {}
+
+/**
+ * @phpstan-sealed UnknownClass|SomeClass
+ */
+class InvalidClassWithUnion {}

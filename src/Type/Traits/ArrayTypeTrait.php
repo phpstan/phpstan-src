@@ -190,6 +190,16 @@ trait ArrayTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

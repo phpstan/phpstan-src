@@ -337,6 +337,16 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($type->isNull()->yes()) {

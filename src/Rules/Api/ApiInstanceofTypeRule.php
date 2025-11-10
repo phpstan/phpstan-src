@@ -38,6 +38,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
@@ -79,6 +80,7 @@ final class ApiInstanceofTypeRule implements Rule
 		IntersectionType::class => null,
 		ConstantScalarType::class => 'Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues()',
 		ObjectShapeType::class => 'Type::isObject() and Type::hasProperty()',
+		NeverType::class => 'Type::isNever() or Type::isExplicitNever()',
 
 		// accessory types
 		NonEmptyArrayType::class => 'Type::isIterableAtLeastOnce()',

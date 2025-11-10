@@ -533,6 +533,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isScalar();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return $this->resolve()->isNever();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return $this->resolve()->isExplicitNever();
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();

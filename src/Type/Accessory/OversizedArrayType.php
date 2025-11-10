@@ -399,6 +399,16 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();

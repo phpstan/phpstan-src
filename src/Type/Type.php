@@ -292,6 +292,10 @@ interface Type
 
 	public function isScalar(): TrinaryLogic;
 
+	public function isNever(): TrinaryLogic;
+
+	public function isExplicitNever(): TrinaryLogic;
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
 	public function getSmallerType(PhpVersion $phpVersion): Type;

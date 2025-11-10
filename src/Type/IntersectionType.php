@@ -796,6 +796,16 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNever());
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isExplicitNever());
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return $this->intersectResults(

@@ -164,6 +164,16 @@ trait JustNullableTypeTrait
 		return new ErrorType();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -669,6 +669,16 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isScalar();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isNever();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isExplicitNever();
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();

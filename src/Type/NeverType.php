@@ -548,6 +548,16 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function isExplicitNever(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->isExplicit);
+	}
+
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		return new BooleanType();

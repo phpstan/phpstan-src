@@ -145,27 +145,16 @@ final class EnumSanityRule implements Rule
 			}
 			$caseName = $stmt->name->name;
 
-			if ($stmt->expr instanceof Node\Scalar\Int_ || $stmt->expr instanceof Node\Scalar\String_) {
-				if ($enumNode->scalarType === null) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Enum %s is not backed, but case %s has value %s.',
-						$classReflection->getDisplayName(),
-						$caseName,
-						$stmt->expr->value,
-					))
-						->identifier('enum.caseWithValue')
-						->line($stmt->getStartLine())
-						->nonIgnorable()
-						->build();
-				} else {
-					$caseValue = $stmt->expr->value;
-
-					if (!isset($enumCases[$caseValue])) {
-						$enumCases[$caseValue] = [];
-					}
-
-					$enumCases[$caseValue][] = $caseName;
-				}
+			if ($enumNode->scalarType === null && $stmt->expr !== null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum %s is not backed, but case %s has value.',
+					$classReflection->getDisplayName(),
+					$caseName,
+				))
+					->identifier('enum.caseWithValue')
+					->line($stmt->getStartLine())
+					->nonIgnorable()
+					->build();
 			}
 
 			if ($enumNode->scalarType === null) {
@@ -187,6 +176,16 @@ final class EnumSanityRule implements Rule
 			}
 
 			$exprType = $scope->getType($stmt->expr);
+			$constantValues = $exprType->getConstantScalarValues();
+			if (count($constantValues) === 1) {
+				$caseValue = $constantValues[0];
+				if (!isset($enumCases[$caseValue])) {
+					$enumCases[$caseValue] = [];
+				}
+
+				$enumCases[$caseValue][] = $caseName;
+			}
+
 			$scalarType = $enumNode->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
 			if ($scalarType->isSuperTypeOf($exprType)->yes()) {
 				continue;

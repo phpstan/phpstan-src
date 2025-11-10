@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
@@ -16,6 +17,8 @@ use function array_key_exists;
 use function count;
 use function implode;
 use function in_array;
+use function is_int;
+use function is_string;
 use function sprintf;
 
 /**
@@ -176,18 +179,22 @@ final class EnumSanityRule implements Rule
 			}
 
 			$exprType = $scope->getType($stmt->expr);
-			$constantValues = $exprType->getConstantScalarValues();
-			if (count($constantValues) === 1) {
-				$caseValue = $constantValues[0];
-				if (!isset($enumCases[$caseValue])) {
-					$enumCases[$caseValue] = [];
-				}
-
-				$enumCases[$caseValue][] = $caseName;
-			}
-
 			$scalarType = $enumNode->scalarType->toLowerString() === 'int' ? new IntegerType() : new StringType();
 			if ($scalarType->isSuperTypeOf($exprType)->yes()) {
+				$constantValues = $exprType->getConstantScalarValues();
+				if (count($constantValues) === 1) {
+					$caseValue = $constantValues[0];
+					if (!is_string($caseValue) && !is_int($caseValue)) {
+						throw new ShouldNotHappenException();
+					}
+
+					if (!isset($enumCases[$caseValue])) {
+						$enumCases[$caseValue] = [];
+					}
+
+					$enumCases[$caseValue][] = $caseName;
+				}
+
 				continue;
 			}
 

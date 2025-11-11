@@ -58,3 +58,26 @@ class Feature7553
 	}
 
 }
+
+/**
+ * @param array<string> $items
+ */
+function skipFirstElement(array $items): void
+{
+	for ($i = 1; count($items) > $i; ++$i) {
+		$element = $items[$i];
+		\PHPStan\Testing\assertType('string', $element);
+	}
+}
+
+/**
+ * @param positive-int $skip
+ * @param array<string> $items
+ */
+function skipByX(int $skip, array $items): void
+{
+	for ($i = $skip; count($items) > $i; ++$i) {
+		$element = $items[$i];
+		\PHPStan\Testing\assertType('string', $element);
+	}
+}

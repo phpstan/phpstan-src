@@ -15,7 +15,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -112,7 +111,7 @@ final class MissingReturnRule implements Rule
 			return [];
 		}
 
-		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+		if ($returnType->isExplicitNever()->yes()) {
 			$errorBuilder = RuleErrorBuilder::message(sprintf('%s should always throw an exception or terminate script execution but doesn\'t do that.', $description))->line($node->getNode()->getStartLine());
 
 			if ($node->hasNativeReturnTypehint()) {

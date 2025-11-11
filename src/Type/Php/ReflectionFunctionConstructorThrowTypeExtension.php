@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use ReflectionFunction;
@@ -47,7 +46,7 @@ final class ReflectionFunctionConstructorThrowTypeExtension implements DynamicSt
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
-		if (!$valueType instanceof NeverType) {
+		if ($valueType->isNever()->no()) {
 			return $methodReflection->getThrowType();
 		}
 

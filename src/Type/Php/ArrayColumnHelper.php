@@ -66,7 +66,7 @@ final class ArrayColumnHelper
 	public function handleAnyArray(Type $arrayType, Type $columnType, Type $indexType, Scope $scope): Type
 	{
 		[$returnValueType, $iterableAtLeastOnce] = $this->getReturnValueType($arrayType, $columnType, $scope);
-		if ($returnValueType instanceof NeverType) {
+		if (!$returnValueType->isNever()->no()) {
 			return new ConstantArrayType([], []);
 		}
 
@@ -92,7 +92,7 @@ final class ArrayColumnHelper
 			if (!$certainty->yes()) {
 				return null;
 			}
-			if ($valueType instanceof NeverType) {
+			if (!$valueType->isNever()->no()) {
 				continue;
 			}
 

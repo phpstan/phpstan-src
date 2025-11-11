@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Playground;
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ReturnStatementsNode;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
@@ -17,7 +16,7 @@ final class NeverRuleHelper
 	 */
 	public function shouldReturnNever(ReturnStatementsNode $node, Type $returnType): array|false
 	{
-		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+		if ($returnType->isExplicitNever()->yes()) {
 			return false;
 		}
 

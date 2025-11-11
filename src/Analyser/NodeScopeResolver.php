@@ -1799,7 +1799,7 @@ class NodeScopeResolver
 				}
 			}
 
-			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;
+			$exhaustive = $scopeForBranches->getType($stmt->cond)->isNever()->yes();
 
 			if (!$hasDefaultCase && !$exhaustive) {
 				$alwaysTerminating = false;
@@ -1949,7 +1949,7 @@ class NodeScopeResolver
 				foreach ($throwPoints as $throwPoint) {
 					$newThrowPoint = $throwPoint->subtractCatchType($originalCatchType);
 
-					if ($newThrowPoint->getType() instanceof NeverType) {
+					if (!$newThrowPoint->getType()->isNever()->no()) {
 						continue;
 					}
 
@@ -2460,7 +2460,7 @@ class NodeScopeResolver
 		}
 
 		$exprType = $scope->getType($expr);
-		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+		if ($exprType->isExplicitNever()->yes()) {
 			return $expr;
 		}
 
@@ -2723,7 +2723,7 @@ class NodeScopeResolver
 		}
 
 		$returnType = $closureType->getReturnType();
-		$isAlwaysTerminating = ($returnType instanceof NeverType && $returnType->isExplicit());
+		$isAlwaysTerminating = ($returnType->isExplicitNever()->yes());
 
 		$this->callNodeCallback($nodeCallback, new InClosureNode($closureType, $expr), $closureScope, $storage);
 
@@ -3416,7 +3416,7 @@ class NodeScopeResolver
 							$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
 							$returnType = $acceptors[0]->getReturnType();
-							$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
+							$isAlwaysTerminating = $isAlwaysTerminating || ($returnType->isExplicitNever()->yes());
 						}
 					}
 				}
@@ -4088,7 +4088,7 @@ class NodeScopeResolver
 				$endNode = $executionEnd->getNode();
 				if ($endNode instanceof Node\Stmt\Expression) {
 					$exprType = $statementResult->getScope()->getType($endNode->expr);
-					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+					if ($exprType->isExplicitNever()->yes()) {
 						continue;
 					}
 				}

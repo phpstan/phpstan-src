@@ -11,7 +11,6 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function sprintf;
@@ -126,7 +125,7 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 			return $this->writableType;
 		}
 
-		if ($this->writablePhpDocType === null || $this->writablePhpDocType instanceof NeverType) {
+		if ($this->writablePhpDocType === null || !$this->writablePhpDocType->isNever()->no()) {
 			return $this->writableType = TypehintHelper::decideType(
 				$this->nativeType,
 				$this->readablePhpDocType,

@@ -4875,8 +4875,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
-		if ($actualType instanceof NeverType) {
-			if ($actualType->isExplicit()) {
+		if (!$actualType->isNever()->no()) {
+			if ($actualType->isExplicitNever()->yes()) {
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';
@@ -4918,8 +4918,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
-		if ($actualType instanceof NeverType) {
-			if ($actualType->isExplicit()) {
+		if (!$actualType->isNever()->no()) {
+			if ($actualType->isExplicitNever()->yes()) {
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';
@@ -5457,8 +5457,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 	{
 		$result = TypeCombinator::remove($fromType, $type);
 		$actualTypeDescription = $result->describe(VerbosityLevel::precise());
-		if ($result instanceof NeverType) {
-			if ($result->isExplicit()) {
+		if (!$result->isNever()->no()) {
+			if ($result->isExplicitNever()->yes()) {
 				$actualTypeDescription .= '=explicit';
 			} else {
 				$actualTypeDescription .= '=implicit';

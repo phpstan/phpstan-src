@@ -10,7 +10,6 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\NeverType;
 use function sprintf;
 
 /**
@@ -51,7 +50,7 @@ final class SetNonVirtualPropertyHookAssignRule implements Rule
 			if ($statementResult->isAlwaysTerminating()) {
 				if ($endNode instanceof Node\Stmt\Expression) {
 					$exprType = $statementResult->getScope()->getType($endNode->expr);
-					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+					if ($exprType->isExplicitNever()->yes()) {
 						continue;
 					}
 				}

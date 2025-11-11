@@ -17,7 +17,6 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LateResolvableType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 trait LateResolvableTypeTrait
@@ -62,7 +61,7 @@ trait LateResolvableTypeTrait
 
 	private function isSuperTypeOfDefault(Type $type): IsSuperTypeOfResult
 	{
-		if ($type instanceof NeverType) {
+		if (!$type->isNever()->no()) {
 			return IsSuperTypeOfResult::createYes();
 		}
 

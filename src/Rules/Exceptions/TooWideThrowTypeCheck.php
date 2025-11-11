@@ -43,7 +43,7 @@ final class TooWideThrowTypeCheck
 
 		$throwClasses = [];
 		foreach (TypeUtils::flattenTypes($throwType) as $type) {
-			if (!$throwPointType instanceof NeverType && !$type->isSuperTypeOf($throwPointType)->no()) {
+			if ($throwPointType->isNever()->no() && !$type->isSuperTypeOf($throwPointType)->no()) {
 				continue;
 			}
 

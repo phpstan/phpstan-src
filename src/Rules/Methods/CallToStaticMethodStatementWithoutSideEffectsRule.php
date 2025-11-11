@@ -12,7 +12,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function count;
@@ -96,7 +95,7 @@ final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$methodResult = $scope->getType($staticCall);
-		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+		if ($methodResult->isExplicitNever()->yes()) {
 			return [];
 		}
 

@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -36,7 +35,7 @@ final class CatchWithUnthrownExceptionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->getCaughtType() instanceof NeverType) {
+		if ($node->getCaughtType()->isNever()->yes()) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly())),

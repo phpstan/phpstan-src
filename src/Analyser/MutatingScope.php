@@ -3028,7 +3028,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$exprType = $this->getType($expr);
-		if ($exprType instanceof NeverType) {
+		if ($exprType->isNever()->yes()) {
 			return $this;
 		}
 
@@ -4532,7 +4532,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		if ($iteratee instanceof UnionType) {
 			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
-			if (!$filtered instanceof NeverType) {
+			if ($filtered->isNever()->no()) {
 				$iteratee = $filtered;
 			}
 		}
@@ -4544,7 +4544,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		if ($iteratee instanceof UnionType) {
 			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
-			if (!$filtered instanceof NeverType) {
+			if ($filtered->isNever()->no()) {
 				$iteratee = $filtered;
 			}
 		}

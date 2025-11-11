@@ -59,7 +59,7 @@ class MixedType implements CompoundType, SubtractableType
 		?Type $subtractedType = null,
 	)
 	{
-		if ($subtractedType instanceof NeverType) {
+		if ($subtractedType !== null && !$subtractedType->isNever()->no()) {
 			$subtractedType = null;
 		}
 
@@ -135,7 +135,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
-		if ($this->subtractedType === null || $type instanceof NeverType) {
+		if ($this->subtractedType === null || !$type->isNever()->no()) {
 			return IsSuperTypeOfResult::createYes();
 		}
 

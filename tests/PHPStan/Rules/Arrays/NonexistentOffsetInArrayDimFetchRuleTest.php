@@ -704,6 +704,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset int might not exist on list<int>.',
 				77
 			],
+			[
+				'Offset int<0, max> might not exist on list<int>.',
+				88
+			],
+			[
+				'Offset int<0, max> might not exist on array<int, int>.',
+				100
+			],
 		]];
 		yield [true, true, [
 			[
@@ -717,6 +725,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset int might not exist on list<int>.',
 				77
+			],
+			[
+				'Offset int<0, max> might not exist on list<int>.',
+				88
+			],
+			[
+				'Offset int<0, max> might not exist on array<int, int>.',
+				100
 			],
 		]];
 	}

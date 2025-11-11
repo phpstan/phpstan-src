@@ -59,7 +59,7 @@ class Feature7553
 
 	/**
 	 * @param list<int> $array
-	 * @param positive-int $index
+	 * @param non-negative-int $index
 	 */
 	public function guard(array $array, int $index) {
 		if ($index < count($array)) {
@@ -72,8 +72,31 @@ class Feature7553
 	/**
 	 * @param list<int> $array
 	 */
-	public function guardNotSafe(array $array, int $index) {
+	public function guardNotSafeLowerBound(array $array, int $index) {
 		if ($index < count($array)) {
+			return $array[$index];
+		}
+		return null;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param non-negative-int $index
+	 */
+	public function guardNotSafeUpperBound(array $array, int $index) {
+		if ($index <= count($array)) {
+			return $array[$index];
+		}
+		return null;
+	}
+
+
+	/**
+	 * @param array<int, int> $array
+	 * @param non-negative-int $index
+	 */
+	public function guardNotSafeArray(array $array, int $index) {
+		if ($index <= count($array)) {
 			return $array[$index];
 		}
 		return null;

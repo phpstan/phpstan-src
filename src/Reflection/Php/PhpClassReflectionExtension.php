@@ -49,7 +49,6 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -1161,7 +1160,7 @@ final class PhpClassReflectionExtension
 			}
 
 			$propertyType = $methodScope->getType($expr->expr);
-			if ($propertyType instanceof ErrorType || $propertyType instanceof NeverType) {
+			if ($propertyType instanceof ErrorType || !$propertyType->isNever()->no()) {
 				continue;
 			}
 

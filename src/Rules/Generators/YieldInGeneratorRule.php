@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use function sprintf;
 
 /**
@@ -57,7 +56,7 @@ final class YieldInGeneratorRule implements Rule
 			return [];
 		}
 
-		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+		if ($returnType->isExplicitNever()->yes()) {
 			$isSuperType = TrinaryLogic::createNo();
 		} else {
 			$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(

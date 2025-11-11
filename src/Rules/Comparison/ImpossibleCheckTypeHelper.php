@@ -24,7 +24,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -146,7 +145,7 @@ final class ImpossibleCheckTypeHelper
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
 						$haystackArrayTypes = $haystackType->getArrays();
-						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
+						if (count($haystackArrayTypes) === 1 && !$haystackArrayTypes[0]->getIterableValueType()->isNever()->no()) {
 							return null;
 						}
 

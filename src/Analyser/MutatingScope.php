@@ -1068,7 +1068,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 			) {
 				return new BooleanType();
 			}
-			if ($expressionType instanceof NeverType) {
+			if (!$expressionType->isNever()->no()) {
 				return new ConstantBooleanType(false);
 			}
 
@@ -4578,8 +4578,8 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$exprType = $this->getType($expr);
 		if (
-			$exprType instanceof NeverType ||
-			$typeToRemove instanceof NeverType
+			!$exprType->isNever()->no() ||
+			!$typeToRemove->isNever()->no()
 		) {
 			return $this;
 		}
@@ -5891,7 +5891,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$methodResult = $this->getType($methodCall);
-		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+		if ($methodResult->isExplicitNever()->yes()) {
 			return $methodResult;
 		}
 
@@ -6347,7 +6347,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		if ($iteratee instanceof UnionType) {
 			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
-			if (!$filtered instanceof NeverType) {
+			if ($filtered->isNever()->no()) {
 				$iteratee = $filtered;
 			}
 		}
@@ -6359,7 +6359,7 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		if ($iteratee instanceof UnionType) {
 			$filtered = $iteratee->filterTypes(static fn (Type $innerType) => $innerType->isIterable()->yes());
-			if (!$filtered instanceof NeverType) {
+			if ($filtered->isNever()->no()) {
 				$iteratee = $filtered;
 			}
 		}

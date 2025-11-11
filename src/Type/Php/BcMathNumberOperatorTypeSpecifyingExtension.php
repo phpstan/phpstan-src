@@ -7,7 +7,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
 use PHPStan\Type\Type;
@@ -23,7 +22,7 @@ final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeS
 
 	public function isOperatorSupported(string $operatorSigil, Type $leftSide, Type $rightSide): bool
 	{
-		if (!$this->phpVersion->supportsBcMathNumberOperatorOverloading() || $leftSide instanceof NeverType || $rightSide instanceof NeverType) {
+		if (!$this->phpVersion->supportsBcMathNumberOperatorOverloading() || !$leftSide->isNever()->no() || !$rightSide->isNever()->no()) {
 			return false;
 		}
 

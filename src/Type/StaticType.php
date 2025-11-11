@@ -45,7 +45,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		?Type $subtractedType = null,
 	)
 	{
-		if ($subtractedType instanceof NeverType) {
+		if ($subtractedType !== null && !$subtractedType->isNever()->no()) {
 			$subtractedType = null;
 		}
 
@@ -782,7 +782,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 			$classReflection = $this->getClassReflection();
 			if ($classReflection->getAllowedSubTypes() !== null) {
 				$objectType = $this->getStaticObjectType()->changeSubtractedType($subtractedType);
-				if ($objectType instanceof NeverType) {
+				if (!$objectType->isNever()->no()) {
 					return $objectType;
 				}
 

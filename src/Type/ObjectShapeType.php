@@ -515,7 +515,7 @@ class ObjectShapeType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {
+		if ($exponent->isNever()->no() && !$this->isSuperTypeOf($exponent)->no()) {
 			return TypeCombinator::union($this, $exponent);
 		}
 

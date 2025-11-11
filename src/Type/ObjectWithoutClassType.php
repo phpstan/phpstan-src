@@ -27,7 +27,7 @@ class ObjectWithoutClassType implements SubtractableType
 		?Type $subtractedType = null,
 	)
 	{
-		if ($subtractedType instanceof NeverType) {
+		if ($subtractedType !== null && !$subtractedType->isNever()->no()) {
 			$subtractedType = null;
 		}
 
@@ -188,7 +188,7 @@ class ObjectWithoutClassType implements SubtractableType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {
+		if ($exponent->isNever()->no() && !$this->isSuperTypeOf($exponent)->no()) {
 			return TypeCombinator::union($this, $exponent);
 		}
 

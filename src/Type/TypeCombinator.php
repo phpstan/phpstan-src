@@ -561,7 +561,7 @@ final class TypeCombinator
 				$type->getTypeWithoutSubtractedType(),
 				$subtractedType,
 			);
-			if ($subtractedType instanceof NeverType) {
+			if (!$subtractedType->isNever()->no()) {
 				$subtractedType = null;
 			}
 
@@ -580,7 +580,7 @@ final class TypeCombinator
 		Type $b,
 	): Type
 	{
-		if ($a->getSubtractedType() === null || $b instanceof NeverType) {
+		if ($a->getSubtractedType() === null || !$b->isNever()->no()) {
 			return $a;
 		}
 
@@ -622,7 +622,7 @@ final class TypeCombinator
 				$subtractedType = self::remove($a->getSubtractedType(), $b);
 
 				if (
-					$subtractedType instanceof NeverType
+					!$subtractedType->isNever()->no()
 					|| !$subtractedType->isSuperTypeOf($b)->no()
 				) {
 					$subtractedType = null;
@@ -647,7 +647,7 @@ final class TypeCombinator
 			$a->getSubtractedType(),
 			$subtractedType,
 		);
-		if ($subtractedType instanceof NeverType) {
+		if (!$subtractedType->isNever()->no()) {
 			$subtractedType = null;
 		}
 
@@ -1126,7 +1126,7 @@ final class TypeCombinator
 			}
 
 			$union = self::union(...$topLevelUnionSubTypes);
-			if ($union instanceof NeverType) {
+			if (!$union->isNever()->no()) {
 				return $union;
 			}
 
@@ -1310,7 +1310,7 @@ final class TypeCombinator
 						$offsetType = $types[$j]->getOffsetType();
 						$valueType = $types[$j]->getValueType();
 						$newValueType = self::intersect($types[$i]->getOffsetValueType($offsetType), $valueType);
-						if ($newValueType instanceof NeverType) {
+						if (!$newValueType->isNever()->no()) {
 							return $newValueType;
 						}
 						$types[$i] = $types[$i]->setOffsetValueType($offsetType, $newValueType);
@@ -1323,7 +1323,7 @@ final class TypeCombinator
 						$offsetType = $types[$i]->getOffsetType();
 						$valueType = $types[$i]->getValueType();
 						$newValueType = self::intersect($types[$j]->getOffsetValueType($offsetType), $valueType);
-						if ($newValueType instanceof NeverType) {
+						if (!$newValueType->isNever()->no()) {
 							return $newValueType;
 						}
 
@@ -1422,7 +1422,7 @@ final class TypeCombinator
 						&& !$types[$j]->getIterableKeyType()->isSuperTypeOf($types[$i]->getIterableKeyType())->yes()
 					) {
 						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType());
-						if ($keyType instanceof NeverType) {
+						if (!$keyType->isNever()->no()) {
 							return $keyType;
 						}
 						$types[$i] = new ArrayType($keyType, $types[$i]->getItemType());

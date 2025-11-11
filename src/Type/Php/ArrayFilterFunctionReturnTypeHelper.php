@@ -66,7 +66,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 		$keyType = $arrayArgType->getIterableKeyType();
 		$itemType = $arrayArgType->getIterableValueType();
 
-		if ($itemType instanceof NeverType || $keyType instanceof NeverType) {
+		if (!$itemType->isNever()->no() || !$keyType->isNever()->no()) {
 			return new ConstantArrayType([], []);
 		}
 
@@ -183,7 +183,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 
 		$valueType = TypeCombinator::remove($valueType, $falseyTypes);
 
-		if ($valueType instanceof NeverType) {
+		if (!$valueType->isNever()->no()) {
 			return new ConstantArrayType([], []);
 		}
 
@@ -206,7 +206,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 					$itemType = $constantArray->getValueTypes()[$i];
 					[$newKeyType, $newItemType, $optional] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
 					$optional = $optional || in_array($i, $optionalKeys, true);
-					if ($newKeyType instanceof NeverType || $newItemType instanceof NeverType) {
+					if (!$newKeyType->isNever()->no() || !$newItemType->isNever()->no()) {
 						continue;
 					}
 					if ($itemType->equals($newItemType) && $keyType->equals($newKeyType)) {
@@ -225,7 +225,7 @@ final class ArrayFilterFunctionReturnTypeHelper
 
 		[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $arrayType->getIterableKeyType(), $arrayType->getIterableValueType(), $itemVar, $keyVar, $expr);
 
-		if ($newItemType instanceof NeverType || $newKeyType instanceof NeverType) {
+		if (!$newItemType->isNever()->no() || !$newKeyType->isNever()->no()) {
 			return new ConstantArrayType([], []);
 		}
 

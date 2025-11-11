@@ -13,7 +13,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -65,7 +64,7 @@ final class NonexistentOffsetInArrayDimFetchCheck
 		if ($type->hasOffsetValueType($dimType)->no()) {
 			if ($type->isArray()->yes()) {
 				$validArrayDimType = TypeCombinator::intersect(AllowedArrayKeysTypes::getType(), $dimType);
-				if ($validArrayDimType instanceof NeverType) {
+				if (!$validArrayDimType->isNever()->no()) {
 					// Already reported by InvalidKeyInArrayDimFetchRule
 					return [];
 				}

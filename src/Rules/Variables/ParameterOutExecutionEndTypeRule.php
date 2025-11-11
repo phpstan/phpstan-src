@@ -15,7 +15,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -54,7 +53,7 @@ final class ParameterOutExecutionEndTypeRule implements Rule
 		if ($endNode instanceof Node\Stmt\Expression) {
 			$endNodeExpr = $endNode->expr;
 			$endNodeExprType = $scope->getType($endNodeExpr);
-			if ($endNodeExprType instanceof NeverType && $endNodeExprType->isExplicit()) {
+			if ($endNodeExprType->isExplicitNever()->yes()) {
 				return [];
 			}
 		}

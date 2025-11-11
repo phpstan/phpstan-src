@@ -233,7 +233,7 @@ class IntersectionType implements CompoundType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		if ($otherType instanceof NeverType) {
+		if (!$otherType->isNever()->no()) {
 			return IsSuperTypeOfResult::createYes();
 		}
 

@@ -8,7 +8,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use function sprintf;
 
@@ -128,7 +127,7 @@ final class TemplateTypeVariance
 
 	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
 	{
-		if ($b instanceof NeverType) {
+		if (!$b->isNever()->no()) {
 			return IsSuperTypeOfResult::createYes();
 		}
 

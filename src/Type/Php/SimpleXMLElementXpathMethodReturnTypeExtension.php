@@ -9,7 +9,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SimpleXMLElement;
@@ -50,7 +49,7 @@ final class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMet
 			$argType = TypeCombinator::remove($argType, $constantString);
 		}
 
-		if (!$argType instanceof NeverType) {
+		if ($argType->isNever()->no()) {
 			return null;
 		}
 

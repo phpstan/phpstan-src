@@ -26,7 +26,7 @@ class NonAcceptingNeverType extends NeverType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if ($type instanceof NeverType) {
+		if (!$type->isNever()->no()) {
 			return AcceptsResult::createYes();
 		}
 

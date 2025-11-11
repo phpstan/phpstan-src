@@ -1748,7 +1748,7 @@ final class NodeScopeResolver
 				}
 			}
 
-			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;
+			$exhaustive = $scopeForBranches->getType($stmt->cond)->isNever()->yes();
 
 			if (!$hasDefaultCase && !$exhaustive) {
 				$alwaysTerminating = false;
@@ -1893,7 +1893,7 @@ final class NodeScopeResolver
 				foreach ($throwPoints as $throwPoint) {
 					$newThrowPoint = $throwPoint->subtractCatchType($originalCatchType);
 
-					if ($newThrowPoint->getType() instanceof NeverType) {
+					if (!$newThrowPoint->getType()->isNever()->no()) {
 						continue;
 					}
 
@@ -2489,7 +2489,7 @@ final class NodeScopeResolver
 		}
 
 		$exprType = $scope->getType($expr);
-		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+		if ($exprType->isExplicitNever()->yes()) {
 			return $expr;
 		}
 
@@ -2709,7 +2709,7 @@ final class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $isAlwaysTerminating || $returnType instanceof NeverType && $returnType->isExplicit();
+				$isAlwaysTerminating = $isAlwaysTerminating || $returnType->isExplicitNever()->yes();
 			}
 
 			if (
@@ -3032,7 +3032,7 @@ final class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+				$isAlwaysTerminating = $returnType->isExplicitNever()->yes();
 			}
 
 			$result = $this->processArgs(
@@ -3224,7 +3224,7 @@ final class NodeScopeResolver
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+				$isAlwaysTerminating = $returnType->isExplicitNever()->yes();
 			}
 			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $expr, $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
@@ -3450,7 +3450,7 @@ final class NodeScopeResolver
 			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($stmt, $expr->right, $leftResult->getTruthyScope(), $nodeCallback, $context);
 			$rightExprType = $rightResult->getScope()->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+			if ($rightExprType->isExplicitNever()->yes()) {
 				$leftMergedWithRightScope = $leftResult->getFalseyScope();
 			} else {
 				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
@@ -3471,7 +3471,7 @@ final class NodeScopeResolver
 			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($stmt, $expr->right, $leftResult->getFalseyScope(), $nodeCallback, $context);
 			$rightExprType = $rightResult->getScope()->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+			if ($rightExprType->isExplicitNever()->yes()) {
 				$leftMergedWithRightScope = $leftResult->getTruthyScope();
 			} else {
 				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
@@ -3498,7 +3498,7 @@ final class NodeScopeResolver
 			$rightScope = $scope->filterByFalseyValue($expr);
 			$rightResult = $this->processExprNode($stmt, $expr->right, $rightScope, $nodeCallback, $context->enterDeep());
 			$rightExprType = $scope->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+			if ($rightExprType->isExplicitNever()->yes()) {
 				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
 			} else {
 				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());
@@ -3936,12 +3936,12 @@ final class NodeScopeResolver
 			} elseif ($condType->isFalse()->yes()) {
 				$finalScope = $ifFalseScope;
 			} else {
-				if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+				if ($ifTrueType !== null && $ifTrueType->isExplicitNever()->yes()) {
 					$finalScope = $ifFalseScope;
 				} else {
 					$ifFalseType = $ifFalseScope->getType($expr->else);
 
-					if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+					if ($ifFalseType->isExplicitNever()->yes()) {
 						$finalScope = $ifTrueScope;
 					} else {
 						$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
@@ -4196,7 +4196,7 @@ final class NodeScopeResolver
 			}
 
 			$remainingType = $matchScope->getType($expr->cond);
-			if (!$hasDefaultCond && !$hasAlwaysTrueCond && !$remainingType instanceof NeverType) {
+			if (!$hasDefaultCond && !$hasAlwaysTrueCond && $remainingType->isNever()->no()) {
 				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 
@@ -4502,7 +4502,7 @@ final class NodeScopeResolver
 		$throwType = $functionReflection->getThrowType();
 		if ($throwType === null && $parametersAcceptor !== null) {
 			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			if ($returnType->isExplicitNever()->yes()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
 		}
@@ -4560,7 +4560,7 @@ final class NodeScopeResolver
 		$throwType = $methodReflection->getThrowType();
 		if ($throwType === null) {
 			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			if ($returnType->isExplicitNever()->yes()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
 		}
@@ -4857,7 +4857,7 @@ final class NodeScopeResolver
 		}
 
 		$returnType = $closureType->getReturnType();
-		$isAlwaysTerminating = ($returnType instanceof NeverType && $returnType->isExplicit());
+		$isAlwaysTerminating = ($returnType->isExplicitNever()->yes());
 
 		$nodeCallback(new InClosureNode($closureType, $expr), $closureScope);
 
@@ -5545,7 +5545,7 @@ final class NodeScopeResolver
 							$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
 							$returnType = $acceptors[0]->getReturnType();
-							$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
+							$isAlwaysTerminating = $isAlwaysTerminating || ($returnType->isExplicitNever()->yes());
 						}
 					}
 				}
@@ -6961,7 +6961,7 @@ final class NodeScopeResolver
 				$endNode = $executionEnd->getNode();
 				if ($endNode instanceof Node\Stmt\Expression) {
 					$exprType = $statementResult->getScope()->getType($endNode->expr);
-					if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+					if ($exprType->isExplicitNever()->yes()) {
 						continue;
 					}
 				}

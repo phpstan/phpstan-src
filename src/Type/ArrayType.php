@@ -138,8 +138,8 @@ class ArrayType implements Type
 		$isMixedItemType = $this->itemType instanceof MixedType && $this->itemType->describe(VerbosityLevel::precise()) === 'mixed' && !$this->itemType->isExplicitMixed();
 
 		$valueHandler = function () use ($level, $isMixedKeyType, $isMixedItemType): string {
-			if ($isMixedKeyType || $this->keyType instanceof NeverType) {
-				if ($isMixedItemType || $this->itemType instanceof NeverType) {
+			if ($isMixedKeyType || !$this->keyType->isNever()->no()) {
+				if ($isMixedItemType || !$this->itemType->isNever()->no()) {
 					return 'array';
 				}
 
@@ -272,7 +272,7 @@ class ArrayType implements Type
 		if ($offsetArrayKeyType instanceof ErrorType) {
 			$allowedArrayKeys = AllowedArrayKeysTypes::getType();
 			$offsetArrayKeyType = TypeCombinator::intersect($allowedArrayKeys, $offsetType)->toArrayKey();
-			if ($offsetArrayKeyType instanceof NeverType) {
+			if (!$offsetArrayKeyType->isNever()->no()) {
 				return TrinaryLogic::createNo();
 			}
 		}
@@ -425,7 +425,7 @@ class ArrayType implements Type
 			&& !$this->keyType->isSuperTypeOf($offsetType)->no()
 		) {
 			$keyType = TypeCombinator::remove($this->keyType, $offsetType);
-			if ($keyType instanceof NeverType) {
+			if (!$keyType->isNever()->no()) {
 				return new ConstantArrayType([], []);
 			}
 
@@ -595,7 +595,7 @@ class ArrayType implements Type
 		$itemType = $cb($this->itemType);
 
 		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
-			if ($keyType instanceof NeverType && $itemType instanceof NeverType) {
+			if (!$keyType->isNever()->no() && !$itemType->isNever()->no()) {
 				return new ConstantArrayType([], []);
 			}
 
@@ -638,7 +638,7 @@ class ArrayType implements Type
 		$itemType = $cb($this->itemType, $right->getIterableValueType());
 
 		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
-			if ($keyType instanceof NeverType && $itemType instanceof NeverType) {
+			if (!$keyType->isNever()->no() && !$itemType->isNever()->no()) {
 				return new ConstantArrayType([], []);
 			}
 

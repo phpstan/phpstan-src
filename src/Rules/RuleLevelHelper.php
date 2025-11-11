@@ -14,7 +14,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
@@ -214,7 +213,7 @@ final class RuleLevelHelper
 			);
 		}
 
-		if ($type instanceof MixedType || $type instanceof NeverType) {
+		if ($type instanceof MixedType || !$type->isNever()->no()) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 

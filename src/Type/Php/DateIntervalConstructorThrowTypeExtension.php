@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -47,7 +46,7 @@ final class DateIntervalConstructorThrowTypeExtension implements DynamicStaticMe
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
-		if (!$valueType instanceof NeverType) {
+		if ($valueType->isNever()->no()) {
 			return $this->exceptionType();
 		}
 

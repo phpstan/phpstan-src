@@ -66,7 +66,7 @@ final class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnType
 			$valueType = TypeCombinator::remove($valueType, $constantString);
 		}
 
-		if (!$valueType instanceof NeverType) {
+		if ($valueType->isNever()->no()) {
 			return null;
 		}
 

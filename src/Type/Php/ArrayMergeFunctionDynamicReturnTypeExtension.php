@@ -16,7 +16,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_keys;
@@ -117,7 +116,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 
 		$keyType = TypeCombinator::union(...$keyTypes);
-		if ($keyType instanceof NeverType) {
+		if (!$keyType->isNever()->no()) {
 			return new ConstantArrayType([], []);
 		}
 

@@ -239,7 +239,7 @@ class UnionType implements CompoundType
 		if (
 			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
 			|| ($otherType instanceof IterableType && !$otherType instanceof TemplateIterableType)
-			|| $otherType instanceof NeverType
+			|| $otherType->isNever()->yes()
 			|| ($otherType instanceof LateResolvableType && $otherType instanceof CompoundType && !$otherType instanceof TemplateType)
 			|| $otherType instanceof IntegerRangeType
 		) {

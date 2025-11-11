@@ -13,7 +13,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -55,7 +54,7 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 		)->getReturnType();
 
 		$result = TypeCombinator::intersect($initialReturnType, $this->generalizeStringType($argType));
-		if ($result instanceof NeverType) {
+		if (!$result->isNever()->no()) {
 			$result = $initialReturnType;
 		}
 

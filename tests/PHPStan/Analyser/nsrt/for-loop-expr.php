@@ -59,6 +59,8 @@ function skipFirstElement(array $items): void
 	for ($i = 1; count($items) > $i; ++$i) {
 		$items[$i] = 'hello';
 	}
+
+	assertType('array<string>', $items);
 }
 
 /**
@@ -70,4 +72,6 @@ function skipByX(int $skip, array $items): void
 	for ($i = $skip; count($items) > $i; ++$i) {
 		$items[$i] = 'hello';
 	}
+
+	assertType('array<string>', $items);
 }

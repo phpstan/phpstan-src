@@ -78,7 +78,7 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 						);
 					}
 				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $stringType->isNumericString()->yes()) {
-					$result[] = new AccessoryNumericStringType();
+					$result[] = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 				} else {
 					return $defaultType;
 				}

@@ -1564,7 +1564,7 @@ final class TypeSpecifier
 					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
 						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
 							$resolvedType = $templateTypeMap->getType($type->getName());
-							if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
+							if ($resolvedType === null || $resolvedType->isSuperTypeOf($type->getBound())->yes()) {
 								$containsUnresolvedTemplate = true;
 								return $type;
 							}

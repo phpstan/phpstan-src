@@ -99,6 +99,27 @@ class HelloWorld
 		}
 	}
 
+	public function countImplicitNormal($mode): void
+	{
+		$arr = [1, 2, 3];
+		if (count($arr, $mode) > 2) {
+			assertType('3', count($arr));
+			assertType('3', count($arr, $mode));
+			assertType('3', count($arr, COUNT_NORMAL));
+			assertType('3', count($arr, COUNT_RECURSIVE));
+		}
+	}
+
+	public function countMixed($arr, $mode): void
+	{
+		if (count($arr, $mode) > 2) {
+			assertType('int<0, max>', count($arr));
+			assertType('int<3, max>', count($arr, $mode));
+			assertType('int<0, max>', count($arr, COUNT_NORMAL));
+			assertType('int<0, max>', count($arr, COUNT_RECURSIVE));
+		}
+	}
+
 	/** @param list<int> $list */
 	public function countListRecursive($list): void
 	{

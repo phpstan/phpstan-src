@@ -3,11 +3,13 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ScopeFunctionCallStackRule>
  */
+#[CoversNothing]
 class ScopeFunctionCallStackRuleTest extends RuleTestCase
 {
 

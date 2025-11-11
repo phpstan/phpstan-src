@@ -3,10 +3,12 @@
 namespace PHPStan\Rules;
 
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
 /**
  * @extends RuleTestCase<DummyCollectorRule>
  */
+#[CoversNothing]
 class DummyCollectorRuleTest extends RuleTestCase
 {
 

@@ -4,11 +4,13 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InstanceMethodsParameterScopeFunctionRule>
  */
+#[CoversNothing]
 class InstanceMethodsParameterScopeFunctionTest extends RuleTestCase
 {
 

@@ -3,9 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_VERSION_ID;
 
+#[CoversNothing]
 class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 {
 

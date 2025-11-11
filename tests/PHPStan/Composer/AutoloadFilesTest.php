@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
 use function array_map;
@@ -17,6 +18,7 @@ use function strpos;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 
+#[CoversNothing]
 class AutoloadFilesTest extends TestCase
 {
 

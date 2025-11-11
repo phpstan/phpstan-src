@@ -4,7 +4,9 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 
+#[CoversNothing]
 class AnonymousClassNameRuleTest extends RuleTestCase
 {
 

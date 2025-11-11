@@ -3,8 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+#[CoversNothing]
 class TraitStubFilesTest extends TypeInferenceTestCase
 {
 

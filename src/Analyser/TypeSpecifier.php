@@ -273,7 +273,8 @@ final class TypeSpecifier
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& $leftType->isInteger()->yes()
 			) {
-				$argType = $scope->getType($expr->right->getArgs()[0]->value);
+				$argExpr = $expr->right->getArgs()[0]->value;
+				$argType = $scope->getType($argExpr);
 
 				if ($leftType instanceof ConstantIntegerType) {
 					if ($orEqual) {
@@ -295,10 +296,11 @@ final class TypeSpecifier
 					$context->true()
 					&& $expr instanceof Node\Expr\BinaryOp\Smaller
 				    && $argType->isList()->yes()
+					&& $argExpr instanceof Expr\Variable
 					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
 				) {
 					$dimFetch = new ArrayDimFetch(
-						$expr->right->getArgs()[0]->value,
+						$argExpr,
 						$expr->left,
 					);
 					$result = $result->unionWith(

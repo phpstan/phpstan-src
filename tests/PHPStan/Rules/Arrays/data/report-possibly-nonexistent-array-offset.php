@@ -101,4 +101,16 @@ class Feature7553
 		}
 		return null;
 	}
+
+	/**
+	 * @param array<int, int> $array
+	 * @param non-negative-int $index
+	 */
+	public function guardNotSafeBecauseRewrite(array $array, int $index) {
+		if ($index <= count($array)) {
+			unset($array[5]);
+			return $array[$index];
+		}
+		return null;
+	}
 }

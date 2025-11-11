@@ -33,7 +33,7 @@ class A
 		assertType('list<int>', $c);
 		if (count($c) > 0) {
 			$c = array_map(fn() => new stdClass(), $c);
-			assertType('non-empty-list<stdClass>', $c);
+			assertType('non-empty-list<stdClass>&hasOffsetValue(0, stdClass)', $c);
 		} else {
 			assertType('array{}', $c);
 		}

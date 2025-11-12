@@ -1073,13 +1073,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isError(): TrinaryLogic
 	{
-		if ($this->subtractedType !== null) {
-			if ($this->subtractedType->isSuperTypeOf(new ErrorType())->yes()) {
-				return TrinaryLogic::createNo();
-			}
-		}
-
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createNo();
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

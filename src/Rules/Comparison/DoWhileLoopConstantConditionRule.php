@@ -65,6 +65,13 @@ final class DoWhileLoopConstantConditionRule implements Rule
 						return [];
 					}
 				}
+			} else {
+				foreach ($node->getExitPoints() as $exitPoint) {
+					$statement = $exitPoint->getStatement();
+					if ($statement instanceof Break_) {
+						return [];
+					}
+				}
 			}
 
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {

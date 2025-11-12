@@ -44,16 +44,20 @@ class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 				46,
 			],
 			[
-				'Do-while loop condition is always false.',
-				55,
-			],
-			[
 				'Do-while loop condition is always true.',
 				64,
 			],
 			[
 				'Do-while loop condition is always false.',
 				73,
+			],
+			[
+				'Do-while loop condition is always false.',
+				105,
+			],
+			[
+				'Do-while loop condition is always false.',
+				115,
 			],
 		]);
 	}

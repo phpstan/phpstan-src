@@ -4697,11 +4697,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'non-empty-array<1|string, int|stdClass>',
+				"non-empty-array<1|string, int|stdClass>&hasOffset('foo')&hasOffset(1)",
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<1|string, int|stdClass>',
+				"non-empty-array<1|string, int|stdClass>&hasOffset('foo')&hasOffset(1)",
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[

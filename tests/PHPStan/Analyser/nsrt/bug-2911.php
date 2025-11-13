@@ -49,23 +49,23 @@ final class ArrayItemRemoval
 	private function getResultSettings(array $settings): array
 	{
 		$settings = array_merge(self::DEFAULT_SETTINGS, $settings);
-		assertType('non-empty-array<string, mixed>', $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffset('remove')", $settings);
 
 		if (!is_string($settings['remove'])) {
 			throw $this->configException($settings, 'remove');
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', string)", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', string)", $settings);
 
 		$settings['remove'] = strtolower($settings['remove']);
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', lowercase-string)", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', lowercase-string)", $settings);
 
 		if (!in_array($settings['remove'], ['first', 'last', 'all'], true)) {
 			throw $this->configException($settings, 'remove');
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
 
 		if (!is_numeric($settings['limit']) || $settings['limit'] < 1) {
 			throw $this->configException($settings, 'limit');
@@ -110,13 +110,13 @@ final class ArrayItemRemoval2
 	{
 		$settings = array_merge(self::DEFAULT_SETTINGS, $settings);
 
-		assertType('non-empty-array<string, mixed>', $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffset('remove')", $settings);
 
 		if (!is_string($settings['remove'])) {
 			throw new Exception();
 		}
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('remove', string)", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffset('limit')&hasOffsetValue('remove', string)", $settings);
 
 		if (!is_int($settings['limit'])) {
 			throw new Exception();

@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -73,26 +74,40 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			static fn (Type $argType) => $argType->isConstantArray(),
 		);
 
+		$nonOptionalConstKeys = [];
+		$newArrayBuilder = null;
 		if ($allConstant->yes()) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($argTypes as $argType) {
-				/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
-				$keyTypes = [];
-				foreach ($argType->getConstantArrays() as $constantArray) {
-					foreach ($constantArray->getKeyTypes() as $keyType) {
-						$keyTypes[$keyType->getValue()] = $keyType;
-					}
-				}
+		}
+		foreach ($argTypes as $argType) {
+			/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
+			$keyTypes = [];
+			foreach ($argType->getConstantArrays() as $constantArray) {
+				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+					$keyTypes[$keyType->getValue()] = $keyType;
 
-				foreach ($keyTypes as $keyType) {
-					$newArrayBuilder->setOffsetValueType(
-						$keyType instanceof ConstantIntegerType ? null : $keyType,
-						$argType->getOffsetValueType($keyType),
-						!$argType->hasOffsetValueType($keyType)->yes(),
-					);
+					if ($constantArray->isOptionalKey($i)) {
+						continue;
+					}
+
+					$nonOptionalConstKeys[] = $keyType;
 				}
 			}
 
+			if ($newArrayBuilder === null) {
+				continue;
+			}
+
+			foreach ($keyTypes as $keyType) {
+				$newArrayBuilder->setOffsetValueType(
+					$keyType instanceof ConstantIntegerType ? null : $keyType,
+					$argType->getOffsetValueType($keyType),
+					!$argType->hasOffsetValueType($keyType)->yes(),
+				);
+			}
+		}
+
+		if ($newArrayBuilder !== null) {
 			return $newArrayBuilder->getArray();
 		}
 
@@ -121,6 +136,11 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			return new ConstantArrayType([], []);
 		}
 
+		$offsetTypes = [];
+		foreach ($nonOptionalConstKeys as $constKey) {
+			$offsetTypes[] = new HasOffsetType($constKey);
+		}
+
 		$arrayType = new ArrayType(
 			$keyType,
 			TypeCombinator::union(...$valueTypes),
@@ -131,6 +151,9 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 		if ($isList) {
 			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+		}
+		if ($offsetTypes !== []) {
+			$arrayType = TypeCombinator::intersect($arrayType, ...$offsetTypes);
 		}
 
 		return $arrayType;

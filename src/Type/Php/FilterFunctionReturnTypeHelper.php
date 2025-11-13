@@ -484,7 +484,7 @@ final class FilterFunctionReturnTypeHelper
 	/**
 	 * @param non-empty-string $flagName
 	 */
-	private function hasFlag(string $flagName, ?Type $flagsType): TrinaryLogic
+	public function hasFlag(string $flagName, ?Type $flagsType): TrinaryLogic
 	{
 		$flag = $this->getConstant($flagName);
 		if ($flag === null) {

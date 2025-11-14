@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -20,6 +21,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_keys;
 use function count;
 use function in_array;
@@ -74,7 +76,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			static fn (Type $argType) => $argType->isConstantArray(),
 		);
 
-		$nonOptionalConstKeys = [];
+		$offsetTypes = [];
 		$newArrayBuilder = null;
 		if ($allConstant->yes()) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
@@ -90,11 +92,24 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 						continue;
 					}
 
-					$nonOptionalConstKeys[] = $keyType;
+					$offsetTypes[$keyType->getValue()] = new HasOffsetType($keyType);
 				}
 			}
 
 			if ($newArrayBuilder === null) {
+				foreach (TypeUtils::getAccessoryTypes($argType) as $accessoryType) {
+					if (
+						!($accessoryType instanceof HasOffsetType)
+						&& !($accessoryType instanceof HasOffsetValueType)
+					) {
+						continue;
+					}
+
+					$offsetType = $accessoryType->getOffsetType();
+					$offsetTypes[$offsetType->getValue()] = new HasOffsetType($offsetType);
+
+				}
+
 				continue;
 			}
 
@@ -134,11 +149,6 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		$keyType = TypeCombinator::union(...$keyTypes);
 		if ($keyType instanceof NeverType) {
 			return new ConstantArrayType([], []);
-		}
-
-		$offsetTypes = [];
-		foreach ($nonOptionalConstKeys as $constKey) {
-			$offsetTypes[] = new HasOffsetType($constKey);
 		}
 
 		$arrayType = new ArrayType(

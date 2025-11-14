@@ -40,3 +40,15 @@ function doOptKeys(array $array, array $arr2): void {
 function doOptShapeKeys(array $array, array $arr2): void {
 	assertType("non-empty-array&hasOffset('b')", array_merge($arr2, $array));
 }
+
+function hasOffsetKeys(array $array, array $arr2): void {
+	if (array_key_exists('b', $array)) {
+		assertType("non-empty-array&hasOffset('b')", array_merge($arr2, $array));
+	}
+}
+
+function hasOffsetValueKeys(array $array, array $arr2): void {
+	$array['b'] = 123;
+
+	assertType("non-empty-array&hasOffset('b')", array_merge($arr2, $array));
+}

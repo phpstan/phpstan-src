@@ -50,11 +50,18 @@ function hasOffsetKeys(array $array, array $arr2): void {
 	}
 }
 
-function hasOffsetValueKeys(array $array, array $arr2): void {
-	$array['b'] = 123;
+function hasOffsetValueKeys(array $hasB, array $mixedArray, array $hasC): void {
+	$hasB['b'] = 123;
+	$hasC['c'] = 'def';
 
-	assertType("non-empty-array&hasOffsetValue('b', 123)", array_merge($arr2, $array));
-	assertType("non-empty-array&hasOffset('b')", array_merge($array, $arr2));
+	assertType("non-empty-array&hasOffsetValue('b', 123)", array_merge($mixedArray, $hasB));
+	assertType("non-empty-array&hasOffset('b')", array_merge($hasB, $mixedArray));
+
+	assertType("non-empty-array&hasOffset('b')&hasOffsetValue('c', 'def')", array_merge($mixedArray, $hasB, $hasC));
+	assertType("non-empty-array&hasOffset('b')&hasOffsetValue('c', 'def')", array_merge($hasB, $mixedArray, $hasC));
+
+	assertType("non-empty-array&hasOffset('c')&hasOffsetValue('b', 123)", array_merge($hasC, $mixedArray, $hasB));
+	assertType("non-empty-array&hasOffset('b')&hasOffset('c')", array_merge($hasC, $hasB, $mixedArray));
 }
 
 /**

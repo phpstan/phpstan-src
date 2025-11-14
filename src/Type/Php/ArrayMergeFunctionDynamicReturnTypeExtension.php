@@ -26,7 +26,6 @@ use function array_keys;
 use function count;
 use function in_array;
 use function is_int;
-use function is_string;
 
 #[AutowiredService]
 final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -100,26 +99,25 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			}
 
 			if ($keyTypes === []) {
-				foreach ($offsetTypes as [&$generalize, $offsetType]) {
-					$generalize = true;
+				foreach ($offsetTypes as $key => [$generalize, $offsetValueType]) {
+					$offsetTypes[$key][0] = true;
 				}
-				unset($generalize);
+			}
+
+			foreach (TypeUtils::getAccessoryTypes($argType) as $accessoryType) {
+				if (
+					!($accessoryType instanceof HasOffsetType)
+					&& !($accessoryType instanceof HasOffsetValueType)
+				) {
+					continue;
+				}
+
+				$offsetType = $accessoryType->getOffsetType();
+				$offsetValueType = $argType->getOffsetValueType($offsetType);
+				$offsetTypes[$offsetType->getValue()] = [false, $offsetValueType];
 			}
 
 			if ($newArrayBuilder === null) {
-				foreach (TypeUtils::getAccessoryTypes($argType) as $accessoryType) {
-					if (
-						!($accessoryType instanceof HasOffsetType)
-						&& !($accessoryType instanceof HasOffsetValueType)
-					) {
-						continue;
-					}
-
-					$offsetType = $accessoryType->getOffsetType();
-					$offsetValueType = $argType->getOffsetValueType($offsetType);
-					$offsetTypes[$offsetType->getValue()] = [false, $offsetValueType];
-				}
-
 				continue;
 			}
 
@@ -182,7 +180,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 				}
 				$keyType = new ConstantStringType($key);
 
-				if (!$generalize && is_string($key)) {
+				if (!$generalize) {
 					// the last string-keyed offset will overwrite previous values
 					$hasOffsetType = new HasOffsetValueType(
 						$keyType,

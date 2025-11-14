@@ -32,6 +32,7 @@ function doOptKeys(array $array, array $arr2): void {
 		$array['abc'] = 'def';
 	}
 	assertType("array", array_merge($arr2, $array));
+	assertType("array", array_merge($array, $arr2));
 }
 
 /**
@@ -39,11 +40,13 @@ function doOptKeys(array $array, array $arr2): void {
  */
 function doOptShapeKeys(array $array, array $arr2): void {
 	assertType("non-empty-array&hasOffsetValue('b', 2)", array_merge($arr2, $array));
+	assertType("non-empty-array&hasOffset('b')", array_merge($array, $arr2));
 }
 
 function hasOffsetKeys(array $array, array $arr2): void {
 	if (array_key_exists('b', $array)) {
 		assertType("non-empty-array&hasOffsetValue('b', mixed)", array_merge($arr2, $array));
+		assertType("non-empty-array&hasOffset('b')", array_merge($array, $arr2));
 	}
 }
 
@@ -51,6 +54,7 @@ function hasOffsetValueKeys(array $array, array $arr2): void {
 	$array['b'] = 123;
 
 	assertType("non-empty-array&hasOffsetValue('b', 123)", array_merge($arr2, $array));
+	assertType("non-empty-array&hasOffset('b')", array_merge($array, $arr2));
 }
 
 /**

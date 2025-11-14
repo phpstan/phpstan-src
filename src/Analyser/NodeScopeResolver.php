@@ -3752,10 +3752,12 @@ class NodeScopeResolver
 			$exprType = $scope->getType($expr->expr);
 			$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 			if ($toStringMethod !== null) {
-				if ($toStringMethod->getThrowType() !== null) {
-					$throwPoints[] = InternalThrowPoint::createExplicit($scope, $toStringMethod->getThrowType(), $expr, false);
-				} else {
-					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+				if ($this->phpVersion->throwsOnStringCast()) {
+					if ($toStringMethod->getThrowType() !== null) {
+						$throwPoints[] = InternalThrowPoint::createExplicit($scope, $toStringMethod->getThrowType(), $expr, false);
+					} else {
+						$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+					}
 				}
 
 				if (!$toStringMethod->hasSideEffects()->no()) {

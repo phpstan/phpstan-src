@@ -23,6 +23,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_keys;
+use function array_values;
 use function count;
 use function in_array;
 
@@ -163,7 +164,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 		if ($offsetTypes !== []) {
-			$arrayType = TypeCombinator::intersect($arrayType, ...$offsetTypes);
+			$arrayType = TypeCombinator::intersect($arrayType, ...array_values($offsetTypes));
 		}
 
 		return $arrayType;

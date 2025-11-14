@@ -53,10 +53,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 	{
 	}
 
-	/**
-	 * @return ConstantStringType|ConstantIntegerType
-	 */
-	public function getOffsetType(): Type
+	public function getOffsetType(): ConstantStringType|ConstantIntegerType
 	{
 		return $this->offsetType;
 	}

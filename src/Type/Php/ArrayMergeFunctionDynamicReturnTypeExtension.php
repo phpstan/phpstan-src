@@ -23,9 +23,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_keys;
-use function array_values;
 use function count;
 use function in_array;
+use function is_int;
+use function is_string;
 
 #[AutowiredService]
 final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -93,8 +94,16 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 						continue;
 					}
 
-					$offsetTypes[$keyType->getValue()] = new HasOffsetType($keyType);
+					$offsetValueType = $constantArray->getOffsetValueType($keyType);
+					$offsetTypes[$keyType->getValue()] = [false, $offsetValueType];
 				}
+			}
+
+			if ($keyTypes === []) {
+				foreach ($offsetTypes as [&$generalize, $offsetType]) {
+					$generalize = true;
+				}
+				unset($generalize);
 			}
 
 			if ($newArrayBuilder === null) {
@@ -107,8 +116,8 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 					}
 
 					$offsetType = $accessoryType->getOffsetType();
-					$offsetTypes[$offsetType->getValue()] = new HasOffsetType($offsetType);
-
+					$offsetValueType = $argType->getOffsetValueType($offsetType);
+					$offsetTypes[$offsetType->getValue()] = [false, $offsetValueType];
 				}
 
 				continue;
@@ -164,7 +173,32 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 		if ($offsetTypes !== []) {
-			$arrayType = TypeCombinator::intersect($arrayType, ...array_values($offsetTypes));
+			$knownOffsetValues = [];
+			foreach ($offsetTypes as $key => [$generalize, $offsetType]) {
+				if (is_int($key)) {
+					// int keys will be appended and renumbered.
+					// at this point we can't reason about them, because unknown arrays are in the mix.
+					continue;
+				}
+				$keyType = new ConstantStringType($key);
+
+				if (!$generalize && is_string($key)) {
+					// the last string-keyed offset will overwrite previous values
+					$hasOffsetType = new HasOffsetValueType(
+						$keyType,
+						$offsetType,
+					);
+				} else {
+					$hasOffsetType = new HasOffsetType(
+						$keyType,
+					);
+				}
+
+				$knownOffsetValues[] = $hasOffsetType;
+			}
+			if ($knownOffsetValues !== []) {
+				$arrayType = TypeCombinator::intersect($arrayType, ...$knownOffsetValues);
+			}
 		}
 
 		return $arrayType;

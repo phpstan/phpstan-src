@@ -78,27 +78,42 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			static fn (Type $argType) => $argType->isConstantArray(),
 		);
 
-		$offsetTypes = [];
-		$newArrayBuilder = null;
 		if ($allConstant->yes()) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-		}
-		foreach ($argTypes as $argType) {
-			/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
-			$keyTypes = [];
-			foreach ($argType->getConstantArrays() as $constantArray) {
-				foreach ($constantArray->getKeyTypes() as $keyType) {
-					$keyTypes[$keyType->getValue()] = $keyType;
+			foreach ($argTypes as $argType) {
+				/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
+				$keyTypes = [];
+				foreach ($argType->getConstantArrays() as $constantArray) {
+					foreach ($constantArray->getKeyTypes() as $keyType) {
+						$keyTypes[$keyType->getValue()] = $keyType;
+					}
+				}
 
-					$hasOffsetValue = TrinaryLogic::createFromBoolean($argType->hasOffsetValueType($keyType)->yes());
-					$offsetTypes[$keyType->getValue()] = [
-						$hasOffsetValue,
+				foreach ($keyTypes as $keyType) {
+					$newArrayBuilder->setOffsetValueType(
+						$keyType instanceof ConstantIntegerType ? null : $keyType,
 						$argType->getOffsetValueType($keyType),
-					];
+						!$argType->hasOffsetValueType($keyType)->yes(),
+					);
 				}
 			}
 
-			if ($keyTypes === []) {
+			return $newArrayBuilder->getArray();
+		}
+
+		$offsetTypes = [];
+		foreach ($argTypes as $argType) {
+			if ($argType->isConstantArray()->yes()) {
+				foreach ($argType->getConstantArrays() as $constantArray) {
+					foreach ($constantArray->getKeyTypes() as $keyType) {
+						$hasOffsetValue = TrinaryLogic::createFromBoolean($argType->hasOffsetValueType($keyType)->yes());
+						$offsetTypes[$keyType->getValue()] = [
+							$hasOffsetValue,
+							$argType->getOffsetValueType($keyType),
+						];
+					}
+				}
+			} else {
 				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
 					$offsetTypes[$key] = [
 						$hasOffsetValue->and(TrinaryLogic::createMaybe()),
@@ -121,22 +136,6 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 					$argType->getOffsetValueType($offsetType),
 				];
 			}
-
-			if ($newArrayBuilder === null) {
-				continue;
-			}
-
-			foreach ($keyTypes as $keyType) {
-				$newArrayBuilder->setOffsetValueType(
-					$keyType instanceof ConstantIntegerType ? null : $keyType,
-					$argType->getOffsetValueType($keyType),
-					!$argType->hasOffsetValueType($keyType)->yes(),
-				);
-			}
-		}
-
-		if ($newArrayBuilder !== null) {
-			return $newArrayBuilder->getArray();
 		}
 
 		$keyTypes = [];

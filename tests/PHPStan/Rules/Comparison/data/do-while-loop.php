@@ -124,4 +124,32 @@ class Foo
 		} while (false); // do not report
 	}
 
+	public function doFoo11(array $a)
+	{
+		do {
+			throw new \Exception;
+		} while (true); // do not report
+	}
+
+	public function doFoo12(array $a)
+	{
+		do {
+			throw new \Exception;
+		} while (false); // report
+	}
+
+	public function doFoo13(array $a)
+	{
+		do {
+			exit;
+		} while (true); // do not report
+	}
+
+	public function doFoo14(array $a)
+	{
+		do {
+			exit;
+		} while (false); // report
+	}
+
 }

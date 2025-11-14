@@ -18,6 +18,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -86,21 +87,23 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 			/** @var array<int|string, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = [];
 			foreach ($argType->getConstantArrays() as $constantArray) {
-				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+				foreach ($constantArray->getKeyTypes() as $keyType) {
 					$keyTypes[$keyType->getValue()] = $keyType;
 
-					if ($constantArray->isOptionalKey($i)) {
-						continue;
-					}
-
-					$offsetValueType = $constantArray->getOffsetValueType($keyType);
-					$offsetTypes[$keyType->getValue()] = [false, $offsetValueType];
+					$hasOffsetValue = TrinaryLogic::createFromBoolean($argType->hasOffsetValueType($keyType)->yes());
+					$offsetTypes[$keyType->getValue()] = [
+						$hasOffsetValue,
+						$argType->getOffsetValueType($keyType),
+					];
 				}
 			}
 
 			if ($keyTypes === []) {
-				foreach ($offsetTypes as $key => [$generalize, $offsetValueType]) {
-					$offsetTypes[$key][0] = true;
+				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+					$offsetTypes[$key] = [
+						$hasOffsetValue->and(TrinaryLogic::createMaybe()),
+						new MixedType(),
+					];
 				}
 			}
 
@@ -113,8 +116,10 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 				}
 
 				$offsetType = $accessoryType->getOffsetType();
-				$offsetValueType = $argType->getOffsetValueType($offsetType);
-				$offsetTypes[$offsetType->getValue()] = [false, $offsetValueType];
+				$offsetTypes[$offsetType->getValue()] = [
+					TrinaryLogic::createYes(),
+					$argType->getOffsetValueType($offsetType),
+				];
 			}
 
 			if ($newArrayBuilder === null) {
@@ -172,7 +177,7 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 		}
 		if ($offsetTypes !== []) {
 			$knownOffsetValues = [];
-			foreach ($offsetTypes as $key => [$generalize, $offsetType]) {
+			foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetType]) {
 				if (is_int($key)) {
 					// int keys will be appended and renumbered.
 					// at this point we can't reason about them, because unknown arrays are in the mix.
@@ -180,16 +185,18 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 				}
 				$keyType = new ConstantStringType($key);
 
-				if (!$generalize) {
+				if ($hasOffsetValue->yes()) {
 					// the last string-keyed offset will overwrite previous values
 					$hasOffsetType = new HasOffsetValueType(
 						$keyType,
 						$offsetType,
 					);
-				} else {
+				} elseif ($hasOffsetValue->maybe()) {
 					$hasOffsetType = new HasOffsetType(
 						$keyType,
 					);
+				} else {
+					continue;
 				}
 
 				$knownOffsetValues[] = $hasOffsetType;

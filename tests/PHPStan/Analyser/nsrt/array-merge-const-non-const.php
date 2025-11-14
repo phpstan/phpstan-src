@@ -62,6 +62,29 @@ function hasOffsetValueKeys(array $hasB, array $mixedArray, array $hasC): void {
 
 	assertType("non-empty-array&hasOffset('c')&hasOffsetValue('b', 123)", array_merge($hasC, $mixedArray, $hasB));
 	assertType("non-empty-array&hasOffset('b')&hasOffset('c')", array_merge($hasC, $hasB, $mixedArray));
+
+	if (rand(0, 1)) {
+		$hasBorC = ['b' => 1];
+	} else {
+		$hasBorC = ['c' => 2];
+	}
+	assertType('array{b: 1}|array{c: 2}', $hasBorC);
+	assertType("non-empty-array", array_merge($mixedArray, $hasBorC));
+	assertType("non-empty-array", array_merge($hasBorC, $mixedArray));
+
+	if (rand(0, 1)) {
+		$differentCs = ['c' => 10];
+	} else {
+		$differentCs = ['c' => 20];
+	}
+	assertType('array{c: 10}|array{c: 20}', $differentCs);
+	assertType("non-empty-array&hasOffsetValue('c', 10|20)", array_merge($mixedArray, $differentCs));
+	assertType("non-empty-array&hasOffset('c')", array_merge($differentCs, $mixedArray));
+
+	assertType("non-empty-array&hasOffsetValue('c', 10|20)", array_merge($mixedArray, $hasBorC, $differentCs));
+	assertType("non-empty-array", array_merge($differentCs, $mixedArray, $hasBorC)); // could be non-empty-array&hasOffset('c')
+	assertType("non-empty-array&hasOffsetValue('c', 10|20)", array_merge($hasBorC, $mixedArray, $differentCs));
+	assertType("non-empty-array", array_merge($differentCs, $hasBorC, $mixedArray)); // could be non-empty-array&hasOffset('c')
 }
 
 /**

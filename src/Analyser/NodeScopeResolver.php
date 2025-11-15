@@ -1015,7 +1015,7 @@ final class NodeScopeResolver
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope);
 			$classReflection->evictPrivateSymbols();
-			$this->calledMethodResults = [];
+			//$this->calledMethodResults = [];
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			$throwPoints = [];

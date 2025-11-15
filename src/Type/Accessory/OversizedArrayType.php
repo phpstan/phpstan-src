@@ -21,7 +21,6 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -32,7 +31,6 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
-	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
@@ -412,6 +410,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 	public function toAbsoluteNumber(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		return new BooleanType();
 	}
 
 	public function toInteger(): Type

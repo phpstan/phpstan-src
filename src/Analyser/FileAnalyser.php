@@ -52,7 +52,7 @@ final class FileAnalyser
 	/** @var list<Error> */
 	private array $allPhpErrors = [];
 
-	/** @var list<Error> */
+	/** @var array<string, Error> */
 	private array $filteredPhpErrors = [];
 
 	public function __construct(
@@ -377,7 +377,8 @@ final class FileAnalyser
 				return true;
 			}
 
-			$this->filteredPhpErrors[] = (new Error($errorMessage, $errfile, $errline, $errno === E_USER_DEPRECATED))->withIdentifier('phpstan.php');
+			$errorSignature = hash('sha256',md5(sprintf('%s:%s::%s', $errfile, $errline, $errorMessage)));
+			$this->filteredPhpErrors[$errorSignature] = (new Error($errorMessage, $errfile, $errline, $errno === E_USER_DEPRECATED))->withIdentifier('phpstan.php');
 
 			return true;
 		});

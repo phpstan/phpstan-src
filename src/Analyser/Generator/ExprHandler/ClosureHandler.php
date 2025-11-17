@@ -126,8 +126,8 @@ final class ClosureHandler implements ExprHandler
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideExpr !== null
 				) {
-					$inAssignRighSideExprTypeResult = yield new TypeExprRequest($inAssignRightSideExpr);
-					$inAssignRightSideType = $inAssignRighSideExprTypeResult->type;
+					$inAssignRightSideExprTypeResult = yield new TypeExprRequest($inAssignRightSideExpr);
+					$inAssignRightSideType = $inAssignRightSideExprTypeResult->type;
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -138,7 +138,7 @@ final class ClosureHandler implements ExprHandler
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $inAssignRighSideExprTypeResult->nativeType;
+					$inAssignRightSideNativeType = $inAssignRightSideExprTypeResult->nativeType;
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {

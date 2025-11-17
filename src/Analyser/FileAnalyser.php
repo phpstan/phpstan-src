@@ -29,7 +29,6 @@ use function get_class;
 use function hash;
 use function is_dir;
 use function is_file;
-use function md5;
 use function restore_error_handler;
 use function set_error_handler;
 use function sprintf;

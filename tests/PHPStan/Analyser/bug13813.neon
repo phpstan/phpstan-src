@@ -1,0 +1,2 @@
+rules:
+	- PHPStan\Analyser\Bug13813Rule

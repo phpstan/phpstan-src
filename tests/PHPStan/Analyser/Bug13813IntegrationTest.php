@@ -24,14 +24,25 @@ class Bug13813IntegrationTest extends PHPStanTestCase
 		$this->assertCount(2, $analyzerResult->getAllPhpErrors());
 		$this->assertCount(2, $analyzerResult->getFilteredPhpErrors());
 
-		$this->assertSame(
-			'Warning: Undefined variable $x',
-			$analyzerResult->getAllPhpErrors()[0]->getMessage(),
-		);
-		$this->assertSame(
-			'Warning: Undefined variable $x',
-			$analyzerResult->getAllPhpErrors()[1]->getMessage(),
-		);
+		if (PHP_VERSION_ID >= 80000) {
+			$this->assertSame(
+				'Warning: Undefined variable $x',
+				$analyzerResult->getAllPhpErrors()[0]->getMessage(),
+			);
+			$this->assertSame(
+				'Warning: Undefined variable $x',
+				$analyzerResult->getAllPhpErrors()[1]->getMessage(),
+			);
+		} else {
+			$this->assertSame(
+				'Notice: Undefined variable $x',
+				$analyzerResult->getAllPhpErrors()[0]->getMessage(),
+			);
+			$this->assertSame(
+				'Notice: Undefined variable $x',
+				$analyzerResult->getAllPhpErrors()[1]->getMessage(),
+			);
+		}
 	}
 
 	/**

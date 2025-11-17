@@ -20,6 +20,7 @@ class Bug13813Rule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		for ($i = 0; $i < 100; $i++) {
+			// @phpstan-ignore variable.undefined
 			echo $x; // force emit a PHP warning at runtime
 		}
 

@@ -49,7 +49,7 @@ use const E_WARNING;
 final class FileAnalyser
 {
 
-	/** @var list<Error> */
+	/** @var array<string, Error> */
 	private array $allPhpErrors = [];
 
 	/** @var array<string, Error> */
@@ -326,8 +326,8 @@ final class FileAnalyser
 
 		return new FileAnalyserResult(
 			$fileErrors,
-			$this->filteredPhpErrors,
-			$this->allPhpErrors,
+			array_values($this->filteredPhpErrors),
+			array_values($this->allPhpErrors),
 			$locallyIgnoredErrors,
 			$fileCollectedData,
 			array_values(array_unique($fileDependencies)),
@@ -367,7 +367,8 @@ final class FileAnalyser
 
 			$errorMessage = sprintf('%s: %s', $this->getErrorLabel($errno), $errstr);
 
-			$this->allPhpErrors[] = (new Error($errorMessage, $errfile, $errline, false))->withIdentifier('phpstan.php');
+			$errorSignature = hash('sha256',md5(sprintf('%s:%s::%s', $errfile, $errline, $errorMessage)));
+			$this->allPhpErrors[$errorSignature] = (new Error($errorMessage, $errfile, $errline, false))->withIdentifier('phpstan.php');
 
 			if ($errno === E_DEPRECATED) {
 				return true;

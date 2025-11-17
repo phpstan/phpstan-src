@@ -27,7 +27,6 @@ class Bug13813IntegrationTest extends PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @return Error[]
 	 */
 	private function runAnalyse(array $files): AnalyserResult
 	{

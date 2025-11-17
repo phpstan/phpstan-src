@@ -368,8 +368,8 @@ final class FileAnalyser
 			}
 
 			$errorMessage = sprintf('%s: %s', $this->getErrorLabel($errno), $errstr);
-
 			$errorSignature = hash('sha256', md5(sprintf('%s:%s::%s', $errfile, $errline, $errorMessage)));
+
 			$this->allPhpErrors[$errorSignature] = (new Error($errorMessage, $errfile, $errline, false))->withIdentifier('phpstan.php');
 
 			if ($errno === E_DEPRECATED) {
@@ -380,7 +380,6 @@ final class FileAnalyser
 				return true;
 			}
 
-			$errorSignature = hash('sha256', md5(sprintf('%s:%s::%s', $errfile, $errline, $errorMessage)));
 			$this->filteredPhpErrors[$errorSignature] = (new Error($errorMessage, $errfile, $errline, $errno === E_USER_DEPRECATED))->withIdentifier('phpstan.php');
 
 			return true;

@@ -26,11 +26,11 @@ class Bug13813IntegrationTest extends PHPStanTestCase
 
 		$this->assertSame(
 			'Warning: Undefined variable $x',
-			$analyzerResult->getAllPhpErrors()[0]->getMessage()
+			$analyzerResult->getAllPhpErrors()[0]->getMessage(),
 		);
 		$this->assertSame(
 			'Warning: Undefined variable $x',
-			$analyzerResult->getAllPhpErrors()[1]->getMessage()
+			$analyzerResult->getAllPhpErrors()[1]->getMessage(),
 		);
 	}
 

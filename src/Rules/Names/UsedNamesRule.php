@@ -161,12 +161,23 @@ final class UsedNamesRule implements Rule
 			}
 			$useAlias = $use->getAlias()->toLowerString();
 			if (in_array($useAlias, $usedNames[$realUseType][$lowerNamespace] ?? [], true)) {
+				if ($realUseType === Use_::TYPE_FUNCTION) {
+					$displayedUseType = 'use function';
+					$identifierUseType = 'useFunction';
+				} elseif ($realUseType === Use_::TYPE_CONSTANT) {
+					$displayedUseType = 'use const';
+					$identifierUseType = 'useConst';
+				} else {
+					$displayedUseType = 'use';
+					$identifierUseType = 'use';
+				}
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Cannot use %s as %s because the name is already in use.',
+					'Cannot %s %s as %s because the name is already in use.',
+					$displayedUseType,
 					$useGroupPrefix !== '' ? $useGroupPrefix . '\\' . $use->name->toString() : $use->name->toString(),
 					$use->getAlias()->toString(),
 				))
-					->identifier('use.nameInUse')
+					->identifier(sprintf('%s.nameInUse', $identifierUseType))
 					->line($use->getStartLine())
 					->nonIgnorable()
 					->build();

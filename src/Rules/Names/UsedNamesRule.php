@@ -117,6 +117,7 @@ final class UsedNamesRule implements Rule
 					))
 						->identifier('function.nameInUse')
 						->line($node->getStartLine())
+						->nonIgnorable()
 						->build(),
 				];
 			}
@@ -135,6 +136,7 @@ final class UsedNamesRule implements Rule
 					))
 						->identifier('const.nameInUse')
 						->line($constNode->getStartLine())
+						->nonIgnorable()
 						->build();
 				}
 				$usedNames[Use_::TYPE_CONSTANT][$lowerNamespace][] = $name;

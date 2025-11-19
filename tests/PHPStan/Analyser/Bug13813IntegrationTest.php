@@ -19,11 +19,15 @@ class Bug13813IntegrationTest extends PHPStanTestCase
 	{
 		$oldReporting = error_reporting();
 
-		error_reporting(E_ALL);
-		$analyzerResult = $this->runAnalyse([
-			__DIR__ . '/data/bug-13813.php',
-			__DIR__ . '/Bug13813Rule.php',
-		]);
+		try {
+			error_reporting(E_ALL);
+			$analyzerResult = $this->runAnalyse([
+				__DIR__ . '/data/bug-13813.php',
+				__DIR__ . '/Bug13813Rule.php',
+			]);
+		} finally {
+			error_reporting($oldReporting);
+		}
 		$this->assertCount(2, $analyzerResult->getAllPhpErrors());
 		$this->assertCount(2, $analyzerResult->getFilteredPhpErrors());
 
@@ -46,8 +50,6 @@ class Bug13813IntegrationTest extends PHPStanTestCase
 				$analyzerResult->getAllPhpErrors()[1]->getMessage(),
 			);
 		}
-
-		error_reporting($oldReporting);
 	}
 
 	/**

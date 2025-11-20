@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\AllowedSubTypesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -28,6 +29,10 @@ final class SealedAllowedSubTypesClassReflectionExtension implements AllowedSubT
 			} else {
 				$types = [$type];
 			}
+		}
+
+		if ($classReflection->isClass() && !$classReflection->isAbstract()) {
+			$types[] = new ObjectType($classReflection->getName());
 		}
 
 		return $types;

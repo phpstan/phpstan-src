@@ -44,6 +44,11 @@ class AllowedSubTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSealedOnConcreteClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/sealed_concrete.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

@@ -31,6 +31,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Finder\Finder;
 use function array_map;
 use function array_merge;
@@ -56,33 +57,34 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	protected static function createNodeScopeResolver(): NodeScopeResolver|GeneratorNodeScopeResolver
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
+		$container = self::getContainer();
+		$typeSpecifier = $container->getService('typeSpecifier');
 
 		return new NodeScopeResolver(
 			$reflectionProvider,
-			self::getContainer()->getByType(InitializerExprTypeResolver::class),
+			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
-			self::getContainer()->getByType(ClassReflectionFactory::class),
-			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
+			$container->getByType(ClassReflectionFactory::class),
+			$container->getByType(ParameterOutTypeExtensionProvider::class),
 			self::getParser(),
-			self::getContainer()->getByType(FileTypeMapper::class),
-			self::getContainer()->getByType(PhpVersion::class),
-			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
-			self::getContainer()->getByType(FileHelper::class),
+			$container->getByType(FileTypeMapper::class),
+			$container->getByType(PhpVersion::class),
+			$container->getByType(PhpDocInheritanceResolver::class),
+			$container->getByType(FileHelper::class),
 			$typeSpecifier,
-			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
-			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+			$container->getByType(DynamicThrowTypeExtensionProvider::class),
+			$container->getByType(ReadWritePropertiesExtensionProvider::class),
+			$container->getByType(ParameterClosureThisExtensionProvider::class),
+			$container->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
-			self::getContainer()->getParameter('polluteScopeWithLoopInitialAssignments'),
-			self::getContainer()->getParameter('polluteScopeWithAlwaysIterableForeach'),
-			self::getContainer()->getParameter('polluteScopeWithBlock'),
+			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
+			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
+			$container->getParameter('polluteScopeWithBlock'),
 			static::getEarlyTerminatingMethodCalls(),
 			static::getEarlyTerminatingFunctionCalls(),
-			self::getContainer()->getParameter('exceptions')['implicitThrows'],
-			self::getContainer()->getParameter('treatPhpDocTypesAsCertain'),
-			self::getContainer()->getParameter('narrowMethodScopeFromConstructor'),
+			$container->getParameter('exceptions')['implicitThrows'],
+			$container->getParameter('treatPhpDocTypesAsCertain'),
+			$container->getParameter('narrowMethodScopeFromConstructor'),
 		);
 	}
 

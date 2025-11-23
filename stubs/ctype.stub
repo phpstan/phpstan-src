@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-empty-string : int) $text
+ */
+function ctype_alnum(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_alpha(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_cntrl(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_lower(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-empty-string : int) $text
+ */
+function ctype_graph(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-empty-string : int) $text
+ */
+function ctype_print(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_punct(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_space(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-falsy-string : int) $text
+ */
+function ctype_upper(mixed $text): bool {}
+
+/**
+ * @phpstan-assert-if-true =($text is string ? non-empty-string : int) $text
+ */
+function ctype_xdigit(mixed $text): bool {}

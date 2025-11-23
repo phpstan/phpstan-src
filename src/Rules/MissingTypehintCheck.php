@@ -121,7 +121,7 @@ final class MissingTypehintCheck
 					return $type;
 				}
 				if (
-					$this->checkGenericIterableClasses !== true &&
+					!$this->checkGenericIterableClasses &&
 					in_array($classReflection->getName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)
 				) {
 					// checked by getIterableTypesWithMissingValueTypehint() already

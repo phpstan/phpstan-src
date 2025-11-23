@@ -72,7 +72,7 @@ class MissingFunctionParameterTypehintRuleTest extends RuleTestCase
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
-				'Function MissingFunctionParameterTypehint\missingTraversableTypehint() has parameter $traversable with generic interface Traversable but does not specify its types: TKey, TValu',
+				'Function MissingFunctionParameterTypehint\missingTraversableTypehint() has parameter $traversable with generic interface Traversable but does not specify its types: TKey, TValue',
 				148,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],

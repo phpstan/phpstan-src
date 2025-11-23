@@ -58,6 +58,14 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 				'Function MissingFunctionReturnTypehint\callableNestedNoPrototype() return type has no signature specified for callable.',
 				141,
 			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGeneratorOfIntegersNoPrototype() return type with generic class Generator does not specify its types: TKey, TValue, TSend, TReturn',
+				152,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGeneratorOfIntegersByStringNoPrototype() return type with generic class Generator does not specify its types: TKey, TValue, TSend, TReturn',
+				169,
+			],
 		]);
 	}
 

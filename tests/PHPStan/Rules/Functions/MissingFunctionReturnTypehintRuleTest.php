@@ -67,19 +67,20 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 				169,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\returnsIteratorNoPrototype() return type with generic interface Iterator does not specify its types: TKey, TValue, TSend, TReturn',
+				'Function MissingFunctionReturnTypehint\returnsIteratorNoPrototype() return type with generic interface Iterator does not specify its types: TKey, TValue',
 				186,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\returnsIteratorAggregateNoPrototype() return type with generic interface IteratorAggregate does not specify its types: TKey, TValue, TSend, TReturn',
+				'Function MissingFunctionReturnTypehint\returnsIteratorAggregateNoPrototype() return type with generic interface IteratorAggregate does not specify its types: TKey, TValue',
 				199,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type has no value type specified in iterable type Traversable',
+				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type has no value type specified in iterable type Traversable.',
 				212,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
-				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type with generic interface Traversable does not specify its types: TKey, TValue, TSend, TReturn',
+				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type with generic interface Traversable does not specify its types: TKey, TValue',
 				212,
 			],
 		]);

@@ -148,4 +148,38 @@ namespace MissingFunctionReturnTypehint
 	function callableNestedWithPrototype() : callable{
 
 	}
+
+	function returnsGeneratorOfIntegersNoPrototype(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield 3;
+	}
+
+	/**
+	 * @return \Generator<int, int>
+	 */
+	function returnsGeneratorOfIntegersWithPrototype(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield 3;
+	}
+
+	function returnsGeneratorOfIntegersByStringNoPrototype(): \Generator
+	{
+		yield '1' => 1;
+		yield '2' => 2;
+		yield '3' => 3;
+	}
+
+	/**
+	 * @return \Generator<string, int>
+	 */
+	function returnsGeneratorOfIntegersByStringwithPrototype(): \Generator
+	{
+		yield '1' => 1;
+		yield '2' => 2;
+		yield '3' => 3;
+	}
 }

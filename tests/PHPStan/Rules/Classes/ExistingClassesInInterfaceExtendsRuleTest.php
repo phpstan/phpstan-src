@@ -18,12 +18,13 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			$reflectionProvider,
 			true,

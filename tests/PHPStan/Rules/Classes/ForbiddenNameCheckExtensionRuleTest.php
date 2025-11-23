@@ -23,15 +23,16 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new InstantiationRule(
-			self::getContainer(),
+			$container,
 			$reflectionProvider,
 			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			new ConsistentConstructorHelper(),
 			true,

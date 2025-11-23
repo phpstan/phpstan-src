@@ -19,14 +19,15 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
+		$container = self::getContainer();
 		return new InterfaceTemplateTypeRule(
 			new TemplateTypeCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,

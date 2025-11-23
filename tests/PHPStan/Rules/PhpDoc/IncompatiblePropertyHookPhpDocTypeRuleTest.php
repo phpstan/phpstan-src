@@ -23,8 +23,9 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver([], $reflectionProvider);
 
+		$container = self::getContainer();
 		return new IncompatiblePropertyHookPhpDocTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$container->getByType(FileTypeMapper::class),
 			new IncompatiblePhpDocTypeCheck(
 				new GenericObjectTypeCheck(),
 				new UnresolvableTypeHelper(),
@@ -33,9 +34,9 @@ class IncompatiblePropertyHookPhpDocTypeRuleTest extends RuleTestCase
 						$reflectionProvider,
 						new ClassNameCheck(
 							new ClassCaseSensitivityCheck($reflectionProvider, true),
-							new ClassForbiddenNameCheck(self::getContainer()),
+							new ClassForbiddenNameCheck($container),
 							$reflectionProvider,
-							self::getContainer(),
+							$container,
 						),
 						new GenericObjectTypeCheck(),
 						$typeAliasResolver,

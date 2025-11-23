@@ -33,15 +33,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+		$container = self::getContainer();
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				true,
 				true,

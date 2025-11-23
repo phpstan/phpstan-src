@@ -19,14 +19,15 @@ class MethodAssertRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new MethodAssertRule(new AssertRuleHelper(
 			$reflectionProvider,
 			new UnresolvableTypeHelper(),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			new MissingTypehintCheck(true, []),
 			new GenericObjectTypeCheck(),

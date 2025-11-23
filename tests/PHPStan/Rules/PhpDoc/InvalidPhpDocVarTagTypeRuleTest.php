@@ -21,14 +21,15 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new InvalidPhpDocVarTagTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$container->getByType(FileTypeMapper::class),
 			$reflectionProvider,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			new GenericObjectTypeCheck(),
 			new MissingTypehintCheck(true, []),

@@ -30,6 +30,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new TraitAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -45,9 +46,9 @@ class TraitAttributesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, false),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				true,
 			),

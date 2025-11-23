@@ -23,13 +23,14 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new ExistingClassesInPropertiesRule(
 			$reflectionProvider,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			new UnresolvableTypeHelper(),
 			new PhpVersion($this->phpVersion),

@@ -21,17 +21,18 @@ class PromoteParameterRuleWithOriginalRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$container = self::getContainer();
 		return new PromoteParameterRule(
 			new OverridingMethodRule(
-				self::getContainer()->getByType(PhpVersion::class),
-				self::getContainer()->getByType(MethodSignatureRule::class),
+				$container->getByType(PhpVersion::class),
+				$container->getByType(MethodSignatureRule::class),
 				true,
-				self::getContainer()->getByType(MethodParameterComparisonHelper::class),
-				self::getContainer()->getByType(MethodVisibilityComparisonHelper::class),
-				self::getContainer()->getByType(MethodPrototypeFinder::class),
+				$container->getByType(MethodParameterComparisonHelper::class),
+				$container->getByType(MethodVisibilityComparisonHelper::class),
+				$container->getByType(MethodPrototypeFinder::class),
 				true,
 			),
-			self::getContainer(),
+			$container,
 			InClassMethodNode::class,
 			false,
 			'checkMissingOverrideMethodAttribute',

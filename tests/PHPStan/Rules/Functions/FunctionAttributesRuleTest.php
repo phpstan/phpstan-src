@@ -23,6 +23,7 @@ class FunctionAttributesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new FunctionAttributesRule(
 			new AttributesCheck(
 				$reflectionProvider,
@@ -38,9 +39,9 @@ class FunctionAttributesRuleTest extends RuleTestCase
 				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, false),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				true,
 			),

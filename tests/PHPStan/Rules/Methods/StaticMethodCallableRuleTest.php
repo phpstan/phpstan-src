@@ -25,15 +25,16 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true);
 
+		$container = self::getContainer();
 		return new StaticMethodCallableRule(
 			new StaticMethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				true,
 				true,

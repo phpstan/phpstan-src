@@ -22,6 +22,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
+		$container = self::getContainer();
 		return new IncompatiblePropertyPhpDocTypeRule(
 			new GenericObjectTypeCheck(),
 			new UnresolvableTypeHelper(),
@@ -30,9 +31,9 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 					$reflectionProvider,
 					new ClassNameCheck(
 						new ClassCaseSensitivityCheck($reflectionProvider, true),
-						new ClassForbiddenNameCheck(self::getContainer()),
+						new ClassForbiddenNameCheck($container),
 						$reflectionProvider,
-						self::getContainer(),
+						$container,
 					),
 					new GenericObjectTypeCheck(),
 					$typeAliasResolver,

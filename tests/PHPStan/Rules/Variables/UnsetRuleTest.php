@@ -18,9 +18,10 @@ class UnsetRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$container = self::getContainer();
 		return new UnsetRule(
-			self::getContainer()->getByType(PropertyReflectionFinder::class),
-			self::getContainer()->getByType(PhpVersion::class),
+			$container->getByType(PropertyReflectionFinder::class),
+			$container->getByType(PhpVersion::class),
 		);
 	}
 

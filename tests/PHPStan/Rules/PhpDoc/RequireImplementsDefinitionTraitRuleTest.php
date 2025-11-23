@@ -19,13 +19,14 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
+		$container = self::getContainer();
 		return new RequireImplementsDefinitionTraitRule(
 			$reflectionProvider,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			true,
 			true,

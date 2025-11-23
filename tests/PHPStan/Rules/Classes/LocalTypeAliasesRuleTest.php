@@ -23,17 +23,18 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
+		$container = self::getContainer();
 		return new LocalTypeAliasesRule(
 			new LocalTypeAliasesCheck(
 				['GlobalTypeAlias' => 'int|string'],
 				self::createReflectionProvider(),
-				self::getContainer()->getByType(TypeNodeResolver::class),
+				$container->getByType(TypeNodeResolver::class),
 				new MissingTypehintCheck(true, []),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				new UnresolvableTypeHelper(),
 				new GenericObjectTypeCheck(),

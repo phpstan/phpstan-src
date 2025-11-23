@@ -31,7 +31,6 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Finder\Finder;
 use function array_map;
 use function array_merge;

@@ -24,14 +24,15 @@ class ClassConstantRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new ClassConstantRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, true, true, false, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
-				new ClassForbiddenNameCheck(self::getContainer()),
+				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
-				self::getContainer(),
+				$container,
 			),
 			new PhpVersion($this->phpVersion),
 			true,

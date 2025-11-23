@@ -22,14 +22,15 @@ class ExistingClassesInPropertyHookTypehintsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
+		$container = self::getContainer();
 		return new ExistingClassesInPropertyHookTypehintsRule(
 			new FunctionDefinitionCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				new UnresolvableTypeHelper(),
 				new PhpVersion(PHP_VERSION_ID),

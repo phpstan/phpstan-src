@@ -21,14 +21,15 @@ class MethodTagTraitRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
+		$container = self::getContainer();
 		return new MethodTagTraitRule(
 			new MethodTagCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				new GenericObjectTypeCheck(),
 				new MissingTypehintCheck(true, []),

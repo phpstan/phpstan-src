@@ -180,9 +180,10 @@ class GeneratorNodeScopeResolverRuleTest extends RuleTestCase
 
 	protected function createNodeScopeResolver(): GeneratorNodeScopeResolver
 	{
+		$container = self::getContainer();
 		return new GeneratorNodeScopeResolver(
-			self::getContainer()->getByType(ExprPrinter::class),
-			self::getContainer(),
+			$container->getByType(ExprPrinter::class),
+			$container,
 		);
 	}
 

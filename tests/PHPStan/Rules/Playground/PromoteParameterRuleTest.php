@@ -16,12 +16,13 @@ class PromoteParameterRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$container = self::getContainer();
 		return new PromoteParameterRule(
 			new UninitializedPropertyRule(new ConstructorsHelper(
-				self::getContainer(),
+				$container,
 				[],
 			)),
-			self::getContainer(),
+			$container,
 			ClassPropertiesNode::class,
 			false,
 			'checkUninitializedProperties',

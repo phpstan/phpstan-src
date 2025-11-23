@@ -13,10 +13,11 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$container = self::getContainer();
 		return new ConsistentConstructorRule(
 			new ConsistentConstructorHelper(),
-			self::getContainer()->getByType(MethodParameterComparisonHelper::class),
-			self::getContainer()->getByType(MethodVisibilityComparisonHelper::class),
+			$container->getByType(MethodParameterComparisonHelper::class),
+			$container->getByType(MethodVisibilityComparisonHelper::class),
 		);
 	}
 

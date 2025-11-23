@@ -20,15 +20,16 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $reflectionProvider);
 
+		$container = self::getContainer();
 		return new MethodTemplateTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
+			$container->getByType(FileTypeMapper::class),
 			new TemplateTypeCheck(
 				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,

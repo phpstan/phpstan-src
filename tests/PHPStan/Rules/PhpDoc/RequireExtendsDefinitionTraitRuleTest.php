@@ -19,14 +19,15 @@ class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
+		$container = self::getContainer();
 		return new RequireExtendsDefinitionTraitRule(
 			$reflectionProvider,
 			new RequireExtendsCheck(
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
-					new ClassForbiddenNameCheck(self::getContainer()),
+					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
-					self::getContainer(),
+					$container,
 				),
 				true,
 				true,

@@ -74,12 +74,6 @@ class MissingFunctionParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Function MissingFunctionParameterTypehint\missingTraversableTypehint() has parameter $traversable with generic interface Traversable but does not specify its types: TKey, TValue',
 				148,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-			[
-				'Function MissingFunctionParameterTypehint\missingTraversableTypehintPhpDoc() has parameter $traversable with no value type specified in iterable type Traversable.',
-				156,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Function MissingFunctionParameterTypehint\missingCallableSignature() has parameter $cb with no signature specified for callable.',

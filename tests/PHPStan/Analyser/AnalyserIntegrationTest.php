@@ -1577,6 +1577,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Function Bug13714\array_find invoked with 2 parameters, 0 required.', $errors[6]->getMessage());
 	}
 
+	public function testBug10942(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-10942.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

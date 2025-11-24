@@ -800,26 +800,27 @@ class AnalyserTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
 
-		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
-		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper, self::getContainer()->getByType(StubPhpDocProvider::class));
+		$container = self::getContainer();
+		$typeSpecifier = $container->getService('typeSpecifier');
+		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper, $container->getByType(StubPhpDocProvider::class));
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$reflectionProvider,
-			self::getContainer()->getByType(InitializerExprTypeResolver::class),
+			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
-			self::getContainer()->getByType(ClassReflectionFactory::class),
-			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
+			$container->getByType(ClassReflectionFactory::class),
+			$container->getByType(ParameterOutTypeExtensionProvider::class),
 			$this->getParser(),
 			$fileTypeMapper,
-			self::getContainer()->getByType(PhpVersion::class),
+			$container->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
-			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
-			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
-			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
+			$container->getByType(DynamicThrowTypeExtensionProvider::class),
+			$container->getByType(ReadWritePropertiesExtensionProvider::class),
+			$container->getByType(ParameterClosureThisExtensionProvider::class),
+			$container->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			false,
 			true,
@@ -833,17 +834,17 @@ class AnalyserTest extends PHPStanTestCase
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
-			self::getContainer()->getByType(GeneratorScopeFactory::class),
+			$container->getByType(GeneratorScopeFactory::class),
 			$nodeScopeResolver,
 			new RichParser(
 				new Php7($lexer),
 				new NameResolver(),
-				self::getContainer(),
+				$container,
 				new IgnoreLexer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
-			self::getContainer()->getByType(RuleErrorTransformer::class),
+			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
 		);
 

@@ -48,4 +48,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsMaxMemoryLimit(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

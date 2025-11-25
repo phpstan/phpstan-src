@@ -47,6 +47,10 @@ final class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 			'precision' => $numericString,
 		];
 
+		if ($scope->getPhpVersion()->supportsMaxMemoryLimit()->yes()) {
+			$types['max_memory_limit'] = new StringType();
+		}
+
 		$argType = $scope->getType($args[0]->value);
 		$results = [];
 		foreach ($argType->getConstantStrings() as $constantString) {

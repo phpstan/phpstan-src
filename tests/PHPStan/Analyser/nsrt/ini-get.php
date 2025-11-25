@@ -26,4 +26,11 @@ function doFoo() {
 	}
 	assertType('string|false', ini_get($key));
 	assertType('string|false', ini_get('unknown'));
+
+	if (PHP_VERSION_ID >= 80500) {
+		assertType('string', ini_get("max_memory_limit"));
+	} else {
+		assertType('string|false', ini_get("max_memory_limit"));
+	}
+	assertType('string|false', ini_get("max_memory_limit"));
 }

@@ -32,5 +32,10 @@ function doFoo() {
 	} else {
 		assertType('string|false', ini_get("max_memory_limit"));
 	}
-	assertType('string|false', ini_get("max_memory_limit"));
+	if (PHP_VERSION_ID >= 80300) {
+		assertType('string|false', ini_get("max_memory_limit"));
+	}
+	if (PHP_VERSION_ID < 80300) {
+		assertType('string|false', ini_get("max_memory_limit"));
+	}
 }

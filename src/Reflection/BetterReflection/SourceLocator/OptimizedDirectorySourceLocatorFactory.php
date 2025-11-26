@@ -10,11 +10,13 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use function array_key_exists;
 use function count;
+use function implode;
 use function in_array;
 use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
+use function sha1;
 use function sha1_file;
 use function sprintf;
 use function strtolower;
@@ -52,6 +54,11 @@ final class OptimizedDirectorySourceLocatorFactory
 		}
 
 		$cacheKey = sprintf('odsl-%s', $directory);
+		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
+	}
+
+	public function createCachedDirectorySourceLocator(array $fileHashes, string $cacheKey): OptimizedDirectorySourceLocator
+	{
 		$variableCacheKey = 'v1';
 
 		/** @var array<string, array{string, string[], string[], string[]}>|null $cached */
@@ -96,20 +103,17 @@ final class OptimizedDirectorySourceLocatorFactory
 	 */
 	public function createByFiles(array $files): OptimizedDirectorySourceLocator
 	{
-		$symbols = [];
+		$fileHashes = [];
 		foreach ($files as $file) {
-			[$newClasses, $newFunctions, $newConstants] = $this->findSymbols($file);
-			$symbols[$file] = ['', $newClasses, $newFunctions, $newConstants];
+			$hash = sha1_file($file);
+			if ($hash === false) {
+				continue;
+			}
+			$fileHashes[$file] = $hash;
 		}
 
-		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($symbols);
-
-		return new OptimizedDirectorySourceLocator(
-			$this->fileNodesFetcher,
-			$classToFile,
-			$functionToFiles,
-			$constantToFile,
-		);
+		$cacheKey = sprintf('odsl-files-%s', sha1(implode(',', $files)));
+		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
 	}
 
 	/**

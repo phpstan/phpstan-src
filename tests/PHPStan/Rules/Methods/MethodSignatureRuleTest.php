@@ -550,6 +550,13 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10488.php'], []);
 	}
 
+	public function testBug10942(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-10942.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testBug12073(): void
 	{

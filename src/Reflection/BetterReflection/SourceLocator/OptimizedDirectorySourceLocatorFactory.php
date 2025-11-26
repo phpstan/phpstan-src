@@ -57,6 +57,10 @@ final class OptimizedDirectorySourceLocatorFactory
 		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
 	}
 
+	/**
+	 * @param array<string, string> $fileHashes
+	 * @param non-empty-string $cacheKey
+	 */
 	public function createCachedDirectorySourceLocator(array $fileHashes, string $cacheKey): OptimizedDirectorySourceLocator
 	{
 		$variableCacheKey = 'v1';

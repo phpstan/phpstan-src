@@ -11,11 +11,6 @@ services:
 			fileExtensions: %fileExtensions%
 			excludePaths: %excludePaths%
 
-	# overrides service from services.neon
-	cacheStorage:
-		class: PHPStan\Cache\MemoryCacheStorage
-		arguments!: []
-
 	# overrides service from parsers.neon
 	currentPhpVersionSimpleParser!:
 		factory: @currentPhpVersionRichParser

@@ -129,7 +129,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		}
 
 		if (count($files) > 0) {
-			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files);
+			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files, 'odsl-installed-files');
 		}
 
 		$binDir = ComposerHelper::getBinDirFromComposerConfig($projectInstallationPath, $composer);

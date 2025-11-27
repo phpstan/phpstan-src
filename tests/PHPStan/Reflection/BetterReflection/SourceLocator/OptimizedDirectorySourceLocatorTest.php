@@ -307,7 +307,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 	public function testBug5525(): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
-		$locator = $factory->createByFiles([__DIR__ . '/data/bug-5525.php']);
+		$locator = $factory->createByFiles([__DIR__ . '/data/bug-5525.php'], 'bug5525-odsl-installed-files');
 		$reflector = new DefaultReflector($locator);
 
 		$class = $reflector->reflectClass('Faker\\Provider\\nl_BE\\Text');

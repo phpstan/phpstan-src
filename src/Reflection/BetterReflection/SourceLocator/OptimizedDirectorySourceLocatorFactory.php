@@ -10,13 +10,11 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use function array_key_exists;
 use function count;
-use function implode;
 use function in_array;
 use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
-use function sha1;
 use function sha1_file;
 use function sprintf;
 use function strtolower;
@@ -104,8 +102,9 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	/**
 	 * @param string[] $files
+	 * @param non-empty-string&literal-string $uniqueCacheIdentifier
 	 */
-	public function createByFiles(array $files): OptimizedDirectorySourceLocator
+	public function createByFiles(array $files, string $uniqueCacheIdentifier): OptimizedDirectorySourceLocator
 	{
 		$fileHashes = [];
 		foreach ($files as $file) {
@@ -116,8 +115,7 @@ final class OptimizedDirectorySourceLocatorFactory
 			$fileHashes[$file] = $hash;
 		}
 
-		$cacheKey = sprintf('odsl-files-%s', sha1(implode(',', $files)));
-		return $this->createCachedDirectorySourceLocator($fileHashes, $cacheKey);
+		return $this->createCachedDirectorySourceLocator($fileHashes, $uniqueCacheIdentifier);
 	}
 
 	/**

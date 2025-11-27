@@ -3315,7 +3315,7 @@ return [
 'get_magic_quotes_gpc' => ['false'],
 'get_magic_quotes_runtime' => ['false'],
 'get_meta_tags' => ['array|false', 'filename'=>'string', 'use_include_path='=>'bool'],
-'get_object_vars' => ['array<string, mixed>', 'obj'=>'object'],
+'get_object_vars' => ['array<array-key, mixed>', 'obj'=>'object'],
 'get_parent_class' => ['class-string|false', 'object='=>'mixed'],
 'get_required_files' => ['list<string>'],
 'get_resource_type' => ['string', 'res'=>'resource'],

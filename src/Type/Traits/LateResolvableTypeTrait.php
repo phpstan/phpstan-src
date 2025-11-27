@@ -67,6 +67,18 @@ trait LateResolvableTypeTrait
 			return IsSuperTypeOfResult::createYes();
 		}
 
+		if ($this->equals($type)) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($type instanceof UnionType) {
+			foreach ($type->getTypes() as $innerType) {
+				if ($this->equals($innerType)) {
+					return IsSuperTypeOfResult::createYes();
+				}
+			}
+		}
+
 		if ($type instanceof LateResolvableType) {
 			$type = $type->resolve();
 		}

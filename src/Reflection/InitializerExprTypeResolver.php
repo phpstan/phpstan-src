@@ -1238,6 +1238,11 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getModTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getModTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}

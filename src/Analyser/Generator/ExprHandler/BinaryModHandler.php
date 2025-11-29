@@ -20,10 +20,10 @@ use PHPStan\Type\ObjectType;
 use function array_merge;
 
 /**
- * @implements ExprHandler<Expr\BinaryOp\Div>
+ * @implements ExprHandler<Expr\BinaryOp\Mod>
  */
 #[AutowiredService]
-final class BinaryDivHandler implements ExprHandler
+final class BinaryModHandler implements ExprHandler
 {
 
 	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)
@@ -32,7 +32,7 @@ final class BinaryDivHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof Expr\BinaryOp\Div;
+		return $expr instanceof Expr\BinaryOp\Mod;
 	}
 
 	public function analyseExpr(Stmt $stmt, Expr $expr, GeneratorScope $scope, ExpressionContext $context, ?callable $alternativeNodeCallback): Generator
@@ -48,8 +48,8 @@ final class BinaryDivHandler implements ExprHandler
 		}
 
 		return new ExprAnalysisResult(
-			$this->initializerExprTypeResolver->getDivTypeFromTypes($expr->left, $expr->right, $leftResult->type, $rightResult->type),
-			$this->initializerExprTypeResolver->getDivTypeFromTypes($expr->left, $expr->right, $leftResult->nativeType, $rightResult->nativeType),
+			$this->initializerExprTypeResolver->getModTypeFromTypes($expr->left, $expr->right, $leftResult->type, $rightResult->type),
+			$this->initializerExprTypeResolver->getModTypeFromTypes($expr->left, $expr->right, $leftResult->nativeType, $rightResult->nativeType),
 			$rightResult->scope,
 			hasYield: $leftResult->hasYield || $rightResult->hasYield,
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating || $rightResult->isAlwaysTerminating,

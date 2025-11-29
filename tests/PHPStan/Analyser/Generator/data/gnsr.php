@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace GeneratorNodeScopeResolverTest;
 
 use Closure;
+use DivisionByZeroError;
 use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
@@ -50,6 +51,25 @@ class Foo
 		assertNativeType('1', 1 / 1);
 		assertType('(float|int)', $c / $d);
 		assertNativeType('(float|int)', $c / $d);
+
+		assertType('*ERROR*', $c / 0); // DivisionByZeroError
+	}
+
+	/**
+	 * @param int $a
+	 * @param int $b
+	 * @return void
+	 */
+	public function doMod($a, $b, int $c, int $d): void
+	{
+		assertType('int', $a % $b);
+		assertNativeType('int', $a % $b);
+		assertType('0', 1 % 1);
+		assertNativeType('0', 1 % 1);
+		assertType('int', $c % $d);
+		assertNativeType('int', $c % $d);
+
+		assertType('*ERROR*', $c % 0); // DivisionByZeroError
 	}
 
 	/**

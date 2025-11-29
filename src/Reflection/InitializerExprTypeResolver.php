@@ -1648,6 +1648,11 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getPowTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getPowTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$extensionSpecified = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
 			->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
 		if ($extensionSpecified !== null) {

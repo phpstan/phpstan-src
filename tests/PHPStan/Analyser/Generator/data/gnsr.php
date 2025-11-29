@@ -82,6 +82,21 @@ class Foo
 		assertNativeType('int', $c * $d);
 	}
 
+	/**
+	 * @param string $a
+	 * @param string $b
+	 * @return void
+	 */
+	public function doConcat($a, $b, string $c, string $d): void
+	{
+		assertType('string', $a . $b);
+		assertNativeType('string', $a . $b);
+		assertType("'1a'", '1' . 'a');
+		assertNativeType("'1a'", '1' . 'a');
+		assertType('string', $c . $d);
+		assertNativeType('string', $c . $d);
+	}
+
 }
 
 function (): void {

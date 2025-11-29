@@ -2476,4 +2476,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13862(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13862.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13862b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13862b.php'], []);
+	}
+
 }

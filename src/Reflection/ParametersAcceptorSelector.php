@@ -181,7 +181,9 @@ final class ParametersAcceptorSelector
 
 				$hasTypes = false;
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-				foreach ($optArrayType->getIterableKeyType()->getConstantScalarValues() as $optValue) {
+				foreach ($optArrayType->getIterableKeyType()->getConstantScalarTypes() as $optType) {
+					$optValue = $optType->getValue();
+
 					if (!is_int($optValue)) {
 						$hasTypes = false;
 						break;
@@ -197,6 +199,7 @@ final class ParametersAcceptorSelector
 					$builder->setOffsetValueType(
 						new ConstantIntegerType($optValue),
 						$optValueType,
+						!$optArrayType->hasOffsetValueType($optType)->yes(),
 					);
 				}
 

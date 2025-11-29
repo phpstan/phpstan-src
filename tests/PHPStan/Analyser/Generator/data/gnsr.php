@@ -37,6 +37,21 @@ class Foo
 		assertNativeType('int', $c + $d);
 	}
 
+	/**
+	 * @param int $a
+	 * @param int $b
+	 * @return void
+	 */
+	public function doMinus($a, $b, int $c, int $d): void
+	{
+		assertType('int', $a - $b);
+		assertNativeType('(float|int)', $a - $b);
+		assertType('0', 1 - 1);
+		assertNativeType('0', 1 - 1);
+		assertType('int', $c - $d);
+		assertNativeType('int', $c - $d);
+	}
+
 }
 
 function (): void {

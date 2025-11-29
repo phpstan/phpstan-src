@@ -1525,6 +1525,11 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getMinusTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getMinusTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);

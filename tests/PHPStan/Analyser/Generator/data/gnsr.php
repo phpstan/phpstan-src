@@ -90,7 +90,7 @@ class Foo
 	public function doMul($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a * $b);
-		assertNativeType('(float|int)', $a * $b);
+		assertNativeType('int', $a * $b);
 		assertType('1', 1 * 1);
 		assertNativeType('1', 1 * 1);
 		assertType('int', $c * $d);

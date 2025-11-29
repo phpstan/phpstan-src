@@ -42,6 +42,21 @@ class Foo
 	 * @param int $b
 	 * @return void
 	 */
+	public function doDiv($a, $b, int $c, int $d): void
+	{
+		assertType('(float|int)', $a / $b);
+		assertNativeType('(float|int)', $a / $b);
+		assertType('1', 1 / 1);
+		assertNativeType('1', 1 / 1);
+		assertType('(float|int)', $c / $d);
+		assertNativeType('(float|int)', $c / $d);
+	}
+
+	/**
+	 * @param int $a
+	 * @param int $b
+	 * @return void
+	 */
 	public function doMinus($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a - $b);

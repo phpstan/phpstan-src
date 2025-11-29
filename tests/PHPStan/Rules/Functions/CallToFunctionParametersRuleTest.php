@@ -2488,4 +2488,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13862b.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13862c(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13862c.php'], [
+			[
+				'Parameter #2 $options of function curl_setopt_array expects array{10022?: non-empty-string}, array{}|array{10022: 123} given.',
+				12,
+				'Offset 10022 (non-empty-string) does not accept type 123.',
+			],
+		]);
+	}
+
 }

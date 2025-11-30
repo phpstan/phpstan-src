@@ -32,7 +32,7 @@ final class BitwiseNotHandler implements ExprHandler
 
 	public function analyseExpr(Stmt $stmt, Expr $expr, GeneratorScope $scope, ExpressionContext $context, ?callable $alternativeNodeCallback): Generator
 	{
-		$result = yield new ExprAnalysisRequest($stmt, $expr->expr, $scope, $context, $alternativeNodeCallback);
+		$result = yield new ExprAnalysisRequest($stmt, $expr->expr, $scope, $context->enterDeep(), $alternativeNodeCallback);
 
 		return new ExprAnalysisResult(
 			$this->initializerExprTypeResolver->getBitwiseNotTypeFromType($result->type),

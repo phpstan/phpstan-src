@@ -555,3 +555,64 @@ function (array $a): void {
 
 	assertType("array", $a);
 };
+
+class CastNarrowing {
+	/**
+	 * @param int $i2
+	 * @param mixed $m2
+	 */
+	public function doCastNarrowing(
+		int $i, mixed $m,
+			$i2, $m2
+	): void
+	{
+		if ((bool) $i) {
+			assertNativeType('int<min, -1>|int<1, max>', $i);
+		} else {
+			assertNativeType('0', $i);
+		}
+		assertNativeType('int', $i);
+
+		if ((bool) $i2) {
+			assertType('int<min, -1>|int<1, max>', $i2);
+		} else {
+			assertType('0', $i2);
+		}
+		assertType('int', $i2);
+
+		if ((bool) $m) {
+			assertNativeType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m);
+		} else {
+			assertNativeType("0|0.0|''|'0'|array{}|false|null", $m);
+		}
+		assertNativeType('mixed', $m);
+
+		if ((bool) $m2) {
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m2);
+		} else {
+			assertType("0|0.0|''|'0'|array{}|false|null", $m2);
+		}
+		assertType('mixed', $m2);
+
+		if ((string) $m2) {
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m2);
+		} else {
+			assertType("0|0.0|''|'0'|array{}|false|null", $m2);
+		}
+		assertType('mixed', $m2);
+
+		if ((int) $m2) {
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m2);
+		} else {
+			assertType("0|0.0|''|'0'|array{}|false|null", $m2);
+		}
+		assertType('mixed', $m2);
+
+		if ((float) $m2) {
+			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m2);
+		} else {
+			assertType("0|0.0|''|'0'|array{}|false|null", $m2);
+		}
+		assertType('mixed', $m2);
+	}
+}

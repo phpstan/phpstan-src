@@ -241,7 +241,7 @@ class Foo
 
 		assertType('1', (int) $a);
 		assertType("array{'1'}", (array) $a);
-		// assertType("array{'1'}", (object) $a);
+		assertType('stdClass', (object) $a);
 		assertType('1.0', (double) $a);
 		assertType('true', (bool) $a);
 		assertType("'1'", (string) $a);

@@ -702,43 +702,47 @@ final class InitializerExprTypeResolver
 			return $getTypeCallback($expr->expr)->toArray();
 		}
 		if ($expr instanceof Object_) {
-			$castToObject = static function (Type $type): Type {
-				$constantArrays = $type->getConstantArrays();
-				if (count($constantArrays) > 0) {
-					$objects = [];
-					foreach ($constantArrays as $constantArray) {
-						$properties = [];
-						$optionalProperties = [];
-						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-							$valueType = $constantArray->getValueTypes()[$i];
-							$optional = $constantArray->isOptionalKey($i);
-							if ($optional) {
-								$optionalProperties[] = $keyType->getValue();
-							}
-							$properties[$keyType->getValue()] = $valueType;
-						}
-
-						$objects[] = TypeCombinator::intersect(new ObjectShapeType($properties, $optionalProperties), new ObjectType(stdClass::class));
-					}
-
-					return TypeCombinator::union(...$objects);
-				}
-				if ($type->isObject()->yes()) {
-					return $type;
-				}
-
-				return new ObjectType('stdClass');
-			};
-
-			$exprType = $getTypeCallback($expr->expr);
-			if ($exprType instanceof UnionType) {
-				return TypeCombinator::union(...array_map($castToObject, $exprType->getTypes()));
-			}
-
-			return $castToObject($exprType);
+			return $this->getCastObjectType($getTypeCallback($expr->expr));
 		}
 
 		return new MixedType();
+	}
+
+	public function getCastObjectType(Type $exprType): Type
+	{
+		$castToObject = static function (Type $type): Type {
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				$objects = [];
+				foreach ($constantArrays as $constantArray) {
+					$properties = [];
+					$optionalProperties = [];
+					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+						$valueType = $constantArray->getValueTypes()[$i];
+						$optional = $constantArray->isOptionalKey($i);
+						if ($optional) {
+							$optionalProperties[] = $keyType->getValue();
+						}
+						$properties[$keyType->getValue()] = $valueType;
+					}
+
+					$objects[] = TypeCombinator::intersect(new ObjectShapeType($properties, $optionalProperties), new ObjectType(stdClass::class));
+				}
+
+				return TypeCombinator::union(...$objects);
+			}
+			if ($type->isObject()->yes()) {
+				return $type;
+			}
+
+			return new ObjectType('stdClass');
+		};
+
+		if ($exprType instanceof UnionType) {
+			return TypeCombinator::union(...array_map($castToObject, $exprType->getTypes()));
+		}
+
+		return $castToObject($exprType);
 	}
 
 	/**

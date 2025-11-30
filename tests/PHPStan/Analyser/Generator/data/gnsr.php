@@ -220,6 +220,22 @@ class Foo
 		assertType('int', $c >> $d);
 		assertNativeType('int', $c >> $d);
 	}
+
+	/**
+	 * @param string $a
+	 * @param string $b
+	 * @return void
+	 */
+	public function doSpaceship($a, $b, string $c, string $d): void
+	{
+		assertType('int<-1, 1>', $a <=> $b);
+		assertNativeType('int<-1, 1>', $a <=> $b);
+		assertType('-1', '1' <=> 'a');
+		assertNativeType('-1', '1' <=> 'a');
+		assertType('int<-1, 1>', $c <=> $d);
+		assertNativeType('int<-1, 1>', $c <=> $d);
+	}
+
 }
 
 function (): void {

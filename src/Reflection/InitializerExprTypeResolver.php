@@ -1156,12 +1156,17 @@ final class InitializerExprTypeResolver
 		$callbackLeftType = $getTypeCallback($left);
 		$callbackRightType = $getTypeCallback($right);
 
-		if ($callbackLeftType instanceof NeverType || $callbackRightType instanceof NeverType) {
-			return $this->getNeverType($callbackLeftType, $callbackRightType);
+		return $this->getSpaceshipTypeFromTypes($callbackLeftType, $callbackRightType);
+	}
+
+	public function getSpaceshipTypeFromTypes(Type $leftTypes, Type $rightTypes): Type
+	{
+		if ($leftTypes instanceof NeverType || $rightTypes instanceof NeverType) {
+			return $this->getNeverType($leftTypes, $rightTypes);
 		}
 
-		$leftTypes = $callbackLeftType->getConstantScalarTypes();
-		$rightTypes = $callbackRightType->getConstantScalarTypes();
+		$leftTypes = $leftTypes->getConstantScalarTypes();
+		$rightTypes = $rightTypes->getConstantScalarTypes();
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);

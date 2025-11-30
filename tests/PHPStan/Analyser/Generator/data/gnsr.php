@@ -236,6 +236,17 @@ class Foo
 		assertNativeType('int<-1, 1>', $c <=> $d);
 	}
 
+	function doCast() {
+		$a = '1';
+
+		assertType('1', (int) $a);
+		assertType("array{'1'}", (array) $a);
+		// assertType("array{'1'}", (object) $a);
+		assertType('1.0', (double) $a);
+		assertType('true', (bool) $a);
+		assertType("'1'", (string) $a);
+	}
+
 }
 
 function (): void {

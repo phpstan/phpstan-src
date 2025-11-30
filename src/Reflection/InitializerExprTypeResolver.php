@@ -2532,6 +2532,12 @@ final class InitializerExprTypeResolver
 	public function getBitwiseNotType(Expr $expr, callable $getTypeCallback): Type
 	{
 		$exprType = $getTypeCallback($expr);
+
+		return $this->getBitwiseNotTypeFromType($exprType);
+	}
+
+	public function getBitwiseNotTypeFromType(Type $exprType): Type
+	{
 		return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);

@@ -89,6 +89,20 @@ class Foo
 
 	/**
 	 * @param int $a
+	 * @return void
+	 */
+	public function doBitwiseNot($a, int $b): void
+	{
+		assertType('int', ~$a);
+		assertNativeType('int', ~$b);
+		assertType('int', ~1);
+		assertNativeType('int', ~1);
+		assertType('int', ~$b);
+		assertNativeType('int', ~$b);
+	}
+
+	/**
+	 * @param int $a
 	 * @param int $b
 	 * @return void
 	 */

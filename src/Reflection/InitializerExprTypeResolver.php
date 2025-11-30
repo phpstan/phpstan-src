@@ -1690,6 +1690,11 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getShiftLeftTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getShiftLeftTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
@@ -1749,6 +1754,11 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		return $this->getShiftRightTypeFromTypes($left, $right, $leftType, $rightType);
+	}
+
+	public function getShiftRightTypeFromTypes(Expr $left, Expr $right, Type $leftType, Type $rightType): Type
+	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}

@@ -269,6 +269,9 @@ class Foo
 		assertType('1.0', (double) $a);
 		assertType('true', (bool) $a);
 		assertType("'1'", (string) $a);
+
+		$f = 1.1;
+		assertType('1', (int) $f);
 	}
 
 	/**

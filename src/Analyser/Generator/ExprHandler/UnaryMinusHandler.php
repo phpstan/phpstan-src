@@ -4,15 +4,19 @@ namespace PHPStan\Analyser\Generator\ExprHandler;
 
 use Generator;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\Generator\ExprAnalysisRequest;
 use PHPStan\Analyser\Generator\ExprAnalysisResult;
 use PHPStan\Analyser\Generator\ExprHandler;
 use PHPStan\Analyser\Generator\GeneratorScope;
+use PHPStan\Analyser\Generator\NoopNodeCallback;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\IntegerRangeType;
+use function PHPStan\dumpType;
 
 /**
  * @implements ExprHandler<Expr\UnaryMinus>
@@ -34,9 +38,17 @@ final class UnaryMinusHandler implements ExprHandler
 	{
 		$result = yield new ExprAnalysisRequest($stmt, $expr->expr, $scope, $context->enterDeep(), $alternativeNodeCallback);
 
+		$type = $this->initializerExprTypeResolver->getUnaryMinusTypeFromType($expr->expr, $result->type);
+		$nativeType = $this->initializerExprTypeResolver->getUnaryMinusTypeFromType($expr->expr, $result->nativeType);
+		if ($type instanceof IntegerRangeType) {
+			$mulResult = yield new ExprAnalysisRequest($stmt, new Expr\BinaryOp\Mul($expr, new Int_(-1)), $scope, $context->enterDeep(), new NoopNodeCallback());
+			$type = $mulResult->result;
+			$nativeType = $mulResult->nativeType;
+		}
+
 		return new ExprAnalysisResult(
-			$this->initializerExprTypeResolver->getUnaryMinusTypeFromType($expr->expr, $result->type),
-			$this->initializerExprTypeResolver->getUnaryMinusTypeFromType($expr->expr, $result->nativeType),
+			$type,
+			$nativeType,
 			$result->scope,
 			hasYield: $result->hasYield,
 			isAlwaysTerminating: $result->isAlwaysTerminating,

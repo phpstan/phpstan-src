@@ -16,7 +16,6 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\IntegerRangeType;
-use function PHPStan\dumpType;
 
 /**
  * @implements ExprHandler<Expr\UnaryMinus>
@@ -42,7 +41,7 @@ final class UnaryMinusHandler implements ExprHandler
 		$nativeType = $this->initializerExprTypeResolver->getUnaryMinusTypeFromType($expr->expr, $result->nativeType);
 		if ($type instanceof IntegerRangeType) {
 			$mulResult = yield new ExprAnalysisRequest($stmt, new Expr\BinaryOp\Mul($expr, new Int_(-1)), $scope, $context->enterDeep(), new NoopNodeCallback());
-			$type = $mulResult->result;
+			$type = $mulResult->type;
 			$nativeType = $mulResult->nativeType;
 		}
 

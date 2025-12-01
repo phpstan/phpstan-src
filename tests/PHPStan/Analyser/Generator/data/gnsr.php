@@ -191,7 +191,10 @@ class Foo
 		assertNativeType('string', $c . $d);
 	}
 
-	function doUnaryPlus(int $i)
+	/**
+	 * @param int $ii
+	 */
+	function doUnaryPlus(int $i, $ii)
 	{
 		$a = '1';
 
@@ -199,6 +202,8 @@ class Foo
 		assertNativeType('1', +$a);
 		assertType('int', +$i);
 		assertNativeType('int', +$i);
+		assertType('int', +$ii);
+		assertNativeType('float|int', +$ii);
 	}
 
 	function doUnaryMinus(int $i) {

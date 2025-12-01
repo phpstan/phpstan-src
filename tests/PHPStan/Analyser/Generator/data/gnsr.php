@@ -469,6 +469,12 @@ class MagicConstUser {
 		assertType('literal-string&non-falsy-string', __DIR__);
 		assertType('literal-string&non-falsy-string', __FILE__);
 		assertType('471', __LINE__);
+		assertType("'GeneratorNodeScopeResolverTest'", __NAMESPACE__);
+		assertType("'GeneratorNodeScopeResolverTest\\\\MagicConstUser'", __CLASS__);
+		assertType("''", __TRAIT__);
+		assertType("'doFoo'", __FUNCTION__);
+		assertType("'GeneratorNodeScopeResolverTest\\\\MagicConstUser::doFoo'", __METHOD__);
+		assertType("''", __PROPERTY__);
 	}
 }
 

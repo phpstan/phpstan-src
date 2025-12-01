@@ -12,10 +12,10 @@ use PHPStan\Analyser\Generator\ExprAnalysisRequest;
 use PHPStan\Analyser\Generator\ExprAnalysisResult;
 use PHPStan\Analyser\Generator\ExprHandler;
 use PHPStan\Analyser\Generator\GeneratorScope;
-use PHPStan\Analyser\Generator\NoopNodeCallback;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_merge;
 
@@ -46,6 +46,8 @@ final class InterpolatedStringHandler implements ExprHandler
 		yield from [];
 
 		$resultType = null;
+		$resultNativeType = null;
+
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
@@ -53,9 +55,11 @@ final class InterpolatedStringHandler implements ExprHandler
 		foreach ($expr->parts as $part) {
 			if ($part instanceof InterpolatedStringPart) {
 				$partType = new ConstantStringType($part->value);
+				$partNativeType = $partType;
 			} else {
-				$result = yield new ExprAnalysisRequest($stmt, $part, $scope, $context->enterDeep(), new NoopNodeCallback());
+				$result = yield new ExprAnalysisRequest($stmt, $part, $scope, $context->enterDeep(), $alternativeNodeCallback);
 				$partType = $result->type->toString();
+				$partNativeType = $result->nativeType->toString();
 
 				$hasYield = $hasYield || $result->hasYield;
 				$throwPoints = array_merge($throwPoints, $result->throwPoints);
@@ -66,16 +70,21 @@ final class InterpolatedStringHandler implements ExprHandler
 
 			if ($resultType === null) {
 				$resultType = $partType;
+				$resultNativeType = $partNativeType;
 				continue;
 			}
 
+			if ($resultNativeType === null) {
+				throw new ShouldNotHappenException();
+			}
+
 			$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
+			$resultNativeType = $this->initializerExprTypeResolver->resolveConcatType($resultNativeType, $partNativeType);
 		}
 
-		$type = $resultType ?? new ConstantStringType('');
 		return new ExprAnalysisResult(
-			$type,
-			$type,
+			$resultType ?? new ConstantStringType(''),
+			$resultNativeType ?? new ConstantStringType(''),
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

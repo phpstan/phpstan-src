@@ -2522,7 +2522,14 @@ final class InitializerExprTypeResolver
 	 */
 	public function getUnaryMinusType(Expr $expr, callable $getTypeCallback): Type
 	{
-		$type = $getTypeCallback($expr)->toNumber();
+		$type = $getTypeCallback($expr);
+
+		return $this->getUnaryMinusTypeFromType($expr, $type);
+	}
+
+	public function getUnaryMinusTypeFromType(Expr $expr, Type $type): Type
+	{
+		$type = $type->toNumber();
 		$scalarValues = $type->getConstantScalarValues();
 
 		if (count($scalarValues) > 0) {

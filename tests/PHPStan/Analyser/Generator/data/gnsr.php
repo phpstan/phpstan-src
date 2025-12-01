@@ -467,6 +467,6 @@ class MagicConstUser {
 	function doFoo(): void {
 		assertType('literal-string&non-falsy-string', __DIR__);
 		assertType('literal-string&non-falsy-string', __FILE__);
-		assertType('467', __LINE__);
+		assertType('470', __LINE__);
 	}
 }

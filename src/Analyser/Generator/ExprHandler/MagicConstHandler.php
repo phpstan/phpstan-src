@@ -36,8 +36,7 @@ final class MagicConstHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return
-			$expr instanceof Dir
+		return $expr instanceof Dir
 			|| $expr instanceof File
 			|| $expr instanceof Line
 			|| $expr instanceof Namespace_
@@ -45,8 +44,7 @@ final class MagicConstHandler implements ExprHandler
 			|| $expr instanceof Property
 			|| $expr instanceof Function_
 			|| $expr instanceof Method
-			|| $expr instanceof Trait_
-		;
+			|| $expr instanceof Trait_;
 	}
 
 	public function analyseExpr(Stmt $stmt, Expr $expr, GeneratorScope $scope, ExpressionContext $context, ?callable $alternativeNodeCallback): Generator

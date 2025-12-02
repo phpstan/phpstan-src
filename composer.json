@@ -27,7 +27,7 @@
 		"ondrejmirtes/better-reflection": "6.65.0.0",
 		"ondrejmirtes/composer-attribute-collector": "^1.1.1",
 		"ondrejmirtes/php-merge": "^4.1",
-		"phpstan/php-8-stubs": "0.4.33",
+		"phpstan/php-8-stubs": "0.4.34",
 		"phpstan/phpdoc-parser": "2.3.0",
 		"psr/http-message": "^1.1",
 		"react/async": "^3",

@@ -1606,7 +1606,7 @@ return [
 'DomNode::add_namespace' => ['bool', 'uri'=>'string', 'prefix'=>'string'],
 'DomNode::append_child' => ['__benevolent<DOMNode|false>', 'newnode'=>'DOMNode'],
 'DOMNode::appendChild' => ['__benevolent<DOMNode|false>', 'newnode'=>'DOMNode'],
-'DOMNode::C14N' => ['string', 'exclusive='=>'bool', 'with_comments='=>'bool', 'xpath='=>'array', 'ns_prefixes='=>'array'],
+'DOMNode::C14N' => ['__benevolent<string|false>', 'exclusive='=>'bool', 'with_comments='=>'bool', 'xpath='=>'array', 'ns_prefixes='=>'array'],
 'DOMNode::C14NFile' => ['int', 'uri='=>'string', 'exclusive='=>'bool', 'with_comments='=>'bool', 'xpath='=>'array', 'ns_prefixes='=>'array'],
 'DOMNode::cloneNode' => ['__benevolent<DOMNode|false>', 'deep='=>'bool'],
 'DOMNode::getLineNo' => ['int'],

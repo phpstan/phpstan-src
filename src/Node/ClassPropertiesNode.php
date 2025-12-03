@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use ArrayAccess;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
@@ -13,6 +14,8 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\Method\MethodCall;
 use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
@@ -22,6 +25,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use function array_diff_key;
 use function array_key_exists;
@@ -211,6 +215,19 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 			if ($usage instanceof PropertyWrite) {
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
+					$originalNode = $usage->getOriginalNode();
+
+					if ($originalNode instanceof PropertyAssignNode) {
+						$assignedExpr = $originalNode->getAssignedExpr();
+
+						if (
+							($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof UnsetOffsetExpr)
+							&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($assignedExpr->getVar()))->yes()
+						) {
+							continue;
+						}
+					}
+
 					$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
 					if (
 						!$hasInitialization->no()

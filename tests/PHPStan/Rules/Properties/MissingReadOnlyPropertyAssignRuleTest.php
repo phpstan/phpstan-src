@@ -342,4 +342,25 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13856(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13856.php'], [
+			[
+				'Readonly property Bug13856\foo2::$store is already assigned.',
+				27,
+			],
+		]);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
+			],
+		);
+	}
+
 }

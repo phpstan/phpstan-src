@@ -1737,6 +1737,7 @@ return [
 	'tan' => ['hasSideEffects' => false],
 	'tanh' => ['hasSideEffects' => false],
 	'tempnam' => ['hasSideEffects' => true],
+	'time' => ['hasSideEffects' => true],
 	'timezone_abbreviations_list' => ['hasSideEffects' => false],
 	'timezone_identifiers_list' => ['hasSideEffects' => true],
 	'timezone_location_get' => ['hasSideEffects' => true],

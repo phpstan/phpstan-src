@@ -117,6 +117,7 @@ return [
 	'str_decrement' => ['hasSideEffects' => false],
 	'str_increment' => ['hasSideEffects' => false],
 	'symlink' => ['hasSideEffects' => true],
+	'time' => ['hasSideEffects' => true],
 	'tempnam' => ['hasSideEffects' => true],
 	'tmpfile' => ['hasSideEffects' => true],
 	'touch' => ['hasSideEffects' => true],

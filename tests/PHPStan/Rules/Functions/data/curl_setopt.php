@@ -101,10 +101,17 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_SHARE, 'this is wrong');
 
 		$share = curl_share_init();
+		curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
+		curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_CONNECT);
+		curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
 		curl_setopt($curl, CURLOPT_SHARE, $share);
 
 		if (function_exists('curl_share_init_persistent')) {
-			$share = curl_share_init_persistent();
+			$share = curl_share_init_persistent([
+				CURL_LOCK_DATA_DNS,
+				CURL_LOCK_DATA_CONNECT,
+				CURL_LOCK_DATA_SSL_SESSION,
+			]);
 			curl_setopt($curl, CURLOPT_SHARE, $share);
 		}
 	}

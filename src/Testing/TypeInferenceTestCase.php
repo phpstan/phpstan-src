@@ -44,6 +44,7 @@ use function getenv;
 use function in_array;
 use function is_dir;
 use function is_string;
+use function PHPStan\dumpType;
 use function preg_match;
 use function sprintf;
 use function str_starts_with;
@@ -221,9 +222,9 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/**
 	 * @return array<string, (
-	 *      array{0: 'type', 1: string, 2: int|float|string|bool|null, 3: string, 4: int}|
-	 *      array{0: 'superType', 1: string, 2: string, 3: string, 4: bool, 5: int}|
-	 *      array{0: 'variableCertainty', 1: string, 2: TrinaryLogic, 3: TrinaryLogic, 4: string, 5: int}
+	 *      array{0: 'type', 1: string, 2: int|float|string|bool|null, 3: string, 4: int, 5?: non-empty-list<non-falsy-string>}|
+	 *      array{0: 'superType', 1: string, 2: string, 3: string, 4: bool, 5: int, 6?: non-empty-list<non-falsy-string>}|
+	 *      array{0: 'variableCertainty', 1: string, 2: TrinaryLogic, 3: TrinaryLogic, 4: string, 5: int, 6?: non-empty-list<non-falsy-string>}
 	 *  )>
 	 *
 	 * @api

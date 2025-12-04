@@ -8,9 +8,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class LooseConstComparisonPhp8Test extends TypeInferenceTestCase
 {
 
-	/**
-	 * @return iterable<array<string, mixed[]>>
-	 */
 	public static function dataFileAsserts(): iterable
 	{
 		// compares constants according to the php-version phpstan configuration,

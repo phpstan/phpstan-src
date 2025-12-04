@@ -220,8 +220,13 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	}
 
 	/**
+	 * @return array<string, (
+	 *      array{0: 'type', 1: string, 2: string, 3: string, 4: int, 5?: string}|
+	 *      array{0: 'superType', 1: string, 2: string, 3: string, 4: bool, 5: int, 6?: string}|
+	 *      array{0: 'variableCertainty', 1: string, 2: TrinaryLogic, 3: TrinaryLogic, 4: string, 5: int, 6?: string}
+	 *  )>
+	 *
 	 * @api
-	 * @return array<string, mixed[]>
 	 */
 	public static function gatherAssertTypes(string $file): array
 	{

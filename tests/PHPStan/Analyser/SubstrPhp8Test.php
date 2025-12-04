@@ -8,9 +8,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class SubstrPhp8Test extends TypeInferenceTestCase
 {
 
-	/**
-	 * @return iterable<array<string, mixed[]>>
-	 */
 	public static function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-13129-php8.php');

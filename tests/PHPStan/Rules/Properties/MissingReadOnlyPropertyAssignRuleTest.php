@@ -348,7 +348,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13856.php'], [
 			[
 				'Readonly property Bug13856\foo2::$store is already assigned.',
-				27,
+				28,
 			],
 		]);
 	}

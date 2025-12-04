@@ -13,6 +13,7 @@ class foo
     {
         $this->store = new SplObjectStorage();
         $this->store[(object) ['foo' => 'bar']] = true;
+        unset($this->store[(object) ['foo' => 'bar']]);
     }
 }
 

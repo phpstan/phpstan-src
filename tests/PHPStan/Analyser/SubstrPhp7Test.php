@@ -7,6 +7,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class SubstrPhp7Test extends TypeInferenceTestCase
 {
+
 	public static function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-13129-php7.php');

@@ -395,7 +395,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 
 		if (count($delayedErrors) === 0) {
-			return $asserts;
+			return $asserts; // @phpstan-ignore return.type
 		}
 
 		foreach ($asserts as $i => $assert) {
@@ -403,7 +403,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$asserts[$i] = $assert;
 		}
 
-		return $asserts;
+		return $asserts; // @phpstan-ignore return.type
 	}
 
 	/**

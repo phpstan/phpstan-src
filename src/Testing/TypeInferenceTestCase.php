@@ -221,9 +221,9 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/**
 	 * @return array<string, (
-	 *      array{0: 'type', 1: string, 2: string, 3: string, 4: int, 5?: string}|
-	 *      array{0: 'superType', 1: string, 2: string, 3: string, 4: bool, 5: int, 6?: string}|
-	 *      array{0: 'variableCertainty', 1: string, 2: TrinaryLogic, 3: TrinaryLogic, 4: string, 5: int, 6?: string}
+	 *      array{0: 'type', 1: string, 2: int|float|string|bool|null, 3: string, 4: int}|
+	 *      array{0: 'superType', 1: string, 2: string, 3: string, 4: bool, 5: int}|
+	 *      array{0: 'variableCertainty', 1: string, 2: TrinaryLogic, 3: TrinaryLogic, 4: string, 5: int}
 	 *  )>
 	 *
 	 * @api
@@ -395,7 +395,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 
 		if (count($delayedErrors) === 0) {
-			return $asserts; // @phpstan-ignore return.type
+			return $asserts;
 		}
 
 		foreach ($asserts as $i => $assert) {
@@ -403,7 +403,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$asserts[$i] = $assert;
 		}
 
-		return $asserts; // @phpstan-ignore return.type
+		return $asserts;
 	}
 
 	/**

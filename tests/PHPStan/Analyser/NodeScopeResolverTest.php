@@ -12,6 +12,7 @@ use function array_shift;
 use function define;
 use function dirname;
 use function implode;
+use function PHPStan\dumpType;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -270,27 +271,24 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		$failures = [];
 
 		foreach ($asserts as $args) {
-
 			if ($args[0] === 'type') {
-				$assertType = array_shift($args);
-				$file = array_shift($args);
+				$file = $args[1];
 
-				$expected = $args[0];
-				$actual = $args[1];
+				$expected = $args[2];
+				$actual = $args[3];
 
 				if ($expected !== $actual) {
-					$failures[] = sprintf("Line %d:\nExpected: %s\nActual:   %s\n", $args[2], $expected, $actual);
+					$failures[] = sprintf("Line %d:\nExpected: %s\nActual:   %s\n", $args[4], $expected, $actual);
 				}
 			} elseif ($args[0] === 'variableCertainty') {
-				$assertType = array_shift($args);
-				$file = array_shift($args);
+				$file = $args[1];
 
-				$expectedCertainty = $args[0];
-				$actualCertainty = $args[1];
-				$variableName = $args[2];
+				$expectedCertainty = $args[2];
+				$actualCertainty = $args[3];
+				$variableName = $args[4];
 
 				if ($expectedCertainty->equals($actualCertainty) !== true) {
-					$failures[] = sprintf("Certainty of %s on line %d:\nExpected: %s\nActual:   %s\n", $variableName, $args[3], $expectedCertainty->describe(), $actualCertainty->describe());
+					$failures[] = sprintf("Certainty of %s on line %d:\nExpected: %s\nActual:   %s\n", $variableName, $args[5], $expectedCertainty->describe(), $actualCertainty->describe());
 				}
 			}
 		}

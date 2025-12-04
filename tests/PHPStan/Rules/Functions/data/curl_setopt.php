@@ -95,4 +95,17 @@ class HelloWorld
 
 		curl_setopt($curl, $var, $value);
 	}
+
+	public function curlShare() {
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_SHARE, 'this is wrong');
+
+		$share = curl_share_init();
+		curl_setopt($curl, CURLOPT_SHARE, $share);
+
+		if (function_exists('curl_share_init_persistent')) {
+			$share = curl_share_init_persistent();
+			curl_setopt($curl, CURLOPT_SHARE, $share);
+		}
+	}
 }

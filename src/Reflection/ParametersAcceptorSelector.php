@@ -58,6 +58,7 @@ use function is_string;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
+use const CURLOPT_SHARE;
 use const CURLOPT_SSL_VERIFYHOST;
 
 /**
@@ -1210,6 +1211,14 @@ final class ParametersAcceptorSelector
 			if (defined($constName) && constant($constName) === $curlOpt) {
 				return new ResourceType();
 			}
+		}
+
+		if ($curlOpt === CURLOPT_SHARE) {
+			return new UnionType([
+				new ResourceType(), // PHP 7.x
+				new ObjectType('CurlShareHandle'), // since PHP 8.0
+				new ObjectType('CurlSharePersistentHandle'), // since PHP 8.5
+			]);
 		}
 
 		// unknown constant

@@ -119,6 +119,29 @@ class EnumSanityRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1')]
+	public function testBug11592(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11592.php'], [
+			[
+				'Enum Bug11592\Test2 cannot redeclare native method cases().',
+				22,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method cases().',
+				37,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method from().',
+				39,
+			],
+			[
+				'Enum Bug11592\BackedTest2 cannot redeclare native method tryFrom().',
+				41,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13768(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13768.php'], [

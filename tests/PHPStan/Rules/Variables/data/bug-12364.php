@@ -17,3 +17,24 @@ assertType('string', $x);
 assertType('string|null', $y); // <-- should be: null|string
 var_dump($x);
 var_dump($y); // <-- does exist
+
+/** @return array{xx: string, yy?: string} */
+function foo2(): array {
+	return [ 'xx' => 'foo' ];
+}
+
+function testUndefined()
+{
+	if (rand(0, 1)) {
+		$xx = $yy = 0;
+		assertType('0', $xx);
+		assertType('0', $yy);
+	}
+
+	extract(foo2());
+	assertType('string', $xx);
+
+	if (isset($yy)) {
+		assertType('0|string', $yy);
+	}
+}

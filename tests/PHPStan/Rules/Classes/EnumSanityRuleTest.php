@@ -16,7 +16,7 @@ class EnumSanityRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new EnumSanityRule(
-			self::getContainer()->getByType(InitializerExprTypeResolver::class)
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 		);
 	}
 

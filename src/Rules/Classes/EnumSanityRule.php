@@ -163,7 +163,7 @@ final class EnumSanityRule implements Rule
 					$caseName,
 					$this->initializerExprTypeResolver->getType(
 						$stmt->expr,
-						InitializerExprContext::fromScope($scope)
+						InitializerExprContext::fromScope($scope),
 					)->describe(VerbosityLevel::value()),
 				))
 					->identifier('enum.caseWithValue')

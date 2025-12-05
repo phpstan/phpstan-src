@@ -110,7 +110,7 @@ class Foo
 	public function doBitwiseAnd($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a & $b);
-		assertNativeType('*ERROR*', $a & $b);
+		assertNativeType('(int|string)', $a & $b);
 		assertType('1', 1 & 1);
 		assertNativeType('1', 1 & 1);
 		assertType('int', $c & $d);
@@ -125,7 +125,7 @@ class Foo
 	public function doBitwiseOr($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a | $b);
-		assertNativeType('*ERROR*', $a | $b);
+		assertNativeType('(int|string)', $a | $b);
 		assertType('1', 1 | 1);
 		assertNativeType('1', 1 | 1);
 		assertType('int', $c | $d);
@@ -140,7 +140,7 @@ class Foo
 	public function doBitwiseXor($a, $b, int $c, int $d): void
 	{
 		assertType('int', $a ^ $b);
-		assertNativeType('*ERROR*', $a ^ $b);
+		assertNativeType('(int|string)', $a ^ $b);
 		assertType('0', 1 ^ 1);
 		assertNativeType('0', 1 ^ 1);
 		assertType('int', $c ^ $d);

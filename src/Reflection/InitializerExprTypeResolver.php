@@ -1008,9 +1008,16 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
+		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
+
 		$leftIsString = $leftType->isString();
 		$rightIsString = $rightType->isString();
-		if ($leftIsString->yes() && $rightIsString->yes()) {
+		if (
+			($leftIsString->yes() || $leftType instanceof MixedType)
+			&& ($rightIsString->yes() || $rightType instanceof MixedType)
+		) {
 			return new StringType();
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {
@@ -1087,9 +1094,16 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
+		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
+
 		$leftIsString = $leftType->isString();
 		$rightIsString = $rightType->isString();
-		if ($leftIsString->yes() && $rightIsString->yes()) {
+		if (
+			($leftIsString->yes() || $leftType instanceof MixedType)
+			&& ($rightIsString->yes() || $rightType instanceof MixedType)
+		) {
 			return new StringType();
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {
@@ -1156,9 +1170,16 @@ final class InitializerExprTypeResolver
 			$rightType = $this->optimizeScalarType($rightType);
 		}
 
+		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
+
 		$leftIsString = $leftType->isString();
 		$rightIsString = $rightType->isString();
-		if ($leftIsString->yes() && $rightIsString->yes()) {
+		if (
+			($leftIsString->yes() || $leftType instanceof MixedType)
+			&& ($rightIsString->yes() || $rightType instanceof MixedType)
+		) {
 			return new StringType();
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {

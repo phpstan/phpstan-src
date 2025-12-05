@@ -179,4 +179,15 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11891(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11891.php'], [
+			[
+				'Enum Bug11891\test has duplicate value 42 for cases A, B.',
+				5,
+			],
+		]);
+	}
+
 }

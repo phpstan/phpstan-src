@@ -20,6 +20,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Names/data \
 		--exclude tests/PHPStan/Rules/Operators/data/invalid-inc-dec.php \
 		--exclude tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php \
+		--exclude tests/PHPStan/Rules/Classes/data/bug-11891.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-13768.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-declarations.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-enum-cases.php \

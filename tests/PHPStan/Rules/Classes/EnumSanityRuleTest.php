@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -14,7 +15,9 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new EnumSanityRule();
+		return new EnumSanityRule(
+			self::getContainer()->getByType(InitializerExprTypeResolver::class)
+		);
 	}
 
 	#[RequiresPhp('>= 8.1')]
@@ -158,15 +161,15 @@ class EnumSanityRuleTest extends RuleTestCase
 				9,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case D has value 3.',
+				'Enum Bug13768\Order is not backed, but case D has value \'3\'.',
 				10,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case E has value.',
+				'Enum Bug13768\Order is not backed, but case E has value false.',
 				11,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case F has value.',
+				'Enum Bug13768\Order is not backed, but case F has value 1.',
 				12,
 			],
 			[

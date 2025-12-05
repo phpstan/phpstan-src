@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -33,6 +35,12 @@ final class EnumSanityRule implements Rule
 		'__callstatic' => true,
 		'__invoke' => true,
 	];
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -149,20 +157,14 @@ final class EnumSanityRule implements Rule
 			$caseName = $stmt->name->name;
 
 			if ($enumNode->scalarType === null && $stmt->expr !== null) {
-				$value = null;
-				if (
-					$stmt->expr instanceof Node\Scalar\Int_
-					|| $stmt->expr instanceof Node\Scalar\String_
-					|| $stmt->expr instanceof Node\Scalar\Float_
-				) {
-					$value = $stmt->expr->value;
-				}
-
 				$errors[] = RuleErrorBuilder::message(sprintf(
-					'Enum %s is not backed, but case %s has value%s.',
+					'Enum %s is not backed, but case %s has value %s.',
 					$classReflection->getDisplayName(),
 					$caseName,
-					$value !== null ? ' ' . $value : '',
+					$this->initializerExprTypeResolver->getType(
+						$stmt->expr,
+						InitializerExprContext::fromScope($scope)
+					)->describe(VerbosityLevel::value()),
 				))
 					->identifier('enum.caseWithValue')
 					->line($stmt->getStartLine())

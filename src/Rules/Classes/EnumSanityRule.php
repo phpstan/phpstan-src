@@ -162,7 +162,7 @@ final class EnumSanityRule implements Rule
 					'Enum %s is not backed, but case %s has value%s.',
 					$classReflection->getDisplayName(),
 					$caseName,
-					$value !== null ? ' '.$value : '',
+					$value !== null ? ' ' . $value : '',
 				))
 					->identifier('enum.caseWithValue')
 					->line($stmt->getStartLine())

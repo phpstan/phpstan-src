@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -56,9 +57,9 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
-			$outputTypes[] = new ArrayType(
-				$itemType,
-				IntegerRangeType::fromInterval(1, null),
+			$outputTypes[] = TypeCombinator::intersect(
+				new ArrayType($itemType, IntegerRangeType::fromInterval(1, null)),
+				new NonEmptyArrayType(),
 			);
 		}
 

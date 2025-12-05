@@ -23,6 +23,7 @@ class RequireExtendsDefinitionTraitRuleTest extends RuleTestCase
 		return new RequireExtendsDefinitionTraitRule(
 			$reflectionProvider,
 			new RequireExtendsCheck(
+				$reflectionProvider,
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck($container),

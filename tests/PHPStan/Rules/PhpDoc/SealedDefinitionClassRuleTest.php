@@ -21,6 +21,7 @@ class SealedDefinitionClassRuleTest extends RuleTestCase
 
 		$container = self::getContainer();
 		return new SealedDefinitionClassRule(
+			$reflectionProvider,
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck($container),

@@ -7,17 +7,15 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\Tag\RequireExtendsTag;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function array_column;
-use function array_map;
 use function array_merge;
 use function count;
-use function sort;
 use function sprintf;
 use function strtolower;
 
@@ -26,6 +24,7 @@ final class RequireExtendsCheck
 {
 
 	public function __construct(
+		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
@@ -59,12 +58,8 @@ final class RequireExtendsCheck
 				continue;
 			}
 
-			sort($classNames);
-			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $type->getObjectClassReflections());
-			$referencedClassReflectionsMap = array_column($referencedClassReflections, 0, 1);
 			foreach ($classNames as $class) {
-				$referencedClassReflection = $referencedClassReflectionsMap[$class] ?? null;
-				if ($referencedClassReflection === null) {
+				if (!$this->reflectionProvider->hasClass($class)) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends contains unknown class %s.', $class))
 						->identifier('class.notFound');
 
@@ -76,16 +71,17 @@ final class RequireExtendsCheck
 					continue;
 				}
 
-				if ($referencedClassReflection->isInterface()) {
+				$reflection = $this->reflectionProvider->getClass($class);
+				if ($reflection->isInterface()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain an interface %s, expected a class.', $class))
 						->tip('If you meant an interface, use @phpstan-require-implements instead.')
 						->identifier('requireExtends.interface')
 						->build();
-				} elseif (!$referencedClassReflection->isClass()) {
+				} elseif (!$reflection->isClass()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain non-class type %s.', $class))
-						->identifier(sprintf('requireExtends.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
+						->identifier(sprintf('requireExtends.%s', strtolower($reflection->getClassTypeDescription())))
 						->build();
-				} elseif ($referencedClassReflection->isFinal()) {
+				} elseif ($reflection->isFinal()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-extends cannot contain final class %s.', $class))
 						->identifier('requireExtends.finalClass')
 						->build();

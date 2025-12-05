@@ -13,8 +13,6 @@ use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function array_column;
-use function array_map;
 use function array_merge;
 use function count;
 use function sprintf;
@@ -66,11 +64,8 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 				continue;
 			}
 
-			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $type->getObjectClassReflections());
-			$referencedClassReflectionsMap = array_column($referencedClassReflections, 0, 1);
 			foreach ($classNames as $class) {
-				$referencedClassReflection = $referencedClassReflectionsMap[$class] ?? null;
-				if ($referencedClassReflection === null) {
+				if (!$this->reflectionProvider->hasClass($class)) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements contains unknown class %s.', $class))
 					->identifier('class.notFound');
 
@@ -82,9 +77,10 @@ final class RequireImplementsDefinitionTraitRule implements Rule
 					continue;
 				}
 
-				if (!$referencedClassReflection->isInterface()) {
+				$reflection = $this->reflectionProvider->getClass($class);
+				if (!$reflection->isInterface()) {
 					$errors[] = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-require-implements cannot contain non-interface type %s.', $class))
-						->identifier(sprintf('requireImplements.%s', strtolower($referencedClassReflection->getClassTypeDescription())))
+						->identifier(sprintf('requireImplements.%s', strtolower($reflection->getClassTypeDescription())))
 						->build();
 				} else {
 					$errors = array_merge(

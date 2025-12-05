@@ -7,14 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function array_column;
-use function array_map;
 use function array_merge;
 use function count;
 use function sprintf;
@@ -27,6 +26,7 @@ final class SealedDefinitionClassRule implements Rule
 {
 
 	public function __construct(
+		private ReflectionProvider $reflectionProvider,
 		private ClassNameCheck $classCheck,
 		#[AutowiredParameter]
 		private bool $checkClassCaseSensitivity,
@@ -69,11 +69,8 @@ final class SealedDefinitionClassRule implements Rule
 				continue;
 			}
 
-			$referencedClassReflections = array_map(static fn ($reflection) => [$reflection, $reflection->getName()], $type->getObjectClassReflections());
-			$referencedClassReflectionsMap = array_column($referencedClassReflections, 0, 1);
 			foreach ($classNames as $class) {
-				$referencedClassReflection = $referencedClassReflectionsMap[$class] ?? null;
-				if ($referencedClassReflection === null) {
+				if (!$this->reflectionProvider->hasClass($class)) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf('PHPDoc tag @phpstan-sealed contains unknown class %s.', $class))
 					->identifier('class.notFound');
 

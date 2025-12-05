@@ -1214,11 +1214,18 @@ final class ParametersAcceptorSelector
 		}
 
 		if ($curlOpt === CURLOPT_SHARE) {
-			return new UnionType([
-				new ResourceType(), // PHP 7.x
-				new ObjectType('CurlShareHandle'), // since PHP 8.0
-				new ObjectType('CurlSharePersistentHandle'), // since PHP 8.5
-			]);
+			$phpversion = PhpVersionStaticAccessor::getInstance();
+
+			if ($phpversion->supportsCurlShareHandle()) {
+				$shareType = new ObjectType('CurlShareHandle');
+			} else {
+				$shareType = new ResourceType();
+			}
+			if ($phpversion->supportsCurlSharePersistentHandle()) {
+				$shareType = TypeCombinator::union($shareType, new ObjectType('CurlSharePersistentHandle'));
+			}
+
+			return $shareType;
 		}
 
 		// unknown constant

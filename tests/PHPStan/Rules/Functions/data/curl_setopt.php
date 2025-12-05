@@ -98,7 +98,6 @@ class HelloWorld
 
 	public function curlShare() {
 		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_SHARE, 'this is wrong');
 
 		$share = curl_share_init();
 		curl_share_setopt($share, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);

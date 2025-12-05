@@ -394,6 +394,19 @@ final class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	/**
+	 * whether curl handles are represented as 'resource' or CurlShareHandle
+	 */
+	public function supportsCurlShareHandle(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
+	public function supportsCurlSharePersistentHandle(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 	public function highlightStringDoesNotReturnFalse(): bool
 	{
 		return $this->versionId >= 80400;

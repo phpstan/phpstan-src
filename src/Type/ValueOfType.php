@@ -56,7 +56,7 @@ final class ValueOfType implements CompoundType, LateResolvableType
 			if (
 				$enumCases === []
 				&& $this->type instanceof TemplateType
-				&& !(new ObjectType('BackedEnum'))->isSuperTypeOf($this->type->getBound())->no()
+				&& (new ObjectType('BackedEnum'))->isSuperTypeOf($this->type->getBound())->yes()
 			) {
 				return new UnionType([new IntegerType(), new StringType()]);
 			}

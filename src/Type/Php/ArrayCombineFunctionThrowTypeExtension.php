@@ -33,7 +33,7 @@ final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThr
 		$secondArg = $funcCall->getArgs()[1]->value;
 
 		$hasValueError = $this->arrayCombineHelper->getReturnAndThrowType($firstArg, $secondArg, $scope)[1];
-		if ($hasValueError->yes()) {
+		if (!$hasValueError->no()) {
 			return $functionReflection->getThrowType();
 		}
 

@@ -168,3 +168,8 @@ new class implements RequiredInterface {
 new class {
 	use ValidPsalmTrait;
 };
+
+/**
+ * @phpstan-require-implements RequiredInterface|TypeDoesNotExist
+ */
+trait InvalidTraitWithUnknown {}

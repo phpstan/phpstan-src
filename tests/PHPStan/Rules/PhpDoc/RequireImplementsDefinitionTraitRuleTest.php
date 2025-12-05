@@ -62,6 +62,11 @@ class RequireImplementsDefinitionTraitRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-require-implements contains non-object type *NEVER*.',
 				34,
 			],
+			[
+				'PHPDoc tag @phpstan-require-implements contains unknown class IncompatibleRequireImplements\TypeDoesNotExist.',
+				175,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		];
 
 		$this->analyse([__DIR__ . '/data/incompatible-require-implements.php'], $expectedErrors);

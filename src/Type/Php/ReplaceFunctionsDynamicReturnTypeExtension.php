@@ -107,9 +107,7 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 					new ArrayType(new MixedType(), new MixedType()),
 					$scope->getType($functionCall->getArgs()[1]->value),
 				);
-				if ($secondArgumentType->isArray()->yes()) {
-					$replaceArgumentType = $secondArgumentType->getIterableValueType();
-				}
+				$replaceArgumentType = $secondArgumentType->getIterableValueType();
 			}
 		}
 

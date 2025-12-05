@@ -105,7 +105,7 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 				// `strtr` has two signatures: `strtr($string1, $string2, $string3)` and `strtr($string1, $array)`
 				$secondArgumentType = TypeCombinator::intersect(
 					new ArrayType(new MixedType(), new MixedType()),
-					$scope->getType($functionCall->getArgs()[1]->value)
+					$scope->getType($functionCall->getArgs()[1]->value),
 				);
 				if ($secondArgumentType->isArray()->yes()) {
 					$replaceArgumentType = $secondArgumentType->getIterableValueType();

@@ -210,4 +210,20 @@ class HelloWorld
 			}
 		}
 	}
+
+	public function countMaybeCountable(array $arr, bool $b, int $i) {
+		$c = rand(0,1) ? $arr : $b;
+		assertType('array|bool', $c);
+		assertType('int<0, max>', count($c, $i));
+
+		if ($arr === []) {
+			return;
+		}
+		assertType('int<1, max>', count($arr, $i));
+
+		$c = rand(0,1) ? $arr : $b;
+		assertType('non-empty-array|bool', $c);
+		assertType('int<0, max>', count($c, $i));
+
+	}
 }

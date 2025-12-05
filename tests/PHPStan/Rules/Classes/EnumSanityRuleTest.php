@@ -95,7 +95,7 @@ class EnumSanityRuleTest extends RuleTestCase
 				110,
 			],
 			[
-				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value.',
+				'Enum EnumSanity\EnumWithValueButNotBacked is not backed, but case FOO has value 1.',
 				114,
 			],
 			[
@@ -146,24 +146,32 @@ class EnumSanityRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-13768.php'], [
 			[
-				'Enum Bug13768\Order is not backed, but case A has value.',
+				'Enum Bug13768\Order is not backed, but case A has value 1.5.',
 				7,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case B has value.',
+				'Enum Bug13768\Order is not backed, but case B has value 2.5.',
 				8,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case C has value.',
+				'Enum Bug13768\Order is not backed, but case C has value 3.',
 				9,
 			],
 			[
-				'Enum Bug13768\Order is not backed, but case D has value.',
+				'Enum Bug13768\Order is not backed, but case D has value 3.',
 				10,
 			],
 			[
+				'Enum Bug13768\Order is not backed, but case E has value.',
+				11,
+			],
+			[
+				'Enum Bug13768\Order is not backed, but case F has value.',
+				12,
+			],
+			[
 				'Enum Bug13768\Backed has duplicate value 1 for cases One, Two.',
-				18,
+				20,
 			],
 		]);
 	}

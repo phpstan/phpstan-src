@@ -8,6 +8,8 @@ enum Order {
 	case B = 2.5;
 	case C = 3;
 	case D = '3';
+	case E = false;
+	case F = Foo::A;
 }
 
 class Foo

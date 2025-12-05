@@ -53,7 +53,6 @@ use function implode;
 use function in_array;
 use function is_int;
 use function ksort;
-use function max;
 use function md5;
 use function sprintf;
 use function strcasecmp;

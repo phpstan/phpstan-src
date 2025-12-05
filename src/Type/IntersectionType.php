@@ -683,17 +683,17 @@ class IntersectionType implements CompoundType
 	{
 		$arraySize = $this->intersectTypes(static fn (Type $type): Type => $type->getArraySize());
 
-		if ($arraySize instanceof IntegerRangeType) {
-			$knownOffsets = [];
-			foreach ($this->types as $type) {
-				if (!($type instanceof HasOffsetValueType) && !($type instanceof HasOffsetType)) {
-					continue;
-				}
-
-				$knownOffsets[$type->getOffsetType()->getValue()] = true;
+		$knownOffsets = [];
+		foreach ($this->types as $type) {
+			if (!($type instanceof HasOffsetValueType) && !($type instanceof HasOffsetType)) {
+				continue;
 			}
 
-			return IntegerRangeType::fromInterval(max(count($knownOffsets), $arraySize->getMin()), $arraySize->getMax());
+			$knownOffsets[$type->getOffsetType()->getValue()] = true;
+		}
+
+		if ($knownOffsets !== []) {
+			return TypeCombinator::intersect($arraySize, IntegerRangeType::fromInterval(count($knownOffsets), null));
 		}
 
 		return $arraySize;

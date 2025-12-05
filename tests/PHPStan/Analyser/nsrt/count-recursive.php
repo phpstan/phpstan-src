@@ -130,6 +130,24 @@ class HelloWorld
 		}
 	}
 
+	/** @param arary<int> $array */
+	public function countListRecursiveOnUnionOfRanges($array): void
+	{
+		if (!array_key_exists(5, $array)) {
+			return;
+		}
+		assertType('non-empty-array&hasOffset(5)', $array);
+		assertType('int<1, max>', count($array));
+
+		if (
+			(count($array) > 2 && count($array) < 5)
+			|| (count($array) > 20 && count($array) < 50)
+		) {
+			assertType('int<3, 4>|int<21, 49>', count($array));
+		}
+	}
+
+
 	public function countConstantArray(array $anotherArray): void {
 		$arr = [1, 2, 3, [4, 5]];
 		assertType('4', count($arr));
@@ -174,6 +192,21 @@ class HelloWorld
 					assertType('non-empty-array&hasOffset(15)&hasOffset(5)', $array);
 					assertType('int<2, max>', count($array));
 				}
+			}
+		}
+	}
+
+	public function unionIntegerCountAfterKeyExists(array $array, int $i): void {
+		if ($array === []) {
+			return;
+		}
+
+		assertType('non-empty-array', $array);
+		if (count($array) === 3 || count($array) === 4) {
+			assertType('3|4', count($array));
+			if (array_key_exists(5, $array)) {
+				assertType('non-empty-array&hasOffset(5)', $array);
+				assertType('3|4', count($array));
 			}
 		}
 	}

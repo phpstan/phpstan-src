@@ -126,3 +126,14 @@ function returnsTrueNoPhpdoc(): bool {
 function returnsFalseNoPhpdoc(): bool {
 	return false;
 }
+
+function returnsTrueUnionReturn(): int|bool {
+	return true;
+}
+
+/**
+ * @return int|bool
+ */
+function returnsTruePhpdocUnionReturn() {
+	return true;
+}

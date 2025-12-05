@@ -94,6 +94,14 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 				'Function Bug13384c\doFooPhpdoc2() never returns true so the return type can be changed to false.',
 				100,
 			],
+			[
+				'Function Bug13384c\returnsTrueUnionReturn() never returns int so it can be removed from the return type.',
+				130,
+			],
+			[
+				'Function Bug13384c\returnsTruePhpdocUnionReturn() never returns int so it can be removed from the return type.',
+				137,
+			],
 		]);
 	}
 
@@ -116,7 +124,16 @@ class TooWideFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug13384cOff(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-13384c.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13384c.php'], [
+			[
+				'Function Bug13384c\returnsTrueUnionReturn() never returns int so it can be removed from the return type.',
+				130,
+			],
+			[
+				'Function Bug13384c\returnsTruePhpdocUnionReturn() never returns int so it can be removed from the return type.',
+				137,
+			],
+		]);
 	}
 
 	public function testNestedTooWideType(): void

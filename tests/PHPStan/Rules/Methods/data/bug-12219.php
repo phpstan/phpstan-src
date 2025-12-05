@@ -52,3 +52,26 @@ class Bug2
 		$this->foo($class, $value);
 	}
 }
+
+class Bug3
+{
+	/**
+	 * @template T of \UnitEnum
+	 * @param class-string<T> $class
+	 * @param value-of<T> $value
+	 */
+	public function foo(string $class, mixed $value): void
+	{
+	}
+
+	/**
+	 * @template Q of \UnitEnum
+	 * @param class-string<Q> $class
+	 * @param value-of<Q> $value
+	 */
+	public function bar(string $class, mixed $value): void
+	{
+		// Parameter #2 $value of static method Bug::foo() contains unresolvable type.
+		$this->foo($class, $value);
+	}
+}

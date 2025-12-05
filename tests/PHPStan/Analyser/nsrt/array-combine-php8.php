@@ -147,3 +147,18 @@ function bug11819(): void
 	$types[] = 'foo';
 	assertType('array{1: false, 2: false, 3: false, 4: \'foo\'}', $types);
 }
+
+function withMixed(mixed $mixed1, mixed $mixed2)
+{
+	assertType('array', array_combine($mixed1, $mixed2));
+}
+
+/**
+ * @param 1|true $oneOrBool
+ */
+function withUnionAsKey(int|bool $oneOrBool)
+{
+	$keys = [$oneOrBool];
+
+	assertType("array{1: 'bar'}", array_combine($keys, ['bar']));
+}

@@ -46,8 +46,8 @@ class HelloWorld
 	 */
 	public function updateObjectShape($entity): void
 	{
-		assertType('class-string', get_class($entity));
+		assertType('class-string<object{foo: Bug4890\HelloWorld, bar: int, baz?: string}>', get_class($entity));
 		assert(property_exists($entity, 'foo'));
-		assertType('class-string', get_class($entity));
+		assertType('class-string<object{foo: Bug4890\HelloWorld, bar: int, baz?: string}>', get_class($entity));
 	}
 }

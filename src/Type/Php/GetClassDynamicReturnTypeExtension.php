@@ -14,7 +14,6 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
@@ -65,10 +64,6 @@ final class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 				if ($type instanceof EnumCaseObjectType) {
 					return new GenericClassStringType(new ObjectType($type->getClassName()));
-				}
-
-				if ($type instanceof ObjectShapeType) {
-					return new ClassStringType();
 				}
 
 				$isObject = $type->isObject();

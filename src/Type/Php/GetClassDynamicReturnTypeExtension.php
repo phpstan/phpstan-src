@@ -10,15 +10,8 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\Enum\EnumCaseObjectType;
-use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
@@ -62,27 +55,12 @@ final class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnT
 					return $traverse($type);
 				}
 
-				if ($type instanceof EnumCaseObjectType) {
-					return new GenericClassStringType(new ObjectType($type->getClassName()));
-				}
-
 				$isObject = $type->isObject();
 				if ($isObject->no()) {
 					return new ConstantBooleanType(false);
 				}
 
-				if ($type instanceof StaticType) {
-					$objectType = $type->getStaticObjectType();
-				} else {
-					$objectType = TypeCombinator::intersect($type, new ObjectWithoutClassType());
-				}
-
-				if (!$objectType instanceof TemplateType && $objectType instanceof ObjectWithoutClassType) {
-					$classStringType = new ClassStringType();
-				} else {
-					$classStringType = new GenericClassStringType($objectType);
-				}
-
+				$classStringType = $type->getClassStringType();
 				if ($isObject->yes()) {
 					return $classStringType;
 				}

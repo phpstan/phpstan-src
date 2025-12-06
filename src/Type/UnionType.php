@@ -449,6 +449,11 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isObject());
 	}
 
+	public function getClassStringType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->getClassStringType());
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isEnum());

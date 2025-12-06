@@ -12,7 +12,7 @@ class HelloWorld
 	{
 		assertType('class-string', get_class($entity));
 		assert(method_exists($entity, 'getId'));
-		assertType('class-string<object&hasMethod(getId)>', get_class($entity));
+		assertType('class-string<hasMethod(getId)>', get_class($entity));
 
 		if ($entity instanceof Proxy) {
 			assertType('class-string<Bug4890\Proxy&hasMethod(getId)>', get_class($entity));
@@ -29,7 +29,7 @@ class HelloWorld
 	{
 		assertType('class-string', get_class($entity));
 		assert(property_exists($entity, 'myProp'));
-		assertType('class-string<object&hasProperty(myProp)>', get_class($entity));
+		assertType('class-string<hasProperty(myProp)>', get_class($entity));
 
 		if ($entity instanceof Proxy) {
 			assertType('class-string<Bug4890\Proxy&hasProperty(myProp)>', get_class($entity));

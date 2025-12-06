@@ -1316,7 +1316,7 @@ function arrayOfGenericClassStrings(array $a): void
 function getClassOnTemplateType($a, $b, $c, $d, $object, $mixed, $tObject)
 {
 	assertType(
-		'class-string<object&T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|false',
+		'class-string<T (function PHPStan\Generics\FunctionsAssertType\getClassOnTemplateType(), argument)>|false',
 		get_class($a)
 	);
 	assertType(

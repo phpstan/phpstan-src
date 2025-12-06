@@ -89,6 +89,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isObject();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return $this->resolve()->getClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return $this->resolve()->isEnum();

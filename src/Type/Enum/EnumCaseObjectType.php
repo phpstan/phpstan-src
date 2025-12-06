@@ -18,6 +18,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -220,6 +221,11 @@ class EnumCaseObjectType extends ObjectType
 	public function getEnumCaseObject(): ?EnumCaseObjectType
 	{
 		return $this;
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType(new ObjectType($this->getClassName()));
 	}
 
 	public function toPhpDocNode(): TypeNode

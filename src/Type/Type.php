@@ -68,6 +68,8 @@ interface Type
 	/** @return list<ClassReflection> */
 	public function getObjectClassReflections(): array;
 
+	public function getClassStringType(): Type;
+
 	/**
 	 * Returns the object type for a class-string or literal class name string.
 	 * For non-class-string types, returns ErrorType.

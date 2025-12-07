@@ -55,7 +55,7 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 			}
 
 			$outputTypes[] = new IntersectionType([
-				new ArrayType($itemType, IntegerRangeType::fromInterval(1, null)),
+				new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null)),
 				new NonEmptyArrayType(),
 			]);
 		}

@@ -46,3 +46,7 @@ assertType('non-empty-array<1|\'string\', int<1, max>>', $stringable);
 $scalar = array_count_values([true, 1.0, false, 0.0, null]);
 
 assertType('array{}', $scalar);
+
+$intAsString = array_count_values(['1', '2', '2', '3']);
+
+assertType("non-empty-array<1|2|3, int<1, max>>", $intAsString);

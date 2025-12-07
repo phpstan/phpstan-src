@@ -23,7 +23,7 @@
 		"nette/schema": "^1.2.2",
 		"nette/utils": "^3.2.5",
 		"nikic/php-parser": "^5.6.2",
-		"ondram/ci-detector": "^3.4.0",
+		"ondram/ci-detector": "^4.0",
 		"ondrejmirtes/better-reflection": "6.65.0.0",
 		"ondrejmirtes/composer-attribute-collector": "^1.1.1",
 		"ondrejmirtes/php-merge": "^4.1",

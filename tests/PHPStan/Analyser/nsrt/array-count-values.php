@@ -41,3 +41,8 @@ class StringableObject
 $stringable = array_count_values([new StringableObject(), 'string', 1]);
 
 assertType('non-empty-array<1|\'string\', int<1, max>>', $stringable);
+
+// Booleans, floats and null are ignored by array_count_values even if they can be cast to array key.
+$scalar = array_count_values([true, 1.0, false, 0.0, null]);
+
+assertType('array{}', $scalar);

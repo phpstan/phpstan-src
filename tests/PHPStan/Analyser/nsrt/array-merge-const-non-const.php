@@ -65,6 +65,16 @@ function hasOffsetKeys(array $array, array $arr2): void {
 	}
 }
 
+function maybeHasOffsetKeys(array $array): void {
+	$arr2 = [];
+	if (rand(0,1)) {
+		$arr2 ['ab'] = 'def';
+	}
+
+	assertType("array", array_merge($arr2, $array));
+	assertType("array", array_merge($array, $arr2));
+}
+
 function hasOffsetValueKeys(array $hasB, array $mixedArray, array $hasC): void {
 	$hasB['b'] = 123;
 	$hasC['c'] = 'def';

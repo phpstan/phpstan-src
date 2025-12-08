@@ -26,6 +26,7 @@ function doFooBar(array $array): void {
 }
 
 function doFooInts(array $array): void {
+	// int keys will be renumbered therefore we can't reason about them in case we don't know all arrays involved
 	assertType(
 		"non-empty-array&hasOffsetValue('a', 1)&hasOffsetValue('c', 'e')",
 		array_merge([1 => 'd'], $array, ['a' => 1, 3 => false, 'c' => 'e'])

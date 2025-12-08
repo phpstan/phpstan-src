@@ -103,8 +103,9 @@ final class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunct
 
 		$offsetTypes = [];
 		foreach ($argTypes as $argType) {
-			if ($argType->isConstantArray()->yes()) {
-				foreach ($argType->getConstantArrays() as $constantArray) {
+			$constArrays = $argType->getConstantArrays();
+			if ($constArrays !== []) {
+				foreach ($constArrays as $constantArray) {
 					foreach ($constantArray->getKeyTypes() as $keyType) {
 						$hasOffsetValue = TrinaryLogic::createFromBoolean($argType->hasOffsetValueType($keyType)->yes());
 						$offsetTypes[$keyType->getValue()] = [

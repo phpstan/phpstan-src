@@ -64,7 +64,7 @@
 		"phpstan/phpstan-nette": "^2.0",
 		"phpstan/phpstan-phpunit": "^2.0.8",
 		"phpstan/phpstan-strict-rules": "^2.0",
-		"phpunit/phpunit": "^11.5.23 || ^12",
+		"phpunit/phpunit": "^11.5.23 || ^12.5.2",
 		"shipmonk/composer-dependency-analyser": "^1.5",
 		"shipmonk/dead-code-detector": "^0.12.0",
 		"shipmonk/name-collision-detector": "^2.0"

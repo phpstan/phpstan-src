@@ -226,7 +226,7 @@ jobs:
       - uses: ./build-infection/.github/actions/setup-php
         with:
           php-version: "${{ matrix.php-version }}"
-          extensions: ds,mbstring
+          php-extensions: ds,mbstring
 
       - uses: "ramsey/composer-install@v3"
 

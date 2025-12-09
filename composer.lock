@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6988e269ffb0526d70d88c50dd488e0",
+    "content-hash": "3d919d524c799e26f9f7a91232600138",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2318,27 +2318,27 @@
         },
         {
             "name": "ondrejmirtes/php-merge",
-            "version": "4.1.1",
+            "version": "4.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/php-merge.git",
-                "reference": "43d30f9121c9a8762d4841a2350720a7fb2b6b44"
+                "reference": "0c661fbe3efde0619f3652688862ed65f1f34dd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/php-merge/zipball/43d30f9121c9a8762d4841a2350720a7fb2b6b44",
-                "reference": "43d30f9121c9a8762d4841a2350720a7fb2b6b44",
+                "url": "https://api.github.com/repos/ondrejmirtes/php-merge/zipball/0c661fbe3efde0619f3652688862ed65f1f34dd1",
+                "reference": "0c661fbe3efde0619f3652688862ed65f1f34dd1",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0",
-                "sebastian/diff": "^2.0|^3.0|^4.0|^5.0|^6.0"
+                "sebastian/diff": "^2.0|^3.0|^4.0|^5.0|^6.0|^7.0"
             },
             "require-dev": {
                 "escapestudios/symfony2-coding-standard": "^3.5",
                 "phpstan/phpstan": "~1",
                 "phpstan/phpstan-deprecation-rules": "^1.0",
-                "phpunit/phpunit": "~6|~7|~8|~9|~10",
+                "phpunit/phpunit": "~6|~7|~8|~9|~10|~11|~12",
                 "squizlabs/php_codesniffer": "~3",
                 "symplify/git-wrapper": "^9.1|^10.0"
             },
@@ -2370,9 +2370,9 @@
                 "php-merge"
             ],
             "support": {
-                "source": "https://github.com/ondrejmirtes/php-merge/tree/4.1.1"
+                "source": "https://github.com/ondrejmirtes/php-merge/tree/4.1.2"
             },
-            "time": "2025-06-10T09:58:42+00:00"
+            "time": "2025-12-09T08:32:19+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

@@ -276,7 +276,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 				$actual = $args[3];
 
 				if ($expected !== $actual) {
-					$failures[] = sprintf("Line %d:\nExpected: %s\nActual:   %s\n", $args[4], $expected, $actual);
+					$failures[] = sprintf("Line %d:\nExpected: %s\nActual:   %s\n", $args[4], (string) $expected, $actual);
 				}
 			} elseif ($args[0] === 'variableCertainty') {
 				$file = $args[1];

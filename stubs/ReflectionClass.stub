@@ -24,6 +24,11 @@ class ReflectionClass
 	public function getName() : string;
 
 	/**
+	 * @return non-empty-string
+	 */
+	public function getShortName() : string;
+
+	/**
 	 * @param mixed ...$args
 	 *
 	 * @return T

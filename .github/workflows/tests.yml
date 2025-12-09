@@ -237,7 +237,7 @@ jobs:
       - name: "Upgrade PHPUnit with Paratest to speedup coverage generation"
         shell: bash
         run: |
-          composer require --dev phpunit/phpunit:^12 brianium/paratest --update-with-dependencies --ignore-platform-reqs --working-dir=tests
+          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16  --update-with-dependencies --ignore-platform-reqs --working-dir=tests
           composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
       - uses: "ramsey/composer-install@v3"
@@ -271,6 +271,7 @@ jobs:
           php -d pcov.enabled=1 tests/vendor/bin/paratest \
             --passthru-php="'-d' 'pcov.enabled=1'" \
             --coverage-xml=tmp/coverage/coverage-xml --log-junit=tmp/coverage/junit.xml
+            --exclude-source-from-xml-coverage
 
       - name: "Run infection"
         run: |

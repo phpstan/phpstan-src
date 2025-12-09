@@ -77,18 +77,3 @@ parameters:
 			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$constantNodes\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
-
-		-
-			message: '#^Parameter \#3 of function sprintf is expected to be string by placeholder \#2 \("%%s"\), string\|false given\.$#'
-			count: 1
-			path: ../src/Cache/FileCacheStorage.php
-
-		-
-			message: '#^Parameter \#3 of function sprintf is expected to be string by placeholder \#2 \("%%s"\), string\|false given\.$#'
-			count: 1
-			path: ../src/Rules/Cast/InvalidCastRule.php
-
-		-
-			message: '#^Parameter \#2 of function sprintf is expected to be string by placeholder \#1 \("%%s"\), string\|false given\.$#'
-			count: 1
-			path: ../src/Rules/ClassForbiddenNameCheck.php

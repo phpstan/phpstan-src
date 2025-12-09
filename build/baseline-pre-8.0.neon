@@ -113,3 +113,18 @@ parameters:
 			identifier: parameter.phpDocType
 			count: 1
 			path: ../src/Reflection/ClassReflectionFactory.php
+
+		-
+			message: '#^Parameter \#3 of function sprintf is expected to be string by placeholder \#2 \("%%s"\), string\|false given\.$#'
+			count: 1
+			path: ../src/Cache/FileCacheStorage.php
+
+		-
+			message: '#^Parameter \#3 of function sprintf is expected to be string by placeholder \#2 \("%%s"\), string\|false given\.$#'
+			count: 1
+			path: ../src/Rules/Cast/InvalidCastRule.php
+
+		-
+			message: '#^Parameter \#2 of function sprintf is expected to be string by placeholder \#1 \("%%s"\), string\|false given\.$#'
+			count: 1
+			path: ../src/Rules/ClassForbiddenNameCheck.php

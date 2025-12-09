@@ -10,6 +10,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 class CachedParserTest extends PHPStanTestCase
 {
@@ -21,7 +22,7 @@ class CachedParserTest extends PHPStanTestCase
 	): void
 	{
 		$parser = new CachedParser(
-			$this->getParserMock(),
+			$this->getParserStub(),
 			$cachedNodesByStringCountMax,
 		);
 
@@ -62,19 +63,19 @@ class CachedParserTest extends PHPStanTestCase
 		];
 	}
 
-	private function getParserMock(): Parser&MockObject
+	private function getParserStub(): Parser&Stub
 	{
-		$mock = $this->createMock(Parser::class);
+		$mock = $this->createStub(Parser::class);
 
-		$mock->method('parseFile')->willReturn([$this->getPhpParserNodeMock()]);
-		$mock->method('parseString')->willReturn([$this->getPhpParserNodeMock()]);
+		$mock->method('parseFile')->willReturn([$this->getPhpParserNodeStub()]);
+		$mock->method('parseString')->willReturn([$this->getPhpParserNodeStub()]);
 
 		return $mock;
 	}
 
-	private function getPhpParserNodeMock(): Node&MockObject
+	private function getPhpParserNodeStub(): Node&Stub
 	{
-		return $this->createMock(Node::class);
+		return $this->createStub(Node::class);
 	}
 
 	public function testParseTheSameFileWithDifferentMethod(): void

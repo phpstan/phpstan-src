@@ -76,7 +76,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
-		$scope = $this->createMock(Scope::class);
+		$scope = $this->createStub(Scope::class);
 
 		foreach ($throwsAnnotations as $methodName => $type) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);

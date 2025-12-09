@@ -38,7 +38,7 @@ class IntersectionTypeMethodReflectionTest extends PHPStanTestCase
 
 	private function createDeprecatedMethod(TrinaryLogic $deprecated, ?string $deprecationText): ExtendedMethodReflection
 	{
-		$method = $this->createMock(ExtendedMethodReflection::class);
+		$method = $this->createStub(ExtendedMethodReflection::class);
 		$method->method('isDeprecated')->willReturn($deprecated);
 		$method->method('getDeprecatedDescription')->willReturn($deprecationText);
 		return $method;

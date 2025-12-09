@@ -62,7 +62,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 
 		$symfonyOutput = new SymfonyOutput(
 			$output,
-			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createMock(InputInterface::class), $output)),
+			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createStub(InputInterface::class), $output)),
 		);
 
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
@@ -88,7 +88,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			null,
 			null,
 			null,
-			$this->createMock(InputInterface::class),
+			$this->createStub(InputInterface::class),
 		);
 		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
 

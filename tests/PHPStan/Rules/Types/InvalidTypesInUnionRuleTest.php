@@ -31,7 +31,7 @@ class InvalidTypesInUnionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('8.0')]
+	#[RequiresPhp('>=8.0')]
 	public function testRuleOnUnionWithMixed(): void
 	{
 		$this->analyse([__DIR__ . '/data/invalid-union-with-mixed.php'], [
@@ -70,7 +70,7 @@ class InvalidTypesInUnionRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('8.1')]
+	#[RequiresPhp('>=8.1')]
 	public function testRuleOnUnionWithNever(): void
 	{
 		$this->analyse([__DIR__ . '/data/invalid-union-with-never.php'], [

@@ -58,13 +58,13 @@ class FunctionFoo
 			assertType('int<1, max>', $x);
 		};
 
-		doFoo() |> fn ($x) => assertType('int<1, max>', $x);
+		doFoo() |> (fn ($x) => assertType('int<1, max>', $x));
 
 		doFoo() |> function (int $x) {
 			assertType('int<1, max>', $x);
 		};
 
-		doFoo() |> fn (int $x) => assertType('int<1, max>', $x);
+		doFoo() |> (fn (int $x) => assertType('int<1, max>', $x));
 	}
 
 	public function doBaz2(): void
@@ -144,16 +144,16 @@ class FunctionFoo
 				return true;
 			});
 		});
-		assertType('array<int<1, max>>', $ints |> fn ($x) => array_filter($x, function ($i) {
+		assertType('array<int<1, max>>', $ints |> (fn ($x) => array_filter($x, function ($i) {
 			assertType('int<1, max>', $i);
 
 			return true;
-		}));
-		assertType('array<int<1, max>>', $ints |> fn (array $x) => array_filter($x, function (int $i) {
+		})));
+		assertType('array<int<1, max>>', $ints |> (fn (array $x) => array_filter($x, function (int $i) {
 			assertType('int<1, max>', $i);
 
 			return true;
-		}));
+		})));
 		assertType('array<0|1|2, 1|2|3>', (function (array $x) {
 			assertType('array{1, 2, 3}', $x);
 			return array_filter($x, function (int $i) {
@@ -220,8 +220,8 @@ class FunctionFoo
 		assertType('null', null |> $this->doConditional(...));
 		assertType('int', 'foo' |> $this->doConditional(...));
 
-		assertType('null', null |> fn($x) => $this->doConditional($x));
-		assertType('int', 'foo' |> fn($x) => $this->doConditional($x));
+		assertType('null', null |> (fn($x) => $this->doConditional($x)));
+		assertType('int', 'foo' |> (fn($x) => $this->doConditional($x)));
 	}
 
 	/**
@@ -239,8 +239,8 @@ class FunctionFoo
 		assertType(stdClass::class, new stdClass() |> $this->doGenerics(...));
 		assertType(stdClass::class, new stdClass() |> $this->doGenerics(...));
 
-		assertType(stdClass::class, new stdClass() |> fn($x) => $this->doGenerics($x));
-		assertType(stdClass::class, new stdClass() |> fn($x) => $this->doGenerics($x));
+		assertType(stdClass::class, new stdClass() |> (fn($x) => $this->doGenerics($x)));
+		assertType(stdClass::class, new stdClass() |> (fn($x) => $this->doGenerics($x)));
 
 		assertType('null', null |> $this->doConditional(...) |> $this->doGenerics(...));
 		assertType('int', 'foo' |> $this->doConditional(...) |> $this->doGenerics(...));

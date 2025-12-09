@@ -45,7 +45,7 @@ Foo::canDiscard();
 (void) 5 |> ClassWithStaticSideEffects::staticMethod(...);
 (void) 5 |> Foo::canDiscard(...);
 
-5 |> fn ($x) => ClassWithStaticSideEffects::staticMethod($x);
-5 |> fn ($x) => Foo::canDiscard($x);
-(void) 5 |> fn ($x) => ClassWithStaticSideEffects::staticMethod($x);
-(void) 5 |> fn ($x) => Foo::canDiscard($x);
+5 |> (fn ($x) => ClassWithStaticSideEffects::staticMethod($x));
+5 |> (fn ($x) => Foo::canDiscard($x));
+(void) 5 |> (fn ($x) => ClassWithStaticSideEffects::staticMethod($x));
+(void) 5 |> (fn ($x) => Foo::canDiscard($x));

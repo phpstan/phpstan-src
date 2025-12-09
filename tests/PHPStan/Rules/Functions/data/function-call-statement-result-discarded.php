@@ -63,7 +63,7 @@ $canDiscardCb();
 (void) 5 |> withSideEffects(...);
 (void) 5 |> canDiscard(...);
 
-5 |> fn ($x) => withSideEffects($x);
-5 |> fn ($x) => canDiscard($x);
-(void) 5 |> fn ($x) => withSideEffects($x);
-(void) 5 |> fn ($x) => canDiscard($x);
+5 |> (fn ($x) => withSideEffects($x));
+5 |> (fn ($x) => canDiscard($x));
+(void) 5 |> (fn ($x) => withSideEffects($x));
+(void) 5 |> (fn ($x) => canDiscard($x));

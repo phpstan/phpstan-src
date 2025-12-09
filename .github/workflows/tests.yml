@@ -208,7 +208,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.2"
           - "8.3"
           - "8.4"
         operating-system: [ubuntu-latest]
@@ -230,10 +229,6 @@ jobs:
           extensions: ds,mbstring
 
       - uses: "ramsey/composer-install@v3"
-
-      - run: "composer config platform.php --unset"
-        with:
-          working-directory: "tests/"
 
       - uses: "ramsey/composer-install@v3"
         with:

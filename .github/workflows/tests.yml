@@ -201,7 +201,7 @@ jobs:
   mutation-testing:
     name: "Mutation Testing"
     runs-on: "ubuntu-latest"
-    needs: ["tests"]
+    #needs: ["tests"]
     if: github.event_name == 'pull_request'
 
     strategy:
@@ -238,7 +238,7 @@ jobs:
         shell: bash
         run: |
           composer require --dev phpunit/phpunit:^12 brianium/paratest --update-with-dependencies --ignore-platform-reqs --working-dir=tests
-          composer require --dev phpunit/phpunit:^12 --update-with-dependencies --ignore-platform-reqs
+          composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
       - uses: "ramsey/composer-install@v3"
         with:

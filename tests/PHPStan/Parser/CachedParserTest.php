@@ -9,7 +9,6 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 class CachedParserTest extends PHPStanTestCase

@@ -231,6 +231,10 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
+      - run: "composer config platform.php --unset"
+        with:
+          working-directory: "tests/"
+
       - uses: "ramsey/composer-install@v3"
         with:
           working-directory: "tests/"

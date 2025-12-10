@@ -51,12 +51,10 @@ jobs:
           ini-file: development
           ini-values: memory_limit=-1
 
-      - uses: "ramsey/composer-install@v3"
-
       - name: "Upgrade PHPUnit 12"
         shell: bash
         run: |
-          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16  --update-with-dependencies --ignore-platform-reqs --working-dir=tests
+          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16 --update-with-dependencies --ignore-platform-reqs --working-dir=tests
           composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
       - name: "Check PHP configuration"
@@ -276,7 +274,7 @@ jobs:
       - name: "Upgrade PHPUnit with Paratest to speedup coverage generation"
         shell: bash
         run: |
-          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16  --update-with-dependencies --ignore-platform-reqs --working-dir=tests
+          composer require --dev phpunit/phpunit:^12 brianium/paratest:^7.16 --update-with-dependencies --ignore-platform-reqs --working-dir=tests
           composer require --dev phpunit/phpunit:^12 sebastian/diff --update-with-dependencies --ignore-platform-reqs
 
       - uses: "ramsey/composer-install@v3"

@@ -63,7 +63,7 @@ jobs:
       - name: "Tests"
         run: "make tests"
 
-  tests-82:
+  tests-phpunit11:
     name: "Tests PHPUnit 11.x"
     runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 60

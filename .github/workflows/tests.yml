@@ -61,7 +61,7 @@ jobs:
         run: "vendor/bin/phpunit --check-php-configuration"
 
       - name: "Tests"
-        run: "XDEBUG_MODE=off php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage"
+        run: "php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage"
 
   tests-phpunit11:
     name: "Tests PHPUnit 11.x"

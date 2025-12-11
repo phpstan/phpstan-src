@@ -2,7 +2,6 @@
 
 namespace PHPStan\Dependency;
 
-use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use function array_values;
@@ -14,7 +13,6 @@ final class NodeDependencies
 	 * @param array<int, ClassReflection|FunctionReflection> $reflections
 	 */
 	public function __construct(
-		private FileHelper $fileHelper,
 		private array $reflections,
 		private ?RootExportedNode $exportedNode,
 	)

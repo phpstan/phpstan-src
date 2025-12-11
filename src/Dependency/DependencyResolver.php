@@ -492,7 +492,7 @@ final class DependencyResolver
 			}
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
+		return new NodeDependencies($dependenciesReflections, $this->exportedNodeResolver->resolve($scope->getFile(), $node));
 	}
 
 	public function resolveUsedTraitDependencies(InClassNode $inClassNode): NodeDependencies
@@ -502,7 +502,7 @@ final class DependencyResolver
 			$dependenciesReflections[] = $trait;
 		}
 
-		return new NodeDependencies($this->fileHelper, $dependenciesReflections, null);
+		return new NodeDependencies($dependenciesReflections, null);
 	}
 
 	private function considerArrayForCallableTest(Scope $scope, Array_ $arrayNode): bool

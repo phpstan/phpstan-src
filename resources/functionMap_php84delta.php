@@ -24,7 +24,6 @@ return [
 		'dba_delete' => ['bool', 'key'=>'string', 'handle'=>'Dba\Connection'],
 		'dba_exists' => ['bool', 'key'=>'string', 'handle'=>'Dba\Connection'],
 		'dba_fetch' => ['string|false', 'key'=>'string', 'skip'=>'int', 'handle'=>'Dba\Connection'],
-		'dba_fetch\'1' => ['string|false', 'key'=>'string', 'handle'=>'Dba\Connection'],
 		'dba_firstkey' => ['string|false', 'handle'=>'Dba\Connection'],
 		'dba_insert' => ['bool', 'key'=>'string', 'value'=>'string', 'handle'=>'Dba\Connection'],
 		'dba_nextkey' => ['string|false', 'handle'=>'Dba\Connection'],

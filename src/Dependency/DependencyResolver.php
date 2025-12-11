@@ -12,7 +12,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\FileHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InClassMethodNode;
@@ -38,7 +37,6 @@ final class DependencyResolver
 {
 
 	public function __construct(
-		private FileHelper $fileHelper,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
 		private FileTypeMapper $fileTypeMapper,

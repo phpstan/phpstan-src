@@ -842,7 +842,7 @@ class AnalyserTest extends PHPStanTestCase
 				$container,
 				new IgnoreLexer(),
 			),
-			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
+			new DependencyResolver($reflectionProvider, new ExportedNodeResolver($reflectionProvider, $fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new IgnoreErrorExtensionProvider(new NetteContainer(new Container([]))),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),

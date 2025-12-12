@@ -419,9 +419,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 					$deprecatedDescription = $deprecatedMessage;
 				}
 			}
-		}
-
-		if (!$isDeprecated) {
+		} elseif (!$isDeprecated) {
 			$isDeprecated = $constantReflection->isDeprecated();
 		}
 

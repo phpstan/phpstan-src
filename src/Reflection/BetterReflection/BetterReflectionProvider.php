@@ -78,7 +78,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 	/** @var ClassReflection[] */
 	private static array $anonymousClasses = [];
 
-	/** @var array<string, ConstantReflection> */
+	/** @var array<string, array<string, ConstantReflection>> */
 	private array $cachedConstants = [];
 
 	/**
@@ -375,14 +375,18 @@ final class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		$phpVersionType = null;
-		$cacheKey = $constantName;
+		$versionKey = 'current_version';
 		if ($namespaceAnswerer instanceof Scope) {
 			$phpVersionType = $namespaceAnswerer->getPhpVersion()->getType();
-			$cacheKey = $constantName . '-' . $phpVersionType->describe(VerbosityLevel::cache());
+			$versionKey = $phpVersionType->describe(VerbosityLevel::cache());
 		}
 
-		if (array_key_exists($cacheKey, $this->cachedConstants)) {
-			return $this->cachedConstants[$cacheKey];
+		if (!array_key_exists($versionKey, $this->cachedConstants)) {
+			$this->cachedConstants[$versionKey] = [];
+		}
+
+		if (array_key_exists($constantName, $this->cachedConstants[$versionKey])) {
+			return $this->cachedConstants[$versionKey][$constantName];
 		}
 
 		$constantReflection = $this->reflector->reflectConstant($constantName);
@@ -425,7 +429,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$isDeprecated = $constantReflection->isDeprecated();
 		}
 
-		return $this->cachedConstants[$cacheKey] = new RuntimeConstantReflection(
+		return $this->cachedConstants[$versionKey][$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
 			$fileName,

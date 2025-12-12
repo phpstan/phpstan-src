@@ -3674,6 +3674,16 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3396.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13881(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13881.php'], []);
+	}
+
 	public function testBug13511(): void
 	{
 		$this->checkThisOnly = false;

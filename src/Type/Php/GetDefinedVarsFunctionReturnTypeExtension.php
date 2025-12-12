@@ -35,6 +35,10 @@ final class GetDefinedVarsFunctionReturnTypeExtension implements DynamicFunction
 		$typeBuilder = ConstantArrayTypeBuilder::createEmpty();
 
 		foreach ($scope->getDefinedVariables() as $variable) {
+			if ($variable === 'this') {
+				continue;
+			}
+
 			$typeBuilder->setOffsetValueType(new ConstantStringType($variable), $scope->getVariableType($variable), false);
 		}
 

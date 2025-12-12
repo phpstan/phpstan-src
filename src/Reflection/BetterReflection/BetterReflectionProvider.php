@@ -418,6 +418,8 @@ final class BetterReflectionProvider implements ReflectionProvider
 					// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
 					$deprecatedDescription = $deprecatedMessage;
 				}
+			} elseif (!$isDeprecated) {
+				$isDeprecated = $constantReflection->isDeprecated();
 			}
 		} elseif (!$isDeprecated) {
 			$isDeprecated = $constantReflection->isDeprecated();

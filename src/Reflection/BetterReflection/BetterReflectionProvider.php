@@ -53,7 +53,9 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_key_first;
 use function array_map;
@@ -372,8 +374,15 @@ final class BetterReflectionProvider implements ReflectionProvider
 			throw new ConstantNotFoundException((string) $nameNode);
 		}
 
-		if (array_key_exists($constantName, $this->cachedConstants)) {
-			return $this->cachedConstants[$constantName];
+		$phpVersionType = null;
+		$cacheKey = $constantName;
+		if ($namespaceAnswerer instanceof Scope) {
+			$phpVersionType = $namespaceAnswerer->getPhpVersion()->getType();
+			$cacheKey = $constantName . '-' . $phpVersionType->describe(VerbosityLevel::cache());
+		}
+
+		if (array_key_exists($cacheKey, $this->cachedConstants)) {
+			return $this->cachedConstants[$cacheKey];
 		}
 
 		$constantReflection = $this->reflector->reflectConstant($constantName);
@@ -399,7 +408,11 @@ final class BetterReflectionProvider implements ReflectionProvider
 					$patch = $matches[3] ?? 0;
 					$versionId = sprintf('%d%02d%02d', $major, $minor, $patch);
 
-					$isDeprecated = $this->phpVersion->getVersionId() >= $versionId;
+					if ($phpVersionType !== null) {
+						$isDeprecated = IntegerRangeType::fromInterval((int) $versionId, null)->isSuperTypeOf($phpVersionType)->yes();
+					} else {
+						$isDeprecated = $this->phpVersion->getVersionId() >= $versionId;
+					}
 				} else {
 					// filter raw version number messages like in
 					// https://github.com/JetBrains/phpstorm-stubs/blob/9608c953230b08f07b703ecfe459cc58d5421437/filter/filter.php#L478
@@ -412,7 +425,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$isDeprecated = $constantReflection->isDeprecated();
 		}
 
-		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
+		return $this->cachedConstants[$cacheKey] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
 			$fileName,

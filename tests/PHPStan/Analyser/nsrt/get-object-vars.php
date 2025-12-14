@@ -9,6 +9,6 @@ use function PHPStan\Testing\assertType;
  */
 function getObjectVarsWithIntKeyTest(object $object): void
 {
-	assertType('array<array-key, mixed>', get_object_vars($object));
-	assertType('array<array-key, mixed>', get_object_vars(json_decode('{"1": "test"}')));
+	assertType('array<mixed>', get_object_vars($object));
+	assertType('array<mixed>', get_object_vars(json_decode('{"1": "test"}')));
 }

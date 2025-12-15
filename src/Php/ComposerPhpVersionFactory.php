@@ -2,8 +2,6 @@
 
 namespace PHPStan\Php;
 
-use Composer\Semver\VersionParser;
-use Nette\Utils\Strings;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\ComposerHelper;
@@ -11,7 +9,6 @@ use function count;
 use function end;
 use function is_string;
 use function min;
-use function sprintf;
 
 #[AutowiredService]
 final class ComposerPhpVersionFactory
@@ -46,21 +43,26 @@ final class ComposerPhpVersionFactory
 			return;
 		}
 
-		$parser = new VersionParser();
-		$constraint = $parser->parseConstraints($composerPhpVersion);
-
-		if (!$constraint->getLowerBound()->isZero()) {
-			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion(), false);
-
-			if ($minVersion !== null) {
-				$this->minVersion = new PhpVersion($minVersion->getVersionId());
+		$parser = new ComposerPhpVersionParser();
+		[$minVersion, $maxVersion] = $parser->parse($composerPhpVersion, static function (string $version, int $versionId, bool $isMaxVersion): PhpVersion {
+			if ($isMaxVersion && $version === '6.0.0.0-dev') {
+				$versionId = min($versionId, PhpVersionFactory::MAX_PHP5_VERSION);
+			} elseif ($isMaxVersion && $version === '8.0.0.0-dev') {
+				$versionId = min($versionId, PhpVersionFactory::MAX_PHP7_VERSION);
+			} else {
+				$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
 			}
+
+			return new PhpVersion($versionId);
+		});
+		if ($minVersion !== null) {
+			$this->minVersion = new PhpVersion($minVersion->getVersionId());
 		}
-		if ($constraint->getUpperBound()->isPositiveInfinity()) {
+		if ($maxVersion === null) {
 			return;
 		}
 
-		$this->maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion(), true);
+		$this->maxVersion = $maxVersion;
 	}
 
 	public function getMinVersion(): ?PhpVersion
@@ -97,29 +99,6 @@ final class ComposerPhpVersionFactory
 		}
 
 		return $composerPhpVersion;
-	}
-
-	private function buildVersion(string $version, bool $isMaxVersion): ?PhpVersion
-	{
-		$matches = Strings::match($version, '#^(\d+)\.(\d+)(?:\.(\d+))?#');
-		if ($matches === null) {
-			return null;
-		}
-
-		$major = $matches[1];
-		$minor = $matches[2];
-		$patch = $matches[3] ?? 0;
-		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
-
-		if ($isMaxVersion && $version === '6.0.0.0-dev') {
-			$versionId = min($versionId, PhpVersionFactory::MAX_PHP5_VERSION);
-		} elseif ($isMaxVersion && $version === '8.0.0.0-dev') {
-			$versionId = min($versionId, PhpVersionFactory::MAX_PHP7_VERSION);
-		} else {
-			$versionId = min($versionId, PhpVersionFactory::MAX_PHP_VERSION);
-		}
-
-		return new PhpVersion($versionId);
 	}
 
 }

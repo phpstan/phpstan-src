@@ -28,6 +28,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\AfterStaticMethodCall;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
@@ -4409,14 +4410,23 @@ final class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);
-		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprToInvalidate, $exprStringToInvalidate): bool {
 			if (
-				$exprStringToInvalidate === '$this'
+				($exprStringToInvalidate === '$this' || $exprToInvalidate instanceof AfterStaticMethodCall)
 				&& $node instanceof Name
 				&& (
 					in_array($node->toLowerString(), ['self', 'static', 'parent'], true)
 					|| ($this->getClassReflection() !== null && $this->getClassReflection()->is($this->resolveName($node)))
 				)
+			) {
+				return true;
+			}
+
+			if (
+				$exprToInvalidate instanceof AfterStaticMethodCall
+				&& $node instanceof MethodCall
+				&& $node->var instanceof Variable
+				&& $node->var->name === 'this'
 			) {
 				return true;
 			}

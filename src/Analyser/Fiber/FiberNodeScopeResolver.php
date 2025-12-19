@@ -6,7 +6,6 @@ use Fiber;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\ExpressionContext;
-use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -40,19 +39,19 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	}
 
 	/**
-	 * @param Fiber<mixed, ExpressionResult, null, ExpressionAnalysisRequest> $fiber
+	 * @param Fiber<mixed, Scope, null, BeforeScopeForExprRequest> $fiber
 	 */
 	private function runFiberForNodeCallback(
 		ExpressionResultStorage $storage,
 		Fiber $fiber,
-		?ExpressionAnalysisRequest $request,
+		?BeforeScopeForExprRequest $request,
 	): void
 	{
 		while (!$fiber->isTerminated()) {
-			if ($request instanceof ExpressionAnalysisRequest) {
-				$result = $storage->findResult($request->expr);
-				if ($result !== null) {
-					$request = $fiber->resume($result);
+			if ($request instanceof BeforeScopeForExprRequest) {
+				$beforeScope = $storage->findBeforeScope($request->expr);
+				if ($beforeScope !== null) {
+					$request = $fiber->resume($beforeScope);
 					continue;
 				}
 
@@ -79,9 +78,9 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	{
 		foreach ($storage->pendingFibers as $pending) {
 			$request = $pending['request'];
-			$result = $storage->findResult($request->expr);
+			$beforeScope = $storage->findBeforeScope($request->expr);
 
-			if ($result !== null) {
+			if ($beforeScope !== null) {
 				throw new ShouldNotHappenException('Pending fibers at the end should be about synthetic nodes');
 			}
 
@@ -93,8 +92,8 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 				new NoopNodeCallback(),
 				ExpressionContext::createTopLevel(),
 			);
-			if ($storage->findResult($request->expr) === null) {
-				throw new ShouldNotHappenException(sprintf('processExprNode should have stored the result of %s on line %s', get_class($request->expr), $request->expr->getStartLine()));
+			if ($storage->findBeforeScope($request->expr) === null) {
+				throw new ShouldNotHappenException(sprintf('processExprNode should have stored the beforeScope of %s on line %s', get_class($request->expr), $request->expr->getStartLine()));
 			}
 			$this->processPendingFibers($storage);
 

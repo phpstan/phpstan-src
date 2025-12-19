@@ -4,44 +4,38 @@ namespace PHPStan\Analyser;
 
 use Fiber;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\Fiber\ExpressionAnalysisRequest;
-use PHPStan\ShouldNotHappenException;
+use PHPStan\Analyser\Fiber\BeforeScopeForExprRequest;
 use SplObjectStorage;
-use function get_class;
-use function sprintf;
 
 final class ExpressionResultStorage
 {
 
 	/** @var SplObjectStorage<Expr, Scope> */
-	private SplObjectStorage $results;
+	private SplObjectStorage $scopes;
 
-	/** @var array<array{fiber: Fiber<mixed, Scope, null, ExpressionAnalysisRequest>, request: ExpressionAnalysisRequest}> */
+	/** @var array<array{fiber: Fiber<mixed, Scope, null, BeforeScopeForExprRequest>, request: BeforeScopeForExprRequest}> */
 	public array $pendingFibers = [];
 
 	public function __construct()
 	{
-		$this->results = new SplObjectStorage();
+		$this->scopes = new SplObjectStorage();
 	}
 
 	public function duplicate(): self
 	{
 		$new = new self();
-		$new->results->addAll($this->results);
+		$new->scopes->addAll($this->scopes);
 		return $new;
 	}
 
-	public function storeResult(Expr $expr, Scope $scope): void
+	public function storeBeforeScope(Expr $expr, Scope $scope): void
 	{
-		if (isset($this->results[$expr])) {
-			//throw new ShouldNotHappenException(sprintf('already stored %s on line %d', get_class($expr), $expr->getStartLine()));
-		}
-		$this->results[$expr] = $scope;
+		$this->scopes[$expr] = $scope;
 	}
 
-	public function findResult(Expr $expr): ?Scope
+	public function findBeforeScope(Expr $expr): ?Scope
 	{
-		return $this->results[$expr] ?? null;
+		return $this->scopes[$expr] ?? null;
 	}
 
 }

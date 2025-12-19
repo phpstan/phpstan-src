@@ -103,7 +103,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		}
 	}
 
-	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $result): void
+	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
 		$restartLoop = true;
 

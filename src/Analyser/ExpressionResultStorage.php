@@ -13,10 +13,10 @@ use function sprintf;
 final class ExpressionResultStorage
 {
 
-	/** @var SplObjectStorage<Expr, ExpressionResult> */
+	/** @var SplObjectStorage<Expr, Scope> */
 	private SplObjectStorage $results;
 
-	/** @var array<array{fiber: Fiber<mixed, ExpressionResult, null, ExpressionAnalysisRequest>, request: ExpressionAnalysisRequest}> */
+	/** @var array<array{fiber: Fiber<mixed, Scope, null, ExpressionAnalysisRequest>, request: ExpressionAnalysisRequest}> */
 	public array $pendingFibers = [];
 
 	public function __construct()
@@ -31,15 +31,15 @@ final class ExpressionResultStorage
 		return $new;
 	}
 
-	public function storeResult(Expr $expr, ExpressionResult $result): void
+	public function storeResult(Expr $expr, Scope $scope): void
 	{
 		if (isset($this->results[$expr])) {
-			throw new ShouldNotHappenException(sprintf('already stored %s on line %d', get_class($expr), $expr->getStartLine()));
+			//throw new ShouldNotHappenException(sprintf('already stored %s on line %d', get_class($expr), $expr->getStartLine()));
 		}
-		$this->results[$expr] = $result;
+		$this->results[$expr] = $scope;
 	}
 
-	public function findResult(Expr $expr): ?ExpressionResult
+	public function findResult(Expr $expr): ?Scope
 	{
 		return $this->results[$expr] ?? null;
 	}

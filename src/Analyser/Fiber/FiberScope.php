@@ -6,6 +6,7 @@ use Fiber;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\Scope;
 use PHPStan\Type\Type;
 
 final class FiberScope extends MutatingScope
@@ -41,12 +42,12 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
-		/** @var ExpressionResult $exprResult */
+		/** @var Scope $exprResult */
 		$exprResult = Fiber::suspend(
 			new ExpressionAnalysisRequest($node, $this),
 		);
 
-		return $exprResult->getBeforeScope()->toMutatingScope()->getType($node);
+		return $exprResult->toMutatingScope()->getType($node);
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -62,22 +63,22 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		/** @var ExpressionResult $exprResult */
+		/** @var Scope $exprResult */
 		$exprResult = Fiber::suspend(
 			new ExpressionAnalysisRequest($expr, $this),
 		);
 
-		return $exprResult->getBeforeScope()->toMutatingScope()->getNativeType($expr);
+		return $exprResult->toMutatingScope()->getNativeType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
 	{
-		/** @var ExpressionResult $exprResult */
+		/** @var Scope $exprResult */
 		$exprResult = Fiber::suspend(
 			new ExpressionAnalysisRequest($node, $this),
 		);
 
-		return $exprResult->getBeforeScope()->toMutatingScope()->getKeepVoidType($node);
+		return $exprResult->toMutatingScope()->getKeepVoidType($node);
 	}
 
 }

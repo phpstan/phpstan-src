@@ -344,15 +344,15 @@ class NodeScopeResolver
 
 	private function storeResult(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $result): void
 	{
-		$storage->storeResult($expr, $result);
-		$this->processPendingFibersForRequestedExpr($storage, $expr, $result);
+		$storage->storeResult($expr, $result->getBeforeScope());
+		$this->processPendingFibersForRequestedExpr($storage, $expr, $result->getBeforeScope());
 	}
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
 	}
 
-	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $result): void
+	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
 	}
 
@@ -2545,13 +2545,13 @@ class NodeScopeResolver
 		ExpressionContext $context,
 	): ExpressionResult
 	{
-		$existingExprResult = $storage->findResult($expr);
+		/*$existingExprResult = $storage->findResult($expr);
 		if ($existingExprResult !== null) {
 			if ($nodeCallback instanceof ShallowNodeCallback) {
 				return $existingExprResult;
 			}
 			throw new ShouldNotHappenException(sprintf('Expr %s on line %d has already been analysed', get_class($expr), $expr->getStartLine()));
-		}
+		}*/
 
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			if ($expr instanceof FuncCall) {

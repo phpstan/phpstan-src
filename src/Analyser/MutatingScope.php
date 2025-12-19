@@ -4816,7 +4816,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function mergeWith(?self $otherScope): self
 	{
-		if ($otherScope === null) {
+		if ($otherScope === null || $this === $otherScope) {
 			return $this;
 		}
 		$ourExpressionTypes = $this->expressionTypes;

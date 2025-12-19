@@ -5637,8 +5637,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if (!$variableTypeHolder->getType()->equals($otherVariableTypeHolders[$variableExprString]->getType())) {
 				return false;
 			}
-
-			unset($otherVariableTypeHolders[$variableExprString]);
 		}
 
 		return true;

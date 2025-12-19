@@ -71,7 +71,6 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
@@ -2410,9 +2409,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$functionName = $node->name->name;
 				}
 
-				if ($functionName !== null && $this->reflectionProvider->hasFunction($functionName, $this)) {
+				$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+				if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $this)) {
 					$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
-					$resolvedType = $this->getDynamicFunctionReturnType($parametersAcceptor, $node, $functionReflection);
+					$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
 					if ($resolvedType !== null) {
 						return $resolvedType;
 					}
@@ -2471,7 +2471,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 					return $cloneType;
 				}
-				$resolvedType = $this->getDynamicFunctionReturnType($parametersAcceptor, $normalizedNode, $functionReflection);
+				$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
 				if ($resolvedType !== null) {
 					return $resolvedType;
 				}
@@ -2483,23 +2483,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return new MixedType();
 	}
 
-	private function getDynamicFunctionReturnType(ParametersAcceptor $parametersAcceptor, FuncCall $node, FunctionReflection $functionReflection): ?Type
+	private function getDynamicFunctionReturnType(FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type
 	{
-		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-		if ($normalizedNode !== null) {
-			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
-				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
-					continue;
-				}
+		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
+			if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
+				continue;
+			}
 
-				$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
-					$functionReflection,
-					$node,
-					$this,
-				);
-				if ($resolvedType !== null) {
-					return $resolvedType;
-				}
+			$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
+				$functionReflection,
+				$normalizedNode,
+				$this,
+			);
+			if ($resolvedType !== null) {
+				return $resolvedType;
 			}
 		}
 

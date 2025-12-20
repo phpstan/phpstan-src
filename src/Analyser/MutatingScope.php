@@ -2525,12 +2525,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			$supportedFunctions[] = $dynamicFunctionReturnTypeExtension;
 			if ($resolvedType !== null) {
-				self::$functionReturnTypeExtensions[$functionName] = $supportedFunctions;
+				self::$functionReturnTypeExtensions[$functionName] ??= $supportedFunctions;
 				return $resolvedType;
 			}
 		}
 
-		self::$functionReturnTypeExtensions[$functionName] = $supportedFunctions;
+		self::$functionReturnTypeExtensions[$functionName] ??= $supportedFunctions;
 		return null;
 	}
 

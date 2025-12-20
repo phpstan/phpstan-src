@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 use function strtolower;
@@ -14,6 +15,9 @@ final class DynamicReturnTypeExtensionRegistry
 
 	/** @var DynamicStaticMethodReturnTypeExtension[][]|null */
 	private ?array $dynamicStaticMethodReturnTypeExtensionsByClass = null;
+
+	/** @var array<string, list<DynamicFunctionReturnTypeExtension>> */
+	private array $dynamicReturnTypeExtensionsByFunction = [];
 
 	/**
 	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
@@ -88,9 +92,23 @@ final class DynamicReturnTypeExtensionRegistry
 	/**
 	 * @return DynamicFunctionReturnTypeExtension[]
 	 */
-	public function getDynamicFunctionReturnTypeExtensions(): array
+	public function getDynamicFunctionReturnTypeExtensions(FunctionReflection $functionReflection): array
 	{
-		return $this->dynamicFunctionReturnTypeExtensions;
+		$functionName = $functionReflection->getName();
+		if (isset($this->dynamicReturnTypeExtensionsByFunction[$functionName])) {
+			return $this->dynamicReturnTypeExtensionsByFunction[$functionName];
+		}
+
+		$supportedFunctions = [];
+		foreach ($this->dynamicFunctionReturnTypeExtensions as $dynamicFunctionReturnTypeExtension) {
+			if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
+				continue;
+			}
+
+			$supportedFunctions[] = $dynamicFunctionReturnTypeExtension;
+		}
+
+		return $this->dynamicReturnTypeExtensionsByFunction[$functionName] ??= $supportedFunctions;
 	}
 
 }

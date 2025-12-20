@@ -98,6 +98,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
@@ -191,6 +192,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	private ?self $scopeWithPromotedNativeTypes = null;
 
 	private static int $resolveClosureTypeDepth = 0;
+
+	/** @var array<string, list<DynamicFunctionReturnTypeExtension>> */
+	private static array $functionReturnTypeExtensions = [];
 
 	/**
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
@@ -2500,7 +2504,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function getDynamicFunctionReturnType(FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type
 	{
-		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
+		$functionName = $functionReflection->getName();
+		if (isset(self::$functionReturnTypeExtensions[$functionName])) {
+			$extensions = self::$functionReturnTypeExtensions[$functionName];
+		} else {
+			$extensions = $this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions();
+		}
+
+		$supportedFunctions = [];
+		foreach ($extensions as $dynamicFunctionReturnTypeExtension) {
 			if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
 				continue;
 			}
@@ -2510,11 +2522,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$normalizedNode,
 				$this,
 			);
+
+			$supportedFunctions[] = $dynamicFunctionReturnTypeExtension;
 			if ($resolvedType !== null) {
+				self::$functionReturnTypeExtensions[$functionName] = $supportedFunctions;
 				return $resolvedType;
 			}
 		}
 
+		self::$functionReturnTypeExtensions[$functionName] = $supportedFunctions;
 		return null;
 	}
 

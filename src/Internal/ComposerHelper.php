@@ -21,9 +21,16 @@ final class ComposerHelper
 
 	private static ?string $phpstanVersion = null;
 
+	/** @var array<string, mixed[]> */
+	private static array $decodedCache = [];
+
 	/** @return array<string, mixed>|null */
 	public static function getComposerConfig(string $root): ?array
 	{
+		if (isset(self::$decodedCache[$root])) {
+			return self::$decodedCache[$root];
+		}
+
 		$composerJsonPath = self::getComposerJsonPath($root);
 		if ($composerJsonPath === null) {
 			return null;
@@ -32,7 +39,7 @@ final class ComposerHelper
 		try {
 			$composerJsonContents = FileReader::read($composerJsonPath);
 
-			return Json::decode($composerJsonContents, Json::FORCE_ARRAY);
+			return self::$decodedCache[$root] ??= Json::decode($composerJsonContents, Json::FORCE_ARRAY);
 		} catch (CouldNotReadFileException | JsonException) {
 			return null;
 		}

@@ -2,16 +2,12 @@
 
 namespace PHPStan\Php;
 
-use Nette\Utils\Json;
-use Nette\Utils\JsonException;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\CouldNotReadFileException;
-use PHPStan\File\FileReader;
+use PHPStan\Internal\ComposerHelper;
 use function count;
 use function end;
 use function is_array;
-use function is_file;
 use function is_int;
 use function is_string;
 
@@ -36,17 +32,12 @@ final class PhpVersionFactoryFactory
 	{
 		$composerPhpVersion = null;
 		if (count($this->composerAutoloaderProjectPaths) > 0) {
-			$composerJsonPath = end($this->composerAutoloaderProjectPaths) . '/composer.json';
-			if (is_file($composerJsonPath)) {
-				try {
-					$composerJsonContents = FileReader::read($composerJsonPath);
-					$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
-					$platformVersion = $composer['config']['platform']['php'] ?? null;
-					if (is_string($platformVersion)) {
-						$composerPhpVersion = $platformVersion;
-					}
-				} catch (CouldNotReadFileException | JsonException) {
-					// pass
+			$composerJsonPath = end($this->composerAutoloaderProjectPaths);
+			$composer = ComposerHelper::getComposerConfig($composerJsonPath);
+			if ($composer !== null) {
+				$platformVersion = $composer['config']['platform']['php'] ?? null;
+				if (is_string($platformVersion)) {
+					$composerPhpVersion = $platformVersion;
 				}
 			}
 		}

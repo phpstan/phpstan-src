@@ -227,7 +227,7 @@ final class ContainerFactory
 		array $loaderParameters,
 	): array
 	{
-		$neonAdapter = new NeonAdapter([]);
+		$neonAdapter = new NeonCachedFileReader([]);
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		$configArray = [];
@@ -257,7 +257,7 @@ final class ContainerFactory
 	 */
 	private static function getConfigFiles(
 		FileHelper $fileHelper,
-		NeonAdapter $neonAdapter,
+		NeonCachedFileReader $neonAdapter,
 		PhpAdapter $phpAdapter,
 		string $configFile,
 		array $loaderParameters,

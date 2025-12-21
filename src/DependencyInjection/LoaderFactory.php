@@ -24,7 +24,7 @@ final class LoaderFactory
 
 	public function createLoader(): Loader
 	{
-		$neonAdapter = new NeonAdapter($this->expandRelativePaths);
+		$neonAdapter = new NeonCachedFileReader($this->expandRelativePaths);
 
 		$loader = new NeonLoader($this->fileHelper, $this->generateBaselineFile);
 		$loader->addAdapter('dist', $neonAdapter);

@@ -2927,7 +2927,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = [$reflection, $parameter];
 
-		return $this->scopeFactory->create(
+		$functionScope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),

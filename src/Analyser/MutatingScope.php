@@ -177,7 +177,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
-	/** @var Type[] */
+	/** @var array<string, ExpressionTypeHolder> */
 	private array $resolvedTypes = [];
 
 	/** @var array<string, self> */
@@ -862,9 +862,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
+			$this->resolvedTypes[$key] = ExpressionTypeHolder::createYes($node, TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node)));
 		}
-		return $this->resolvedTypes[$key];
+		return $this->resolvedTypes[$key]->getType();
 	}
 
 	public function getScopeType(Expr $expr): Type

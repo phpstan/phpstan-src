@@ -2945,6 +2945,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+		$functionScope->resolvedTypes = $this->resolvedTypes;
+		return $functionScope;
 	}
 
 	public function popInFunctionCall(): self

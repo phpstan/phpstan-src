@@ -2954,7 +2954,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$stack = $this->inFunctionCallsStack;
 		array_pop($stack);
 
-		return $this->scopeFactory->create(
+		$parentScope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -2972,6 +2972,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+		$parentScope->resolvedTypes = $this->resolvedTypes;
+		return $parentScope;
 	}
 
 	/** @api */

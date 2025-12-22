@@ -499,7 +499,8 @@ final class ParametersAcceptorSelector
 			}
 
 			if ($parameter !== null && $scope instanceof MutatingScope) {
-				$scope = $scope->pushInFunctionCall(null, $parameter, true);
+				$rememberTypes = !$originalArg->value instanceof Node\Expr\Closure && !$originalArg->value instanceof Node\Expr\ArrowFunction;
+				$scope = $scope->pushInFunctionCall(null, $parameter, $rememberTypes);
 			}
 
 			$type = $scope->getType($originalArg->value);

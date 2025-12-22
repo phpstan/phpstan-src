@@ -5603,11 +5603,12 @@ class NodeScopeResolver
 				}
 			}
 
+			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			if ($calleeReflection !== null) {
-				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter, true);
+				$rememberTypes = !$originalArg->value instanceof Expr\Closure && !$originalArg->value instanceof Expr\ArrowFunction;
+				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter, $rememberTypes);
 			}
 
-			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			$this->callNodeCallback($nodeCallback, $originalArg, $scope, $storage);
 
 			$originalScope = $scope;

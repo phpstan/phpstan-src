@@ -4367,6 +4367,10 @@ class NodeScopeResolver
 			ksort($armNodes, SORT_NUMERIC);
 
 			$this->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scope, $storage);
+
+			if ($expr->cond instanceof AlwaysRememberedExpr) {
+				$expr->cond = $expr->cond->getExpr();
+			}
 		} elseif ($expr instanceof AlwaysRememberedExpr) {
 			$result = $this->processExprNode($stmt, $expr->getExpr(), $scope, $storage, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
@@ -4374,6 +4378,8 @@ class NodeScopeResolver
 			$impurePoints = $result->getImpurePoints();
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
+
+			$expr = $expr->getExpr();
 		} elseif ($expr instanceof Expr\Throw_) {
 			$hasYield = false;
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());

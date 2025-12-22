@@ -14,7 +14,6 @@ use PHPStan\File\FileReader;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
-use PHPStan\Fixable\UnwrapVirtualNodesVisitor;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
@@ -124,7 +123,6 @@ final class RuleErrorTransformer
 			$indentTraverser->traverse($fileNodes);
 
 			$cloningTraverser = new NodeTraverser();
-			$cloningTraverser->addVisitor(new UnwrapVirtualNodesVisitor());
 			$cloningTraverser->addVisitor(new CloningVisitor());
 
 			/** @var Stmt[] $newStmts */

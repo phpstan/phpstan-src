@@ -108,7 +108,7 @@ final class DynamicReturnTypeExtensionRegistry
 			$supportedFunctions[] = $dynamicFunctionReturnTypeExtension;
 		}
 
-		return $this->dynamicReturnTypeExtensionsByFunction[$functionName] ??= $supportedFunctions;
+		return $this->dynamicReturnTypeExtensionsByFunction[$functionName] = $supportedFunctions;
 	}
 
 }

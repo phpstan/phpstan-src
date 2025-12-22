@@ -2922,7 +2922,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/**
 	 * @param MethodReflection|FunctionReflection|null $reflection
 	 */
-	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter): self
+	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
 	{
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = [$reflection, $parameter];
@@ -2945,7 +2945,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		$functionScope->resolvedTypes = $this->resolvedTypes;
+
+		if ($rememberTypes) {
+			$functionScope->resolvedTypes = $this->resolvedTypes;
+		}
+
 		return $functionScope;
 	}
 
@@ -2972,7 +2976,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+
 		$parentScope->resolvedTypes = $this->resolvedTypes;
+
 		return $parentScope;
 	}
 

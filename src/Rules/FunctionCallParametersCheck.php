@@ -319,7 +319,8 @@ final class FunctionCallParametersCheck
 
 			if ($argumentValueType === null) {
 				if ($scope instanceof MutatingScope) {
-					$scope = $scope->pushInFunctionCall(null, $parameter);
+					$rememberTypes = !$argumentValue instanceof Expr\Closure && !$argumentValue instanceof Expr\ArrowFunction;
+					$scope = $scope->pushInFunctionCall(null, $parameter, $rememberTypes);
 				}
 				$argumentValueType = $scope->getType($argumentValue);
 

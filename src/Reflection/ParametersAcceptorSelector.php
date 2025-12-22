@@ -499,7 +499,7 @@ final class ParametersAcceptorSelector
 			}
 
 			if ($parameter !== null && $scope instanceof MutatingScope) {
-				$scope = $scope->pushInFunctionCall(null, $parameter);
+				$scope = $scope->pushInFunctionCall(null, $parameter, true);
 			}
 
 			$type = $scope->getType($originalArg->value);

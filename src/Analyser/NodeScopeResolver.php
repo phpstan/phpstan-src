@@ -5604,7 +5604,7 @@ class NodeScopeResolver
 			}
 
 			if ($calleeReflection !== null) {
-				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter);
+				$scope = $scope->pushInFunctionCall($calleeReflection, $parameter, true);
 			}
 
 			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;

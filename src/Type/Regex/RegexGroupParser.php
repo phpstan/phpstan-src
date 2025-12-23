@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_values;
 use function count;
 use function in_array;
@@ -44,7 +45,7 @@ final class RegexGroupParser
 
 	private static ?Parser $parser = null;
 
-	/** @var array<string, TreeNode> */
+	/** @var array<string, ?TreeNode> */
 	private static array $parsedAst = [];
 
 	public function __construct(
@@ -59,30 +60,39 @@ final class RegexGroupParser
 		/** @throws void */
 		self::$parser ??= Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
 
-		try {
-			Strings::match('', $regex);
-		} catch (RegexpException) {
-			// pattern is invalid, so let the RegularExpressionPatternRule report it
-			return null;
-		}
-
-		$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
-		foreach (self::NOT_SUPPORTED_MODIFIERS as $notSupportedModifier) {
-			if (str_contains($modifiers, $notSupportedModifier)) {
+		if (array_key_exists($regex, self::$parsedAst)) {
+			$ast = self::$parsedAst[$regex];
+			if ($ast === null) {
 				return null;
 			}
-		}
 
-		if (str_contains($modifiers, 'x')) {
-			// in freespacing mode the # character starts a comment and runs until the end of the line
-			$regex = preg_replace('/(?<!\?)#.*/', '', $regex) ?? '';
-		}
+			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
+		} else {
+			try {
+				Strings::match('', $regex);
+			} catch (RegexpException) {
+				// pattern is invalid, so let the RegularExpressionPatternRule report it
+				return self::$parsedAst[$regex] = null;
+			}
 
-		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
-		try {
-			$ast = self::$parsedAst[$rawRegex] ??= self::$parser->parse($rawRegex);
-		} catch (Exception) {
-			return null;
+			$modifiers = $this->regexExpressionHelper->getPatternModifiers($regex) ?? '';
+			foreach (self::NOT_SUPPORTED_MODIFIERS as $notSupportedModifier) {
+				if (str_contains($modifiers, $notSupportedModifier)) {
+					return self::$parsedAst[$regex] = null;
+				}
+			}
+
+			if (str_contains($modifiers, 'x')) {
+				// in freespacing mode the # character starts a comment and runs until the end of the line
+				$regex = preg_replace('/(?<!\?)#.*/', '', $regex) ?? '';
+			}
+
+			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
+			try {
+				$ast = self::$parsedAst[$regex] = self::$parser->parse($rawRegex);
+			} catch (Exception) {
+				return self::$parsedAst[$regex] = null;
+			}
 		}
 
 		$this->updateAlternationAstRemoveVerticalBarsAndAddEmptyToken($ast);

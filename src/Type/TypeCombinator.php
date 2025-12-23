@@ -201,7 +201,7 @@ final class TypeCombinator
 				unset($types[$i]);
 				continue;
 			}
-			
+
 			if ($types[$i]->isBoolean()->yes()) {
 				$hasGenericScalarTypes[ConstantBooleanType::class] = true;
 			} elseif ($types[$i]->isFloat()->yes()) {

@@ -2400,9 +2400,11 @@ final class InitializerExprTypeResolver
 		}
 
 		if (strtolower($constantName) === 'class') {
+			$reflectionProvider = $this->getReflectionProvider();
+
 			return TypeTraverser::map(
 				$constantClassType,
-				function (Type $type, callable $traverse): Type {
+				static function (Type $type, callable $traverse) use ($reflectionProvider): Type {
 					if ($type instanceof UnionType || $type instanceof IntersectionType) {
 						return $traverse($type);
 					}
@@ -2428,8 +2430,8 @@ final class InitializerExprTypeResolver
 							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
 						);
-					} elseif ($objectClassNames !== [] && $this->getReflectionProvider()->hasClass($objectClassNames[0])) {
-						$reflection = $this->getReflectionProvider()->getClass($objectClassNames[0]);
+					} elseif ($objectClassNames !== [] && $reflectionProvider->hasClass($objectClassNames[0])) {
+						$reflection = $reflectionProvider->getClass($objectClassNames[0]);
 						if ($reflection->isFinalByKeyword()) {
 							return new ConstantStringType($reflection->getName(), true);
 						}

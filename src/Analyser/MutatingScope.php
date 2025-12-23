@@ -3232,10 +3232,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	private function transformStaticType(Type $type): Type
 	{
 		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
-			if (!$this->isInClass()) {
-				return $type;
-			}
 			if ($type instanceof StaticType) {
+				if (!$this->isInClass()) {
+					return $type;
+				}
+
 				$classReflection = $this->getClassReflection();
 				$changedType = $type->changeBaseClass($classReflection);
 				if ($classReflection->isFinal() && !$type instanceof ThisType) {

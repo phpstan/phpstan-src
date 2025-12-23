@@ -284,7 +284,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	/**
 	 * @param mixed[] $expectedParameters
 	 */
-	static private function assertSignature(
+	private static function assertSignature(
 		array $expectedParameters,
 		Type $expectedReturnType,
 		Type $expectedNativeReturnType,

@@ -28,7 +28,7 @@ class ScopePhpVersionTest extends TypeInferenceTestCase
 	#[DataProvider('dataTestPhpVersion')]
 	public function testPhpVersion(string $expected, string $file): void
 	{
-		self::processFile($file, function (Node $node, Scope $scope) use ($expected): void {
+		self::processFile($file, static function (Node $node, Scope $scope) use ($expected): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}

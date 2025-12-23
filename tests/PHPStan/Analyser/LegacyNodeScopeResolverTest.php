@@ -38,7 +38,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testClassMethodScope(): void
 	{
-		self::processFile(__DIR__ . '/data/class.php', function (Node $node, Scope $scope): void {
+		self::processFile(__DIR__ . '/data/class.php', static function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9243,7 +9243,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	#[DataProvider('dataDeclareStrictTypes')]
 	public function testDeclareStrictTypes(string $file, bool $result): void
 	{
-		self::processFile($file, function (Node $node, Scope $scope) use ($result): void {
+		self::processFile($file, static function (Node $node, Scope $scope) use ($result): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}
@@ -9254,7 +9254,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function testEarlyTermination(): void
 	{
-		self::processFile(__DIR__ . '/data/early-termination.php', function (Node $node, Scope $scope): void {
+		self::processFile(__DIR__ . '/data/early-termination.php', static function (Node $node, Scope $scope): void {
 			if (!($node instanceof Exit_)) {
 				return;
 			}

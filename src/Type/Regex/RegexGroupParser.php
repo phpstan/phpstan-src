@@ -44,6 +44,9 @@ final class RegexGroupParser
 
 	private static ?Parser $parser = null;
 
+	/** @var array<string, TreeNode> */
+	private static array $parsedAst = [];
+
 	public function __construct(
 		private PhpVersion $phpVersion,
 		private RegexExpressionHelper $regexExpressionHelper,
@@ -77,7 +80,7 @@ final class RegexGroupParser
 
 		$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
 		try {
-			$ast = self::$parser->parse($rawRegex);
+			$ast = self::$parsedAst[$rawRegex] ??= self::$parser->parse($rawRegex);
 		} catch (Exception) {
 			return null;
 		}

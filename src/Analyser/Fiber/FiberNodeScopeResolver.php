@@ -80,6 +80,8 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
+		start:
+
 		foreach ($storage->pendingFibers as $pending) {
 			$request = $pending['request'];
 			$beforeScope = $storage->findBeforeScope($request->expr);
@@ -99,36 +101,31 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 			if ($storage->findBeforeScope($request->expr) === null) {
 				throw new ShouldNotHappenException(sprintf('processExprNode should have stored the beforeScope of %s on line %s', get_class($request->expr), $request->expr->getStartLine()));
 			}
-			$this->processPendingFibers($storage);
 
 			// Break and restart the loop since the array may have been modified
-			return;
+			goto start;
 		}
 	}
 
 	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
-		$restartLoop = true;
+		start:
 
-		while ($restartLoop) {
-			$restartLoop = false;
-
-			foreach ($storage->pendingFibers as $key => $pending) {
-				$request = $pending['request'];
-				if ($request->expr !== $expr) {
-					continue;
-				}
-
-				unset($storage->pendingFibers[$key]);
-				$restartLoop = true;
-
-				$fiber = $pending['fiber'];
-				$request = $fiber->resume($result);
-				$this->runFiberForNodeCallback($storage, $fiber, $request);
-
-				// Break and restart the loop since the array may have been modified
-				break;
+		foreach ($storage->pendingFibers as $key => $pending) {
+			$request = $pending['request'];
+			if ($request->expr !== $expr) {
+				continue;
 			}
+
+			unset($storage->pendingFibers[$key]);
+			$restartLoop = true;
+
+			$fiber = $pending['fiber'];
+			$request = $fiber->resume($result);
+			$this->runFiberForNodeCallback($storage, $fiber, $request);
+
+			// Break and restart the loop since the array may have been modified
+			goto start;
 		}
 	}
 

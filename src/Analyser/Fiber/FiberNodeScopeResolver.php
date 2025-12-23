@@ -80,8 +80,6 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
 	{
-		start:
-
 		foreach ($storage->pendingFibers as $pending) {
 			$request = $pending['request'];
 			$beforeScope = $storage->findBeforeScope($request->expr);
@@ -103,7 +101,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 			}
 
 			// Break and restart the loop since the array may have been modified
-			goto start;
+			return;
 		}
 	}
 

@@ -142,7 +142,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected,
 	): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$exitCode,
 			$this->formatter->formatErrors(
 				$this->getAnalysisResult($numFileErrors, $numGeneralErrors),
@@ -154,12 +154,12 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		$xml = new DOMDocument();
 		$xml->loadXML($this->getOutputContent());
 
-		$this->assertTrue(
+		self::assertTrue(
 			$xml->schemaValidate(__DIR__ . '/junit-schema.xsd'),
 			'Schema do not validate',
 		);
 
-		$this->assertXmlStringEqualsXmlString(
+		self::assertXmlStringEqualsXmlString(
 			$expected,
 			$this->getOutputContent(),
 			'XML do not match',

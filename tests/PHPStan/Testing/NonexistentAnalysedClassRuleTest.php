@@ -55,7 +55,7 @@ class NonexistentAnalysedClassRuleTest extends RuleTestCase
 			if ($e->getComparisonFailure() === null) {
 				throw $e;
 			}
-			$this->assertStringContainsString('not found in ReflectionProvider', $e->getComparisonFailure()->getDiff());
+			self::assertStringContainsString('not found in ReflectionProvider', $e->getComparisonFailure()->getDiff());
 		}
 	}
 

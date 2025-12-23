@@ -47,8 +47,8 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(ClassFoo::class);
-		$this->assertSame(AbstractFoo::class, $reflection->getNativeMethod('myFoo')->getDeclaringClass()->getName());
-		$this->assertSame(ClassFoo::class, $reflection->getNativeMethod('myBar')->getDeclaringClass()->getName());
+		self::assertSame(AbstractFoo::class, $reflection->getNativeMethod('myFoo')->getDeclaringClass()->getName());
+		self::assertSame(ClassFoo::class, $reflection->getNativeMethod('myBar')->getDeclaringClass()->getName());
 	}
 
 	public function testbug3406AnotherCase(): void

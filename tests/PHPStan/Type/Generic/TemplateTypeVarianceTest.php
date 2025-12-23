@@ -87,12 +87,12 @@ class TemplateTypeVarianceTest extends PHPStanTestCase
 	): void
 	{
 		$templateType = TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', null, $variance);
-		$this->assertSame(
+		self::assertSame(
 			$expected->describe(),
 			$variance->isValidVariance($templateType, $a, $b)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise())),
 		);
-		$this->assertSame(
+		self::assertSame(
 			$expectedInversed->describe(),
 			$variance->isValidVariance($templateType, $b, $a)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),

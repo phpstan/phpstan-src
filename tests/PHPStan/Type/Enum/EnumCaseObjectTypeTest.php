@@ -108,7 +108,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -209,7 +209,7 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->result->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),

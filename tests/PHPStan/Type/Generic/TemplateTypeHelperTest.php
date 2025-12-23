@@ -29,7 +29,7 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 			TemplateTypeVariance::createInvariant(),
 		);
 
-		$this->assertSame(
+		self::assertSame(
 			'T (function a(), parameter)',
 			$type->describe(VerbosityLevel::precise()),
 		);
@@ -46,7 +46,7 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 			TemplateTypeVariance::createInvariant(),
 		);
 
-		$this->assertSame(
+		self::assertSame(
 			'DateTime&T (function a(), parameter)',
 			$type->describe(VerbosityLevel::precise()),
 		);

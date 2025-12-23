@@ -63,7 +63,7 @@ class IterableTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -160,7 +160,7 @@ class IterableTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSubTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -171,7 +171,7 @@ class IterableTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOfInversed(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $otherType->isSuperTypeOf($type);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
@@ -237,7 +237,7 @@ class IterableTypeTest extends PHPStanTestCase
 	{
 		$result = $template->inferTemplateTypes($received);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypes,
 			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
@@ -285,7 +285,7 @@ class IterableTypeTest extends PHPStanTestCase
 	{
 		$result = $type->describe(VerbosityLevel::typeOnly());
 
-		$this->assertSame($expect, $result);
+		self::assertSame($expect, $result);
 	}
 
 	public static function dataAccepts(): array
@@ -321,7 +321,7 @@ class IterableTypeTest extends PHPStanTestCase
 	public function testAccepts(IterableType $iterableType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $iterableType->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),

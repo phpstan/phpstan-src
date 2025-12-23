@@ -147,8 +147,8 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		$provider = $this->createProvider();
 		$reflector = self::getContainer()->getByType(Reflector::class);
 		$signatures = $provider->getFunctionSignatures($functionName, null, new ReflectionFunction($reflector->reflectFunction($functionName)))['positional'];
-		$this->assertCount(1, $signatures);
-		$this->assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
+		self::assertCount(1, $signatures);
+		self::assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
 	}
 
 	private function createProvider(): Php8SignatureMapProvider
@@ -277,14 +277,14 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	{
 		$provider = $this->createProvider();
 		$signatures = $provider->getMethodSignatures($className, $methodName, null)['positional'];
-		$this->assertCount(1, $signatures);
-		$this->assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
+		self::assertCount(1, $signatures);
+		self::assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signatures[0]);
 	}
 
 	/**
 	 * @param mixed[] $expectedParameters
 	 */
-	private function assertSignature(
+	static private function assertSignature(
 		array $expectedParameters,
 		Type $expectedReturnType,
 		Type $expectedNativeReturnType,
@@ -292,20 +292,20 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		FunctionSignature $actualSignature,
 	): void
 	{
-		$this->assertCount(count($expectedParameters), $actualSignature->getParameters());
+		self::assertCount(count($expectedParameters), $actualSignature->getParameters());
 		foreach ($expectedParameters as $i => $expectedParameter) {
 			$actualParameter = $actualSignature->getParameters()[$i];
-			$this->assertSame($expectedParameter['name'], $actualParameter->getName());
-			$this->assertSame($expectedParameter['optional'], $actualParameter->isOptional());
-			$this->assertSame($expectedParameter['type']->describe(VerbosityLevel::precise()), $actualParameter->getType()->describe(VerbosityLevel::precise()));
-			$this->assertSame($expectedParameter['nativeType']->describe(VerbosityLevel::precise()), $actualParameter->getNativeType()->describe(VerbosityLevel::precise()));
-			$this->assertTrue($expectedParameter['passedByReference']->equals($actualParameter->passedByReference()));
-			$this->assertSame($expectedParameter['variadic'], $actualParameter->isVariadic());
+			self::assertSame($expectedParameter['name'], $actualParameter->getName());
+			self::assertSame($expectedParameter['optional'], $actualParameter->isOptional());
+			self::assertSame($expectedParameter['type']->describe(VerbosityLevel::precise()), $actualParameter->getType()->describe(VerbosityLevel::precise()));
+			self::assertSame($expectedParameter['nativeType']->describe(VerbosityLevel::precise()), $actualParameter->getNativeType()->describe(VerbosityLevel::precise()));
+			self::assertTrue($expectedParameter['passedByReference']->equals($actualParameter->passedByReference()));
+			self::assertSame($expectedParameter['variadic'], $actualParameter->isVariadic());
 		}
 
-		$this->assertSame($expectedReturnType->describe(VerbosityLevel::precise()), $actualSignature->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertSame($expectedNativeReturnType->describe(VerbosityLevel::precise()), $actualSignature->getNativeReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertSame($expectedVariadic, $actualSignature->isVariadic());
+		self::assertSame($expectedReturnType->describe(VerbosityLevel::precise()), $actualSignature->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedNativeReturnType->describe(VerbosityLevel::precise()), $actualSignature->getNativeReturnType()->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedVariadic, $actualSignature->isVariadic());
 	}
 
 	public static function dataParseAll(): array

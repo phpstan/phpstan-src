@@ -81,7 +81,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 		foreach ($throwsAnnotations as $methodName => $type) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);
 			$throwType = $methodAnnotation->getThrowType();
-			$this->assertSame($type, $throwType !== null ? $throwType->describe(VerbosityLevel::typeOnly()) : null);
+			self::assertSame($type, $throwType !== null ? $throwType->describe(VerbosityLevel::typeOnly()) : null);
 		}
 	}
 
@@ -91,11 +91,11 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertNull($reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
+		self::assertNull($reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\withoutThrows'), null)->getThrowType());
 
 		$throwType = $reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\throwsRuntime'), null)->getThrowType();
-		$this->assertNotNull($throwType);
-		$this->assertSame(RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
+		self::assertNotNull($throwType);
+		self::assertSame(RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
 	}
 
 }

@@ -414,7 +414,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -696,7 +696,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(ConstantArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -815,7 +815,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	{
 		$result = $template->inferTemplateTypes($received);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypes,
 			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
@@ -825,7 +825,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	public function testIsCallable(ConstantArrayType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
@@ -1039,9 +1039,9 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$actualType->describe(VerbosityLevel::precise()),
 			$expectedType->describe(VerbosityLevel::precise()),
 		);
-		$this->assertTrue($expectedType->equals($actualType), $message);
-		$this->assertSame($expectedType->isList(), $actualType->isList());
-		$this->assertSame($expectedType->getNextAutoIndexes(), $actualType->getNextAutoIndexes());
+		self::assertTrue($expectedType->equals($actualType), $message);
+		self::assertSame($expectedType->isList(), $actualType->isList());
+		self::assertSame($expectedType->getNextAutoIndexes(), $actualType->getNextAutoIndexes());
 	}
 
 	public static function dataHasOffsetValueType(): array
@@ -1063,7 +1063,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 	): void
 	{
 		$actualResult = $type->hasOffsetValueType($offsetType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasOffsetValueType(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),

@@ -109,13 +109,13 @@ class PhpVersionFactoryTest extends TestCase
 	{
 		$factory = new PhpVersionFactory($versionId, $composerPhpVersion);
 		$phpVersion = $factory->create();
-		$this->assertSame($expectedVersion, $phpVersion->getVersionId());
+		self::assertSame($expectedVersion, $phpVersion->getVersionId());
 
 		if ($expectedVersionString === null) {
 			return;
 		}
 
-		$this->assertSame($expectedVersionString, $phpVersion->getVersionString());
+		self::assertSame($expectedVersionString, $phpVersion->getVersionString());
 	}
 
 }

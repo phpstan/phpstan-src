@@ -25,7 +25,7 @@ class CachedParserTest extends PHPStanTestCase
 			$cachedNodesByStringCountMax,
 		);
 
-		$this->assertSame(
+		self::assertSame(
 			$cachedNodesByStringCountMax,
 			$parser->getCachedNodesByStringCountMax(),
 		);
@@ -35,12 +35,12 @@ class CachedParserTest extends PHPStanTestCase
 			$parser->parseString('string' . $i);
 		}
 
-		$this->assertSame(
+		self::assertSame(
 			$cachedNodesByStringCountExpected,
 			$parser->getCachedNodesByStringCount(),
 		);
 
-		$this->assertCount(
+		self::assertCount(
 			$cachedNodesByStringCountExpected,
 			$parser->getCachedNodesByString(),
 		);
@@ -92,35 +92,35 @@ class CachedParserTest extends PHPStanTestCase
 		$pathRoutingParser->setAnalysedFiles([$path]);
 		$contents = FileReader::read($path);
 		$stmts = $parser->parseString($contents);
-		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
-		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
-		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
-		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
-		$this->assertNull($stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+		self::assertInstanceOf(Namespace_::class, $stmts[0]);
+		self::assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		self::assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		self::assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		self::assertNull($stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 
 		$stmts = $parser->parseFile($path);
-		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
-		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
-		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
-		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
-		$this->assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+		self::assertInstanceOf(Namespace_::class, $stmts[0]);
+		self::assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		self::assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		self::assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		self::assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 
-		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[1]);
-		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[1]->expr);
-		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[1]->expr->expr);
-		$this->assertSame(2, $stmts[0]->stmts[1]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+		self::assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[1]);
+		self::assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[1]->expr);
+		self::assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[1]->expr->expr);
+		self::assertSame(2, $stmts[0]->stmts[1]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 
 		$stmts = $parser->parseString($contents);
-		$this->assertInstanceOf(Namespace_::class, $stmts[0]);
-		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
-		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
-		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
-		$this->assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+		self::assertInstanceOf(Namespace_::class, $stmts[0]);
+		self::assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[0]);
+		self::assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[0]->expr);
+		self::assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[0]->expr->expr);
+		self::assertSame(1, $stmts[0]->stmts[0]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 
-		$this->assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[1]);
-		$this->assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[1]->expr);
-		$this->assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[1]->expr->expr);
-		$this->assertSame(2, $stmts[0]->stmts[1]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
+		self::assertInstanceOf(Node\Stmt\Expression::class, $stmts[0]->stmts[1]);
+		self::assertInstanceOf(Node\Expr\Assign::class, $stmts[0]->stmts[1]->expr);
+		self::assertInstanceOf(Node\Expr\New_::class, $stmts[0]->stmts[1]->expr->expr);
+		self::assertSame(2, $stmts[0]->stmts[1]->expr->expr->class->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX));
 	}
 
 }

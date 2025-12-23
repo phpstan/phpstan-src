@@ -66,11 +66,11 @@ class ParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getService('currentPhpVersionSimpleParser');
 		$ast = $parser->parseFile($file);
 		$variadics = $ast[0]->getAttribute($attributeName);
-		$this->assertIsArray($variadics);
-		$this->assertCount(count($expectedVariadics), $variadics);
+		self::assertIsArray($variadics);
+		self::assertCount(count($expectedVariadics), $variadics);
 		foreach ($expectedVariadics as $key => $expectedVariadic) {
-			$this->assertArrayHasKey($key, $variadics);
-			$this->assertSame($expectedVariadic, $variadics[$key]);
+			self::assertArrayHasKey($key, $variadics);
+			self::assertSame($expectedVariadic, $variadics[$key]);
 		}
 	}
 
@@ -85,11 +85,11 @@ class ParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
 		$ast = $parser->parseFile($file);
 		$variadics = $ast[0]->getAttribute($attributeName);
-		$this->assertIsArray($variadics);
-		$this->assertCount(count($expectedVariadics), $variadics);
+		self::assertIsArray($variadics);
+		self::assertCount(count($expectedVariadics), $variadics);
 		foreach ($expectedVariadics as $key => $expectedVariadic) {
-			$this->assertArrayHasKey($key, $variadics);
-			$this->assertSame($expectedVariadic, $variadics[$key]);
+			self::assertArrayHasKey($key, $variadics);
+			self::assertSame($expectedVariadic, $variadics[$key]);
 		}
 	}
 

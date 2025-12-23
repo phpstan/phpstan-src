@@ -135,7 +135,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$locator = $factory->create($file);
 		$reflector = new DefaultReflector($locator);
 		$classReflection = $reflector->reflectClass($className);
-		$this->assertSame($expectedClassName, $classReflection->getName());
+		self::assertSame($expectedClassName, $classReflection->getName());
 	}
 
 	public static function dataFunction(): array
@@ -171,7 +171,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$locator = $factory->create($file);
 		$reflector = new DefaultReflector($locator);
 		$functionReflection = $reflector->reflectFunction($functionName);
-		$this->assertSame($expectedFunctionName, $functionReflection->getName());
+		self::assertSame($expectedFunctionName, $functionReflection->getName());
 	}
 
 	public static function dataConst(): array
@@ -207,14 +207,14 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$locator = $factory->create(__DIR__ . '/data/const.php');
 		$reflector = new DefaultReflector($locator);
 		$constant = $reflector->reflectConstant($constantName);
-		$this->assertSame($constantName, $constant->getName());
+		self::assertSame($constantName, $constant->getName());
 
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
 		$valueType = $initializerExprTypeResolver->getType(
 			$constant->getValueExpression(),
 			InitializerExprContext::fromGlobalConstant($constant),
 		);
-		$this->assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
+		self::assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
 	}
 
 	public static function dataConstUnknown(): array
@@ -255,7 +255,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		);
 
 		$actualIdentifiers = array_map(static fn (Reflection $reflection) => $reflection->getName(), $reflections);
-		$this->assertEqualsCanonicalizing($expectedIdentifiers, $actualIdentifiers);
+		self::assertEqualsCanonicalizing($expectedIdentifiers, $actualIdentifiers);
 	}
 
 }

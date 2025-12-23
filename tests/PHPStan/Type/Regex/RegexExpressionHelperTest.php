@@ -51,7 +51,7 @@ class RegexExpressionHelperTest extends PHPStanTestCase
 	{
 		$regexExpressionHelper = self::getContainer()->getByType(RegexExpressionHelper::class);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedPatternWithoutDelimiter,
 			$regexExpressionHelper->removeDelimitersAndModifiers($inputPattern),
 		);

@@ -141,7 +141,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(ConstantStringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -150,39 +150,39 @@ class ConstantStringTypeTest extends PHPStanTestCase
 
 	public function testGeneralize(): void
 	{
-		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-falsy-string&uppercase-string', (new ConstantStringType('A'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-empty-string&numeric-string&uppercase-string', (new ConstantStringType('0'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string&uppercase-string', (new ConstantStringType('1.123'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string&uppercase-string', (new ConstantStringType('    1       1   '))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string&uppercase-string', (new ConstantStringType('+1'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string&uppercase-string', (new ConstantStringType('+1+1'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string', (new ConstantStringType('1e9'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&lowercase-string&non-falsy-string', (new ConstantStringType('1e91e9'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType(stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('class-string', (new ConstantStringType(stdClass::class, true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&non-falsy-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&non-falsy-string&uppercase-string', (new ConstantStringType('A'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-empty-string&numeric-string&uppercase-string', (new ConstantStringType('0'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string&uppercase-string', (new ConstantStringType('1.123'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string&uppercase-string', (new ConstantStringType('    1       1   '))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string&uppercase-string', (new ConstantStringType('+1'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string&uppercase-string', (new ConstantStringType('+1+1'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string&numeric-string', (new ConstantStringType('1e9'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&lowercase-string&non-falsy-string', (new ConstantStringType('1e91e9'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('literal-string&non-falsy-string', (new ConstantStringType(stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('class-string', (new ConstantStringType(stdClass::class, true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		self::assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 	}
 
 	public function testTextInvalidEncoding(): void
 	{
-		$this->assertSame("'\xc3Lorem ipsum dolor s\u{2026}'", (new ConstantStringType("\xc3Lorem ipsum dolor sit"))->describe(VerbosityLevel::value()));
+		self::assertSame("'\xc3Lorem ipsum dolor s\u{2026}'", (new ConstantStringType("\xc3Lorem ipsum dolor sit"))->describe(VerbosityLevel::value()));
 	}
 
 	public function testShortTextInvalidEncoding(): void
 	{
-		$this->assertSame("'\xc3Lorem ipsum dolor'", (new ConstantStringType("\xc3Lorem ipsum dolor"))->describe(VerbosityLevel::value()));
+		self::assertSame("'\xc3Lorem ipsum dolor'", (new ConstantStringType("\xc3Lorem ipsum dolor"))->describe(VerbosityLevel::value()));
 	}
 
 	public function testSetInvalidValue(): void
 	{
 		$string = new ConstantStringType('internal:/node/add');
 		$result = $string->setOffsetValueType(new ConstantIntegerType(0), new NullType());
-		$this->assertInstanceOf(ErrorType::class, $result);
+		self::assertInstanceOf(ErrorType::class, $result);
 	}
 
 }

@@ -86,7 +86,7 @@ class SimultaneousTypeTraverserTest extends PHPStanTestCase
 			return $right;
 		};
 		$actualType = SimultaneousTypeTraverser::map($left, $right, $cb);
-		$this->assertSame($expectedTypeDescription, $actualType->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedTypeDescription, $actualType->describe(VerbosityLevel::precise()));
 	}
 
 	public static function dataDescriptionBased(): iterable
@@ -152,7 +152,7 @@ class SimultaneousTypeTraverserTest extends PHPStanTestCase
 		$leftType = $typeStringResolver->resolve($left);
 		$rightType = $typeStringResolver->resolve($right);
 		$actualType = SimultaneousTypeTraverser::map($leftType, $rightType, $callback);
-		$this->assertSame($expectedTypeDescription, $actualType->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedTypeDescription, $actualType->describe(VerbosityLevel::precise()));
 	}
 
 }

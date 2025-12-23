@@ -70,7 +70,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 	{
 		$output = self::generateSymbolDescription($input);
 		$output = trim($output);
-		$this->assertSame($expectedOutput, $output);
+		self::assertSame($expectedOutput, $output);
 	}
 
 	private static function generateSymbolDescription(string $symbol): string

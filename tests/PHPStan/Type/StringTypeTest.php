@@ -98,10 +98,10 @@ class StringTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsSuperTypeOf')]
 	public function testIsSuperTypeOf(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$this->assertInstanceOf(StringType::class, $stringType);
+		self::assertInstanceOf(StringType::class, $stringType);
 
 		$actualResult = $stringType->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $stringType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -178,10 +178,10 @@ class StringTypeTest extends PHPStanTestCase
 	#[DataProvider('dataAccepts')]
 	public function testAccepts(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$this->assertInstanceOf(StringType::class, $stringType);
+		self::assertInstanceOf(StringType::class, $stringType);
 
 		$actualResult = $stringType->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $stringType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -228,7 +228,7 @@ class StringTypeTest extends PHPStanTestCase
 	public function testEquals(StringType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult,
 			$actualResult,
 			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),

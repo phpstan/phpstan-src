@@ -79,10 +79,10 @@ class UnionTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsCallable')]
 	public function testIsCallable(Type $unionType, TrinaryLogic $expectedResult): void
 	{
-		$this->assertInstanceOf(UnionType::class, $unionType);
+		self::assertInstanceOf(UnionType::class, $unionType);
 
 		$actualResult = $unionType->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $unionType->describe(VerbosityLevel::precise())),
@@ -155,16 +155,16 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testSelfCompare(Type $type): void
 	{
 		$description = $type->describe(VerbosityLevel::precise());
-		$this->assertTrue(
+		self::assertTrue(
 			$type->equals($type),
 			sprintf('%s -> equals(itself)', $description),
 		);
-		$this->assertSame(
+		self::assertSame(
 			'Yes',
 			$type->isSuperTypeOf($type)->describe(),
 			sprintf('%s -> isSuperTypeOf(itself)', $description),
 		);
-		$this->assertInstanceOf(
+		self::assertInstanceOf(
 			get_class($type),
 			TypeCombinator::union($type, $type),
 			sprintf('%s -> union with itself is same type', $description),
@@ -465,7 +465,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -638,7 +638,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSubTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -649,7 +649,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOfInversed(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $otherType->isSuperTypeOf($type);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
@@ -711,10 +711,10 @@ class UnionTypeTest extends PHPStanTestCase
 	#[DataProvider('dataIsScalar')]
 	public function testIsScalar(Type $unionType, TrinaryLogic $expectedResult): void
 	{
-		$this->assertInstanceOf(UnionType::class, $unionType);
+		self::assertInstanceOf(UnionType::class, $unionType);
 
 		$actualResult = $unionType->isScalar();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isScalar()', $unionType->describe(VerbosityLevel::precise())),
@@ -973,10 +973,10 @@ class UnionTypeTest extends PHPStanTestCase
 		string $expectedTypeOnlyDescription,
 	): void
 	{
-		$this->assertSame($expectedCacheDescription, $type->describe(VerbosityLevel::cache()));
-		$this->assertSame($expectedPreciseDescription, $type->describe(VerbosityLevel::precise()));
-		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
-		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
+		self::assertSame($expectedCacheDescription, $type->describe(VerbosityLevel::cache()));
+		self::assertSame($expectedPreciseDescription, $type->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
+		self::assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}
 
 	public static function dataAccepts(): iterable
@@ -1327,7 +1327,7 @@ class UnionTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->result->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
@@ -1367,7 +1367,7 @@ class UnionTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$this->assertSame($expectedResult->describe(), $type->hasMethod($methodName)->describe());
+		self::assertSame($expectedResult->describe(), $type->hasMethod($methodName)->describe());
 	}
 
 	public function testSorting(): void
@@ -1398,13 +1398,13 @@ class UnionTypeTest extends PHPStanTestCase
 		$type1 = new UnionType($types);
 		$type2 = new UnionType(array_reverse($types));
 
-		$this->assertSame(
+		self::assertSame(
 			$type1->describe(VerbosityLevel::precise()),
 			$type2->describe(VerbosityLevel::precise()),
 			'UnionType sorting always produces the same order',
 		);
 
-		$this->assertTrue(
+		self::assertTrue(
 			$type1->equals($type2),
 			'UnionType sorting always produces the same order',
 		);
@@ -1428,7 +1428,7 @@ class UnionTypeTest extends PHPStanTestCase
 			$actualDescriptions[] = $constantArray->describe(VerbosityLevel::precise());
 		}
 
-		$this->assertSame($expectedDescriptions, $actualDescriptions);
+		self::assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
 	public static function dataGetConstantArrays(): iterable
@@ -1489,7 +1489,7 @@ class UnionTypeTest extends PHPStanTestCase
 			$actualDescriptions[] = $constantString->describe(VerbosityLevel::precise());
 		}
 
-		$this->assertSame($expectedDescriptions, $actualDescriptions);
+		self::assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
 	public static function dataGetConstantStrings(): iterable
@@ -1556,7 +1556,7 @@ class UnionTypeTest extends PHPStanTestCase
 		array $expectedObjectClassNames,
 	): void
 	{
-		$this->assertSame($expectedObjectClassNames, $unionType->getObjectClassNames());
+		self::assertSame($expectedObjectClassNames, $unionType->getObjectClassNames());
 	}
 
 	public static function dataGetObjectClassNames(): iterable
@@ -1605,7 +1605,7 @@ class UnionTypeTest extends PHPStanTestCase
 			$actualDescriptions[] = $arrayType->describe(VerbosityLevel::precise());
 		}
 
-		$this->assertSame($expectedDescriptions, $actualDescriptions);
+		self::assertSame($expectedDescriptions, $actualDescriptions);
 	}
 
 	public static function dataGetArrays(): iterable

@@ -117,12 +117,12 @@ Bar2
 	{
 		$formatter = new RawErrorFormatter();
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(false, $verbose),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
+		self::assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
 	}
 
 }

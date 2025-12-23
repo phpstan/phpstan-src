@@ -48,7 +48,7 @@ class AnalyserTest extends PHPStanTestCase
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], true, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertSame([
+		self::assertSame([
 			'Ignored error pattern #Unknown error# was not matched in reported errors.',
 		], $result);
 	}
@@ -56,107 +56,107 @@ class AnalyserTest extends PHPStanTestCase
 	public function testDoNotReturnErrorIfIgnoredMessagesDoesNotOccurWithReportUnmatchedIgnoredErrorsOff(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], false, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testDoNotReturnErrorIfIgnoredMessagesDoNotOccurWhileAnalysingIndividualFiles(): void
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], true, __DIR__ . '/data/empty/empty.php', true);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredError(): void
 	{
 		$result = $this->runAnalyser(['#Fail\.#'], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessage(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorRawMessage(): void
 	{
 		$result = $this->runAnalyser([['rawMessage' => 'Fail.']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessageAndWrongIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(2, $result);
+		self::assertCount(2, $result);
 		assert($result[0] instanceof Error);
-		$this->assertSame('Fail.', $result[0]->getMessage());
+		self::assertSame('Fail.', $result[0]->getMessage());
 		assert(is_string($result[1]));
-		$this->assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
+		self::assertSame('Ignored error pattern #Fail\.# (wrong.identifier) was not matched in reported errors.', $result[1]);
 	}
 
 	public function testFileWithAnIgnoredErrorRawMessageAndWrongIdentifier(): void
 	{
 		$result = $this->runAnalyser([['rawMessage' => 'Fail.', 'identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(2, $result);
+		self::assertCount(2, $result);
 		assert($result[0] instanceof Error);
-		$this->assertSame('Fail.', $result[0]->getMessage());
+		self::assertSame('Fail.', $result[0]->getMessage());
 		assert(is_string($result[1]));
-		$this->assertSame('Ignored error pattern "Fail." (wrong.identifier) was not matched in reported errors.', $result[1]);
+		self::assertSame('Ignored error pattern "Fail." (wrong.identifier) was not matched in reported errors.', $result[1]);
 	}
 
 	public function testFileWithAnIgnoredWrongIdentifier(): void
 	{
 		$result = $this->runAnalyser([['identifier' => 'wrong.identifier']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(2, $result);
+		self::assertCount(2, $result);
 		assert($result[0] instanceof Error);
-		$this->assertSame('Fail.', $result[0]->getMessage());
+		self::assertSame('Fail.', $result[0]->getMessage());
 		assert(is_string($result[1]));
-		$this->assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
+		self::assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
 	}
 
 	public function testFileWithAnIgnoredErrorMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['message' => '#Fail\.#', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorRawMessageAndCorrectIdentifier(): void
 	{
 		$result = $this->runAnalyser([['rawMessage' => 'Fail.', 'identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorIdentifier(): void
 	{
 		$result = $this->runAnalyser([['identifier' => 'tests.alwaysFail']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEmpty($result);
+		self::assertEmpty($result);
 	}
 
 	public function testFileWithAnIgnoredErrorMessages(): void
 	{
 		$result = $this->runAnalyser([['messages' => ['#Fail\.#']]], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertEquals([], $result);
+		self::assertEquals([], $result);
 	}
 
 	public function testFileWithAnIgnoredErrorIdentifiers(): void
 	{
 		$result = $this->runAnalyser([['identifiers' => ['tests.alwaysFail']]], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testFileWithAnIgnoredErrorIdentifiersWithPath(): void
 	{
 		$result = $this->runAnalyser([['identifiers' => ['tests.alwaysFail'], 'path' => __DIR__ . '/data/bootstrap-error.php']], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testFileWithAnIgnoredErrorIdentifiersWithWrongIdentifier(): void
 	{
 		$result = $this->runAnalyser([['identifiers' => ['wrong.identifier']]], true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(2, $result);
-		$this->assertInstanceOf(Error::class, $result[0]);
-		$this->assertSame('Fail.', $result[0]->getMessage());
+		self::assertCount(2, $result);
+		self::assertInstanceOf(Error::class, $result[0]);
+		self::assertSame('Fail.', $result[0]->getMessage());
 		assert(is_string($result[1]));
-		$this->assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
+		self::assertSame('Ignored error pattern wrong.identifier was not matched in reported errors.', $result[1]);
 	}
 
 	public function testIgnoreErrorByPath(): void
@@ -168,7 +168,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorMultiByPath(): void
@@ -183,7 +183,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-different-fails.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public static function dataIgnoreErrorByPathAndCount(): iterable
@@ -260,7 +260,7 @@ class AnalyserTest extends PHPStanTestCase
 	public function testIgnoreErrorByPathAndCount(array $ignoreErrors): void
 	{
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public static function dataTrueAndFalse(): array
@@ -292,7 +292,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/two-different-fails.php',
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, $filesToAnalyze, $onlyFiles);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
@@ -306,22 +306,22 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', $onlyFiles);
-		$this->assertCount(3, $result);
-		$this->assertInstanceOf(Error::class, $result[0]);
-		$this->assertSame('Fail.', $result[0]->getMessage());
-		$this->assertSame(6, $result[0]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
+		self::assertCount(3, $result);
+		self::assertInstanceOf(Error::class, $result[0]);
+		self::assertSame('Fail.', $result[0]->getMessage());
+		self::assertSame(6, $result[0]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
 
-		$this->assertInstanceOf(Error::class, $result[1]);
-		$this->assertSame('Fail.', $result[1]->getMessage());
-		$this->assertSame(7, $result[1]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
+		self::assertInstanceOf(Error::class, $result[1]);
+		self::assertSame('Fail.', $result[1]->getMessage());
+		self::assertSame(7, $result[1]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
 
-		$this->assertInstanceOf(Error::class, $result[2]);
-		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[2]->getMessage());
-		$this->assertStringContainsString('is expected to occur 1 time, but occurred 3 times.', $result[2]->getMessage());
-		$this->assertSame(5, $result[2]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
+		self::assertInstanceOf(Error::class, $result[2]);
+		self::assertStringContainsString('Ignored error pattern #Fail\.#', $result[2]->getMessage());
+		self::assertStringContainsString('is expected to occur 1 time, but occurred 3 times.', $result[2]->getMessage());
+		self::assertSame(5, $result[2]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
@@ -335,12 +335,12 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', $onlyFiles);
-		$this->assertCount(1, $result);
-		$this->assertInstanceOf(Error::class, $result[0]);
-		$this->assertStringContainsString('Ignored error pattern #Fail\.#', $result[0]->getMessage());
-		$this->assertStringContainsString('is expected to occur 4 times, but occurred only 3 times.', $result[0]->getMessage());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
-		$this->assertSame(5, $result[0]->getLine());
+		self::assertCount(1, $result);
+		self::assertInstanceOf(Error::class, $result[0]);
+		self::assertStringContainsString('Ignored error pattern #Fail\.#', $result[0]->getMessage());
+		self::assertStringContainsString('is expected to occur 4 times, but occurred only 3 times.', $result[0]->getMessage());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
+		self::assertSame(5, $result[0]->getLine());
 	}
 
 	public function testIgnoreErrorByPathAndCountMissing(): void
@@ -353,26 +353,26 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
-		$this->assertCount(4, $result);
-		$this->assertInstanceOf(Error::class, $result[0]);
-		$this->assertSame('Fail.', $result[0]->getMessage());
-		$this->assertSame(5, $result[0]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
+		self::assertCount(4, $result);
+		self::assertInstanceOf(Error::class, $result[0]);
+		self::assertSame('Fail.', $result[0]->getMessage());
+		self::assertSame(5, $result[0]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[0]->getFile());
 
-		$this->assertInstanceOf(Error::class, $result[1]);
-		$this->assertSame('Fail.', $result[1]->getMessage());
-		$this->assertSame(6, $result[1]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
+		self::assertInstanceOf(Error::class, $result[1]);
+		self::assertSame('Fail.', $result[1]->getMessage());
+		self::assertSame(6, $result[1]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[1]->getFile());
 
-		$this->assertInstanceOf(Error::class, $result[2]);
-		$this->assertSame('Fail.', $result[2]->getMessage());
-		$this->assertSame(7, $result[2]->getLine());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
+		self::assertInstanceOf(Error::class, $result[2]);
+		self::assertSame('Fail.', $result[2]->getMessage());
+		self::assertSame(7, $result[2]->getLine());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 
-		$this->assertInstanceOf(Error::class, $result[3]);
-		$this->assertStringContainsString('Ignored error pattern #Some custom error\.# in path', $result[3]->getMessage());
-		$this->assertStringContainsString('was not matched in reported errors.', $result[3]->getMessage());
-		$this->assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
+		self::assertInstanceOf(Error::class, $result[3]);
+		self::assertStringContainsString('Ignored error pattern #Some custom error\.# in path', $result[3]->getMessage());
+		self::assertStringContainsString('was not matched in reported errors.', $result[3]->getMessage());
+		self::assertSamePaths(__DIR__ . '/data/two-fails.php', $result[2]->getFile());
 	}
 
 	public function testIgnoreErrorByPaths(): void
@@ -384,7 +384,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorRawByPaths(): void
@@ -396,7 +396,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorMultiByPaths(): void
@@ -411,7 +411,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-different-fails.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorByPathsMultipleUnmatched(): void
@@ -423,10 +423,10 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(1, $result);
-		$this->assertIsString($result[0]);
-		$this->assertStringContainsString('Ignored error pattern #Fail\.# in paths: ', $result[0]);
-		$this->assertStringContainsString('was not matched in reported errors', $result[0]);
+		self::assertCount(1, $result);
+		self::assertIsString($result[0]);
+		self::assertStringContainsString('Ignored error pattern #Fail\.# in paths: ', $result[0]);
+		self::assertStringContainsString('was not matched in reported errors', $result[0]);
 	}
 
 	public function testIgnoreErrorByPathsUnmatched(): void
@@ -438,10 +438,10 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(1, $result);
-		$this->assertIsString($result[0]);
-		$this->assertStringContainsString('Ignored error pattern #Fail\.# in path ', $result[0]);
-		$this->assertStringContainsString('was not matched in reported errors', $result[0]);
+		self::assertCount(1, $result);
+		self::assertIsString($result[0]);
+		self::assertStringContainsString('Ignored error pattern #Fail\.# in path ', $result[0]);
+		self::assertStringContainsString('was not matched in reported errors', $result[0]);
 	}
 
 	public function testIgnoreErrorByPathsUnmatchedExplicitReportUnmatched(): void
@@ -454,10 +454,10 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(1, $result);
-		$this->assertIsString($result[0]);
-		$this->assertStringContainsString('Ignored error pattern #Fail\.# in path ', $result[0]);
-		$this->assertStringContainsString('was not matched in reported errors', $result[0]);
+		self::assertCount(1, $result);
+		self::assertIsString($result[0]);
+		self::assertStringContainsString('Ignored error pattern #Fail\.# in path ', $result[0]);
+		self::assertStringContainsString('was not matched in reported errors', $result[0]);
 	}
 
 	public function testIgnoreErrorNotFoundInPath(): void
@@ -469,8 +469,8 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
 	}
 
 	public function testIgnoreErrorNotFoundInPathExplicitReportUnmatched(): void
@@ -483,8 +483,8 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
 	}
 
 	public static function dataIgnoreErrorInTraitUsingClassFilePath(): array
@@ -512,7 +512,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/traits-ignore/Foo.php',
 			__DIR__ . '/data/traits-ignore/FooTrait.php',
 		], true);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	#[DataProvider('dataIgnoreErrorInTraitUsingClassFilePath')]
@@ -527,7 +527,7 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/traits-ignore/Foo.php',
 		], true);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoredErrorMissingMessage(): void
@@ -545,24 +545,24 @@ class AnalyserTest extends PHPStanTestCase
 		}
 
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message or an identifier.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message or an identifier.', $result[0]);
 	}
 
 	public function testReportMultipleParserErrorsAtOnce(): void
 	{
 		$result = $this->runAnalyser([], false, __DIR__ . '/data/multipleParseErrors.php', false);
-		$this->assertCount(2, $result);
+		self::assertCount(2, $result);
 
 		/** @var Error $errorOne */
 		$errorOne = $result[0];
-		$this->assertSame('Syntax error, unexpected T_IS_EQUAL, expecting T_VARIABLE on line 3', $errorOne->getMessage());
-		$this->assertSame(3, $errorOne->getLine());
+		self::assertSame('Syntax error, unexpected T_IS_EQUAL, expecting T_VARIABLE on line 3', $errorOne->getMessage());
+		self::assertSame(3, $errorOne->getLine());
 
 		/** @var Error $errorTwo */
 		$errorTwo = $result[1];
-		$this->assertSame('Syntax error, unexpected EOF on line 10', $errorTwo->getMessage());
-		$this->assertSame(10, $errorTwo->getLine());
+		self::assertSame('Syntax error, unexpected EOF on line 10', $errorTwo->getMessage());
+		self::assertSame(10, $errorTwo->getLine());
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
@@ -581,7 +581,7 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
@@ -602,7 +602,7 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreNextLine(): void
@@ -610,12 +610,12 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser([], false, [
 			__DIR__ . '/data/ignore-next-line.php',
 		], true);
-		$this->assertCount(5, $result);
+		self::assertCount(5, $result);
 		foreach ([10, 20, 24, 31, 50] as $i => $line) {
-			$this->assertArrayHasKey($i, $result);
-			$this->assertInstanceOf(Error::class, $result[$i]);
-			$this->assertSame('Fail.', $result[$i]->getMessage());
-			$this->assertSame($line, $result[$i]->getLine());
+			self::assertArrayHasKey($i, $result);
+			self::assertInstanceOf(Error::class, $result[$i]);
+			self::assertSame('Fail.', $result[$i]->getMessage());
+			self::assertSame($line, $result[$i]->getLine());
 		}
 	}
 
@@ -624,12 +624,12 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser([], true, [
 			__DIR__ . '/data/ignore-next-line-unmatched.php',
 		], true);
-		$this->assertCount(2, $result);
+		self::assertCount(2, $result);
 		foreach ([11, 15] as $i => $line) {
-			$this->assertArrayHasKey($i, $result);
-			$this->assertInstanceOf(Error::class, $result[$i]);
-			$this->assertStringContainsString('No error to ignore is reported on line', $result[$i]->getMessage());
-			$this->assertSame($line, $result[$i]->getLine());
+			self::assertArrayHasKey($i, $result);
+			self::assertInstanceOf(Error::class, $result[$i]);
+			self::assertStringContainsString('No error to ignore is reported on line', $result[$i]->getMessage());
+			self::assertSame($line, $result[$i]->getLine());
 		}
 	}
 
@@ -639,22 +639,22 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
 			__DIR__ . '/data/ignore-line.php',
 		], true);
-		$this->assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
+		self::assertCount($reportUnmatchedIgnoredErrors ? 4 : 3, $result);
 		foreach ([10, 19, 22] as $i => $line) {
-			$this->assertArrayHasKey($i, $result);
-			$this->assertInstanceOf(Error::class, $result[$i]);
-			$this->assertSame('Fail.', $result[$i]->getMessage());
-			$this->assertSame($line, $result[$i]->getLine());
+			self::assertArrayHasKey($i, $result);
+			self::assertInstanceOf(Error::class, $result[$i]);
+			self::assertSame('Fail.', $result[$i]->getMessage());
+			self::assertSame($line, $result[$i]->getLine());
 		}
 
 		if (!$reportUnmatchedIgnoredErrors) {
 			return;
 		}
 
-		$this->assertArrayHasKey(3, $result);
-		$this->assertInstanceOf(Error::class, $result[3]);
-		$this->assertSame('No error to ignore is reported on line 26.', $result[3]->getMessage());
-		$this->assertSame(26, $result[3]->getLine());
+		self::assertArrayHasKey(3, $result);
+		self::assertInstanceOf(Error::class, $result[3]);
+		self::assertSame('No error to ignore is reported on line 26.', $result[3]->getMessage());
+		self::assertSame(26, $result[3]->getLine());
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedDisable(): void
@@ -666,7 +666,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedDisableRaw(): void
@@ -678,7 +678,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedDisableMulti(): void
@@ -690,7 +690,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertNoErrors($result);
+		self::assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedEnable(): void
@@ -702,8 +702,8 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedEnableRaw(): void
@@ -715,8 +715,8 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error pattern "Fail." was not matched in reported errors.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error pattern "Fail." was not matched in reported errors.', $result[0]);
 	}
 
 	public function testIgnoreErrorExplicitReportUnmatchedEnableMulti(): void
@@ -728,8 +728,8 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
+		self::assertCount(1, $result);
+		self::assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
 	}
 
 	/**

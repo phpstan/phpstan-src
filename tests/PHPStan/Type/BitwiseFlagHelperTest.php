@@ -138,7 +138,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 
 		$analyser = new BitwiseFlagHelper(self::createReflectionProvider());
 		$actual = $analyser->bitwiseOrContainsConstant($expr, $scope, $constName);
-		$this->assertTrue($expected->equals($actual), sprintf('Expected Trinary::%s but got Trinary::%s.', $expected->describe(), $actual->describe()));
+		self::assertTrue($expected->equals($actual), sprintf('Expected Trinary::%s but got Trinary::%s.', $expected->describe(), $actual->describe()));
 	}
 
 }

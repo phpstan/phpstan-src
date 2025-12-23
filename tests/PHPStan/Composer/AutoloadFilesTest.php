@@ -77,7 +77,7 @@ class AutoloadFilesTest extends TestCase
 		$expectedFiles = array_map(static fn (string $path): string => $fileHelper->normalizePath($path), $expectedFiles);
 		sort($expectedFiles);
 
-		$this->assertSame($expectedFiles, $autoloadFiles);
+		self::assertSame($expectedFiles, $autoloadFiles);
 	}
 
 }

@@ -139,8 +139,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$result = TypeCombinator::addNull($type);
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		self::assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
+		self::assertInstanceOf($expectedTypeClass, $result);
 	}
 
 	/**
@@ -154,8 +154,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$result = TypeCombinator::union($type, new NullType());
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		self::assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
+		self::assertInstanceOf($expectedTypeClass, $result);
 	}
 
 	public static function dataRemoveNull(): array
@@ -257,8 +257,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$result = TypeCombinator::removeNull($type);
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		self::assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
+		self::assertInstanceOf($expectedTypeClass, $result);
 	}
 
 	public static function dataUnion(): iterable
@@ -2835,7 +2835,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			}
 		}
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
@@ -2844,7 +2844,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			))),
 		);
 
-		$this->assertInstanceOf($expectedTypeClass, $actualType);
+		self::assertInstanceOf($expectedTypeClass, $actualType);
 
 		$hasSubtraction = false;
 		foreach ($types as $type) {
@@ -2891,7 +2891,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=final';
 			}
 		}
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
@@ -2899,7 +2899,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$types,
 			))),
 		);
-		$this->assertInstanceOf($expectedTypeClass, $actualType);
+		self::assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	public static function dataIntersect(): iterable
@@ -4798,8 +4798,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 			}
 		}
 
-		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
-		$this->assertInstanceOf($expectedTypeClass, $actualType);
+		self::assertSame($expectedTypeDescription, $actualTypeDescription);
+		self::assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	/**
@@ -4840,8 +4840,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=final';
 			}
 		}
-		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
-		$this->assertInstanceOf($expectedTypeClass, $actualType);
+		self::assertSame($expectedTypeDescription, $actualTypeDescription);
+		self::assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
 	public static function dataRemove(): array
@@ -5368,8 +5368,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
-		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
-		$this->assertInstanceOf($expectedTypeClass, $result);
+		self::assertSame($expectedTypeDescription, $actualTypeDescription);
+		self::assertInstanceOf($expectedTypeClass, $result);
 	}
 
 	public function testSpecificUnionConstantArray(): void
@@ -5387,8 +5387,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 			}
 		}
 		$resultType = TypeCombinator::union(...$arrays);
-		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
-		$this->assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
+		self::assertInstanceOf(ConstantArrayType::class, $resultType);
+		self::assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
 	#[DataProvider('dataContainsNull')]
@@ -5397,7 +5397,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		bool $expectedResult,
 	): void
 	{
-		$this->assertSame($expectedResult, TypeCombinator::containsNull($type));
+		self::assertSame($expectedResult, TypeCombinator::containsNull($type));
 	}
 
 	public static function dataContainsNull(): iterable

@@ -145,16 +145,16 @@ class CommandHelperTest extends TestCase
 		rewind($output->getStream());
 
 		$contents = stream_get_contents($output->getStream());
-		$this->assertStringContainsString($expectedOutput, $contents);
+		self::assertStringContainsString($expectedOutput, $contents);
 
 		if (isset($result)) {
 			$parameters = $result->getContainer()->getParameters();
 			foreach ($expectedParameters as $name => $expectedValue) {
-				$this->assertArrayHasKey($name, $parameters);
-				$this->assertSame($expectedValue, $parameters[$name]);
+				self::assertArrayHasKey($name, $parameters);
+				self::assertSame($expectedValue, $parameters[$name]);
 			}
 		} else {
-			$this->assertCount(0, $expectedParameters);
+			self::assertCount(0, $expectedParameters);
 		}
 	}
 
@@ -314,8 +314,8 @@ class CommandHelperTest extends TestCase
 		);
 		$parameters = $result->getContainer()->getParameters();
 		foreach ($expectedParameters as $name => $expectedValue) {
-			$this->assertArrayHasKey($name, $parameters);
-			$this->assertSame($expectedValue, $parameters[$name]);
+			self::assertArrayHasKey($name, $parameters);
+			self::assertSame($expectedValue, $parameters[$name]);
 		}
 	}
 

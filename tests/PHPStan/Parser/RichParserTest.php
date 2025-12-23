@@ -323,8 +323,8 @@ class RichParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
 		$ast = $parser->parseString($code);
 		$lines = $ast[0]->getAttribute('linesToIgnore');
-		$this->assertNull($ast[0]->getAttribute('linesToIgnoreParseErrors'));
-		$this->assertSame($expectedLines, $lines);
+		self::assertNull($ast[0]->getAttribute('linesToIgnoreParseErrors'));
+		self::assertSame($expectedLines, $lines);
 	}
 
 	public static function dataLinesToIgnoreParseErrors(): iterable
@@ -536,12 +536,12 @@ class RichParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getService('currentPhpVersionRichParser');
 		$ast = $parser->parseString($code);
 		$errors = $ast[0]->getAttribute('linesToIgnoreParseErrors');
-		$this->assertIsArray($errors);
-		$this->assertSame($expectedErrors, $errors);
+		self::assertIsArray($errors);
+		self::assertSame($expectedErrors, $errors);
 
 		$lines = $ast[0]->getAttribute('linesToIgnore');
-		$this->assertIsArray($lines);
-		$this->assertCount(0, $lines);
+		self::assertIsArray($lines);
+		self::assertCount(0, $lines);
 	}
 
 }

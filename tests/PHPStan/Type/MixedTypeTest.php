@@ -164,7 +164,7 @@ class MixedTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(MixedType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -231,7 +231,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isArray();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isArray()', $subtracted->describe(VerbosityLevel::precise())),
@@ -303,7 +303,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isConstantArray();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isConstantArray()', $subtracted->describe(VerbosityLevel::precise())),
@@ -353,7 +353,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isString()', $subtracted->describe(VerbosityLevel::precise())),
@@ -403,7 +403,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNumericString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNumericString()', $subtracted->describe(VerbosityLevel::precise())),
@@ -461,7 +461,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNonEmptyString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNonEmptyString()', $subtracted->describe(VerbosityLevel::precise())),
@@ -519,7 +519,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNonFalsyString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNonFalsyString()', $subtracted->describe(VerbosityLevel::precise())),
@@ -585,7 +585,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isClassString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isClassStringType()', $subtracted->describe(VerbosityLevel::precise())),
@@ -627,7 +627,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isVoid();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isVoid()', $subtracted->describe(VerbosityLevel::precise())),
@@ -656,7 +656,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isScalar();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isScalar()', $subtracted->describe(VerbosityLevel::precise())),
@@ -685,7 +685,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isLiteralString();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isLiteralString()', $subtracted->describe(VerbosityLevel::precise())),
@@ -737,7 +737,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isBoolean();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isBoolean()', $subtracted->describe(VerbosityLevel::precise())),
@@ -776,7 +776,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isFalse();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isFalse()', $subtracted->describe(VerbosityLevel::precise())),
@@ -815,7 +815,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isNull();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNull()', $subtracted->describe(VerbosityLevel::precise())),
@@ -859,7 +859,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isTrue();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isTrue()', $subtracted->describe(VerbosityLevel::precise())),
@@ -898,7 +898,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isFloat();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isFloat()', $subtracted->describe(VerbosityLevel::precise())),
@@ -932,7 +932,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isInteger();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isInteger()', $subtracted->describe(VerbosityLevel::precise())),
@@ -966,7 +966,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isIterable();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterable()', $subtracted->describe(VerbosityLevel::precise())),
@@ -1019,7 +1019,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isOffsetAccessible();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isOffsetAccessible()', $subtracted->describe(VerbosityLevel::precise())),
@@ -1064,7 +1064,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->isOffsetAccessLegal();
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isOffsetAccessLegal()', $subtracted->describe(VerbosityLevel::precise())),
@@ -1122,7 +1122,7 @@ class MixedTypeTest extends PHPStanTestCase
 		$subtracted = $mixedType->subtract($typeToSubtract);
 		$actualResult = $subtracted->hasOffsetValueType($offsetType);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasOffsetValueType()', $subtracted->describe(VerbosityLevel::precise())),
@@ -1132,7 +1132,7 @@ class MixedTypeTest extends PHPStanTestCase
 	#[DataProvider('dataEquals')]
 	public function testEquals(MixedType $mixedType, Type $typeToCompare, bool $expectedResult): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult,
 			$mixedType->equals($typeToCompare),
 			sprintf('%s -> equals(%s)', $mixedType->describe(VerbosityLevel::precise()), $typeToCompare->describe(VerbosityLevel::precise())),

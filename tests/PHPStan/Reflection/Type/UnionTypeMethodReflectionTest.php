@@ -20,7 +20,7 @@ class UnionTypeMethodReflectionTest extends PHPStanTestCase
 			],
 		);
 
-		$this->assertSame('Deprecated', $reflection->getDeprecatedDescription());
+		self::assertSame('Deprecated', $reflection->getDeprecatedDescription());
 	}
 
 	public function testMultipleDeprecationsAreJoined(): void
@@ -33,7 +33,7 @@ class UnionTypeMethodReflectionTest extends PHPStanTestCase
 			],
 		);
 
-		$this->assertSame('Deprecated #1 Deprecated #2', $reflection->getDeprecatedDescription());
+		self::assertSame('Deprecated #1 Deprecated #2', $reflection->getDeprecatedDescription());
 	}
 
 	private function createDeprecatedMethod(TrinaryLogic $deprecated, ?string $deprecationText): ExtendedMethodReflection

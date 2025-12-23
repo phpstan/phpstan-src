@@ -269,17 +269,17 @@ class AttributeReflectionTest extends PHPStanTestCase
 		array $expectations,
 	): void
 	{
-		$this->assertCount(count($expectations), $attributeReflections);
+		self::assertCount(count($expectations), $attributeReflections);
 		foreach ($expectations as $i => [$name, $argumentTypes]) {
 			$attribute = $attributeReflections[$i];
-			$this->assertSame($name, $attribute->getName());
+			self::assertSame($name, $attribute->getName());
 
 			$attributeArgumentTypes = $attribute->getArgumentTypes();
-			$this->assertCount(count($argumentTypes), $attributeArgumentTypes);
+			self::assertCount(count($argumentTypes), $attributeArgumentTypes);
 
 			foreach ($argumentTypes as $argumentName => $argumentType) {
-				$this->assertArrayHasKey($argumentName, $attributeArgumentTypes);
-				$this->assertSame($argumentType, $attributeArgumentTypes[$argumentName]->describe(VerbosityLevel::precise()));
+				self::assertArrayHasKey($argumentName, $attributeArgumentTypes);
+				self::assertSame($argumentType, $attributeArgumentTypes[$argumentName]->describe(VerbosityLevel::precise()));
 			}
 		}
 	}

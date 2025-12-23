@@ -115,7 +115,7 @@ class InitializerExprTypeResolverTest extends PHPStanTestCase
 			$right,
 			$callback,
 		);
-		$this->assertInstanceOf($resultClass, $result);
+		self::assertInstanceOf($resultClass, $result);
 
 		if (!($result instanceof NeverType)) {
 			return;
@@ -124,7 +124,7 @@ class InitializerExprTypeResolverTest extends PHPStanTestCase
 		if ($resultIsExplicit === null) {
 			throw new ShouldNotHappenException();
 		}
-		$this->assertSame($resultIsExplicit, $result->isExplicit());
+		self::assertSame($resultIsExplicit, $result->isExplicit());
 	}
 
 }

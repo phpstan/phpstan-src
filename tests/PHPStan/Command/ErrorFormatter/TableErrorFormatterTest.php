@@ -285,12 +285,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			putenv($envVar);
 		}
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(false, $verbose),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
+		self::assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
 	}
 
 	public function testEditorUrlWithTrait(): void
@@ -299,7 +299,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, filePath: 'Foo.php', traitFilePath: 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
 
-		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
+		self::assertStringContainsString('Bar.php', $this->getOutputContent());
 	}
 
 	public function testEditorUrlWithRelativePath(): void
@@ -308,7 +308,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
 
-		$this->assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
+		self::assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
 	}
 
 	public function testEditorUrlWithCustomTitle(): void
@@ -317,7 +317,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
 
-		$this->assertStringContainsString('rel/Foo.php:12', $this->getOutputContent(true));
+		self::assertStringContainsString('rel/Foo.php:12', $this->getOutputContent(true));
 	}
 
 	public function testBug6727(): void
@@ -406,7 +406,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			),
 			$this->getOutput(),
 		);
-		$this->assertSame(
+		self::assertSame(
 			<<<'TABLE'
  ------ -------------------------------------------------------------------------------------------------------------------------------------------------
   Line   bla.php
@@ -445,7 +445,7 @@ TABLE,
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
 
-		$this->assertStringContainsString('at rel/Foo.php:12', $this->getOutputContent(true));
+		self::assertStringContainsString('at rel/Foo.php:12', $this->getOutputContent(true));
 	}
 
 	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter

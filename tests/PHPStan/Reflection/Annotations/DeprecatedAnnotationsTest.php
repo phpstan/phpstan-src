@@ -108,31 +108,31 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$scope->method('canReadProperty')->willReturn(true);
 		$scope->method('canWriteProperty')->willReturn(true);
 
-		$this->assertSame($deprecated, $class->isDeprecated());
-		$this->assertSame($classDeprecation, $class->getDeprecatedDescription());
+		self::assertSame($deprecated, $class->isDeprecated());
+		self::assertSame($classDeprecation, $class->getDeprecatedDescription());
 
 		foreach ($deprecatedAnnotations['method'] ?? [] as $methodName => $deprecatedMessage) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);
-			$this->assertSame($deprecated, $methodAnnotation->isDeprecated()->yes());
-			$this->assertSame($deprecatedMessage, $methodAnnotation->getDeprecatedDescription());
+			self::assertSame($deprecated, $methodAnnotation->isDeprecated()->yes());
+			self::assertSame($deprecatedMessage, $methodAnnotation->getDeprecatedDescription());
 		}
 
 		foreach ($deprecatedAnnotations['property'] ?? [] as $propertyName => $deprecatedMessage) {
 			$propertyAnnotation = $class->getInstanceProperty($propertyName, $scope);
-			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
-			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
+			self::assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
+			self::assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
 		}
 
 		foreach ($deprecatedAnnotations['staticProperty'] ?? [] as $propertyName => $deprecatedMessage) {
 			$propertyAnnotation = $class->getStaticProperty($propertyName);
-			$this->assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
-			$this->assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
+			self::assertSame($deprecated, $propertyAnnotation->isDeprecated()->yes());
+			self::assertSame($deprecatedMessage, $propertyAnnotation->getDeprecatedDescription());
 		}
 
 		foreach ($deprecatedAnnotations['constant'] ?? [] as $constantName => $deprecatedMessage) {
 			$constantAnnotation = $class->getConstant($constantName);
-			$this->assertSame($deprecated, $constantAnnotation->isDeprecated()->yes());
-			$this->assertSame($deprecatedMessage, $constantAnnotation->getDeprecatedDescription());
+			self::assertSame($deprecated, $constantAnnotation->isDeprecated()->yes());
+			self::assertSame($deprecatedMessage, $constantAnnotation->getDeprecatedDescription());
 		}
 	}
 
@@ -142,33 +142,33 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\foo'), null)->isDeprecated()->yes());
-		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\deprecatedFoo'), null)->isDeprecated()->yes());
+		self::assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\foo'), null)->isDeprecated()->yes());
+		self::assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('DeprecatedAnnotations\deprecatedFoo'), null)->isDeprecated()->yes());
 	}
 
 	public function testNonDeprecatedNativeFunctions(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertFalse($reflectionProvider->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
-		$this->assertFalse($reflectionProvider->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
-		$this->assertFalse($reflectionProvider->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
+		self::assertFalse($reflectionProvider->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
+		self::assertFalse($reflectionProvider->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
+		self::assertFalse($reflectionProvider->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
 	}
 
 	public function testDeprecatedMethodsFromInterface(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(DeprecatedBar::class);
-		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+		self::assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 	}
 
 	public function testNotDeprecatedChildMethods(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertTrue($reflectionProvider->getClass(BazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->yes());
-		$this->assertTrue($reflectionProvider->getClass(SubBazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
-		$this->assertTrue($reflectionProvider->getClass(Baz::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
+		self::assertTrue($reflectionProvider->getClass(BazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+		self::assertTrue($reflectionProvider->getClass(SubBazInterface::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
+		self::assertTrue($reflectionProvider->getClass(Baz::class)->getNativeMethod('superDeprecated')->isDeprecated()->no());
 	}
 
 	public static function dataDeprecatedAttributeAboveFunction(): iterable
@@ -210,8 +210,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 
 		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
-		$this->assertSame($isDeprecated->describe(), $function->isDeprecated()->describe());
-		$this->assertSame($deprecatedDescription, $function->getDeprecatedDescription());
+		self::assertSame($isDeprecated->describe(), $function->isDeprecated()->describe());
+		self::assertSame($deprecatedDescription, $function->getDeprecatedDescription());
 	}
 
 	public static function dataDeprecatedAttributeAboveMethod(): iterable
@@ -248,8 +248,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$method = $class->getNativeMethod($methodName);
-		$this->assertSame($isDeprecated->describe(), $method->isDeprecated()->describe());
-		$this->assertSame($deprecatedDescription, $method->getDeprecatedDescription());
+		self::assertSame($isDeprecated->describe(), $method->isDeprecated()->describe());
+		self::assertSame($deprecatedDescription, $method->getDeprecatedDescription());
 	}
 
 	public static function dataDeprecatedAttributeAboveClassConstant(): iterable
@@ -309,8 +309,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$constant = $class->getConstant($constantName);
-		$this->assertSame($isDeprecated->describe(), $constant->isDeprecated()->describe());
-		$this->assertSame($deprecatedDescription, $constant->getDeprecatedDescription());
+		self::assertSame($isDeprecated->describe(), $constant->isDeprecated()->describe());
+		self::assertSame($deprecatedDescription, $constant->getDeprecatedDescription());
 	}
 
 	public static function dataDeprecatedAttributeAboveEnumCase(): iterable
@@ -342,8 +342,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$case = $class->getEnumCase($caseName);
-		$this->assertSame($isDeprecated->describe(), $case->isDeprecated()->describe());
-		$this->assertSame($deprecatedDescription, $case->getDeprecatedDescription());
+		self::assertSame($isDeprecated->describe(), $case->isDeprecated()->describe());
+		self::assertSame($deprecatedDescription, $case->getDeprecatedDescription());
 	}
 
 	public static function dataDeprecatedAttributeAbovePropertyHook(): iterable
@@ -396,8 +396,8 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 		$class = $reflectionProvider->getClass($className);
 		$property = $class->getNativeProperty($propertyName);
 		$hook = $property->getHook($hookName);
-		$this->assertSame($isDeprecated->describe(), $hook->isDeprecated()->describe());
-		$this->assertSame($deprecatedDescription, $hook->getDeprecatedDescription());
+		self::assertSame($isDeprecated->describe(), $hook->isDeprecated()->describe());
+		self::assertSame($deprecatedDescription, $hook->getDeprecatedDescription());
 	}
 
 }

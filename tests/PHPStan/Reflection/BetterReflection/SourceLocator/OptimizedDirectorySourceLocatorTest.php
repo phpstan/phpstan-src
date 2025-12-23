@@ -78,9 +78,9 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
 		$reflector = new DefaultReflector($locator);
 		$classReflection = $reflector->reflectClass($className);
-		$this->assertSame($expectedClassName, $classReflection->getName());
-		$this->assertNotNull($classReflection->getFileName());
-		$this->assertSame($file, basename($classReflection->getFileName()));
+		self::assertSame($expectedClassName, $classReflection->getName());
+		self::assertNotNull($classReflection->getFileName());
+		self::assertSame($file, basename($classReflection->getFileName()));
 	}
 
 	public static function dataFunctionExists(): array
@@ -136,9 +136,9 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
 		$reflector = new DefaultReflector($locator);
 		$functionReflection = $reflector->reflectFunction($functionName);
-		$this->assertSame($expectedFunctionName, $functionReflection->getName());
-		$this->assertNotNull($functionReflection->getFileName());
-		$this->assertSame($file, basename($functionReflection->getFileName()));
+		self::assertSame($expectedFunctionName, $functionReflection->getName());
+		self::assertNotNull($functionReflection->getFileName());
+		self::assertSame($file, basename($functionReflection->getFileName()));
 	}
 
 	public static function dataConstant(): iterable
@@ -212,8 +212,8 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		} else {
 			$constantReflection = $reflector->reflectConstant($constantName);
 
-			$this->assertNotNull($constantReflection->getFileName());
-			$this->assertSame($expectedFile, basename($constantReflection->getFileName()));
+			self::assertNotNull($constantReflection->getFileName());
+			self::assertSame($expectedFile, basename($constantReflection->getFileName()));
 		}
 	}
 
@@ -244,7 +244,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		}
 
 		$actualClasses = array_map(static fn (Reflection $reflection) => $reflection->getName(), $classIdentifiers);
-		$this->assertEqualsCanonicalizing($expectedClasses, $actualClasses);
+		self::assertEqualsCanonicalizing($expectedClasses, $actualClasses);
 
 		$functionIdentifiers = $locator->locateIdentifiersByType(
 			$reflector,
@@ -253,7 +253,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 		$actualFunctions = array_map(static fn (Reflection $reflection) => $reflection->getName(), $functionIdentifiers);
 
-		$this->assertEqualsCanonicalizing([
+		self::assertEqualsCanonicalizing([
 			'TestDirectorySourceLocator\doLorem',
 			'OptimizedDirectory\doBar',
 			'OptimizedDirectory\doBaz',
@@ -269,7 +269,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 		$actualConstants = array_map(static fn (Reflection $reflection) => $reflection->getName(), $constantIdentifiers);
 
-		$this->assertEqualsCanonicalizing([
+		self::assertEqualsCanonicalizing([
 			'NOTHING',
 			'OptimizedDirectory\SOMETHING',
 			'OptimizedDirectory2\ANYTHING',
@@ -314,7 +314,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 
 		/** @var string $className */
 		$className = $class->getName();
-		$this->assertSame('Faker\\Provider\\nl_BE\\Text', $className);
+		self::assertSame('Faker\\Provider\\nl_BE\\Text', $className);
 	}
 
 }

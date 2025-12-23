@@ -63,7 +63,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testIsIterable(ObjectType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterable()', $type->describe(VerbosityLevel::precise())),
@@ -90,7 +90,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testIsEnum(ObjectType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isEnum();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isEnum()', $type->describe(VerbosityLevel::precise())),
@@ -110,7 +110,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testIsCallable(ObjectType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
@@ -485,7 +485,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(ObjectType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -550,7 +550,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->result->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
@@ -588,7 +588,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testHasConstant(ObjectType $type, string $constantName, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasConstant($constantName);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasConstant("%s")', $type->describe(VerbosityLevel::precise()), $constantName),
@@ -599,8 +599,8 @@ class ObjectTypeTest extends PHPStanTestCase
 	{
 		$objectType = new ObjectType(Traversable::class);
 		$classReflection = $objectType->getClassReflection();
-		$this->assertNotNull($classReflection);
-		$this->assertSame('Traversable<mixed,mixed>', $classReflection->getDisplayName());
+		self::assertNotNull($classReflection);
+		self::assertSame('Traversable<mixed,mixed>', $classReflection->getDisplayName());
 	}
 
 	public static function dataHasOffsetValueType(): array
@@ -666,7 +666,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		TrinaryLogic $expectedResult,
 	): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$type->hasOffsetValueType($offsetType)->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),
@@ -716,10 +716,10 @@ class ObjectTypeTest extends PHPStanTestCase
 	): void
 	{
 		$enumCases = $type->getEnumCases();
-		$this->assertCount(count($expectedEnumCases), $enumCases);
+		self::assertCount(count($expectedEnumCases), $enumCases);
 		foreach ($enumCases as $i => $enumCase) {
 			$expectedEnumCase = $expectedEnumCases[$i];
-			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
+			self::assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
 		}
 	}
 
@@ -727,22 +727,22 @@ class ObjectTypeTest extends PHPStanTestCase
 	{
 		$type = new ObjectType(GenericClass::class);
 		$classReflection = $type->getClassReflection();
-		$this->assertNotNull($classReflection);
+		self::assertNotNull($classReflection);
 		$tModlel = $classReflection->getActiveTemplateTypeMap()->getType('TModlel');
-		$this->assertNotNull($tModlel);
-		$this->assertSame(BaseModel::class, $tModlel->describe(VerbosityLevel::precise()));
+		self::assertNotNull($tModlel);
+		self::assertSame(BaseModel::class, $tModlel->describe(VerbosityLevel::precise()));
 	}
 
 	public function testClassReflectionParentWithTemplateBound(): void
 	{
 		$type = new ObjectType(ChildGenericGenericClass::class);
 		$classReflection = $type->getClassReflection();
-		$this->assertNotNull($classReflection);
+		self::assertNotNull($classReflection);
 		$ancestor = $classReflection->getAncestorWithClassName(GenericClass::class);
-		$this->assertNotNull($ancestor);
+		self::assertNotNull($ancestor);
 		$tModlel = $ancestor->getActiveTemplateTypeMap()->getType('TModlel');
-		$this->assertNotNull($tModlel);
-		$this->assertSame(Model::class, $tModlel->describe(VerbosityLevel::precise()));
+		self::assertNotNull($tModlel);
+		self::assertSame(Model::class, $tModlel->describe(VerbosityLevel::precise()));
 	}
 
 }

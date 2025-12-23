@@ -45,16 +45,16 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$funcCall = new FuncCall($funcName, $args);
 
 		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
+		self::assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(2, $reorderedArgs);
+		self::assertCount(2, $reorderedArgs);
 
-		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
+		self::assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
+		self::assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
-		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
-		$this->assertSame(0, $reorderedArgs[1]->value->value);
+		self::assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
+		self::assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
+		self::assertSame(0, $reorderedArgs[1]->value->value);
 	}
 
 	/**
@@ -84,21 +84,21 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$funcCall = new FuncCall($funcName, $args);
 
 		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
+		self::assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(3, $reorderedArgs);
+		self::assertCount(3, $reorderedArgs);
 
-		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
+		self::assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
+		self::assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
-		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
-		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
-		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue(), 'flags-arg with default value');
+		self::assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
+		self::assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
+		self::assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
+		self::assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue(), 'flags-arg with default value');
 
-		$this->assertNull($reorderedArgs[2]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[2]->value, 'depth-arg at the right position');
-		$this->assertSame(128, $reorderedArgs[2]->value->value);
+		self::assertNull($reorderedArgs[2]->name, 'named-arg turned into regular numeric arg');
+		self::assertInstanceOf(LNumber::class, $reorderedArgs[2]->value, 'depth-arg at the right position');
+		self::assertSame(128, $reorderedArgs[2]->value->value);
 	}
 
 	#[RequiresPhp('>= 8.0')]
@@ -120,7 +120,7 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		];
 		$funcCall = new FuncCall($funcName, $args);
 
-		$this->assertNull(ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall));
+		self::assertNull(ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall));
 	}
 
 	public function testLeaveRegularCallAsIs(): void
@@ -144,13 +144,13 @@ final class ArgumentsNormalizerLegacyTest extends PHPStanTestCase
 		$funcCall = new FuncCall($funcName, $args);
 
 		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
+		self::assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(2, $reorderedArgs);
+		self::assertCount(2, $reorderedArgs);
 
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at unchanged position');
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at unchanged position');
-		$this->assertSame(0, $reorderedArgs[1]->value->value);
+		self::assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at unchanged position');
+		self::assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at unchanged position');
+		self::assertSame(0, $reorderedArgs[1]->value->value);
 	}
 
 }

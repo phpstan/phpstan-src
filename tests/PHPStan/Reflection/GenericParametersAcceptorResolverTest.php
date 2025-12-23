@@ -434,12 +434,12 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 			$parametersAcceptor,
 		);
 
-		$this->assertInstanceOf(
+		self::assertInstanceOf(
 			get_class($expectedResult->getReturnType()),
 			$result->getReturnType(),
 			'Unexpected return type',
 		);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->getReturnType()->describe(VerbosityLevel::precise()),
 			$result->getReturnType()->describe(VerbosityLevel::precise()),
 			'Unexpected return type',
@@ -448,15 +448,15 @@ class GenericParametersAcceptorResolverTest extends PHPStanTestCase
 		$resultParameters = $result->getParameters();
 		$expectedParameters = $expectedResult->getParameters();
 
-		$this->assertCount(count($expectedParameters), $resultParameters);
+		self::assertCount(count($expectedParameters), $resultParameters);
 
 		foreach ($expectedParameters as $i => $param) {
-			$this->assertInstanceOf(
+			self::assertInstanceOf(
 				get_class($param->getType()),
 				$resultParameters[$i]->getType(),
 				sprintf('Unexpected parameter %d', $i + 1),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$param->getType()->describe(VerbosityLevel::precise()),
 				$resultParameters[$i]->getType()->describe(VerbosityLevel::precise()),
 				sprintf('Unexpected parameter %d', $i + 1),

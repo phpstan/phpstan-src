@@ -483,43 +483,43 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 	): void
 	{
 		$selectedAcceptor = ParametersAcceptorSelector::selectFromTypes($types, $variants, $unpack);
-		$this->assertCount(count($expected->getParameters()), $selectedAcceptor->getParameters());
+		self::assertCount(count($expected->getParameters()), $selectedAcceptor->getParameters());
 		foreach ($selectedAcceptor->getParameters() as $i => $parameter) {
 			$expectedParameter = $expected->getParameters()[$i];
-			$this->assertSame(
+			self::assertSame(
 				$expectedParameter->getName(),
 				$parameter->getName(),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedParameter->isOptional(),
 				$parameter->isOptional(),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedParameter->getType()->describe(VerbosityLevel::precise()),
 				$parameter->getType()->describe(VerbosityLevel::precise()),
 			);
-			$this->assertTrue(
+			self::assertTrue(
 				$expectedParameter->passedByReference()->equals($parameter->passedByReference()),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedParameter->isVariadic(),
 				$parameter->isVariadic(),
 			);
 			if ($expectedParameter->getDefaultValue() === null) {
-				$this->assertNull($parameter->getDefaultValue());
+				self::assertNull($parameter->getDefaultValue());
 			} else {
-				$this->assertSame(
+				self::assertSame(
 					$expectedParameter->getDefaultValue()->describe(VerbosityLevel::precise()),
 					$parameter->getDefaultValue() !== null ? $parameter->getDefaultValue()->describe(VerbosityLevel::precise()) : null,
 				);
 			}
 		}
 
-		$this->assertSame(
+		self::assertSame(
 			$expected->getReturnType()->describe(VerbosityLevel::precise()),
 			$selectedAcceptor->getReturnType()->describe(VerbosityLevel::precise()),
 		);
-		$this->assertSame($expected->isVariadic(), $selectedAcceptor->isVariadic());
+		self::assertSame($expected->isVariadic(), $selectedAcceptor->isVariadic());
 	}
 
 }

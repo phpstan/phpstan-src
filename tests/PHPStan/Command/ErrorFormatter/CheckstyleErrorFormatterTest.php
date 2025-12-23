@@ -122,14 +122,14 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = new CheckstyleErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$outputContent = $this->getOutputContent();
-		$this->assertXmlStringEqualsXmlString($expected, $outputContent, sprintf('%s: XML do not match', $message));
-		$this->assertStringStartsWith('<?xml', $outputContent);
+		self::assertXmlStringEqualsXmlString($expected, $outputContent, sprintf('%s: XML do not match', $message));
+		self::assertStringStartsWith('<?xml', $outputContent);
 	}
 
 	public function testTraitPath(): void
@@ -155,7 +155,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			false,
 			[],
 		), $this->getOutput());
-		$this->assertXmlStringEqualsXmlString('<checkstyle>
+		self::assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="FooTrait.php">
 		<error column="1" line="5" message="Foo" severity="error"/>
 	</file>
@@ -184,7 +184,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			true,
 			[],
 		), $this->getOutput());
-		$this->assertXmlStringEqualsXmlString('<checkstyle>
+		self::assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="Foo.php">
 		<error column="1" line="5" message="Foo" severity="error" source="argument.type" />
 	</file>

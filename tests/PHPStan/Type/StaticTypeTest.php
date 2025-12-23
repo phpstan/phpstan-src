@@ -44,7 +44,7 @@ class StaticTypeTest extends PHPStanTestCase
 	public function testIsIterable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterable()', $type->describe(VerbosityLevel::precise())),
@@ -65,7 +65,7 @@ class StaticTypeTest extends PHPStanTestCase
 	public function testIsCallable(StaticType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
@@ -292,7 +292,7 @@ class StaticTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -330,8 +330,8 @@ class StaticTypeTest extends PHPStanTestCase
 	#[DataProvider('dataEquals')]
 	public function testEquals(StaticType $type, StaticType $otherType, bool $expected): void
 	{
-		$this->assertSame($expected, $type->equals($otherType));
-		$this->assertSame($expected, $otherType->equals($type));
+		self::assertSame($expected, $type->equals($otherType));
+		self::assertSame($expected, $otherType->equals($type));
 	}
 
 	public static function dataAccepts(): iterable
@@ -452,7 +452,7 @@ class StaticTypeTest extends PHPStanTestCase
 	public function testAccepts(StaticType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->result->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),

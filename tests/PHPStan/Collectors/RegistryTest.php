@@ -18,10 +18,10 @@ class RegistryTest extends PHPStanTestCase
 		]);
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
-		$this->assertCount(1, $collectors);
-		$this->assertSame($collector, $collectors[0]);
+		self::assertCount(1, $collectors);
+		self::assertSame($collector, $collectors[0]);
 
-		$this->assertCount(0, $registry->getCollectors(Node\Expr\MethodCall::class));
+		self::assertCount(0, $registry->getCollectors(Node\Expr\MethodCall::class));
 	}
 
 	public function testGetCollectorsWithTwoDifferentInstances(): void
@@ -35,11 +35,11 @@ class RegistryTest extends PHPStanTestCase
 		]);
 
 		$collectors = $registry->getCollectors(Node\Expr\FuncCall::class);
-		$this->assertCount(2, $collectors);
-		$this->assertSame($fooCollector, $collectors[0]);
-		$this->assertSame($barCollector, $collectors[1]);
+		self::assertCount(2, $collectors);
+		self::assertSame($fooCollector, $collectors[0]);
+		self::assertSame($barCollector, $collectors[1]);
 
-		$this->assertCount(0, $registry->getCollectors(Node\Expr\MethodCall::class));
+		self::assertCount(0, $registry->getCollectors(Node\Expr\MethodCall::class));
 	}
 
 }

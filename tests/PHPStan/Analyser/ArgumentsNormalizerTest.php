@@ -284,15 +284,15 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			),
 			new FuncCall(new Name('foo'), $arguments),
 		);
-		$this->assertNotNull($normalized);
+		self::assertNotNull($normalized);
 
 		$actualArguments = $normalized->getArgs();
-		$this->assertCount(count($expectedArgumentTypes), $actualArguments);
+		self::assertCount(count($expectedArgumentTypes), $actualArguments);
 		foreach ($actualArguments as $i => $actualArgument) {
-			$this->assertNull($actualArgument->name);
+			self::assertNull($actualArgument->name);
 			$value = $actualArgument->value;
-			$this->assertInstanceOf(TypeExpr::class, $value);
-			$this->assertSame(
+			self::assertInstanceOf(TypeExpr::class, $value);
+			self::assertSame(
 				$expectedArgumentTypes[$i]->describe(VerbosityLevel::precise()),
 				$value->getExprType()->describe(VerbosityLevel::precise()),
 			);
@@ -362,7 +362,7 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			),
 			new FuncCall(new Name('foo'), $arguments),
 		);
-		$this->assertNull($normalized);
+		self::assertNull($normalized);
 	}
 
 }

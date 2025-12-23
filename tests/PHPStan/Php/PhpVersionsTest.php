@@ -17,7 +17,7 @@ class PhpVersionsTest extends TestCase
 	public function testProducesWarningForFinalPrivateMethods(TrinaryLogic $expected, Type $versionType): void
 	{
 		$phpVersions = new PhpVersions($versionType);
-		$this->assertSame(
+		self::assertSame(
 			$expected->describe(),
 			$phpVersions->producesWarningForFinalPrivateMethods()->describe(),
 		);

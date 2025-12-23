@@ -14,16 +14,16 @@ class ConditionalTagsExtensionTest extends PHPStanTestCase
 	{
 		$enabledServices = self::getContainer()->getServicesByTag(LazyRegistry::RULE_TAG);
 		$enabledServices = array_map(static fn ($service) => get_class($service), $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceDisabled::class, $enabledServices);
-		$this->assertContains(TestedConditionalServiceEnabled::class, $enabledServices);
-		$this->assertContains(TestedConditionalServiceNotDisabled::class, $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceNotEnabled::class, $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceDisabledDisabled::class, $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceDisabledEnabled::class, $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceEnabledDisabled::class, $enabledServices);
-		$this->assertContains(TestedConditionalServiceEnabledEnabled::class, $enabledServices);
-		$this->assertContains(TestedConditionalServiceEnabledNotDisabled::class, $enabledServices);
-		$this->assertNotContains(TestedConditionalServiceEnabledNotEnabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceDisabled::class, $enabledServices);
+		self::assertContains(TestedConditionalServiceEnabled::class, $enabledServices);
+		self::assertContains(TestedConditionalServiceNotDisabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceNotEnabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceDisabledDisabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceDisabledEnabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceEnabledDisabled::class, $enabledServices);
+		self::assertContains(TestedConditionalServiceEnabledEnabled::class, $enabledServices);
+		self::assertContains(TestedConditionalServiceEnabledNotDisabled::class, $enabledServices);
+		self::assertNotContains(TestedConditionalServiceEnabledNotEnabled::class, $enabledServices);
 	}
 
 	/**

@@ -49,9 +49,9 @@ class RuntimeConstantReflectionTest extends PHPStanTestCase
 
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertTrue($reflectionProvider->hasConstant($constName, null));
-		$this->assertSame($isDeprecated->describe(), $reflectionProvider->getConstant($constName, null)->isDeprecated()->describe());
-		$this->assertSame($deprecationMessage, $reflectionProvider->getConstant($constName, null)->getDeprecatedDescription());
+		self::assertTrue($reflectionProvider->hasConstant($constName, null));
+		self::assertSame($isDeprecated->describe(), $reflectionProvider->getConstant($constName, null)->isDeprecated()->describe());
+		self::assertSame($deprecationMessage, $reflectionProvider->getConstant($constName, null)->getDeprecatedDescription());
 	}
 
 }

@@ -61,7 +61,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 
 		$fileHelper = new FileHelper(__DIR__);
 		$filePath = $fileHelper->normalizePath(__DIR__ . '/data/trait-definition.php');
-		$this->assertJsonStringEqualsJsonString(Json::encode([
+		self::assertJsonStringEqualsJsonString(Json::encode([
 			'totals' => [
 				'errors' => 0,
 				'file_errors' => 4,
@@ -106,7 +106,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 			],
 			'errors' => [],
 		]), $output);
-		$this->assertSame(1, $exitCode);
+		self::assertSame(1, $exitCode);
 	}
 
 }

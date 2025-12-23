@@ -11,39 +11,39 @@ class RuleErrorBuilderTest extends TestCase
 	{
 		$builder = RuleErrorBuilder::message('Foo');
 		$ruleError = $builder->build();
-		$this->assertSame('Foo', $ruleError->getMessage());
+		self::assertSame('Foo', $ruleError->getMessage());
 	}
 
 	public function testMessageAndLineAndBuild(): void
 	{
 		$builder = RuleErrorBuilder::message('Foo')->line(25);
 		$ruleError = $builder->build();
-		$this->assertSame('Foo', $ruleError->getMessage());
+		self::assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore method.alreadyNarrowedType
-		$this->assertSame(25, $ruleError->getLine());
+		self::assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore staticMethod.alreadyNarrowedType
+		self::assertSame(25, $ruleError->getLine());
 	}
 
 	public function testMessageAndFileAndBuild(): void
 	{
 		$builder = RuleErrorBuilder::message('Foo')->file(__FILE__);
 		$ruleError = $builder->build();
-		$this->assertSame('Foo', $ruleError->getMessage());
+		self::assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(FileRuleError::class, $ruleError); // @phpstan-ignore method.alreadyNarrowedType
-		$this->assertSame(__FILE__, $ruleError->getFile());
+		self::assertInstanceOf(FileRuleError::class, $ruleError); // @phpstan-ignore staticMethod.alreadyNarrowedType
+		self::assertSame(__FILE__, $ruleError->getFile());
 	}
 
 	public function testMessageAndLineAndFileAndBuild(): void
 	{
 		$builder = RuleErrorBuilder::message('Foo')->line(25)->file(__FILE__);
 		$ruleError = $builder->build();
-		$this->assertSame('Foo', $ruleError->getMessage());
+		self::assertSame('Foo', $ruleError->getMessage());
 
-		$this->assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore method.alreadyNarrowedType
-		$this->assertInstanceOf(FileRuleError::class, $ruleError);  // @phpstan-ignore method.alreadyNarrowedType
-		$this->assertSame(25, $ruleError->getLine());
-		$this->assertSame(__FILE__, $ruleError->getFile());
+		self::assertInstanceOf(LineRuleError::class, $ruleError); // @phpstan-ignore staticMethod.alreadyNarrowedType
+		self::assertInstanceOf(FileRuleError::class, $ruleError);  // @phpstan-ignore staticMethod.alreadyNarrowedType
+		self::assertSame(25, $ruleError->getLine());
+		self::assertSame(__FILE__, $ruleError->getFile());
 	}
 
 }

@@ -238,7 +238,7 @@ return ['parameters' => ['ignoreErrors' => \$ignoreErrors]];
 			$this->getOutput(),
 		);
 
-		$this->assertSame($expectedOutput, $this->getOutputContent());
+		self::assertSame($expectedOutput, $this->getOutputContent());
 	}
 
 }

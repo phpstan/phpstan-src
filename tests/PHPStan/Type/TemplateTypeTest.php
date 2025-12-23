@@ -108,7 +108,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		assert($type instanceof TemplateType);
 
 		$actualResult = $type->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedAccept->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -117,7 +117,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		$type = $type->toArgument();
 
 		$actualResult = $type->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedAcceptArg->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s) (Argument strategy)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -295,14 +295,14 @@ class TemplateTypeTest extends PHPStanTestCase
 		assert($type instanceof TemplateType);
 
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedIsSuperType->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 
 		$actualResult = $otherType->isSuperTypeOf($type);
-		$this->assertSame(
+		self::assertSame(
 			$expectedIsSuperTypeInverse->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
@@ -365,7 +365,7 @@ class TemplateTypeTest extends PHPStanTestCase
 	{
 		$result = $template->inferTemplateTypes($received);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypes,
 			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);

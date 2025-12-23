@@ -90,8 +90,8 @@ class IgnoreLexerTest extends PHPStanTestCase
 		$tokens = $lexer->tokenize($input);
 		$lastToken = array_pop($tokens);
 
-		$this->assertSame(['', IgnoreLexer::TOKEN_END, substr_count($input, PHP_EOL) + 1], $lastToken);
-		$this->assertSame($expectedTokens, $tokens);
+		self::assertSame(['', IgnoreLexer::TOKEN_END, substr_count($input, PHP_EOL) + 1], $lastToken);
+		self::assertSame($expectedTokens, $tokens);
 	}
 
 }

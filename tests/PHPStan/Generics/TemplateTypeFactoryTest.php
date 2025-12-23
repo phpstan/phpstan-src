@@ -91,7 +91,7 @@ class TemplateTypeFactoryTest extends PHPStanTestCase
 			TemplateTypeVariance::createInvariant(),
 		);
 
-		$this->assertTrue(
+		self::assertTrue(
 			$expectedBound->equals($templateType->getBound()),
 			sprintf('%s -> equals(%s)', $expectedBound->describe(VerbosityLevel::precise()), $templateType->getBound()->describe(VerbosityLevel::precise())),
 		);

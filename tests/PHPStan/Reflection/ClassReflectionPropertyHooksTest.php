@@ -342,15 +342,15 @@ class ClassReflectionPropertyHooksTest extends PHPStanTestCase
 	): void
 	{
 		$propertyReflection = $classReflection->getNativeProperty($propertyName);
-		$this->assertSame($isVirtual, $propertyReflection->isVirtual()->yes());
+		self::assertSame($isVirtual, $propertyReflection->isVirtual()->yes());
 
 		$hookReflection = $propertyReflection->getHook($hookName);
 		$hookVariant = $hookReflection->getOnlyVariant();
-		$this->assertSame($returnType, $hookVariant->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertCount(count($parameterTypes), $hookVariant->getParameters());
+		self::assertSame($returnType, $hookVariant->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertCount(count($parameterTypes), $hookVariant->getParameters());
 
 		foreach ($hookVariant->getParameters() as $i => $parameter) {
-			$this->assertSame($parameterTypes[$i], $parameter->getType()->describe(VerbosityLevel::precise()));
+			self::assertSame($parameterTypes[$i], $parameter->getType()->describe(VerbosityLevel::precise()));
 		}
 	}
 

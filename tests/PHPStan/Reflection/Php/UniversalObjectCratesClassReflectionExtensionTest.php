@@ -19,7 +19,7 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 			['NonexistentClass', 'stdClass'],
 			new AnnotationsPropertiesClassReflectionExtension(),
 		);
-		$this->assertTrue($extension->hasProperty($reflectionProvider->getClass(stdClass::class), 'foo'));
+		self::assertTrue($extension->hasProperty($reflectionProvider->getClass(stdClass::class), 'foo'));
 	}
 
 	public function testDifferentGetSetType(): void
@@ -33,13 +33,13 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 			new AnnotationsPropertiesClassReflectionExtension(),
 		);
 
-		$this->assertEquals(
+		self::assertEquals(
 			new ObjectType('UniversalObjectCreates\DifferentGetSetTypesValue'),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
 				->getReadableType(),
 		);
-		$this->assertEquals(
+		self::assertEquals(
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
@@ -59,13 +59,13 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 			new AnnotationsPropertiesClassReflectionExtension(),
 		);
 
-		$this->assertEquals(
+		self::assertEquals(
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass($className), 'foo')
 				->getReadableType(),
 		);
-		$this->assertEquals(
+		self::assertEquals(
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass($className), 'foo')

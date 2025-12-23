@@ -58,7 +58,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
-		$this->assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
+		self::assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
 	}
 
 	public static function dataClassHierarchyDistances(): array
@@ -105,7 +105,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($class);
-		$this->assertSame(
+		self::assertSame(
 			$expectedDistances,
 			$classReflection->getClassHierarchyDistances(),
 		);
@@ -117,7 +117,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$fooReflection = $reflectionProvider->getClass(Foo::class);
 		$variadicMethod = $fooReflection->getNativeMethod('variadicMethod');
 		$methodVariant = $variadicMethod->getOnlyVariant();
-		$this->assertTrue($methodVariant->isVariadic());
+		self::assertTrue($methodVariant->isVariadic());
 	}
 
 	public function testGenericInheritance(): void
@@ -125,14 +125,14 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(C::class);
 
-		$this->assertSame('GenericInheritance\\C', $reflection->getDisplayName());
+		self::assertSame('GenericInheritance\\C', $reflection->getDisplayName());
 
 		$parent = $reflection->getParentClass();
-		$this->assertNotNull($parent);
+		self::assertNotNull($parent);
 
-		$this->assertSame('GenericInheritance\\C0<DateTime>', $parent->getDisplayName());
+		self::assertSame('GenericInheritance\\C0<DateTime>', $parent->getDisplayName());
 
-		$this->assertSame([
+		self::assertSame([
 			'GenericInheritance\\I<DateTime>',
 			'GenericInheritance\\I0<DateTime>',
 			'GenericInheritance\\I1<int>',
@@ -143,7 +143,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(ReflectionClass::class);
-		$this->assertTrue($reflection->isGeneric());
+		self::assertTrue($reflection->isGeneric());
 	}
 
 	public static function dataIsAttributeClass(): array
@@ -176,11 +176,11 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
-		$this->assertSame($expected, $reflection->isAttributeClass());
+		self::assertSame($expected, $reflection->isAttributeClass());
 		if (!$expected) {
 			return;
 		}
-		$this->assertSame($expectedFlags, $reflection->getAttributeClassFlags());
+		self::assertSame($expectedFlags, $reflection->getAttributeClassFlags());
 	}
 
 	public function testDeprecatedConstantFromAnotherFile(): void
@@ -188,7 +188,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
 		$constant = $reflection->getConstant('SECURED');
-		$this->assertTrue($constant->isDeprecated()->yes());
+		self::assertTrue($constant->isDeprecated()->yes());
 	}
 
 	/**
@@ -200,7 +200,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertSame(
+		self::assertSame(
 			array_map(
 				static fn (ClassReflection $classReflection): string => $classReflection->getNativeReflection()->getName(),
 				$reflectionProvider->getClass($className)->getTraits($recursive),
@@ -289,12 +289,12 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
-		$this->assertTrue($enum->isEnum());
+		self::assertTrue($enum->isEnum());
 
 		// @phpstan-ignore-next-line Exact error differs on PHP 7.4 and others
-		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection());
-		$this->assertTrue($enum->isFinal());
-		$this->assertTrue($enum->isFinalByKeyword());
+		self::assertInstanceOf('ReflectionEnum', $enum->getNativeReflection());
+		self::assertTrue($enum->isFinal());
+		self::assertTrue($enum->isFinalByKeyword());
 	}
 
 	#[RequiresPhp('>= 8.1')]
@@ -302,7 +302,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
-		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
+		self::assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
 	}
 
 	public function testIs(): void
@@ -312,10 +312,10 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 
-		$this->assertTrue($classReflection->is($className));
-		$this->assertTrue($classReflection->is(PHPStanTestCase::class));
-		$this->assertTrue($classReflection->is(TestCase::class));
-		$this->assertFalse($classReflection->is(RuleTestCase::class));
+		self::assertTrue($classReflection->is($className));
+		self::assertTrue($classReflection->is(PHPStanTestCase::class));
+		self::assertTrue($classReflection->is(TestCase::class));
+		self::assertFalse($classReflection->is(RuleTestCase::class));
 	}
 
 	public static function dataDeprecatedAttribute(): iterable
@@ -329,7 +329,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
-		$this->assertSame($expected, $classReflection->isDeprecated());
+		self::assertSame($expected, $classReflection->isDeprecated());
 	}
 
 }

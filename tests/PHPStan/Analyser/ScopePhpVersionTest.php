@@ -32,7 +32,7 @@ class ScopePhpVersionTest extends TypeInferenceTestCase
 			if (!($node instanceof Exit_)) {
 				return;
 			}
-			$this->assertSame(
+			self::assertSame(
 				$expected,
 				$scope->getPhpVersion()->getType()->describe(VerbosityLevel::precise()),
 			);

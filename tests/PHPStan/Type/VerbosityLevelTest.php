@@ -50,7 +50,7 @@ class VerbosityLevelTest extends PHPStanTestCase
 	{
 		$level = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
 
-		$this->assertSame($expected->getLevelValue(), $level->getLevelValue());
+		self::assertSame($expected->getLevelValue(), $level->getLevelValue());
 	}
 
 }

@@ -27,8 +27,8 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 		$stubFiles = $defaultStubFilesProvider->getStubFiles();
 
 		$fileHelper = new FileHelper(__DIR__);
-		$this->assertContains($fileHelper->normalizePath('/projectStub.stub'), $stubFiles);
-		$this->assertContains($fileHelper->normalizePath($thirdPartyStubFile), $stubFiles);
+		self::assertContains($fileHelper->normalizePath('/projectStub.stub'), $stubFiles);
+		self::assertContains($fileHelper->normalizePath($thirdPartyStubFile), $stubFiles);
 	}
 
 	public function testGetProjectStubFiles(): void
@@ -39,11 +39,11 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 		$projectStubFiles = $defaultStubFilesProvider->getProjectStubFiles();
 
 		$fileHelper = new FileHelper(__DIR__);
-		$this->assertContains($fileHelper->normalizePath('/projectStub.stub'), $projectStubFiles);
-		$this->assertNotContains($thirdPartyStubFile, $projectStubFiles);
-		$this->assertNotContains($fileHelper->normalizePath($thirdPartyStubFile), $projectStubFiles);
-		$this->assertNotContains($firstPartyStubFile, $projectStubFiles);
-		$this->assertNotContains($fileHelper->normalizePath($firstPartyStubFile), $projectStubFiles);
+		self::assertContains($fileHelper->normalizePath('/projectStub.stub'), $projectStubFiles);
+		self::assertNotContains($thirdPartyStubFile, $projectStubFiles);
+		self::assertNotContains($fileHelper->normalizePath($thirdPartyStubFile), $projectStubFiles);
+		self::assertNotContains($firstPartyStubFile, $projectStubFiles);
+		self::assertNotContains($fileHelper->normalizePath($firstPartyStubFile), $projectStubFiles);
 	}
 
 	public function testGetProjectStubFilesWhenPathContainsWindowsSeparator(): void
@@ -53,9 +53,9 @@ class DefaultStubFilesProviderTest extends PHPStanTestCase
 		$projectStubFiles = $defaultStubFilesProvider->getProjectStubFiles();
 
 		$fileHelper = new FileHelper(__DIR__);
-		$this->assertContains($fileHelper->normalizePath('/projectStub.stub'), $projectStubFiles);
-		$this->assertNotContains($thirdPartyStubFile, $projectStubFiles);
-		$this->assertNotContains($fileHelper->normalizePath($thirdPartyStubFile), $projectStubFiles);
+		self::assertContains($fileHelper->normalizePath('/projectStub.stub'), $projectStubFiles);
+		self::assertNotContains($thirdPartyStubFile, $projectStubFiles);
+		self::assertNotContains($fileHelper->normalizePath($thirdPartyStubFile), $projectStubFiles);
 	}
 
 	/**

@@ -102,12 +102,12 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			$relativePathHelper,
 		);
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertSame($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+		self::assertSame($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
 	}
 
 }

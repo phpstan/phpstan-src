@@ -59,10 +59,10 @@ class TemplateTypeMapTest extends PHPStanTestCase
 	#[DataProvider('dataUnionWithLowerBoundTypes')]
 	public function testUnionWithLowerBoundTypes(TemplateTypeMap $map, string $expectedTDescription): void
 	{
-		$this->assertFalse($map->isEmpty());
+		self::assertFalse($map->isEmpty());
 		$t = $map->getType('T');
-		$this->assertNotNull($t);
-		$this->assertSame($expectedTDescription, $t->describe(VerbosityLevel::precise()));
+		self::assertNotNull($t);
+		self::assertSame($expectedTDescription, $t->describe(VerbosityLevel::precise()));
 	}
 
 }

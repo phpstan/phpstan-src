@@ -69,15 +69,15 @@ class OversizedArrayBuilderTest extends PHPStanTestCase
 		$parser = self::getParser();
 		$ast = $parser->parseString('<?php ' . $sourceCode . ';');
 		$expr = $ast[0];
-		$this->assertInstanceOf(Expression::class, $expr);
+		self::assertInstanceOf(Expression::class, $expr);
 
 		$array = $expr->expr;
-		$this->assertInstanceOf(Array_::class, $array);
+		self::assertInstanceOf(Array_::class, $array);
 
 		$builder = new OversizedArrayBuilder();
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
 		$arrayType = $builder->build($array, static fn (Expr $expr): Type => $initializerExprTypeResolver->getType($expr, InitializerExprContext::createEmpty()));
-		$this->assertSame($expectedTypeDescription, $arrayType->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedTypeDescription, $arrayType->describe(VerbosityLevel::precise()));
 	}
 
 	public static function getAdditionalConfigFiles(): array

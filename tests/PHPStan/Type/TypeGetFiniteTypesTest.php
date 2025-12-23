@@ -133,7 +133,7 @@ class TypeGetFiniteTypesTest extends PHPStanTestCase
 		array $expectedTypes,
 	): void
 	{
-		$this->assertEquals($expectedTypes, $type->getFiniteTypes());
+		self::assertEquals($expectedTypes, $type->getFiniteTypes());
 	}
 
 	public static function getAdditionalConfigFiles(): array

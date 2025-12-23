@@ -265,7 +265,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	public function testFile(string $file): void
 	{
 		$asserts = self::gatherAssertTypes($file);
-		$this->assertNotCount(0, $asserts, sprintf('File %s has no asserts.', $file));
+		self::assertNotCount(0, $asserts, sprintf('File %s has no asserts.', $file));
 		$failures = [];
 
 		foreach ($asserts as $args) {

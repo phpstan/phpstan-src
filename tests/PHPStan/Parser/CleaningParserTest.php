@@ -79,7 +79,7 @@ class CleaningParserTest extends PHPStanTestCase
 		);
 		$printer = new Printer();
 		$ast = $parser->parseFile($beforeFile);
-		$this->assertSame(FileReader::read($afterFile), "<?php\n" . $printer->prettyPrint($ast) . "\n");
+		self::assertSame(FileReader::read($afterFile), "<?php\n" . $printer->prettyPrint($ast) . "\n");
 	}
 
 }

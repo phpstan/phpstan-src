@@ -267,7 +267,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -339,7 +339,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
@@ -453,7 +453,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	{
 		$result = $template->inferTemplateTypes($received);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypes,
 			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
@@ -974,7 +974,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			'positionVariance' => $ref->getPositionVariance()->describe(),
 		], $expectedReferences);
 
-		$this->assertSame($comparableExpect, $comparableResult);
+		self::assertSame($comparableExpect, $comparableResult);
 	}
 
 }

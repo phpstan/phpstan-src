@@ -117,8 +117,8 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 
 		[$variableAssert, $offsetAssert] = array_values(self::gatherAssertTypes($filePath));
 
-		$this->assertSame('variable $context', $variableAssert[4]);
-		$this->assertSame("offset 'email'", $offsetAssert[4]);
+		self::assertSame('variable $context', $variableAssert[4]);
+		self::assertSame("offset 'email'", $offsetAssert[4]);
 	}
 
 	public function testSuperType(): void
@@ -159,7 +159,7 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 
 			$this->fail('Should have failed');
 		} catch (AssertionFailedError $e) {
-			$this->assertStringContainsString('not found in ReflectionProvider', $e->getMessage());
+			self::assertStringContainsString('not found in ReflectionProvider', $e->getMessage());
 		}
 	}
 

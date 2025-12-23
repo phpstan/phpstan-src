@@ -21,7 +21,7 @@ class ArrayHelperTest extends TestCase
 
 		ArrayHelper::unsetKeyAtPath($array, ['dep1a', 'dep2a', 'dep3a']);
 
-		$this->assertSame([
+		self::assertSame([
 			'dep1a' => [
 				'dep2a' => [],
 				'dep2b' => null,
@@ -31,7 +31,7 @@ class ArrayHelperTest extends TestCase
 
 		ArrayHelper::unsetKeyAtPath($array, ['dep1a', 'dep2a']);
 
-		$this->assertSame([
+		self::assertSame([
 			'dep1a' => [
 				'dep2b' => null,
 			],
@@ -40,13 +40,13 @@ class ArrayHelperTest extends TestCase
 
 		ArrayHelper::unsetKeyAtPath($array, ['dep1a']);
 
-		$this->assertSame([
+		self::assertSame([
 			'dep1b' => null,
 		], $array);
 
 		ArrayHelper::unsetKeyAtPath($array, ['dep1b']);
 
-		$this->assertSame([], $array);
+		self::assertSame([], $array);
 	}
 
 	public function testUnsetKeyAtPathEmpty(): void
@@ -55,7 +55,7 @@ class ArrayHelperTest extends TestCase
 
 		ArrayHelper::unsetKeyAtPath($array, ['foo', 'bar']);
 
-		$this->assertSame([], $array);
+		self::assertSame([], $array);
 	}
 
 }

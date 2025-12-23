@@ -333,12 +333,12 @@ class GitlabErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = new GitlabErrorFormatter(new SimpleRelativePathHelper('/data/folder'));
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
+		self::assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));
 	}
 
 }

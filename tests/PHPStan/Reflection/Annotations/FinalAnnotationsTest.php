@@ -52,11 +52,11 @@ class FinalAnnotationsTest extends PHPStanTestCase
 		$scope->method('canReadProperty')->willReturn(true);
 		$scope->method('canWriteProperty')->willReturn(true);
 
-		$this->assertSame($final, $class->isFinal());
+		self::assertSame($final, $class->isFinal());
 
 		foreach ($finalAnnotations['method'] ?? [] as $methodName) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);
-			$this->assertSame($final, $methodAnnotation->isFinal()->yes());
+			self::assertSame($final, $methodAnnotation->isFinal()->yes());
 		}
 	}
 

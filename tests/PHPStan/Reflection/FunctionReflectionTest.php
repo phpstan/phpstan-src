@@ -47,7 +47,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
-		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
+		self::assertSame($expectedDoc, $functionReflection->getDocComment());
 	}
 
 	public static function dataPhpdocMethods(): iterable
@@ -128,7 +128,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$classReflection = $reflectionProvider->getClass($className);
 
 		$methodReflection = $classReflection->getMethod($methodName, $scope);
-		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
+		self::assertSame($expectedDocComment, $methodReflection->getDocComment());
 	}
 
 	public static function dataFunctionReturnsByReference(): iterable
@@ -150,7 +150,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
-		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
+		self::assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
 	}
 
 	public static function dataMethodReturnsByReference(): iterable
@@ -189,7 +189,7 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$classReflection = $reflectionProvider->getClass($className);
 
 		$methodReflection = $classReflection->getMethod($methodName, $scope);
-		$this->assertSame($expectedReturnsByRef, $methodReflection->returnsByReference());
+		self::assertSame($expectedReturnsByRef, $methodReflection->returnsByReference());
 	}
 
 	/**

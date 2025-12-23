@@ -133,26 +133,26 @@ class InternalAnnotationsTest extends PHPStanTestCase
 		$scope->method('canReadProperty')->willReturn(true);
 		$scope->method('canWriteProperty')->willReturn(true);
 
-		$this->assertSame($internal, $class->isInternal());
+		self::assertSame($internal, $class->isInternal());
 
 		foreach ($internalAnnotations['method'] ?? [] as $methodName) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);
-			$this->assertSame($internal, $methodAnnotation->isInternal()->yes());
+			self::assertSame($internal, $methodAnnotation->isInternal()->yes());
 		}
 
 		foreach ($internalAnnotations['property'] ?? [] as $propertyName) {
 			$propertyAnnotation = $class->getInstanceProperty($propertyName, $scope);
-			$this->assertSame($internal, $propertyAnnotation->isInternal()->yes());
+			self::assertSame($internal, $propertyAnnotation->isInternal()->yes());
 		}
 
 		foreach ($internalAnnotations['staticProperty'] ?? [] as $propertyName) {
 			$propertyAnnotation = $class->getStaticProperty($propertyName);
-			$this->assertSame($internal, $propertyAnnotation->isInternal()->yes());
+			self::assertSame($internal, $propertyAnnotation->isInternal()->yes());
 		}
 
 		foreach ($internalAnnotations['constant'] ?? [] as $constantName) {
 			$constantAnnotation = $class->getConstant($constantName);
-			$this->assertSame($internal, $constantAnnotation->isInternal()->yes());
+			self::assertSame($internal, $constantAnnotation->isInternal()->yes());
 		}
 	}
 
@@ -162,8 +162,8 @@ class InternalAnnotationsTest extends PHPStanTestCase
 
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
-		$this->assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());
+		self::assertFalse($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\foo'), null)->isInternal()->yes());
+		self::assertTrue($reflectionProvider->getFunction(new Name\FullyQualified('InternalAnnotations\internalFoo'), null)->isInternal()->yes());
 	}
 
 }

@@ -441,11 +441,11 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$phpDocNode = $type->toPhpDocNode();
 
 		$typeString = (string) $phpDocNode;
-		$this->assertSame($expected, $typeString);
+		self::assertSame($expected, $typeString);
 
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$parsedType = $typeStringResolver->resolve($typeString);
-		$this->assertTrue($type->equals($parsedType), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $parsedType->describe(VerbosityLevel::precise())));
+		self::assertTrue($type->equals($parsedType), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $parsedType->describe(VerbosityLevel::precise())));
 	}
 
 	public static function dataToPhpDocNodeWithoutCheckingEquals(): iterable
@@ -522,7 +522,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		$phpDocNode = $type->toPhpDocNode();
 
 		$typeString = (string) $phpDocNode;
-		$this->assertSame($expected, $typeString);
+		self::assertSame($expected, $typeString);
 
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$typeStringResolver->resolve($typeString);
@@ -550,10 +550,10 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 	{
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$type = $typeStringResolver->resolve($typeString);
-		$this->assertSame($typeString, (string) $type->toPhpDocNode());
+		self::assertSame($typeString, (string) $type->toPhpDocNode());
 
 		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode());
-		$this->assertTrue($type->equals($typeAgain));
+		self::assertTrue($type->equals($typeAgain));
 	}
 
 	public static function getAdditionalConfigFiles(): array

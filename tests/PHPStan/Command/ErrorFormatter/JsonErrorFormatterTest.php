@@ -205,12 +205,12 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = new JsonErrorFormatter(true);
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 		), $message);
 
-		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent());
+		self::assertJsonStringEqualsJsonString($expected, $this->getOutputContent());
 	}
 
 	#[DataProvider('dataFormatterOutputProvider')]
@@ -224,12 +224,12 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = new JsonErrorFormatter(false);
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));
+		self::assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));
 	}
 
 	public static function dataFormatTip(): iterable
@@ -249,7 +249,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 
 		$content = $this->getOutputContent();
 		$json = Json::decode($content, Json::FORCE_ARRAY);
-		$this->assertSame($expectedTip, $json['files']['/foo/bar.php']['messages'][0]['tip']);
+		self::assertSame($expectedTip, $json['files']['/foo/bar.php']['messages'][0]['tip']);
 	}
 
 }

@@ -168,9 +168,9 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 		$validator = new IgnoredRegexValidator($parser, self::getContainer()->getByType(TypeStringResolver::class));
 
 		$result = $validator->validate($regex);
-		$this->assertSame($expectedTypes, $result->getIgnoredTypes());
-		$this->assertSame($expectedHasAnchors, $result->hasAnchorsInTheMiddle());
-		$this->assertSame($expectAllErrorsIgnored, $result->areAllErrorsIgnored());
+		self::assertSame($expectedTypes, $result->getIgnoredTypes());
+		self::assertSame($expectedHasAnchors, $result->hasAnchorsInTheMiddle());
+		self::assertSame($expectAllErrorsIgnored, $result->areAllErrorsIgnored());
 	}
 
 }

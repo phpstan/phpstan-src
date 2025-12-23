@@ -213,7 +213,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			},
 			ExpressionContext::createTopLevel(),
 		);
-		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
+		self::assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}
 
 }

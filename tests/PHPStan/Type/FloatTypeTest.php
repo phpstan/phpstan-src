@@ -66,7 +66,7 @@ class FloatTypeTest extends PHPStanTestCase
 	{
 		$type = new FloatType();
 		$actualResult = $type->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -123,7 +123,7 @@ class FloatTypeTest extends PHPStanTestCase
 	public function testEquals(FloatType $type, Type $otherType, bool $expectedResult): void
 	{
 		$actualResult = $type->equals($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult,
 			$actualResult,
 			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),

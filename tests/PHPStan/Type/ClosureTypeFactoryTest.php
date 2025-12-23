@@ -43,7 +43,7 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 	{
 		$closureType = $this->getClosureType($closure);
 
-		$this->assertSame($returnType, $closureType->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertSame($returnType, $closureType->getReturnType()->describe(VerbosityLevel::precise()));
 	}
 
 	public static function dataFromClosureObjectParameter(): array
@@ -70,8 +70,8 @@ class ClosureTypeFactoryTest extends PHPStanTestCase
 	{
 		$closureType = $this->getClosureType($closure);
 
-		$this->assertArrayHasKey($index, $closureType->getParameters());
-		$this->assertSame($type, $closureType->getParameters()[$index]->getType()->describe(VerbosityLevel::precise()));
+		self::assertArrayHasKey($index, $closureType->getParameters());
+		self::assertSame($type, $closureType->getParameters()[$index]->getType()->describe(VerbosityLevel::precise()));
 	}
 
 	/**

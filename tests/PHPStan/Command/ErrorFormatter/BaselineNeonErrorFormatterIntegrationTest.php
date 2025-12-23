@@ -26,8 +26,8 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 	{
 		$output = $this->runPhpStan(__DIR__ . '/data/', __DIR__ . '/empty.neon');
 		$errors = Json::decode($output, Json::FORCE_ARRAY);
-		$this->assertSame(10, array_sum($errors['totals']));
-		$this->assertCount(6, $errors['files']);
+		self::assertSame(10, array_sum($errors['totals']));
+		self::assertCount(6, $errors['files']);
 	}
 
 	public function testGenerateBaselineAndRunAgainWithIt(): void
@@ -38,24 +38,24 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 		$output = $this->runPhpStan(__DIR__ . '/data/', $baselineFile);
 		@unlink($baselineFile);
 		$errors = Json::decode($output, Json::FORCE_ARRAY);
-		$this->assertSame(0, array_sum($errors['totals']));
-		$this->assertCount(0, $errors['files']);
+		self::assertSame(0, array_sum($errors['totals']));
+		self::assertCount(0, $errors['files']);
 	}
 
 	public function testRunWindowsFileWithUnixBaseline(): void
 	{
 		$output = $this->runPhpStan(__DIR__ . '/data/WindowsNewlines.php', __DIR__ . '/data/unixBaseline.neon');
 		$errors = Json::decode($output, Json::FORCE_ARRAY);
-		$this->assertSame(0, array_sum($errors['totals']));
-		$this->assertCount(0, $errors['files']);
+		self::assertSame(0, array_sum($errors['totals']));
+		self::assertCount(0, $errors['files']);
 	}
 
 	public function testRunUnixFileWithWindowsBaseline(): void
 	{
 		$output = $this->runPhpStan(__DIR__ . '/data/UnixNewlines.php', __DIR__ . '/data/windowsBaseline.neon');
 		$errors = Json::decode($output, Json::FORCE_ARRAY);
-		$this->assertSame(0, array_sum($errors['totals']));
-		$this->assertCount(0, $errors['files']);
+		self::assertSame(0, array_sum($errors['totals']));
+		self::assertCount(0, $errors['files']);
 	}
 
 	private function runPhpStan(

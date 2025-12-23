@@ -76,7 +76,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->accepts($otherType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -117,7 +117,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testIsCallable(IntersectionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
@@ -241,7 +241,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -342,7 +342,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSubTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -353,7 +353,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testIsSubTypeOfInversed(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $otherType->isSuperTypeOf($type);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
@@ -363,7 +363,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testToBooleanCrash(): void
 	{
 		$type = new IntersectionType([new NeverType(), new NonEmptyArrayType()]);
-		$this->assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
+		self::assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
 	}
 
 	public static function dataGetEnumCases(): iterable
@@ -396,10 +396,10 @@ class IntersectionTypeTest extends PHPStanTestCase
 	): void
 	{
 		$enumCases = $type->getEnumCases();
-		$this->assertCount(count($expectedEnumCases), $enumCases);
+		self::assertCount(count($expectedEnumCases), $enumCases);
 		foreach ($enumCases as $i => $enumCase) {
 			$expectedEnumCase = $expectedEnumCases[$i];
-			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
+			self::assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
 		}
 	}
 

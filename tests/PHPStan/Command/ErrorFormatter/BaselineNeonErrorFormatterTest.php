@@ -161,13 +161,13 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH), $useRawMessage);
 
-		$this->assertSame($exitCode, $formatter->formatErrors(
+		self::assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
 			'',
 		), sprintf('%s: response code do not match', $message));
 
-		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
+		self::assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
 	}
 
 	public function testFormatErrorMessagesRegexEscape(): void
@@ -689,7 +689,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			'',
 		);
 
-		$this->assertSame($expectedOutput, Neon::decode($this->getOutputContent()));
+		self::assertSame($expectedOutput, Neon::decode($this->getOutputContent()));
 	}
 
 }

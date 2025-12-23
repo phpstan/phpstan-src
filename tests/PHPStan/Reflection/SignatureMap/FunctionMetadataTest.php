@@ -12,7 +12,7 @@ class FunctionMetadataTest extends PHPStanTestCase
 	public function testSchema(): void
 	{
 		$data = require __DIR__ . '/../../../../resources/functionMetadata.php';
-		$this->assertIsArray($data);
+		self::assertIsArray($data);
 
 		$processor = new Processor();
 		$processor->process(Expect::arrayOf(

@@ -29,78 +29,78 @@ class FileTypeMapperTest extends PHPStanTestCase
  * @method Image rotate(float $angle, $backgroundColor)
  * @method int | float paramMultipleTypesWithExtraSpaces(string | null $string, stdClass | null $object)
  */');
-		$this->assertCount(0, $resolvedA->getVarTags());
-		$this->assertCount(0, $resolvedA->getParamTags());
-		$this->assertCount(2, $resolvedA->getPropertyTags());
-		$this->assertArrayHasKey('numericBazBazProperty', $resolvedA->getPropertyTags());
-		$this->assertNull($resolvedA->getReturnTag());
-		$this->assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType());
-		$this->assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType());
-		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType()->describe(VerbosityLevel::precise()));
-		$this->assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType()->describe(VerbosityLevel::precise()));
-		$this->assertArrayHasKey('singleLetterObjectName', $resolvedA->getPropertyTags());
-		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType());
-		$this->assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType());
-		$this->assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType()->describe(VerbosityLevel::precise()));
-		$this->assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType()->describe(VerbosityLevel::precise()));
+		self::assertCount(0, $resolvedA->getVarTags());
+		self::assertCount(0, $resolvedA->getParamTags());
+		self::assertCount(2, $resolvedA->getPropertyTags());
+		self::assertArrayHasKey('numericBazBazProperty', $resolvedA->getPropertyTags());
+		self::assertNull($resolvedA->getReturnTag());
+		self::assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType());
+		self::assertNotNull($resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType());
+		self::assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getReadableType()->describe(VerbosityLevel::precise()));
+		self::assertSame('float|int', $resolvedA->getPropertyTags()['numericBazBazProperty']->getWritableType()->describe(VerbosityLevel::precise()));
+		self::assertArrayHasKey('singleLetterObjectName', $resolvedA->getPropertyTags());
+		self::assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType());
+		self::assertNotNull($resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType());
+		self::assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getReadableType()->describe(VerbosityLevel::precise()));
+		self::assertSame('TestAnnotations\\X', $resolvedA->getPropertyTags()['singleLetterObjectName']->getWritableType()->describe(VerbosityLevel::precise()));
 
-		$this->assertCount(6, $resolvedA->getMethodTags());
-		$this->assertArrayNotHasKey('complicatedParameters', $resolvedA->getMethodTags()); // ambiguous parameter types
-		$this->assertArrayHasKey('simpleMethod', $resolvedA->getMethodTags());
+		self::assertCount(6, $resolvedA->getMethodTags());
+		self::assertArrayNotHasKey('complicatedParameters', $resolvedA->getMethodTags()); // ambiguous parameter types
+		self::assertArrayHasKey('simpleMethod', $resolvedA->getMethodTags());
 		$simpleMethod = $resolvedA->getMethodTags()['simpleMethod'];
-		$this->assertSame('void', $simpleMethod->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($simpleMethod->isStatic());
-		$this->assertCount(0, $simpleMethod->getParameters());
+		self::assertSame('void', $simpleMethod->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($simpleMethod->isStatic());
+		self::assertCount(0, $simpleMethod->getParameters());
 
-		$this->assertArrayHasKey('returningMethod', $resolvedA->getMethodTags());
+		self::assertArrayHasKey('returningMethod', $resolvedA->getMethodTags());
 		$returningMethod = $resolvedA->getMethodTags()['returningMethod'];
-		$this->assertSame('string', $returningMethod->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($returningMethod->isStatic());
-		$this->assertCount(0, $returningMethod->getParameters());
+		self::assertSame('string', $returningMethod->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($returningMethod->isStatic());
+		self::assertCount(0, $returningMethod->getParameters());
 
-		$this->assertArrayHasKey('returningNullableScalar', $resolvedA->getMethodTags());
+		self::assertArrayHasKey('returningNullableScalar', $resolvedA->getMethodTags());
 		$returningNullableScalar = $resolvedA->getMethodTags()['returningNullableScalar'];
-		$this->assertSame('float|null', $returningNullableScalar->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($returningNullableScalar->isStatic());
-		$this->assertCount(0, $returningNullableScalar->getParameters());
+		self::assertSame('float|null', $returningNullableScalar->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($returningNullableScalar->isStatic());
+		self::assertCount(0, $returningNullableScalar->getParameters());
 
-		$this->assertArrayHasKey('returningNullableObject', $resolvedA->getMethodTags());
+		self::assertArrayHasKey('returningNullableObject', $resolvedA->getMethodTags());
 		$returningNullableObject = $resolvedA->getMethodTags()['returningNullableObject'];
-		$this->assertSame('stdClass|null', $returningNullableObject->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($returningNullableObject->isStatic());
-		$this->assertCount(0, $returningNullableObject->getParameters());
+		self::assertSame('stdClass|null', $returningNullableObject->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($returningNullableObject->isStatic());
+		self::assertCount(0, $returningNullableObject->getParameters());
 
-		$this->assertArrayHasKey('rotate', $resolvedA->getMethodTags());
+		self::assertArrayHasKey('rotate', $resolvedA->getMethodTags());
 		$rotate = $resolvedA->getMethodTags()['rotate'];
-		$this->assertSame('TestAnnotations\\Image', $rotate->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($rotate->isStatic());
-		$this->assertCount(2, $rotate->getParameters());
-		$this->assertArrayHasKey('angle', $rotate->getParameters());
-		$this->assertSame('float', $rotate->getParameters()['angle']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertTrue($rotate->getParameters()['angle']->passedByReference()->no());
-		$this->assertFalse($rotate->getParameters()['angle']->isOptional());
-		$this->assertFalse($rotate->getParameters()['angle']->isVariadic());
-		$this->assertArrayHasKey('backgroundColor', $rotate->getParameters());
-		$this->assertSame('mixed', $rotate->getParameters()['backgroundColor']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertTrue($rotate->getParameters()['backgroundColor']->passedByReference()->no());
-		$this->assertFalse($rotate->getParameters()['backgroundColor']->isOptional());
-		$this->assertFalse($rotate->getParameters()['backgroundColor']->isVariadic());
+		self::assertSame('TestAnnotations\\Image', $rotate->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($rotate->isStatic());
+		self::assertCount(2, $rotate->getParameters());
+		self::assertArrayHasKey('angle', $rotate->getParameters());
+		self::assertSame('float', $rotate->getParameters()['angle']->getType()->describe(VerbosityLevel::precise()));
+		self::assertTrue($rotate->getParameters()['angle']->passedByReference()->no());
+		self::assertFalse($rotate->getParameters()['angle']->isOptional());
+		self::assertFalse($rotate->getParameters()['angle']->isVariadic());
+		self::assertArrayHasKey('backgroundColor', $rotate->getParameters());
+		self::assertSame('mixed', $rotate->getParameters()['backgroundColor']->getType()->describe(VerbosityLevel::precise()));
+		self::assertTrue($rotate->getParameters()['backgroundColor']->passedByReference()->no());
+		self::assertFalse($rotate->getParameters()['backgroundColor']->isOptional());
+		self::assertFalse($rotate->getParameters()['backgroundColor']->isVariadic());
 
-		$this->assertArrayHasKey('paramMultipleTypesWithExtraSpaces', $resolvedA->getMethodTags());
+		self::assertArrayHasKey('paramMultipleTypesWithExtraSpaces', $resolvedA->getMethodTags());
 		$paramMultipleTypesWithExtraSpaces = $resolvedA->getMethodTags()['paramMultipleTypesWithExtraSpaces'];
-		$this->assertSame('float|int', $paramMultipleTypesWithExtraSpaces->getReturnType()->describe(VerbosityLevel::precise()));
-		$this->assertFalse($paramMultipleTypesWithExtraSpaces->isStatic());
-		$this->assertCount(2, $paramMultipleTypesWithExtraSpaces->getParameters());
-		$this->assertArrayHasKey('string', $paramMultipleTypesWithExtraSpaces->getParameters());
-		$this->assertSame('string|null', $paramMultipleTypesWithExtraSpaces->getParameters()['string']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['string']->passedByReference()->no());
-		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isOptional());
-		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isVariadic());
-		$this->assertArrayHasKey('object', $paramMultipleTypesWithExtraSpaces->getParameters());
-		$this->assertSame('TestAnnotations\\stdClass|null', $paramMultipleTypesWithExtraSpaces->getParameters()['object']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['object']->passedByReference()->no());
-		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isOptional());
-		$this->assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isVariadic());
+		self::assertSame('float|int', $paramMultipleTypesWithExtraSpaces->getReturnType()->describe(VerbosityLevel::precise()));
+		self::assertFalse($paramMultipleTypesWithExtraSpaces->isStatic());
+		self::assertCount(2, $paramMultipleTypesWithExtraSpaces->getParameters());
+		self::assertArrayHasKey('string', $paramMultipleTypesWithExtraSpaces->getParameters());
+		self::assertSame('string|null', $paramMultipleTypesWithExtraSpaces->getParameters()['string']->getType()->describe(VerbosityLevel::precise()));
+		self::assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['string']->passedByReference()->no());
+		self::assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isOptional());
+		self::assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['string']->isVariadic());
+		self::assertArrayHasKey('object', $paramMultipleTypesWithExtraSpaces->getParameters());
+		self::assertSame('TestAnnotations\\stdClass|null', $paramMultipleTypesWithExtraSpaces->getParameters()['object']->getType()->describe(VerbosityLevel::precise()));
+		self::assertTrue($paramMultipleTypesWithExtraSpaces->getParameters()['object']->passedByReference()->no());
+		self::assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isOptional());
+		self::assertFalse($paramMultipleTypesWithExtraSpaces->getParameters()['object']->isVariadic());
 	}
 
 	public function testFileWithDependentPhpDocs(): void
@@ -121,9 +121,9 @@ class FileTypeMapperTest extends PHPStanTestCase
 			'/** @param Foo[]|Foo|\Iterator $pages */',
 		);
 
-		$this->assertCount(1, $resolved->getParamTags());
-		$this->assertArrayHasKey('pages', $resolved->getParamTags());
-		$this->assertSame(
+		self::assertCount(1, $resolved->getParamTags());
+		self::assertArrayHasKey('pages', $resolved->getParamTags());
+		self::assertSame(
 			'(DependentPhpDocs\Foo&iterable<DependentPhpDocs\Foo>)|(iterable<DependentPhpDocs\Foo>&Iterator)',
 			$resolved->getParamTags()['pages']->getType()->describe(VerbosityLevel::precise()),
 		);
@@ -143,8 +143,8 @@ class FileTypeMapperTest extends PHPStanTestCase
  * @throws RuntimeException
  */');
 
-		$this->assertNotNull($resolved->getThrowsTag());
-		$this->assertSame(
+		self::assertNotNull($resolved->getThrowsTag());
+		self::assertSame(
 			RuntimeException::class,
 			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
@@ -153,8 +153,8 @@ class FileTypeMapperTest extends PHPStanTestCase
  * @throws RuntimeException|LogicException
  */');
 
-		$this->assertNotNull($resolved->getThrowsTag());
-		$this->assertSame(
+		self::assertNotNull($resolved->getThrowsTag());
+		self::assertSame(
 			'LogicException|RuntimeException',
 			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
@@ -164,8 +164,8 @@ class FileTypeMapperTest extends PHPStanTestCase
  * @throws LogicException
  */');
 
-		$this->assertNotNull($resolved->getThrowsTag());
-		$this->assertSame(
+		self::assertNotNull($resolved->getThrowsTag());
+		self::assertSame(
 			'LogicException|RuntimeException',
 			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
@@ -193,7 +193,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 
 		/** @var ReturnTag $returnTag */
 		$returnTag = $resolved->getReturnTag();
-		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
+		self::assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
 	}
 
 	public function testFilesWithIdenticalPhpDocsUsingDifferentAliases(): void
@@ -204,10 +204,10 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$doc1 = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/alias-collision1.php', null, null, null, '/** @var Foo $x */');
 		$doc2 = $fileTypeMapper->getResolvedPhpDoc(__DIR__ . '/data/alias-collision2.php', null, null, null, '/** @var Foo $x */');
 
-		$this->assertArrayHasKey('x', $doc1->getVarTags());
-		$this->assertSame('AliasCollisionNamespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
-		$this->assertArrayHasKey('x', $doc2->getVarTags());
-		$this->assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+		self::assertArrayHasKey('x', $doc1->getVarTags());
+		self::assertSame('AliasCollisionNamespace1\Foo', $doc1->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
+		self::assertArrayHasKey('x', $doc2->getVarTags());
+		self::assertSame('AliasCollisionNamespace2\Foo', $doc2->getVarTags()['x']->getType()->describe(VerbosityLevel::precise()));
 	}
 
 }

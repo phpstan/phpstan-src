@@ -36,7 +36,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		TrinaryLogic ...$operands,
 	): void
 	{
-		$this->assertTrue($expectedResult->equals($value->and(...$operands)));
+		self::assertTrue($expectedResult->equals($value->and(...$operands)));
 	}
 
 	#[DataProvider('dataAnd')]
@@ -46,7 +46,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		TrinaryLogic ...$operands,
 	): void
 	{
-		$this->assertTrue($expectedResult->equals($value->lazyAnd($operands, static fn (TrinaryLogic $result) => $result)));
+		self::assertTrue($expectedResult->equals($value->lazyAnd($operands, static fn (TrinaryLogic $result) => $result)));
 	}
 
 	public static function dataOr(): array
@@ -77,7 +77,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		TrinaryLogic ...$operands,
 	): void
 	{
-		$this->assertTrue($expectedResult->equals($value->or(...$operands)));
+		self::assertTrue($expectedResult->equals($value->or(...$operands)));
 	}
 
 	#[DataProvider('dataOr')]
@@ -87,7 +87,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 		TrinaryLogic ...$operands,
 	): void
 	{
-		$this->assertTrue($expectedResult->equals($value->lazyOr($operands, static fn (TrinaryLogic $result) => $result)));
+		self::assertTrue($expectedResult->equals($value->lazyOr($operands, static fn (TrinaryLogic $result) => $result)));
 	}
 
 	public static function dataNegate(): array
@@ -102,7 +102,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	#[DataProvider('dataNegate')]
 	public function testNegate(TrinaryLogic $expectedResult, TrinaryLogic $operand): void
 	{
-		$this->assertTrue($expectedResult->equals($operand->negate()));
+		self::assertTrue($expectedResult->equals($operand->negate()));
 	}
 
 	public static function dataCompareTo(): array
@@ -147,7 +147,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	#[DataProvider('dataCompareTo')]
 	public function testCompareTo(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expected,
 			$first->compareTo($second),
 		);
@@ -156,7 +156,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	#[DataProvider('dataCompareTo')]
 	public function testCompareToInversed(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{
-		$this->assertSame(
+		self::assertSame(
 			$expected,
 			$second->compareTo($first),
 		);

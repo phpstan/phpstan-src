@@ -90,7 +90,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(ArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -154,7 +154,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
@@ -180,7 +180,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		string $expectedDescription,
 	): void
 	{
-		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
 	}
 
 	public static function dataInferTemplateTypes(): array
@@ -263,7 +263,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	{
 		$result = $template->inferTemplateTypes($received);
 
-		$this->assertSame(
+		self::assertSame(
 			$expectedTypes,
 			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
@@ -294,7 +294,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	): void
 	{
 		$actualResult = $type->hasOffsetValueType($offsetType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasOffsetValueType(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),

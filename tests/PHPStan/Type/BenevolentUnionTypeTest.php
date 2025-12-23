@@ -45,7 +45,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testCanAccessProperties(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canAccessProperties();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> canAccessProperties()', $type->describe(VerbosityLevel::precise())),
@@ -86,7 +86,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testHasInstanceProperty(BenevolentUnionType $type, string $propertyName, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasInstanceProperty($propertyName);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasProperty()', $type->describe(VerbosityLevel::precise())),
@@ -118,7 +118,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testCanCanCallMethods(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canCallMethods();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> canCallMethods()', $type->describe(VerbosityLevel::precise())),
@@ -156,7 +156,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testHasMethod(BenevolentUnionType $type, string $methodName, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasMethod($methodName);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasMethod()', $type->describe(VerbosityLevel::precise())),
@@ -188,7 +188,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testCanAccessConstants(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->canAccessConstants();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> canAccessConstants()', $type->describe(VerbosityLevel::precise())),
@@ -226,7 +226,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsIterable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterable()', $type->describe(VerbosityLevel::precise())),
@@ -264,7 +264,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsIterableAtLeastOnce(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isIterableAtLeastOnce();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterableAtLeastOnce()', $type->describe(VerbosityLevel::precise())),
@@ -296,7 +296,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsArray(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isArray();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isArray()', $type->describe(VerbosityLevel::precise())),
@@ -331,7 +331,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isString();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isString()', $type->describe(VerbosityLevel::precise())),
@@ -365,7 +365,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsNumericString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isNumericString();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNumericString()', $type->describe(VerbosityLevel::precise())),
@@ -399,7 +399,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsNonFalsyString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isNonFalsyString();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isNonFalsyString()', $type->describe(VerbosityLevel::precise())),
@@ -433,7 +433,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsLiteralString(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isLiteralString();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isLiteralString()', $type->describe(VerbosityLevel::precise())),
@@ -471,7 +471,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsOffsetAccessible(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isOffsetAccessible();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isOffsetAccessible()', $type->describe(VerbosityLevel::precise())),
@@ -512,7 +512,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testHasOffsetValue(BenevolentUnionType $type, Type $offsetType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->hasOffsetValueType($offsetType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> hasOffsetValueType()', $type->describe(VerbosityLevel::precise())),
@@ -544,7 +544,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsCallable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCallable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
@@ -576,7 +576,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 	public function testIsCloneable(BenevolentUnionType $type, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isCloneable();
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isCloneable()', $type->describe(VerbosityLevel::precise())),

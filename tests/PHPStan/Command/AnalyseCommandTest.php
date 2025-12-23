@@ -33,7 +33,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 
 		try {
 			$output = $this->runCommand(1);
-			$this->assertStringContainsString('Note: Using configuration file ' . $file . '.', $output);
+			self::assertStringContainsString('Note: Using configuration file ' . $file . '.', $output);
 		} catch (Throwable $e) {
 			chdir($originalDir);
 			throw $e;
@@ -46,7 +46,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 		$autoloadFile = $dir . DIRECTORY_SEPARATOR . 'phpstan.123456789.php';
 
 		$output = $this->runCommand(1, ['--autoload-file' => $autoloadFile]);
-		$this->assertSame(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
+		self::assertSame(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
 	}
 
 	public function testValidAutoloadFile(): void
@@ -62,9 +62,9 @@ class AnalyseCommandTest extends PHPStanTestCase
 
 		try {
 			$output = $this->runCommand(0, ['--autoload-file' => $autoloadFile]);
-			$this->assertStringContainsString('[OK] No errors', $output);
-			$this->assertStringNotContainsString(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
-			$this->assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
+			self::assertStringContainsString('[OK] No errors', $output);
+			self::assertStringNotContainsString(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
+			self::assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
 		} catch (Throwable $e) {
 			chdir($originalDir);
 			throw $e;
@@ -128,7 +128,7 @@ class AnalyseCommandTest extends PHPStanTestCase
 			'--debug' => true,
 		] + $parameters, ['debug' => true]);
 
-		$this->assertSame($expectedStatusCode, $commandTester->getStatusCode(), $commandTester->getDisplay());
+		self::assertSame($expectedStatusCode, $commandTester->getStatusCode(), $commandTester->getDisplay());
 
 		return $commandTester->getDisplay();
 	}

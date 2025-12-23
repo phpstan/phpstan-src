@@ -20,28 +20,28 @@ class MixedTypeTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();
-		$this->assertInstanceOf(MixedType::class, $propertyType);
-		$this->assertTrue($propertyType->isExplicitMixed());
+		self::assertInstanceOf(MixedType::class, $propertyType);
+		self::assertTrue($propertyType->isExplicitMixed());
 
 		$method = $class->getNativeMethod('doFoo');
 		$methodVariant = $method->getOnlyVariant();
 		$methodReturnType = $methodVariant->getReturnType();
-		$this->assertInstanceOf(MixedType::class, $methodReturnType);
-		$this->assertTrue($methodReturnType->isExplicitMixed());
+		self::assertInstanceOf(MixedType::class, $methodReturnType);
+		self::assertTrue($methodReturnType->isExplicitMixed());
 
 		$methodParameterType = $methodVariant->getParameters()[0]->getType();
-		$this->assertInstanceOf(MixedType::class, $methodParameterType);
-		$this->assertTrue($methodParameterType->isExplicitMixed());
+		self::assertInstanceOf(MixedType::class, $methodParameterType);
+		self::assertTrue($methodParameterType->isExplicitMixed());
 
 		$function = $reflectionProvider->getFunction(new Name('NativeMixedType\doFoo'), null);
 		$functionVariant = $function->getOnlyVariant();
 		$functionReturnType = $functionVariant->getReturnType();
-		$this->assertInstanceOf(MixedType::class, $functionReturnType);
-		$this->assertTrue($functionReturnType->isExplicitMixed());
+		self::assertInstanceOf(MixedType::class, $functionReturnType);
+		self::assertTrue($functionReturnType->isExplicitMixed());
 
 		$functionParameterType = $functionVariant->getParameters()[0]->getType();
-		$this->assertInstanceOf(MixedType::class, $functionParameterType);
-		$this->assertTrue($functionParameterType->isExplicitMixed());
+		self::assertInstanceOf(MixedType::class, $functionParameterType);
+		self::assertTrue($functionParameterType->isExplicitMixed());
 	}
 
 }

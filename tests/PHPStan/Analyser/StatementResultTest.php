@@ -539,7 +539,7 @@ class StatementResultTest extends PHPStanTestCase
 			},
 			StatementContext::createTopLevel(),
 		);
-		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
+		self::assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}
 
 }

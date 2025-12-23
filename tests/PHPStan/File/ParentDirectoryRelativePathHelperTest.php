@@ -112,7 +112,7 @@ class ParentDirectoryRelativePathHelperTest extends TestCase
 	): void
 	{
 		$helper = new ParentDirectoryRelativePathHelper($parentDirectory);
-		$this->assertSame(
+		self::assertSame(
 			$expectedRelativePath,
 			$helper->getRelativePath($filename),
 		);

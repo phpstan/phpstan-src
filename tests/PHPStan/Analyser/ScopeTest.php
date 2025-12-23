@@ -236,7 +236,7 @@ class ScopeTest extends PHPStanTestCase
 		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a, TrinaryLogic::createYes());
 		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b, TrinaryLogic::createYes());
 		$resultScope = $scopeA->generalizeWith($scopeB);
-		$this->assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
 	}
 
 	public function testGetConstantType(): void
@@ -246,7 +246,7 @@ class ScopeTest extends PHPStanTestCase
 		$scope = $scopeFactory->create(ScopeContext::create(__DIR__ . '/data/compiler-halt-offset.php'));
 		$node = new ConstFetch(new FullyQualified('__COMPILER_HALT_OFFSET__'));
 		$type = $scope->getType($node);
-		$this->assertSame('int<1, max>', $type->describe(VerbosityLevel::precise()));
+		self::assertSame('int<1, max>', $type->describe(VerbosityLevel::precise()));
 	}
 
 	public function testDefinedVariables(): void
@@ -257,7 +257,7 @@ class ScopeTest extends PHPStanTestCase
 			->assignVariable('a', new ConstantStringType('a'), new StringType(), TrinaryLogic::createYes())
 			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
 
-		$this->assertSame(['a'], $scope->getDefinedVariables());
+		self::assertSame(['a'], $scope->getDefinedVariables());
 	}
 
 	public function testMaybeDefinedVariables(): void
@@ -268,7 +268,7 @@ class ScopeTest extends PHPStanTestCase
 			->assignVariable('a', new ConstantStringType('a'), new StringType(), TrinaryLogic::createYes())
 			->assignVariable('b', new ConstantStringType('b'), new StringType(), TrinaryLogic::createMaybe());
 
-		$this->assertSame(['b'], $scope->getMaybeDefinedVariables());
+		self::assertSame(['b'], $scope->getMaybeDefinedVariables());
 	}
 
 }

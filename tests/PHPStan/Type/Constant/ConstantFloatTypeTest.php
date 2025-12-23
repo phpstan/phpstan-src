@@ -45,7 +45,7 @@ class ConstantFloatTypeTest extends PHPStanTestCase
 		string $expectedDescription,
 	): void
 	{
-		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
+		self::assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
 	}
 
 }

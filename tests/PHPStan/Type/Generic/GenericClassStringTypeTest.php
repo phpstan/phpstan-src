@@ -163,7 +163,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(GenericClassStringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
@@ -282,7 +282,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true)->result;
-		$this->assertSame(
+		self::assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
@@ -325,14 +325,14 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		$otherTypeDescription = $otherType->describe($verbosityLevel);
 
 		$actual = $type->equals($otherType);
-		$this->assertSame(
+		self::assertSame(
 			$expected,
 			$actual,
 			sprintf('%s -> equals(%s)', $typeDescription, $otherTypeDescription),
 		);
 
 		$actual = $otherType->equals($type);
-		$this->assertSame(
+		self::assertSame(
 			$expected,
 			$actual,
 			sprintf('%s -> equals(%s)', $otherTypeDescription, $typeDescription),

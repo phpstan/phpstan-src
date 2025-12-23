@@ -287,33 +287,33 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 		$scope->method('canReadProperty')->willReturn(true);
 		$scope->method('canWriteProperty')->willReturn(true);
 		foreach ($properties as $propertyName => $expectedPropertyData) {
-			$this->assertTrue(
+			self::assertTrue(
 				$class->hasInstanceProperty($propertyName),
 				sprintf('Class %s does not define property %s.', $className, $propertyName),
 			);
 
 			$property = $class->getInstanceProperty($propertyName, $scope);
-			$this->assertSame(
+			self::assertSame(
 				$expectedPropertyData['class'],
 				$property->getDeclaringClass()->getName(),
 				sprintf('Declaring class of property $%s does not match.', $propertyName),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedPropertyData['readableType'],
 				$property->getReadableType()->describe(VerbosityLevel::precise()),
 				sprintf('Readable type of property %s::$%s does not match.', $property->getDeclaringClass()->getName(), $propertyName),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedPropertyData['writableType'],
 				$property->getWritableType()->describe(VerbosityLevel::precise()),
 				sprintf('Writable type of property %s::$%s does not match.', $property->getDeclaringClass()->getName(), $propertyName),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedPropertyData['readable'],
 				$property->isReadable(),
 				sprintf('Property %s::$%s readability is not as expected.', $property->getDeclaringClass()->getName(), $propertyName),
 			);
-			$this->assertSame(
+			self::assertSame(
 				$expectedPropertyData['writable'],
 				$property->isWritable(),
 				sprintf('Property %s::$%s writability is not as expected.', $property->getDeclaringClass()->getName(), $propertyName),
@@ -325,8 +325,8 @@ class AnnotationsPropertiesClassReflectionExtensionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass(Bar::class);
-		$this->assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
-		$this->assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));
+		self::assertTrue($class->hasNativeProperty('overridenPropertyWithAnnotation'));
+		self::assertSame('AnnotationsProperties\Foo', $class->getNativeProperty('overridenPropertyWithAnnotation')->getReadableType()->describe(VerbosityLevel::precise()));
 	}
 
 }

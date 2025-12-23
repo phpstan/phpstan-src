@@ -41,11 +41,11 @@ class TypeSpecifierContextTest extends PHPStanTestCase
 	#[DataProvider('dataContext')]
 	public function testContext(TypeSpecifierContext $context, array $results): void
 	{
-		$this->assertSame($results[0], $context->true());
-		$this->assertSame($results[1], $context->truthy());
-		$this->assertSame($results[2], $context->false());
-		$this->assertSame($results[3], $context->falsey());
-		$this->assertSame($results[4], $context->null());
+		self::assertSame($results[0], $context->true());
+		self::assertSame($results[1], $context->truthy());
+		self::assertSame($results[2], $context->false());
+		self::assertSame($results[3], $context->falsey());
+		self::assertSame($results[4], $context->null());
 	}
 
 	public static function dataNegate(): array
@@ -76,11 +76,11 @@ class TypeSpecifierContextTest extends PHPStanTestCase
 	#[DataProvider('dataNegate')]
 	public function testNegate(TypeSpecifierContext $context, array $results): void
 	{
-		$this->assertSame($results[0], $context->true());
-		$this->assertSame($results[1], $context->truthy());
-		$this->assertSame($results[2], $context->false());
-		$this->assertSame($results[3], $context->falsey());
-		$this->assertSame($results[4], $context->null());
+		self::assertSame($results[0], $context->true());
+		self::assertSame($results[1], $context->truthy());
+		self::assertSame($results[2], $context->false());
+		self::assertSame($results[3], $context->falsey());
+		self::assertSame($results[4], $context->null());
 	}
 
 	public function testNegateNull(): void

@@ -61,11 +61,11 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
 		$throwType = $function->getThrowType();
 		if ($expectedThrowType === null) {
-			$this->assertNull($throwType);
+			self::assertNull($throwType);
 			return;
 		}
-		$this->assertNotNull($throwType);
-		$this->assertSame(
+		self::assertNotNull($throwType);
+		self::assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
 			$throwType->describe(VerbosityLevel::precise()),
 		);
@@ -105,7 +105,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$function = $reflectionProvider->getFunction(new Name($functionName), null);
-		$this->assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
+		self::assertEquals(TrinaryLogic::createFromBoolean($isDeprecated), $function->isDeprecated());
 	}
 
 	public static function dataConstantDeprecated(): iterable
@@ -135,7 +135,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		$constant = $reflectionProvider->getConstant(new Name($constantName), null);
-		$this->assertSame(TrinaryLogic::createFromBoolean($isDeprecated)->describe(), $constant->isDeprecated()->describe());
+		self::assertSame(TrinaryLogic::createFromBoolean($isDeprecated)->describe(), $constant->isDeprecated()->describe());
 	}
 
 	public static function dataMethodThrowType(): array
@@ -162,11 +162,11 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$method = $class->getNativeMethod($methodName);
 		$throwType = $method->getThrowType();
 		if ($expectedThrowType === null) {
-			$this->assertNull($throwType);
+			self::assertNull($throwType);
 			return;
 		}
-		$this->assertNotNull($throwType);
-		$this->assertSame(
+		self::assertNotNull($throwType);
+		self::assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
 			$throwType->describe(VerbosityLevel::precise()),
 		);
@@ -180,7 +180,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$class = $reflectionProvider->getClass('NativeClassConstantInEvaledClass\\Foo');
 		$constant = $class->getConstant('FOO');
-		$this->assertSame('int', $constant->getValueType()->describe(VerbosityLevel::precise()));
+		self::assertSame('int', $constant->getValueType()->describe(VerbosityLevel::precise()));
 	}
 
 }

@@ -147,7 +147,7 @@ class ApiRuleHelperTest extends TestCase
 		$scope = $this->createStub(Scope::class);
 		$scope->method('getNamespace')->willReturn($scopeNamespace);
 		$scope->method('getFile')->willReturn($scopeFile);
-		$this->assertSame($expected, $rule->isPhpStanCode($scope, $nameToCheck, $declaringFileNameToCheck));
+		self::assertSame($expected, $rule->isPhpStanCode($scope, $nameToCheck, $declaringFileNameToCheck));
 	}
 
 }

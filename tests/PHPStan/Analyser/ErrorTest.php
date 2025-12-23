@@ -11,9 +11,9 @@ class ErrorTest extends PHPStanTestCase
 	public function testError(): void
 	{
 		$error = new Error('Message', 'file', 10);
-		$this->assertSame('Message', $error->getMessage());
-		$this->assertSame('file', $error->getFile());
-		$this->assertSame(10, $error->getLine());
+		self::assertSame('Message', $error->getMessage());
+		self::assertSame('file', $error->getFile());
+		self::assertSame(10, $error->getLine());
 	}
 
 	public static function dataValidIdentifier(): iterable
@@ -33,7 +33,7 @@ class ErrorTest extends PHPStanTestCase
 	#[DataProvider('dataValidIdentifier')]
 	public function testValidIdentifier(string $identifier): void
 	{
-		$this->assertTrue(Error::validateIdentifier($identifier));
+		self::assertTrue(Error::validateIdentifier($identifier));
 	}
 
 	public static function dataInvalidIdentifier(): iterable
@@ -50,7 +50,7 @@ class ErrorTest extends PHPStanTestCase
 	#[DataProvider('dataInvalidIdentifier')]
 	public function testInvalidIdentifier(string $identifier): void
 	{
-		$this->assertFalse(Error::validateIdentifier($identifier));
+		self::assertFalse(Error::validateIdentifier($identifier));
 	}
 
 }

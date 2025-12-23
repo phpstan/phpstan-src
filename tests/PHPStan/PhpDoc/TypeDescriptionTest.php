@@ -75,21 +75,21 @@ class TypeDescriptionTest extends PHPStanTestCase
 	{
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$type = $typeStringResolver->resolve($description);
-		$this->assertTrue($expectedType->equals($type), sprintf('Parsing %s did not result in %s, but in %s', $description, $expectedType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())));
+		self::assertTrue($expectedType->equals($type), sprintf('Parsing %s did not result in %s, but in %s', $description, $expectedType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())));
 
 		$newDescription = $type->describe(VerbosityLevel::value());
 		$newType = $typeStringResolver->resolve($newDescription);
-		$this->assertTrue($type->equals($newType), sprintf('Parsing %s again did not result in %s, but in %s', $newDescription, $type->describe(VerbosityLevel::value()), $newType->describe(VerbosityLevel::value())));
+		self::assertTrue($type->equals($newType), sprintf('Parsing %s again did not result in %s, but in %s', $newDescription, $type->describe(VerbosityLevel::value()), $newType->describe(VerbosityLevel::value())));
 	}
 
 	#[DataProvider('dataTest')]
 	public function testDesiredTypeDescription(string $description, Type $expectedType): void
 	{
-		$this->assertSame($description, $expectedType->describe(VerbosityLevel::value()));
+		self::assertSame($description, $expectedType->describe(VerbosityLevel::value()));
 
 		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
 		$type = $typeStringResolver->resolve($description);
-		$this->assertSame($description, $type->describe(VerbosityLevel::value()));
+		self::assertSame($description, $type->describe(VerbosityLevel::value()));
 	}
 
 }

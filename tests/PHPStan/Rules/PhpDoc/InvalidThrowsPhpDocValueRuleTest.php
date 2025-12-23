@@ -133,8 +133,8 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 		$reflection = $reflectionProvider->getClass($className);
 		$method = $reflection->getNativeMethod($method);
 		$throwsType = $method->getThrowType();
-		$this->assertNotNull($throwsType);
-		$this->assertSame($expectedType, $throwsType->describe(VerbosityLevel::precise()));
+		self::assertNotNull($throwsType);
+		self::assertSame($expectedType, $throwsType->describe(VerbosityLevel::precise()));
 	}
 
 	#[RequiresPhp('>= 8.4')]

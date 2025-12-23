@@ -10,9 +10,9 @@ use function array_key_exists;
 use function array_keys;
 use function array_merge;
 use function array_unique;
+use function hash_file;
 use function is_dir;
 use function is_file;
-use function sha1_file;
 
 #[AutowiredService]
 final class FileMonitor
@@ -107,7 +107,7 @@ final class FileMonitor
 
 	private function getFileHash(string $filePath): string
 	{
-		$hash = sha1_file($filePath);
+		$hash = hash_file('sha256', $filePath);
 
 		if ($hash === false) {
 			throw new CouldNotReadFileException($filePath);

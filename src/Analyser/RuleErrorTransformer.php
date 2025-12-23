@@ -27,7 +27,7 @@ use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function get_class;
-use function sha1;
+use function hash;
 use function str_contains;
 use function str_repeat;
 
@@ -114,7 +114,7 @@ final class RuleErrorTransformer
 			$oldCode = FileReader::read($fixingFile);
 
 			$this->parser->parse($oldCode);
-			$hash = sha1($oldCode);
+			$hash = hash('sha256', $oldCode);
 			$oldTokens = $this->parser->getTokens();
 
 			$indentTraverser = new NodeTraverser();

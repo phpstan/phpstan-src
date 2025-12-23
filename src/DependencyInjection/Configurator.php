@@ -15,6 +15,7 @@ use function array_keys;
 use function count;
 use function error_reporting;
 use function explode;
+use function hash_file;
 use function implode;
 use function in_array;
 use function is_dir;
@@ -22,7 +23,6 @@ use function is_file;
 use function ksort;
 use function restore_error_handler;
 use function set_error_handler;
-use function sha1_file;
 use function sprintf;
 use function str_ends_with;
 use function substr;
@@ -94,7 +94,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 				array_keys($this->dynamicParameters),
 				$this->configs,
 				PHP_VERSION_ID - PHP_RELEASE_VERSION,
-				is_file($attributesPhp) ? sha1_file($attributesPhp) : 'attributes-missing',
+				is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
 				NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes(),
 			],
 		);
@@ -224,7 +224,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 	{
 		$hashes = [];
 		foreach ($this->allConfigFiles as $file) {
-			$hash = sha1_file($file);
+			$hash = hash_file('sha256', $file);
 
 			if ($hash === false) {
 				throw new CouldNotReadFileException($file);

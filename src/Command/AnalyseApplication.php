@@ -17,10 +17,10 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
+use function hash_file;
 use function is_file;
 use function memory_get_peak_usage;
 use function microtime;
-use function sha1_file;
 use function sprintf;
 
 /**
@@ -151,7 +151,7 @@ final class AnalyseApplication
 						continue;
 					}
 
-					$newHash = sha1_file($file);
+					$newHash = hash_file('sha256', $file);
 					if ($newHash === $hash) {
 						continue;
 					}

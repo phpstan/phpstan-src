@@ -38,13 +38,13 @@ use function count;
 use function explode;
 use function get_loaded_extensions;
 use function getenv;
+use function hash_file;
 use function implode;
 use function is_array;
 use function is_dir;
 use function is_file;
 use function ksort;
 use function microtime;
-use function sha1_file;
 use function sort;
 use function sprintf;
 use function str_starts_with;
@@ -1055,7 +1055,7 @@ return [
 			return $this->fileHashes[$path];
 		}
 
-		$hash = sha1_file($path);
+		$hash = hash_file('sha256', $path);
 		if ($hash === false) {
 			throw new CouldNotReadFileException($path);
 		}

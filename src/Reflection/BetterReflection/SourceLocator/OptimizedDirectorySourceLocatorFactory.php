@@ -10,12 +10,12 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use function array_key_exists;
 use function count;
+use function hash_file;
 use function in_array;
 use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
-use function sha1_file;
 use function sprintf;
 use function strtolower;
 
@@ -44,7 +44,7 @@ final class OptimizedDirectorySourceLocatorFactory
 		$files = $this->fileFinder->findFiles([$directory])->getFiles();
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$hash = sha1_file($file);
+			$hash = hash_file('sha256', $file);
 			if ($hash === false) {
 				continue;
 			}
@@ -108,7 +108,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	{
 		$fileHashes = [];
 		foreach ($files as $file) {
-			$hash = sha1_file($file);
+			$hash = hash_file('sha256', $file);
 			if ($hash === false) {
 				continue;
 			}

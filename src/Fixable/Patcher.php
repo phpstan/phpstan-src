@@ -15,8 +15,8 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_map;
 use function count;
+use function hash;
 use function implode;
-use function sha1;
 use function str_starts_with;
 use function substr;
 use const PHP_VERSION_ID;
@@ -42,7 +42,7 @@ final class Patcher
 	public function applyDiffs(string $fileName, array $diffs): string
 	{
 		$fileContents = FileReader::read($fileName);
-		$fileHash = sha1($fileContents);
+		$fileHash = hash('sha256', $fileContents);
 		$diffHunks = [];
 		foreach ($diffs as $diff) {
 			if ($diff->originalHash !== $fileHash) {

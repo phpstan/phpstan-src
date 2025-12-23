@@ -21,9 +21,9 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceL
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
 use ReflectionClass;
 use function dirname;
+use function hash;
 use function is_file;
 use function serialize;
-use function sha1;
 use const PHP_VERSION_ID;
 
 final class TestCaseSourceLocatorFactory
@@ -55,7 +55,7 @@ final class TestCaseSourceLocatorFactory
 	{
 		$classLoaders = ClassLoader::getRegisteredLoaders();
 		$classLoaderReflection = new ReflectionClass(ClassLoader::class);
-		$cacheKey = sha1(serialize([
+		$cacheKey = hash('sha256', serialize([
 			$this->phpVersion->getVersionId(),
 			$this->fileExtensions,
 			$this->excludePaths,

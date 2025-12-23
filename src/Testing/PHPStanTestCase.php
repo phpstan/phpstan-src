@@ -37,9 +37,9 @@ use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function count;
+use function hash;
 use function implode;
 use function rtrim;
-use function sha1;
 use function sprintf;
 use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
@@ -59,7 +59,7 @@ abstract class PHPStanTestCase extends TestCase
 		foreach (static::getAdditionalConfigFiles() as $configFile) {
 			$additionalConfigFiles[] = $configFile;
 		}
-		$cacheKey = sha1(implode("\n", $additionalConfigFiles));
+		$cacheKey = hash('sha256', implode("\n", $additionalConfigFiles));
 
 		if (!isset(self::$containers[$cacheKey])) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan-tests';

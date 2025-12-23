@@ -17,13 +17,13 @@ use function array_keys;
 use function closedir;
 use function dirname;
 use function error_get_last;
+use function hash;
 use function is_dir;
 use function is_file;
 use function opendir;
 use function readdir;
 use function rename;
 use function rmdir;
-use function sha1;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -107,7 +107,7 @@ final class FileCacheStorage implements CacheStorage
 	 */
 	private function getFilePaths(string $key): array
 	{
-		$keyHash = sha1($key);
+		$keyHash = hash('sha256', $key);
 		$firstDirectory = sprintf('%s/%s', $this->directory, substr($keyHash, 0, 2));
 		$secondDirectory = sprintf('%s/%s', $firstDirectory, substr($keyHash, 2, 2));
 		$filePath = sprintf('%s/%s.php', $secondDirectory, $keyHash);

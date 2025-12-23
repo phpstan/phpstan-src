@@ -118,7 +118,6 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 			}
 
 			unset($storage->pendingFibers[$key]);
-			$restartLoop = true;
 
 			$fiber = $pending['fiber'];
 			$request = $fiber->resume($result);

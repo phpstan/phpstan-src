@@ -5008,7 +5008,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
 					$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
 				}
-				if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) !== true) {
+				if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) === true) {
 					continue;
 				}
 
@@ -5025,7 +5025,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
 				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
 			}
-			if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) !== true) {
+			if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) === true) {
 				continue;
 			}
 

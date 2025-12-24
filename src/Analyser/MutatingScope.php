@@ -5012,7 +5012,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
-				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($expr, $variableTypeHolder->getType());
 			}
 		}
 
@@ -5029,7 +5029,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getExpr(), $variableTypeHolder->getType());
+			$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($expr, $variableTypeHolder->getType());
 		}
 
 		return $intersectedVariableTypeHolders;

@@ -24,6 +24,7 @@ use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\PropertyHook;
+use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
@@ -4265,6 +4266,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
+		if ($expr instanceof Scalar) {
+			return $this;
+		}
+
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {

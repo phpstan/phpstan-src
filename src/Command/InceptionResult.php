@@ -104,7 +104,7 @@ final class InceptionResult
 	{
 		if ($this->getErrorOutput()->isVerbose()) {
 			$elapsedTime = round(microtime(true) - $analysisStartTime, 2);
-			if ($elapsedTime < 10) {
+			if ($elapsedTime < 60) {
 				$elapsedTimeString = sprintf('%.2f seconds', $elapsedTime);
 			} else {
 				$elapsedTimeString = $this->formatDuration((int) $elapsedTime);

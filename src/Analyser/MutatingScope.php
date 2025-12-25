@@ -3947,6 +3947,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		} else {
 			$cond = $expr->cond;
 		}
+		if ($cond instanceof Scalar) {
+			return $this;
+		}
 
 		$type = $this->getType($cond);
 		$nativeType = $this->getNativeType($cond);

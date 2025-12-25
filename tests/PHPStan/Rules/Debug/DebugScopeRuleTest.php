@@ -53,4 +53,19 @@ class DebugScopeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPr4663(): void
+	{
+		$this->analyse([__DIR__ . '/data/pr-4663.php'], [
+			[
+				implode("\n", [
+					'__phpstanRemembered(1) (Maybe): 1',
+					"\$result (Yes): 'no matches!'",
+					'native __phpstanRemembered(1) (Maybe): 1',
+					"native \$result (Yes): 'no matches!'",
+				]),
+				11,
+			],
+		]);
+	}
+
 }

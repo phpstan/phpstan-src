@@ -940,12 +940,14 @@ final class TypeCombinator
 				$keyType = TypeCombinator::union(...array_values($keyTypes));
 				$valueType = TypeCombinator::union(...array_values($valueTypes));
 
-				$arrayType = new ArrayType($keyType, $valueType);
+				$accessories = [];
 				if ($isList) {
-					$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+					$accessories[] = new AccessoryArrayListType();
 				}
+				$accessories[] = new NonEmptyArrayType();
+				$accessories[] = new OversizedArrayType();
 
-				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());
+				return TypeCombinator::intersect(new ArrayType($keyType, $valueType), ...$accessories);
 			});
 
 			if (!$isOversized) {
@@ -975,12 +977,14 @@ final class TypeCombinator
 				$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
 			}
 
-			$arrayType = new ArrayType($keyType, $valueType);
+			$accessories = [];
 			if ($eachIsList) {
-				$arrayType = self::intersect($arrayType, new AccessoryArrayListType());
+				$accessories[] = new AccessoryArrayListType();
 			}
+			$accessories[] = new NonEmptyArrayType();
+			$accessories[] = new OversizedArrayType();
 
-			return [self::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType())];
+			return [self::intersect(new ArrayType($keyType, $valueType), ...$accessories)];
 		}
 
 		return $results;

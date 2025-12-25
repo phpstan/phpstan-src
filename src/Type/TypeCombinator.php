@@ -865,8 +865,8 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
-		foreach (self::optimizeConstantArrays($reducedArrayTypes) as $idx => $reducedArray) {
+		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$accessoryTypes);
 		}
 		return $reducedArrayTypes;

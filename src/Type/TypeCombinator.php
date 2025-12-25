@@ -903,6 +903,7 @@ final class TypeCombinator
 				$valueTypes = [];
 				$keyTypes = [];
 				$nextAutoIndex = 0;
+				$innerValueTypes = $type->getValueTypes();
 				foreach ($type->getKeyTypes() as $i => $innerKeyType) {
 					if (!$innerKeyType instanceof ConstantIntegerType) {
 						$isList = false;
@@ -916,8 +917,7 @@ final class TypeCombinator
 					$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
 					$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
-					$innerValueType = $type->getValueTypes()[$i];
-					$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type) use ($traverse): Type {
+					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type) use ($traverse): Type {
 						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
 							return TypeCombinator::intersect($type, new OversizedArrayType());
 						}

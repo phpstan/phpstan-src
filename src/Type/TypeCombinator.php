@@ -27,7 +27,6 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_key_exists;
 use function array_key_first;
-use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -795,13 +794,9 @@ final class TypeCombinator
 
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
-		$constantArraysMap = array_map(
-			static fn (Type $t) => $t->getConstantArrays(),
-			$arrayTypes,
-		);
 
-		foreach ($arrayTypes as $arrayIdx => $arrayType) {
-			$constantArrays = $constantArraysMap[$arrayIdx];
+		foreach ($arrayTypes as $arrayType) {
+			$constantArrays = $arrayType->getConstantArrays();
 			$isConstantArray = $constantArrays !== [];
 			if (!$isConstantArray || !$arrayType->isIterableAtLeastOnce()->no()) {
 				$filledArrays++;
@@ -816,11 +811,11 @@ final class TypeCombinator
 				continue;
 			}
 
-			$constantArrays = $arrayType->getConstantArrays();
 			foreach ($constantArrays as $constantArray) {
+				$valueTypes = $constantArray->getValueTypes();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$keyTypesForGeneralArray[] = $keyType;
-					$valueTypesForGeneralArray[] = $constantArray->getValueTypes()[$i];
+					$valueTypesForGeneralArray[] = $valueTypes[$i];
 
 					$keyTypeValue = $keyType->getValue();
 					if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
@@ -876,12 +871,11 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
-
-		return array_map(
-			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
-			self::optimizeConstantArrays($reducedArrayTypes),
-		);
+		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		foreach ($reducedArrayTypes as $idx => $reducedArray) {
+			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$accessoryTypes);
+		}
+		return $reducedArrayTypes;
 	}
 
 	/**
@@ -915,6 +909,7 @@ final class TypeCombinator
 				$valueTypes = [];
 				$keyTypes = [];
 				$nextAutoIndex = 0;
+				$innerValueTypes = $type->getValueTypes();
 				foreach ($type->getKeyTypes() as $i => $innerKeyType) {
 					if (!$innerKeyType instanceof ConstantIntegerType) {
 						$isList = false;
@@ -928,8 +923,7 @@ final class TypeCombinator
 					$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
 					$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
-					$innerValueType = $type->getValueTypes()[$i];
-					$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type) use ($traverse): Type {
+					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type) use ($traverse): Type {
 						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
 							return TypeCombinator::intersect($type, new OversizedArrayType());
 						}

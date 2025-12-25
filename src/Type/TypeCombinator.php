@@ -27,7 +27,6 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_key_exists;
 use function array_key_first;
-use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -867,11 +866,10 @@ final class TypeCombinator
 		}
 
 		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
-
-		return array_map(
-			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
-			self::optimizeConstantArrays($reducedArrayTypes),
-		);
+		foreach (self::optimizeConstantArrays($reducedArrayTypes) as $idx => $reducedArray) {
+			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$accessoryTypes);
+		}
+		return $reducedArrayTypes;
 	}
 
 	/**

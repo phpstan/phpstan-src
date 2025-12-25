@@ -53,4 +53,17 @@ class DebugScopeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPr4663(): void
+	{
+		$this->analyse([__DIR__ . '/data/pr-4663.php'], [
+			[
+				implode("\n", [
+					"\$result (Yes): 'no matches!'",
+					"native \$result (Yes): 'no matches!'",
+				]),
+				11,
+			],
+		]);
+	}
+
 }

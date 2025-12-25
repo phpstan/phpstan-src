@@ -234,10 +234,6 @@ final class TypeCombinator
 			unset($types[$i]);
 		}
 
-		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			$scalarTypes[$classType] = array_values($scalarTypeItems);
-		}
-
 		$enumCaseTypes = array_values($enumCaseTypes);
 		usort(
 			$integerRangeTypes,
@@ -260,6 +256,7 @@ final class TypeCombinator
 				continue;
 			}
 
+			$scalarTypeItems = array_values($scalarTypeItems);
 			$scalarTypeItemsCount = count($scalarTypeItems);
 			for ($i = 0; $i < $typesCount; $i++) {
 				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {

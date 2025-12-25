@@ -1710,7 +1710,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 5
+			count: 3
 			path: src/Type/TypeCombinator.php
 
 		-

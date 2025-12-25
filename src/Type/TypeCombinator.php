@@ -789,13 +789,9 @@ final class TypeCombinator
 
 		/** @var int|float $nextConstantKeyTypeIndex */
 		$nextConstantKeyTypeIndex = 1;
-		$constantArraysMap = array_map(
-			static fn (Type $t) => $t->getConstantArrays(),
-			$arrayTypes,
-		);
 
-		foreach ($arrayTypes as $arrayIdx => $arrayType) {
-			$constantArrays = $constantArraysMap[$arrayIdx];
+		foreach ($arrayTypes as $arrayType) {
+			$constantArrays = $arrayType->getConstantArrays();
 			$isConstantArray = $constantArrays !== [];
 			if (!$isConstantArray || !$arrayType->isIterableAtLeastOnce()->no()) {
 				$filledArrays++;

@@ -18,14 +18,12 @@ final class UnresolvableTypeHelper
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsUnresolvable): Type {
 			if ($type instanceof ErrorType) {
 				$containsUnresolvable = true;
-				return $type;
 			}
 			if ($type instanceof NeverType && !$type->isExplicit()) {
 				$containsUnresolvable = true;
-				return $type;
 			}
 
-			return $traverse($type);
+			return $containsUnresolvable ? $type : $traverse($type);
 		});
 
 		return $containsUnresolvable;

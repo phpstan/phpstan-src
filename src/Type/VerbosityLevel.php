@@ -94,6 +94,8 @@ final class VerbosityLevel
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
+		$moreVerbose = false;
+		$veryVerbose = false;
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
 			// stop deep traversal to not waste resources.
 			if ($veryVerbose) {
@@ -143,10 +145,6 @@ final class VerbosityLevel
 			return $traverse($type);
 		};
 
-		/** @var bool $moreVerbose */
-		$moreVerbose = false;
-		/** @var bool $veryVerbose */
-		$veryVerbose = false;
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
 
 		if ($veryVerbose) {

@@ -94,7 +94,14 @@ final class VerbosityLevel
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
+		$moreVerbose = false;
+		$veryVerbose = false;
 		$moreVerboseCallback = static function (Type $type, callable $traverse) use (&$moreVerbose, &$veryVerbose): Type {
+			// stop deep traversal to not waste resources.
+			if ($veryVerbose) {
+				return $type;
+			}
+
 			if ($type->isCallable()->yes()) {
 				$moreVerbose = true;
 
@@ -138,10 +145,6 @@ final class VerbosityLevel
 			return $traverse($type);
 		};
 
-		/** @var bool $moreVerbose */
-		$moreVerbose = false;
-		/** @var bool $veryVerbose */
-		$veryVerbose = false;
 		TypeTraverser::map($acceptingType, $moreVerboseCallback);
 
 		if ($veryVerbose) {
@@ -158,6 +161,11 @@ final class VerbosityLevel
 
 		$containsInvariantTemplateType = false;
 		TypeTraverser::map($acceptingType, static function (Type $type, callable $traverse) use (&$containsInvariantTemplateType): Type {
+			// stop deep traversal to not waste resources.
+			if ($containsInvariantTemplateType) {
+				return $type;
+			}
+
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {
 				$reflection = $type->getClassReflection();
 				if ($reflection !== null) {

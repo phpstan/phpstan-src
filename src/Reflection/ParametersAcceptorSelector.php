@@ -567,12 +567,11 @@ final class ParametersAcceptorSelector
 	{
 		$has = false;
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$has): Type {
-			if ($has || $type instanceof TemplateType || $type instanceof LateResolvableType) {
+			if ($type instanceof TemplateType || $type instanceof LateResolvableType) {
 				$has = true;
-				return $type;
 			}
 
-			return $traverse($type);
+			return $has ? $type : $traverse($type);
 		});
 
 		return $has;

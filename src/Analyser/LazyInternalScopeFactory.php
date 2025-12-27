@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -24,6 +25,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	/** @var int|array{min: int, max: int}|null */
 	private int|array|null $phpVersion;
 
+	private Parser $currentSimpleVersionParser;
+
 	/**
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 */
@@ -34,6 +37,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
+		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
 	}
 
 	public function create(
@@ -69,7 +73,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(TypeSpecifier::class),
 			$this->container->getByType(PropertyReflectionFinder::class),
-			$this->container->getService('currentPhpVersionSimpleParser'),
+			$this->currentSimpleVersionParser,
 			$this->container->getByType(NodeScopeResolver::class),
 			$this->container->getByType(RicherScopeGetTypeHelper::class),
 			$this->container->getByType(ConstantResolver::class),

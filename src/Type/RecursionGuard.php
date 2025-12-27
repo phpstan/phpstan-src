@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use function spl_object_hash;
+use function spl_object_id;
 
 final class RecursionGuard
 {
@@ -37,7 +37,7 @@ final class RecursionGuard
 	 */
 	public static function runOnObjectIdentity(Type $type, callable $callback)
 	{
-		$key = spl_object_hash($type);
+		$key = spl_object_id($type);
 		if (isset(self::$context[$key])) {
 			return new ErrorType();
 		}

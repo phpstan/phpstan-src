@@ -151,10 +151,23 @@ final class TypeCombinator
 		$alreadyNormalized = [];
 		$alreadyNormalizedCounter = 0;
 
+		$containsNonNever = false;
+
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
+			// transform A | never to A
+			if ($types[$i] instanceof NeverType) {
+				if ($containsNonNever) {
+					array_splice($types, $i--, 1);
+					$typesCount--;
+					continue;
+				}
+			} else {
+				$containsNonNever = true;
+			}
+
 			if ($types[$i] instanceof BenevolentUnionType) {
 				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
 					$benevolentUnionObject = $types[$i];

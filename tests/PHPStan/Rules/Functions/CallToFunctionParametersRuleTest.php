@@ -2511,6 +2511,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.5')]
+	public function testBug13930(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13930.php'], [
+			[
+				'Parameter #1 $codepoint of function chr expects int<0, 255>, 256 given.',
+				9,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1')]
 	public function testBug13862(): void
 	{

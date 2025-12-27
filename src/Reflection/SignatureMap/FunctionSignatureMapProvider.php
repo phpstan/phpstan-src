@@ -219,6 +219,10 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php84delta.php');
 		}
 
+		if ($this->phpVersion->getVersionId() >= 80500) {
+			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php85delta.php');
+		}
+
 		return self::$signatureMaps[$cacheKey] = $signatureMap;
 	}
 

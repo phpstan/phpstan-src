@@ -1131,7 +1131,7 @@ final class ClassReflection
 		$parent = $this->getParentClass();
 		while ($parent !== null) {
 			foreach ($parent->getNativeReflection()->getInterfaceNames() as $parentInterfaceName) {
-				$indirectInterfaceNames[] = $parentInterfaceName;
+				$indirectInterfaceNames[$parentInterfaceName] = true;
 			}
 
 			$parent = $parent->getParentClass();
@@ -1139,7 +1139,7 @@ final class ClassReflection
 
 		foreach ($this->getNativeReflection()->getInterfaces() as $interfaceInterface) {
 			foreach ($interfaceInterface->getInterfaceNames() as $interfaceInterfaceName) {
-				$indirectInterfaceNames[] = $interfaceInterfaceName;
+				$indirectInterfaceNames[$interfaceInterfaceName] = true;
 			}
 		}
 
@@ -1149,7 +1149,13 @@ final class ClassReflection
 			$implementsTags = $this->getImplementsTags();
 		}
 
-		$immediateInterfaceNames = array_diff($this->getNativeReflection()->getInterfaceNames(), $indirectInterfaceNames);
+		// Use isset() for O(1) lookup instead of O(n) array_diff()
+		$immediateInterfaceNames = [];
+		foreach ($this->getNativeReflection()->getInterfaceNames() as $interfaceName) {
+			if (!isset($indirectInterfaceNames[$interfaceName])) {
+				$immediateInterfaceNames[] = $interfaceName;
+			}
+		}
 		$immediateInterfaces = [];
 		foreach ($immediateInterfaceNames as $immediateInterfaceName) {
 			if (!$this->reflectionProvider->hasClass($immediateInterfaceName)) {
@@ -1333,13 +1339,19 @@ final class ClassReflection
 	private function getTraitNames(): array
 	{
 		$class = $this->reflection;
-		$traitNames = array_map(static fn (ReflectionClass $class) => $class->getName(), $this->collectTraits($class));
+		// Use hash map for O(1) deduplication instead of array_unique
+		$traitNamesMap = [];
+		foreach ($this->collectTraits($class) as $trait) {
+			$traitNamesMap[$trait->getName()] = true;
+		}
 		while ($class->getParentClass() !== false) {
-			$traitNames = array_values(array_unique(array_merge($traitNames, $class->getParentClass()->getTraitNames())));
+			foreach ($class->getParentClass()->getTraitNames() as $traitName) {
+				$traitNamesMap[$traitName] = true;
+			}
 			$class = $class->getParentClass();
 		}
 
-		return $traitNames;
+		return array_keys($traitNamesMap);
 	}
 
 	/**

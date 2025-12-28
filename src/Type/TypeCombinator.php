@@ -36,6 +36,7 @@ use function get_class;
 use function is_int;
 use function sprintf;
 use function usort;
+use function spl_object_id;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -286,7 +287,7 @@ final class TypeCombinator
 		if (count($types) > 16) {
 			$newTypes = [];
 			foreach ($types as $type) {
-				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
+				$newTypes[spl_object_id($type)] = $type;
 			}
 			$types = array_values($newTypes);
 		}

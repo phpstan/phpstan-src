@@ -92,6 +92,27 @@ use const COUNT_NORMAL;
 final class TypeSpecifier
 {
 
+	/** @var array<string, true> Fast lookup for count/strlen-like functions */
+	private const COUNT_FUNCTIONS = [
+		'count' => true,
+		'sizeof' => true,
+		'strlen' => true,
+		'mb_strlen' => true,
+		'preg_match' => true,
+	];
+
+	/** @var array<string, true> Fast lookup for count/sizeof functions */
+	private const ARRAY_COUNT_FUNCTIONS = [
+		'count' => true,
+		'sizeof' => true,
+	];
+
+	/** @var array<string, true> Fast lookup for strlen functions */
+	private const STRLEN_FUNCTIONS = [
+		'strlen' => true,
+		'mb_strlen' => true,
+	];
+
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
 
@@ -237,11 +258,11 @@ final class TypeSpecifier
 				$expr->left instanceof FuncCall
 				&& count($expr->left->getArgs()) >= 1
 				&& $expr->left->name instanceof Name
-				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
+				&& isset(self::COUNT_FUNCTIONS[strtolower((string) $expr->left->name)])
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
-					|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
+					|| !isset(self::COUNT_FUNCTIONS[strtolower((string) $expr->right->name)])
 				)
 			) {
 				$inverseOperator = $expr instanceof Node\Expr\BinaryOp\Smaller
@@ -265,7 +286,7 @@ final class TypeSpecifier
 				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) >= 1
 				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
+				&& isset(self::ARRAY_COUNT_FUNCTIONS[strtolower((string) $expr->right->name)])
 				&& $leftType->isInteger()->yes()
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
@@ -334,7 +355,7 @@ final class TypeSpecifier
 				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) >= 3
 				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+				&& strtolower((string) $expr->right->name) === 'preg_match'
 				&& (
 					IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
 					|| ($expr instanceof Expr\BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
@@ -351,7 +372,7 @@ final class TypeSpecifier
 				&& $expr->right instanceof FuncCall
 				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
-				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
+				&& isset(self::STRLEN_FUNCTIONS[strtolower((string) $expr->right->name)])
 				&& $leftType->isInteger()->yes()
 			) {
 				if (
@@ -2263,7 +2284,7 @@ final class TypeSpecifier
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& count($unwrappedLeftExpr->getArgs()) >= 1
 			&& $unwrappedLeftExpr->name instanceof Name
-			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['count', 'sizeof'], true)
+			&& isset(self::ARRAY_COUNT_FUNCTIONS[strtolower((string) $unwrappedLeftExpr->name)])
 			&& $rightType->isInteger()->yes()
 		) {
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {
@@ -2312,7 +2333,7 @@ final class TypeSpecifier
 			&& $unwrappedLeftExpr instanceof FuncCall
 			&& count($unwrappedLeftExpr->getArgs()) === 1
 			&& $unwrappedLeftExpr->name instanceof Name
-			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['strlen', 'mb_strlen'], true)
+			&& isset(self::STRLEN_FUNCTIONS[strtolower((string) $unwrappedLeftExpr->name)])
 			&& $rightType->isInteger()->yes()
 		) {
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {

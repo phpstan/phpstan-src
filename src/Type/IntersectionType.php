@@ -53,8 +53,8 @@ use function implode;
 use function in_array;
 use function is_int;
 use function ksort;
-use function md5;
 use function sprintf;
+use function spl_object_id;
 use function strcasecmp;
 use function strlen;
 use function substr;
@@ -1326,7 +1326,7 @@ class IntersectionType implements CompoundType
 		foreach ($this->types as $type) {
 			$oneType = [];
 			foreach ($type->getFiniteTypes() as $finiteType) {
-				$oneType[md5($finiteType->describe(VerbosityLevel::typeOnly()))] = $finiteType;
+				$oneType[spl_object_id($finiteType)] = $finiteType;
 			}
 			$compare[] = $oneType;
 		}

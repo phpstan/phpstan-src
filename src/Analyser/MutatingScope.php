@@ -862,9 +862,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = ExpressionTypeHolder::createYes($node, TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node)));
+			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
 		}
-		return $this->resolvedTypes[$key]->getType();
+		return $this->resolvedTypes[$key];
 	}
 
 	public function getScopeType(Expr $expr): Type

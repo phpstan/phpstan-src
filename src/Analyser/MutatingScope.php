@@ -1369,16 +1369,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof ConstFetch) {
-			$constName = (string) $node->name;
-			$loweredConstName = strtolower($constName);
-			if ($loweredConstName === 'true') {
-				return new ConstantBooleanType(true);
-			} elseif ($loweredConstName === 'false') {
-				return new ConstantBooleanType(false);
-			} elseif ($loweredConstName === 'null') {
-				return new NullType();
-			}
-
 			$namespacedName = null;
 			if (!$node->name->isFullyQualified() && $this->getNamespace() !== null) {
 				$namespacedName = new FullyQualified([$this->getNamespace(), $node->name->toString()]);

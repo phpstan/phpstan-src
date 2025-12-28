@@ -4358,6 +4358,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+		$scope->resolvedTypes = $this->preserveResolvedTypes($expressionTypes);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
 			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);
@@ -4404,6 +4405,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 *
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private function preserveResolvedTypes(array $expressionTypes): array
+	{
+		$preservedTypes = $this->resolvedTypes;
+		foreach($preservedTypes as $exprStringToInvalidate => $resolvedType) {
+			foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+				if (str_contains($exprStringToInvalidate, $exprString)) {
+					unset ($preservedTypes[$exprStringToInvalidate]);
+					continue 2;
+				}
+			}
+		}
+
+		return $preservedTypes;
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self

@@ -803,6 +803,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Node\Scalar\Float_) {
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof Expr\UnaryMinus && $node->expr instanceof Node\Scalar) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof ConstFetch) {
 			$loweredConstName = strtolower($node->name->toString());
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {

@@ -4409,7 +4409,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/**
 	 * @param array<string> $changedExpressions
 	 *
-	 * @return array<string, ExpressionTypeHolder>
+	 * @return array<string, Type>
 	 */
 	private function preserveResolvedTypes(array $changedExpressions): array
 	{

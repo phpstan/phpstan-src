@@ -1110,7 +1110,7 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
 		}
 
@@ -1186,7 +1186,7 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
+		if ($leftType->toNumber() instanceof ErrorType || $rightType->toNumber() instanceof ErrorType) {
 			return new ErrorType();
 		}
 

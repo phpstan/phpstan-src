@@ -12,6 +12,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -57,10 +58,10 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
-			$outputTypes[] = TypeCombinator::intersect(
+			$outputTypes[] = new IntersectionType([
 				new ArrayType($itemType, IntegerRangeType::fromInterval(1, null)),
 				new NonEmptyArrayType(),
-			);
+			]);
 		}
 
 		if (count($outputTypes) === 0) {

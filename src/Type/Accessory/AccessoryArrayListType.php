@@ -24,7 +24,6 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -446,18 +445,18 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return TypeCombinator::union(
+		return new UnionType([
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),
-		);
+		]);
 	}
 
 	public function toFloat(): Type
 	{
-		return TypeCombinator::union(
+		return new UnionType([
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
-		);
+		]);
 	}
 
 	public function toString(): Type

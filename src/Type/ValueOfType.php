@@ -8,6 +8,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function count;
 use function sprintf;
 
 /** @api */
@@ -60,7 +61,14 @@ final class ValueOfType implements CompoundType, LateResolvableType
 				$valueTypes[] = $valueType;
 			}
 
-			return TypeCombinator::union(...$valueTypes);
+			if (count($valueTypes) === 0) {
+				return new NeverType();
+			}
+			if (count($valueTypes) === 1) {
+				return $valueTypes[0];
+			}
+
+			return new UnionType($valueTypes);
 		}
 
 		return $this->type->getIterableValueType();

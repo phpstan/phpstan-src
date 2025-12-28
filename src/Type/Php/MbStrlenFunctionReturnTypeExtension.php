@@ -19,6 +19,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -114,7 +115,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$isNonEmpty = $argType->isNonEmptyString();
-		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
+		$numeric = new UnionType([new IntegerType(), new FloatType()]);
 		if (count($lengths) > 0) {
 			$lengths = array_unique($lengths);
 			sort($lengths);
@@ -145,7 +146,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if (!$this->phpVersion->throwsOnInvalidMbStringEncoding() && in_array(self::UNSUPPORTED_ENCODING, $encodings, true)) {
-			return TypeCombinator::union($range, new ConstantBooleanType(false));
+			return new UnionType([$range, new ConstantBooleanType(false)]);
 		}
 		return $range;
 	}

@@ -21,6 +21,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_values;
 use function count;
@@ -431,7 +432,7 @@ final class RegexGroupParser
 
 			$result = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 			if (!$walkResult->isNonEmpty()->yes()) {
-				return TypeCombinator::union(new ConstantStringType(''), $result);
+				return new UnionType([new ConstantStringType(''), $result]);
 			}
 			return $result;
 		} elseif ($walkResult->isNonFalsy()->yes()) {

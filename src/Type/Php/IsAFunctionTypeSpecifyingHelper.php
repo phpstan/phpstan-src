@@ -47,10 +47,10 @@ final class IsAFunctionTypeSpecifyingHelper
 						return new NeverType();
 					}
 					if ($allowString) {
-						return TypeCombinator::union(
+						return new UnionType([
 							new ObjectType($type->getValue()),
 							new GenericClassStringType(new ObjectType($type->getValue())),
-						);
+						]);
 					}
 
 					return new ObjectType($type->getValue());
@@ -66,10 +66,10 @@ final class IsAFunctionTypeSpecifyingHelper
 					return $type->getGenericType();
 				}
 				if ($allowString) {
-					return TypeCombinator::union(
+					return new UnionType([
 						new ObjectWithoutClassType(),
 						new ClassStringType(),
-					);
+					]);
 				}
 
 				return new ObjectWithoutClassType();

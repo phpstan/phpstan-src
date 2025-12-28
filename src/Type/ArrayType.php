@@ -549,18 +549,18 @@ class ArrayType implements Type
 
 	public function toInteger(): Type
 	{
-		return TypeCombinator::union(
+		return new UnionType([
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),
-		);
+		]);
 	}
 
 	public function toFloat(): Type
 	{
-		return TypeCombinator::union(
+		return new UnionType([
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
-		);
+		]);
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

@@ -21,6 +21,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -137,22 +138,19 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 					if ($subjectType->isNonEmptyString()->yes()) {
 						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
 					}
-					return TypeCombinator::union($capturedArrayListType, new ConstantBooleanType(false));
+					return new UnionType([$capturedArrayListType, new ConstantBooleanType(false)]);
 				}
 				if ($flagState->maybe()) {
-					$returnInternalValueType = TypeCombinator::union(new StringType(), $capturedArrayType);
+					$returnInternalValueType = new UnionType([new StringType(), $capturedArrayType]);
 				}
 			}
 
-			$returnListType = TypeCombinator::intersect(new ArrayType(new MixedType(), $returnInternalValueType), new AccessoryArrayListType());
+			$returnListType = new IntersectionType([new ArrayType(new MixedType(), $returnInternalValueType), new AccessoryArrayListType()]);
 			if ($subjectType->isNonEmptyString()->yes()) {
-				$returnListType = TypeCombinator::intersect(
-					$returnListType,
-					new NonEmptyArrayType(),
-				);
+				$returnListType = new IntersectionType([new NonEmptyArrayType(), ...$returnListType->getTypes()]);
 			}
 
-			return TypeCombinator::union($returnListType, new ConstantBooleanType(false));
+			return new UnionType([$returnListType, new ConstantBooleanType(false)]);
 		}
 
 		$resultTypes = [];

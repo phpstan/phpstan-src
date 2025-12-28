@@ -24,6 +24,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_is_list;
 use function array_map;
 use function array_unique;
@@ -133,7 +134,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			!$this->phpVersion->throwsValueErrorForInternalFunctions()
 			&& !IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($splitLengthType)->yes()
 		) {
-			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
+			$returnType = new UnionType([$returnType, new ConstantBooleanType(false)]);
 		}
 
 		return $returnType;

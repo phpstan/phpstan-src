@@ -17,12 +17,14 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -64,10 +66,10 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
 		$falseType = new ConstantBooleanType(false);
-		$stringFalseType = TypeCombinator::union($stringType, $falseType);
-		$integerFalseType = TypeCombinator::union($integerType, $falseType);
-		$stringListType = TypeCombinator::intersect(new ArrayType($integerType, $stringType), new AccessoryArrayListType());
-		$nestedArrayInListType = TypeCombinator::intersect(new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType());
+		$stringFalseType = new UnionType([$stringType, $falseType]);
+		$integerFalseType = new UnionType([$integerType, $falseType]);
+		$stringListType = new IntersectionType([new ArrayType($integerType, $stringType), new AccessoryArrayListType()]);
+		$nestedArrayInListType = new IntersectionType([new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
 		$mixedType = new MixedType();
 
 		$componentTypesPairedConstants = [
@@ -172,8 +174,8 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$stringType = new StringType();
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
-		$stringOrNullType = TypeCombinator::union($stringType, new NullType());
-		$nestedArrayInListType = TypeCombinator::intersect(new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType());
+		$stringOrNullType = new UnionType([$stringType, new NullType()]);
+		$nestedArrayInListType = new IntersectionType([new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
 
 		$componentTypesPairedStrings = [
 			'url' => $stringType,

@@ -19,6 +19,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_filter;
 use function count;
 use function in_array;
@@ -88,11 +89,11 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 				? new BooleanType()
 				: new BenevolentUnionType([new BooleanType(), new NullType()]);
 		} else {
-			$returnType = TypeCombinator::union(
+			$returnType = new UnionType([
 				new ConstantIntegerType(-1),
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
-			);
+			]);
 		}
 
 		if (count(array_filter($counts, static fn (int $count): bool => $count === 0)) > 0) {

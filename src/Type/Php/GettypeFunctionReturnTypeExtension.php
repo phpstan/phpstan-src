@@ -11,7 +11,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function count;
@@ -74,7 +73,7 @@ final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 				return new ConstantStringType('object');
 			}
 
-			return TypeCombinator::union(
+			return new UnionType([
 				new ConstantStringType('string'),
 				new ConstantStringType('array'),
 				new ConstantStringType('boolean'),
@@ -85,7 +84,7 @@ final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 				new ConstantStringType('NULL'),
 				new ConstantStringType('object'),
 				new ConstantStringType('unknown type'),
-			);
+			]);
 		});
 	}
 

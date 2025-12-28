@@ -16,7 +16,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -51,10 +51,10 @@ final class ImpossibleInstanceOfRule implements Rule
 			$classType = new ObjectType($className);
 		} else {
 			$classType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->class) : $scope->getNativeType($node->class);
-			$allowed = TypeCombinator::union(
+			$allowed = new UnionType([
 				new StringType(),
 				new ObjectWithoutClassType(),
-			);
+			]);
 			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
 				$node->class,

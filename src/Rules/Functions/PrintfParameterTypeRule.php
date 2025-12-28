@@ -16,7 +16,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
@@ -94,13 +94,13 @@ final class PrintfParameterTypeRule implements Rule
 		$format = $formatString->getValue();
 		$placeholderMap = $this->printfHelper->getPrintfPlaceholders($format);
 		$errors = [];
-		$typeAllowedByCallToFunctionParametersRule = TypeCombinator::union(
+		$typeAllowedByCallToFunctionParametersRule = new UnionType([
 			new StringAlwaysAcceptingObjectWithToStringType(),
 			new IntegerType(),
 			new FloatType(),
 			new BooleanType(),
 			new NullType(),
-		);
+		]);
 		// Type on the left can go to the type on the right, but not vice versa.
 		$allowedTypeNameMap = $this->checkStrictPrintfPlaceholderTypes
 			? [

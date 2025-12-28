@@ -24,7 +24,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
@@ -299,7 +298,7 @@ final class AccessPropertiesCheck
 			}
 		}
 
-		$unionType = TypeCombinator::union(...$types);
+		$unionType = new UnionType($types);
 
 		try {
 			return $unionType->getInstanceProperty($name, $scope);

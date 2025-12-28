@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 use function is_bool;
@@ -128,10 +129,10 @@ final class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			$accessoryTypes[] = new StringType();
 
 			if (!$isNotEmpty && $this->phpVersion->substrReturnFalseInsteadOfEmptyString()) {
-				return TypeCombinator::union(
+				return new UnionType([
 					new ConstantBooleanType(false),
 					new IntersectionType($accessoryTypes),
-				);
+				]);
 			}
 
 			return new IntersectionType($accessoryTypes);

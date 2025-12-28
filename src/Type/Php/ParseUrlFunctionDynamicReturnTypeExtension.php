@@ -19,6 +19,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use ValueError;
 use function count;
 use function parse_url;
@@ -97,10 +98,10 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		if ($componentType->getValue() === -1) {
-			return TypeCombinator::union(
+			return new UnionType([
 				$this->createComponentsArray($urlType->isLowercaseString()->yes()),
 				new ConstantBooleanType(false),
-			);
+			]);
 		}
 
 		if ($urlType->isLowercaseString()->yes()) {

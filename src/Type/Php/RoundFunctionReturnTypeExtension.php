@@ -19,7 +19,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 
@@ -69,21 +69,22 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if ($this->phpVersion->hasStricterRoundFunctions()) {
-			$allowed = TypeCombinator::union(
-				new IntegerType(),
-				new FloatType(),
-			);
-
 			if (!$scope->isDeclareStrictTypes()) {
-				$allowed = TypeCombinator::union(
-					$allowed,
+				$allowed = new UnionType([
+					new IntegerType(),
+					new FloatType(),
 					new IntersectionType([
 						new StringType(),
 						new AccessoryNumericStringType(),
 					]),
 					new NullType(),
 					new BooleanType(),
-				);
+				]);
+			} else {
+				$allowed = new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]);
 			}
 
 			if ($allowed->isSuperTypeOf($firstArgType)->no()) {

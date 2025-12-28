@@ -13,6 +13,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_map;
 use function array_unique;
 use function count;
@@ -53,7 +54,7 @@ final class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		$isNonEmpty = $argType->isNonEmptyString();
-		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
+		$numeric = new UnionType([new IntegerType(), new FloatType()]);
 		$range = null;
 		if (count($lengths) > 0) {
 			$lengths = array_unique($lengths);

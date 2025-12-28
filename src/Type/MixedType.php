@@ -265,7 +265,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::union(new IntegerType(), new StringType(), new ConstantBooleanType(false));
+		return new UnionType([new IntegerType(), new StringType(), new ConstantBooleanType(false)]);
 	}
 
 	public function shiftArray(): Type

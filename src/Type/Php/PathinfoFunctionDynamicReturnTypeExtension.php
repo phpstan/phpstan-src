@@ -15,6 +15,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
 
@@ -76,7 +77,7 @@ final class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			return TypeCombinator::union(...$result);
 		}
 
-		return TypeCombinator::union($arrayType, new StringType());
+		return new UnionType([$arrayType, new StringType()]);
 	}
 
 	/**

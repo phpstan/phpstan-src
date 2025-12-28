@@ -797,6 +797,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		if ($node instanceof Node\Scalar\Int_) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof String_) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof Node\Scalar\Float_) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof ConstFetch) {
+			$loweredConstName = strtolower($node->name->toString());
+			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
+				return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+			}
+		}
+
 		if ($node instanceof GetIterableKeyTypeExpr) {
 			return $this->getIterableKeyType($this->getType($node->getExpr()));
 		}
@@ -1295,11 +1308,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			});
 		}
 
-		if ($node instanceof Node\Scalar\Int_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof String_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof Node\Scalar\InterpolatedString) {
+		if ($node instanceof Node\Scalar\InterpolatedString) {
 			$resultType = null;
 			foreach ($node->parts as $part) {
 				if ($part instanceof InterpolatedStringPart) {
@@ -1316,8 +1325,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			return $resultType ?? new ConstantStringType('');
-		} elseif ($node instanceof Node\Scalar\Float_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
 			if ($node instanceof FuncCall && $node->name instanceof Expr) {
 				$callableType = $this->getType($node->name);

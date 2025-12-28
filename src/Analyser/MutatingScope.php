@@ -4357,7 +4357,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		$scope->resolvedTypes = $this->preserveResolvedTypes($expressionTypes);
+		$scope->resolvedTypes = $this->preserveResolvedTypes([$exprString]);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
 			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);
@@ -4407,15 +4407,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string> $changedExpressions
 	 *
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	private function preserveResolvedTypes(array $expressionTypes): array
+	private function preserveResolvedTypes(array $changedExpressions): array
 	{
 		$preservedTypes = $this->resolvedTypes;
 		foreach($preservedTypes as $exprStringToInvalidate => $resolvedType) {
-			foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			foreach ($changedExpressions as $exprString) {
 				if (str_contains($exprStringToInvalidate, $exprString)) {
 					unset ($preservedTypes[$exprStringToInvalidate]);
 					continue 2;

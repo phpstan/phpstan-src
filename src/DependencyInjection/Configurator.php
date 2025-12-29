@@ -11,6 +11,7 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use function array_keys;
 use function count;
 use function error_reporting;
@@ -29,6 +30,7 @@ use function substr;
 use function time;
 use function trim;
 use function unlink;
+use function var_export;
 use const E_USER_DEPRECATED;
 use const PHP_RELEASE_VERSION;
 use const PHP_VERSION_ID;
@@ -95,7 +97,9 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 				$this->configs,
 				PHP_VERSION_ID - PHP_RELEASE_VERSION,
 				is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
-				NeonAdapter::CACHE_KEY, $this->getAllConfigFilesHashes(),
+				NeonAdapter::CACHE_KEY,
+				$this->getAllConfigFilesHashes(),
+				var_export(TurboExtensionEnabler::isLoaded(), true),
 			],
 		);
 

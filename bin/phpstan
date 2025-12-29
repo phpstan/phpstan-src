@@ -8,6 +8,7 @@ use PHPStan\Command\DumpParametersCommand;
 use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\WorkerCommand;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Turbo\TurboExtensionEnabler;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
@@ -15,6 +16,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	ini_set('display_errors', 'stderr');
 
 	define('__PHPSTAN_RUNNING__', true);
+	TurboExtensionEnabler::enableIfLoaded();
 
 	$analysisStartTime = microtime(true);
 

@@ -882,13 +882,13 @@ class IntersectionType implements CompoundType
 					return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
 				}
 
-				return TypeCombinator::intersect(
+				return new IntersectionType([
 					new ArrayType(
 						TypeCombinator::union($type->getKeyType(), $offsetType),
 						TypeCombinator::union($type->getItemType(), $valueType),
 					),
 					new NonEmptyArrayType(),
-				);
+				]);
 			});
 		}
 

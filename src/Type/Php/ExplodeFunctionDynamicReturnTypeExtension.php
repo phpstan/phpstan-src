@@ -16,7 +16,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -24,6 +23,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -74,7 +74,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 			$returnValueType = new StringType();
 		}
 
-		$returnType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $returnValueType), new AccessoryArrayListType());
+		$returnType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $returnValueType), new AccessoryArrayListType()]);
 		if (
 			!isset($args[2])
 			|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($args[2]->value))->yes()
@@ -83,7 +83,7 @@ final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		if (!$this->phpVersion->throwsValueErrorForInternalFunctions() && $isEmptyString->maybe()) {
-			$returnType = TypeCombinator::union($returnType, new ConstantBooleanType(false));
+			$returnType = new UnionType([$returnType, new ConstantBooleanType(false)]);
 		}
 
 		if ($delimiterType instanceof MixedType) {

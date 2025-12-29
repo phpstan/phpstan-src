@@ -363,7 +363,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
-			return TypeCombinator::intersect($this, new AccessoryNonFalsyStringType());
+			return new AccessoryNonFalsyStringType();
 		}
 
 		return null;

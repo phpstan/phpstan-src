@@ -8,6 +8,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -295,19 +296,24 @@ final class ConstantArrayTypeBuilder
 			TypeCombinator::union(...$this->valueTypes),
 		);
 
+		$types = [];
 		if (count($this->optionalKeys) < $keyTypesCount) {
-			$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
+			$types[] = new NonEmptyArrayType();
 		}
 
 		if ($this->oversized) {
-			$array = TypeCombinator::intersect($array, new OversizedArrayType());
+			$types[] = new OversizedArrayType();
 		}
 
 		if ($this->isList->yes()) {
-			$array = TypeCombinator::intersect($array, new AccessoryArrayListType());
+			$types[] = new AccessoryArrayListType();
 		}
 
-		return $array;
+		if (count($types) === 0) {
+			return $array;
+		}
+
+		return new IntersectionType([$array, ...$types]);
 	}
 
 	public function isList(): bool

@@ -178,6 +178,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -2937,7 +2938,7 @@ class NodeScopeResolver
 				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType()), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
+				$scope = $scope->assignVariable('http_response_header', new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new AccessoryArrayListType()]), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
 			}
 
 			if (
@@ -4554,7 +4555,7 @@ class NodeScopeResolver
 					$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
 					$isList = $constantArray->isList()->yes();
 					$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
-						? TypeCombinator::intersect($array, new NonEmptyArrayType())
+						? new IntersectionType([$array, new NonEmptyArrayType()])
 						: $array;
 					$constantArray = $isList
 						? TypeCombinator::intersect($constantArray, new AccessoryArrayListType())
@@ -4600,7 +4601,7 @@ class NodeScopeResolver
 				return $type;
 			}
 
-			$newArrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $type->getIterableValueType()), new AccessoryArrayListType());
+			$newArrayType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $type->getIterableValueType()), new AccessoryArrayListType()]);
 			if ($isIterableAtLeastOnce->yes()) {
 				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
 			}
@@ -4639,7 +4640,7 @@ class NodeScopeResolver
 
 			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
 			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
+				$newArrayType = new IntersectionType([$newArrayType, new NonEmptyArrayType()]);
 			}
 
 			return $newArrayType;

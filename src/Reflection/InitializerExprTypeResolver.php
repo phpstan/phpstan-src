@@ -440,10 +440,10 @@ final class InitializerExprTypeResolver
 
 		if ($expr instanceof MagicConst\Class_) {
 			if ($context->getTraitName() !== null) {
-				return TypeCombinator::intersect(
+				return new IntersectionType([
 					new ClassStringType(),
 					new AccessoryLiteralStringType(),
-				);
+				]);
 			}
 
 			if ($context->getClassName() === null) {
@@ -455,10 +455,10 @@ final class InitializerExprTypeResolver
 
 		if ($expr instanceof MagicConst\Namespace_) {
 			if ($context->getTraitName() !== null) {
-				return TypeCombinator::intersect(
+				return new IntersectionType([
 					new StringType(),
 					new AccessoryLiteralStringType(),
-				);
+				]);
 			}
 
 			return new ConstantStringType($context->getNamespace() ?? '');
@@ -731,7 +731,7 @@ final class InitializerExprTypeResolver
 						$properties[$keyType->getValue()] = $valueType;
 					}
 
-					$objects[] = TypeCombinator::intersect(new ObjectShapeType($properties, $optionalProperties), new ObjectType(stdClass::class));
+					$objects[] = new IntersectionType([new ObjectShapeType($properties, $optionalProperties), new ObjectType(stdClass::class)]);
 				}
 
 				return TypeCombinator::union(...$objects);
@@ -770,12 +770,12 @@ final class InitializerExprTypeResolver
 				));
 			}
 
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getFunctionType(
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->getFunctionType(
 				$type,
 				false,
 				false,
 				$context,
-			)), new AccessoryArrayListType());
+			)), new AccessoryArrayListType()]);
 		}
 
 		if ($type instanceof Name) {
@@ -2412,10 +2412,10 @@ final class InitializerExprTypeResolver
 					}
 
 					if ($type instanceof EnumCaseObjectType) {
-						return TypeCombinator::intersect(
+						return new IntersectionType([
 							new GenericClassStringType(new ObjectType($type->getClassName())),
 							new AccessoryLiteralStringType(),
-						);
+						]);
 					}
 
 					$objectClassNames = $type->getObjectClassNames();
@@ -2424,25 +2424,25 @@ final class InitializerExprTypeResolver
 					}
 
 					if ($type instanceof TemplateType && $objectClassNames === []) {
-						return TypeCombinator::intersect(
+						return new IntersectionType([
 							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
-						);
+						]);
 					} elseif ($objectClassNames !== [] && $this->getReflectionProvider()->hasClass($objectClassNames[0])) {
 						$reflection = $this->getReflectionProvider()->getClass($objectClassNames[0]);
 						if ($reflection->isFinalByKeyword()) {
 							return new ConstantStringType($reflection->getName(), true);
 						}
 
-						return TypeCombinator::intersect(
+						return new IntersectionType([
 							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
-						);
+						]);
 					} elseif ($type->isObject()->yes()) {
-						return TypeCombinator::intersect(
+						return new IntersectionType([
 							new ClassStringType(),
 							new AccessoryLiteralStringType(),
-						);
+						]);
 					}
 
 					return new ErrorType();
@@ -2619,16 +2619,16 @@ final class InitializerExprTypeResolver
 				return new ConstantStringType(~$type->getValue());
 			}
 			if ($type->isString()->yes()) {
-				$accessories = [
-					new StringType(),
-				];
-				if ($type->isNonEmptyString()->yes()) {
-					$accessories[] = new AccessoryNonEmptyStringType();
+				$accessories = [];
+				if (!$type->isNonEmptyString()->yes()) {
+					return new StringType();
 				}
+
+				$accessories[] = new AccessoryNonEmptyStringType();
 				// it is not useful to apply numeric and literal strings here.
 				// numeric string isn't certainly kept numeric: 3v4l.org/JERDB
 
-				return TypeCombinator::intersect(...$accessories);
+				return new IntersectionType([new StringType(), ...$accessories]);
 			}
 			if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
 				return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE

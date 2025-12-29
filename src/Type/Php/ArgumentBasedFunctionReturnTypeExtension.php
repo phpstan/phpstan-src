@@ -11,8 +11,8 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 
 #[AutowiredService]
@@ -68,7 +68,7 @@ final class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionR
 			$argumentValueType,
 		);
 		if ($functionReflection->getName() === 'array_unique' && $argumentType->isIterableAtLeastOnce()->yes()) {
-			$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
+			$array = new IntersectionType([$array, new NonEmptyArrayType()]);
 		}
 
 		return $array;

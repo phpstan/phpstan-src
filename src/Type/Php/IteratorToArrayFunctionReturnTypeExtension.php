@@ -10,10 +10,10 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
 #[AutowiredService]
@@ -39,10 +39,10 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 			$preserveKeysType = $scope->getType($arguments[1]->value);
 
 			if ($preserveKeysType->isFalse()->yes()) {
-				return TypeCombinator::intersect(new ArrayType(
-					new IntegerType(),
+				return new IntersectionType([new ArrayType(
+					IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 					$traversableType->getIterableValueType(),
-				), new AccessoryArrayListType());
+				), new AccessoryArrayListType()]);
 			}
 		}
 

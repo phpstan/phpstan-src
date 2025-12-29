@@ -339,7 +339,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	{
 		return TypeCombinator::union(
 			$this,
-			TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+			new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 			new ArrayType(new MixedType(true), new MixedType(true)),
 			new ObjectType(Closure::class),
 		);

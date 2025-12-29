@@ -9,10 +9,12 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function in_array;
 use function openssl_get_cipher_methods;
 use function strtolower;
@@ -48,10 +50,10 @@ final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameter
 			}
 
 			if (in_array($mode, ['gcm', 'ccm'], true)) {
-				$tagTypes[] = TypeCombinator::intersect(
+				$tagTypes[] = new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
-				);
+				]);
 
 				continue;
 			}
@@ -60,10 +62,13 @@ final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameter
 		}
 
 		if ($tagTypes === []) {
-			return TypeCombinator::addNull(TypeCombinator::intersect(
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			));
+			return new UnionType([
+				new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				]),
+				new NullType(),
+			]);
 		}
 
 		return TypeCombinator::union(...$tagTypes);

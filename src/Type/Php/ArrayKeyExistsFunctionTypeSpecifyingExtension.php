@@ -21,6 +21,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -119,10 +120,10 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		}
 
 		if ($context->true()) {
-			$type = TypeCombinator::intersect(
+			$type = new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
 				new HasOffsetType($keyType),
-			);
+			]);
 		} elseif ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			$specifiedTypes = $this->typeSpecifier->create(
 				$array,

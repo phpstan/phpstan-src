@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Regex\RegexCapturingGroup;
 use PHPStan\Type\Regex\RegexExpressionHelper;
@@ -295,14 +296,7 @@ final class RegexArrayShapeMatcher
 		}
 
 		if ($matchesAll && $this->containsSetOrder($flags)) {
-			$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $builder->getArray()), new AccessoryArrayListType());
-			if (!$wasMatched->yes()) {
-				$arrayType = TypeCombinator::union(
-					ConstantArrayTypeBuilder::createEmpty()->getArray(),
-					$arrayType,
-				);
-			}
-			return $arrayType;
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $builder->getArray()), new AccessoryArrayListType()]);
 		}
 
 		if ($forceList) {
@@ -332,10 +326,10 @@ final class RegexArrayShapeMatcher
 			$subjectValueType = TypeCombinator::removeNull($this->getValueType(new StringType(), $flags, $matchesAll));
 
 			if ($this->containsPatternOrder($flags)) {
-				$subjectValueType = TypeCombinator::intersect(
+				$subjectValueType = new IntersectionType([
 					new ArrayType(new IntegerType(), $subjectValueType),
 					new AccessoryArrayListType(),
-				);
+				]);
 			}
 		}
 
@@ -399,7 +393,7 @@ final class RegexArrayShapeMatcher
 			}
 
 			if ($this->containsPatternOrder($flags)) {
-				$groupValueType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $groupValueType), new AccessoryArrayListType());
+				$groupValueType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $groupValueType), new AccessoryArrayListType()]);
 			}
 
 			return $groupValueType;

@@ -20,6 +20,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -227,7 +228,7 @@ final class FilterFunctionReturnTypeHelper
 		$floatType = new FloatType();
 		$intType = new IntegerType();
 		$stringType = new StringType();
-		$nonFalsyStringType = TypeCombinator::intersect($stringType, new AccessoryNonFalsyStringType());
+		$nonFalsyStringType = new IntersectionType([$stringType, new AccessoryNonFalsyStringType()]);
 
 		$map = [
 			'FILTER_UNSAFE_RAW' => $stringType,

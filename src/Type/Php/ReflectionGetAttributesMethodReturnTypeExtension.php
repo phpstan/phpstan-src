@@ -9,9 +9,9 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use ReflectionAttribute;
 use function count;
 
@@ -44,7 +44,7 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new GenericObjectType(ReflectionAttribute::class, [$classType])), new AccessoryArrayListType());
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new GenericObjectType(ReflectionAttribute::class, [$classType])), new AccessoryArrayListType()]);
 	}
 
 }

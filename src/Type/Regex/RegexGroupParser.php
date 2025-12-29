@@ -128,11 +128,11 @@ final class RegexGroupParser
 			// we could handle numeric-string, in case we know the regex is delimited by ^ and $
 			if ($subjectAsGroupResult->isNonFalsy()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(
-					TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 				);
 			} elseif ($subjectAsGroupResult->isNonEmpty()->yes()) {
 				$astWalkResult = $astWalkResult->withSubjectBaseType(
-					TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 				);
 			}
 		}

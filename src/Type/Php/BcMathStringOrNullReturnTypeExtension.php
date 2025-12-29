@@ -13,11 +13,11 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function in_array;
 use function is_numeric;
@@ -45,7 +45,7 @@ final class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionRetu
 			return $this->getTypeForBcPowMod($functionCall, $scope);
 		}
 
-		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+		$stringAndNumericStringType = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 
 		if (isset($functionCall->getArgs()[1]) === false) {
 			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
@@ -120,7 +120,7 @@ final class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionRetu
 	 */
 	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope): Type
 	{
-		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+		$stringAndNumericStringType = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 			$defaultReturnType = $stringAndNumericStringType;
 		} else {
@@ -193,7 +193,7 @@ final class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionRetu
 			return new NeverType();
 		}
 
-		$stringAndNumericStringType = TypeCombinator::intersect(new StringType(), new AccessoryNumericStringType());
+		$stringAndNumericStringType = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 
 		if (isset($functionCall->getArgs()[1]) === false) {
 			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {

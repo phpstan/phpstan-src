@@ -33,6 +33,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -1061,10 +1062,10 @@ final class ParametersAcceptorSelector
 			if (defined($constName) && constant($constName) === $curlOpt) {
 				return new UnionType([
 					new NullType(),
-					TypeCombinator::intersect(
+					new IntersectionType([
 						new StringType(),
 						new AccessoryNonEmptyStringType(),
-					),
+					]),
 				]);
 			}
 		}
@@ -1146,10 +1147,10 @@ final class ParametersAcceptorSelector
 		];
 		foreach ($nonEmptyStringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {
-				return TypeCombinator::intersect(
+				return new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
-				);
+				]);
 			}
 		}
 

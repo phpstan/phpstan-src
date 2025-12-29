@@ -16,7 +16,8 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -165,10 +166,10 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				);
 			}
 		} else {
-			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
-				new IntegerType(),
+			$mappedArrayType = new IntersectionType([new ArrayType(
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 				$valueType,
-			), new AccessoryArrayListType(), ...$this->getAccessoryTypes($arrayType, $valueType));
+			), new AccessoryArrayListType(), ...$this->getAccessoryTypes($arrayType, $valueType)]);
 		}
 
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {

@@ -353,23 +353,23 @@ class ArrayType implements Type
 				return $builder->getArray();
 			}
 
-			return TypeCombinator::intersect(
+			return new IntersectionType([
 				new self(
 					TypeCombinator::union($this->keyType, $offsetType),
 					TypeCombinator::union($this->itemType, $valueType),
 				),
 				new HasOffsetValueType($offsetType, $valueType),
 				new NonEmptyArrayType(),
-			);
+			]);
 		}
 
-		return TypeCombinator::intersect(
+		return new IntersectionType([
 			new self(
 				TypeCombinator::union($this->keyType, $offsetType),
 				$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 			),
 			new NonEmptyArrayType(),
-		);
+		]);
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
@@ -496,7 +496,7 @@ class ArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
+		return new IntersectionType([new self(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -506,7 +506,7 @@ class ArrayType implements Type
 		}
 
 		if ($preserveKeys->no() && $this->keyType->isInteger()->yes()) {
-			return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
+			return new IntersectionType([new self(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->itemType), new AccessoryArrayListType()]);
 		}
 
 		return $this;
@@ -527,7 +527,7 @@ class ArrayType implements Type
 		);
 
 		if ($replacementArrayTypeIsIterableAtLeastOnce->yes()) {
-			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			$arrayType = new IntersectionType([$arrayType, new NonEmptyArrayType()]);
 		}
 
 		return $arrayType;

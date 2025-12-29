@@ -17,6 +17,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -125,7 +126,10 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 						$types[] = new AccessoryUppercaseStringType();
 					}
 
-					return TypeCombinator::intersect(...$types);
+					if (count($types) === 1) {
+						return $types[0];
+					}
+					return new IntersectionType($types);
 				}
 
 				return $type;

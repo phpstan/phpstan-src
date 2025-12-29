@@ -1359,10 +1359,10 @@ final class TypeSpecifier
 			if ($argType->isString()->yes()) {
 				return $this->create(
 					$argValue,
-					TypeCombinator::intersect(
+					new IntersectionType([
 						new StringType(),
 						new AccessoryNonEmptyStringType(),
-					),
+					]),
 					$context->negate(),
 					$scope,
 				)->setRootExpr($rootExpr);

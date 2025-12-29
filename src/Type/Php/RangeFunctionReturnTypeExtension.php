@@ -19,6 +19,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -91,30 +92,30 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 								$startConstant = $endConstant;
 								$endConstant = $tmp;
 							}
-							return TypeCombinator::intersect(
+							return new IntersectionType([
 								new ArrayType(
-									new IntegerType(),
+									IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
 								),
 								new NonEmptyArrayType(),
 								new AccessoryArrayListType(),
-							);
+							]);
 						}
 
 						if ($stepType->isFloat()->yes()) {
-							return TypeCombinator::intersect(
+							return new IntersectionType([
 								new ArrayType(
-									new IntegerType(),
+									IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 									new FloatType(),
 								),
 								new NonEmptyArrayType(),
 								new AccessoryArrayListType(),
-							);
+							]);
 						}
 
-						return TypeCombinator::intersect(
+						return new IntersectionType([
 							new ArrayType(
-								new IntegerType(),
+								IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 								TypeCombinator::union(
 									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
 									$endConstant->generalize(GeneralizePrecision::moreSpecific()),
@@ -123,7 +124,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 							),
 							new NonEmptyArrayType(),
 							new AccessoryArrayListType(),
-						);
+						]);
 					}
 					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($rangeValues as $value) {
@@ -145,30 +146,30 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		if ($isInteger && $isStepInteger) {
 			if ($argType instanceof IntegerRangeType) {
-				return TypeCombinator::intersect(new ArrayType(new IntegerType(), $argType), new AccessoryArrayListType());
+				return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $argType), new AccessoryArrayListType()]);
 			}
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new IntegerType()), new AccessoryArrayListType());
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()), new AccessoryArrayListType()]);
 		}
 
 		if ($argType->isFloat()->yes()) {
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new FloatType()), new AccessoryArrayListType());
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new FloatType()), new AccessoryArrayListType()]);
 		}
 
 		$numberType = new UnionType([new IntegerType(), new FloatType()]);
 		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
 		$isNumericString = $argType->isNumericString()->yes();
 		if ($isNumber || $isNumericString) {
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $numberType), new AccessoryArrayListType());
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $numberType), new AccessoryArrayListType()]);
 		}
 
 		if ($argType->isString()->yes()) {
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new AccessoryArrayListType()]);
 		}
 
-		return TypeCombinator::intersect(new ArrayType(
-			new IntegerType(),
+		return new IntersectionType([new ArrayType(
+			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
 			new BenevolentUnionType([new IntegerType(), new FloatType(), new StringType()]),
-		), new AccessoryArrayListType());
+		), new AccessoryArrayListType()]);
 	}
 
 }

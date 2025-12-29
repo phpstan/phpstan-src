@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -34,10 +35,10 @@ final class IniGetReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 			return null;
 		}
 
-		$numericString = TypeCombinator::intersect(
+		$numericString = new IntersectionType([
 			new StringType(),
 			new AccessoryNumericStringType(),
-		);
+		]);
 		$types = [
 			'date.timezone' => new StringType(),
 			'memory_limit' => new StringType(),

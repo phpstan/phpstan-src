@@ -672,11 +672,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				return IntegerRangeType::fromInterval(1, null);
 			}
 			if ($variableName === 'argv') {
-				return TypeCombinator::intersect(
-					new ArrayType(new IntegerType(), new StringType()),
+				return new IntersectionType([
+					new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()),
 					new NonEmptyArrayType(),
 					new AccessoryArrayListType(),
-				);
+				]);
 			}
 			if ($this->canAnyVariableExist()) {
 				return new MixedType();
@@ -3410,7 +3410,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
-					$parameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $parameterType), new AccessoryArrayListType());
+					$parameterType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $parameterType), new AccessoryArrayListType()]);
 				}
 			}
 			$parameterNode = new Variable($parameter->getName());
@@ -3425,7 +3425,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
-					$nativeParameterType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $nativeParameterType), new AccessoryArrayListType());
+					$nativeParameterType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $nativeParameterType), new AccessoryArrayListType()]);
 				}
 			}
 			$nativeExpressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterNode, $nativeParameterType);
@@ -3913,11 +3913,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				));
 			}
 
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getFunctionType(
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->getFunctionType(
 				$type,
 				$isNullable,
 				false,
-			)), new AccessoryArrayListType());
+			)), new AccessoryArrayListType()]);
 		}
 		return $this->initializerExprTypeResolver->getFunctionType($type, $isNullable, false, InitializerExprContext::fromScope($this));
 	}
@@ -5426,17 +5426,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1)),
 						TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1)),
 					);
+					$accessories = [];
 					if (
 						$constantArraysA->isIterableAtLeastOnce()->yes()
 						&& $constantArraysB->isIterableAtLeastOnce()->yes()
 						&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 					) {
-						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+						$accessories[] = new NonEmptyArrayType();
 					}
 					if ($constantArraysA->isList()->yes() && $constantArraysB->isList()->yes()) {
-						$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
+						$accessories[] = new AccessoryArrayListType();
 					}
-					$resultTypes[] = $resultType;
+
+					if (count($accessories) === 0) {
+						$resultTypes[] = $resultType;
+					} else {
+						$resultTypes[] = TypeCombinator::intersect($resultType, ...$accessories);
+					}
 				}
 			}
 		} elseif (count($constantArrays['b']) > 0) {
@@ -5473,16 +5479,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					TypeCombinator::union($this->generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType(), $depth + 1)),
 					TypeCombinator::union($this->generalizeType($aValueType, $bValueType, $depth + 1)),
 				);
+
+				$accessories = [];
 				if ($generalArraysA->isIterableAtLeastOnce()->yes() && $generalArraysB->isIterableAtLeastOnce()->yes()) {
-					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+					$accessories[] = new NonEmptyArrayType();
 				}
 				if ($generalArraysA->isList()->yes() && $generalArraysB->isList()->yes()) {
-					$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
+					$accessories[] = new AccessoryArrayListType();
 				}
 				if ($generalArraysA->isOversizedArray()->yes() && $generalArraysB->isOversizedArray()->yes()) {
-					$resultType = TypeCombinator::intersect($resultType, new OversizedArrayType());
+					$accessories[] = new OversizedArrayType();
 				}
-				$resultTypes[] = $resultType;
+
+				if (count($accessories) === 0) {
+					$resultTypes[] = $resultType;
+				} else {
+					$resultTypes[] = TypeCombinator::intersect($resultType, ...$accessories);
+				}
 			}
 		} elseif (count($generalArrays['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);

@@ -17,10 +17,12 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use function in_array;
 use function sprintf;
@@ -102,9 +104,7 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		}
 
 		if ($name === '__debuginfo') {
-			$realReturnType = TypeCombinator::intersect(TypeCombinator::addNull(
-				new ArrayType(new MixedType(true), new MixedType(true)),
-			), $realReturnType);
+			$realReturnType = TypeCombinator::intersect(new UnionType([new ArrayType(new MixedType(true), new MixedType(true)), new NullType()]), $realReturnType);
 		}
 
 		if ($name === '__unserialize') {

@@ -7,7 +7,8 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -198,10 +199,10 @@ trait ArrayTypeTrait
 	{
 		$chunkType = $preserveKeys->yes()
 			? $this
-			: TypeCombinator::intersect(new ArrayType(new IntegerType(), $this->getIterableValueType()), new AccessoryArrayListType());
+			: new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $this->getIterableValueType()), new AccessoryArrayListType()]);
 		$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
 
-		$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), new AccessoryArrayListType());
+		$arrayType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $chunkType), new AccessoryArrayListType()]);
 
 		return $this->isIterableAtLeastOnce()->yes()
 			? TypeCombinator::intersect($arrayType, new NonEmptyArrayType())

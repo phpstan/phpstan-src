@@ -510,11 +510,11 @@ final class TypeCombinator
 				$a->getValue() === '0'
 				&& $description === 'non-falsy-string'
 			) {
-				return [null, self::intersect(
+				return [null, new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
 					...self::getAccessoryCaseStringTypes($b),
-				)];
+				])];
 			}
 		}
 
@@ -537,11 +537,11 @@ final class TypeCombinator
 				$b->getValue() === '0'
 				&& $description === 'non-falsy-string'
 			) {
-				return [self::intersect(
+				return [new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
 					...self::getAccessoryCaseStringTypes($a),
-				), null];
+				]), null];
 			}
 		}
 
@@ -925,7 +925,7 @@ final class TypeCombinator
 
 					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type) use ($traverse): Type {
 						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
-							return TypeCombinator::intersect($type, new OversizedArrayType());
+							return new IntersectionType([$type, new OversizedArrayType()]);
 						}
 
 						if ($type instanceof ConstantScalarType) {
@@ -947,7 +947,7 @@ final class TypeCombinator
 				$accessories[] = new NonEmptyArrayType();
 				$accessories[] = new OversizedArrayType();
 
-				return TypeCombinator::intersect(new ArrayType($keyType, $valueType), ...$accessories);
+				return self::intersect(new ArrayType($keyType, $valueType), ...$accessories);
 			});
 
 			if (!$isOversized) {

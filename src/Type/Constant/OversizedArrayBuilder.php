@@ -93,11 +93,12 @@ final class OversizedArrayBuilder
 		$valueType = TypeCombinator::union(...array_values($valueTypes));
 
 		$arrayType = new ArrayType($keyType, $valueType);
+		$accessories = [];
 		if ($isList) {
-			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			$accessories[] = new AccessoryArrayListType();
 		}
 
-		return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());
+		return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType(), ...$accessories);
 	}
 
 }

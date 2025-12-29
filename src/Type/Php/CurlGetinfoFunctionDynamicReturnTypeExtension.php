@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -68,8 +69,8 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$falseType = new ConstantBooleanType(false);
 		$stringFalseType = new UnionType([$stringType, $falseType]);
 		$integerFalseType = new UnionType([$integerType, $falseType]);
-		$stringListType = new IntersectionType([new ArrayType($integerType, $stringType), new AccessoryArrayListType()]);
-		$nestedArrayInListType = new IntersectionType([new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
+		$stringListType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $stringType), new AccessoryArrayListType()]);
+		$nestedArrayInListType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
 		$mixedType = new MixedType();
 
 		$componentTypesPairedConstants = [
@@ -175,7 +176,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
 		$stringOrNullType = new UnionType([$stringType, new NullType()]);
-		$nestedArrayInListType = new IntersectionType([new ArrayType($integerType, new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
+		$nestedArrayInListType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new ArrayType($stringType, $stringType)), new AccessoryArrayListType()]);
 
 		$componentTypesPairedStrings = [
 			'url' => $stringType,

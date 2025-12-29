@@ -193,7 +193,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new StringType()])), new AccessoryArrayListType());
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new UnionType([new IntegerType(), new StringType()])), new AccessoryArrayListType()]);
 	}
 
 	public function getValuesArray(): Type
@@ -202,7 +202,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType()]);
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -211,7 +211,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType()]);
 	}
 
 	public function fillKeysArray(Type $valueType): Type
@@ -283,7 +283,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return TypeCombinator::intersect(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType());
+		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType($this->isExplicitMixed)), new AccessoryArrayListType()]);
 	}
 
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -786,10 +786,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isOversizedArray(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$oversizedArray = TypeCombinator::intersect(
+			$oversizedArray = new IntersectionType([
 				new ArrayType(new MixedType(), new MixedType()),
 				new OversizedArrayType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($oversizedArray)->yes()) {
 				return TrinaryLogic::createNo();
@@ -802,10 +802,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isList(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$list = TypeCombinator::intersect(
-				new ArrayType(new IntegerType(), new MixedType()),
+			$list = new IntersectionType([
+				new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new MixedType()),
 				new AccessoryArrayListType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($list)->yes()) {
 				return TrinaryLogic::createNo();
@@ -914,10 +914,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isNumericString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$numericString = TypeCombinator::intersect(
+			$numericString = new IntersectionType([
 				new StringType(),
 				new AccessoryNumericStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($numericString)->yes()) {
 				return TrinaryLogic::createNo();
@@ -930,10 +930,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$nonEmptyString = TypeCombinator::intersect(
+			$nonEmptyString = new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($nonEmptyString)->yes()) {
 				return TrinaryLogic::createNo();
@@ -946,10 +946,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isNonFalsyString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$nonFalsyString = TypeCombinator::intersect(
+			$nonFalsyString = new IntersectionType([
 				new StringType(),
 				new AccessoryNonFalsyStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($nonFalsyString)->yes()) {
 				return TrinaryLogic::createNo();
@@ -962,10 +962,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isLiteralString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$literalString = TypeCombinator::intersect(
+			$literalString = new IntersectionType([
 				new StringType(),
 				new AccessoryLiteralStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($literalString)->yes()) {
 				return TrinaryLogic::createNo();
@@ -978,10 +978,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isLowercaseString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$lowercaseString = TypeCombinator::intersect(
+			$lowercaseString = new IntersectionType([
 				new StringType(),
 				new AccessoryLowercaseStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($lowercaseString)->yes()) {
 				return TrinaryLogic::createNo();
@@ -994,10 +994,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isUppercaseString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$uppercaseString = TypeCombinator::intersect(
+			$uppercaseString = new IntersectionType([
 				new StringType(),
 				new AccessoryUppercaseStringType(),
-			);
+			]);
 
 			if ($this->subtractedType->isSuperTypeOf($uppercaseString)->yes()) {
 				return TrinaryLogic::createNo();

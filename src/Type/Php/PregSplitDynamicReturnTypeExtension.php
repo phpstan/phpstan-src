@@ -22,7 +22,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -107,10 +106,10 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 		if ($this->isPatternOrSubjectEmpty($patternConstantTypes, $subjectConstantTypes)) {
 			if ($capturesOffset !== null
 				&& $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($capturesOffset->value, $scope, 'PREG_SPLIT_NO_EMPTY')->yes()) {
-				$returnStringType = TypeCombinator::intersect(
+				$returnStringType = new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
-				);
+				]);
 			} else {
 				$returnStringType = new StringType();
 			}
@@ -130,10 +129,10 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 			if ($capturesOffset !== null) {
 				$flagState = $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($capturesOffset->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE');
 				if ($flagState->yes()) {
-					$capturedArrayListType = TypeCombinator::intersect(
-						new ArrayType(new IntegerType(), $capturedArrayType),
+					$capturedArrayListType = new IntersectionType([
+						new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $capturedArrayType),
 						new AccessoryArrayListType(),
-					);
+					]);
 
 					if ($subjectType->isNonEmptyString()->yes()) {
 						$capturedArrayListType = TypeCombinator::intersect($capturedArrayListType, new NonEmptyArrayType());
@@ -145,7 +144,7 @@ final class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturn
 				}
 			}
 
-			$returnListType = new IntersectionType([new ArrayType(new MixedType(), $returnInternalValueType), new AccessoryArrayListType()]);
+			$returnListType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $returnInternalValueType), new AccessoryArrayListType()]);
 			if ($subjectType->isNonEmptyString()->yes()) {
 				$returnListType = new IntersectionType([new NonEmptyArrayType(), ...$returnListType->getTypes()]);
 			}

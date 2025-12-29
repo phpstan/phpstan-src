@@ -19,7 +19,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -115,12 +115,12 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$isInputNonEmptyString = $stringType->isNonEmptyString()->yes();
 
 		if ($isInputNonEmptyString || $this->phpVersion->strSplitReturnsEmptyArray()) {
-			$returnValueType = TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType());
+			$returnValueType = new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
 		} else {
 			$returnValueType = new StringType();
 		}
 
-		$returnType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $returnValueType), new AccessoryArrayListType());
+		$returnType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $returnValueType), new AccessoryArrayListType()]);
 		if (
 			// Non-empty-string will return an array with at least an element
 			$isInputNonEmptyString

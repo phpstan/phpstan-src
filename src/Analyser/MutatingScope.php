@@ -4418,7 +4418,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$exprExpr = $exprTypeHolder->getExpr();
 
 			foreach ($changedExpressions as $exprStringToInvalidate => $expressionToInvalidate) {
-				if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, true)) {
+				if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr)) {
 					continue;
 				}
 

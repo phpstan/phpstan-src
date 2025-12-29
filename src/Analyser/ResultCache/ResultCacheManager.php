@@ -1014,7 +1014,7 @@ return [
 	 */
 	private function getMeta(array $allAnalysedFiles, ?array $projectConfigArray): array
 	{
-		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => $extension !== 'xdebug'));
+		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => $extension !== 'xdebug' && $extension !== 'blackfire'));
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {

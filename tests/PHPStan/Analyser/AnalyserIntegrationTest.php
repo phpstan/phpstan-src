@@ -1576,7 +1576,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

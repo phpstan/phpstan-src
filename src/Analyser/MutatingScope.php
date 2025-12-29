@@ -877,9 +877,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
+			$this->resolvedTypes[$key] = ExpressionTypeHolder::createYes($node, TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node)));
 		}
-		return $this->resolvedTypes[$key];
+		return $this->resolvedTypes[$key]->getType();
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -4357,7 +4357,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
-		$scope->resolvedTypes = $this->preserveResolvedTypes([$exprString]);
+		$scope->resolvedTypes = $this->preserveResolvedTypes([$exprString => $expr]);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
 			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);
@@ -4407,19 +4407,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * @param array<string> $changedExpressions
+	 * @param array<string, Expr> $changedExpressions
 	 *
-	 * @return array<string, Type>
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function preserveResolvedTypes(array $changedExpressions): array
 	{
 		$preservedTypes = $this->resolvedTypes;
-		foreach($preservedTypes as $exprStringToInvalidate => $resolvedType) {
-			foreach ($changedExpressions as $exprString) {
-				if (str_contains($exprStringToInvalidate, $exprString)) {
-					unset ($preservedTypes[$exprStringToInvalidate]);
-					continue 2;
+		foreach($preservedTypes as $exprString => $exprTypeHolder) {
+			$exprExpr = $exprTypeHolder->getExpr();
+
+			foreach ($changedExpressions as $exprStringToInvalidate => $expressionToInvalidate) {
+				if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, true)) {
+					continue;
 				}
+
+				unset($preservedTypes[$exprString]);
+				continue 2;
 			}
 		}
 

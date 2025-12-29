@@ -10,6 +10,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\Cast\Unset_;
 use PhpParser\Node\Expr\ConstFetch;
@@ -4418,6 +4419,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$exprExpr = $exprTypeHolder->getExpr();
 
 			foreach ($changedExpressions as $exprStringToInvalidate => $expressionToInvalidate) {
+				while ($expressionToInvalidate instanceof Expr\ArrayDimFetch) {
+					$expressionToInvalidate = $expressionToInvalidate->var;
+					$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
+				}
+
 				if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr)) {
 					continue;
 				}

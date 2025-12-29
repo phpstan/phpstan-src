@@ -179,6 +179,7 @@ class ConstantArrayType implements Type
 			foreach ($this->valueTypes as $valueType) {
 				if (!$valueType instanceof ClosureType) {
 					$onlyClosureValues = false;
+					break;
 				}
 			}
 

@@ -171,7 +171,7 @@ class ConstantArrayType implements Type
 
 		$count = count($this->valueTypes);
 		if ($count === 0) {
-			return new NeverType(true);
+			return $this->iterableValueType = new NeverType(true);
 		}
 
 		if ($count > 16) {
@@ -184,11 +184,11 @@ class ConstantArrayType implements Type
 			}
 
 			if ($onlyClosureValues) {
-				return new CallableType();
+				return $this->iterableValueType = new CallableType();
 			}
 		}
 
-		return TypeCombinator::union(...$this->valueTypes);
+		return $this->iterableValueType = TypeCombinator::union(...$this->valueTypes);
 	}
 
 	public function getKeyType(): Type

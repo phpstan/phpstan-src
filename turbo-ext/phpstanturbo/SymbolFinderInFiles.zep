@@ -92,11 +92,11 @@ final class SymbolFinderInFiles
 
             if isset matches["constant"][i] && matches["constant"][i] !== "" {
                 let constantName = ltrim(ns . matches["cname"][i], "\\");
-                let constants[] = self::normalizeConstantName(constantName);
+                let constants[] = this->normalizeConstantName(constantName);
             }
 
             if isset matches["define"][i] && matches["define"][i] !== "" {
-                let constants[] = self::normalizeConstantName(matches["dname"][i]);
+                let constants[] = this->normalizeConstantName(matches["dname"][i]);
                 let i++;
                 continue;
             }
@@ -123,7 +123,7 @@ final class SymbolFinderInFiles
         ];
     }
 
-    private static function normalizeConstantName(string name) -> string
+    private function normalizeConstantName(string name) -> string
     {
         var nameParts, lastPart, prefix, part;
         array filtered;

@@ -268,9 +268,10 @@ Dynamic variables support **eight types**:
 - Only long and string values function as keys
 
 **Strings:**
-- Require double quotes
+- **Must use double quotes** (unlike PHP where single quotes also work)
 - Support escape sequences (`\t`, `\n`, `\r`, `\\`, `\"`)
 - Variable interpolation isn't supported; concatenation is required instead
+- **PHP to Zephir**: Convert all single-quoted PHP strings (`'text'`) to double-quoted (`"text"`)
 
 ### Static Types
 
@@ -319,6 +320,25 @@ Understanding the difference between `string` and `char` types is critical in Ze
 **Syntax Difference:**
 - **String**: Uses double quotes `"hello"`
 - **Char**: Uses single quotes `'h'`
+
+**Important for PHP to Zephir Conversion:**
+When converting PHP code to Zephir, **all single-quoted strings must be converted to double-quoted strings** and properly escaped following the same rules as double-quoted strings in PHP:
+
+```php
+// PHP - both single and double quotes work for strings
+$str1 = 'hello world';
+$str2 = "hello world";
+$str3 = 'it\'s a test';
+```
+
+```zephir
+// Zephir - MUST use double quotes for strings
+string str1 = "hello world";
+string str2 = "hello world";
+string str3 = "it's a test";  // No need to escape single quote in double-quoted string
+```
+
+Remember: In Zephir, single quotes create a `char` type (single character), not a `string`!
 
 **Array Access Returns Char:**
 When you access a string by index, Zephir returns a `char`, not a `string`:
@@ -1835,6 +1855,7 @@ vendor/bin/zephir generate && vendor/bin/zephir compile
    - Use single quotes for char: `'a'`, double quotes for string: `"a"`
    - When iterating strings, loop variable is `char` type
    - Comparing `str[0] == "a"` is wrong; use `str[0] == 'a'` instead
+   - **PHP to Zephir**: Convert all single-quoted PHP strings to double-quoted Zephir strings
 4. **Missing Semicolons**: While optional, they can help avoid ambiguity
 5. **File/Class Mismatch**: File structure must match namespace and class names
 6. **Immutable Variables**: Use `let` to assign values, not direct assignment

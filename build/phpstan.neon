@@ -118,6 +118,10 @@ parameters:
 			count: 1
 			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- identifier: ternary.shortNotAllowed
+		-
+			identifier: shipmonk.deadMethod
+			path: ../src/Internal/CombinationsHelper.php
+			reportUnmatched: false
 	reportStaticMethodSignatures: true
 	tmpDir: %rootDir%/tmp
 	stubFiles:

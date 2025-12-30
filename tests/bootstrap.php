@@ -5,7 +5,7 @@ use PHPStan\Turbo\TurboExtensionEnabler;
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
-TurboExtensionEnabler::enableIfLoaded();
+TurboExtensionEnabler::enableIfLoaded(); // @phpstan-ignore phpstanApi.method
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/PHPStan/Rules/AlwaysFailRule.php';

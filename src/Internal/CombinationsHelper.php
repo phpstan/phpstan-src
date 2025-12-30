@@ -11,7 +11,7 @@ final class CombinationsHelper
 	 * @param array<iterable<mixed>> $arrays
 	 * @return iterable<list<mixed>>
 	 */
-	public static function combinations(array $arrays): iterable // @phpstan-ignore shipmonk.deadMethod
+	public static function combinations(array $arrays): iterable
 	{
 		// from https://stackoverflow.com/a/70800936/565782 by Arnaud Le Blanc
 		if ($arrays === []) {

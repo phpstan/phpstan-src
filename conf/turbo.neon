@@ -1,3 +1,7 @@
 services:
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles
+		arguments:
+			cleaner: @PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner
+	-
+		class: PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner

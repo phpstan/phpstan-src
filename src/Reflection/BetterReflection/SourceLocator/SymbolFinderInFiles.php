@@ -14,11 +14,8 @@ use function strtolower;
 final class SymbolFinderInFiles
 {
 
-	private PhpFileCleaner $cleaner;
-
-	public function __construct()
+	public function __construct(private PhpFileCleaner $cleaner)
 	{
-		$this->cleaner = new PhpFileCleaner();
 	}
 
 	/**

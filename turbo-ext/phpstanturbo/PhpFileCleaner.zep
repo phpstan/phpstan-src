@@ -14,7 +14,7 @@ final class PhpFileCleaner
 
     public function __construct()
     {
-        var type, types, typeKey, typeData, pattern;
+        var type, types, typeKey, typeData, pattern, keys, keysStr;
 
         let this->typeConfig = [];
         let this->restPattern = "";
@@ -25,25 +25,27 @@ final class PhpFileCleaner
         let types = ["class", "interface", "trait", "enum"];
 
         for type in types {
-            let typeKey = "";
-            let typeKey .= type[0];
+            let typeKey = substr(type, 0, 1);
             let pattern = "{.\\b(?<![\\$:>])" . type . "\\s++[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+}Ais";
 
-            let typeData = [
-                "name": type,
-                "length": strlen(type),
-                "pattern": pattern
-            ];
+            let typeData = [];
+            let typeData["name"] = type;
+            let typeData["length"] = strlen(type);
+            let typeData["pattern"] = pattern;
 
             let this->typeConfig[typeKey] = typeData;
         }
 
-        let this->restPattern = "{[^{}?\"'</d" . implode("", array_keys(this->typeConfig)) . "]+}A";
+        let keys = array_keys(this->typeConfig);
+        let keysStr = implode("", keys);
+        let this->restPattern = "{[^{}?\"'</d" . keysStr . "]+}A";
     }
 
     public function clean(string contents, int maxMatches) -> string
     {
-        var inType, typeLevel, inDefine, clean, ch, match, type, charStr;
+        var inType, typeLevel, inDefine, clean, ch, match, type;
+        var typeLength, typeName, typePattern, matchLen, cleanTemp;
+        var peekResult, matchResult;
 
         let this->contents = contents;
         let this->len = strlen(contents);
@@ -59,19 +61,22 @@ final class PhpFileCleaner
             let clean .= "<?";
 
             while this->index < this->len {
-                let ch = this->contents[this->index];
+                let ch = substr(this->contents, this->index, 1);
 
-                if ch == '?' && this->peek('>') {
+                // Check for ?>
+                let peekResult = this->peek(">");
+                if ch == '?' && peekResult {
                     let clean .= "?>";
                     let this->index += 2;
-                    continue;
+                    break;
                 }
 
-                if ch == '"' || ch == '\'' {
+                // Check for quotes
+                if ch == '\'' || ch == '"' {
                     if inDefine {
-                        let charStr = "";
-                        let charStr .= ch;
-                        let clean .= charStr . this->consumeString(ch);
+                        let cleanTemp = this->consumeString(ch);
+                        let clean .= ch;
+                        let clean .= cleanTemp;
                         let inDefine = false;
                     } else {
                         this->skipString(ch);
@@ -80,17 +85,17 @@ final class PhpFileCleaner
                     continue;
                 }
 
+                // Check for {
                 if ch == '{' {
                     if inType {
                         let typeLevel++;
                     }
-                    let charStr = "";
-                    let charStr .= ch;
-                    let clean .= charStr;
+                    let clean .= ch;
                     let this->index++;
                     continue;
                 }
 
+                // Check for }
                 if ch == '}' {
                     if inType {
                         let typeLevel--;
@@ -98,67 +103,94 @@ final class PhpFileCleaner
                             let inType = false;
                         }
                     }
-                    let charStr = "";
-                    let charStr .= ch;
-                    let clean .= charStr;
+                    let clean .= ch;
                     let this->index++;
                     continue;
                 }
 
-                if ch == '<' && this->peek('<') && this->match("{<<<[ \\t]*+(['\"]?)([a-zA-Z_\\x80-\\xff][a-zA-Z0-9_\\x80-\\xff]*+)\\\\1(?:\\r\\n|\\n|\\r)}A", match) {
-                    let this->index += strlen(match[0]);
-                    this->skipHeredoc(match[2]);
-                    let clean .= "null";
-                    continue;
+                // Check for heredoc
+                let peekResult = this->peek("<");
+                if ch == '<' && peekResult {
+                    let matchResult = this->match("{<<<[ \\t]*+(['\"]?)([a-zA-Z_\\x80-\\xff][a-zA-Z0-9_\\x80-\\xff]*+)\\\\1(?:\\r\\n|\\n|\\r)}A", match);
+                    if matchResult {
+                        let matchLen = strlen(match[0]);
+                        let this->index += matchLen;
+                        this->skipHeredoc(match[2]);
+                        let clean .= "null";
+                        continue;
+                    }
                 }
 
+                // Check for comments
                 if ch == '/' {
-                    if this->peek('/') {
+                    let peekResult = this->peek("/");
+                    if peekResult {
                         this->skipToNewline();
                         continue;
                     }
-                    if this->peek('*') {
+                    let peekResult = this->peek("*");
+                    if peekResult {
                         this->skipComment();
                         continue;
                     }
                 }
 
-                if inType && ch == 'c' && this->matchWithOffset("~.\\b(?<![\\$:>])const(\\s++[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+)~Ais", match, this->index - 1) {
-                    let clean .= "class_const" . match[1];
-                    let this->index += strlen(match[0]) - 1;
-                    continue;
+                // Check for const in type
+                if inType && ch == 'c' {
+                    let matchResult = this->matchWithOffset("~.\\b(?<![\\$:>])const(\\s++[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+)~Ais", match, this->index - 1);
+                    if matchResult {
+                        let clean .= "class_const";
+                        let clean .= match[1];
+                        let matchLen = strlen(match[0]);
+                        let this->index += matchLen;
+                        let this->index -= 1;
+                        continue;
+                    }
                 }
 
-                if ch == 'd' && this->matchWithOffset("~.\\b(?<![\\$:>])define\\s*+\\(~Ais", match, this->index - 1) {
-                    let inDefine = true;
-                    let clean .= match[0];
-                    let this->index += strlen(match[0]) - 1;
-                    continue;
+                // Check for define
+                if ch == 'd' {
+                    let matchResult = this->matchWithOffset("~.\\b(?<![\\$:>])define\\s*+\\(~Ais", match, this->index - 1);
+                    if matchResult {
+                        let inDefine = true;
+                        let clean .= match[0];
+                        let matchLen = strlen(match[0]);
+                        let this->index += matchLen;
+                        let this->index -= 1;
+                        continue;
+                    }
                 }
 
-                let charStr = "";
-                let charStr .= ch;
-                if isset this->typeConfig[charStr] {
-                    let type = this->typeConfig[charStr];
+                // Check for type keywords
+                if isset this->typeConfig[ch] {
+                    let type = this->typeConfig[ch];
+                    let typeName = type["name"];
+                    let typeLength = type["length"];
+                    let typePattern = type["pattern"];
 
-                    if substr(this->contents, this->index, type["length"]) === type["name"] {
-                        if maxMatches === 1 && this->matchWithOffset(type["pattern"], match, this->index - 1) {
-                            return clean . match[0];
+                    let cleanTemp = substr(this->contents, this->index, typeLength);
+                    if cleanTemp === typeName {
+                        if maxMatches === 1 {
+                            let matchResult = this->matchWithOffset(typePattern, match, this->index - 1);
+                            if matchResult {
+                                let clean .= match[0];
+                                return clean;
+                            }
                         }
                         let inType = true;
                     }
                 }
 
+                // Default: consume character and try rest pattern
                 let this->index += 1;
-                if this->match(this->restPattern, match) {
-                    let charStr = "";
-                    let charStr .= ch;
-                    let clean .= charStr . match[0];
-                    let this->index += strlen(match[0]);
+                let matchResult = this->match(this->restPattern, match);
+                if matchResult {
+                    let clean .= ch;
+                    let clean .= match[0];
+                    let matchLen = strlen(match[0]);
+                    let this->index += matchLen;
                 } else {
-                    let charStr = "";
-                    let charStr .= ch;
-                    let clean .= charStr;
+                    let clean .= ch;
                 }
             }
         }
@@ -168,8 +200,12 @@ final class PhpFileCleaner
 
     private function skipToPhp() -> void
     {
+        var ch, peekResult;
+
         while this->index < this->len {
-            if this->contents[this->index] == '<' && this->peek('?') {
+            let ch = substr(this->contents, this->index, 1);
+            let peekResult = this->peek("?");
+            if ch == '<' && peekResult {
                 let this->index += 2;
                 break;
             }
@@ -177,19 +213,22 @@ final class PhpFileCleaner
         }
     }
 
-    private function consumeString(char delimiter) -> string
+    private function consumeString(string delimiter) -> string
     {
-        var result, currentChar;
+        var result, currentChar, peekBackslash, peekDelim;
 
         let result = "";
         let this->index += 1;
 
         while this->index < this->len {
-            let currentChar = this->contents[this->index];
+            let currentChar = substr(this->contents, this->index, 1);
 
-            if currentChar == '\\' && (this->peek('\\') || this->peekChar(delimiter)) {
+            let peekBackslash = this->peek("\\");
+            let peekDelim = this->peek(delimiter);
+
+            if currentChar == '\\' && (peekBackslash || peekDelim) {
                 let result .= currentChar;
-                let result .= this->contents[this->index + 1];
+                let result .= substr(this->contents, this->index + 1, 1);
                 let this->index += 2;
                 continue;
             }
@@ -207,29 +246,42 @@ final class PhpFileCleaner
         return result;
     }
 
-    private function skipString(char delimiter) -> void
+    private function skipString(string delimiter) -> void
     {
+        var currentChar, peekBackslash, peekDelim;
+
         let this->index += 1;
 
         while this->index < this->len {
-            if this->contents[this->index] == '\\' && (this->peek('\\') || this->peekChar(delimiter)) {
+            let currentChar = substr(this->contents, this->index, 1);
+
+            let peekBackslash = this->peek("\\");
+            let peekDelim = this->peek(delimiter);
+
+            if currentChar == '\\' && (peekBackslash || peekDelim) {
                 let this->index += 2;
                 continue;
             }
-            if this->contents[this->index] == delimiter {
+
+            if currentChar == delimiter {
                 let this->index += 1;
                 break;
             }
+
             let this->index += 1;
         }
     }
 
     private function skipComment() -> void
     {
+        var currentChar, peekResult;
+
         let this->index += 2;
 
         while this->index < this->len {
-            if this->contents[this->index] == '*' && this->peek('/') {
+            let currentChar = substr(this->contents, this->index, 1);
+            let peekResult = this->peek("/");
+            if currentChar == '*' && peekResult {
                 let this->index += 2;
                 break;
             }
@@ -239,11 +291,12 @@ final class PhpFileCleaner
 
     private function skipToNewline() -> void
     {
-        var currentChar;
+        var currentChar, isNewline;
 
         while this->index < this->len {
-            let currentChar = this->contents[this->index];
-            if currentChar == '\r' || currentChar == '\n' {
+            let currentChar = substr(this->contents, this->index, 1);
+            let isNewline = (currentChar == '\r' || currentChar == '\n');
+            if isNewline {
                 return;
             }
             let this->index += 1;
@@ -253,32 +306,42 @@ final class PhpFileCleaner
     private function skipHeredoc(string delimiter) -> void
     {
         var firstDelimiterChar, delimiterLength, delimiterPattern, currentChar;
+        var substrResult, isTab, isSpace, matchResult, isNewline;
 
-        let firstDelimiterChar = delimiter[0];
+        let firstDelimiterChar = substr(delimiter, 0, 1);
         let delimiterLength = strlen(delimiter);
         let delimiterPattern = "{" . preg_quote(delimiter) . "(?![a-zA-Z0-9_\\x80-\\xff])}A";
 
         while this->index < this->len {
-            let currentChar = this->contents[this->index];
+            let currentChar = substr(this->contents, this->index, 1);
 
-            if currentChar == '\t' || currentChar == ' ' {
+            let isTab = (currentChar == '\t');
+            let isSpace = (currentChar == ' ');
+
+            if isTab || isSpace {
                 let this->index += 1;
                 continue;
             }
 
             if currentChar == firstDelimiterChar {
-                if substr(this->contents, this->index, delimiterLength) === delimiter && this->match(delimiterPattern) {
+                let substrResult = substr(this->contents, this->index, delimiterLength);
+                let matchResult = this->match(delimiterPattern);
+
+                if substrResult === delimiter && matchResult {
                     let this->index += delimiterLength;
                     return;
                 }
             }
 
+            // Skip the rest of the line
             while this->index < this->len {
                 this->skipToNewline();
 
+                // Skip newlines
                 while this->index < this->len {
-                    let currentChar = this->contents[this->index];
-                    if currentChar == '\r' || currentChar == '\n' {
+                    let currentChar = substr(this->contents, this->index, 1);
+                    let isNewline = (currentChar == '\r' || currentChar == '\n');
+                    if isNewline {
                         let this->index += 1;
                     } else {
                         break;
@@ -290,19 +353,15 @@ final class PhpFileCleaner
         }
     }
 
-    private function peek(char charToCheck) -> bool
+    private function peek(string charToCheck) -> bool
     {
-        if this->index + 1 < this->len {
-            return this->contents[this->index + 1] == charToCheck;
-        }
-        return false;
-    }
+        var nextChar;
 
-    private function peekChar(char charToCheck) -> bool
-    {
         if this->index + 1 < this->len {
-            return this->contents[this->index + 1] == charToCheck;
+            let nextChar = substr(this->contents, this->index + 1, 1);
+            return nextChar == charToCheck;
         }
+
         return false;
     }
 

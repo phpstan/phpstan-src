@@ -2208,9 +2208,95 @@ When adding new optimizations:
    - Impact: Longer development cycles
    - Mitigation: Comprehensive PHP tests before porting
 
+## Known Issues and Blockers
+
+### String Concatenation in Loops (December 2025)
+
+**Status**: BLOCKER - PhpFileCleaner and SymbolFinderInFiles implementations compile but don't work at runtime
+
+**Problem**: Zephir-compiled code exhibits unexpected runtime behavior where string concatenation inside loops does not persist changes to the accumulated string variable.
+
+**Symptoms**:
+```zephir
+let clean = "";
+while this->index < this->len {
+    this->skipToPhp();
+    let clean .= "<?";  // This works!
+
+    while this->index < this->len {
+        let ch = substr(this->contents, this->index, 1);
+        // ... various conditions ...
+        let clean .= ch;  // This doesn't work - clean stays as "<?"
+        let this->index += 1;
+    }
+}
+return clean;  // Returns just "<?" instead of full processed string
+```
+
+**Observed Behavior**:
+- Constructor executes correctly, all properties initialized properly
+- First string concatenation outside inner loop works: `let clean .= "<?";` succeeds
+- Inner loop executes (confirmed by index advancing from 2 to end of string)
+- BUT: String concatenations inside inner loop have no effect on `clean` variable
+- Final return value is just `"<?"` instead of expected fully processed string
+
+**Evidence**:
+- Test Input: `"<?php class Foo {}"`
+- Expected Output: `"<?php  class Foo"`
+- Actual Output: `"<?"`
+- Property `index` after execution: 19 (end of string) - proves loop ran
+- Property `clean` value: `"<?"` - proves concatenation didn't work
+
+**What Works**:
+- Property initialization in constructor
+- Array building with `let array[] = value` (proven by CombinationsHelper)
+- String concatenation in simple cases outside loops
+- Function calls and property access
+- All control flow (if/while/for/break/continue)
+
+**What Doesn't Work**:
+- String concatenation with `.=` operator inside nested while loops
+- Possibly related to variable scope or optimization in generated C code
+
+**Compiler Warnings**:
+The Zephir compiler generates multiple "unreachable code" warnings for code blocks inside conditionals, suggesting it may be over-optimizing and removing valid code paths:
+```
+Warning: Unreachable code in PHPStanTurbo\PhpFileCleaner::clean in phpstanturbo/PhpFileCleaner.zep on line 80 [unreachable-code]
+```
+
+**Investigation Attempts**:
+1. ✅ Replaced all `bool` typed variables with `var` (Zephir limitation)
+2. ✅ Replaced all string indexing `str[i]` with `substr(str, i, 1)`
+3. ✅ Simplified boolean expressions from stored variables to inline comparisons
+4. ✅ Full clean rebuild with `zephir fullclean`
+5. ✅ Verified object construction and property initialization
+6. ❌ Issue persists across all attempts
+
+**Current Workaround**:
+PhpFileCleaner and SymbolFinderInFiles remain disabled in `TurboExtensionEnabler.php`:
+```php
+// PhpFileCleaner and SymbolFinderInFiles Zephir implementations are WIP
+// class_alias('PHPStanTurbo\\PhpFileCleaner', PhpFileCleaner::class);
+// class_alias('PHPStanTurbo\\SymbolFinderInFiles', SymbolFinderInFiles::class);
+```
+
+All tests pass (33 tests, 79 assertions) using PHP fallback implementations.
+
+**Next Steps**:
+1. Report issue to Zephir project with minimal reproduction case
+2. Investigate generated C code to identify optimization issue
+3. Try alternative implementation strategies (e.g., building array of strings, then implode)
+4. Consider simpler algorithms that avoid complex nested loops
+
+**Files Affected**:
+- `turbo-ext/phpstanturbo/PhpFileCleaner.zep` (compiles, runtime broken)
+- `turbo-ext/phpstanturbo/SymbolFinderInFiles.zep` (compiles, runtime broken)
+- `src/Turbo/TurboExtensionEnabler.php` (class aliases disabled)
+
 ## Version History
 
-- **0.0.1** (Current): Initial PoC with CombinationsHelper only
+- **0.0.2** (2025-12-30): Attempted PhpFileCleaner + SymbolFinderInFiles, discovered string concatenation blocker
+- **0.0.1** (2025-12-29): Initial PoC with CombinationsHelper only
 
 ## Contact & Support
 

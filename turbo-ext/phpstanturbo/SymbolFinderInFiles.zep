@@ -35,7 +35,9 @@ final class SymbolFinderInFiles
     private function findSymbolsInFile(string file, bool supportsEnums) -> array
     {
         var contents, extraTypes, matches, matchResults, classes, functions, constants;
-        var ns, i, len, name, constantName, pattern;
+        var ns, i, len, name, constantName, pattern, cleanedContents;
+        var matchCnt, fname, cname, dname, nsname;
+        var hasNs, hasFunction, hasConstant, hasDefine, isExtends, isImplements;
         array emptyResult;
 
         let contents = php_strip_whitespace(file);
@@ -53,7 +55,8 @@ final class SymbolFinderInFiles
             return emptyResult;
         }
 
-        let contents = this->cleaner->clean(contents, count(matches[0]));
+        let matchCnt = count(matches[0]);
+        let cleanedContents = this->cleaner->clean(contents, matchCnt);
 
         let pattern = "{
             (?:
@@ -67,7 +70,7 @@ final class SymbolFinderInFiles
             )
         }ix";
 
-        preg_match_all(pattern, contents, matches);
+        preg_match_all(pattern, cleanedContents, matches);
 
         let classes = [];
         let functions = [];
@@ -78,25 +81,44 @@ final class SymbolFinderInFiles
         let i = 0;
 
         while i < len {
-            if isset matches["ns"][i] && matches["ns"][i] !== "" {
-                let ns = preg_replace("~\\s+~", "", strtolower(matches["nsname"][i])) . "\\";
+            let hasNs = isset matches["ns"][i] && matches["ns"][i] !== "";
+
+            if hasNs {
+                let nsname = matches["nsname"][i];
+                let ns = preg_replace("~\\s+~", "", strtolower(nsname));
+                let ns .= "\\";
                 let i++;
                 continue;
             }
 
-            if isset matches["function"][i] && matches["function"][i] !== "" {
-                let functions[] = strtolower(ltrim(ns . matches["fname"][i], "\\"));
+            let hasFunction = isset matches["function"][i] && matches["function"][i] !== "";
+
+            if hasFunction {
+                let fname = matches["fname"][i];
+                let fname = ns . fname;
+                let fname = ltrim(fname, "\\");
+                let fname = strtolower(fname);
+                let functions[] = fname;
                 let i++;
                 continue;
             }
 
-            if isset matches["constant"][i] && matches["constant"][i] !== "" {
-                let constantName = ltrim(ns . matches["cname"][i], "\\");
-                let constants[] = this->normalizeConstantName(constantName);
+            let hasConstant = isset matches["constant"][i] && matches["constant"][i] !== "";
+
+            if hasConstant {
+                let cname = matches["cname"][i];
+                let constantName = ns . cname;
+                let constantName = ltrim(constantName, "\\");
+                let constantName = this->normalizeConstantName(constantName);
+                let constants[] = constantName;
             }
 
-            if isset matches["define"][i] && matches["define"][i] !== "" {
-                let constants[] = this->normalizeConstantName(matches["dname"][i]);
+            let hasDefine = isset matches["define"][i] && matches["define"][i] !== "";
+
+            if hasDefine {
+                let dname = matches["dname"][i];
+                let constantName = this->normalizeConstantName(dname);
+                let constants[] = constantName;
                 let i++;
                 continue;
             }
@@ -105,12 +127,18 @@ final class SymbolFinderInFiles
                 let name = matches["name"][i];
 
                 // skip anon classes extending/implementing
-                if name === "extends" || name === "implements" {
+                let isExtends = (name === "extends");
+                let isImplements = (name === "implements");
+
+                if isExtends || isImplements {
                     let i++;
                     continue;
                 }
 
-                let classes[] = strtolower(ltrim(ns . name, "\\"));
+                let name = ns . name;
+                let name = ltrim(name, "\\");
+                let name = strtolower(name);
+                let classes[] = name;
             }
 
             let i++;
@@ -126,10 +154,11 @@ final class SymbolFinderInFiles
     private function normalizeConstantName(string name) -> string
     {
         var nameParts, lastPart, prefix, part;
+        var cnt, i, hasBackslash;
         array filtered;
-        var cnt;
 
-        if !str_contains(name, "\\") {
+        let hasBackslash = str_contains(name, "\\");
+        if !hasBackslash {
             return name;
         }
 
@@ -148,10 +177,9 @@ final class SymbolFinderInFiles
         }
 
         let lastPart = filtered[cnt - 1];
-        let prefix = "";
 
         if cnt > 1 {
-            var i;
+            let prefix = "";
             let i = 0;
             while i < cnt - 1 {
                 if i > 0 {
@@ -160,7 +188,9 @@ final class SymbolFinderInFiles
                 let prefix .= strtolower(filtered[i]);
                 let i++;
             }
-            return prefix . "\\" . lastPart;
+            let prefix .= "\\";
+            let prefix .= lastPart;
+            return prefix;
         }
 
         return lastPart;

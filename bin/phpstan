@@ -16,6 +16,8 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	ini_set('display_errors', 'stderr');
 
 	define('__PHPSTAN_RUNNING__', true);
+
+	require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
 	TurboExtensionEnabler::enableIfLoaded();
 
 	$analysisStartTime = microtime(true);

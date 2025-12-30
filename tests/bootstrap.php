@@ -3,6 +3,8 @@
 use PHPStan\Turbo\TurboExtensionEnabler;
 
 error_reporting(E_ALL);
+
+require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
 TurboExtensionEnabler::enableIfLoaded();
 
 require_once __DIR__ . '/../vendor/autoload.php';

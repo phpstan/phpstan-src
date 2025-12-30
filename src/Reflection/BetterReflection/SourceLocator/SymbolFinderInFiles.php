@@ -2,13 +2,19 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use function array_filter;
+use function array_slice;
 use function count;
+use function end;
+use function explode;
+use function implode;
 use function in_array;
 use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function preg_replace;
 use function sprintf;
+use function str_contains;
 use function strtolower;
 
 final class SymbolFinderInFiles

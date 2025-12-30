@@ -23,8 +23,9 @@ final class TurboExtensionEnabler
 		}
 
 		class_alias('PHPStanTurbo\CombinationsHelper', CombinationsHelper::class);
-		class_alias('PHPStanTurbo\PhpFileCleaner', PhpFileCleaner::class);
-		class_alias('PHPStanTurbo\SymbolFinderInFiles', SymbolFinderInFiles::class);
+		// TODO: Fix Zephir implementation issues before enabling
+		// class_alias('PHPStanTurbo\PhpFileCleaner', PhpFileCleaner::class);
+		// class_alias('PHPStanTurbo\SymbolFinderInFiles', SymbolFinderInFiles::class);
 	}
 
 }

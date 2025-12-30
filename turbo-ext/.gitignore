@@ -1,3 +1,4 @@
 /vendor
 /ext
 /.zephir
+compile*.log

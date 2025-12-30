@@ -1,0 +1,168 @@
+namespace PHPStanTurbo;
+
+final class SymbolFinderInFiles
+{
+    private cleaner;
+
+    public function __construct(<PhpFileCleaner> cleaner)
+    {
+        let this->cleaner = cleaner;
+    }
+
+    /**
+     * @param string[] files
+     * @return array<string, array{string[], string[], string[]}>
+     */
+    public function findSymbols(array files, bool supportsEnums) -> array
+    {
+        var result, file, symbols;
+
+        let result = [];
+        for file in files {
+            let symbols = this->findSymbolsInFile(file, supportsEnums);
+            let result[file] = symbols;
+        }
+
+        return result;
+    }
+
+    /**
+     * Inspired by Composer\Autoload\ClassMapGenerator::findClasses()
+     * @link https://github.com/composer/composer/blob/45d3e133a4691eccb12e9cd6f9dfd76eddc1906d/src/Composer/Autoload/ClassMapGenerator.php#L216
+     *
+     * @return array{string[], string[], string[]}
+     */
+    private function findSymbolsInFile(string file, bool supportsEnums) -> array
+    {
+        var contents, extraTypes, matches, matchResults, classes, functions, constants;
+        var ns, i, len, name, constantName, pattern;
+        array emptyResult;
+
+        let contents = php_strip_whitespace(file);
+        if contents === "" || contents === false {
+            let emptyResult = [[], [], []];
+            return emptyResult;
+        }
+
+        let extraTypes = supportsEnums ? "|enum" : "";
+        let pattern = "{\\b(?:(?:class|interface|trait|const|function" . extraTypes . ")\\s)|(?:define\\s*\\()}i";
+        let matchResults = preg_match_all(pattern, contents, matches);
+
+        if !matchResults {
+            let emptyResult = [[], [], []];
+            return emptyResult;
+        }
+
+        let contents = this->cleaner->clean(contents, count(matches[0]));
+
+        let pattern = "{
+            (?:
+                \\b(?<![\\$:>])(?:
+                    (?: (?P<type>class|interface|trait" . extraTypes . ") \\s++ (?P<name>[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+) )
+                    | (?: (?P<function>function) \\s++ (?:&\\s*)? (?P<fname>[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+) \\s*+ [&\\(] )
+                    | (?: (?P<constant>const) \\s++ (?P<cname>[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff\\-]*+) \\s*+ [^;] )
+                    | (?: (?:\\\\)? (?P<define>define) \\s*+ \\( \\s*+ ['\"] (?P<dname>[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*+(?:[\\\\]{1,2}[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*+)*+) )
+                    | (?: (?P<ns>namespace) (?P<nsname>\\s++[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*+(?:\\s*+\\\\\\s*+[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*+)*+)? \\s*+ [\\{;] )
+                )
+            )
+        }ix";
+
+        preg_match_all(pattern, contents, matches);
+
+        let classes = [];
+        let functions = [];
+        let constants = [];
+        let ns = "";
+
+        let len = count(matches["type"]);
+        let i = 0;
+
+        while i < len {
+            if isset matches["ns"][i] && matches["ns"][i] !== "" {
+                let ns = preg_replace("~\\s+~", "", strtolower(matches["nsname"][i])) . "\\";
+                let i++;
+                continue;
+            }
+
+            if isset matches["function"][i] && matches["function"][i] !== "" {
+                let functions[] = strtolower(ltrim(ns . matches["fname"][i], "\\"));
+                let i++;
+                continue;
+            }
+
+            if isset matches["constant"][i] && matches["constant"][i] !== "" {
+                let constantName = ltrim(ns . matches["cname"][i], "\\");
+                let constants[] = self::normalizeConstantName(constantName);
+            }
+
+            if isset matches["define"][i] && matches["define"][i] !== "" {
+                let constants[] = self::normalizeConstantName(matches["dname"][i]);
+                let i++;
+                continue;
+            }
+
+            if isset matches["name"][i] {
+                let name = matches["name"][i];
+
+                // skip anon classes extending/implementing
+                if name === "extends" || name === "implements" {
+                    let i++;
+                    continue;
+                }
+
+                let classes[] = strtolower(ltrim(ns . name, "\\"));
+            }
+
+            let i++;
+        }
+
+        return [
+            classes,
+            functions,
+            constants
+        ];
+    }
+
+    private static function normalizeConstantName(string name) -> string
+    {
+        var nameParts, lastPart, prefix, part;
+        array filtered;
+        var cnt;
+
+        if !str_contains(name, "\\") {
+            return name;
+        }
+
+        let nameParts = explode("\\", name);
+        let filtered = [];
+
+        for part in nameParts {
+            if part !== "" {
+                let filtered[] = part;
+            }
+        }
+
+        let cnt = count(filtered);
+        if cnt === 0 {
+            return name;
+        }
+
+        let lastPart = filtered[count - 1];
+        let prefix = "";
+
+        if cnt > 1 {
+            var i;
+            let i = 0;
+            while i < cnt - 1 {
+                if i > 0 {
+                    let prefix .= "\\";
+                }
+                let prefix .= strtolower(filtered[i]);
+                let i++;
+            }
+            return prefix . "\\" . lastPart;
+        }
+
+        return lastPart;
+    }
+}

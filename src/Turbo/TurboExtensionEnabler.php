@@ -2,8 +2,7 @@
 
 namespace PHPStan\Turbo;
 
-use PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner;
-use PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles;
+use PHPStan\Internal\CombinationsHelper;
 use function class_alias;
 use function extension_loaded;
 
@@ -21,8 +20,7 @@ final class TurboExtensionEnabler
 			return;
 		}
 
-		class_alias('PHPStanTurbo\PhpFileCleaner', PhpFileCleaner::class);
-		class_alias('PHPStanTurbo\SymbolFinderInFiles', SymbolFinderInFiles::class);
+		class_alias('PHPStanTurbo\CombinationsHelper', CombinationsHelper::class);
 	}
 
 }

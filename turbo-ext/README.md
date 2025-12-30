@@ -14,19 +14,19 @@ Compiling the extension
 -----------
 
 ```bash
-cd turbo-ext/phpstan_turbo
-../vendor/bin/zephir generate && ../vendor/bin/zephir compile
+cd turbo-ext
+vendor/bin/zephir generate && vendor/bin/zephir compile
 ```
 
 Enabling the extension
 ------------
 
-Once you have compiled the extension, you should have this file: `turbo-ext/phpstan_turbo/ext/modules/phpstanturbo.so`.
+Once you have compiled the extension, you should have this file: `turbo-ext/ext/modules/phpstanturbo.so`.
 
 Put the absolute path to it to your php.ini like this:
 
 ```
-extension=/home/john/dev/phpstan-src/turbo-ext/phpstan_turbo/ext/modules/phpstanturbo.so
+extension=/home/john/dev/phpstan-src/turbo-ext/ext/modules/phpstanturbo.so
 ```
 
 Once the extension is loaded, PHPStan will use the extension automatically thanks to the `PHPStan\Turbo\TurboExtensionEnabler` class.

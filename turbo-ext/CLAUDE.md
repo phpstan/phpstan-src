@@ -1860,6 +1860,310 @@ vendor/bin/zephir generate && vendor/bin/zephir compile
 5. **File/Class Mismatch**: File structure must match namespace and class names
 6. **Immutable Variables**: Use `let` to assign values, not direct assignment
 
+---
+
+## Advanced Topics: Lessons from PhpFileCleaner and SymbolFinderInFiles Implementation
+
+### Reserved Keywords and Naming Conflicts
+
+Beyond the obvious reserved words, several common variable names cause issues in Zephir:
+
+**Problematic Variable Names:**
+- `namespace` - Reserved keyword, use `ns` instead
+- `char` - Type name, conflicts when used as variable name, use `ch` instead
+- `count` - Conflicts with built-in function, use `cnt` instead
+- `type` - Can cause issues in certain contexts
+- `match` - In newer PHP/Zephir versions, this may conflict
+
+**Best Practice:**
+```zephir
+// WRONG
+var namespace, char, count;
+
+// CORRECT
+var ns, ch, cnt;
+```
+
+### Property Initialization Restrictions
+
+**CRITICAL**: Zephir does not allow inline property initialization like PHP does.
+
+```zephir
+// PHP - This works
+private array $typeConfig = [];
+private int $index = 0;
+
+// Zephir - This FAILS to compile
+private array typeConfig = [];
+private int index = 0;
+
+// Zephir - CORRECT approach
+private typeConfig;
+private index;
+
+public function __construct()
+{
+    let this->typeConfig = [];
+    let this->index = 0;
+}
+```
+
+**Properties must:**
+1. Be declared without initialization
+2. Be initialized in the constructor
+3. Cannot use static types with initialization (use dynamic `var` type or omit type)
+
+### Static vs Instance Methods
+
+**Zephir Compiler Bug**: Complex static method calls can cause fatal compiler errors.
+
+```zephir
+// This causes: TypeError: Argument #1 ($variable) must be of type
+// Zephir\Variable\Variable, Zephir\LiteralCompiledExpression given
+
+private static function normalizeConstantName(string name) -> string
+{
+    // ... complex logic ...
+}
+
+// Called with:
+let constants[] = self::normalizeConstantName(matches["dname"][i]);
+```
+
+**Workaround**: Convert to instance method
+
+```zephir
+// CORRECT - Use instance method instead
+private function normalizeConstantName(string name) -> string
+{
+    // ... same logic ...
+}
+
+// Called with:
+let constants[] = this->normalizeConstantName(matches["dname"][i]);
+```
+
+### Whitespace Sensitivity
+
+Zephir can be sensitive to tabs vs spaces in certain contexts:
+
+**Issue**: Syntax errors on valid-looking code may be caused by tab characters.
+
+**Solution**:
+```bash
+# Convert tabs to spaces
+php -r 'file_put_contents("file.zep",
+    str_replace("\t", "    ", file_get_contents("file.zep")));'
+
+# Or use sed
+sed -i 's/\t/    /g' file.zep
+```
+
+### Variable Declaration Grouping
+
+You can declare multiple variables in different ways:
+
+```zephir
+// Multiple lines with typed declarations
+var contents, extraTypes, matches;
+var ns, i, len, name;
+array emptyResult;  // Specific type must be on separate line
+
+// NOT allowed - mixing typed and var on same line
+var ns, i, len, array emptyResult;  // SYNTAX ERROR
+```
+
+### Array Access and Type Returns
+
+When accessing arrays returned from built-in functions, be aware of type expectations:
+
+```zephir
+// preg_match_all returns int, populates array by reference
+var matches, matchResults;
+let matchResults = preg_match_all(pattern, contents, matches);
+
+// Access matched groups - these are arrays
+if isset matches["ns"][i] {
+    let ns = matches["ns"][i];  // String from capture group
+}
+
+// Array indexing with variables
+let value = someArray[i];           // OK
+let value = someArray[varName];     // OK
+let value = someArray["literal"];   // OK
+```
+
+### Compiler Error Debugging
+
+**Common Error**: "Syntax error in file.zep on line X" with no details
+
+**Debugging Steps:**
+1. Check for reserved word usage on that line and nearby lines
+2. Verify all variables on that line are declared
+3. Look for tab characters (use `cat -A file.zep | sed -n 'X,Xp'`)
+4. Check previous lines for missing semicolons
+5. Verify type declarations are on correct lines
+6. Try `vendor/bin/zephir fullclean` before regenerating
+
+**Advanced Debugging:**
+```bash
+# Full clean and verbose generation
+vendor/bin/zephir fullclean
+vendor/bin/zephir generate --verbose
+
+# Check generated C code if compilation succeeds but runtime fails
+ls -la ext/phpstanturbo/
+cat ext/phpstanturbo/phpfilecleaner.zep.c | less
+
+# Test compiled extension directly
+php -d extension=ext/modules/phpstanturbo.so -r 'var_dump(class_exists("PHPStanTurbo\\PhpFileCleaner"));'
+```
+
+### Function Call Limitations
+
+**Issue**: Some PHP functions may not work as expected or have different signatures in Zephir.
+
+**php_strip_whitespace()**: Takes filename, not string content
+```zephir
+// This is correct - pass filename
+let contents = php_strip_whitespace(file);
+
+// NOT: php_strip_whitespace(fileContents)
+```
+
+**preg_match() offset parameter**: Different from PHP 8's named parameter
+
+```php
+// PHP 8 - Named parameter
+preg_match($regex, $subject, $matches, offset: $offset);
+```
+
+```zephir
+// Zephir - Positional parameter (flags must be included)
+let result = preg_match(regex, subject, match, 0, offset);
+//                                            ↑ flags parameter required
+```
+
+### Return Type Compatibility
+
+Arrays must match expected structure:
+
+```zephir
+// If return type is array, must return array even if empty
+public function findSymbols() -> array
+{
+    // WRONG - returns null if no matches
+    if !matchResults {
+        return null;  // Type error!
+    }
+
+    // CORRECT - return empty array
+    if !matchResults {
+        array emptyResult;
+        let emptyResult = [[], [], []];
+        return emptyResult;
+    }
+}
+```
+
+### Iteration and Control Flow
+
+**continue** keyword behavior:
+
+```zephir
+// In nested loops, continue without number continues innermost loop
+while this->index < this->len {
+    while this->index < this->len {
+        if condition {
+            continue;  // Continues inner while
+        }
+    }
+}
+
+// Use break to exit inner loop
+while this->index < this->len {
+    while this->index < this->len {
+        if condition {
+            break;  // Exits inner while, continues outer
+        }
+    }
+}
+```
+
+### Memory and Performance Considerations
+
+**String Building**: Zephir handles string concatenation efficiently, but be aware:
+
+```zephir
+// This is fine - Zephir optimizes this
+let result = "";
+let result .= "string1";
+let result .= "string2";
+let result .= char;  // Char auto-converts to string
+
+// For single char to string conversion, explicit temp variable works better
+var charStr;
+let charStr = "";
+let charStr .= ch;  // Convert char to string
+let result .= charStr;
+```
+
+### Testing Strategy for Zephir Code
+
+1. **Write PHP version first** with comprehensive tests
+2. **Port to Zephir** maintaining same logic
+3. **Compile and check** class exists:
+   ```bash
+   php -r 'var_dump(class_exists("PHPStanTurbo\\ClassName"));'
+   ```
+4. **Test basic functionality** before enabling in production:
+   ```php
+   php -r '
+   $obj = new PHPStanTurbo\ClassName();
+   $result = $obj->method($testInput);
+   var_dump($result);
+   '
+   ```
+5. **Compare output** between PHP and Zephir versions
+6. **Enable via class_alias** only after verification
+7. **Run full test suite** with extension enabled
+
+### Known Zephir Compiler Issues
+
+Based on implementation experience with PhpFileCleaner and SymbolFinderInFiles:
+
+1. **Static method calls with array access in parameters** causes `TypeError` in compiler
+   - Error: `Argument #1 ($variable) must be of type Zephir\Variable\Variable, Zephir\LiteralCompiledExpression given`
+   - Workaround: Use instance methods instead of static methods
+
+2. **Complex expression evaluation** may silently fail or produce empty results
+   - Symptoms: Code compiles but returns empty arrays/strings at runtime
+   - Debugging: Add intermediate variables to break down complex expressions
+
+3. **Inconsistent handling** of dynamic vs static typing in method parameters
+   - Use `var` for parameters when in doubt
+   - Explicit type hints may cause issues with array access
+
+### Implementation Checklist
+
+When porting PHP to Zephir:
+
+- [ ] Replace all single-quoted strings with double-quoted
+- [ ] Convert `$variable` to `variable` (no dollar signs)
+- [ ] Change assignments from `=` to `let variable =`
+- [ ] Declare all variables with `var` or type at method start
+- [ ] Replace reserved words: namespace→ns, char→ch, count→cnt
+- [ ] Move property initialization to constructor
+- [ ] Remove inline property default values
+- [ ] Convert static methods to instance if they have complex calls
+- [ ] Replace `foreach` with `for item in array`
+- [ ] Change `$this->` to `this->`
+- [ ] Update `self::` to `this->` if converting static to instance
+- [ ] Add explicit return types to all methods
+- [ ] Handle empty return values (return `[]` not `null` for arrays)
+- [ ] Test char vs string comparisons (use single quotes for char)
+- [ ] Convert tabs to spaces throughout file
+
 ## Resources
 
 ### Documentation

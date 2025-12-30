@@ -147,7 +147,7 @@ final class SymbolFinderInFiles
             return name;
         }
 
-        let lastPart = filtered[count - 1];
+        let lastPart = filtered[cnt - 1];
         let prefix = "";
 
         if cnt > 1 {

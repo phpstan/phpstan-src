@@ -289,8 +289,11 @@ Static typing prevents type changes after declaration, enabling compiler optimiz
 - String assignment throws compiler exceptions
 
 **Char:**
-- Stores single characters using single-quote syntax (`'Z'`)
-- Extracted from strings via indexing
+- Stores single characters using **single-quote syntax** (`'Z'`)
+- **Important**: Accessing a string with array/index access returns a `char` type
+- Extracted from strings via indexing: `let ch = str[0];` (ch is char type)
+- Must use single quotes for char literals: `'A'`, `'z'`, `'\n'`
+- Can be converted to string by concatenation or assignment to string variable
 
 **Integer/Unsigned Integer:**
 - Numeric values auto-cast (floats truncate)
@@ -303,9 +306,75 @@ Static typing prevents type changes after declaration, enabling compiler optimiz
 - Similar auto-casting rules to integer types
 
 **String:**
-- Double-quote required
-- Characters auto-convert to strings
+- **Must use double-quote syntax** (`"hello"`)
+- **Important**: Accessing a string index with `str[i]` returns a `char` (not a string)
+- Characters auto-convert to strings when assigned to string variables
 - Null becomes empty string
+- Cannot use single quotes for strings (single quotes are for char type only)
+
+### String vs Char: Key Distinctions
+
+Understanding the difference between `string` and `char` types is critical in Zephir:
+
+**Syntax Difference:**
+- **String**: Uses double quotes `"hello"`
+- **Char**: Uses single quotes `'h'`
+
+**Array Access Returns Char:**
+When you access a string by index, Zephir returns a `char`, not a `string`:
+
+```zephir
+string text = "hello";
+char firstChar;
+let firstChar = text[0];  // firstChar = 'h' (char type, not string)
+```
+
+**Practical Example:**
+```zephir
+string str = "hello";
+char ch;
+
+// Iterating over a string yields char types
+for ch in str {
+    // ch is of type char ('h', 'e', 'l', 'l', 'o')
+    // Use single-quote syntax for comparison
+    if ch == 'e' {
+        echo "Found 'e'";
+    }
+}
+
+// Array access also returns char
+let ch = str[0];  // ch = 'h' (char type)
+```
+
+**Type Conversion:**
+```zephir
+char ch = 'A';
+string str;
+
+// Char to String: Auto-converts when assigned to string
+let str = ch;  // str = "A"
+
+// String to Char: Use array access
+let str = "Hello";
+let ch = str[0];  // ch = 'H'
+```
+
+**Common Pitfall:**
+```zephir
+string text = "test";
+
+// WRONG: This won't work as expected
+// text[0] returns char 't', not string "t"
+if text[0] == "t" {  // Comparing char to string - type mismatch!
+    // This may not work as expected
+}
+
+// CORRECT: Use single quotes for char comparison
+if text[0] == 't' {  // Comparing char to char - correct!
+    // This works correctly
+}
+```
 
 ---
 
@@ -1697,6 +1766,8 @@ To identify new optimization targets:
 - Specify return types on all methods
 - Use type hints for parameters
 - Be aware of automatic type conversions
+- **Remember**: String indexing (`str[i]`) returns `char`, not `string`
+- Use single quotes for `char` literals (`'a'`), double quotes for `string` literals (`"a"`)
 
 **Memory Efficiency:**
 - Prefer static types over dynamic for performance
@@ -1759,9 +1830,14 @@ vendor/bin/zephir generate && vendor/bin/zephir compile
 
 1. **Undeclared Variables**: All variables must be declared with `var` or a type
 2. **Type Mismatches**: Static types cannot be reassigned to different types
-3. **Missing Semicolons**: While optional, they can help avoid ambiguity
-4. **File/Class Mismatch**: File structure must match namespace and class names
-5. **Immutable Variables**: Use `let` to assign values, not direct assignment
+3. **String vs Char Confusion**:
+   - String indexing returns `char`, not `string`: `str[0]` is char type
+   - Use single quotes for char: `'a'`, double quotes for string: `"a"`
+   - When iterating strings, loop variable is `char` type
+   - Comparing `str[0] == "a"` is wrong; use `str[0] == 'a'` instead
+4. **Missing Semicolons**: While optional, they can help avoid ambiguity
+5. **File/Class Mismatch**: File structure must match namespace and class names
+6. **Immutable Variables**: Use `let` to assign values, not direct assignment
 
 ## Resources
 

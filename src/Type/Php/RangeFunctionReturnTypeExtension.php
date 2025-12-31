@@ -146,24 +146,24 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		if ($isInteger && $isStepInteger) {
 			if ($argType instanceof IntegerRangeType) {
-				return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $argType), new AccessoryArrayListType()]);
+				return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $argType), new NonEmptyArrayType(), new AccessoryArrayListType()]);
 			}
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()), new AccessoryArrayListType()]);
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
 		}
 
 		if ($argType->isFloat()->yes()) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new FloatType()), new AccessoryArrayListType()]);
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new FloatType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
 		}
 
 		$numberType = new UnionType([new IntegerType(), new FloatType()]);
 		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
 		$isNumericString = $argType->isNumericString()->yes();
 		if ($isNumber || $isNumericString) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $numberType), new AccessoryArrayListType()]);
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $numberType), new NonEmptyArrayType(), new AccessoryArrayListType()]);
 		}
 
 		if ($argType->isString()->yes()) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new AccessoryArrayListType()]);
+			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
 		}
 
 		return new IntersectionType([new ArrayType(

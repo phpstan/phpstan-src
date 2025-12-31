@@ -13,6 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function array_last;
 use function array_map;
 use function array_merge;
 use function count;

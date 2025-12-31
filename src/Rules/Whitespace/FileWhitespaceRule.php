@@ -13,6 +13,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FileNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_last;
 use function count;
 
 /**

@@ -29,6 +29,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
+use function array_last;
 use function count;
 use function implode;
 use function in_array;

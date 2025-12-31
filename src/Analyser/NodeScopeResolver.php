@@ -207,6 +207,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_key_last;
 use function array_keys;
+use function array_last;
 use function array_map;
 use function array_merge;
 use function array_pop;

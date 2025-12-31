@@ -5,6 +5,7 @@ namespace PHPStan\Fixable;
 use Override;
 use PhpParser\Node;
 use PhpParser\PrettyPrinter\Standard;
+use function array_last;
 use function count;
 use function rtrim;
 

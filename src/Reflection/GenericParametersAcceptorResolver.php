@@ -55,7 +55,7 @@ final class GenericParametersAcceptorResolver
 			$namedArgTypes[$i] = $argType;
 		}
 
-		foreach ($parametersAcceptor->getParameters() as $param) {
+		foreach ($parameters as $param) {
 			if (isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
 			} elseif ($param->getDefaultValue() !== null) {
@@ -104,10 +104,10 @@ final class GenericParametersAcceptorResolver
 					TrinaryLogic::createMaybe(),
 					null,
 					[],
-				), $parametersAcceptor->getParameters()),
+				), $parameters),
 				$parametersAcceptor->isVariadic(),
-				$parametersAcceptor->getReturnType(),
-				$parametersAcceptor->getReturnType(),
+				$returnType,
+				$returnType,
 				new MixedType(),
 				TemplateTypeVarianceMap::createEmpty(),
 			);

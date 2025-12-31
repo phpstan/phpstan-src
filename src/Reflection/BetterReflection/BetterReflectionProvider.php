@@ -188,7 +188,6 @@ final class BetterReflectionProvider implements ReflectionProvider
 			}
 		}
 
-		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
 		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
 			$classNode,
 			$scopeFile,
@@ -220,6 +219,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 		/** @var int|null $classLineIndex */
 		$classLineIndex = $classNode->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX);
+		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
 		if ($classLineIndex === null) {
 			$displayName = sprintf('%s@anonymous/%s:%s', $displayParentName, $filename, $classNode->getStartLine());
 		} else {

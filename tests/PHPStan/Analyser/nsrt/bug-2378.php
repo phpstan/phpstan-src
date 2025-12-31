@@ -17,7 +17,7 @@ class Foo
 		assertType('array{\'a\', \'b\', \'c\', \'d\'}', range('a', 'd'));
 		assertType('array{\'a\', \'c\', \'e\', \'g\', \'i\'}', range('a', 'i', 2));
 
-		assertType('list<string>', range($s, $s));
+		assertType('non-empty-list<string>', range($s, $s));
 	}
 
 }

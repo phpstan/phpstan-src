@@ -16,7 +16,7 @@ class Foo
 		int $b
 	): void
 	{
-		assertType('list<int<0, max>>', range($a, $b));
+		assertType('non-empty-list<int<0, max>>', range($a, $b));
 	}
 
 	/**
@@ -28,7 +28,7 @@ class Foo
 		int $b
 	): void
 	{
-		assertType('list<int<2, 20>>', range($a, $b));
+		assertType('non-empty-list<int<2, 20>>', range($a, $b));
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Foo
 		int $b
 	): void
 	{
-		assertType('list<int<5, 30>>', range($a, $b));
+		assertType('non-empty-list<int<5, 30>>', range($a, $b));
 	}
 
 	public function knownRange(

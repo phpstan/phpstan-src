@@ -12,13 +12,12 @@ function doFoo(int $i, float $f, $floatOrInt): void {
 	assertType('non-empty-list<float>', range(1, 9999, .01));
 	assertType('non-empty-list<int<1, 9999>>', range(1, 9999, 3));
 
-	assertType('list<float|int>', range(1, 9999, $floatOrInt));
-	assertType('list<float|int>', range(1, 9999, $floatOrInt));
+	assertType('non-empty-list<float|int>', range(1, 9999, $floatOrInt));
 
-	assertType('list<int>', range(1, 3, $i));
-	assertType('list<float|int>', range(1, 3, $f));
+	assertType('non-empty-list<int>', range(1, 3, $i));
+	assertType('non-empty-list<float|int>', range(1, 3, $f));
 
-	assertType('list<int>', range(1, 9999, $i));
-	assertType('list<float|int>', range(1, 9999, $f));
+	assertType('non-empty-list<int>', range(1, 9999, $i));
+	assertType('non-empty-list<float|int>', range(1, 9999, $f));
 }
 

@@ -10,6 +10,7 @@ $list['a-3'] = static function (): C { return new C(); };
 $list['a-4'] = static function (): D { return new D(); };
 $list['a-5'] = static function (): E { return new E(); };
 $list['a-6'] = static function (): F { return new F(); };
+$list['string'] = 'hello';
 // Beta
 $list['b-1'] = static function (): A1 { return new A1(); };
 $list['b-2'] = static function (): B1 { return new B1(); };
@@ -17,6 +18,7 @@ $list['b-3'] = static function (): C1 { return new C1(); };
 $list['b-4'] = static function (): D1 { return new D1(); };
 $list['b-5'] = static function (): E1 { return new E1(); };
 $list['b-6'] = static function (): F1 { return new F1(); };
+$list['int'] = 123;
 // Delta
 $list['c-1'] = static function (): A2 { return new A2(); };
 $list['c-2'] = static function (): B2 { return new B2(); };
@@ -122,6 +124,69 @@ $list['q-3'] = static function (): C16 { return new C16(); };
 $list['q-4'] = static function (): D16 { return new D16(); };
 $list['q-5'] = static function (): E16 { return new E16(); };
 $list['q-6'] = static function (): F16 { return new F16(); };
+//
+$list['r-1'] = static function (): A16 { return new A16(); };
+$list['r-2'] = static function (): B16 { return new B16(); };
+$list['r-3'] = static function (): C16 { return new C16(); };
+$list['r-4'] = static function (): D16 { return new D16(); };
+$list['r-5'] = static function (): E16 { return new E16(); };
+$list['r-6'] = static function (): F16 { return new F16(); };
+//
+$list['s-1'] = static function (): A16 { return new A16(); };
+$list['s-2'] = static function (): B16 { return new B16(); };
+$list['s-3'] = static function (): C16 { return new C16(); };
+$list['s-4'] = static function (): D16 { return new D16(); };
+$list['s-5'] = static function (): E16 { return new E16(); };
+$list['s-6'] = static function (): F16 { return new F16(); };
+//
+$list['t-1'] = static function (): A16 { return new A16(); };
+$list['t-2'] = static function (): B16 { return new B16(); };
+$list['t-3'] = static function (): C16 { return new C16(); };
+$list['t-4'] = static function (): D16 { return new D16(); };
+$list['t-5'] = static function (): E16 { return new E16(); };
+$list['t-6'] = static function (): F16 { return new F16(); };
+//
+$list['u-1'] = static function (): A16 { return new A16(); };
+$list['u-2'] = static function (): B16 { return new B16(); };
+$list['u-3'] = static function (): C16 { return new C16(); };
+$list['u-4'] = static function (): D16 { return new D16(); };
+$list['u-5'] = static function (): E16 { return new E16(); };
+$list['u-6'] = static function (): F16 { return new F16(); };
+//
+$list['v-1'] = static function (): A16 { return new A16(); };
+$list['v-2'] = static function (): B16 { return new B16(); };
+$list['v-3'] = static function (): C16 { return new C16(); };
+$list['v-4'] = static function (): D16 { return new D16(); };
+$list['v-5'] = static function (): E16 { return new E16(); };
+$list['v-6'] = static function (): F16 { return new F16(); };
+//
+$list['w-1'] = static function (): A16 { return new A16(); };
+$list['w-2'] = static function (): B16 { return new B16(); };
+$list['w-3'] = static function (): C16 { return new C16(); };
+$list['w-4'] = static function (): D16 { return new D16(); };
+$list['w-5'] = static function (): E16 { return new E16(); };
+$list['w-6'] = static function (): F16 { return new F16(); };
+//
+$list['x-1'] = static function (): A16 { return new A16(); };
+$list['x-2'] = static function (): B16 { return new B16(); };
+$list['x-3'] = static function (): C16 { return new C16(); };
+$list['x-4'] = static function (): D16 { return new D16(); };
+$list['x-5'] = static function (): E16 { return new E16(); };
+$list['x-6'] = static function (): F16 { return new F16(); };
+//
+$list['y-1'] = static function (): A16 { return new A16(); };
+$list['y-2'] = static function (): B16 { return new B16(); };
+$list['y-3'] = static function (): C16 { return new C16(); };
+$list['y-4'] = static function (): D16 { return new D16(); };
+$list['y-5'] = static function (): E16 { return new E16(); };
+$list['y-6'] = static function (): F16 { return new F16(); };
+//
+$list['z-1'] = static function (): A16 { return new A16(); };
+$list['z-2'] = static function (): B16 { return new B16(); };
+$list['z-3'] = static function (): C16 { return new C16(); };
+$list['z-4'] = static function (): D16 { return new D16(); };
+$list['z-5'] = static function (): E16 { return new E16(); };
+$list['z-6'] = static function (): F16 { return new F16(); };
 
 
 print 1;

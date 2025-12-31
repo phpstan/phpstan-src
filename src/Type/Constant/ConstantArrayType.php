@@ -29,8 +29,6 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\CallableType;
-use PHPStan\Type\ClosureType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
@@ -169,26 +167,7 @@ class ConstantArrayType implements Type
 			return $this->iterableValueType;
 		}
 
-		$count = count($this->valueTypes);
-		if ($count === 0) {
-			return $this->iterableValueType = new NeverType(true);
-		}
-
-		if ($count > 16) {
-			$onlyClosureValues = true;
-			foreach ($this->valueTypes as $valueType) {
-				if (!$valueType instanceof ClosureType) {
-					$onlyClosureValues = false;
-					break;
-				}
-			}
-
-			if ($onlyClosureValues) {
-				return $this->iterableValueType = new CallableType();
-			}
-		}
-
-		return $this->iterableValueType = TypeCombinator::union(...$this->valueTypes);
+		return $this->iterableValueType = count($this->valueTypes) > 0 ? TypeCombinator::union(...$this->valueTypes) : new NeverType(true);
 	}
 
 	public function getKeyType(): Type

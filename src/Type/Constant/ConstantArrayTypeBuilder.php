@@ -8,6 +8,8 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -29,8 +31,11 @@ final class ConstantArrayTypeBuilder
 {
 
 	public const ARRAY_COUNT_LIMIT = 256;
+	private const ARRAY_CLOSURES_COUNT_LIMIT = 16;
 
 	private bool $degradeToGeneralArray = false;
+
+	private bool $degradeClosures = false;
 
 	private bool $oversized = false;
 
@@ -79,6 +84,23 @@ final class ConstantArrayTypeBuilder
 		}
 
 		if (!$this->degradeToGeneralArray) {
+			if ($valueType instanceof ClosureType) {
+				$numClosures = 1;
+				foreach ($this->valueTypes as $innerType) {
+					if (!($innerType instanceof ClosureType)) {
+						continue;
+					}
+
+					$numClosures++;
+				}
+
+				if ($numClosures >= self::ARRAY_CLOSURES_COUNT_LIMIT) {
+					$this->degradeClosures = true;
+					$this->degradeToGeneralArray = true;
+					$this->oversized = true;
+				}
+			}
+
 			if ($offsetType === null) {
 				$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];
 				$hasOptional = false;
@@ -291,9 +313,20 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}
 
+		$itemTypes = [];
+		foreach ($this->valueTypes as $valueType) {
+			if ($this->degradeClosures && $valueType instanceof ClosureType) {
+				continue;
+			}
+			$itemTypes[] = $valueType;
+		}
+		if ($this->degradeClosures) {
+			$itemTypes[] = new CallableType();
+		}
+
 		$array = new ArrayType(
 			TypeCombinator::union(...$this->keyTypes),
-			TypeCombinator::union(...$this->valueTypes),
+			TypeCombinator::union(...$itemTypes),
 		);
 
 		$types = [];

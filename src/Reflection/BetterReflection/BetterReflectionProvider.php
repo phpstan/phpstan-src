@@ -142,11 +142,16 @@ final class BetterReflectionProvider implements ReflectionProvider
 			return $this->classReflections[$reflectionClassName];
 		}
 
-		$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
+		if ($reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000) {
+			$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
+			$adaptedClass = new $enumAdapter($reflectionClass);
+		} else {
+			$adaptedClass = new ReflectionClass($reflectionClass);
+		}
 
 		return $this->classReflections[$reflectionClassName] = $this->classReflectionFactory->create(
 			$reflectionClass->getName(),
-			$reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000 ? new $enumAdapter($reflectionClass) : new ReflectionClass($reflectionClass),
+			$adaptedClass,
 			null,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),

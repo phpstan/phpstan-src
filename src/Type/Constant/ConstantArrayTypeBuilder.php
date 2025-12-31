@@ -313,15 +313,17 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}
 
-		$itemTypes = [];
-		foreach ($this->valueTypes as $valueType) {
-			if ($this->degradeClosures && $valueType instanceof ClosureType) {
-				continue;
-			}
-			$itemTypes[] = $valueType;
-		}
 		if ($this->degradeClosures) {
+			$itemTypes = [];
 			$itemTypes[] = new CallableType();
+			foreach ($this->valueTypes as $valueType) {
+				if ($valueType instanceof ClosureType) {
+					continue;
+				}
+				$itemTypes[] = $valueType;
+			}
+		} else {
+			$itemTypes = $this->valueTypes;
 		}
 
 		$array = new ArrayType(

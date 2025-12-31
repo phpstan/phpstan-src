@@ -92,39 +92,25 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 								$startConstant = $endConstant;
 								$endConstant = $tmp;
 							}
-							return new IntersectionType([
-								new ArrayType(
-									IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
+							return self::getNonEmptyListOfType(
+								IntegerRangeType::fromInterval(
+									$startConstant->getValue(),
+									$endConstant->getValue(),
 								),
-								new NonEmptyArrayType(),
-								new AccessoryArrayListType(),
-							]);
+							);
 						}
 
 						if ($stepType->isFloat()->yes()) {
-							return new IntersectionType([
-								new ArrayType(
-									IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-									new FloatType(),
-								),
-								new NonEmptyArrayType(),
-								new AccessoryArrayListType(),
-							]);
+							return self::getNonEmptyListOfType(new FloatType());
 						}
 
-						return new IntersectionType([
-							new ArrayType(
-								IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-								TypeCombinator::union(
-									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
-									$endConstant->generalize(GeneralizePrecision::moreSpecific()),
-									$stepType->generalize(GeneralizePrecision::moreSpecific()),
-								),
+						return self::getNonEmptyListOfType(
+							TypeCombinator::union(
+								$startConstant->generalize(GeneralizePrecision::moreSpecific()),
+								$endConstant->generalize(GeneralizePrecision::moreSpecific()),
+								$stepType->generalize(GeneralizePrecision::moreSpecific()),
 							),
-							new NonEmptyArrayType(),
-							new AccessoryArrayListType(),
-						]);
+						);
 					}
 					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($rangeValues as $value) {
@@ -146,30 +132,45 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		if ($isInteger && $isStepInteger) {
 			if ($argType instanceof IntegerRangeType) {
-				return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $argType), new NonEmptyArrayType(), new AccessoryArrayListType()]);
+				return self::getNonEmptyListOfType($argType);
 			}
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new IntegerType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
+			return self::getNonEmptyListOfType(new IntegerType());
 		}
 
 		if ($argType->isFloat()->yes()) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new FloatType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
+			return self::getNonEmptyListOfType(new FloatType());
 		}
 
 		$numberType = new UnionType([new IntegerType(), new FloatType()]);
 		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
 		$isNumericString = $argType->isNumericString()->yes();
 		if ($isNumber || $isNumericString) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $numberType), new NonEmptyArrayType(), new AccessoryArrayListType()]);
+			return self::getNonEmptyListOfType($numberType);
 		}
 
 		if ($argType->isString()->yes()) {
-			return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new NonEmptyArrayType(), new AccessoryArrayListType()]);
+			return self::getNonEmptyListOfType(new StringType());
 		}
 
-		return new IntersectionType([new ArrayType(
-			IntegerRangeType::createAllGreaterThanOrEqualTo(0),
-			new BenevolentUnionType([new IntegerType(), new FloatType(), new StringType()]),
-		), new AccessoryArrayListType()]);
+		return self::getNonEmptyListOfType(
+			new BenevolentUnionType([
+				new IntegerType(),
+				new FloatType(),
+				new StringType(),
+			]),
+		);
+	}
+
+	private static function getNonEmptyListOfType(Type $type): IntersectionType
+	{
+		return new IntersectionType([
+			new ArrayType(
+				IntegerRangeType::createAllGreaterThanOrEqualTo(0),
+				$type,
+			),
+			new NonEmptyArrayType(),
+			new AccessoryArrayListType(),
+		]);
 	}
 
 }

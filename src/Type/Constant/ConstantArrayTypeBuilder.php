@@ -31,7 +31,7 @@ final class ConstantArrayTypeBuilder
 {
 
 	public const ARRAY_COUNT_LIMIT = 256;
-	private const ARRAY_CLOSURES_COUNT_LIMIT = 16;
+	private const CLOSURES_COUNT_LIMIT = 16;
 
 	private bool $degradeToGeneralArray = false;
 
@@ -94,7 +94,7 @@ final class ConstantArrayTypeBuilder
 					$numClosures++;
 				}
 
-				if ($numClosures >= self::ARRAY_CLOSURES_COUNT_LIMIT) {
+				if ($numClosures >= self::CLOSURES_COUNT_LIMIT) {
 					$this->degradeClosures = true;
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;

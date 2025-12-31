@@ -146,7 +146,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		if (!$this->phpVersion->throwsOnInvalidMbStringEncoding() && in_array(self::UNSUPPORTED_ENCODING, $encodings, true)) {
-			return new UnionType([$range, new ConstantBooleanType(false)]);
+			return TypeCombinator::union($range, new ConstantBooleanType(false));
 		}
 		return $range;
 	}

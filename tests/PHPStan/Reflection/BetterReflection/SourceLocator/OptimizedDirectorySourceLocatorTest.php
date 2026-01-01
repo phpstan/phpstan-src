@@ -12,6 +12,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use TestDirectorySourceLocator\AFoo;
 use TestDirectorySourceLocator\EmptyClass;
 use function array_map;
+use function array_merge;
 use function basename;
 use const PHP_VERSION_ID;
 
@@ -315,6 +316,16 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		/** @var string $className */
 		$className = $class->getName();
 		$this->assertSame('Faker\\Provider\\nl_BE\\Text', $className);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/OptimizedDirectorySourceLocatorTest.neon',
+			],
+		);
 	}
 
 }

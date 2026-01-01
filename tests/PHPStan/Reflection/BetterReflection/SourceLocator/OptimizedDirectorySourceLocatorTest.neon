@@ -1,0 +1,5 @@
+services:
+	# overrides service from services.neon
+	cacheStorage:
+		class: PHPStan\Cache\MemoryCacheStorage
+		arguments!: []

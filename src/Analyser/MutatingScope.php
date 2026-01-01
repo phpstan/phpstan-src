@@ -4747,15 +4747,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($certainty->no()) {
 				unset($scope->expressionTypes[$conditionalExprString]);
 			} else {
-				$type = TypeCombinator::intersect(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
+				if (array_key_exists($conditionalExprString, $scope->expressionTypes)) {
+					$type = TypeCombinator::intersect(...array_map(static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getType(), $expressions));
 
-				$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
-					? new ExpressionTypeHolder(
+					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),
 						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
 						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
-					)
-					: $expressions[0]->getTypeHolder();
+					);
+				} else {
+					$scope->expressionTypes[$conditionalExprString] = $expressions[0]->getTypeHolder();
+				}
 			}
 		}
 

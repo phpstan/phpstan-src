@@ -4725,7 +4725,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
-			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
+			$specifiedExpressions[$typeSpecification['exprString']] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}
 
 		$conditions = [];

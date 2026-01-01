@@ -1416,7 +1416,6 @@ class ConstantArrayType implements Type
 	{
 		$count = count($types);
 		$autoIndexes = range($count - count($this->optionalKeys), $count);
-		assert($autoIndexes !== []);
 
 		if ($this->isList->yes()) {
 			// Optimized version for lists: Assume that if a later key exists, then earlier keys also exist.

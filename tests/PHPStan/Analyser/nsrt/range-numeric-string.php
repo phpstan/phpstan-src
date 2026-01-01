@@ -16,7 +16,7 @@ class Foo
 		string $b
 	): void
 	{
-		assertType('list<float|int>', range($a, $b));
+		assertType('non-empty-list<float|int>', range($a, $b));
 	}
 
 }

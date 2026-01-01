@@ -5594,19 +5594,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(2.1, 5)',
 			],
 			[
-				'list<int>',
+				'non-empty-list<int>',
 				'range(2, 5, $integer)',
 			],
 			[
-				'list<float|int>',
+				'non-empty-list<float|int>',
 				'range($float, 5, $integer)',
 			],
 			[
-				'list<(float|int|string)>',
+				'non-empty-list<(float|int|string)>',
 				'range($float, $mixed, $integer)',
 			],
 			[
-				'list<(float|int|string)>',
+				'non-empty-list<(float|int|string)>',
 				'range($integer, $mixed)',
 			],
 			[

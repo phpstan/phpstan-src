@@ -4520,21 +4520,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
-		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
+		$exprStringToInvalidate = null;
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
-		$nodeFinder = new NodeFinder();
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$expr = $exprTypeHolder->getExpr();
-			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($exprStringToInvalidate): bool {
-				if (!$node instanceof MethodCall) {
-					return false;
-				}
+			if (!$expr instanceof MethodCall) {
+				continue;
+			}
 
-				return $this->getNodeKey($node->var) === $exprStringToInvalidate;
-			});
-			if ($found === null) {
+			$exprStringToInvalidate ??= $this->getNodeKey($expressionToInvalidate);
+			if ($this->getNodeKey($expr->var) !== $exprStringToInvalidate) {
 				continue;
 			}
 

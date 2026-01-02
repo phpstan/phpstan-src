@@ -342,10 +342,10 @@ class NodeScopeResolver
 		$this->processPendingFibers($expressionResultStorage);
 	}
 
-	private function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, ExpressionResult $result): void
+	private function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
 	{
-		$storage->storeBeforeScope($expr, $result->getBeforeScope());
-		$this->processPendingFibersForRequestedExpr($storage, $expr, $result->getBeforeScope());
+		$storage->storeBeforeScope($expr, $beforeScope);
+		$this->processPendingFibersForRequestedExpr($storage, $expr, $beforeScope);
 	}
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
@@ -2559,7 +2559,7 @@ class NodeScopeResolver
 			}
 
 			$newExprResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
-			$this->storeBeforeScope($storage, $expr, $newExprResult);
+			$this->storeBeforeScope($storage, $expr, $newExprResult->getBeforeScope());
 			return $newExprResult;
 		}
 
@@ -2631,7 +2631,7 @@ class NodeScopeResolver
 					}
 
 					$result = new ExpressionResult($scope, $beforeScope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
-					$this->storeBeforeScope($storage, $expr, $result);
+					$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 					return $result;
 				},
@@ -2688,7 +2688,7 @@ class NodeScopeResolver
 							$result->getThrowPoints(),
 							$result->getImpurePoints(),
 						);
-						$this->storeBeforeScope($storage, $expr, $result);
+						$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 						return $result;
 					}
@@ -2699,7 +2699,7 @@ class NodeScopeResolver
 			);
 			$scope = $result->getScope();
 			if (!$expr instanceof Expr\AssignOp\Coalesce) {
-				$this->storeBeforeScope($storage, $expr, $result);
+				$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 			}
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -3228,7 +3228,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 			return $result;
 		} elseif ($expr instanceof StaticCall) {
@@ -3448,7 +3448,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 			return $result;
 		} elseif ($expr instanceof StaticPropertyFetch) {
@@ -3493,7 +3493,7 @@ class NodeScopeResolver
 				[],
 				[],
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 			return $result;
 		} elseif ($expr instanceof Expr\ArrowFunction) {
@@ -3506,7 +3506,7 @@ class NodeScopeResolver
 				[],
 				[],
 			);
-			$this->storeBeforeScope($storage, $expr, $exprResult);
+			$this->storeBeforeScope($storage, $expr, $exprResult->getBeforeScope());
 			return $exprResult;
 		} elseif ($expr instanceof ErrorSuppress) {
 			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context);
@@ -3615,7 +3615,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 			return $result;
 		} elseif ($expr instanceof BooleanOr || $expr instanceof BinaryOp\LogicalOr) {
 			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
@@ -3639,7 +3639,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 			return $result;
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left);
@@ -3890,7 +3890,7 @@ class NodeScopeResolver
 		} elseif ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
 			$result = new ExpressionResult($scope, $scope, false, false, [], []);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 			return $result;
 		} elseif ($expr instanceof New_) {
@@ -4116,7 +4116,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
 				static fn (): MutatingScope => $finalScope->filterByFalseyValue($expr),
 			);
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 			return $result;
 
 		} elseif ($expr instanceof Expr\Yield_) {
@@ -4379,7 +4379,7 @@ class NodeScopeResolver
 			$impurePoints = $result->getImpurePoints();
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
-			$this->storeBeforeScope($storage, $expr, $result);
+			$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 
 			$expr = $expr->getExpr();
 		} elseif ($expr instanceof Expr\Throw_) {
@@ -4479,7 +4479,7 @@ class NodeScopeResolver
 			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
-		$this->storeBeforeScope($storage, $expr, $result);
+		$this->storeBeforeScope($storage, $expr, $result->getBeforeScope());
 		return $result;
 	}
 
@@ -5661,7 +5661,7 @@ class NodeScopeResolver
 					$isAlwaysTerminating = $isAlwaysTerminating || $closureResult->isAlwaysTerminating();
 				}
 
-				$this->storeBeforeScope($storage, $arg->value, new ExpressionResult($closureResult->getScope(), $scopeToPass, false, $isAlwaysTerminating, $throwPoints, $impurePoints));
+				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 
 				$uses = [];
 				foreach ($arg->value->uses as $use) {
@@ -5717,7 +5717,7 @@ class NodeScopeResolver
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $arrowFunctionResult->isAlwaysTerminating();
 				}
-				$this->storeBeforeScope($storage, $arg->value, new ExpressionResult($arrowFunctionResult->getScope(), $scopeToPass, false, $isAlwaysTerminating, $throwPoints, $impurePoints));
+				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 			} else {
 				$exprType = $scope->getType($arg->value);
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
@@ -5947,6 +5947,7 @@ class NodeScopeResolver
 		bool $enterExpressionAssign,
 	): ExpressionResult
 	{
+		$this->storeBeforeScope($storage, $var, $scope);
 		$originalScope = $scope;
 		$this->callNodeCallback($nodeCallback, $var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope, $storage);
 		$hasYield = false;

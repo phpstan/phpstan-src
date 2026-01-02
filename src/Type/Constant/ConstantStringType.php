@@ -311,6 +311,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 		/** @var int|string $offsetValue */
 		$offsetValue = key([$this->value => null]);
+
+		if ($offsetValue === $this->value) {
+			return $this;
+		}
+
 		return $this->arrayKeyType = is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
 	}
 

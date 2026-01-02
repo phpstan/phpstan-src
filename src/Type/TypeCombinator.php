@@ -820,7 +820,7 @@ final class TypeCombinator
 					if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
 						continue;
 					}
-					$keyTypesForGeneralArray[$keyTypeValue] = $keyType;
+					$keyTypesForGeneralArray[] = $keyType;
 
 					$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
 					$nextConstantKeyTypeIndex *= 2;
@@ -832,7 +832,6 @@ final class TypeCombinator
 				}
 			}
 		}
-		$keyTypesForGeneralArray = array_values($keyTypesForGeneralArray);
 
 		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);

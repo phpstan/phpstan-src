@@ -115,7 +115,7 @@ final class FiberScope extends MutatingScope
 		return $scope;
 	}
 
-	private function preprocessScope(Scope $scope): Scope
+	private function preprocessScope(MutatingScope $scope): Scope
 	{
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();

@@ -168,6 +168,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function getPhpVersion(): PhpVersions;
 
 	/** @internal */
-	public function toMutatingScope(): self;
+	public function toMutatingScope(): MutatingScope;
 
 }

@@ -237,7 +237,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		protected array $currentlyAllowedUndefinedExpressions = [],
 		protected array $inFunctionCallsStack = [],
 		protected bool $afterExtractCall = false,
-		private ?Scope $parentScope = null,
+		private ?self $parentScope = null,
 		protected bool $nativeTypesPromoted = false,
 	)
 	{
@@ -469,7 +469,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/** @api */
-	public function getParentScope(): ?Scope
+	public function getParentScope(): ?self
 	{
 		return $this->parentScope;
 	}
@@ -4616,9 +4616,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	/**
 	 * @api
-	 * @return MutatingScope
 	 */
-	public function filterByTruthyValue(Expr $expr): Scope
+	public function filterByTruthyValue(Expr $expr): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		if (array_key_exists($exprString, $this->truthyScopes)) {
@@ -4634,9 +4633,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	/**
 	 * @api
-	 * @return MutatingScope
 	 */
-	public function filterByFalseyValue(Expr $expr): Scope
+	public function filterByFalseyValue(Expr $expr): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		if (array_key_exists($exprString, $this->falseyScopes)) {

@@ -6,10 +6,19 @@ use Fiber;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Type;
 
 final class FiberScope extends MutatingScope
 {
+
+	/** @var Expr[] */
+	private array $truthyValueExprs = [];
+
+	/** @var Expr[] */
+	private array $falseyValueExprs = [];
 
 	public function toFiberScope(): self
 	{
@@ -46,10 +55,7 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($node, $this),
 		);
 
-		$scope = $beforeScope->toMutatingScope();
-		if ($this->nativeTypesPromoted) {
-			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
-		}
+		$scope = $this->preprocessScope($beforeScope->toMutatingScope());
 
 		return $scope->getType($node);
 	}
@@ -72,10 +78,7 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($expr, $this),
 		);
 
-		$scope = $beforeScope->toMutatingScope();
-		if ($this->nativeTypesPromoted) {
-			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
-		}
+		$scope = $this->preprocessScope($beforeScope->toMutatingScope());
 
 		return $scope->getNativeType($expr);
 	}
@@ -87,12 +90,70 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($node, $this),
 		);
 
-		$scope = $beforeScope->toMutatingScope();
+		$scope = $this->preprocessScope($beforeScope->toMutatingScope());
+
+		return $scope->getKeepVoidType($node);
+	}
+
+	public function filterByTruthyValue(Expr $expr): self
+	{
+		/** @var self $scope */
+		$scope = parent::filterByTruthyValue($expr);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->truthyValueExprs[] = $expr;
+
+		return $scope;
+	}
+
+	public function filterByFalseyValue(Expr $expr): self
+	{
+		/** @var self $scope */
+		$scope = parent::filterByTruthyValue($expr);
+		$scope->falseyValueExprs = $this->falseyValueExprs;
+		$scope->falseyValueExprs[] = $expr;
+
+		return $scope;
+	}
+
+	private function preprocessScope(Scope $scope): Scope
+	{
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}
 
-		return $scope->getKeepVoidType($node);
+		foreach ($this->truthyValueExprs as $expr) {
+			$scope = $scope->filterByTruthyValue($expr);
+		}
+		foreach ($this->falseyValueExprs as $expr) {
+			$scope = $scope->filterByFalseyValue($expr);
+		}
+
+		return $scope;
+	}
+
+	/**
+	 * @param MethodReflection|FunctionReflection|null $reflection
+	 */
+	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
+	{
+		// no need to track this in rules, the type will be correct anyway
+		return $this;
+	}
+
+	public function popInFunctionCall(): self
+	{
+		// no need to track this in rules, the type will be correct anyway
+		return $this;
+	}
+
+	public function getParentScope(): ?MutatingScope
+	{
+		$parent = parent::getParentScope();
+		if ($parent === null) {
+			return null;
+		}
+
+		return $parent->toFiberScope();
 	}
 
 }

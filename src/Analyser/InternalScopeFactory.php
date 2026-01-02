@@ -35,7 +35,7 @@ interface InternalScopeFactory
 		array $currentlyAllowedUndefinedExpressions = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null,
+		?MutatingScope $parentScope = null,
 		bool $nativeTypesPromoted = false,
 	): MutatingScope;
 

@@ -11,6 +11,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function getenv;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -604,12 +605,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-falsy-string given.',
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') === '1' ? 'non-falsy-string' : 'non-empty-string'),
 				13,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-falsy-string given.',
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') === '1' ? 'non-falsy-string' : 'non-empty-string'),
 				22,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -624,12 +625,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-falsy-string given.',
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') === '1' ? 'non-falsy-string' : 'non-empty-string'),
 				11,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				'Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): non-falsy-string given.',
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') === '1' ? 'non-falsy-string' : 'non-empty-string'),
 				18,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],

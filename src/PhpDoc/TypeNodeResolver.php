@@ -1056,18 +1056,24 @@ final class TypeNodeResolver
 		}
 
 		$arrayType = $builder->getArray();
+
+		$accessories = [];
 		if (in_array($typeNode->kind, [
 			ArrayShapeNode::KIND_LIST,
 			ArrayShapeNode::KIND_NON_EMPTY_LIST,
 		], true)) {
-			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			$accessories[] = new AccessoryArrayListType();
 		}
 
 		if (in_array($typeNode->kind, [
 			ArrayShapeNode::KIND_NON_EMPTY_ARRAY,
 			ArrayShapeNode::KIND_NON_EMPTY_LIST,
 		], true)) {
-			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			$accessories[] = new NonEmptyArrayType();
+		}
+
+		if (count($accessories) > 0) {
+			return TypeCombinator::intersect($arrayType, ...$accessories);
 		}
 
 		return $arrayType;

@@ -689,6 +689,16 @@ class NodeScopeResolver
 				$functionReflection,
 			), $functionScope, $storage);
 			if (!$scope->isInAnonymousFunction()) {
+				$finder = new NodeFinder();
+				foreach ($storage->pendingFibers as $pendingFiber) {
+					$expr = $pendingFiber['request']->expr;
+					$found = $finder->find($stmt->stmts, function ($node) use ($expr) {
+						return $node === $expr;
+					});
+					if (count($found) > 0) {
+						throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
+					}
+				}
 				$this->processPendingFibers($storage);
 			}
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
@@ -886,6 +896,18 @@ class NodeScopeResolver
 				}
 			}
 			if (!$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
+				$finder = new NodeFinder();
+				if ($stmt->stmts !== null) {
+					foreach ($storage->pendingFibers as $pendingFiber) {
+						$expr = $pendingFiber['request']->expr;
+						$found = $finder->find($stmt->stmts, function ($node) use ($expr) {
+							return $node === $expr;
+						});
+						if (count($found) > 0) {
+							throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
+						}
+					}
+				}
 				$this->processPendingFibers($storage);
 			}
 		} elseif ($stmt instanceof Echo_) {

@@ -32,6 +32,8 @@ final class ProcessHelper
 
 		$processCommandArray = [
 			$phpCmd,
+			'-d',
+			'sys_temp_dir=' . escapeshellarg(sys_get_temp_dir()),
 		];
 
 		if ($input->getOption('memory-limit') === null) {

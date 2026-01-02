@@ -5947,7 +5947,6 @@ class NodeScopeResolver
 		bool $enterExpressionAssign,
 	): ExpressionResult
 	{
-		$this->storeBeforeScope($storage, $var, $scope);
 		$originalScope = $scope;
 		$this->callNodeCallback($nodeCallback, $var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope, $storage);
 		$hasYield = false;
@@ -5956,6 +5955,7 @@ class NodeScopeResolver
 		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable && is_string($var->name)) {
+			$this->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -6079,6 +6079,7 @@ class NodeScopeResolver
 					if ($enterExpressionAssign) {
 						$scope->enterExpressionAssign($dimExpr);
 					}
+					$this->storeBeforeScope($storage, $dimFetch, $scope);
 					$result = $this->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
 					$hasYield = $hasYield || $result->hasYield();
 					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -6195,6 +6196,7 @@ class NodeScopeResolver
 				)->getThrowPoints());
 			}
 		} elseif ($var instanceof PropertyFetch) {
+			$this->storeBeforeScope($storage, $var, $scope);
 			$objectResult = $this->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
 			$hasYield = $objectResult->hasYield();
 			$throwPoints = $objectResult->getThrowPoints();
@@ -6292,6 +6294,7 @@ class NodeScopeResolver
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
+			$this->storeBeforeScope($storage, $var, $scope);
 			if ($var->class instanceof Node\Name) {
 				$propertyHolderType = $scope->resolveTypeByName($var->class);
 			} else {
@@ -6357,6 +6360,7 @@ class NodeScopeResolver
 				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 			}
 		} elseif ($var instanceof List_) {
+			$this->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -6473,6 +6477,7 @@ class NodeScopeResolver
 				);
 			}
 		} else {
+			$this->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();

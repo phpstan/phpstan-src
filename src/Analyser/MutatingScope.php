@@ -3525,12 +3525,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
 		if ($restoreThisScope->isInClass()) {
-			$nodeFinder = new NodeFinder();
-			$cb = static fn ($expr) => $expr instanceof Variable && $expr->name === 'this';
 			foreach ($restoreThisScope->expressionTypes as $exprString => $expressionTypeHolder) {
 				$expr = $expressionTypeHolder->getExpr();
-				$thisExpr = $nodeFinder->findFirst([$expr], $cb);
-				if ($thisExpr === null) {
+
+				while (
+					$expr instanceof PropertyFetch
+					|| $expr instanceof Expr\NullsafePropertyFetch
+					|| $expr instanceof MethodCall
+				) {
+					$expr = $expr->var;
+				}
+
+				if (!$expr instanceof Variable || $expr->name !== 'this') {
 					continue;
 				}
 
@@ -3539,8 +3545,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			foreach ($restoreThisScope->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
 				$expr = $expressionTypeHolder->getExpr();
-				$thisExpr = $nodeFinder->findFirst([$expr], $cb);
-				if ($thisExpr === null) {
+
+				while (
+					$expr instanceof PropertyFetch
+					|| $expr instanceof Expr\NullsafePropertyFetch
+					|| $expr instanceof MethodCall
+				) {
+					$expr = $expr->var;
+				}
+
+				if (!$expr instanceof Variable || $expr->name !== 'this') {
 					continue;
 				}
 

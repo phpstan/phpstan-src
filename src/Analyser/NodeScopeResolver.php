@@ -5166,18 +5166,8 @@ class NodeScopeResolver
 
 		$finder = new NodeFinder();
 		foreach ($invalidatedExpressions as $invalidateExpression) {
-			$found = false;
-			foreach ($uses as $use) {
-				$result = $finder->findFirst([$invalidateExpression->getExpr()], static fn ($node) => $node instanceof Variable && $node->name === $use);
-				if ($result === null) {
-					continue;
-				}
-
-				$found = true;
-				break;
-			}
-
-			if (!$found) {
+			$result = $finder->findFirst([$invalidateExpression->getExpr()], static fn ($node) => $node instanceof Variable && in_array($node->name, $uses, true));
+			if ($result === null) {
 				continue;
 			}
 

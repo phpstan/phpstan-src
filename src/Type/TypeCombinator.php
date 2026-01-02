@@ -814,13 +814,13 @@ final class TypeCombinator
 			foreach ($constantArrays as $constantArray) {
 				$valueTypes = $constantArray->getValueTypes();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-					$keyTypesForGeneralArray[] = $keyType;
 					$valueTypesForGeneralArray[] = $valueTypes[$i];
 
 					$keyTypeValue = $keyType->getValue();
 					if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
 						continue;
 					}
+					$keyTypesForGeneralArray[] = $keyType;
 
 					$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
 					$nextConstantKeyTypeIndex *= 2;

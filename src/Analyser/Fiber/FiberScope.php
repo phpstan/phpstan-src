@@ -46,7 +46,12 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($node, $this),
 		);
 
-		return $beforeScope->toMutatingScope()->getType($node);
+		$scope = $beforeScope->toMutatingScope();
+		if ($this->nativeTypesPromoted) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
+
+		return $scope->getType($node);
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -67,7 +72,12 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($expr, $this),
 		);
 
-		return $beforeScope->toMutatingScope()->getNativeType($expr);
+		$scope = $beforeScope->toMutatingScope();
+		if ($this->nativeTypesPromoted) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
+
+		return $scope->getNativeType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type
@@ -77,7 +87,12 @@ final class FiberScope extends MutatingScope
 			new BeforeScopeForExprRequest($node, $this),
 		);
 
-		return $beforeScope->toMutatingScope()->getKeepVoidType($node);
+		$scope = $beforeScope->toMutatingScope();
+		if ($this->nativeTypesPromoted) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
+
+		return $scope->getKeepVoidType($node);
 	}
 
 }

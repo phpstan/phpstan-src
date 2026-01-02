@@ -3532,6 +3532,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$expr instanceof PropertyFetch
 					|| $expr instanceof Expr\NullsafePropertyFetch
 					|| $expr instanceof MethodCall
+					|| $expr instanceof Expr\NullsafeMethodCall
 				) {
 					$expr = $expr->var;
 				}
@@ -3550,6 +3551,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$expr instanceof PropertyFetch
 					|| $expr instanceof Expr\NullsafePropertyFetch
 					|| $expr instanceof MethodCall
+					|| $expr instanceof Expr\NullsafeMethodCall
 				) {
 					$expr = $expr->var;
 				}

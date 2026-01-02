@@ -814,7 +814,7 @@ final class TypeCombinator
 			foreach ($constantArrays as $constantArray) {
 				$valueTypes = $constantArray->getValueTypes();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-					$keyTypesForGeneralArray[] = $keyType;
+					$keyTypesForGeneralArray[$keyType->getValue()] = $keyType;
 					$valueTypesForGeneralArray[] = $valueTypes[$i];
 
 					$keyTypeValue = $keyType->getValue();
@@ -832,6 +832,7 @@ final class TypeCombinator
 				}
 			}
 		}
+		$keyTypesForGeneralArray = array_values($keyTypesForGeneralArray);
 
 		if ($generalArrayOccurred && (!$overflowed || $filledArrays > 1)) {
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);

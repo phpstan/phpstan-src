@@ -5954,61 +5954,70 @@ class NodeScopeResolver
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
-		if ($var instanceof Variable && is_string($var->name)) {
+		if ($var instanceof Variable) {
 			$this->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			if (in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
-				$impurePoints[] = new ImpurePoint($scope, $var, 'superglobal', 'assign to superglobal variable', true);
-			}
-			$assignedExpr = $this->unwrapAssign($assignedExpr);
-			$type = $scope->getType($assignedExpr);
-
-			$conditionalExpressions = [];
-			if ($assignedExpr instanceof Ternary) {
-				$if = $assignedExpr->if;
-				if ($if === null) {
-					$if = $assignedExpr->cond;
-				}
-				$condScope = $this->processExprNode($stmt, $assignedExpr->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
-				$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
-				$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
-				$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
-				$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
-				$truthyType = $truthyScope->getType($if);
-				$falseyType = $falsyScope->getType($assignedExpr->else);
-
-				if (
-					$truthyType->isSuperTypeOf($falseyType)->no()
-					&& $falseyType->isSuperTypeOf($truthyType)->no()
-				) {
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-				}
-			}
-
 			$scopeBeforeAssignEval = $scope;
 			$scope = $result->getScope();
-			$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
-			$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
+			if (is_string($var->name)) {
+				if (in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
+					$impurePoints[] = new ImpurePoint($scopeBeforeAssignEval, $var, 'superglobal', 'assign to superglobal variable', true);
+				}
+				$assignedExpr = $this->unwrapAssign($assignedExpr);
+				$type = $scopeBeforeAssignEval->getType($assignedExpr);
 
-			$truthyType = TypeCombinator::removeFalsey($type);
-			$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
+				$conditionalExpressions = [];
+				if ($assignedExpr instanceof Ternary) {
+					$if = $assignedExpr->if;
+					if ($if === null) {
+						$if = $assignedExpr->cond;
+					}
+					$condScope = $this->processExprNode($stmt, $assignedExpr->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
+					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
+					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
+					$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
+					$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
+					$truthyType = $truthyScope->getType($if);
+					$falseyType = $falsyScope->getType($assignedExpr->else);
 
-			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
-			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
-			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					if (
+						$truthyType->isSuperTypeOf($falseyType)->no()
+						&& $falseyType->isSuperTypeOf($truthyType)->no()
+					) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					}
+				}
 
-			$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
-			$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
-			foreach ($conditionalExpressions as $exprString => $holders) {
-				$scope = $scope->addConditionalExpressions($exprString, $holders);
+				$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
+				$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
+
+				$truthyType = TypeCombinator::removeFalsey($type);
+				$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
+
+				$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+				$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+				$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+				$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+
+				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
+				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
+				foreach ($conditionalExpressions as $exprString => $holders) {
+					$scope = $scope->addConditionalExpressions($exprString, $holders);
+				}
+			} else {
+				$nameExprResult = $this->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $hasYield || $nameExprResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
+				$scope = $nameExprResult->getScope();
 			}
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimFetchStack = [];

@@ -81,11 +81,12 @@ final class PhpDocBlock
 
 	public function transformConditionalReturnTypeWithParameterNameMapping(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+		$nameMapping = $this->parameterNameMapping;
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($nameMapping): Type {
 			if ($type instanceof ConditionalTypeForParameter) {
 				$parameterName = substr($type->getParameterName(), 1);
-				if (array_key_exists($parameterName, $this->parameterNameMapping)) {
-					$type = $type->changeParameterName('$' . $this->parameterNameMapping[$parameterName]);
+				if (array_key_exists($parameterName, $nameMapping)) {
+					$type = $type->changeParameterName('$' . $nameMapping[$parameterName]);
 				}
 			}
 

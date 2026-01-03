@@ -101,7 +101,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Global_) {
-			return $this->processGlobal($scope, $node, $varTags);
+			return $this->processGlobal($node, $varTags);
 		}
 
 		if ($node instanceof InClassNode || $node instanceof InClassMethodNode || $node instanceof InFunctionNode) {
@@ -372,7 +372,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 	 * @param VarTag[] $varTags
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processGlobal(Scope $scope, Node\Stmt\Global_ $node, array $varTags): array
+	private function processGlobal(Node\Stmt\Global_ $node, array $varTags): array
 	{
 		$variableNames = [];
 		foreach ($node->vars as $var) {

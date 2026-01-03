@@ -239,6 +239,9 @@ final class ArgumentsNormalizer
 				// order named args into the position the signature expects them
 				$attributes = $arg->getAttributes();
 				$attributes[self::ORIGINAL_ARG_ATTRIBUTE] = $arg;
+				if (array_key_exists($argumentPositions[$argName], $reorderedArgs)) {
+					continue;
+				}
 				$reorderedArgs[$argumentPositions[$argName]] = new Arg(
 					$arg->value,
 					$arg->byRef,

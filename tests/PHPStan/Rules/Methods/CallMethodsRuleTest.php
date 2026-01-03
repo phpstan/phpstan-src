@@ -1926,6 +1926,14 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Named argument bar for variadic parameter ...$args of method NamedArgumentsMethod\Foo::doIpsum() expects string, int given.',
 				95,
 			],
+			[
+				'Argument for parameter $i has already been passed.',
+				116,
+			],
+			[
+				'Call to an undefined method NamedArgumentsMethod\Bar::doBaz().',
+				115,
+			],
 		]);
 	}
 

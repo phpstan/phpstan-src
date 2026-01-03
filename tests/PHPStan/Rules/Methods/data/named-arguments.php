@@ -96,3 +96,27 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doFoo(
+		int $i,
+		int $j,
+		int $k, ?int $l = null
+	)
+	{
+
+	}
+
+	public function doBar(): void
+	{
+		$this->doFoo(
+			$this->doBaz(),
+			i: 1,
+			j: 2,
+			k: 3
+		);
+	}
+
+}

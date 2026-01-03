@@ -693,9 +693,10 @@ class NodeScopeResolver
 				$finder = new NodeFinder();
 				foreach ($storage->pendingFibers as $pendingFiber) {
 					$expr = $pendingFiber['request']->expr;
+					$request = $pendingFiber['request'];
 					$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
 					if (count($found) > 0) {
-						throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
+						throw new ShouldNotHappenException(sprintf('Request for %s on line %d%s', get_class($expr), $expr->getStartLine(), $request->originFile !== null && $request->originLine !== null ? sprintf(', originated %s:%d', $request->originFile, $request->originLine) : ''));
 					}
 				}
 				$this->processPendingFibers($storage);
@@ -899,9 +900,10 @@ class NodeScopeResolver
 				if ($stmt->stmts !== null) {
 					foreach ($storage->pendingFibers as $pendingFiber) {
 						$expr = $pendingFiber['request']->expr;
+						$request = $pendingFiber['request'];
 						$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
 						if (count($found) > 0) {
-							throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
+							throw new ShouldNotHappenException(sprintf('Request for %s on line %d%s', get_class($expr), $expr->getStartLine(), $request->originFile !== null && $request->originLine !== null ? sprintf(', originated %s:%d', $request->originFile, $request->originLine) : ''));
 						}
 					}
 				}

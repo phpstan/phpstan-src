@@ -1508,9 +1508,13 @@ class NodeScopeResolver
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
 
-			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
-			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
-			$neverIterates = $condBooleanType->isFalse()->yes() && $context->isTopLevel();
+			$alwaysIterates = false;
+			$neverIterates = false;
+			if ($context->isTopLevel()) {
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
+				$alwaysIterates = $condBooleanType->isTrue()->yes();
+				$neverIterates = $condBooleanType->isFalse()->yes();
+			}
 			if (!$alwaysIterates) {
 				foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
@@ -1598,8 +1602,12 @@ class NodeScopeResolver
 			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
-			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
-			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
+
+			$alwaysIterates = false;
+			if ($context->isTopLevel()) {
+				$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
+				$alwaysIterates = $condBooleanType->isTrue()->yes();
+			}
 
 			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints()), $bodyScope, $storage);
 

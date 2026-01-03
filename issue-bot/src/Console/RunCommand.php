@@ -111,6 +111,7 @@ class RunCommand extends Command
 		$output->writeln(sprintf('Starting analysis of %s', $hash));
 
 		$startTime = microtime(true);
+		putenv("PHPSTAN_FNSR=1");
 		exec(implode(' ', $commandArray), $outputLines, $exitCode);
 		$elapsedTime = microtime(true) - $startTime;
 		$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));

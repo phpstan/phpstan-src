@@ -215,6 +215,7 @@ use function array_slice;
 use function array_values;
 use function base64_decode;
 use function count;
+use function get_class;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -692,9 +693,7 @@ class NodeScopeResolver
 				$finder = new NodeFinder();
 				foreach ($storage->pendingFibers as $pendingFiber) {
 					$expr = $pendingFiber['request']->expr;
-					$found = $finder->find($stmt->stmts, function ($node) use ($expr) {
-						return $node === $expr;
-					});
+					$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
 					if (count($found) > 0) {
 						throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
 					}
@@ -900,9 +899,7 @@ class NodeScopeResolver
 				if ($stmt->stmts !== null) {
 					foreach ($storage->pendingFibers as $pendingFiber) {
 						$expr = $pendingFiber['request']->expr;
-						$found = $finder->find($stmt->stmts, function ($node) use ($expr) {
-							return $node === $expr;
-						});
+						$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
 						if (count($found) > 0) {
 							throw new ShouldNotHappenException(sprintf('%s - %d', get_class($expr), $expr->getStartLine()));
 						}

@@ -1910,7 +1910,7 @@ class NodeScopeResolver
 							continue;
 						}
 
-						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
+						foreach ($catchTypes as $catchTypeItem) {
 							if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
 								continue;
 							}
@@ -6393,7 +6393,7 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
-					$itemScope = $keyResult->getScope();
+					// no need for $keyResult->getScope()
 				}
 
 				if ($arrayItem->key === null) {

@@ -28,6 +28,6 @@ class Bar
 		$this->acceptUppercaseString($string);
 		$this->acceptUppercaseString($uppercaseString);
 		$this->acceptUppercaseString($numericString);
-		$this->acceptUppercaseString($nonEmptyLowercaseString);
+		$this->acceptUppercaseString($nonEmptyUppercaseString);
 	}
 }

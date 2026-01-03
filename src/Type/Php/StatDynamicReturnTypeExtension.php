@@ -17,6 +17,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use SplFileObject;
+use function count;
 use function in_array;
 
 #[AutowiredService]
@@ -68,7 +69,7 @@ final class StatDynamicReturnTypeExtension implements DynamicFunctionReturnTypeE
 			'blocks',
 		];
 
-		foreach ($keys as $key) {
+		for ($i = 0; $i < count($keys); $i++) {
 			$builder->setOffsetValueType(null, $valueType);
 		}
 

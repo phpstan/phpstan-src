@@ -133,7 +133,7 @@ final class StubValidator
 			]);
 
 			$ruleRegistry = $this->getRuleRegistry($container);
-			$collectorRegistry = $this->getCollectorRegistry($container);
+			$collectorRegistry = $this->getCollectorRegistry();
 
 			$fileAnalyser = $container->getByType(FileAnalyser::class);
 
@@ -293,7 +293,7 @@ final class StubValidator
 		return new DirectRuleRegistry($rules);
 	}
 
-	private function getCollectorRegistry(Container $container): CollectorRegistry
+	private function getCollectorRegistry(): CollectorRegistry
 	{
 		return new CollectorRegistry([]);
 	}

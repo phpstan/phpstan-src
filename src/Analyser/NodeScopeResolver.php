@@ -1910,7 +1910,7 @@ class NodeScopeResolver
 							continue;
 						}
 
-						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
+						foreach ($catchTypes as $catchTypeItem) {
 							if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
 								continue;
 							}

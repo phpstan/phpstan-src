@@ -325,7 +325,7 @@ class IntersectionType implements CompoundType
 				}
 
 				if ($isList) {
-					$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+					$isMixedValueType = $valueType instanceof MixedType && $valueType->getSubtractedType() === null && !$valueType->isExplicitMixed();
 					$innerType = '';
 					if ($valueType !== null && !$isMixedValueType) {
 						$innerType = sprintf('<%s>', $valueType->describe($level));
@@ -403,7 +403,7 @@ class IntersectionType implements CompoundType
 					$keyType = $type->getKeyType();
 					$valueType = $type->getItemType();
 					if ($isList) {
-						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->getSubtractedType() === null && !$valueType->isExplicitMixed();
 						$valueTypeDescription = '';
 						if (!$isMixedValueType) {
 							$valueTypeDescription = sprintf('<%s>', $valueType->describe($level));
@@ -411,8 +411,8 @@ class IntersectionType implements CompoundType
 
 						$describedTypes[$i] = ($isNonEmptyArray ? 'non-empty-list' : 'list') . $valueTypeDescription;
 					} else {
-						$isMixedKeyType = $keyType instanceof MixedType && $keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$keyType->isExplicitMixed();
-						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$isMixedKeyType = $keyType instanceof MixedType && $keyType->getSubtractedType() === null && !$keyType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->getSubtractedType() === null && !$valueType->isExplicitMixed();
 						$typeDescription = '';
 						if (!$isMixedKeyType) {
 							$typeDescription = sprintf('<%s, %s>', $keyType->describe($level), $valueType->describe($level));
@@ -1417,7 +1417,7 @@ class IntersectionType implements CompoundType
 					$keyType = $type->getKeyType();
 					$valueType = $type->getItemType();
 					if ($isList) {
-						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->getSubtractedType() === null && !$valueType->isExplicitMixed();
 						$identifierTypeNode = new IdentifierTypeNode($isNonEmptyArray ? 'non-empty-list' : 'list');
 						if (!$isMixedValueType) {
 							$describedTypes[$i] = new GenericTypeNode($identifierTypeNode, [
@@ -1427,8 +1427,8 @@ class IntersectionType implements CompoundType
 							$describedTypes[$i] = $identifierTypeNode;
 						}
 					} else {
-						$isMixedKeyType = $keyType instanceof MixedType && $keyType->describe(VerbosityLevel::precise()) === 'mixed' && !$keyType->isExplicitMixed();
-						$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+						$isMixedKeyType = $keyType instanceof MixedType && $keyType->getSubtractedType() === null && !$keyType->isExplicitMixed();
+						$isMixedValueType = $valueType instanceof MixedType && $valueType->getSubtractedType() === null && !$valueType->isExplicitMixed();
 						$identifierTypeNode = new IdentifierTypeNode($isNonEmptyArray ? 'non-empty-array' : 'array');
 						if (!$isMixedKeyType) {
 							$describedTypes[$i] = new GenericTypeNode($identifierTypeNode, [

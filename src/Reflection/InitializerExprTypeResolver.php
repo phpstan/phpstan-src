@@ -282,9 +282,10 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof Expr\Ternary) {
-			$condType = $this->getType($expr->cond, $context);
 			$elseType = $this->getType($expr->else, $context);
 			if ($expr->if === null) {
+				$condType = $this->getType($expr->cond, $context);
+
 				return TypeCombinator::union(
 					TypeCombinator::removeFalsey($condType),
 					$elseType,

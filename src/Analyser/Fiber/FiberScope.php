@@ -20,6 +20,8 @@ final class FiberScope extends MutatingScope
 	/** @var Expr[] */
 	private array $falseyValueExprs = [];
 
+	private ?MutatingScope $mutatingScope = null;
+
 	public function toFiberScope(): self
 	{
 		return $this;
@@ -27,7 +29,11 @@ final class FiberScope extends MutatingScope
 
 	public function toMutatingScope(): MutatingScope
 	{
-		return $this->scopeFactory->toMutatingFactory()->create(
+		if ($this->mutatingScope !== null) {
+			return $this->mutatingScope;
+		}
+
+		return $this->mutatingScope = $this->scopeFactory->toMutatingFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),

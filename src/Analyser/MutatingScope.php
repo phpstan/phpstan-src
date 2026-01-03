@@ -186,6 +186,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @var array<string, self> */
 	private array $falseyScopes = [];
 
+	private ?self $fiberScope = null;
+
 	/** @var non-empty-string|null */
 	private ?string $namespace;
 
@@ -254,7 +256,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			throw new ShouldNotHappenException('Cannot create FiberScope below PHP 8.1');
 		}
 
-		return $this->scopeFactory->toFiberFactory()->create(
+		if ($this->fiberScope !== null) {
+			return $this->fiberScope;
+		}
+
+		return $this->fiberScope = $this->scopeFactory->toFiberFactory()->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),

@@ -6080,6 +6080,7 @@ class NodeScopeResolver
 				if ($dimExpr === null) {
 					$offsetTypes[] = [null, $dimFetch];
 					$offsetNativeTypes[] = [null, $dimFetch];
+					$this->storeBeforeScope($storage, $dimFetch, $scope);
 
 				} else {
 					$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
@@ -6486,12 +6487,17 @@ class NodeScopeResolver
 				);
 			}
 		} else {
-			$this->storeBeforeScope($storage, $var, $scope);
+			$varResult = $this->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
+			$hasYield = $varResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
+			$isAlwaysTerminating = $varResult->isAlwaysTerminating();
+			$scope = $varResult->getScope();
 			$result = $processExprCallback($scope);
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 		}
 

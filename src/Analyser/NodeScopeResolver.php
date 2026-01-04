@@ -5564,8 +5564,7 @@ class NodeScopeResolver
 		}
 
 		$args = $callLike->getArgs();
-		$hasAttributeGroups =
-			(
+		$hasAttributeGroups = (
 				$stmt instanceof Node\Stmt\ClassLike
 				|| $stmt instanceof FunctionLike
 				|| $stmt instanceof Node\Stmt\ClassConst

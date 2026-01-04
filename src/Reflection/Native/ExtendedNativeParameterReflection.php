@@ -99,21 +99,21 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		return $this->attributes;
 	}
 
-	public function union(self $other): self
+	public function union(ExtendedParameterReflection $other): self
 	{
 		return new self(
 			$this->name,
-			$this->optional && $other->optional,
-			TypeCombinator::union($this->type, $other->type),
-			TypeCombinator::union($this->phpDocType, $other->phpDocType),
-			TypeCombinator::union($this->nativeType, $other->nativeType),
-			$this->passedByReference->combine($other->passedByReference),
-			$this->variadic && $other->variadic,
-			$this->optional && $other->optional ? $this->defaultValue : null,
-			$this->outType !== null && $other->outType !== null ? TypeCombinator::union($this->outType, $other->outType) : null,
-			$this->immediatelyInvokedCallable->and($other->immediatelyInvokedCallable),
-			$this->closureThisType !== null && $other->closureThisType !== null ? TypeCombinator::union($this->closureThisType, $other->closureThisType) : null,
-			array_merge($this->attributes, $other->attributes),
+			$this->optional && $other->isOptional(),
+			TypeCombinator::union($this->type, $other->getType()),
+			TypeCombinator::union($this->phpDocType, $other->getPhpDocType()),
+			TypeCombinator::union($this->nativeType, $other->getNativeType()),
+			$this->passedByReference->combine($other->passedByReference()),
+			$this->variadic && $other->isVariadic(),
+			$this->optional && $other->isOptional() ? $this->defaultValue : null,
+			$this->outType !== null && $other->getOutType() !== null ? TypeCombinator::union($this->outType, $other->getOutType()) : null,
+			$this->immediatelyInvokedCallable->and($other->isImmediatelyInvokedCallable()),
+			$this->closureThisType !== null && $other->getClosureThisType() !== null ? TypeCombinator::union($this->closureThisType, $other->getClosureThisType()) : null,
+			array_merge($this->attributes, $other->getAttributes()),
 		);
 	}
 

@@ -12,6 +12,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 final class ExprPrinter
 {
 
+	public const ATTRIBUTE_CACHE_KEY = 'phpstan_cache_printer';
+
 	public function __construct(private Printer $printer)
 	{
 	}
@@ -19,10 +21,10 @@ final class ExprPrinter
 	public function printExpr(Expr $expr): string
 	{
 		/** @var string|null $exprString */
-		$exprString = $expr->getAttribute('phpstan_cache_printer');
+		$exprString = $expr->getAttribute(self::ATTRIBUTE_CACHE_KEY);
 		if ($exprString === null) {
 			$exprString = $this->printer->prettyPrintExpr($expr);
-			$expr->setAttribute('phpstan_cache_printer', $exprString);
+			$expr->setAttribute(self::ATTRIBUTE_CACHE_KEY, $exprString);
 		}
 
 		return $exprString;

@@ -119,6 +119,7 @@ use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
@@ -3210,13 +3211,15 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
 			$beforeScope = $scope;
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
+			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
+			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$exprResult = $this->processExprNode(
 				$stmt,
 				new MethodCall(
 					$expr->var,
 					$expr->name,
 					$expr->args,
-					array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]),
+					$attributes,
 				),
 				$nonNullabilityResult->getScope(),
 				$storage,
@@ -3438,10 +3441,12 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
 			$beforeScope = $scope;
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
+			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]);
+			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$exprResult = $this->processExprNode($stmt, new PropertyFetch(
 				$expr->var,
 				$expr->name,
-				array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]),
+				$attributes,
 			), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
@@ -3669,10 +3674,12 @@ class NodeScopeResolver
 			$impurePoints = array_merge($condResult->getImpurePoints(), $rightResult->getImpurePoints());
 			$isAlwaysTerminating = $condResult->isAlwaysTerminating();
 		} elseif ($expr instanceof BinaryOp\Pipe) {
+			$rightAttributes = array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true]);
+			unset($rightAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
 				$exprResult = $this->processExprNode($stmt, new FuncCall($expr->right->name, [
 					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true])), $scope, $storage, $nodeCallback, $context);
+				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
 				$scope = $exprResult->getScope();
 				$hasYield = $exprResult->hasYield();
 				$throwPoints = $exprResult->getThrowPoints();
@@ -3681,7 +3688,7 @@ class NodeScopeResolver
 			} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
 				$exprResult = $this->processExprNode($stmt, new MethodCall($expr->right->var, $expr->right->name, [
 					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true])), $scope, $storage, $nodeCallback, $context);
+				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
 				$scope = $exprResult->getScope();
 				$hasYield = $exprResult->hasYield();
 				$throwPoints = $exprResult->getThrowPoints();
@@ -3690,7 +3697,7 @@ class NodeScopeResolver
 			} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
 				$exprResult = $this->processExprNode($stmt, new StaticCall($expr->right->class, $expr->right->name, [
 					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true])), $scope, $storage, $nodeCallback, $context);
+				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
 				$scope = $exprResult->getScope();
 				$hasYield = $exprResult->hasYield();
 				$throwPoints = $exprResult->getThrowPoints();
@@ -3699,7 +3706,7 @@ class NodeScopeResolver
 			} else {
 				$exprResult = $this->processExprNode($stmt, new FuncCall($expr->right, [
 					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true])), $scope, $storage, $nodeCallback, $context);
+				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
 				$scope = $exprResult->getScope();
 				$hasYield = $exprResult->hasYield();
 				$throwPoints = $exprResult->getThrowPoints();

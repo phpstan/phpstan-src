@@ -5568,6 +5568,8 @@ class NodeScopeResolver
 				$stmt instanceof Node\Stmt\ClassLike
 				|| $stmt instanceof FunctionLike
 				|| $stmt instanceof Node\Stmt\ClassConst
+				|| $stmt instanceof Node\Stmt\Property
+				|| $stmt instanceof Node\Stmt\EnumCase
 			)
 			&& count($stmt->attrGroups) > 0;
 

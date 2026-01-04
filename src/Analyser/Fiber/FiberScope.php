@@ -123,6 +123,14 @@ final class FiberScope extends MutatingScope
 
 	private function preprocessScope(MutatingScope $scope): Scope
 	{
+		if ($scope->getAnonymousFunctionReflection() !== $this->getAnonymousFunctionReflection()) {
+			return $this->toMutatingScope();
+		}
+
+		if ($scope->getFunction() !== $this->getFunction()) {
+			return $this->toMutatingScope();
+		}
+
 		if ($this->nativeTypesPromoted) {
 			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		}

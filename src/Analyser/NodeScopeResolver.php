@@ -5565,13 +5565,14 @@ class NodeScopeResolver
 
 		$args = $callLike->getArgs();
 		$hasAttributeGroups = (
+			($stmt instanceof FunctionLike && count($stmt->getAttrGroups()) > 0)
+			|| ((
 				$stmt instanceof Node\Stmt\ClassLike
-				|| $stmt instanceof FunctionLike
 				|| $stmt instanceof Node\Stmt\ClassConst
 				|| $stmt instanceof Node\Stmt\Property
 				|| $stmt instanceof Node\Stmt\EnumCase
 			)
-			&& count($stmt->attrGroups) > 0; // @phpstan-ignore property.notFound
+			&& count($stmt->attrGroups) > 0));
 
 		$parameters = null;
 		if ($parametersAcceptor !== null) {

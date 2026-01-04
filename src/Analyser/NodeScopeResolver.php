@@ -5594,6 +5594,7 @@ class NodeScopeResolver
 				if (
 					$arg->value instanceof Node\Scalar\Int_
 					|| $arg->value instanceof Node\Scalar\Float_
+					|| ($arg->value instanceof Expr\UnaryMinus && $arg->value->expr instanceof Node\Scalar)
 				) {
 					continue;
 				}

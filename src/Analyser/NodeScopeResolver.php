@@ -5558,6 +5558,7 @@ class NodeScopeResolver
 	{
 		$args = $callLike->getArgs();
 
+		$parameters = null;
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
 		}
@@ -5571,7 +5572,7 @@ class NodeScopeResolver
 			$parameter = null;
 			$parameterType = null;
 			$parameterNativeType = null;
-			if (isset($parameters) && $parametersAcceptor !== null) {
+			if ($parameters !== null) {
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
@@ -5752,7 +5753,7 @@ class NodeScopeResolver
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
 
-		if (isset($parameters) && $parametersAcceptor !== null) {
+		if ($parameters !== null) {
 			foreach ($args as $i => $arg) {
 				$byRefType = new MixedType();
 				$assignByReference = false;
@@ -5843,19 +5844,19 @@ class NodeScopeResolver
 	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool
 	{
 		$parameterCallableType = null;
-		if ($parameterType !== null) {
+		if ($parameterType !== null && $calleeReflection instanceof FunctionReflection) {
 			$parameterCallableType = TypeUtils::findCallableType($parameterType);
 		}
 
 		if ($parameter instanceof ExtendedParameterReflection) {
 			$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
 			if ($parameterCallImmediately->maybe()) {
-				$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+				$callCallbackImmediately = $parameterCallableType !== null;
 			} else {
 				$callCallbackImmediately = $parameterCallImmediately->yes();
 			}
 		} else {
-			$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+			$callCallbackImmediately = $parameterCallableType !== null;
 		}
 
 		return $callCallbackImmediately;

@@ -78,12 +78,14 @@ final class ApiStaticCallRule implements Rule
 	private function isCovered(MethodReflection $methodReflection): bool
 	{
 		$declaringClass = $methodReflection->getDeclaringClass();
-		$classDocBlock = $declaringClass->getResolvedPhpDoc();
-		if ($methodReflection->getName() !== '__construct' && $classDocBlock !== null) {
-			foreach ($classDocBlock->getPhpDocNodes() as $phpDocNode) {
-				$apiTags = $phpDocNode->getTagsByName('@api');
-				if (count($apiTags) > 0) {
-					return true;
+		if ($methodReflection->getName() !== '__construct') {
+			$classDocBlock = $declaringClass->getResolvedPhpDoc();
+			if ($classDocBlock !== null) {
+				foreach ($classDocBlock->getPhpDocNodes() as $phpDocNode) {
+					$apiTags = $phpDocNode->getTagsByName('@api');
+					if (count($apiTags) > 0) {
+						return true;
+					}
 				}
 			}
 		}

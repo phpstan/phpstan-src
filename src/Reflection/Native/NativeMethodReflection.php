@@ -166,10 +166,9 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		$name = strtolower($this->getName());
-		$isVoid = $this->isVoid();
 		if (
 			$name !== '__construct'
-			&& $isVoid
+			&& $this->isVoid()
 		) {
 			return TrinaryLogic::createYes();
 		}

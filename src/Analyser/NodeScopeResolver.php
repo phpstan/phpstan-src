@@ -5754,7 +5754,6 @@ class NodeScopeResolver
 
 		if (isset($parameters) && $parametersAcceptor !== null) {
 			foreach ($args as $i => $arg) {
-				$byRefType = new MixedType();
 				$assignByReference = false;
 				$currentParameter = null;
 				if (isset($parameters[$i])) {
@@ -5765,21 +5764,6 @@ class NodeScopeResolver
 
 				if ($currentParameter !== null) {
 					$assignByReference = $currentParameter->passedByReference()->createsNewVariable();
-					if ($assignByReference) {
-						if ($currentParameter instanceof ExtendedParameterReflection && $currentParameter->getOutType() !== null) {
-							$byRefType = $currentParameter->getOutType();
-						} elseif (
-							$calleeReflection instanceof MethodReflection
-							&& !$calleeReflection->getDeclaringClass()->isBuiltin()
-						) {
-							$byRefType = $currentParameter->getType();
-						} elseif (
-							$calleeReflection instanceof FunctionReflection
-							&& !$calleeReflection->isBuiltin()
-						) {
-							$byRefType = $currentParameter->getType();
-						}
-					}
 				}
 
 				if ($assignByReference) {
@@ -5792,6 +5776,23 @@ class NodeScopeResolver
 						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
 						if ($paramOutType !== null) {
 							$byRefType = $paramOutType;
+						} elseif (
+							$currentParameter instanceof ExtendedParameterReflection
+							&& $currentParameter->getOutType() !== null
+						) {
+							$byRefType = $currentParameter->getOutType();
+						} elseif (
+							$calleeReflection instanceof MethodReflection
+							&& !$calleeReflection->getDeclaringClass()->isBuiltin()
+						) {
+							$byRefType = $currentParameter->getType();
+						} elseif (
+							$calleeReflection instanceof FunctionReflection
+							&& !$calleeReflection->isBuiltin()
+						) {
+							$byRefType = $currentParameter->getType();
+						} else {
+							$byRefType = new MixedType();
 						}
 
 						$scope = $this->processVirtualAssign(

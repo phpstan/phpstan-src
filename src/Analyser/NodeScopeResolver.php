@@ -402,7 +402,7 @@ class NodeScopeResolver
 		$result = $this->processStmtNodesInternal(
 			$parentNode,
 			$stmts,
-			$scope->toMutatingScope(),
+			$scope,
 			$storage,
 			$nodeCallback,
 			$context,

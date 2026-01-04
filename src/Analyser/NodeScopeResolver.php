@@ -5563,7 +5563,7 @@ class NodeScopeResolver
 		}
 
 		$args = $callLike->getArgs();
-		$hasAttributeGroups = count($stmt->attrGroups) > 0;
+		$hasAttributeGroups = isset($stmt->attrGroups) && count($stmt->attrGroups) > 0;
 
 		$parameters = null;
 		if ($parametersAcceptor !== null) {

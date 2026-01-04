@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -31,7 +32,7 @@ final class ArgumentsNormalizer
 	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
 
 	/**
-	 * @return array{ParametersAcceptor, FuncCall, TrinaryLogic}|null
+	 * @return array{ExtendedParametersAcceptor, FuncCall, TrinaryLogic}|null
 	 */
 	public static function reorderCallUserFuncArguments(
 		FuncCall $callUserFuncCall,

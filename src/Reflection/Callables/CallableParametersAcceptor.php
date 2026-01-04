@@ -3,13 +3,13 @@
 namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Node\InvalidateExprNode;
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\TrinaryLogic;
 
 /**
  * @api
  */
-interface CallableParametersAcceptor extends ParametersAcceptor
+interface CallableParametersAcceptor extends ExtendedParametersAcceptor
 {
 
 	/**

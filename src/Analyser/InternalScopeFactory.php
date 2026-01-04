@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Type\ClosureType;
 
@@ -18,7 +18,7 @@ interface InternalScopeFactory
 	 * @param list<string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param list<array{FunctionReflection|MethodReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{FunctionReflection|ExtendedMethodReflection|null, ExtendedParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

@@ -26,7 +26,6 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -56,7 +55,6 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -508,7 +506,7 @@ final class TypeSpecifier
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
 						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$parametersAcceptor->getCallSiteVarianceMap(),
 						TemplateTypeVariance::createInvariant(),
 					));
 					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
@@ -561,7 +559,7 @@ final class TypeSpecifier
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
 						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$parametersAcceptor->getCallSiteVarianceMap(),
 						TemplateTypeVariance::createInvariant(),
 					));
 					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
@@ -619,7 +617,7 @@ final class TypeSpecifier
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
 						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$parametersAcceptor->getCallSiteVarianceMap(),
 						TemplateTypeVariance::createInvariant(),
 					));
 					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
@@ -1087,7 +1085,7 @@ final class TypeSpecifier
 					$asserts = $asserts->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
 						$parametersAcceptor->getResolvedTemplateTypeMap(),
-						$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						$parametersAcceptor->getCallSiteVarianceMap(),
 						TemplateTypeVariance::createInvariant(),
 					));
 

@@ -23,7 +23,6 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -181,9 +180,6 @@ final class DependencyResolver
 						}
 
 						foreach ($variant->getParameters() as $parameter) {
-							if (!$parameter instanceof ExtendedParameterReflection) {
-								continue;
-							}
 							if ($parameter->getOutType() !== null) {
 								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
 									$this->addClassToDependencies($referencedClass, $dependenciesReflections);

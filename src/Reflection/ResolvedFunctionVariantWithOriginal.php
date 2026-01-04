@@ -45,7 +45,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	{
 	}
 
-	public function getOriginalParametersAcceptor(): ParametersAcceptor
+	public function getOriginalParametersAcceptor(): ExtendedParametersAcceptor
 	{
 		return $this->parametersAcceptor;
 	}

@@ -66,12 +66,13 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
@@ -206,7 +207,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
+	 * @param list<array{ExtendedMethodReflection|FunctionReflection|null, ExtendedParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function __construct(
 		protected InternalScopeFactory $scopeFactory,
@@ -1379,15 +1380,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 					throw new ShouldNotHappenException();
 				}
-				$parameters[] = new NativeParameterReflection(
+				$paramType = $this->getFunctionType($param->type, $this->isParameterValueNullable($param), false);
+				$parameters[] = new ExtendedNativeParameterReflection(
 					$param->var->name,
 					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
+					$paramType,
+					new MixedType(),
+					$paramType,
 					$param->byRef
 						? PassedByReference::createCreatesNewVariable()
 						: PassedByReference::createNo(),
 					$param->variadic,
 					$param->default !== null ? $this->getType($param->default) : null,
+					null,
+					TrinaryLogic::createMaybe(),
+					null,
+					[],
 				);
 			}
 
@@ -2924,9 +2932,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * @param MethodReflection|FunctionReflection|null $reflection
+	 * @param ExtendedMethodReflection|FunctionReflection|null $reflection
 	 */
-	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
+	public function pushInFunctionCall($reflection, ?ExtendedParameterReflection $parameter, bool $rememberTypes): self
 	{
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = [$reflection, $parameter];

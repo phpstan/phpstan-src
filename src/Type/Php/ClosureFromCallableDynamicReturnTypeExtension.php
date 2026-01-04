@@ -6,12 +6,10 @@ use Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -49,7 +47,7 @@ final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStat
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
-				$variant instanceof ExtendedParametersAcceptor ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+				$variant->getCallSiteVarianceMap(),
 				throwPoints: $variant->getThrowPoints(),
 				impurePoints: $variant->getImpurePoints(),
 				invalidateExpressions: $variant->getInvalidateExpressions(),

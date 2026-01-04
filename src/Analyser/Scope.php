@@ -11,11 +11,10 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
-use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
@@ -142,10 +141,10 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function isInClosureBind(): bool;
 
-	/** @return list<FunctionReflection|MethodReflection> */
+	/** @return list<FunctionReflection|ExtendedMethodReflection> */
 	public function getFunctionCallStack(): array;
 
-	/** @return list<array{FunctionReflection|MethodReflection, ParameterReflection|null}> */
+	/** @return list<array{FunctionReflection|ExtendedMethodReflection, ExtendedParameterReflection|null}> */
 	public function getFunctionCallStackWithParameters(): array;
 
 	public function isParameterValueNullable(Param $parameter): bool;

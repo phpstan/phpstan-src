@@ -1835,8 +1835,10 @@ final class TypeSpecifier
 			!$context->null()
 			&& $expr instanceof Expr\BinaryOp\Coalesce
 		) {
-			$rightIsSuperType = $type->isSuperTypeOf($scope->getType($expr->right));
-			if (($context->true() && $rightIsSuperType->no()) || ($context->false() && $rightIsSuperType->yes())) {
+			if (
+				($context->true() && $type->isSuperTypeOf($scope->getType($expr->right))->no())
+				|| ($context->false() && $type->isSuperTypeOf($scope->getType($expr->right))->yes())
+			) {
 				$expr = $expr->left;
 			}
 		}
@@ -1909,14 +1911,18 @@ final class TypeSpecifier
 
 		$sureTypes = [];
 		$sureNotTypes = [];
-		$exprString = $this->exprPrinter->printExpr($expr);
-		$originalExprString = $this->exprPrinter->printExpr($originalExpr);
 		if ($context->false()) {
+			$exprString = $this->exprPrinter->printExpr($expr);
+			$originalExprString = $this->exprPrinter->printExpr($originalExpr);
+
 			$sureNotTypes[$exprString] = [$expr, $type];
 			if ($exprString !== $originalExprString) {
 				$sureNotTypes[$originalExprString] = [$originalExpr, $type];
 			}
 		} elseif ($context->true()) {
+			$exprString = $this->exprPrinter->printExpr($expr);
+			$originalExprString = $this->exprPrinter->printExpr($originalExpr);
+
 			$sureTypes[$exprString] = [$expr, $type];
 			if ($exprString !== $originalExprString) {
 				$sureTypes[$originalExprString] = [$originalExpr, $type];

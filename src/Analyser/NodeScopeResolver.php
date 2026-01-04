@@ -37,6 +37,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Break_;
@@ -5563,7 +5564,13 @@ class NodeScopeResolver
 		}
 
 		$args = $callLike->getArgs();
-		$hasAttributeGroups = isset($stmt->attrGroups) && count($stmt->attrGroups) > 0;
+		$hasAttributeGroups =
+			(
+				$stmt instanceof Node\Stmt\ClassLike
+				|| $stmt instanceof FunctionLike
+				|| $stmt instanceof Node\Stmt\ClassConst
+			)
+			&& count($stmt->attrGroups) > 0;
 
 		$parameters = null;
 		if ($parametersAcceptor !== null) {

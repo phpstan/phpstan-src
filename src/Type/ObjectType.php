@@ -1550,7 +1550,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	}
 
 	/**
-	 * @return CallableParametersAcceptor[]|null
+	 * @return list<CallableParametersAcceptor>|null
 	 */
 	private function findCallableParametersAcceptors(): ?array
 	{

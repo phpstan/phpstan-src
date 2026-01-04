@@ -33,8 +33,8 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 	}
 
 	/**
-	 * @param ExtendedParametersAcceptor[] $variants
-	 * @return self[]
+	 * @param list<ExtendedParametersAcceptor> $variants
+	 * @return list<self>
 	 */
 	public static function createFromVariants(FunctionReflection|ExtendedMethodReflection $function, array $variants): array
 	{

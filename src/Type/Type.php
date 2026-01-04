@@ -207,7 +207,7 @@ interface Type
 	public function isCallable(): TrinaryLogic;
 
 	/**
-	 * @return CallableParametersAcceptor[]
+	 * @return list<CallableParametersAcceptor>
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array;
 

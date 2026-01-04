@@ -5281,25 +5281,23 @@ class NodeScopeResolver
 			}
 
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) > 0) {
-				foreach ($acceptors as $acceptor) {
-					if ($callableParameters === null) {
-						$callableParameters = $acceptor->getParameters();
+			foreach ($acceptors as $acceptor) {
+				if ($callableParameters === null) {
+					$callableParameters = $acceptor->getParameters();
+					continue;
+				}
+
+				$newParameters = [];
+				foreach ($acceptor->getParameters() as $i => $callableParameter) {
+					if (!array_key_exists($i, $callableParameters)) {
+						$newParameters[] = $callableParameter;
 						continue;
 					}
 
-					$newParameters = [];
-					foreach ($acceptor->getParameters() as $i => $callableParameter) {
-						if (!array_key_exists($i, $callableParameters)) {
-							$newParameters[] = $callableParameter;
-							continue;
-						}
-
-						$newParameters[] = $callableParameters[$i]->union($callableParameter);
-					}
-
-					$callableParameters = $newParameters;
+					$newParameters[] = $callableParameters[$i]->union($callableParameter);
 				}
+
+				$callableParameters = $newParameters;
 			}
 		}
 

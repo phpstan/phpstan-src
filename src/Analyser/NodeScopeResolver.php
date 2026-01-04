@@ -2752,13 +2752,7 @@ class NodeScopeResolver
 				$throwPoints = $nameResult->getThrowPoints();
 				$impurePoints = $nameResult->getImpurePoints();
 				$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
-				if ( // phpcs:ignore
-					$nameType->isObject()->yes()
-					&& $nameType->isCallable()->yes()
-					&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
-				) {
-					// processed later
-				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
+				if ($parametersAcceptor instanceof CallableParametersAcceptor) {
 					$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
 					if (!$this->implicitThrows) {
 						$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));

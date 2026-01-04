@@ -215,7 +215,6 @@ use function array_slice;
 use function array_values;
 use function base64_decode;
 use function count;
-use function get_class;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -690,15 +689,6 @@ class NodeScopeResolver
 				$functionReflection,
 			), $functionScope, $storage);
 			if (!$scope->isInAnonymousFunction()) {
-				$finder = new NodeFinder();
-				foreach ($storage->pendingFibers as $pendingFiber) {
-					$expr = $pendingFiber['request']->expr;
-					$request = $pendingFiber['request'];
-					$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
-					if (count($found) > 0) {
-						throw new ShouldNotHappenException(sprintf('Request for %s on line %d%s', get_class($expr), $expr->getStartLine(), $request->originFile !== null && $request->originLine !== null ? sprintf(', originated %s:%d', $request->originFile, $request->originLine) : ''));
-					}
-				}
 				$this->processPendingFibers($storage);
 			}
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
@@ -896,17 +886,6 @@ class NodeScopeResolver
 				}
 			}
 			if (!$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
-				$finder = new NodeFinder();
-				if ($stmt->stmts !== null) {
-					foreach ($storage->pendingFibers as $pendingFiber) {
-						$expr = $pendingFiber['request']->expr;
-						$request = $pendingFiber['request'];
-						$found = $finder->find($stmt->stmts, static fn ($node) => $node === $expr);
-						if (count($found) > 0) {
-							throw new ShouldNotHappenException(sprintf('Request for %s on line %d%s', get_class($expr), $expr->getStartLine(), $request->originFile !== null && $request->originLine !== null ? sprintf(', originated %s:%d', $request->originFile, $request->originLine) : ''));
-						}
-					}
-				}
 				$this->processPendingFibers($storage);
 			}
 		} elseif ($stmt instanceof Echo_) {

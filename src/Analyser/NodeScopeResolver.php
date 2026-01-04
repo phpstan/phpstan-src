@@ -5767,85 +5767,84 @@ class NodeScopeResolver
 
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
-		foreach ($args as $i => $arg) {
-			if (!isset($parameters) || $parametersAcceptor === null) {
-				continue;
-			}
 
-			$byRefType = new MixedType();
-			$assignByReference = false;
-			$currentParameter = null;
-			if (isset($parameters[$i])) {
-				$currentParameter = $parameters[$i];
-			} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
-				$currentParameter = array_last($parameters);
-			}
+		if (isset($parameters) && $parametersAcceptor !== null) {
+			foreach ($args as $i => $arg) {
+				$byRefType = new MixedType();
+				$assignByReference = false;
+				$currentParameter = null;
+				if (isset($parameters[$i])) {
+					$currentParameter = $parameters[$i];
+				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
+					$currentParameter = array_last($parameters);
+				}
 
-			if ($currentParameter !== null) {
-				$assignByReference = $currentParameter->passedByReference()->createsNewVariable();
+				if ($currentParameter !== null) {
+					$assignByReference = $currentParameter->passedByReference()->createsNewVariable();
+					if ($assignByReference) {
+						if ($currentParameter instanceof ExtendedParameterReflection && $currentParameter->getOutType() !== null) {
+							$byRefType = $currentParameter->getOutType();
+						} elseif (
+							$calleeReflection instanceof MethodReflection
+							&& !$calleeReflection->getDeclaringClass()->isBuiltin()
+						) {
+							$byRefType = $currentParameter->getType();
+						} elseif (
+							$calleeReflection instanceof FunctionReflection
+							&& !$calleeReflection->isBuiltin()
+						) {
+							$byRefType = $currentParameter->getType();
+						}
+					}
+				}
+
 				if ($assignByReference) {
-					if ($currentParameter instanceof ExtendedParameterReflection && $currentParameter->getOutType() !== null) {
-						$byRefType = $currentParameter->getOutType();
-					} elseif (
-						$calleeReflection instanceof MethodReflection
-						&& !$calleeReflection->getDeclaringClass()->isBuiltin()
-					) {
-						$byRefType = $currentParameter->getType();
-					} elseif (
-						$calleeReflection instanceof FunctionReflection
-						&& !$calleeReflection->isBuiltin()
-					) {
-						$byRefType = $currentParameter->getType();
-					}
-				}
-			}
-
-			if ($assignByReference) {
-				if ($currentParameter === null) {
-					throw new ShouldNotHappenException();
-				}
-
-				$argValue = $arg->value;
-				if (!$argValue instanceof Variable || $argValue->name !== 'this') {
-					$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
-					if ($paramOutType !== null) {
-						$byRefType = $paramOutType;
+					if ($currentParameter === null) {
+						throw new ShouldNotHappenException();
 					}
 
-					$scope = $this->processVirtualAssign(
-						$scope,
-						$storage,
-						$stmt,
-						$argValue,
-						new TypeExpr($byRefType),
-						$nodeCallback,
-					)->getScope();
-					$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
-				}
-			} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
-				$argType = $scope->getType($arg->value);
-				if (!$argType->isObject()->no()) {
-					$nakedReturnType = null;
-					if ($nakedMethodReflection !== null) {
-						$nakedParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+					$argValue = $arg->value;
+					if (!$argValue instanceof Variable || $argValue->name !== 'this') {
+						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
+						if ($paramOutType !== null) {
+							$byRefType = $paramOutType;
+						}
+
+						$scope = $this->processVirtualAssign(
 							$scope,
-							$args,
-							$nakedMethodReflection->getVariants(),
-							$nakedMethodReflection->getNamedArgumentsVariants(),
-						);
-						$nakedReturnType = $nakedParametersAcceptor->getReturnType();
+							$storage,
+							$stmt,
+							$argValue,
+							new TypeExpr($byRefType),
+							$nodeCallback,
+						)->getScope();
+						$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
-					if (
-						$nakedReturnType === null
-						|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
-						|| $nakedMethodReflection->isPure()->no()
-					) {
+				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
+					$argType = $scope->getType($arg->value);
+					if (!$argType->isObject()->no()) {
+						$nakedReturnType = null;
+						if ($nakedMethodReflection !== null) {
+							$nakedParametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+								$scope,
+								$args,
+								$nakedMethodReflection->getVariants(),
+								$nakedMethodReflection->getNamedArgumentsVariants(),
+							);
+							$nakedReturnType = $nakedParametersAcceptor->getReturnType();
+						}
+						if (
+							$nakedReturnType === null
+							|| !(new ThisType($nakedMethodReflection->getDeclaringClass()))->isSuperTypeOf($nakedReturnType)->yes()
+							|| $nakedMethodReflection->isPure()->no()
+						) {
+							$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
+							$scope = $scope->invalidateExpression($arg->value, true);
+						}
+					} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
 						$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
-				} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
-					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
-					$scope = $scope->invalidateExpression($arg->value, true);
 				}
 			}
 		}

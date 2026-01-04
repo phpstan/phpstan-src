@@ -5623,22 +5623,6 @@ class NodeScopeResolver
 				$scopeToPass = $closureBindScope;
 			}
 
-			$parameterCallableType = null;
-			if ($parameterType !== null) {
-				$parameterCallableType = TypeUtils::findCallableType($parameterType);
-			}
-
-			if ($parameter instanceof ExtendedParameterReflection) {
-				$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
-				if ($parameterCallImmediately->maybe()) {
-					$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
-				} else {
-					$callCallbackImmediately = $parameterCallImmediately->yes();
-				}
-			} else {
-				$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
-			}
-
 			if ($arg->value instanceof Expr\Closure) {
 				$restoreThisScope = null;
 				if (
@@ -5663,7 +5647,7 @@ class NodeScopeResolver
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
-				if ($callCallbackImmediately) {
+				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $closureResult->isAlwaysTerminating();
@@ -5720,7 +5704,7 @@ class NodeScopeResolver
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null);
-				if ($callCallbackImmediately) {
+				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $arrowFunctionResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $arrowFunctionResult->isAlwaysTerminating();
@@ -5739,7 +5723,7 @@ class NodeScopeResolver
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
 						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
-						if ($callCallbackImmediately) {
+						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
@@ -5851,6 +5835,29 @@ class NodeScopeResolver
 
 		// not storing this, it's scope after processing all args
 		return new ExpressionResult($scope, $scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	/**
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 */
+	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool {
+		$parameterCallableType = null;
+		if ($parameterType !== null) {
+			$parameterCallableType = TypeUtils::findCallableType($parameterType);
+		}
+
+		if ($parameter instanceof ExtendedParameterReflection) {
+			$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
+			if ($parameterCallImmediately->maybe()) {
+				$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+			} else {
+				$callCallbackImmediately = $parameterCallImmediately->yes();
+			}
+		} else {
+			$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+		}
+
+		return $callCallbackImmediately;
 	}
 
 	/**

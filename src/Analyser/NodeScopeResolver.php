@@ -5843,19 +5843,19 @@ class NodeScopeResolver
 	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool
 	{
 		$parameterCallableType = null;
-		if ($parameterType !== null) {
+		if ($parameterType !== null && $calleeReflection instanceof FunctionReflection) {
 			$parameterCallableType = TypeUtils::findCallableType($parameterType);
 		}
 
 		if ($parameter instanceof ExtendedParameterReflection) {
 			$parameterCallImmediately = $parameter->isImmediatelyInvokedCallable();
 			if ($parameterCallImmediately->maybe()) {
-				$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+				$callCallbackImmediately = $parameterCallableType !== null;
 			} else {
 				$callCallbackImmediately = $parameterCallImmediately->yes();
 			}
 		} else {
-			$callCallbackImmediately = $parameterCallableType !== null && $calleeReflection instanceof FunctionReflection;
+			$callCallbackImmediately = $parameterCallableType !== null;
 		}
 
 		return $callCallbackImmediately;

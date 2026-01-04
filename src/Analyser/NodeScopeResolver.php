@@ -5571,7 +5571,7 @@ class NodeScopeResolver
 				|| $stmt instanceof Node\Stmt\Property
 				|| $stmt instanceof Node\Stmt\EnumCase
 			)
-			&& count($stmt->attrGroups) > 0;
+			&& count($stmt->attrGroups) > 0; // @phpstan-ignore property.notFound
 
 		$parameters = null;
 		if ($parametersAcceptor !== null) {

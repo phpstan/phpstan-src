@@ -5558,6 +5558,7 @@ class NodeScopeResolver
 	{
 		$args = $callLike->getArgs();
 
+		$parameters = null;
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
 		}
@@ -5571,7 +5572,7 @@ class NodeScopeResolver
 			$parameter = null;
 			$parameterType = null;
 			$parameterNativeType = null;
-			if (isset($parameters) && $parametersAcceptor !== null) {
+			if ($parameters !== null) {
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
@@ -5752,7 +5753,7 @@ class NodeScopeResolver
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
 		}
 
-		if (isset($parameters) && $parametersAcceptor !== null) {
+		if ($parameters !== null) {
 			foreach ($args as $i => $arg) {
 				$byRefType = new MixedType();
 				$assignByReference = false;

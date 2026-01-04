@@ -23,11 +23,11 @@ final class FinalPrivateMethodRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $node->getMethodReflection();
-		if ($scope->getPhpVersion()->producesWarningForFinalPrivateMethods()->no()) {
+		if ($method->getName() === '__construct') {
 			return [];
 		}
 
-		if ($method->getName() === '__construct') {
+		if ($scope->getPhpVersion()->producesWarningForFinalPrivateMethods()->no()) {
 			return [];
 		}
 

@@ -3164,8 +3164,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			if ($methodReflection !== null) {
-				$hasSideEffects = $methodReflection->hasSideEffects();
-				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
+				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 				}
@@ -3376,11 +3375,11 @@ class NodeScopeResolver
 			if (
 				$methodReflection !== null
 				&& (
-					$methodReflection->hasSideEffects()->yes()
-					|| (
+					(
 						!$methodReflection->isStatic()
 						&& $methodReflection->getName() === '__construct'
 					)
+					|| $methodReflection->hasSideEffects()->yes()
 				)
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())

@@ -5,17 +5,13 @@ namespace PHPStan\Analyser\Fiber;
 use Fiber;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
-use function get_class;
 use function get_debug_type;
-use function sprintf;
 
 #[AutowiredService(as: FiberNodeScopeResolver::class)]
 final class FiberNodeScopeResolver extends NodeScopeResolver
@@ -82,7 +78,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	{
 		start:
 
-		foreach ($storage->pendingFibers as $pending) {
+		foreach ($storage->pendingFibers as $key => $pending) {
 			$request = $pending['request'];
 			$beforeScope = $storage->findBeforeScope($request->expr);
 
@@ -90,17 +86,11 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 				throw new ShouldNotHappenException('Pending fibers at the end should be about synthetic nodes');
 			}
 
-			$this->processExprNode(
-				new Node\Stmt\Expression($request->expr),
-				$request->expr,
-				$request->scope->toMutatingScope(),
-				$storage,
-				new NoopNodeCallback(),
-				ExpressionContext::createTopLevel(),
-			);
-			if ($storage->findBeforeScope($request->expr) === null) {
-				throw new ShouldNotHappenException(sprintf('processExprNode should have stored the beforeScope of %s on line %s', get_class($request->expr), $request->expr->getStartLine()));
-			}
+			unset($storage->pendingFibers[$key]);
+
+			$fiber = $pending['fiber'];
+			$request = $fiber->resume($request->scope);
+			$this->runFiberForNodeCallback($storage, $fiber, $request);
 
 			// Break and restart the loop since the array may have been modified
 			goto start;

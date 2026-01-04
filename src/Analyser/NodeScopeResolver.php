@@ -5840,7 +5840,8 @@ class NodeScopeResolver
 	/**
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 */
-	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool {
+	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool
+	{
 		$parameterCallableType = null;
 		if ($parameterType !== null) {
 			$parameterCallableType = TypeUtils::findCallableType($parameterType);

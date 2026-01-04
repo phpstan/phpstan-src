@@ -24,6 +24,8 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	private Type|false|null $selfOutType = false;
 
+	private ?TrinaryLogic $hasSideEffects = null;
+
 	public function __construct(
 		private ExtendedMethodReflection $reflection,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
@@ -167,7 +169,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		return $this->reflection->hasSideEffects();
+		return $this->hasSideEffects ??= $this->reflection->hasSideEffects();
 	}
 
 	public function isPure(): TrinaryLogic

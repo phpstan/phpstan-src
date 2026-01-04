@@ -3188,6 +3188,10 @@ class NodeScopeResolver
 				if (
 					$scope->isInClass()
 					&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+					&& (
+						!$this->narrowMethodScopeFromConstructor
+						|| ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
+					)
 					/*&& (
 						// should not be allowed but in practice has to be
 						$scope->getClassReflection()->isFinal()

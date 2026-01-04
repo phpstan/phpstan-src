@@ -7,6 +7,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_merge;
 use function strpos;
 
 /**
@@ -78,9 +79,13 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 	public static function getAdditionalConfigFiles(): array
 	{
-		return [
-			__DIR__ . '/uninitialized-property-rule.neon',
-		];
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/uninitialized-property-rule.neon',
+				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
+			],
+		);
 	}
 
 	public function testRule(): void
@@ -154,12 +159,12 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-7219.php'], [
 			[
-				'Class Bug7219\Foo has an uninitialized property $id. Give it default value or assign it in the constructor.',
-				8,
-			],
-			[
 				'Class Bug7219\Foo has an uninitialized property $email. Give it default value or assign it in the constructor.',
 				15,
+			],
+			[
+				'Class Bug7219\Foo has an uninitialized property $id. Give it default value or assign it in the constructor.',
+				8,
 			],
 		]);
 	}
@@ -168,12 +173,12 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uninitialized-property-additional-constructors.php'], [
 			[
-				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $one. Give it default value or assign it in the constructor.',
-				07,
-			],
-			[
 				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $three. Give it default value or assign it in the constructor.',
 				11,
+			],
+			[
+				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $one. Give it default value or assign it in the constructor.',
+				07,
 			],
 		]);
 	}

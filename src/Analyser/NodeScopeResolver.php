@@ -5563,6 +5563,7 @@ class NodeScopeResolver
 		}
 
 		$args = $callLike->getArgs();
+		$hasAttributeGroups = count($stmt->attrGroups) > 0;
 
 		$parameters = null;
 		if ($parametersAcceptor !== null) {
@@ -5574,6 +5575,22 @@ class NodeScopeResolver
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		foreach ($args as $i => $arg) {
+			if (!$hasAttributeGroups) {
+				if ($arg->value instanceof ConstFetch) {
+					$loweredConstName = strtolower($arg->value->name->toString());
+					if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
+						continue;
+					}
+				}
+
+				if (
+					$arg->value instanceof Node\Scalar\Int_
+					|| $arg->value instanceof Node\Scalar\Float_
+				) {
+					continue;
+				}
+			}
+
 			$assignByReference = false;
 			$parameter = null;
 			$parameterType = null;

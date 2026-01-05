@@ -1224,7 +1224,7 @@ final class ParametersAcceptorSelector
 			}
 		}
 
-		if (defined('CURLOPT_SHARE') && CURLOPT_SHARE === $curlOpt) {
+		if (defined('CURLOPT_SHARE') && $curlOpt === CURLOPT_SHARE) {
 			$phpversion = PhpVersionStaticAccessor::getInstance();
 
 			if ($phpversion->supportsCurlShareHandle()) {

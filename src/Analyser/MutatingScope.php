@@ -4484,14 +4484,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
 	{
-		$exprString = $this->getNodeKey($expr);
-		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
+		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
 			return false;
 		}
 
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
 		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
-			return $exprStringToInvalidate === $exprString;
+			return $exprStringToInvalidate === $this->getNodeKey($expr);
 		}
 
 		$nodeFinder = new NodeFinder();

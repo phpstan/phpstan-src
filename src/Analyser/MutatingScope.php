@@ -703,7 +703,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return new MixedType();
 		}
 
-		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+		return $this->expressionTypes[$varExprString]->getType();
 	}
 
 	/**

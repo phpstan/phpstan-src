@@ -333,6 +333,8 @@ jobs:
             extensions: "soap"
           - script: "bin/phpstan analyse -l 8 -a tests/e2e/data/soap.php -c tests/e2e/data/empty.neon tests/e2e/data/soap.php"
             extensions: ""
+          - script: "bin/phpstan analyse -l 8 -c tests/e2e/data/empty.neon tests/e2e/data/curl_setopt.php"
+            extensions: ":curl"
           - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
             extensions: ""
           - script: "bin/phpstan analyse -l 8 e2e/phpstan-phpunit-190/test.php -c e2e/phpstan-phpunit-190/test.neon"

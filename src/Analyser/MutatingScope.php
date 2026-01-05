@@ -912,9 +912,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
 		}
 		$parts[] = '---';
-		foreach ($this->nativeExpressionTypes as $exprString => $expressionTypeHolder) {
-			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
-		}
 
 		$parts[] = sprintf(':%d', count($this->inFunctionCallsStack));
 		foreach ($this->inFunctionCallsStack as [$method, $parameter]) {

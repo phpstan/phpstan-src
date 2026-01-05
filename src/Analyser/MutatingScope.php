@@ -49,6 +49,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
@@ -5024,6 +5025,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 
+				if (!$expr instanceof Variable && !$expr instanceof VirtualNode) {
+					continue;
+				}
+
 				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($expr, $variableTypeHolder->getType());
 			}
 		}
@@ -5038,6 +5043,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
 			}
 			if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) === true) {
+				continue;
+			}
+
+			if (!$expr instanceof Variable && !$expr instanceof VirtualNode) {
 				continue;
 			}
 

@@ -4112,6 +4112,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function isInExpressionAssign(Expr $expr): bool
 	{
+		if (count($this->currentlyAssignedExpressions) === 0) {
+			return false;
+		}
+
 		$exprString = $this->getNodeKey($expr);
 		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
 	}
@@ -4185,6 +4189,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function isUndefinedExpressionAllowed(Expr $expr): bool
 	{
+		if (count($this->currentlyAllowedUndefinedExpressions) === 0) {
+			return false;
+		}
 		$exprString = $this->getNodeKey($expr);
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
@@ -4480,13 +4487,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
 	{
-		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
+		$exprString = $this->getNodeKey($expr);
+		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
 			return false;
 		}
 
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
 		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
-			return $exprStringToInvalidate === $this->getNodeKey($expr);
+			return $exprStringToInvalidate === $exprString;
 		}
 
 		$nodeFinder = new NodeFinder();

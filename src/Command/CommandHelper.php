@@ -99,10 +99,10 @@ final class CommandHelper
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
-		$errorOutput = (static function () use ($input, $output): Output {
+		$errorOutput = (static function ($input, $output): Output {
 			$symfonyErrorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 			return new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
-		})();
+		})($input, $output);
 
 		if (!$allowXdebug) {
 			$xdebug = new XdebugHandler('phpstan');

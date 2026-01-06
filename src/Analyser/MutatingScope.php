@@ -675,7 +675,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function getVariableType(string $variableName): Type
 	{
-		if ($this->hasVariableType($variableName)->maybe()) {
+		$hasVariableType = $this->hasVariableType($variableName);
+
+		if ($hasVariableType->maybe()) {
 			if ($variableName === 'argc') {
 				return IntegerRangeType::fromInterval(1, null);
 			}
@@ -691,7 +693,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		if ($this->hasVariableType($variableName)->no()) {
+		if ($hasVariableType->no()) {
 			throw new UndefinedVariableException($this, $variableName);
 		}
 

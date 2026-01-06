@@ -1633,27 +1633,30 @@ class NodeScopeResolver
 			}
 
 			$originalStorage = $storage;
-			$storage = $originalStorage->duplicate();
 
 			$bodyScope = $initScope;
 			$isIterableAtLeastOnce = TrinaryLogic::createYes();
 			$lastCondExpr = array_last($stmt->cond) ?? null;
-			foreach ($stmt->cond as $condExpr) {
-				$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-				$initScope = $condResult->getScope();
-				$condResultScope = $condResult->getScope();
+			if (count($stmt->cond) > 0) {
+				$storage = $originalStorage->duplicate();
 
-				// only the last condition expression is relevant whether the loop continues
-				// see https://www.php.net/manual/en/control-structures.for.php
-				if ($condExpr === $lastCondExpr) {
-					$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
-					$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
+				foreach ($stmt->cond as $condExpr) {
+					$condResult = $this->processExprNode($stmt, $condExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
+					$initScope = $condResult->getScope();
+					$condResultScope = $condResult->getScope();
+
+					// only the last condition expression is relevant whether the loop continues
+					// see https://www.php.net/manual/en/control-structures.for.php
+					if ($condExpr === $lastCondExpr) {
+						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
+						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
+					}
+
+					$hasYield = $hasYield || $condResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
+					$bodyScope = $condResult->getTruthyScope();
 				}
-
-				$hasYield = $hasYield || $condResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
-				$bodyScope = $condResult->getTruthyScope();
 			}
 
 			if ($context->isTopLevel()) {

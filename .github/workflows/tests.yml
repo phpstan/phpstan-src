@@ -245,13 +245,13 @@ jobs:
 
       - name: "Downgrade PHPUnit"
         shell: bash
-        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 --update-with-dependencies --ignore-platform-reqs"
+        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
       - uses: "ramsey/composer-install@v3"
 
       - name: "Downgrade PHPUnit with Paratest"
         shell: bash
-        run: "composer require --dev phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
+        run: "composer require --dev phpunit/phpunit:^9.6 brianium/paratest:^6.5 symfony/console:^5.4 symfony/process:^5.4 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs --working-dir=tests"
 
       - uses: ./.github/actions/downgrade-code
         with:

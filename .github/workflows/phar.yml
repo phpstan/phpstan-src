@@ -42,7 +42,7 @@ jobs:
 
       # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
       - name: "Downgrade PHPUnit"
-        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 --update-with-dependencies --ignore-platform-reqs"
+        run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install compiler dependencies"
         uses: "ramsey/composer-install@v3"

@@ -29,6 +29,12 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\Traverser\CloneTypeTraverser;
+use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
+use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
+use PHPStan\Analyser\Traverser\InstanceOfClassTypeTraverser;
+use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
+use PHPStan\Analyser\Traverser\VoidToNullTraverser;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -107,7 +113,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
@@ -1255,17 +1260,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		if ($node instanceof Expr\Clone_) {
 			$cloneType = TypeCombinator::intersect($this->getType($node->expr), new ObjectWithoutClassType());
-
-			return TypeTraverser::map($cloneType, static function (Type $type, callable $traverse): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof ThisType) {
-					return new StaticType($type->getClassReflection(), $type->getSubtractedType());
-				}
-
-				return $type;
-			});
+			return TypeTraverser::map($cloneType, new CloneTypeTraverser());
 		}
 
 		if ($node instanceof Node\Scalar\Int_) {
@@ -1618,17 +1613,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $type;
 		}
 
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			if ($type->isVoid()->yes()) {
-				return new NullType();
-			}
-
-			return $type;
-		});
+		return TypeTraverser::map($type, new VoidToNullTraverser());
 	}
 
 	/**
@@ -2298,21 +2283,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function transformStaticType(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
-			if (!$this->isInClass()) {
-				return $type;
-			}
-			if ($type instanceof StaticType) {
-				$classReflection = $this->getClassReflection();
-				$changedType = $type->changeBaseClass($classReflection);
-				if ($classReflection->isFinal() && !$type instanceof ThisType) {
-					$changedType = $changedType->getStaticObjectType();
-				}
-				return $traverse($changedType);
-			}
-
-			return $traverse($type);
-		});
+		return TypeTraverser::map($type, new TransformStaticTypeTraverser($this));
 	}
 
 	/**
@@ -5074,19 +5045,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$constructorVariant = $constructorVariants[0];
 				$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
 				$originalClassTemplateTypes = $classTemplateTypes;
-				foreach ($constructorVariant->getParameters() as $parameter) {
-					TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$classTemplateTypes): Type {
-						if ($type instanceof TemplateType && array_key_exists($type->getName(), $classTemplateTypes)) {
-							$classTemplateType = $classTemplateTypes[$type->getName()];
-							if ($classTemplateType instanceof TemplateType && $classTemplateType->getScope()->equals($type->getScope())) {
-								unset($classTemplateTypes[$type->getName()]);
-							}
-							return $type;
-						}
 
-						return $traverse($type);
-					});
+				$traverser = new ConstructorClassTemplateTraverser($classTemplateTypes);
+				foreach ($constructorVariant->getParameters() as $parameter) {
+					TypeTraverser::map($parameter->getType(), $traverser);
 				}
+				$classTemplateTypes = $traverser->getClassTemplateTypes();
 
 				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
 					$propertyType = TypeCombinator::removeNull($this->getType($assignedToProperty));
@@ -5255,18 +5219,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				[],
 			);
 		}
-		return TypeTraverser::map($newGenericType, static function (Type $type, callable $traverse) use ($resolvedTemplateTypeMap): Type {
-			if ($type instanceof TemplateType && !$type->isArgument()) {
-				$newType = $resolvedTemplateTypeMap->getType($type->getName());
-				if ($newType === null || $newType instanceof ErrorType) {
-					return $type->getDefault() ?? $type->getBound();
-				}
-
-				return TemplateTypeHelper::generalizeInferredTemplateType($type, $newType);
-			}
-
-			return $traverse($type);
-		});
+		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
 	}
 
 	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
@@ -5588,23 +5541,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		} else {
 			$classType = $this->getType($node->class);
-			$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type->getObjectClassNames() !== []) {
-					$uncertainty = true;
-					return $type;
-				}
-				if ($type instanceof GenericClassStringType) {
-					$uncertainty = true;
-					return $type->getGenericType();
-				}
-				if ($type instanceof ConstantStringType) {
-					return new ObjectType($type->getValue());
-				}
-				return new MixedType();
-			});
+			$traverser = new InstanceOfClassTypeTraverser();
+			$classType = TypeTraverser::map($classType, $traverser);
+			$uncertainty = $traverser->getUncertainty();
 		}
 
 		if ($classType->isSuperTypeOf(new MixedType())->yes()) {

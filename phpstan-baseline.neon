@@ -73,6 +73,36 @@ parameters:
 			path: src/Analyser/RuleErrorTransformer.php
 
 		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/Traverser/CloneTypeTraverser.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/Traverser/VoidToNullTraverser.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2

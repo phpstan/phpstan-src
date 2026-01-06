@@ -946,13 +946,13 @@ class NodeScopeResolver
 			$currentScope = $scope;
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $currentScope, &$hasAssign): void {
 				$nodeCallback($node, $scope);
+				if (!$node instanceof VariableAssignNode && !$node instanceof PropertyAssignNode) {
+					return;
+				}
 				if ($scope->getAnonymousFunctionReflection() !== $currentScope->getAnonymousFunctionReflection()) {
 					return;
 				}
 				if ($scope->getFunction() !== $currentScope->getFunction()) {
-					return;
-				}
-				if (!$node instanceof VariableAssignNode && !$node instanceof PropertyAssignNode) {
 					return;
 				}
 
@@ -1272,8 +1272,9 @@ class NodeScopeResolver
 			}
 
 			$originalStorage = $storage;
-			$storage = $originalStorage->duplicate();
 			if ($context->isTopLevel()) {
+				$storage = $originalStorage->duplicate();
+
 				$originalScope = $this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope;
 				$bodyScope = $this->enterForeach($originalScope, $storage, $originalScope, $stmt, $nodeCallback);
 				$count = 0;
@@ -1337,9 +1338,9 @@ class NodeScopeResolver
 				&& count($scopesWithIterableValueType) > 0
 				&& !$continueExitPointHasUnoriginalKeyType
 				&& $stmt->keyVar !== null
+				&& (!$hasExpr->no() || !$stmt->expr instanceof Variable)
 				&& $exprType->isArray()->yes()
 				&& $exprType->isConstantArray()->no()
-				&& (!$hasExpr->no() || !$stmt->expr instanceof Variable)
 			) {
 				$arrayExprDimFetch = new ArrayDimFetch($stmt->expr, $stmt->keyVar);
 				$arrayDimFetchLoopTypes = [];
@@ -1398,7 +1399,7 @@ class NodeScopeResolver
 			}
 
 			$isIterableAtLeastOnce = $exprType->isIterableAtLeastOnce();
-			if ($exprType->isIterable()->no() || $isIterableAtLeastOnce->maybe()) {
+			if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
 				$finalScope = $finalScope->mergeWith($scope->filterByTruthyValue(new BooleanOr(
 					new BinaryOp\Identical(
 						$stmt->expr,

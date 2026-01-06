@@ -945,7 +945,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			!$node instanceof Variable
 			&& !$node instanceof Expr\Closure
 			&& !$node instanceof Expr\ArrowFunction
-			&& $this->hasExpressionType($node)->yes()
+			&& $this->hasExpressionTypeByString($exprString, $node)->yes()
 		) {
 			return $this->expressionTypes[$exprString]->getType();
 		}
@@ -2074,10 +2074,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					continue;
 				}
 				$constFetch = new ConstFetch($name);
-				if ($this->hasExpressionType($constFetch)->yes()) {
+				$constExprString = $this->getNodeKey($constFetch);
+				if ($this->hasExpressionTypeByString($constExprString, $constFetch)->yes()) {
 					return $this->constantResolver->resolveConstantType(
 						$name->toString(),
-						$this->expressionTypes[$this->getNodeKey($constFetch)]->getType(),
+						$this->expressionTypes[$constExprString]->getType(),
 					);
 				}
 			}
@@ -2089,7 +2090,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			return new ErrorType();
 		} elseif ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
-			if ($this->hasExpressionType($node)->yes()) {
+			if ($this->hasExpressionTypeByString($exprString, $node)->yes()) {
 				return $this->expressionTypes[$exprString]->getType();
 			}
 			return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
@@ -2920,11 +2921,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
+		return $this->hasExpressionTypeByString(
+			$this->getNodeKey($node),
+			$node
+		);
+	}
+
+	private function hasExpressionTypeByString(string $exprString, Expr $node): TrinaryLogic
+	{
 		if ($node instanceof Variable && is_string($node->name)) {
 			return $this->hasVariableType($node->name);
 		}
 
-		$exprString = $this->getNodeKey($node);
 		if (!isset($this->expressionTypes[$exprString])) {
 			return TrinaryLogic::createNo();
 		}

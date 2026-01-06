@@ -1678,6 +1678,12 @@ parameters:
 			path: src/Type/StringType.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Traverser/LateResolvableTraverser.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 5

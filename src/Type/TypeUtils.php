@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Traverser\LateResolvableTraverser;
 use function array_merge;
 
 /**
@@ -237,24 +238,7 @@ final class TypeUtils
 			return $type;
 		}
 
-		/** @var int $ignoreResolveUnresolvableTypesLevel */
-		$ignoreResolveUnresolvableTypesLevel = 0;
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolveUnresolvableTypes, &$ignoreResolveUnresolvableTypesLevel): Type {
-			while ($type instanceof LateResolvableType && (($resolveUnresolvableTypes && $ignoreResolveUnresolvableTypesLevel === 0) || $type->isResolvable())) {
-				$type = $type->resolve();
-			}
-
-			if ($type instanceof CallableType || $type instanceof ClosureType) {
-				$ignoreResolveUnresolvableTypesLevel++;
-				$result = $traverse($type);
-				$ignoreResolveUnresolvableTypesLevel--;
-
-				return $result;
-			}
-
-			return $traverse($type);
-		});
+		return TypeTraverser::map($type, new LateResolvableTraverser($resolveUnresolvableTypes));
 	}
 
 }

@@ -2921,16 +2921,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
+		if ($node instanceof Variable && is_string($node->name)) {
+			return $this->hasVariableType($node->name);
+		}
+
 		return $this->hasExpressionTypeByString(
 			$this->getNodeKey($node),
-			$node
+			$node,
 		);
 	}
 
 	private function hasExpressionTypeByString(string $exprString, Expr $node): TrinaryLogic
 	{
-		if ($node instanceof Variable && is_string($node->name)) {
-			return $this->hasVariableType($node->name);
+		if ($node instanceof Variable) {
+			throw new ShouldNotHappenException();
 		}
 
 		if (!isset($this->expressionTypes[$exprString])) {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "11bd8902e7391bdbef10d19d21891bd2",
+    "content-hash": "10fb50893d3be0d947db32cd98f6fed1",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1471,7 +1471,7 @@
                 "stubs",
                 "type"
             ],
-            "time": "2025-11-03T00:11:12+00:00"
+            "time": "2025-10-14T11:30:05+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -2182,16 +2182,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.65.0.0",
+            "version": "6.65.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "17299dbfe99d1815acad81ab7d63529a3d85274a"
+                "reference": "6c768697b23c86d136a79dc7559076758cab27bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/17299dbfe99d1815acad81ab7d63529a3d85274a",
-                "reference": "17299dbfe99d1815acad81ab7d63529a3d85274a",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/6c768697b23c86d136a79dc7559076758cab27bd",
+                "reference": "6c768697b23c86d136a79dc7559076758cab27bd",
                 "shasum": ""
             },
             "require": {
@@ -2248,9 +2248,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.65.0.0"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.65.0.5"
             },
-            "time": "2025-10-06T08:47:15+00:00"
+            "time": "2026-01-07T17:10:26+00:00"
         },
         {
             "name": "ondrejmirtes/composer-attribute-collector",

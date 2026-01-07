@@ -47,6 +47,7 @@ final class FileTypeMapper
 
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
+	private const DONT_TRAVERSE_CHILDREN = 3;
 
 	/** @var NameScope[][] */
 	private array $memoryCache = [];
@@ -319,6 +320,10 @@ final class FileTypeMapper
 						$phpDocNodeMap[$nameScopeKey] = $this->phpDocStringResolver->resolve($docComment);
 					}
 
+					if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+						return self::DONT_TRAVERSE_CHILDREN;
+					}
+
 					return null;
 				} elseif ($node instanceof Node\PropertyHook) {
 					$propertyName = $node->getAttribute('propertyName');
@@ -330,7 +335,7 @@ final class FileTypeMapper
 						}
 					}
 
-					return null;
+					return self::DONT_TRAVERSE_CHILDREN;
 				}
 
 				if ($node instanceof Node\Stmt\Namespace_) {
@@ -821,9 +826,11 @@ final class FileTypeMapper
 			if ($callbackResult === self::SKIP_NODE) {
 				return;
 			}
-			foreach ($node->getSubNodeNames() as $subNodeName) {
-				$subNode = $node->{$subNodeName};
-				$this->processNodes($subNode, $nodeCallback, $endNodeCallback);
+			if ($callbackResult !== self::DONT_TRAVERSE_CHILDREN) {
+				foreach ($node->getSubNodeNames() as $subNodeName) {
+					$subNode = $node->{$subNodeName};
+					$this->processNodes($subNode, $nodeCallback, $endNodeCallback);
+				}
 			}
 			$endNodeCallback($node, $callbackResult);
 		} elseif (is_array($node)) {

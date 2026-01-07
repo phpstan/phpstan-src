@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use SingleFileSourceLocatorTestClass;
 use TestSingleFileSourceLocator\AFoo;
 use function array_map;
+use function array_merge;
 use const PHP_VERSION_ID;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
@@ -256,6 +257,16 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 		$actualIdentifiers = array_map(static fn (Reflection $reflection) => $reflection->getName(), $reflections);
 		$this->assertEqualsCanonicalizing($expectedIdentifiers, $actualIdentifiers);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/disableCache.neon',
+			],
+		);
 	}
 
 }

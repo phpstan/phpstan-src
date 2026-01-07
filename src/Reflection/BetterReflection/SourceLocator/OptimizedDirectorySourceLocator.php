@@ -7,14 +7,22 @@ use PhpParser\Node;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflection\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\BetterReflection\Reflection\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Cache\Cache;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_values;
 use function current;
+use function hash_file;
+use function sprintf;
 use function strtolower;
 
 final class OptimizedDirectorySourceLocator implements SourceLocator
@@ -27,6 +35,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
+		private Cache $cache,
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
@@ -34,73 +43,140 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	{
 	}
 
+	/**
+	 * @return array{non-empty-string, string}
+	 */
+	private function getCacheKeys(string $file, Identifier $identifier): array
+	{
+		$fileHash = hash_file('sha256', $file);
+		if ($fileHash === false) {
+			throw new CouldNotReadFileException($file);
+		}
+
+		$reflectionCacheKey = sprintf('odsl-%s-%s-%s', $file, $identifier->getType()->getName(), $identifier->getName());
+		$variableCacheKey = sprintf('v1-%s', $fileHash);
+
+		return [$reflectionCacheKey, $variableCacheKey];
+	}
+
 	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if ($identifier->isClass()) {
-			$className = strtolower($identifier->getName());
-			$file = $this->findFileByClass($className);
+			$identifierName = strtolower($identifier->getName());
+			$file = $this->findFileByClass($identifierName);
+			if ($file === null) {
+				return null;
+			}
+			$files = [$file];
+		} elseif ($identifier->isFunction()) {
+			$identifierName = strtolower($identifier->getName());
+			$files = $this->findFilesByFunction($identifierName);
+		} elseif ($identifier->isConstant()) {
+			$identifierName = ConstantNameHelper::normalize($identifier->getName());
+			$file = $this->findFileByConstant($identifierName);
+
 			if ($file === null) {
 				return null;
 			}
 
-			$fetchedClassNodes = $this->fileNodesFetcher->fetchNodes($file)->getClassNodes();
+			$files = [$file];
+		} else {
+			return null;
+		}
 
-			if (!array_key_exists($className, $fetchedClassNodes)) {
+		foreach ($files as $file) {
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
+			$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
+			if ($cachedReflection === null) {
+				continue;
+			}
+
+			if ($identifier->isConstant()) {
+				return ReflectionConstant::importFromCache($reflector, $cachedReflection);
+			}
+			if ($identifier->isFunction()) {
+				return ReflectionFunction::importFromCache($reflector, $cachedReflection);
+			}
+			if ($identifier->isClass()) {
+				if (array_key_exists('backingType', $cachedReflection)) {
+					return ReflectionEnum::importFromCache($reflector, $cachedReflection);
+				}
+
+				return ReflectionClass::importFromCache($reflector, $cachedReflection);
+			}
+		}
+
+		if ($identifier->isClass()) {
+			$fetchedClassNode = null;
+			foreach ($files as $file) {
+				$fetchedClassNodes = $this->fileNodesFetcher->fetchNodes($file)->getClassNodes();
+
+				if (!array_key_exists($identifierName, $fetchedClassNodes)) {
+					return null;
+				}
+
+				/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
+				$fetchedClassNode = current($fetchedClassNodes[$identifierName]);
+			}
+
+			if ($fetchedClassNode === null) {
 				return null;
 			}
 
-			/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
-			$fetchedClassNode = current($fetchedClassNodes[$className]);
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
+			$classReflection = $this->nodeToReflection($reflector, $fetchedClassNode);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
 
-			return $this->nodeToReflection($reflector, $fetchedClassNode);
-		}
-
-		if ($identifier->isFunction()) {
-			$functionName = strtolower($identifier->getName());
-			$files = $this->findFilesByFunction($functionName);
-
+			return $classReflection;
+		} elseif ($identifier->isFunction()) {
 			$fetchedFunctionNode = null;
 			foreach ($files as $file) {
 				$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
 
-				if (!array_key_exists($functionName, $fetchedFunctionNodes)) {
+				if (!array_key_exists($identifierName, $fetchedFunctionNodes)) {
 					continue;
 				}
 
 				/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
-				$fetchedFunctionNode = current($fetchedFunctionNodes[$functionName]);
+				$fetchedFunctionNode = current($fetchedFunctionNodes[$identifierName]);
 			}
 
 			if ($fetchedFunctionNode === null) {
 				return null;
 			}
 
-			return $this->nodeToReflection($reflector, $fetchedFunctionNode);
-		}
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
+			$functionReflection = $this->nodeToReflection($reflector, $fetchedFunctionNode);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
 
-		if ($identifier->isConstant()) {
-			$constantName = ConstantNameHelper::normalize($identifier->getName());
-			$file = $this->findFileByConstant($constantName);
+			return $functionReflection;
+		} elseif ($identifier->isConstant()) {
+			$fetchedConstantNode = null;
+			foreach ($files as $file) {
+				$fetchedConstantNodes = $this->fileNodesFetcher->fetchNodes($file)->getConstantNodes();
 
-			if ($file === null) {
+				if (!array_key_exists($identifierName, $fetchedConstantNodes)) {
+					return null;
+				}
+
+				/** @var FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedConstantNode */
+				$fetchedConstantNode = current($fetchedConstantNodes[$identifierName]);
+			}
+
+			if ($fetchedConstantNode === null) {
 				return null;
 			}
 
-			$fetchedConstantNodes = $this->fileNodesFetcher->fetchNodes($file)->getConstantNodes();
-
-			if (!array_key_exists($constantName, $fetchedConstantNodes)) {
-				return null;
-			}
-
-			/** @var FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedConstantNode */
-			$fetchedConstantNode = current($fetchedConstantNodes[$constantName]);
-
-			return $this->nodeToReflection(
+			[$reflectionCacheKey, $variableCacheKey] = $this->getCacheKeys($file, $identifier); // @phpstan-ignore variable.undefined
+			$constantReflection = $this->nodeToReflection(
 				$reflector,
 				$fetchedConstantNode,
-				$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $constantName),
+				$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $identifierName),
 			);
+			$this->cache->save($reflectionCacheKey, $variableCacheKey, $constantReflection->exportToCache());
+
+			return $constantReflection;
 		}
 
 		return null;
@@ -109,7 +185,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	/**
 	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_>|FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedNode
 	 */
-	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode, ?int $positionInNode = null): Reflection
+	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode, ?int $positionInNode = null): ReflectionClass|ReflectionConstant|ReflectionFunction
 	{
 		$nodeToReflection = new NodeToReflection();
 		return $nodeToReflection->__invoke(

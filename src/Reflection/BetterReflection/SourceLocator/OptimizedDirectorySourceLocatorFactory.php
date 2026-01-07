@@ -89,6 +89,7 @@ final class OptimizedDirectorySourceLocatorFactory
 
 		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
+			$this->cache,
 			$classToFile,
 			$functionToFiles,
 			$constantToFile,

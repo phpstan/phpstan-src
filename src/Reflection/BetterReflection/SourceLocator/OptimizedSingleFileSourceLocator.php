@@ -9,15 +9,20 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\GenerateFactory;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_keys;
+use function hash_file;
+use function sprintf;
 use function strtolower;
 
 #[GenerateFactory(interface: OptimizedSingleFileSourceLocatorFactory::class)]
@@ -29,14 +34,29 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
+		private Cache $cache,
 		private string $fileName,
 	)
 	{
 	}
 
+	private function getVariableCacheKey(string $file): string
+	{
+		$fileHash = hash_file('sha256', $file);
+		if ($fileHash === false) {
+			throw new CouldNotReadFileException($file);
+		}
+		return sprintf('v1-%s', $fileHash);
+	}
+
 	#[Override]
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
+		$presentSymbolsCacheKey = sprintf('osfsl-%s-presentSymbols', $this->fileName);
+		if ($this->presentSymbols === null) {
+			$variableCacheKey = $this->getVariableCacheKey($this->fileName);
+			$this->presentSymbols = $this->cache->load($presentSymbolsCacheKey, $variableCacheKey);
+		}
 		if ($this->presentSymbols !== null) {
 			if ($identifier->isClass()) {
 				$className = strtolower($identifier->getName());
@@ -57,6 +77,26 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 				}
 			}
 		}
+
+		$reflectionCacheKey = sprintf('osfsl-%s-%s-%s', $this->fileName, $identifier->getType()->getName(), $identifier->getName());
+		$variableCacheKey = $this->getVariableCacheKey($this->fileName);
+		$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
+		if ($cachedReflection !== null) {
+			if ($identifier->isConstant()) {
+				return ReflectionConstant::importFromCache($reflector, $cachedReflection);
+			}
+			if ($identifier->isFunction()) {
+				return ReflectionFunction::importFromCache($reflector, $cachedReflection);
+			}
+			if ($identifier->isClass()) {
+				if (array_key_exists('backingType', $cachedReflection)) {
+					return ReflectionEnum::importFromCache($reflector, $cachedReflection);
+				}
+
+				return ReflectionClass::importFromCache($reflector, $cachedReflection);
+			}
+		}
+
 		$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($this->fileName);
 		if ($this->presentSymbols === null) {
 			$presentSymbols = [
@@ -75,7 +115,9 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 			}
 
 			$this->presentSymbols = $presentSymbols;
+			$this->cache->save($presentSymbolsCacheKey, $variableCacheKey, $presentSymbols);
 		}
+
 		$nodeToReflection = new NodeToReflection();
 		if ($identifier->isClass()) {
 			$classNodes = $fetchedNodesResult->getClassNodes();
@@ -94,6 +136,8 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 				if (!$classReflection instanceof ReflectionClass) {
 					throw new ShouldNotHappenException();
 				}
+
+				$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
 
 				return $classReflection;
 			}
@@ -116,6 +160,8 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 				if (!$functionReflection instanceof ReflectionFunction) {
 					throw new ShouldNotHappenException();
 				}
+
+				$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
 
 				return $functionReflection;
 			}
@@ -161,6 +207,8 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 				if (!$constantReflection instanceof ReflectionConstant) {
 					throw new ShouldNotHappenException();
 				}
+
+				$this->cache->save($reflectionCacheKey, $variableCacheKey, $constantReflection->exportToCache());
 
 				return $constantReflection;
 			}

@@ -10,6 +10,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
+use function array_merge;
 use function class_alias;
 
 function testFunctionForLocator(): void // phpcs:disable
@@ -76,6 +77,16 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$reflector = new DefaultReflector($locator);
 		$class = $reflector->reflectClass('A_Foo');
 		$this->assertSame(AFoo::class, $class->getName());
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return array_merge(
+			parent::getAdditionalConfigFiles(),
+			[
+				__DIR__ . '/disableCache.neon',
+			],
+		);
 	}
 
 }

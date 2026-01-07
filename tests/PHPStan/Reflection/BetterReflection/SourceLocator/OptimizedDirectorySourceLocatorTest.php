@@ -323,7 +323,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		return array_merge(
 			parent::getAdditionalConfigFiles(),
 			[
-				__DIR__ . '/OptimizedDirectorySourceLocatorTest.neon',
+				__DIR__ . '/disableCache.neon',
 			],
 		);
 	}

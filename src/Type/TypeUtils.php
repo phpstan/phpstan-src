@@ -233,6 +233,10 @@ final class TypeUtils
 
 	public static function resolveLateResolvableTypes(Type $type, bool $resolveUnresolvableTypes = true): Type
 	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
 		/** @var int $ignoreResolveUnresolvableTypesLevel */
 		$ignoreResolveUnresolvableTypesLevel = 0;
 

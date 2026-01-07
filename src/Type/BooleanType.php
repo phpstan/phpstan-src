@@ -193,4 +193,9 @@ class BooleanType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

@@ -380,4 +380,9 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('lowercase-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

@@ -526,4 +526,9 @@ class IterableType implements CompoundType
 		);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
+	}
+
 }

@@ -409,4 +409,9 @@ class NullType implements ConstantScalarType
 		return new IdentifierTypeNode('null');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

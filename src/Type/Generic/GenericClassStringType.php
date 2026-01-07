@@ -222,4 +222,9 @@ class GenericClassStringType extends ClassStringType
 		return parent::tryRemove($typeToRemove);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return $this->type->hasTemplateOrLateResolvableType();
+	}
+
 }

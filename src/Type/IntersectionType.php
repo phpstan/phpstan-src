@@ -1541,4 +1541,17 @@ class IntersectionType implements CompoundType
 		return new IntersectionTypeNode($describedTypes);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->types as $type) {
+			if (!$type->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 }

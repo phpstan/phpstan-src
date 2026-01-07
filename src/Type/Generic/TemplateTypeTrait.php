@@ -369,4 +369,9 @@ trait TemplateTypeTrait
 		return new IdentifierTypeNode($this->name);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return true;
+	}
+
 }

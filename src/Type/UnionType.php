@@ -1279,4 +1279,17 @@ class UnionType implements CompoundType
 		return $values;
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->types as $type) {
+			if (!$type->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 }

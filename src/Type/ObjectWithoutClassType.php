@@ -208,4 +208,9 @@ class ObjectWithoutClassType implements SubtractableType
 		return new IdentifierTypeNode('object');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

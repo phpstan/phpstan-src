@@ -33,6 +33,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
@@ -1836,6 +1837,27 @@ class ConstantArrayType implements Type
 		}
 
 		return $finiteTypes;
+	}
+
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->valueTypes as $valueType) {
+			if (!$valueType->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		foreach ($this->keyTypes as $keyType) {
+			if (!$keyType instanceof TemplateType) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

@@ -659,7 +659,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					$defaultValue !== null ? $cb($defaultValue) : null,
 					$param instanceof ExtendedParameterReflection && $param->getOutType() !== null ? $cb($param->getOutType()) : null,
 					$param instanceof ExtendedParameterReflection ? $param->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
-					$param instanceof ExtendedParameterReflection ? $param->getClosureThisType() : null,
+					$param instanceof ExtendedParameterReflection && $param->getClosureThisType() !== null ? $cb($param->getClosureThisType()) : null,
 					$param instanceof ExtendedParameterReflection ? $param->getAttributes() : [],
 				);
 			}, $this->parameters),
@@ -892,6 +892,28 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->returnType->toPhpDocNode(),
 			$templateTags,
 		);
+	}
+
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->parameters as $parameter) {
+			if ($parameter->getType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+
+			if (!$parameter instanceof ExtendedParameterReflection) {
+				continue;
+			}
+
+			if ($parameter->getOutType() !== null && $parameter->getOutType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()) {
+				return true;
+			}
+		}
+
+		return $this->getReturnType()->hasTemplateOrLateResolvableType();
 	}
 
 }

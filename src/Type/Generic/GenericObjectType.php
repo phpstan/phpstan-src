@@ -414,4 +414,21 @@ class GenericObjectType extends ObjectType
 		);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->types as $type) {
+			if (!$type->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		if ($this->getSubtractedType() === null) {
+			return false;
+		}
+
+		return $this->getSubtractedType()->hasTemplateOrLateResolvableType();
+	}
+
 }

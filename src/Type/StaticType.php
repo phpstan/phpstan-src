@@ -816,4 +816,9 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new IdentifierTypeNode('static');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return $this->getStaticObjectType()->hasTemplateOrLateResolvableType();
+	}
+
 }

@@ -489,4 +489,9 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('non-empty-array');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

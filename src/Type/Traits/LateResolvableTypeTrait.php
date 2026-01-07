@@ -629,4 +629,9 @@ trait LateResolvableTypeTrait
 
 	abstract protected function getResult(): Type;
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return true;
+	}
+
 }

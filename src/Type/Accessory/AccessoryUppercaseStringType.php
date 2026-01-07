@@ -380,4 +380,9 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('uppercase-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

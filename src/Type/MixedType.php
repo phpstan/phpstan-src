@@ -1097,4 +1097,9 @@ class MixedType implements CompoundType, SubtractableType
 		return new IdentifierTypeNode('mixed');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

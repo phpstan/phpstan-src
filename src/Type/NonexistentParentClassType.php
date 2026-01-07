@@ -227,4 +227,9 @@ class NonexistentParentClassType implements Type
 		return new IdentifierTypeNode('parent');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

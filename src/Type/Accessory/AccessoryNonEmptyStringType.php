@@ -387,4 +387,9 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('non-empty-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

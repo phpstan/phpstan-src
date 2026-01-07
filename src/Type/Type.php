@@ -376,4 +376,6 @@ interface Type
 
 	public function generalize(GeneralizePrecision $precision): Type;
 
+	public function hasTemplateOrLateResolvableType(): bool;
+
 }

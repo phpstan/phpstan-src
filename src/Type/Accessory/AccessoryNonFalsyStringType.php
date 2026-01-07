@@ -375,4 +375,9 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('non-falsy-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

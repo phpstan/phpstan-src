@@ -199,4 +199,9 @@ class IntegerType implements Type
 		return new IdentifierTypeNode('int');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

@@ -270,4 +270,21 @@ class GenericStaticType extends StaticType
 		);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->types as $type) {
+			if (!$type->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		if ($this->subtractedType === null) {
+			return false;
+		}
+
+		return $this->subtractedType->hasTemplateOrLateResolvableType();
+	}
+
 }

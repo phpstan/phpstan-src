@@ -392,4 +392,9 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('numeric-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

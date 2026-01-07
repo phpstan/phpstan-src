@@ -269,4 +269,9 @@ class VoidType implements Type
 		return new IdentifierTypeNode('void');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

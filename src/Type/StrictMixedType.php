@@ -470,4 +470,9 @@ class StrictMixedType implements CompoundType
 		return new IdentifierTypeNode('mixed');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

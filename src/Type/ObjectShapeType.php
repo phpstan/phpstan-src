@@ -555,4 +555,17 @@ class ObjectShapeType implements Type
 		return new ObjectShapeNode($items);
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		foreach ($this->properties as $property) {
+			if (!$property->hasTemplateOrLateResolvableType()) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
 }

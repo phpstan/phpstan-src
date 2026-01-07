@@ -573,4 +573,9 @@ class NeverType implements CompoundType
 		return new IdentifierTypeNode('never');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

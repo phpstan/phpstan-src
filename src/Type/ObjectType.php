@@ -1866,4 +1866,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new IdentifierTypeNode($this->getClassName());
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		if ($this->subtractedType === null) {
+			return false;
+		}
+
+		return $this->subtractedType->hasTemplateOrLateResolvableType();
+	}
+
 }

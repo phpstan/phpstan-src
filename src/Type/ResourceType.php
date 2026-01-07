@@ -125,4 +125,9 @@ class ResourceType implements Type
 		return new IdentifierTypeNode('resource');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

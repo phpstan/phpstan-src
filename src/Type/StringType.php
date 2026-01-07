@@ -322,4 +322,9 @@ class StringType implements Type
 		return new IdentifierTypeNode('string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

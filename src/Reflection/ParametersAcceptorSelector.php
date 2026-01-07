@@ -31,12 +31,10 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -44,7 +42,6 @@ use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_is_list;
 use function array_key_exists;
@@ -563,7 +560,7 @@ final class ParametersAcceptorSelector
 
 	private static function hasAcceptorTemplateOrLateResolvableType(ParametersAcceptor $acceptor): bool
 	{
-		if (self::hasTemplateOrLateResolvableType($acceptor->getReturnType())) {
+		if ($acceptor->getReturnType()->hasTemplateOrLateResolvableType()) {
 			return true;
 		}
 
@@ -571,7 +568,7 @@ final class ParametersAcceptorSelector
 			if (
 				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getOutType() !== null
-				&& self::hasTemplateOrLateResolvableType($parameter->getOutType())
+				&& $parameter->getOutType()->hasTemplateOrLateResolvableType()
 			) {
 				return true;
 			}
@@ -579,12 +576,12 @@ final class ParametersAcceptorSelector
 			if (
 				$parameter instanceof ExtendedParameterReflection
 				&& $parameter->getClosureThisType() !== null
-				&& self::hasTemplateOrLateResolvableType($parameter->getClosureThisType())
+				&& $parameter->getClosureThisType()->hasTemplateOrLateResolvableType()
 			) {
 				return true;
 			}
 
-			if (!self::hasTemplateOrLateResolvableType($parameter->getType())) {
+			if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
 				continue;
 			}
 
@@ -592,20 +589,6 @@ final class ParametersAcceptorSelector
 		}
 
 		return false;
-	}
-
-	private static function hasTemplateOrLateResolvableType(Type $type): bool
-	{
-		$has = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$has): Type {
-			if ($type instanceof TemplateType || $type instanceof LateResolvableType) {
-				$has = true;
-			}
-
-			return $has ? $type : $traverse($type);
-		});
-
-		return $has;
 	}
 
 	/**

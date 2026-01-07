@@ -375,4 +375,9 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('literal-string');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

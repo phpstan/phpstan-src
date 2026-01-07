@@ -191,4 +191,9 @@ class HasMethodType implements AccessoryType, CompoundType
 		return new IdentifierTypeNode(''); // no PHPDoc representation
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

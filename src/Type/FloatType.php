@@ -296,4 +296,9 @@ class FloatType implements Type
 		return [];
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

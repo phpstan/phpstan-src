@@ -504,4 +504,9 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode('list');
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return false;
+	}
+
 }

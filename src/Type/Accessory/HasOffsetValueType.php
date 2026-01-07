@@ -511,4 +511,9 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new IdentifierTypeNode(''); // no PHPDoc representation
 	}
 
+	public function hasTemplateOrLateResolvableType(): bool
+	{
+		return $this->offsetType->hasTemplateOrLateResolvableType() || $this->valueType->hasTemplateOrLateResolvableType();
+	}
+
 }

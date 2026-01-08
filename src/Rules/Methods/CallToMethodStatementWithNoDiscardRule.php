@@ -59,6 +59,9 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 		) {
 			return [];
 		}
+		if (!$methodCall->name instanceof Node\Identifier) {
+			return [];
+		}
 
 		if ($methodCall->isFirstClassCallable()) {
 			return [];
@@ -68,11 +71,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
-		if (!$methodCall->name instanceof Node\Identifier) {
-			return [];
-		}
 		$methodName = $methodCall->name->toString();
-
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $methodCall->var),

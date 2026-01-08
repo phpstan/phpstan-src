@@ -233,9 +233,9 @@ final class TypeSpecifier
 
 			if (
 				$expr->left instanceof FuncCall
-				&& count($expr->left->getArgs()) >= 1
 				&& $expr->left->name instanceof Name
 				&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
+				&& count($expr->left->getArgs()) >= 1
 				&& (
 					!$expr->right instanceof FuncCall
 					|| !$expr->right->name instanceof Name
@@ -261,9 +261,9 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) >= 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
+				&& count($expr->right->getArgs()) >= 1
 				&& $leftType->isInteger()->yes()
 			) {
 				$argType = $scope->getType($expr->right->getArgs()[0]->value);
@@ -330,9 +330,9 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) >= 3
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+				&& count($expr->right->getArgs()) >= 3
 				&& (
 					IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
 					|| ($expr instanceof Expr\BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
@@ -347,9 +347,9 @@ final class TypeSpecifier
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall
-				&& count($expr->right->getArgs()) === 1
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
+				&& count($expr->right->getArgs()) === 1
 				&& $leftType->isInteger()->yes()
 			) {
 				if (
@@ -479,8 +479,9 @@ final class TypeSpecifier
 
 				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
 				$normalizedExpr = $expr;
-				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+				$args = $expr->getArgs();
+				if (count($args) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
 					$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 				}
 
@@ -492,7 +493,7 @@ final class TypeSpecifier
 					return $extension->specifyTypes($functionReflection, $normalizedExpr, $scope, $context);
 				}
 
-				if (count($expr->getArgs()) > 0) {
+				if (count($args) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
@@ -501,7 +502,7 @@ final class TypeSpecifier
 
 				$assertions = $functionReflection->getAsserts();
 				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
 
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
@@ -525,8 +526,9 @@ final class TypeSpecifier
 				$parametersAcceptor = null;
 
 				$normalizedExpr = $expr;
-				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+				$args = $expr->getArgs();
+				if (count($args) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
 					$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 				}
 
@@ -545,7 +547,7 @@ final class TypeSpecifier
 					}
 				}
 
-				if (count($expr->getArgs()) > 0) {
+				if (count($args) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
@@ -554,7 +556,7 @@ final class TypeSpecifier
 
 				$assertions = $methodReflection->getAsserts();
 				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
 
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
@@ -583,8 +585,9 @@ final class TypeSpecifier
 				$parametersAcceptor = null;
 
 				$normalizedExpr = $expr;
-				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+				$args = $expr->getArgs();
+				if (count($args) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
 					$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 				}
 
@@ -603,7 +606,7 @@ final class TypeSpecifier
 					}
 				}
 
-				if (count($expr->getArgs()) > 0) {
+				if (count($args) > 0) {
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
@@ -612,7 +615,7 @@ final class TypeSpecifier
 
 				$assertions = $staticMethodReflection->getAsserts();
 				if ($assertions->getAll() !== []) {
-					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
+					$parametersAcceptor ??= ParametersAcceptorSelector::selectFromArgs($scope, $args, $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
 
 					$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
 						$type,
@@ -705,9 +708,10 @@ final class TypeSpecifier
 					&& count($expr->expr->getArgs()) >= 1
 				) {
 					$numArg = null;
-					$arrayArg = $expr->expr->getArgs()[0]->value;
-					if (count($expr->expr->getArgs()) > 1) {
-						$numArg = $expr->expr->getArgs()[1]->value;
+					$args = $expr->expr->getArgs();
+					$arrayArg = $args[0]->value;
+					if (count($args) > 1) {
+						$numArg = $args[1]->value;
 					}
 					$one = new ConstantIntegerType(1);
 					$arrayType = $scope->getType($arrayArg);
@@ -754,10 +758,10 @@ final class TypeSpecifier
 					$expr->expr instanceof Expr\BinaryOp\Minus
 					&& $expr->expr->left instanceof FuncCall
 					&& $expr->expr->left->name instanceof Name
-					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
-					&& count($expr->expr->left->getArgs()) >= 1
 					&& $expr->expr->right instanceof Node\Scalar\Int_
 					&& $expr->expr->right->value === 1
+					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
+					&& count($expr->expr->left->getArgs()) >= 1
 				) {
 					$arrayArg = $expr->expr->left->getArgs()[0]->value;
 					$arrayType = $scope->getType($arrayArg);

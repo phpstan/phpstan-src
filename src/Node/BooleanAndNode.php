@@ -19,10 +19,7 @@ final class BooleanAndNode extends Expr implements VirtualNode
 		parent::__construct($originalNode->getAttributes());
 	}
 
-	/**
-	 * @return BooleanAnd|LogicalAnd
-	 */
-	public function getOriginalNode()
+	public function getOriginalNode(): BooleanAnd|LogicalAnd
 	{
 		return $this->originalNode;
 	}

@@ -19,10 +19,7 @@ final class BooleanOrNode extends Expr implements VirtualNode
 		parent::__construct($originalNode->getAttributes());
 	}
 
-	/**
-	 * @return BooleanOr|LogicalOr
-	 */
-	public function getOriginalNode()
+	public function getOriginalNode(): BooleanOr|LogicalOr
 	{
 		return $this->originalNode;
 	}

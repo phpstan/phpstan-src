@@ -5249,7 +5249,14 @@ class NodeScopeResolver
 						continue;
 					}
 
-					$newParameters[] = $callableParameters[$i]->union($callableParameter);
+					$newParameters[] = $callableParameters[$i]->union(new NativeParameterReflection(
+						$callableParameter->getName(),
+						$callableParameter->isOptional(),
+						$callableParameter->getType(),
+						$callableParameter->passedByReference(),
+						$callableParameter->isVariadic(),
+						$callableParameter->getDefaultValue(),
+					));
 				}
 
 				$callableParameters = $newParameters;

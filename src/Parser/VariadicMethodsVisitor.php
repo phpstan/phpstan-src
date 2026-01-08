@@ -10,6 +10,7 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use function array_key_exists;
+use function array_last;
 use function array_pop;
 use function in_array;
 use function sprintf;

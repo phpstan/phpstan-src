@@ -10,6 +10,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function array_last;
 use function count;
 use function is_int;
 

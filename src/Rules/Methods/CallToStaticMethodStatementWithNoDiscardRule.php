@@ -60,16 +60,15 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 		if (!$methodCall instanceof Node\Expr\StaticCall) {
 			return [];
 		}
+		if (!$methodCall->name instanceof Node\Identifier) {
+			return [];
+		}
 
 		if ($methodCall->isFirstClassCallable()) {
 			return [];
 		}
 
 		if (!$this->phpVersion->supportsNoDiscardAttribute()) {
-			return [];
-		}
-
-		if (!$methodCall->name instanceof Node\Identifier) {
 			return [];
 		}
 

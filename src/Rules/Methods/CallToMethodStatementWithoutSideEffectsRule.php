@@ -38,17 +38,21 @@ final class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		if ($methodCall instanceof Node\Expr\BinaryOp\Pipe) {
 			$methodCall = $methodCall->right;
 		}
+
 		if ($methodCall instanceof Node\Expr\NullsafeMethodCall) {
+			if (!$methodCall->name instanceof Node\Identifier) {
+				return [];
+			}
 			$scope = $scope->filterByTruthyValue(new Node\Expr\BinaryOp\NotIdentical($methodCall->var, new Node\Expr\ConstFetch(new Node\Name('null'))));
-		} elseif (!$methodCall instanceof Node\Expr\MethodCall) {
+		} elseif ($methodCall instanceof Node\Expr\MethodCall) {
+			if (!$methodCall->name instanceof Node\Identifier) {
+				return [];
+			}
+		} else {
 			return [];
 		}
 
-		if (!$methodCall->name instanceof Node\Identifier) {
-			return [];
-		}
 		$methodName = $methodCall->name->toString();
-
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $methodCall->var),

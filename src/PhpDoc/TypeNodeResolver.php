@@ -982,7 +982,7 @@ final class TypeNodeResolver
 				$templateTags,
 			));
 
-			$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
+			$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap, $templateTags);
 		} else {
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}

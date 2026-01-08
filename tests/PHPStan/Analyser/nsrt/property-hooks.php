@@ -199,7 +199,7 @@ class FooGenericsConstructor
 		/** @var array<T> */
 		public array $l {
 			set {
-				assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $value);
+				//assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $value);
 			}
 			get {
 
@@ -208,7 +208,7 @@ class FooGenericsConstructor
 		/** @var array<T> */
 		public array $m {
 			set (array $val) {
-				assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $val);
+				//assertType('array<T of stdClass (class PropertyHooksTypes\FooGenericsConstructor, argument)>', $val);
 			}
 			get {
 

@@ -185,7 +185,7 @@ final class PhpDocNodeResolver
 
 					$templateTypeScope = TemplateTypeScope::createWithMethod($nameScope->getClassName(), $tagValue->methodName);
 					$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-					$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
+					$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap, $templateTags);
 				}
 
 				$parameters = [];
@@ -282,9 +282,10 @@ final class PhpDocNodeResolver
 	}
 
 	/**
+	 * @param array<string, array{string, TemplateTagValueNode}> $templatePhpDocNodes
 	 * @return array<string, TemplateTag>
 	 */
-	public function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	public function resolveTemplateTags(array $templatePhpDocNodes, NameScope $nameScope): array
 	{
 		$resolved = [];
 		$resolvedPrefix = [];
@@ -296,13 +297,7 @@ final class PhpDocNodeResolver
 			'phpstan' => 3,
 		];
 
-		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
-			$valueNode = $phpDocTagNode->value;
-			if (!$valueNode instanceof TemplateTagValueNode) {
-				continue;
-			}
-
-			$tagName = $phpDocTagNode->name;
+		foreach ($templatePhpDocNodes as [$tagName, $valueNode]) {
 			if (in_array($tagName, ['@template', '@phan-template', '@psalm-template', '@phpstan-template'], true)) {
 				$variance = TemplateTypeVariance::createInvariant();
 			} elseif (in_array($tagName, ['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'], true)) {

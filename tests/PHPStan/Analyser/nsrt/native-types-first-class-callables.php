@@ -50,7 +50,7 @@ class Test
 
 		$i = $h(...);
 		assertType('non-empty-string', $i());
-		assertNativeType('mixed', $i()); // could be string
+		assertNativeType('string', $i());
 
 		$j = [Foo::class, 'doBar'](...);
 		assertType('non-empty-string', $j());

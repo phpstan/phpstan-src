@@ -19,7 +19,6 @@ use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Parser\CurlSetOptArrayArgVisitor;
 use PHPStan\Parser\ImplodeArgVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
-use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
@@ -78,7 +77,7 @@ final class ParametersAcceptorSelector
 		array $args,
 		array $parametersAcceptors,
 		?array $namedArgumentsVariants = null,
-	): ExtendedParametersAcceptor
+	): ParametersAcceptor
 	{
 		$types = [];
 		$unpack = false;
@@ -109,33 +108,26 @@ final class ParametersAcceptorSelector
 				}
 
 				if (isset($parameters[0])) {
-					$parameterType = new UnionType([
-						new CallableType($callbackParameters, new MixedType(), false),
-						new NullType(),
-					]);
-					$parameters[0] = new ExtendedNativeParameterReflection(
+					$parameters[0] = new NativeParameterReflection(
 						$parameters[0]->getName(),
 						$parameters[0]->isOptional(),
-						$parameterType,
-						$parameterType,
-						new MixedType(),
+						new UnionType([
+							new CallableType($callbackParameters, new MixedType(), false),
+							new NullType(),
+						]),
 						$parameters[0]->passedByReference(),
 						$parameters[0]->isVariadic(),
 						$parameters[0]->getDefaultValue(),
-						null,
-						TrinaryLogic::createYes(),
-						null,
-						[],
 					);
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -172,14 +164,14 @@ final class ParametersAcceptorSelector
 					);
 
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -224,14 +216,14 @@ final class ParametersAcceptorSelector
 					);
 
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -256,39 +248,32 @@ final class ParametersAcceptorSelector
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (isset($parameters[1])) {
-					$type = new UnionType([
-						new CallableType(
-							$arrayFilterParameters ?? [
-								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
-							],
-							new BooleanType(),
-							false,
-						),
-						new NullType(),
-					]);
-					$parameters[1] = new ExtendedNativeParameterReflection(
+					$parameters[1] = new NativeParameterReflection(
 						$parameters[1]->getName(),
 						$parameters[1]->isOptional(),
-						$type,
-						$type,
-						new MixedType(),
+						new UnionType([
+							new CallableType(
+								$arrayFilterParameters ?? [
+									new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+								],
+								new BooleanType(),
+								false,
+							),
+							new NullType(),
+						]),
 						$parameters[1]->passedByReference(),
 						$parameters[1]->isVariadic(),
 						$parameters[1]->getDefaultValue(),
-						null,
-						TrinaryLogic::createYes(),
-						null,
-						[],
 					);
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -311,14 +296,14 @@ final class ParametersAcceptorSelector
 				}
 
 				$parametersAcceptors = [
-					self::wrapAcceptor(new FunctionVariant(
+					new FunctionVariant(
 						$acceptor->getTemplateTypeMap(),
 						$acceptor->getResolvedTemplateTypeMap(),
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
 						$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-					)),
+					),
 				];
 			}
 
@@ -334,30 +319,23 @@ final class ParametersAcceptorSelector
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
 				if (isset($parameters[1])) {
-					$type = new CallableType($arrayWalkParameters, new MixedType(), false);
-					$parameters[1] = new ExtendedNativeParameterReflection(
+					$parameters[1] = new NativeParameterReflection(
 						$parameters[1]->getName(),
 						$parameters[1]->isOptional(),
-						$type,
-						$type,
-						new MixedType(),
+						new CallableType($arrayWalkParameters, new MixedType(), false),
 						$parameters[1]->passedByReference(),
 						$parameters[1]->isVariadic(),
 						$parameters[1]->getDefaultValue(),
-						null,
-						TrinaryLogic::createYes(),
-						null,
-						[],
 					);
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -367,37 +345,30 @@ final class ParametersAcceptorSelector
 				$parameters = $acceptor->getParameters();
 				if (isset($parameters[1])) {
 					$argType = $scope->getType($args[0]->value);
-					$type = new CallableType(
-						[
-							new DummyParameter('value', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null),
-							new DummyParameter('key', $scope->getIterableKeyType($argType), false, PassedByReference::createNo(), false, null),
-						],
-						new BooleanType(),
-						false,
-					);
-					$parameters[1] = new ExtendedNativeParameterReflection(
+					$parameters[1] = new NativeParameterReflection(
 						$parameters[1]->getName(),
 						$parameters[1]->isOptional(),
-						$type,
-						$type,
-						new MixedType(),
+						new CallableType(
+							[
+								new DummyParameter('value', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', $scope->getIterableKeyType($argType), false, PassedByReference::createNo(), false, null),
+							],
+							new BooleanType(),
+							false,
+						),
 						$parameters[1]->passedByReference(),
 						$parameters[1]->isVariadic(),
 						$parameters[1]->getDefaultValue(),
-						null,
-						TrinaryLogic::createYes(),
-						null,
-						[],
 					);
 					$parametersAcceptors = [
-						self::wrapAcceptor(new FunctionVariant(
+						new FunctionVariant(
 							$acceptor->getTemplateTypeMap(),
 							$acceptor->getResolvedTemplateTypeMap(),
 							$parameters,
 							$acceptor->isVariadic(),
 							$acceptor->getReturnType(),
 							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-						)),
+						),
 					];
 				}
 			}
@@ -432,14 +403,14 @@ final class ParametersAcceptorSelector
 										$parameters[0]->getDefaultValue(),
 									);
 									$parametersAcceptors = [
-										self::wrapAcceptor(new FunctionVariant(
+										new FunctionVariant(
 											$acceptor->getTemplateTypeMap(),
 											$acceptor->getResolvedTemplateTypeMap(),
 											$parameters,
 											$acceptor->isVariadic(),
 											$acceptor->getReturnType(),
 											$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-										)),
+										),
 									];
 								}
 							}
@@ -478,14 +449,14 @@ final class ParametersAcceptorSelector
 									$parameters[1]->getDefaultValue(),
 								);
 								$parametersAcceptors = [
-									self::wrapAcceptor(new FunctionVariant(
+									new FunctionVariant(
 										$acceptor->getTemplateTypeMap(),
 										$acceptor->getResolvedTemplateTypeMap(),
 										$parameters,
 										$acceptor->isVariadic(),
 										$acceptor->getReturnType(),
 										$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-									)),
+									),
 								];
 							}
 						}
@@ -497,7 +468,7 @@ final class ParametersAcceptorSelector
 		if (count($parametersAcceptors) === 1) {
 			$acceptor = $parametersAcceptors[0];
 			if (!self::hasAcceptorTemplateOrLateResolvableType($acceptor)) {
-				return self::wrapAcceptor($acceptor);
+				return $acceptor;
 			}
 		}
 
@@ -529,7 +500,7 @@ final class ParametersAcceptorSelector
 
 			if ($parameter !== null && $scope instanceof MutatingScope && !$scope instanceof FiberScope) {
 				$rememberTypes = !$originalArg->value instanceof Node\Expr\Closure && !$originalArg->value instanceof Node\Expr\ArrowFunction;
-				$scope = $scope->pushInFunctionCall(null, self::wrapParameter($parameter), $rememberTypes);
+				$scope = $scope->pushInFunctionCall(null, $parameter, $rememberTypes);
 			}
 
 			$type = $scope->getType($originalArg->value);
@@ -600,7 +571,7 @@ final class ParametersAcceptorSelector
 		array $types,
 		array $parametersAcceptors,
 		bool $unpack,
-	): ExtendedParametersAcceptor
+	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) === 1) {
 			return GenericParametersAcceptorResolver::resolve($types, $parametersAcceptors[0]);
@@ -888,6 +859,26 @@ final class ParametersAcceptorSelector
 	{
 		if ($acceptor instanceof ExtendedParametersAcceptor) {
 			return $acceptor;
+		}
+
+		if ($acceptor instanceof CallableParametersAcceptor) {
+			return new ExtendedCallableFunctionVariant(
+				$acceptor->getTemplateTypeMap(),
+				$acceptor->getResolvedTemplateTypeMap(),
+				array_map(static fn (ParameterReflection $parameter): ExtendedParameterReflection => self::wrapParameter($parameter), $acceptor->getParameters()),
+				$acceptor->isVariadic(),
+				$acceptor->getReturnType(),
+				$acceptor->getReturnType(),
+				new MixedType(),
+				TemplateTypeVarianceMap::createEmpty(),
+				$acceptor->getThrowPoints(),
+				$acceptor->isPure(),
+				$acceptor->getImpurePoints(),
+				$acceptor->getInvalidateExpressions(),
+				$acceptor->getUsedVariables(),
+				$acceptor->acceptsNamedArguments(),
+				$acceptor->mustUseReturnValue(),
+			);
 		}
 
 		return new ExtendedFunctionVariant(

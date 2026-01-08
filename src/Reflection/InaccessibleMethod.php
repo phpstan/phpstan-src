@@ -52,16 +52,6 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return new MixedType();
 	}
 
-	public function getPhpDocReturnType(): Type
-	{
-		return new MixedType();
-	}
-
-	public function getNativeReturnType(): Type
-	{
-		return new MixedType();
-	}
-
 	public function getThrowPoints(): array
 	{
 		return [];

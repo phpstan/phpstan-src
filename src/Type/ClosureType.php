@@ -22,7 +22,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
-use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -63,9 +63,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	/** @var list<ParameterReflection> */
 	private array $parameters;
-
-	/** @var list<ExtendedParameterReflection>|null */
-	private ?array $extendedParameters = null;
 
 	private Type $returnType;
 
@@ -536,25 +533,12 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->callSiteVarianceMap;
 	}
 
+	/**
+	 * @return list<ParameterReflection>
+	 */
 	public function getParameters(): array
 	{
-		return $this->extendedParameters ??= array_map(
-			static fn (ParameterReflection $parameter) => $parameter instanceof ExtendedParameterReflection ? $parameter : new ExtendedNativeParameterReflection(
-				$parameter->getName(),
-				$parameter->isOptional(),
-				$parameter->getType(),
-				new MixedType(),
-				$parameter->getType(),
-				$parameter->passedByReference(),
-				$parameter->isVariadic(),
-				$parameter->getDefaultValue(),
-				null,
-				TrinaryLogic::createMaybe(),
-				null,
-				[],
-			),
-			$this->parameters,
-		);
+		return $this->parameters;
 	}
 
 	public function isVariadic(): bool
@@ -565,16 +549,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
-	}
-
-	public function getPhpDocReturnType(): Type
-	{
-		return $this->returnType;
-	}
-
-	public function getNativeReturnType(): Type
-	{
-		return new MixedType();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -646,23 +620,17 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		}
 
 		return new self(
-			array_map(static function (ParameterReflection $param) use ($cb): ExtendedNativeParameterReflection {
+			array_map(static function (ParameterReflection $param) use ($cb): NativeParameterReflection {
 				$defaultValue = $param->getDefaultValue();
-				return new ExtendedNativeParameterReflection(
+				return new NativeParameterReflection(
 					$param->getName(),
 					$param->isOptional(),
 					$cb($param->getType()),
-					$param instanceof ExtendedParameterReflection ? $cb($param->getPhpDocType()) : new MixedType(),
-					$param instanceof ExtendedParameterReflection ? $cb($param->getNativeType()) : new MixedType(),
 					$param->passedByReference(),
 					$param->isVariadic(),
 					$defaultValue !== null ? $cb($defaultValue) : null,
-					$param instanceof ExtendedParameterReflection && $param->getOutType() !== null ? $cb($param->getOutType()) : null,
-					$param instanceof ExtendedParameterReflection ? $param->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
-					$param instanceof ExtendedParameterReflection && $param->getClosureThisType() !== null ? $cb($param->getClosureThisType()) : null,
-					$param instanceof ExtendedParameterReflection ? $param->getAttributes() : [],
 				);
-			}, $this->parameters),
+			}, $this->getParameters()),
 			$cb($this->getReturnType()),
 			$this->isVariadic(),
 			$this->templateTypeMap,
@@ -702,19 +670,13 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			if ($leftDefaultValue !== null && $rightDefaultValue !== null) {
 				$defaultValue = $cb($leftDefaultValue, $rightDefaultValue);
 			}
-			$parameters[] = new ExtendedNativeParameterReflection(
+			$parameters[] = new NativeParameterReflection(
 				$leftParam->getName(),
 				$leftParam->isOptional(),
 				$cb($leftParam->getType(), $rightParam->getType()),
-				$cb($leftParam->getPhpDocType(), $rightParam->getPhpDocType()),
-				$cb($leftParam->getNativeType(), $rightParam->getNativeType()),
 				$leftParam->passedByReference(),
 				$leftParam->isVariadic(),
 				$defaultValue,
-				$leftParam->getOutType() !== null && $rightParam->getOutType() !== null ? $cb($leftParam->getOutType(), $rightParam->getOutType()) : null,
-				$leftParam->isImmediatelyInvokedCallable()->and($rightParam->isImmediatelyInvokedCallable()),
-				$leftParam->getClosureThisType() !== null && $rightParam->getClosureThisType() !== null ? $cb($leftParam->getClosureThisType(), $rightParam->getClosureThisType()) : null,
-				$leftParam->getAttributes(),
 			);
 		}
 

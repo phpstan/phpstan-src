@@ -151,8 +151,8 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -178,6 +178,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -3171,7 +3172,7 @@ class NodeScopeResolver
 							TemplateTypeHelper::resolveTemplateTypes(
 								$selfOutType,
 								$parametersAcceptor->getResolvedTemplateTypeMap(),
-								$parametersAcceptor->getCallSiteVarianceMap(),
+								$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 								TemplateTypeVariance::createCovariant(),
 							),
 							$scope->getNativeType($normalizedExpr->var),
@@ -5215,19 +5216,13 @@ class NodeScopeResolver
 					}
 
 					$type = $scope->getType($args[$index]->value);
-					$callableParameters[$index] = new ExtendedNativeParameterReflection(
+					$callableParameters[$index] = new NativeParameterReflection(
 						$callableParameter->getName(),
 						$callableParameter->isOptional(),
 						$type,
-						$type,
-						$scope->getNativeType($args[$index]->value),
 						$callableParameter->passedByReference(),
 						$callableParameter->isVariadic(),
 						$callableParameter->getDefaultValue(),
-						$callableParameter->getOutType(),
-						$callableParameter->isImmediatelyInvokedCallable(),
-						$callableParameter->getClosureThisType(),
-						$callableParameter->getAttributes(),
 					);
 				}
 			}
@@ -5500,7 +5495,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param ExtendedMethodReflection|FunctionReflection|null $calleeReflection
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processArgs(
@@ -5516,10 +5511,6 @@ class NodeScopeResolver
 		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
-		if ($parametersAcceptor !== null && !$parametersAcceptor instanceof ExtendedParametersAcceptor) {
-			throw new ShouldNotHappenException();
-		}
-
 		$args = $callLike->getArgs();
 
 		$parameters = null;
@@ -5541,14 +5532,18 @@ class NodeScopeResolver
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
 
-					$parameterNativeType = $parameters[$i]->getNativeType();
+					if ($parameters[$i] instanceof ExtendedParameterReflection) {
+						$parameterNativeType = $parameters[$i]->getNativeType();
+					}
 					$parameter = $parameters[$i];
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = array_last($parameters);
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
 
-					$parameterNativeType = $lastParameter->getNativeType();
+					if ($lastParameter instanceof ExtendedParameterReflection) {
+						$parameterNativeType = $lastParameter->getNativeType();
+					}
 					$parameter = $lastParameter;
 				}
 			}
@@ -5737,7 +5732,10 @@ class NodeScopeResolver
 						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
 						if ($paramOutType !== null) {
 							$byRefType = $paramOutType;
-						} elseif ($currentParameter->getOutType() !== null) {
+						} elseif (
+							$currentParameter instanceof ExtendedParameterReflection
+							&& $currentParameter->getOutType() !== null
+						) {
 							$byRefType = $currentParameter->getOutType();
 						} elseif (
 							$calleeReflection instanceof MethodReflection

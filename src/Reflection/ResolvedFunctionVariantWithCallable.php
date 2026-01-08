@@ -33,7 +33,7 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 	{
 	}
 
-	public function getOriginalParametersAcceptor(): ExtendedParametersAcceptor
+	public function getOriginalParametersAcceptor(): ParametersAcceptor
 	{
 		return $this->parametersAcceptor->getOriginalParametersAcceptor();
 	}

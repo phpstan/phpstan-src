@@ -9,8 +9,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParameterReflection;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -64,7 +64,7 @@ final class FunctionCallParametersCheck
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
-		ExtendedParametersAcceptor $parametersAcceptor,
+		ParametersAcceptor $parametersAcceptor,
 		Scope $scope,
 		bool $isBuiltin,
 		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
@@ -384,7 +384,8 @@ final class FunctionCallParametersCheck
 				}
 
 				if (
-					$parameter->getClosureThisType() !== null
+					$parameter instanceof ExtendedParameterReflection
+					&& $parameter->getClosureThisType() !== null
 					&& ($argumentValue instanceof Expr\Closure || $argumentValue instanceof Expr\ArrowFunction)
 					&& $argumentValue->static
 				) {
@@ -543,10 +544,10 @@ final class FunctionCallParametersCheck
 
 	/**
 	 * @param array<int, array{Expr, Type|null, bool, string|null, int}> $arguments
-	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type|null, bool, (string|null), int, (ExtendedParameterReflection|null), (ExtendedParameterReflection|null)}>}
+	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
-		ExtendedParametersAcceptor $parametersAcceptor,
+		ParametersAcceptor $parametersAcceptor,
 		int $line,
 		bool $isBuiltin,
 		array $arguments,

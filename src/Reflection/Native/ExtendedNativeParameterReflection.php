@@ -8,8 +8,6 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use function array_merge;
 
 final class ExtendedNativeParameterReflection implements ExtendedParameterReflection
 {
@@ -97,24 +95,6 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function getAttributes(): array
 	{
 		return $this->attributes;
-	}
-
-	public function union(ExtendedParameterReflection $other): self
-	{
-		return new self(
-			$this->name,
-			$this->optional && $other->isOptional(),
-			TypeCombinator::union($this->type, $other->getType()),
-			TypeCombinator::union($this->phpDocType, $other->getPhpDocType()),
-			TypeCombinator::union($this->nativeType, $other->getNativeType()),
-			$this->passedByReference->combine($other->passedByReference()),
-			$this->variadic && $other->isVariadic(),
-			$this->optional && $other->isOptional() ? $this->defaultValue : null,
-			$this->outType !== null && $other->getOutType() !== null ? TypeCombinator::union($this->outType, $other->getOutType()) : null,
-			$this->immediatelyInvokedCallable->and($other->isImmediatelyInvokedCallable()),
-			$this->closureThisType !== null && $other->getClosureThisType() !== null ? TypeCombinator::union($this->closureThisType, $other->getClosureThisType()) : null,
-			array_merge($this->attributes, $other->getAttributes()),
-		);
 	}
 
 }

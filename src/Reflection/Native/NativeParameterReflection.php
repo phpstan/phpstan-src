@@ -51,15 +51,15 @@ final class NativeParameterReflection implements ParameterReflection
 		return $this->defaultValue;
 	}
 
-	public function union(ParameterReflection $other): self
+	public function union(self $other): self
 	{
 		return new self(
 			$this->name,
-			$this->optional && $other->isOptional(),
-			TypeCombinator::union($this->type, $other->getType()),
-			$this->passedByReference->combine($other->passedByReference()),
-			$this->variadic && $other->isVariadic(),
-			$this->optional && $other->isOptional() ? $this->defaultValue : null,
+			$this->optional && $other->optional,
+			TypeCombinator::union($this->type, $other->type),
+			$this->passedByReference->combine($other->passedByReference),
+			$this->variadic && $other->variadic,
+			$this->optional && $other->optional ? $this->defaultValue : null,
 		);
 	}
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fb82d3fddd187abc2f321b38688fb441",
+    "content-hash": "8c72337081ddf7ca83d3b63b69ea241f",
     "packages": [
         {
             "name": "amphp/amp",
@@ -1528,24 +1528,25 @@
         },
         {
             "name": "jetbrains/phpstorm-stubs",
-            "version": "v2024.3",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "0e82bdfe850c71857ee4ee3501ed82a9fc5d043c"
+                "url": "https://github.com/JetBrains/phpstorm-stubs",
+                "reference": "ef45e9e2a0a3c69c13ed59184d42f99a16240313"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/0e82bdfe850c71857ee4ee3501ed82a9fc5d043c",
-                "reference": "0e82bdfe850c71857ee4ee3501ed82a9fc5d043c",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/ef45e9e2a0a3c69c13ed59184d42f99a16240313",
+                "reference": "ef45e9e2a0a3c69c13ed59184d42f99a16240313",
                 "shasum": ""
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "v3.64.0",
-                "nikic/php-parser": "v5.3.1",
-                "phpdocumentor/reflection-docblock": "5.6.0",
-                "phpunit/phpunit": "11.4.3"
+                "friendsofphp/php-cs-fixer": "^v3.86",
+                "nikic/php-parser": "^v5.6",
+                "phpdocumentor/reflection-docblock": "^5.6",
+                "phpunit/phpunit": "^12.3"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "files": [
@@ -1568,10 +1569,7 @@
                 "stubs",
                 "type"
             ],
-            "support": {
-                "source": "https://github.com/JetBrains/phpstorm-stubs/tree/v2024.3"
-            },
-            "time": "2024-12-14T08:03:12+00:00"
+            "time": "2026-01-08T09:22:58+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -4199,9 +4197,18 @@
         }
     ],
     "packages-dev": [],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "jetbrains/phpstorm-stubs",
+            "version": "9999999-dev",
+            "alias": "v2024.x-dev",
+            "alias_normalized": "2024.9999999.9999999.9999999-dev"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "jetbrains/phpstorm-stubs": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {},

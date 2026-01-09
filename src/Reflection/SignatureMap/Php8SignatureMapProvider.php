@@ -44,8 +44,11 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, array<string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
-	/** @var array<string, array<string, Type|null>> */
+	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
 	private array $constantTypes = [];
+
+	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
+	private array $stubbedConstantTypes = [];
 
 	private Php8StubsMap $map;
 
@@ -485,38 +488,43 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->constantTypes[$lowerClassName][$lowerConstantName];
 		}
 
-		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
-		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
-		$classes = $nodes->getClassNodes();
-		if (count($classes) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		$class = $classes[$lowerClassName];
-		if (count($class) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		foreach ($class[0]->getNode()->stmts as $stmt) {
-			if (!$stmt instanceof ClassConst) {
-				continue;
+		// read/parse each stubFile only once
+		if (!array_key_exists($lowerClassName, $this->stubbedConstantTypes)) {
+			$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
+			$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
+			$classes = $nodes->getClassNodes();
+			if (count($classes) !== 1) {
+				throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 			}
 
-			foreach ($stmt->consts as $const) {
-				if ($const->name->toString() !== $constantName) {
+			$class = $classes[$lowerClassName];
+			if (count($class) !== 1) {
+				throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			}
+
+			// find and remember all constants within the stubFile
+			foreach ($class[0]->getNode()->stmts as $stmt) {
+				if (!$stmt instanceof ClassConst) {
 					continue;
 				}
 
-				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
-					continue;
-				}
+				foreach ($stmt->consts as $const) {
+					if ($stmt->type === null) {
+						continue;
+					}
 
-				if ($stmt->type === null) {
-					return null;
-				}
+					if (!$this->isForCurrentVersion($stmt->attrGroups)) {
+						continue;
+					}
 
-				return $this->constantTypes[$lowerClassName][$lowerConstantName] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
+					$this->stubbedConstantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
+				}
 			}
+		}
+
+		// mark only the requested constant as being found
+		if (isset($this->stubbedConstantTypes[$lowerClassName][$lowerConstantName])) {
+			return $this->constantTypes[$lowerClassName][$lowerConstantName] = $this->stubbedConstantTypes[$lowerClassName][$lowerConstantName];
 		}
 
 		return null;

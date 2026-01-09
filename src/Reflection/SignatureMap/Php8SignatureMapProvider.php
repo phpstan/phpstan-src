@@ -41,8 +41,11 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';
 
-	/** @var array<string, array<string, array{ClassMethod, string}>> */
+	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
+
+	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
+	private array $stubbedMethodNodes = [];
 
 	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
 	private array $constantTypes = [];
@@ -89,29 +92,40 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			return $this->methodNodes[$lowerClassName][$lowerMethodName];
 		}
 
-		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
-		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
-		$classes = $nodes->getClassNodes();
-		if (count($classes) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		$class = $classes[$lowerClassName];
-		if (count($class) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		foreach ($class[0]->getNode()->stmts as $stmt) {
-			if (!$stmt instanceof ClassMethod) {
-				continue;
+		if (!array_key_exists($lowerClassName, $this->stubbedConstantTypes)) {
+			$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
+			$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
+			$classes = $nodes->getClassNodes();
+			if (count($classes) !== 1) {
+				throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 			}
 
-			if ($stmt->name->toLowerString() === $lowerMethodName) {
+			$class = $classes[$lowerClassName];
+			if (count($class) !== 1) {
+				throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			}
+
+			// find and remember all methods within the stubFile
+			foreach ($class[0]->getNode()->stmts as $stmt) {
+				if (!$stmt instanceof ClassMethod) {
+					continue;
+				}
+
+				if ($stmt->name->toLowerString() !== $lowerMethodName) {
+					continue;
+				}
+
 				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
 					continue;
 				}
-				return $this->methodNodes[$lowerClassName][$lowerMethodName] = [$stmt, $stubFile];
+
+				$this->stubbedMethodNodes[$lowerClassName][$lowerMethodName] = [$stmt, $stubFile];
 			}
+		}
+
+		// mark only the requested method as being found
+		if (isset($this->stubbedMethodNodes[$lowerClassName][$lowerMethodName])) {
+			return $this->methodNodes[$lowerClassName][$lowerMethodName] = $this->stubbedMethodNodes[$lowerClassName][$lowerMethodName];
 		}
 
 		return null;

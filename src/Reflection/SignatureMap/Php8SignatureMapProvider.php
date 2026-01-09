@@ -97,7 +97,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 		if (
 			isset($this->methodNodes[$lowerClassName])
-		 	|| isset($this->constantTypes[$lowerClassName])
+			|| isset($this->constantTypes[$lowerClassName])
 		) {
 			return;
 		}

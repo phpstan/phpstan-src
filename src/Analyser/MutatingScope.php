@@ -2746,6 +2746,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				(
 					!$node instanceof FuncCall
 					&& !$node instanceof MethodCall
+					&& !$node instanceof Expr\NullsafeMethodCall
 					&& !$node instanceof Expr\StaticCall
 				) || $node->isFirstClassCallable()
 			)

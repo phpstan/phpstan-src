@@ -92,6 +92,11 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12379.php'], []);
 	}
 
+	public function testBug13956(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13956.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testPipeOperator(): void
 	{

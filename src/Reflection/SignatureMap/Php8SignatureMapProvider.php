@@ -123,6 +123,9 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
+		$this->stubbedMethodNodes[$lowerClassName] = [];
+		$this->stubbedConstantTypes[$lowerClassName] = [];
+
 		// find and remember all methods/constants within the stubFile
 		foreach ($class[0]->getNode()->stmts as $stmt) {
 			if ($stmt instanceof ClassMethod) {

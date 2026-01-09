@@ -44,14 +44,8 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
-	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
-	private array $stubbedMethodNodes = [];
-
 	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
 	private array $constantTypes = [];
-
-	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
-	private array $stubbedConstantTypes = [];
 
 	private Php8StubsMap $map;
 
@@ -88,13 +82,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	{
 		$lowerClassName = strtolower($className);
 		$lowerMethodName = strtolower($methodName);
-		if (isset($this->methodNodes[$lowerClassName][$lowerMethodName])) {
-			return $this->methodNodes[$lowerClassName][$lowerMethodName];
-		}
 
 		$this->findClassStubs($className);
-		if (isset($this->stubbedMethodNodes[$lowerClassName][$lowerMethodName])) {
-			return $this->methodNodes[$lowerClassName][$lowerMethodName] = $this->stubbedMethodNodes[$lowerClassName][$lowerMethodName];
+		if (isset($this->methodNodes[$lowerClassName][$lowerMethodName])) {
+			return $this->methodNodes[$lowerClassName][$lowerMethodName];
 		}
 
 		return null;
@@ -105,8 +96,8 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 		$lowerClassName = strtolower($className);
 
 		if (
-			array_key_exists($lowerClassName, $this->stubbedMethodNodes)
-			|| array_key_exists($lowerClassName, $this->stubbedConstantTypes)
+			isset($this->methodNodes[$lowerClassName])
+		 	|| isset($this->constantTypes[$lowerClassName])
 		) {
 			return;
 		}
@@ -123,8 +114,8 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
-		$this->stubbedMethodNodes[$lowerClassName] = [];
-		$this->stubbedConstantTypes[$lowerClassName] = [];
+		$this->methodNodes[$lowerClassName] = [];
+		$this->constantTypes[$lowerClassName] = [];
 
 		// find and remember all methods/constants within the stubFile
 		foreach ($class[0]->getNode()->stmts as $stmt) {
@@ -133,7 +124,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 					continue;
 				}
 
-				$this->stubbedMethodNodes[$lowerClassName][$stmt->name->toLowerString()] = [$stmt, $stubFile];
+				$this->methodNodes[$lowerClassName][$stmt->name->toLowerString()] = [$stmt, $stubFile];
 
 				continue;
 			}
@@ -151,7 +142,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 					continue;
 				}
 
-				$this->stubbedConstantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
+				$this->constantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
 			}
 		}
 	}
@@ -523,13 +514,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	{
 		$lowerClassName = strtolower($className);
 		$lowerConstantName = strtolower($constantName);
-		if (isset($this->constantTypes[$lowerClassName][$lowerConstantName])) {
-			return $this->constantTypes[$lowerClassName][$lowerConstantName];
-		}
 
 		$this->findClassStubs($className);
-		if (isset($this->stubbedConstantTypes[$lowerClassName][$lowerConstantName])) {
-			return $this->constantTypes[$lowerClassName][$lowerConstantName] = $this->stubbedConstantTypes[$lowerClassName][$lowerConstantName];
+		if (isset($this->constantTypes[$lowerClassName][$lowerConstantName])) {
+			return $this->constantTypes[$lowerClassName][$lowerConstantName];
 		}
 
 		return null;

@@ -5238,7 +5238,14 @@ class NodeScopeResolver
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			foreach ($acceptors as $acceptor) {
 				if ($callableParameters === null) {
-					$callableParameters = $acceptor->getParameters();
+					$callableParameters = array_map(static fn (ParameterReflection $callableParameter) => new NativeParameterReflection(
+						$callableParameter->getName(),
+						$callableParameter->isOptional(),
+						$callableParameter->getType(),
+						$callableParameter->passedByReference(),
+						$callableParameter->isVariadic(),
+						$callableParameter->getDefaultValue(),
+					), $acceptor->getParameters());
 					continue;
 				}
 

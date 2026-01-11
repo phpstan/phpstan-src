@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
@@ -128,6 +129,11 @@ class ObjectWithoutClassType implements SubtractableType
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function subtract(Type $type): Type

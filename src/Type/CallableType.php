@@ -26,6 +26,7 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -643,6 +644,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function isCommonCallable(): bool

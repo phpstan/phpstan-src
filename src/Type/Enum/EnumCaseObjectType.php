@@ -217,6 +217,11 @@ class EnumCaseObjectType extends ObjectType
 		return [$this];
 	}
 
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return $this;
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return new ConstTypeNode(

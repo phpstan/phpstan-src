@@ -37,6 +37,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -1030,6 +1031,25 @@ class IntersectionType implements CompoundType
 		}
 
 		return array_values(array_intersect_key(...$compare));
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		$singleCase = null;
+		foreach ($this->types as $type) {
+			$caseObject = $type->getEnumCaseObject();
+			if ($caseObject === null) {
+				continue;
+			}
+
+			if ($singleCase !== null) {
+				return null;
+			}
+
+			$singleCase = $caseObject;
+		}
+
+		return $singleCase;
 	}
 
 	public function isCallable(): TrinaryLogic

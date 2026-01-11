@@ -13,6 +13,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -210,6 +211,11 @@ class NonexistentParentClassType implements Type
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function exponentiate(Type $exponent): Type

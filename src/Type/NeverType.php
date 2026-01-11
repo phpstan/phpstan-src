@@ -13,6 +13,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -556,6 +557,11 @@ class NeverType implements CompoundType
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function exponentiate(Type $exponent): Type

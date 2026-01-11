@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -419,6 +420,11 @@ class IterableType implements CompoundType
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

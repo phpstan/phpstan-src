@@ -13,6 +13,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -474,6 +475,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function getEnumCases(): array
 	{
 		return [];
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return null;
 	}
 
 	public function traverse(callable $cb): Type

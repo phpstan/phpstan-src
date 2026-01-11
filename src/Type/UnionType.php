@@ -23,6 +23,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateIterableType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -874,6 +875,17 @@ class UnionType implements CompoundType
 			static fn (Type $type) => $type->getEnumCases(),
 			static fn (Type $type) => $type->isObject()->yes(),
 		);
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		$cases = $this->getEnumCases();
+
+		if (count($cases) === 1) {
+			return $cases[0];
+		}
+
+		return null;
 	}
 
 	public function isCallable(): TrinaryLogic

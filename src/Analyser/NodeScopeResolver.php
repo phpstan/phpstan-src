@@ -4343,9 +4343,11 @@ class NodeScopeResolver
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
 
-			$remainingType = $matchScope->getType($expr->cond);
-			if (!$hasDefaultCond && !$hasAlwaysTrueCond && !$remainingType instanceof NeverType) {
-				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
+			if (!$hasDefaultCond && !$hasAlwaysTrueCond) {
+				$remainingType = $matchScope->getType($expr->cond);
+				if (!$remainingType instanceof NeverType) {
+					$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
+				}
 			}
 
 			ksort($armNodes, SORT_NUMERIC);

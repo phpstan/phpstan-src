@@ -206,13 +206,12 @@ final class PhpClassReflectionExtension
 				|| ($declaringClassReflection->isBackedEnum() && $propertyName === 'value')
 			) {
 				$types = [];
-				foreach (array_keys($classReflection->getEnumCases()) as $name) {
+				foreach ($classReflection->getEnumCases() as $name => $case) {
 					if ($propertyName === 'name') {
 						$types[] = new ConstantStringType($name);
 						continue;
 					}
 
-					$case = $classReflection->getEnumCase($name);
 					$value = $case->getBackingValueType();
 					if ($value === null) {
 						throw new ShouldNotHappenException();

@@ -186,6 +186,8 @@ interface Type
 	 */
 	public function getEnumCases(): array;
 
+	public function getEnumCaseObject(): ?EnumCaseObjectType;
+
 	/**
 	 * Returns a list of finite values.
 	 *

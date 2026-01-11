@@ -1516,6 +1516,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return self::$enumCases[$cacheKey] = $cases;
 	}
 
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		$cases = $this->getEnumCases();
+
+		if (count($cases) === 1) {
+			return $cases[0];
+		}
+
+		return null;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		$parametersAcceptors = RecursionGuard::run($this, fn () => $this->findCallableParametersAcceptors());

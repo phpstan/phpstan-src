@@ -13,6 +13,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LateResolvableType;
@@ -356,6 +357,11 @@ trait LateResolvableTypeTrait
 	public function getEnumCases(): array
 	{
 		return $this->resolve()->getEnumCases();
+	}
+
+	public function getEnumCaseObject(): ?EnumCaseObjectType
+	{
+		return $this->resolve()->getEnumCaseObject();
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

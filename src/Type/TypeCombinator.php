@@ -209,8 +209,8 @@ final class TypeCombinator
 			} elseif ($types[$i]->isString()->yes() && $types[$i]->isClassString()->no() && TypeUtils::getAccessoryTypes($types[$i]) === []) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			} else {
-				$enumCases = $types[$i]->getEnumCases();
-				if (count($enumCases) === 1) {
+				$enumCase = $types[$i]->getEnumCaseObject();
+				if ($enumCase !== null) {
 					$enumCaseTypes[$types[$i]->describe(VerbosityLevel::cache())] = $types[$i];
 
 					unset($types[$i]);

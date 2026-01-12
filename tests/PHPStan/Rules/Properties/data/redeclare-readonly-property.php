@@ -181,7 +181,7 @@ class B14 {
 
 class B15 extends A {
 	public function __construct(public readonly int $myProp) {
-		self:foo();
+		self::foo();
 	}
 
 	public static function foo(): void

@@ -1345,6 +1345,10 @@ class IntersectionType implements CompoundType
 		foreach ($this->types as $type) {
 			$oneType = [];
 			foreach ($type->getFiniteTypes() as $finiteType) {
+				if ($finiteType instanceof EnumCaseObjectType) {
+					$oneType[$finiteType->getClassName() . '::' . $finiteType->getEnumCaseName()] = $finiteType;
+					continue;
+				}
 				$oneType[$finiteType->describe(VerbosityLevel::typeOnly())] = $finiteType;
 			}
 			$compare[] = $oneType;

@@ -799,11 +799,12 @@ class NodeScopeResolver
 				$executionEnds = [];
 				$methodImpurePoints = [];
 				$statementResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $methodScope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $methodScope, &$gatheredReturnStatements, &$gatheredYieldStatements, &$executionEnds, &$methodImpurePoints): void {
-					$nodeCallback($node, $scope);
 					if ($scope->getFunction() !== $methodScope->getFunction()) {
+						$nodeCallback($node, $scope);
 						return;
 					}
 					if ($scope->isInAnonymousFunction()) {
+						$nodeCallback($node, $scope);
 						return;
 					}
 					if ($node instanceof PropertyAssignNode) {
@@ -814,6 +815,7 @@ class NodeScopeResolver
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
 							&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
 						) {
+							$nodeCallback($node, $scope);
 							return;
 						}
 						$methodImpurePoints[] = new ImpurePoint(
@@ -823,8 +825,10 @@ class NodeScopeResolver
 							'property assignment',
 							true,
 						);
+						$nodeCallback($node, $scope);
 						return;
 					}
+					$nodeCallback($node, $scope);
 					if ($node instanceof ExecutionEndNode) {
 						$executionEnds[] = $node;
 						return;

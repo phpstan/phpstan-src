@@ -8134,12 +8134,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClass3301acd9e9d13ba9bbce9581cdb00699)',
+				'$this(AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name.php:6)',
 				'$this',
 				"'inside'",
 			],
 			[
-				'AnonymousClass3301acd9e9d13ba9bbce9581cdb00699',
+				'AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name.php:6',
 				'$foo',
 				"'outside'",
 			],
@@ -8185,7 +8185,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'$this(AnonymousClass3de0a9734314db9dec21ba308363ff9a)',
+				'$this(AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name-in-trait-trait.php:10)',
 				'$this',
 			],
 		];
@@ -8208,17 +8208,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'AnonymousClass0d7d08272ba2f0a6ef324bb65c679e02',
+				'AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name-same-line.php:5:1',
 				'$foo',
 				'$bar',
 			],
 			[
-				'AnonymousClass464f64cbdca25b4af842cae65615bca9',
+				'AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name-same-line.php:5:2',
 				'$bar',
 				'$baz',
 			],
 			[
-				'AnonymousClassa9fb472ec9acc5cae3bee4355c296bfa',
+				'AnonymousClasstests/PHPStan/Analyser/data/anonymous-class-name-same-line.php:5:3',
 				'$baz',
 				'die',
 			],

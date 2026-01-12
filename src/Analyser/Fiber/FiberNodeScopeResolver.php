@@ -11,6 +11,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
+use function array_pop;
+use function count;
 use function get_debug_type;
 
 #[AutowiredService(as: FiberNodeScopeResolver::class)]
@@ -31,20 +33,28 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 			$nodeCallback($node, $scope->toFiberScope());
 			return;
 		}
-		$fiber = new Fiber(static function () use ($node, $scope, $nodeCallback) {
-			$nodeCallback($node, $scope->toFiberScope());
-		});
-		$request = $fiber->start();
+		if (count($storage->parkedFibers) > 0) {
+			$fiber = array_pop($storage->parkedFibers);
+			$request = $fiber->resume([$nodeCallback, $node, $scope]);
+		} else {
+			$fiber = new Fiber(static function () use ($node, $scope, $nodeCallback) {
+				while (true) { // @phpstan-ignore while.alwaysTrue
+					$nodeCallback($node, $scope->toFiberScope());
+					[$nodeCallback, $node, $scope] = Fiber::suspend(new ParkFiberRequest());
+				}
+			});
+			$request = $fiber->start();
+		}
 		$this->runFiberForNodeCallback($storage, $fiber, $request);
 	}
 
 	/**
-	 * @param Fiber<mixed, Scope, null, BeforeScopeForExprRequest> $fiber
+	 * @param Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest> $fiber
 	 */
 	private function runFiberForNodeCallback(
 		ExpressionResultStorage $storage,
 		Fiber $fiber,
-		?BeforeScopeForExprRequest $request,
+		BeforeScopeForExprRequest|ParkFiberRequest|null $request,
 	): void
 	{
 		while (!$fiber->isTerminated()) {
@@ -59,6 +69,10 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 					'fiber' => $fiber,
 					'request' => $request,
 				];
+				return;
+			}
+			if ($request instanceof ParkFiberRequest) {
+				$storage->parkedFibers[] = $fiber;
 				return;
 			}
 

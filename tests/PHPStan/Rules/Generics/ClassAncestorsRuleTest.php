@@ -285,4 +285,9 @@ class ClassAncestorsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7021(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7021.php'], []);
+	}
+
 }

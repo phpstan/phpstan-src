@@ -42,7 +42,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function implode;
-use function md5;
 use function sprintf;
 use function str_contains;
 
@@ -1204,7 +1203,7 @@ class UnionType implements CompoundType
 		$types = $this->notBenevolentPickFromTypes(static fn (Type $type) => $type->getFiniteTypes());
 		$uniquedTypes = [];
 		foreach ($types as $type) {
-			$uniquedTypes[md5($type->describe(VerbosityLevel::cache()))] = $type;
+			$uniquedTypes[$type->describe(VerbosityLevel::cache())] = $type;
 		}
 
 		if (count($uniquedTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {

@@ -11,6 +11,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\Php\EnumPropertyReflection;
 use PHPStan\Reflection\Php\EnumUnresolvedPropertyPrototypeReflection;
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -33,7 +34,7 @@ class EnumCaseObjectType extends ObjectType
 	/** @api */
 	public function __construct(
 		string $className,
-		private string $enumCaseName,
+		private readonly string $enumCaseName,
 		?ClassReflection $classReflection = null,
 	)
 	{

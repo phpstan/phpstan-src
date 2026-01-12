@@ -8,6 +8,7 @@ use PHPStan\Analyser\IntermediaryNameScope;
 use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
+use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
@@ -37,6 +38,7 @@ use function array_pop;
 use function array_reverse;
 use function array_slice;
 use function count;
+use function hash_file;
 use function in_array;
 use function is_array;
 use function is_file;
@@ -54,7 +56,7 @@ final class FileTypeMapper
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
 
-	/** @var array<string, array{array<string, PhpDocNode>, array<string, IntermediaryNameScope>}> */
+	/** @var array<string, array{array<string, IntermediaryNameScope>}> */
 	private array $memoryCache = [];
 
 	private int $memoryCacheCount = 0;
@@ -75,6 +77,7 @@ final class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
+		private Cache $cache,
 	)
 	{
 	}
@@ -197,7 +200,7 @@ final class FileTypeMapper
 			throw new NameScopeAlreadyBeingCreatedException();
 		}
 
-		[, $nameScopeMap] = $this->getNameScopeMap($fileName);
+		[$nameScopeMap] = $this->getNameScopeMap($fileName);
 		if (!isset($nameScopeMap[$nameScopeKey])) {
 			throw new NameScopeAlreadyBeingCreatedException();
 		}
@@ -317,12 +320,25 @@ final class FileTypeMapper
 	}
 
 	/**
-	 * @return array{array<string, PhpDocNode>, array<string, IntermediaryNameScope>}
+	 * @return array{array<string, IntermediaryNameScope>}
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			[$phpDocNodeMap, $nameScopeMap] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
+			$cacheKey = sprintf('ftm-%s', $fileName);
+			$variableCacheKey = 'v2';
+			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
+			if ($cached === null) {
+				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
+				$filesWithHashes = [];
+				foreach ($files as $file) {
+					$newHash = hash_file('sha256', $file);
+					$filesWithHashes[$file] = $newHash;
+				}
+				$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
+			} else {
+				[$nameScopeMap, $files] = $cached;
+			}
 			if ($this->memoryCacheCount >= 2048) {
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
@@ -332,7 +348,7 @@ final class FileTypeMapper
 				$this->memoryCacheCount--;
 			}
 
-			$this->memoryCache[$fileName] = [$phpDocNodeMap, $nameScopeMap];
+			$this->memoryCache[$fileName] = [$nameScopeMap, $files];
 			$this->memoryCacheCount++;
 		}
 
@@ -340,14 +356,45 @@ final class FileTypeMapper
 	}
 
 	/**
+	 * @param non-empty-string $cacheKey
+	 * @return array{array<string, IntermediaryNameScope>, list<string>}|null
+	 */
+	private function loadCachedPhpDocNodeMap(string $cacheKey, string $variableCacheKey): ?array
+	{
+		$cached = $this->cache->load($cacheKey, $variableCacheKey);
+		if ($cached !== null) {
+			/**
+			 * @var array<string, string> $filesWithHashes
+			 */
+			[$nameScopeMap, $filesWithHashes] = $cached;
+			$useCache = true;
+			foreach ($filesWithHashes as $file => $hash) {
+				if (!is_file($file)) {
+					$useCache = false;
+					break;
+				}
+				$newHash = hash_file('sha256', $file);
+				if ($newHash === $hash) {
+					continue;
+				}
+				$useCache = false;
+				break;
+			}
+
+			if ($useCache) {
+				return [$nameScopeMap, array_keys($filesWithHashes)];
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param array<string, string> $traitMethodAliases
-	 * @return array{array<string, PhpDocNode>, array<string, IntermediaryNameScope>}
+	 * @return array{array<string, IntermediaryNameScope>, list<string>}
 	 */
 	private function createPhpDocNodeMap(string $fileName, ?string $lookForTrait, ?string $traitUseClass, array $traitMethodAliases, string $originalClassFileName): array
 	{
-		/** @var array<string, PhpDocNode> $phpDocNodeMap */
-		$phpDocNodeMap = [];
-
 		/** @var array<string, IntermediaryNameScope> $nameScopeMap */
 		$nameScopeMap = [];
 
@@ -367,13 +414,15 @@ final class FileTypeMapper
 
 		$traitFound = false;
 
+		$files = [$fileName];
+
 		/** @var array<string|null> $functionStack */
 		$functionStack = [];
 		$uses = [];
 		$constUses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$phpDocNodeMap, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, &$namespace, &$functionStack, &$uses, &$constUses): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$typeMapStack, &$typeAliasStack, &$classStack, &$namespace, &$functionStack, &$uses, &$constUses, &$files): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
@@ -434,13 +483,7 @@ final class FileTypeMapper
 				) {
 					$docComment = GetLastDocComment::forNode($node);
 					if ($docComment !== null) {
-						$phpDocKey = $this->getPhpDocKey($nameScopeKey, $docComment);
 						$phpDocNode = $this->phpDocStringResolver->resolve($docComment);
-						$phpDocNodeMap[$phpDocKey] = $phpDocNode;
-						$plainDocComment = $node->getDocComment();
-						if ($plainDocComment !== null && $plainDocComment->getText() !== $docComment) {
-							$phpDocNodeMap[$this->getPhpDocKey($nameScopeKey, $plainDocComment->getText())] = $phpDocNode;
-						}
 					}
 				}
 
@@ -576,16 +619,15 @@ final class FileTypeMapper
 							throw new ShouldNotHappenException();
 						}
 
-						[$traitPhpDocNodeMap, $traitNameScopeMap] = $this->createPhpDocNodeMap(
+						[$traitNameScopeMap, $traitFiles] = $this->createPhpDocNodeMap(
 							$traitReflection->getFileName(),
 							$traitName,
 							$className,
 							$traitMethodAliases[$traitName] ?? [],
 							$originalClassFileName,
 						);
-						$phpDocNodeMap = array_merge($phpDocNodeMap, $traitPhpDocNodeMap);
 						$nameScopeMap = array_merge($nameScopeMap, array_map(static fn ($originalNameScope) => $originalNameScope->getTraitData() === null ? $originalNameScope->withTraitData($fileName, $className, $traitName, $lookForTrait, $docComment) : $originalNameScope, $traitNameScopeMap));
-
+						$files = array_merge($files, $traitFiles);
 					}
 				}
 
@@ -644,7 +686,7 @@ final class FileTypeMapper
 			throw new ShouldNotHappenException();
 		}
 
-		return [$phpDocNodeMap, $nameScopeMap];
+		return [$nameScopeMap, $files];
 	}
 
 	/**

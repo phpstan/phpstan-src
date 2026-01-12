@@ -146,4 +146,24 @@ final class IntermediaryNameScope
 		return $this->typeAliasClassName;
 	}
 
+	/**
+	 * @param array<string, mixed> $properties
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['namespace'],
+			$properties['uses'],
+			$properties['className'],
+			$properties['functionName'],
+			$properties['templatePhpDocNodes'],
+			$properties['parent'],
+			$properties['typeAliasesMap'],
+			$properties['bypassTypeAliases'],
+			$properties['constUses'],
+			$properties['typeAliasClassName'],
+			$properties['traitData'],
+		);
+	}
+
 }

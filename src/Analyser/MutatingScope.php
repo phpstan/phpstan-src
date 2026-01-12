@@ -157,6 +157,7 @@ use function is_bool;
 use function is_numeric;
 use function is_string;
 use function ltrim;
+use function md5;
 use function sprintf;
 use function str_decrement;
 use function str_increment;
@@ -924,7 +925,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$parts[] = sprintf(',%s', $parameter->getType()->describe(VerbosityLevel::cache()));
 		}
 
-		return implode("\n", $parts);
+		return md5(implode("\n", $parts));
 	}
 
 	private function resolveType(string $exprString, Expr $node): Type

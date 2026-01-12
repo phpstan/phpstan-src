@@ -96,7 +96,7 @@ final class FileTypeMapper
 		}
 
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);
-		$phpDocKey = md5(sprintf('%s-%s', $nameScopeKey, $docComment));
+		$phpDocKey = sprintf('%s-%s', $nameScopeKey, $docComment);
 		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
@@ -648,14 +648,14 @@ final class FileTypeMapper
 	): string
 	{
 		if ($class === null && $trait === null && $function === null) {
-			return md5(sprintf('%s', $file ?? 'no-file'));
+			return sprintf('%s', $file ?? 'no-file');
 		}
 
 		if ($class !== null && str_contains($class, 'class@anonymous')) {
 			throw new ShouldNotHappenException('Wrong anonymous class name, FilTypeMapper should be called with ClassReflection::getName().');
 		}
 
-		return md5(sprintf('%s-%s-%s-%s', $file ?? 'no-file', $class, $trait, $function));
+		return sprintf('%s-%s-%s-%s', $file ?? 'no-file', $class, $trait, $function);
 	}
 
 }

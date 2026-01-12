@@ -157,7 +157,6 @@ use function is_bool;
 use function is_numeric;
 use function is_string;
 use function ltrim;
-use function md5;
 use function sprintf;
 use function str_decrement;
 use function str_increment;

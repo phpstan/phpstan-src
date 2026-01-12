@@ -42,7 +42,6 @@ use function array_unique;
 use function array_values;
 use function count;
 use function implode;
-use function md5;
 use function sprintf;
 use function str_contains;
 

@@ -9,7 +9,6 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\ShouldNotHappenException;
-use function md5;
 use function sprintf;
 
 #[AutowiredService]
@@ -43,9 +42,9 @@ final class AnonymousClassNameHelper
 		/** @var int|null $lineIndex */
 		$lineIndex = $classNode->getAttribute(AnonymousClassVisitor::ATTRIBUTE_LINE_INDEX);
 		if ($lineIndex === null) {
-			$hash = md5(sprintf('%s:%s', $filename, $classNode->getStartLine()));
+			$hash = sprintf('%s:%s', $filename, $classNode->getStartLine());
 		} else {
-			$hash = md5(sprintf('%s:%s:%d', $filename, $classNode->getStartLine(), $lineIndex));
+			$hash = sprintf('%s:%s:%d', $filename, $classNode->getStartLine(), $lineIndex);
 		}
 
 		return sprintf(

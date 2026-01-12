@@ -206,11 +206,14 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_VERSION_ID >= 80100) {
 			yield __DIR__ . '/../Rules/Comparison/data/bug-8485.php';
 			yield __DIR__ . '/../Rules/PhpDoc/data/bug-11033.php';
+			yield __DIR__ . '/../Rules/PhpDoc/data/bug-9708.php';
 		}
 
 		if (PHP_VERSION_ID >= 80100) {
 			yield __DIR__ . '/../Rules/Comparison/data/bug-9007.php';
 		}
+
+		yield __DIR__ . '/../Rules/Generics/data/bug-9981.php';
 
 		yield __DIR__ . '/../Rules/DeadCode/data/bug-8620.php';
 

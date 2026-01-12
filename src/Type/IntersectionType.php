@@ -1346,7 +1346,7 @@ class IntersectionType implements CompoundType
 		foreach ($this->types as $type) {
 			$oneType = [];
 			foreach ($type->getFiniteTypes() as $finiteType) {
-				$oneType[md5($finiteType->describe(VerbosityLevel::typeOnly()))] = $finiteType;
+				$oneType[$finiteType->describe(VerbosityLevel::typeOnly())] = $finiteType;
 			}
 			$compare[] = $oneType;
 		}

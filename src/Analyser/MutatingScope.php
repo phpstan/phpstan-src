@@ -925,7 +925,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$parts[] = sprintf(',%s', $parameter->getType()->describe(VerbosityLevel::cache()));
 		}
 
-		return md5(implode("\n", $parts));
+		return implode("\n", $parts);
 	}
 
 	private function resolveType(string $exprString, Expr $node): Type

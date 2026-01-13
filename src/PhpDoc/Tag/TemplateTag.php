@@ -4,6 +4,7 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 
 /**
  * @api
@@ -39,6 +40,19 @@ final class TemplateTag
 	public function getVariance(): TemplateTypeVariance
 	{
 		return $this->variance;
+	}
+
+	/**
+	 * @param callable(Type $type, callable(Type): Type $traverse): Type $callback
+	 */
+	public function changeType(callable $callback): self
+	{
+		return new self(
+			$this->name,
+			TypeTraverser::map($this->bound, $callback),
+			$this->default !== null ? TypeTraverser::map($this->default, $callback) : null,
+			$this->variance,
+		);
 	}
 
 }

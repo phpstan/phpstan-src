@@ -19,6 +19,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -85,6 +86,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof BooleanType && ($boundClass === BooleanType::class || $bound instanceof TemplateType)) {
 			return new TemplateBooleanType($scope, $strategy, $variance, $name, $bound, $default);
+		}
+
+		if ($bound instanceof StrictMixedType && ($boundClass === StrictMixedType::class || $bound instanceof TemplateType)) {
+			return new TemplateStrictMixedType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
 		if ($bound instanceof MixedType && ($boundClass === MixedType::class || $bound instanceof TemplateType)) {

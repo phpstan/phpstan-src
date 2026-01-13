@@ -25,6 +25,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateStrictMixedType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -283,13 +284,25 @@ final class FileTypeMapper
 					continue;
 				}
 
-				$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($parent->getTemplatePhpDocNodes(), $nameScope);
-				$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-				$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap, $templateTags);
-				$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($parent->getTemplatePhpDocNodes(), $nameScope);
-				$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-				$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap, $templateTags);
-				$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($parent->getTemplatePhpDocNodes(), $nameScope);
+				$templatePhpDocNodes = $parent->getTemplatePhpDocNodes();
+				$temporaryTemplateTypeMap = new TemplateTypeMap(array_map(static fn (array $tag) => TemplateTypeFactory::create($templateTypeScope, $tag[1]->name, new StrictMixedType(), TemplateTypeVariance::createInvariant()), $templatePhpDocNodes));
+
+				$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($templatePhpDocNodes, $nameScope->withTemplateTypeMap($temporaryTemplateTypeMap, []));
+				$temporaryTemplateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
+				foreach ($templateTags as $k => $templateTag) {
+					$templateTags[$k] = $templateTag->changeType(static function (Type $type, $traverse) use ($temporaryTemplateTypeMap): Type {
+						if ($type instanceof TemplateStrictMixedType) {
+							$newType = $temporaryTemplateTypeMap->getType($type->getName());
+							if ($newType === null) {
+								throw new ShouldNotHappenException();
+							}
+
+							return $newType;
+						}
+
+						return $traverse($type);
+					});
+				}
 				$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
 				foreach (array_keys($templateTags) as $name) {
 					$templateType = $templateTypeMap->getType($name);

@@ -205,6 +205,17 @@ final class TypeCombinator
 			return $types[0];
 		}
 
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = $i + 1; $j < $typesCount; $j++) {
+				if (!$types[$i]->equals($types[$j])) {
+					continue;
+				}
+
+				array_splice($types, $j--, 1);
+				$typesCount--;
+			}
+		}
+
 		$arrayTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];

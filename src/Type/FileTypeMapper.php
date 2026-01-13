@@ -696,7 +696,6 @@ final class FileTypeMapper
 		$resolved = [];
 		$resolvedPrefix = [];
 
-		// mirrors PhpDocNodeResolver::resolveTemplateTags
 		$prefixPriority = [
 			'' => 0,
 			'phan' => 1,

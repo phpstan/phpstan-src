@@ -288,16 +288,7 @@ final class PhpDocNodeResolver
 	public function resolveTemplateTags(array $templatePhpDocNodes, NameScope $nameScope): array
 	{
 		$resolved = [];
-		$resolvedPrefix = [];
-
-		$prefixPriority = [
-			'' => 0,
-			'phan' => 1,
-			'psalm' => 2,
-			'phpstan' => 3,
-		];
-
-		foreach ($templatePhpDocNodes as [$tagName, $valueNode]) {
+		foreach ($templatePhpDocNodes as $name => [$tagName, $valueNode]) {
 			if (in_array($tagName, ['@template', '@phan-template', '@psalm-template', '@phpstan-template'], true)) {
 				$variance = TemplateTypeVariance::createInvariant();
 			} elseif (in_array($tagName, ['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'], true)) {
@@ -308,32 +299,14 @@ final class PhpDocNodeResolver
 				continue;
 			}
 
-			if (str_starts_with($tagName, '@phan-')) {
-				$prefix = 'phan';
-			} elseif (str_starts_with($tagName, '@psalm-')) {
-				$prefix = 'psalm';
-			} elseif (str_starts_with($tagName, '@phpstan-')) {
-				$prefix = 'phpstan';
-			} else {
-				$prefix = '';
-			}
-
-			if (isset($resolved[$valueNode->name])) {
-				$setPrefix = $resolvedPrefix[$valueNode->name];
-				if ($prefixPriority[$prefix] <= $prefixPriority[$setPrefix]) {
-					continue;
-				}
-			}
-
 			$nameScopeWithoutCurrent = $nameScope->unsetTemplateType($valueNode->name);
 
-			$resolved[$valueNode->name] = new TemplateTag(
+			$resolved[$name] = new TemplateTag(
 				$valueNode->name,
 				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScopeWithoutCurrent) : new MixedType(true),
 				$valueNode->default !== null ? $this->typeNodeResolver->resolve($valueNode->default, $nameScopeWithoutCurrent) : null,
 				$variance,
 			);
-			$resolvedPrefix[$valueNode->name] = $prefix;
 		}
 
 		return $resolved;

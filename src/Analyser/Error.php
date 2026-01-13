@@ -45,6 +45,10 @@ final class Error implements JsonSerializable
 		if ($this->identifier !== null && !self::validateIdentifier($this->identifier)) {
 			throw new ShouldNotHappenException(sprintf('Invalid identifier: %s', $this->identifier));
 		}
+
+		if ($file === $filePath) {
+			$this->filePath = null;
+		}
 	}
 
 	public function getMessage(): string

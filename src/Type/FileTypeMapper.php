@@ -109,33 +109,6 @@ final class FileTypeMapper
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
 
-		if ($fileName === null) {
-			return $this->createResolvedPhpDocBlock($phpDocKey, $this->phpDocStringResolver->resolve($docComment), new NameScope(null, []), $docComment, null);
-		}
-
-		try {
-			$nameScope = $this->getNameScope($fileName, $className, $traitName, $functionName);
-		} catch (NameScopeAlreadyBeingCreatedException) {
-			return ResolvedPhpDocBlock::createEmpty();
-		}
-
-		return $this->createResolvedPhpDocBlock(
-			$phpDocKey,
-			$this->phpDocStringResolver->resolve($docComment),
-			$nameScope,
-			$docComment,
-			$fileName,
-		);
-	}
-
-	private function createResolvedPhpDocBlock(
-		string $phpDocKey,
-		PhpDocNode $phpDocNode,
-		NameScope $nameScope,
-		string $phpDocString,
-		?string $fileName,
-	): ResolvedPhpDocBlock
-	{
 		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
@@ -146,6 +119,33 @@ final class FileTypeMapper
 			$this->resolvedPhpDocBlockCacheCount--;
 		}
 
+		$this->resolvedPhpDocBlockCacheCount++;
+
+		if ($fileName === null) {
+			return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock($this->phpDocStringResolver->resolve($docComment), new NameScope(null, []), $docComment, null);
+		}
+
+		try {
+			$nameScope = $this->getNameScope($fileName, $className, $traitName, $functionName);
+		} catch (NameScopeAlreadyBeingCreatedException) {
+			return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+		}
+
+		return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock(
+			$this->phpDocStringResolver->resolve($docComment),
+			$nameScope,
+			$docComment,
+			$fileName,
+		);
+	}
+
+	private function createResolvedPhpDocBlock(
+		PhpDocNode $phpDocNode,
+		NameScope $nameScope,
+		string $phpDocString,
+		?string $fileName,
+	): ResolvedPhpDocBlock
+	{
 		$docBlockTemplateTypes = [];
 		$templateTypeMap = $nameScope->getTemplateTypeMap();
 		$templateTags = [];
@@ -170,7 +170,7 @@ final class FileTypeMapper
 			$docBlockTemplateTypes[$templateTagName] = $templateType;
 		}
 
-		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
+		return ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,
@@ -180,9 +180,6 @@ final class FileTypeMapper
 			$this->phpDocNodeResolver,
 			$this->reflectionProviderProvider->getReflectionProvider(),
 		);
-		$this->resolvedPhpDocBlockCacheCount++;
-
-		return $this->resolvedPhpDocBlockCache[$phpDocKey];
 	}
 
 	/**

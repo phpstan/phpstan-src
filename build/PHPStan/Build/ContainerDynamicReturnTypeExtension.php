@@ -30,22 +30,14 @@ final class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTy
 		], true);
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
-			return ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$methodCall->getArgs(),
-				$methodReflection->getVariants(),
-			)->getReturnType();
+			return null;
 		}
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 		if (!$argType instanceof ConstantStringType) {
-			return ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$methodCall->getArgs(),
-				$methodReflection->getVariants(),
-			)->getReturnType();
+			return null;
 		}
 
 		$type = new ObjectType($argType->getValue());

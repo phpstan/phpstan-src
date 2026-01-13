@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
@@ -31,7 +32,7 @@ final class NameScope
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param array<string, string> $constUses alias(string) => fullName(string)
 	 * @param array<string, TemplateTag> $templateTags
-	 * @param array<string, true> $typeAliasesMap
+	 * @param array<string, Type> $typeAliasesMap
 	 */
 	public function __construct(
 		private ?string $namespace,
@@ -262,6 +263,15 @@ final class NameScope
 	public function hasTypeAlias(string $alias): bool
 	{
 		return array_key_exists($alias, $this->typeAliasesMap);
+	}
+
+	public function getTypeAlias(string $alias): Type
+	{
+		if (!$this->hasTypeAlias($alias)) {
+			throw new ShouldNotHappenException(sprintf('Type alias %s not in NameScope', $alias));
+		}
+
+		return $this->typeAliasesMap[$alias];
 	}
 
 }

@@ -23,7 +23,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
-use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -183,7 +182,6 @@ abstract class PHPStanTestCase extends TestCase
 		return new UsefulTypeAliasResolver(
 			$globalTypeAliases,
 			$container->getByType(TypeStringResolver::class),
-			$container->getByType(TypeNodeResolver::class),
 			$reflectionProvider,
 		);
 	}

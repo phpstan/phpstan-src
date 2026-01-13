@@ -19,9 +19,11 @@ use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\TemplateTag;
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -76,6 +78,7 @@ final class FileTypeMapper
 		private Parser $phpParser,
 		private PhpDocStringResolver $phpDocStringResolver,
 		private PhpDocNodeResolver $phpDocNodeResolver,
+		private TypeNodeResolver $typeNodeResolver,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
 		private Cache $cache,
@@ -217,6 +220,7 @@ final class FileTypeMapper
 
 			$phpDocTemplateTypes = [];
 			$templateTags = [];
+			$typeAliases = [];
 			$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
 			foreach (array_reverse($parents) as $parent) {
 				$nameScope = new NameScope(
@@ -226,7 +230,21 @@ final class FileTypeMapper
 					$parent->getFunctionName(),
 					new TemplateTypeMap($phpDocTemplateTypes),
 					$templateTags,
-					$parent->getTypeAliasesMap(),
+					$typeAliases,
+					$parent->shouldBypassTypeAliases(),
+					$parent->getConstUses(),
+					$parent->getClassNameForTypeAlias(),
+				);
+				$resolvedTypeAliases = $this->resolveTypeAliases($parent->getTypeAliasesMap(), $nameScope);
+				$typeAliases = array_merge($typeAliases, $resolvedTypeAliases);
+				$nameScope = new NameScope(
+					$parent->getNamespace(),
+					$parent->getUses(),
+					$parent->getClassName(),
+					$parent->getFunctionName(),
+					new TemplateTypeMap($phpDocTemplateTypes),
+					$templateTags,
+					$typeAliases,
 					$parent->shouldBypassTypeAliases(),
 					$parent->getConstUses(),
 					$parent->getClassNameForTypeAlias(),
@@ -307,7 +325,7 @@ final class FileTypeMapper
 				$intermediaryNameScope->getFunctionName(),
 				new TemplateTypeMap($phpDocTemplateTypes),
 				$templateTags,
-				$intermediaryNameScope->getTypeAliasesMap(),
+				$typeAliases,
 				$intermediaryNameScope->shouldBypassTypeAliases(),
 				$intermediaryNameScope->getConstUses(),
 				$intermediaryNameScope->getClassNameForTypeAlias(),
@@ -318,13 +336,43 @@ final class FileTypeMapper
 	}
 
 	/**
+	 * @param array<string, TypeNode|array{string, string}> $typeAliasesMap
+	 * @return array<string, Type>
+	 */
+	private function resolveTypeAliases(array $typeAliasesMap, NameScope $nameScope): array
+	{
+		$aliases = [];
+		foreach ($typeAliasesMap as $localAliasName => $alias) {
+			if (is_array($alias)) {
+				[$aliasName, $importedFrom] = $alias;
+				$importedFrom = $nameScope->resolveStringName($importedFrom);
+				$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+				if (!$reflectionProvider->hasClass($importedFrom)) {
+					continue;
+				}
+				$importedFromClassReflection = $reflectionProvider->getClass($importedFrom);
+				$classTypeAliaseses = $importedFromClassReflection->getTypeAliases();
+				if (!array_key_exists($aliasName, $classTypeAliaseses)) {
+					continue;
+				}
+
+				$aliases[$localAliasName] = $classTypeAliaseses[$aliasName]->resolve($this->typeNodeResolver);
+				continue;
+			}
+
+			$aliases[$localAliasName] = $this->typeNodeResolver->resolve($alias, $nameScope);
+		}
+		return $aliases;
+	}
+
+	/**
 	 * @return array{array<string, IntermediaryNameScope>}
 	 */
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = 'v2';
+			$variableCacheKey = 'v3';
 			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 			if ($cached === null) {
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -399,7 +447,7 @@ final class FileTypeMapper
 		/** @var array<int, IntermediaryNameScope> $typeMapStack */
 		$typeMapStack = [];
 
-		/** @var array<int, array<string, true>> $typeAliasStack */
+		/** @var array<int, array<string, TypeNode|array{string, string}>> $typeAliasStack */
 		$typeAliasStack = [];
 
 		/** @var string[] $classStack */
@@ -735,19 +783,19 @@ final class FileTypeMapper
 	}
 
 	/**
-	 * @return array<string, true>
+	 * @return array<string, TypeNode|array{string, string}>
 	 */
 	private function getTypeAliasesMap(PhpDocNode $phpDocNode): array
 	{
 		$nameScope = new NameScope(null, []);
 
 		$aliasesMap = [];
-		foreach (array_keys($this->phpDocNodeResolver->resolveTypeAliasImportTags($phpDocNode, $nameScope)) as $key) {
-			$aliasesMap[$key] = true;
+		foreach ($this->phpDocNodeResolver->resolveTypeAliasImportTags($phpDocNode, $nameScope) as $key => $typeAliasImportTag) {
+			$aliasesMap[$key] = [$typeAliasImportTag->getImportedAlias(), $typeAliasImportTag->getImportedFrom()];
 		}
 
-		foreach (array_keys($this->phpDocNodeResolver->resolveTypeAliasTags($phpDocNode, $nameScope)) as $key) {
-			$aliasesMap[$key] = true;
+		foreach ($this->phpDocNodeResolver->resolveTypeAliasTags($phpDocNode, $nameScope) as $key => $typeAlias) {
+			$aliasesMap[$key] = $typeAlias->getTypeNode();
 		}
 
 		return $aliasesMap;

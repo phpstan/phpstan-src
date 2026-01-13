@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 
 final class IntermediaryNameScope
 {
@@ -13,7 +14,7 @@ final class IntermediaryNameScope
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param array<string, array{string, TemplateTagValueNode}> $templatePhpDocNodes
 	 * @param array<string, string> $constUses alias(string) => fullName(string)
-	 * @param array<string, true> $typeAliasesMap
+	 * @param array<string, TypeNode|array{string, string}> $typeAliasesMap
 	 * @param array{string, string, string, string|null, string|null}|null $traitData
 	 */
 	public function __construct(
@@ -129,7 +130,7 @@ final class IntermediaryNameScope
 	}
 
 	/**
-	 * @return array<string, true>
+	 * @return array<string, TypeNode|array{string, string}>
 	 */
 	public function getTypeAliasesMap(): array
 	{

@@ -25,6 +25,11 @@ final class TypeAliasTag
 		return $this->aliasName;
 	}
 
+	public function getTypeNode(): TypeNode
+	{
+		return $this->typeNode;
+	}
+
 	public function getTypeAlias(): TypeAlias
 	{
 		return new TypeAlias(

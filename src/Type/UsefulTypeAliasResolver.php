@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\NameScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -19,12 +18,6 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
-	/** @var array<string, Type> */
-	private array $resolvedLocalTypeAliases = [];
-
-	/** @var array<string, true> */
-	private array $resolvingClassTypeAliases = [];
-
 	/** @var array<string, true> */
 	private array $inProcess = [];
 
@@ -35,7 +28,6 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		#[AutowiredParameter(ref: '%typeAliases%')]
 		private array $globalTypeAliases,
 		private TypeStringResolver $typeStringResolver,
-		private TypeNodeResolver $typeNodeResolver,
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
@@ -73,56 +65,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 			return null;
 		}
 
-		$className = $nameScope->getClassNameForTypeAlias();
-		if ($className === null) {
-			return null;
-		}
-
-		$aliasNameInClassScope = $className . '::' . $aliasName;
-
-		if (array_key_exists($aliasNameInClassScope, $this->resolvedLocalTypeAliases)) {
-			return $this->resolvedLocalTypeAliases[$aliasNameInClassScope];
-		}
-
-		// prevent infinite recursion
-		if (array_key_exists($className, $this->resolvingClassTypeAliases)) {
-			return null;
-		}
-
-		$this->resolvingClassTypeAliases[$className] = true;
-
-		if (!$this->reflectionProvider->hasClass($className)) {
-			unset($this->resolvingClassTypeAliases[$className]);
-			return null;
-		}
-
-		$classReflection = $this->reflectionProvider->getClass($className);
-		$localTypeAliases = $classReflection->getTypeAliases();
-
-		unset($this->resolvingClassTypeAliases[$className]);
-
-		if (!array_key_exists($aliasName, $localTypeAliases)) {
-			return null;
-		}
-
-		if (array_key_exists($aliasNameInClassScope, $this->inProcess)) {
-			// resolve circular reference as ErrorType to make it easier to detect
-			throw new CircularTypeAliasDefinitionException();
-		}
-
-		$this->inProcess[$aliasNameInClassScope] = true;
-
-		try {
-			$unresolvedAlias = $localTypeAliases[$aliasName];
-			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
-		} catch (CircularTypeAliasDefinitionException) {
-			$resolvedAliasType = new CircularTypeAliasErrorType();
-		}
-
-		$this->resolvedLocalTypeAliases[$aliasNameInClassScope] = $resolvedAliasType;
-		unset($this->inProcess[$aliasNameInClassScope]);
-
-		return $resolvedAliasType;
+		return $nameScope->getTypeAlias($aliasName);
 	}
 
 	private function resolveGlobalTypeAlias(string $aliasName, NameScope $nameScope): ?Type

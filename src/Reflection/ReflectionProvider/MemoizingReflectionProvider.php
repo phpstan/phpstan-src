@@ -29,11 +29,12 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		if (isset($this->hasClasses[$className])) {
-			return $this->hasClasses[$className];
+		$lowerClassName = strtolower($className);
+		if (isset($this->hasClasses[$lowerClassName])) {
+			return $this->hasClasses[$lowerClassName];
 		}
 
-		return $this->hasClasses[$className] = $this->provider->hasClass($className);
+		return $this->hasClasses[$lowerClassName] = $this->provider->hasClass($className);
 	}
 
 	public function getClass(string $className): ClassReflection

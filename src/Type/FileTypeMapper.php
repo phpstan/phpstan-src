@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use Closure;
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\IntermediaryNameScope;
 use PHPStan\Analyser\NameScope;
@@ -796,7 +797,8 @@ final class FileTypeMapper
 
 	private function getPhpDocKey(string $nameScopeKey, string $docComment): string
 	{
-		return md5(sprintf('%s-%s', $nameScopeKey, $docComment));
+		$doc = new Doc($docComment);
+		return md5(sprintf('%s-%s', $nameScopeKey, $doc->getReformattedText()));
 	}
 
 }

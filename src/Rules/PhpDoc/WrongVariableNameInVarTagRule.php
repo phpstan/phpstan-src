@@ -51,10 +51,24 @@ final class WrongVariableNameInVarTagRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			$node instanceof Node\Stmt\Property
-			|| $node instanceof Node\Stmt\ClassConst
-			|| $node instanceof Node\Stmt\Const_
-			|| ($node instanceof VirtualNode && !$node instanceof InFunctionNode && !$node instanceof InClassMethodNode && !$node instanceof InClassNode)
+			// mirrored from top of NodeScopeResolver::processStmtNode
+		!(
+			!$node instanceof Node\Stmt\Property
+			&& !$node instanceof Node\Stmt\ClassConst
+			&& !$node instanceof Node\Stmt\Const_
+			&& !$node instanceof Node\Stmt\ClassLike
+			&& !$node instanceof Node\Stmt\Function_
+			&& !$node instanceof Node\Stmt\ClassMethod
+		)
+		) {
+			return [];
+		}
+
+		if (
+			$node instanceof VirtualNode
+			&& !$node instanceof InFunctionNode
+			&& !$node instanceof InClassMethodNode
+			&& !$node instanceof InClassNode
 		) {
 			return [];
 		}

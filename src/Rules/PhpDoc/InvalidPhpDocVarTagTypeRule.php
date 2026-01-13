@@ -54,9 +54,15 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			$node instanceof Node\Stmt\Property
-			|| $node instanceof Node\Stmt\ClassConst
-			|| $node instanceof Node\Stmt\Const_
+			// mirrored from top of NodeScopeResolver::processStmtNode
+			!(
+				!$node instanceof Node\Stmt\Property
+				&& !$node instanceof Node\Stmt\ClassConst
+				&& !$node instanceof Node\Stmt\Const_
+				&& !$node instanceof Node\Stmt\ClassLike
+				&& !$node instanceof Node\Stmt\Function_
+				&& !$node instanceof Node\Stmt\ClassMethod
+			)
 		) {
 			return [];
 		}

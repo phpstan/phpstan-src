@@ -527,6 +527,7 @@ class NodeScopeResolver
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$overridingThrowPoints = null;
 		if (
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
@@ -534,8 +535,12 @@ class NodeScopeResolver
 			&& !$stmt instanceof Node\Stmt\Property
 			&& !$stmt instanceof Node\Stmt\ClassConst
 			&& !$stmt instanceof Node\Stmt\Const_
+			&& !$stmt instanceof Node\Stmt\ClassLike
+			&& !$stmt instanceof Node\Stmt\Function_
+			&& !$stmt instanceof Node\Stmt\ClassMethod
 		) {
 			$scope = $this->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+			$overridingThrowPoints = $this->getOverridingThrowPoints($stmt, $scope);
 		}
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
@@ -568,8 +573,6 @@ class NodeScopeResolver
 		}
 
 		$this->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
-
-		$overridingThrowPoints = $this->getOverridingThrowPoints($stmt, $scope);
 
 		if ($stmt instanceof Node\Stmt\Declare_) {
 			$hasYield = false;

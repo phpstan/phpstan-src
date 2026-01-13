@@ -4,11 +4,8 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
-use PHPStan\Parser\Parser;
-use PHPStan\Parser\VariadicMethodsVisitor;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -35,13 +32,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 use ReflectionException;
-use function array_key_exists;
 use function array_map;
-use function count;
 use function explode;
 use function in_array;
-use function is_array;
-use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
 
@@ -62,8 +55,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
-	private ?bool $containsVariadicCalls = null;
-
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
@@ -78,8 +69,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private ReflectionMethod $reflection,
 		private ReflectionProvider $reflectionProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
-		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
-		private Parser $parser,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
@@ -240,55 +229,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	private function isVariadic(): bool
 	{
-		$isNativelyVariadic = $this->reflection->isVariadic();
-		$declaringClass = $this->declaringClass;
-		$filename = $this->declaringClass->getFileName();
-		if ($this->declaringTrait !== null) {
-			$declaringClass = $this->declaringTrait;
-			$filename = $this->declaringTrait->getFileName();
-		}
-
-		if (!$isNativelyVariadic && $filename !== null && !$this->declaringClass->isBuiltin()) {
-			if ($this->containsVariadicCalls !== null) {
-				return $this->containsVariadicCalls;
-			}
-
-			$className = $declaringClass->getName();
-			if ($declaringClass->isAnonymous()) {
-				$startLine = $declaringClass->getNativeReflection()->getStartLine();
-				$endLine = $declaringClass->getNativeReflection()->getEndLine();
-
-				if ($endLine === false) {
-					$endLine = 0;
-				}
-
-				$className = sprintf('%s:%s:%s', VariadicMethodsVisitor::ANONYMOUS_CLASS_PREFIX, $startLine, $endLine);
-			}
-			if (array_key_exists($className, VariadicMethodsVisitor::$cache)) {
-				if (array_key_exists($this->reflection->getName(), VariadicMethodsVisitor::$cache[$className])) {
-					return $this->containsVariadicCalls = VariadicMethodsVisitor::$cache[$className][$this->reflection->getName()];
-				}
-
-				return $this->containsVariadicCalls = false;
-			}
-
-			$nodes = $this->parser->parseFile($filename);
-			if (count($nodes) > 0) {
-				$variadicMethods = $nodes[0]->getAttribute(VariadicMethodsVisitor::ATTRIBUTE_NAME);
-
-				if (
-					is_array($variadicMethods)
-					&& array_key_exists($className, $variadicMethods)
-					&& array_key_exists($this->reflection->getName(), $variadicMethods[$className])
-				) {
-					return $this->containsVariadicCalls = $variadicMethods[$className][$this->reflection->getName()];
-				}
-			}
-
-			return $this->containsVariadicCalls = false;
-		}
-
-		return $isNativelyVariadic;
+		return $this->reflection->isVariadic();
 	}
 
 	public function isPrivate(): bool
@@ -468,7 +409,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->reflection,
 			$this->reflectionProvider,
 			$this->attributeReflectionFactory,
-			$this->parser,
 			$this->templateTypeMap,
 			$this->phpDocParameterTypes,
 			$phpDocType,
@@ -501,7 +441,6 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->reflection,
 			$this->reflectionProvider,
 			$this->attributeReflectionFactory,
-			$this->parser,
 			$this->templateTypeMap,
 			$phpDocParameterTypes,
 			$this->phpDocReturnType,

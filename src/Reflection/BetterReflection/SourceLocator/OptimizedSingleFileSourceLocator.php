@@ -46,7 +46,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		if ($fileHash === false) {
 			throw new CouldNotReadFileException($file);
 		}
-		return sprintf('v1-%s', $fileHash);
+		return sprintf('v2-%s', $fileHash);
 	}
 
 	#[Override]

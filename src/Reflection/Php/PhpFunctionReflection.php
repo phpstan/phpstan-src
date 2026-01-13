@@ -4,11 +4,8 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
-use PHPStan\Parser\Parser;
-use PHPStan\Parser\VariadicFunctionsVisitor;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -26,8 +23,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
-use function count;
-use function is_array;
 use function is_file;
 use function strtolower;
 
@@ -37,8 +32,6 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
-
-	private ?bool $containsVariadicCalls = null;
 
 	/**
 	 * @param array<string, Type> $phpDocParameterTypes
@@ -50,8 +43,6 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionFunction $reflection,
-		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
-		private Parser $parser,
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
@@ -142,34 +133,7 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	private function isVariadic(): bool
 	{
-		$isNativelyVariadic = $this->reflection->isVariadic();
-		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false && !$this->isBuiltin()) {
-			$filename = $this->reflection->getFileName();
-
-			if ($this->containsVariadicCalls !== null) {
-				return $this->containsVariadicCalls;
-			}
-
-			if (array_key_exists($this->reflection->getName(), VariadicFunctionsVisitor::$cache)) {
-				return $this->containsVariadicCalls = VariadicFunctionsVisitor::$cache[$this->reflection->getName()];
-			}
-
-			$nodes = $this->parser->parseFile($filename);
-			if (count($nodes) > 0) {
-				$variadicFunctions = $nodes[0]->getAttribute(VariadicFunctionsVisitor::ATTRIBUTE_NAME);
-
-				if (
-					is_array($variadicFunctions)
-					&& array_key_exists($this->reflection->getName(), $variadicFunctions)
-				) {
-					return $this->containsVariadicCalls = $variadicFunctions[$this->reflection->getName()];
-				}
-			}
-
-			return $this->containsVariadicCalls = false;
-		}
-
-		return $isNativelyVariadic;
+		return $this->reflection->isVariadic();
 	}
 
 	private function getReturnType(): Type

@@ -54,7 +54,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		$reflectionCacheKey = sprintf('odsl-%s-%s-%s', $file, $identifier->getType()->getName(), $identifier->getName());
-		$variableCacheKey = sprintf('v1-%s', $fileHash);
+		$variableCacheKey = sprintf('v2-%s', $fileHash);
 
 		return [$reflectionCacheKey, $variableCacheKey];
 	}

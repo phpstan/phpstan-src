@@ -296,7 +296,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param Node\Stmt\StaticVar[] $vars
+	 * @param Node\StaticVar[] $vars
 	 * @param VarTag[] $varTags
 	 * @return list<IdentifierRuleError>
 	 */

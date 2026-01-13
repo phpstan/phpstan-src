@@ -22,6 +22,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
@@ -155,6 +156,19 @@ final class TypeCombinator
 		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
+			if (
+				$types[$i] instanceof MixedType
+				&& !$types[$i]->isExplicitMixed()
+				&& !$types[$i] instanceof TemplateMixedType
+				&& $types[$i]->getSubtractedType() === null
+			) {
+				return $types[$i];
+			}
+			if ($types[$i] instanceof NeverType) {
+				array_splice($types, $i--, 1);
+				$typesCount--;
+				continue;
+			}
 			if ($types[$i] instanceof BenevolentUnionType) {
 				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
 					$benevolentUnionObject = $types[$i];
@@ -181,6 +195,10 @@ final class TypeCombinator
 			$alreadyNormalizedCounter++;
 			array_splice($types, $i, 1, $typesInner);
 			$typesCount += count($typesInner) - 1;
+		}
+
+		if ($typesCount === 0) {
+			return new NeverType();
 		}
 
 		if ($typesCount === 1) {
@@ -1114,6 +1132,12 @@ final class TypeCombinator
 		}
 		if ($typesCount === 1) {
 			return $types[0];
+		}
+
+		foreach ($types as $type) {
+			if ($type instanceof NeverType) {
+				return $type;
+			}
 		}
 
 		$sortTypes = static function (Type $a, Type $b): int {

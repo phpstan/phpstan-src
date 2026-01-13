@@ -2598,7 +2598,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new NonAcceptingNeverType(),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'never',
 		];
 		yield [
 			[

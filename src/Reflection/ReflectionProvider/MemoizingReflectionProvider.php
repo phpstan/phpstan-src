@@ -14,13 +14,13 @@ use function strtolower;
 final class MemoizingReflectionProvider implements ReflectionProvider
 {
 
-	/** @var array<string, bool> */
+	/** @var array<lowercase-string, bool> */
 	private array $hasClasses = [];
 
-	/** @var array<string, ClassReflection> */
+	/** @var array<lowercase-string, ClassReflection> */
 	private array $classes = [];
 
-	/** @var array<string, string> */
+	/** @var array<lowercase-string, string> */
 	private array $classNames = [];
 
 	public function __construct(private ReflectionProvider $provider)

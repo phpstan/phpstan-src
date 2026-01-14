@@ -3908,13 +3908,41 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
 		);
+
+		$ourNativeExpressionTypes = $this->nativeExpressionTypes;
+		$theirNativeExpressionTypes = $otherScope->nativeExpressionTypes;
+		$mergedNativeExpressionTypes = [];
+		foreach ($ourNativeExpressionTypes as $exprString => $expressionTypeHolder) {
+			if (!array_key_exists($exprString, $theirNativeExpressionTypes)) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $ourExpressionTypes)) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $theirExpressionTypes)) {
+				continue;
+			}
+			if (!$expressionTypeHolder->equals($ourExpressionTypes[$exprString])) {
+				continue;
+			}
+			if (!$theirNativeExpressionTypes[$exprString]->equals($theirExpressionTypes[$exprString])) {
+				continue;
+			}
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+				continue;
+			}
+			$mergedNativeExpressionTypes[$exprString] = $mergedExpressionTypes[$exprString];
+			unset($ourNativeExpressionTypes[$exprString]);
+			unset($theirNativeExpressionTypes[$exprString]);
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$mergedExpressionTypes,
-			$this->mergeVariableHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes),
+			array_merge($mergedNativeExpressionTypes, $this->mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes)),
 			$conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,

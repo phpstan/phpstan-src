@@ -100,7 +100,6 @@ final class FileAnalyser
 		$callbackInvocationNumber = 0;
 		if (is_file($file)) {
 			try {
-
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];

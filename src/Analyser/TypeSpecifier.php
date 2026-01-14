@@ -2539,17 +2539,15 @@ final class TypeSpecifier
 			if ($identicalType instanceof ConstantBooleanType) {
 				$never = new NeverType();
 				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
-				$leftTypes = $this->create($leftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
-				$rightTypes = $this->create($rightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				if ($leftExpr instanceof AlwaysRememberedExpr) {
-					$leftTypes = $leftTypes->unionWith(
-						$this->create($unwrappedLeftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr),
-					);
+					$leftTypes = $this->create($unwrappedLeftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
+				} else {
+					$leftTypes = $this->create($leftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				}
 				if ($rightExpr instanceof AlwaysRememberedExpr) {
-					$rightTypes = $rightTypes->unionWith(
-						$this->create($unwrappedRightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr),
-					);
+					$rightTypes = $this->create($unwrappedRightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
+				} else {
+					$rightTypes = $this->create($rightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				}
 				return $leftTypes->unionWith($rightTypes);
 			}

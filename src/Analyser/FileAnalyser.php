@@ -100,11 +100,13 @@ final class FileAnalyser
 		$callbackInvocationNumber = 0;
 		if (is_file($file)) {
 			try {
+
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
+				$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, $scope, int $callbackInvocationNumber) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, $parserNodes): void {
+				$nodeCallback = function (Node $node, $scope, int $callbackInvocationNumber) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, $parserNodes, $ignoreErrorExtensions): void {
 					/** @var Scope&NodeCallbackInvoker $scope */
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
@@ -133,7 +135,6 @@ final class FileAnalyser
 					}
 					$uniquedAnalysedCodeExceptionMessages = [];
 					$nodeType = get_class($node);
-					$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 					foreach ($ruleRegistry->getRules($nodeType) as $rule) {
 						try {
 							$ruleErrors = $rule->processNode($node, $scope);

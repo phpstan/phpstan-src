@@ -367,11 +367,11 @@ final class FileTypeMapper
 			[$nameScopeMap, $filesWithHashes] = $cached;
 			$useCache = true;
 			foreach ($filesWithHashes as $file => $hash) {
-				if (!is_file($file)) {
+				$newHash = @hash_file('sha256', $file);
+				if ($newHash === false) {
 					$useCache = false;
 					break;
 				}
-				$newHash = hash_file('sha256', $file);
 				if ($newHash === $hash) {
 					continue;
 				}

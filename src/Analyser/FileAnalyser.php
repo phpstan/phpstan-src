@@ -133,6 +133,7 @@ final class FileAnalyser
 					}
 					$uniquedAnalysedCodeExceptionMessages = [];
 					$nodeType = get_class($node);
+					$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 					foreach ($ruleRegistry->getRules($nodeType) as $rule) {
 						try {
 							$ruleErrors = $rule->processNode($node, $scope);
@@ -171,7 +172,7 @@ final class FileAnalyser
 							$error = $this->ruleErrorTransformer->transform($ruleError, $scope, $parserNodes, $node);
 
 							if ($error->canBeIgnored()) {
-								foreach ($this->ignoreErrorExtensionProvider->getExtensions() as $ignoreErrorExtension) {
+								foreach ($ignoreErrorExtensions as $ignoreErrorExtension) {
 									if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 										continue 2;
 									}

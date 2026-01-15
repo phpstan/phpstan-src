@@ -1326,71 +1326,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
 			return $this->getType($node->var);
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
-			$varType = $this->getType($node->var);
-			$varScalars = $varType->getConstantScalarValues();
-
-			if (count($varScalars) > 0) {
-				$newTypes = [];
-
-				foreach ($varScalars as $varValue) {
-					// until PHP 8.5 it was valid to increment/decrement an empty string.
-					// see https://github.com/php/php-src/issues/19597
-					if ($node instanceof Expr\PreInc) {
-						if ($varValue === '') {
-							$varValue = '1';
-						} elseif (is_string($varValue) && !is_numeric($varValue)) {
-							try {
-								$varValue = str_increment($varValue);
-							} catch (ValueError) {
-								return new NeverType();
-							}
-						} elseif (!is_bool($varValue)) {
-							++$varValue;
-						}
-					} else {
-						if ($varValue === '') {
-							$varValue = -1;
-						} elseif (is_string($varValue) && !is_numeric($varValue)) {
-							try {
-								$varValue = str_decrement($varValue);
-							} catch (ValueError) {
-								return new NeverType();
-							}
-						} elseif (is_numeric($varValue)) {
-							--$varValue;
-						}
-					}
-
-					$newTypes[] = $this->getTypeFromValue($varValue);
-				}
-				return TypeCombinator::union(...$newTypes);
-			} elseif ($varType->isString()->yes()) {
-				if ($varType->isLiteralString()->yes()) {
-					return new IntersectionType([
-						new StringType(),
-						new AccessoryLiteralStringType(),
-					]);
-				}
-
-				if ($varType->isNumericString()->yes()) {
-					return new BenevolentUnionType([
-						new IntegerType(),
-						new FloatType(),
-					]);
-				}
-
-				return new BenevolentUnionType([
-					new StringType(),
-					new IntegerType(),
-					new FloatType(),
-				]);
-			}
-
-			if ($node instanceof Expr\PreInc) {
-				return $this->getType(new BinaryOp\Plus($node->var, new Node\Scalar\Int_(1)));
-			}
-
-			return $this->getType(new BinaryOp\Minus($node->var, new Node\Scalar\Int_(1)));
+			return $this->getPreIncDecType($node);
 		} elseif ($node instanceof Expr\Yield_) {
 			$functionReflection = $this->getFunction();
 			if ($functionReflection === null) {
@@ -6535,6 +6471,75 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $rightType;
+	}
+
+	private function getPreIncDecType(Expr\PreInc|Expr\PreDec $node): Type
+	{
+		$varType = $this->getType($node->var);
+		$varScalars = $varType->getConstantScalarValues();
+
+		if (count($varScalars) > 0) {
+			$newTypes = [];
+
+			foreach ($varScalars as $varValue) {
+				// until PHP 8.5 it was valid to increment/decrement an empty string.
+				// see https://github.com/php/php-src/issues/19597
+				if ($node instanceof Expr\PreInc) {
+					if ($varValue === '') {
+						$varValue = '1';
+					} elseif (is_string($varValue) && !is_numeric($varValue)) {
+						try {
+							$varValue = str_increment($varValue);
+						} catch (ValueError) {
+							return new NeverType();
+						}
+					} elseif (!is_bool($varValue)) {
+						++$varValue;
+					}
+				} else {
+					if ($varValue === '') {
+						$varValue = -1;
+					} elseif (is_string($varValue) && !is_numeric($varValue)) {
+						try {
+							$varValue = str_decrement($varValue);
+						} catch (ValueError) {
+							return new NeverType();
+						}
+					} elseif (is_numeric($varValue)) {
+						--$varValue;
+					}
+				}
+
+				$newTypes[] = $this->getTypeFromValue($varValue);
+			}
+			return TypeCombinator::union(...$newTypes);
+		} elseif ($varType->isString()->yes()) {
+			if ($varType->isLiteralString()->yes()) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				]);
+			}
+
+			if ($varType->isNumericString()->yes()) {
+				return new BenevolentUnionType([
+					new IntegerType(),
+					new FloatType(),
+				]);
+			}
+
+			return new BenevolentUnionType([
+				new StringType(),
+				new IntegerType(),
+				new FloatType(),
+			]);
+		}
+
+		if ($node instanceof Expr\PreInc) {
+			return $this->getType(new BinaryOp\Plus($node->var, new Node\Scalar\Int_(1)));
+		}
+
+		return $this->getType(new BinaryOp\Minus($node->var, new Node\Scalar\Int_(1)));
 	}
 
 }

@@ -1113,64 +1113,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\Instanceof_) {
-			$expressionType = $this->getType($node->expr);
-			if (
-				$this->isInTrait()
-				&& TypeUtils::findThisType($expressionType) !== null
-			) {
-				return new BooleanType();
-			}
-			if ($expressionType instanceof NeverType) {
-				return new ConstantBooleanType(false);
-			}
-
-			$uncertainty = false;
-
-			if ($node->class instanceof Node\Name) {
-				$unresolvedClassName = $node->class->toString();
-				if (
-					strtolower($unresolvedClassName) === 'static'
-					&& $this->isInClass()
-				) {
-					$classType = new StaticType($this->getClassReflection());
-				} else {
-					$className = $this->resolveName($node->class);
-					$classType = new ObjectType($className);
-				}
-			} else {
-				$classType = $this->getType($node->class);
-				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
-					if ($type instanceof UnionType || $type instanceof IntersectionType) {
-						return $traverse($type);
-					}
-					if ($type->getObjectClassNames() !== []) {
-						$uncertainty = true;
-						return $type;
-					}
-					if ($type instanceof GenericClassStringType) {
-						$uncertainty = true;
-						return $type->getGenericType();
-					}
-					if ($type instanceof ConstantStringType) {
-						return new ObjectType($type->getValue());
-					}
-					return new MixedType();
-				});
-			}
-
-			if ($classType->isSuperTypeOf(new MixedType())->yes()) {
-				return new BooleanType();
-			}
-
-			$isSuperType = $classType->isSuperTypeOf($expressionType);
-
-			if ($isSuperType->no()) {
-				return new ConstantBooleanType(false);
-			} elseif ($isSuperType->yes() && !$uncertainty) {
-				return new ConstantBooleanType(true);
-			}
-
-			return new BooleanType();
+			return $this->getInstanceOfType($node);
 		}
 
 		if ($node instanceof Node\Expr\UnaryPlus) {
@@ -6465,6 +6408,68 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$nodeCallback($node, $this);
+	}
+
+	private function getInstanceOfType(Expr\Instanceof_ $node): Type
+	{
+		$expressionType = $this->getType($node->expr);
+		if (
+			$this->isInTrait()
+			&& TypeUtils::findThisType($expressionType) !== null
+		) {
+			return new BooleanType();
+		}
+		if ($expressionType instanceof NeverType) {
+			return new ConstantBooleanType(false);
+		}
+
+		$uncertainty = false;
+
+		if ($node->class instanceof Node\Name) {
+			$unresolvedClassName = $node->class->toString();
+			if (
+				strtolower($unresolvedClassName) === 'static'
+				&& $this->isInClass()
+			) {
+				$classType = new StaticType($this->getClassReflection());
+			} else {
+				$className = $this->resolveName($node->class);
+				$classType = new ObjectType($className);
+			}
+		} else {
+			$classType = $this->getType($node->class);
+			$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type->getObjectClassNames() !== []) {
+					$uncertainty = true;
+					return $type;
+				}
+				if ($type instanceof GenericClassStringType) {
+					$uncertainty = true;
+					return $type->getGenericType();
+				}
+				if ($type instanceof ConstantStringType) {
+					return new ObjectType($type->getValue());
+				}
+				return new MixedType();
+			});
+		}
+
+		if ($classType->isSuperTypeOf(new MixedType())->yes()) {
+			return new BooleanType();
+		}
+
+		$isSuperType = $classType->isSuperTypeOf($expressionType);
+
+		if ($isSuperType->no()) {
+			return new ConstantBooleanType(false);
+		} elseif ($isSuperType->yes() && !$uncertainty) {
+			return new ConstantBooleanType(true);
+		}
+
+		return new BooleanType();
 	}
 
 }

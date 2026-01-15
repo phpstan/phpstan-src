@@ -138,5 +138,4 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13964.php'], []);
 	}
 
-
 }

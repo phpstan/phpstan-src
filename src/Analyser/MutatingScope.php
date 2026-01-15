@@ -3887,6 +3887,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->inFirstLevelStatement;
 	}
 
+	/**
+	 * @no-named-arguments
+	 */
 	public function mergeWith(?self ...$otherScopes): self
 	{
 		$otherScopes = array_filter($otherScopes, fn ($scope) => $scope !== null && $scope !== $this);

@@ -1234,7 +1234,12 @@ class UnionType implements CompoundType
 	 */
 	protected function unionTypes(callable $getType): Type
 	{
-		return TypeCombinator::union(...array_map($getType, $this->types));
+		$newTypes = [];
+		foreach($this->types as $type) {
+			$newTypes[] = $getType($type);
+		}
+
+		return TypeCombinator::union(...$newTypes);
 	}
 
 	/**

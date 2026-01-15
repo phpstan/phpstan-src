@@ -863,36 +863,27 @@ class NodeScopeResolver
 				), $methodScope, $storage);
 
 				if ($isConstructor && $this->narrowMethodScopeFromConstructor) {
-					$finalScope = null;
-
+					$scopesToMerge = [];
 					foreach ($executionEnds as $executionEnd) {
 						if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
 							continue;
 						}
 
-						$endScope = $executionEnd->getStatementResult()->getScope();
-						if ($finalScope === null) {
-							$finalScope = $endScope;
-							continue;
-						}
-
-						$finalScope = $finalScope->mergeWith($endScope);
+						$scopesToMerge[] = $executionEnd->getStatementResult()->getScope()->toMutatingScope();
 					}
 
 					foreach ($gatheredReturnStatements as $statement) {
-						if ($finalScope === null) {
-							$finalScope = $statement->getScope()->toMutatingScope();
-							continue;
-						}
-
-						$finalScope = $finalScope->mergeWith($statement->getScope()->toMutatingScope());
+						$scopesToMerge[] = $statement->getScope()->toMutatingScope();
 					}
 
-					if ($finalScope !== null) {
-						$scope = $finalScope->rememberConstructorScope();
+					if (count($scopesToMerge) > 0) {
+						$scope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1))->rememberConstructorScope();
 					}
 
 				}
+			}
+			if (!$scope->isInClass()) {
+				throw new ShouldNotHappenException();
 			}
 			if (!$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
 				$this->processPendingFibers($storage);

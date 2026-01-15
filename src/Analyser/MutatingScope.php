@@ -1600,39 +1600,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof MethodCall) {
-			if ($node->name instanceof Node\Identifier) {
-				if ($this->nativeTypesPromoted) {
-					$methodReflection = $this->getMethodReflection(
-						$this->getNativeType($node->var),
-						$node->name->name,
-					);
-					if ($methodReflection === null) {
-						$returnType = new ErrorType();
-					} else {
-						$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-					}
-
-					return $this->getNullsafeShortCircuitingType($node->var, $returnType);
-				}
-
-				$returnType = $this->methodCallReturnType(
-					$this->getType($node->var),
-					$node->name->name,
-					$node,
-				);
-				if ($returnType === null) {
-					$returnType = new ErrorType();
-				}
-				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(new MethodCall($node->var, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
-				);
+			$callType = $this->getMethodCallType($node);
+			if ($callType !== null) {
+				return $callType;
 			}
 		}
 
@@ -6511,6 +6481,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
 					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
 					->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
+	}
+
+	private function getMethodCallType(MethodCall $node): ?Type
+	{
+		if ($node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				$methodReflection = $this->getMethodReflection(
+					$this->getNativeType($node->var),
+					$node->name->name,
+				);
+				if ($methodReflection === null) {
+					$returnType = new ErrorType();
+				} else {
+					$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+				}
+
+				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+			}
+
+			$returnType = $this->methodCallReturnType(
+				$this->getType($node->var),
+				$node->name->name,
+				$node,
+			);
+			if ($returnType === null) {
+				$returnType = new ErrorType();
+			}
+			return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(new MethodCall($node->var, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
 			);
 		}
 

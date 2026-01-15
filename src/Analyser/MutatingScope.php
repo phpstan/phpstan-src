@@ -1450,31 +1450,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			$issetLeftExpr = new Expr\Isset_([$node->left]);
-
-			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
-				$isNull = $type->isNull();
-				if ($isNull->maybe()) {
-					return null;
-				}
-
-				return !$isNull->yes();
-			});
-
-			if ($result !== null && $result !== false) {
-				return TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left));
-			}
-
-			$rightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
-
-			if ($result === null) {
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left)),
-					$rightType,
-				);
-			}
-
-			return $rightType;
+			return $this->getCoalesceType($node);
 		}
 
 		if ($node instanceof ConstFetch) {
@@ -6530,6 +6506,35 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$condResult->getTruthyScope()->getType($node->if),
 			$condResult->getFalseyScope()->getType($node->else),
 		);
+	}
+
+	private function getCoalesceType(BinaryOp\Coalesce $node): Type
+	{
+		$issetLeftExpr = new Expr\Isset_([$node->left]);
+
+		$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
+			$isNull = $type->isNull();
+			if ($isNull->maybe()) {
+				return null;
+			}
+
+			return !$isNull->yes();
+		});
+
+		if ($result !== null && $result !== false) {
+			return TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left));
+		}
+
+		$rightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
+
+		if ($result === null) {
+			return TypeCombinator::union(
+				TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left)),
+				$rightType,
+			);
+		}
+
+		return $rightType;
 	}
 
 }

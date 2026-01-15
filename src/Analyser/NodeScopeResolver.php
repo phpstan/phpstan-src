@@ -1293,10 +1293,11 @@ class NodeScopeResolver
 					$storage = $originalStorage->duplicate();
 					$bodyScope = $this->enterForeach($bodyScope, $storage, $originalScope, $stmt, $nodeCallback);
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
+					$scopesToMerge = [$bodyScopeResult->getScope()];
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						$scopesToMerge[] = $continueExitPoint->getScope();
 					}
+					$bodyScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 					if ($bodyScope->equals($prevScope)) {
 						break;
 					}
@@ -1326,9 +1327,10 @@ class NodeScopeResolver
 				}
 			}
 
+			$scopesToMerge = [$finalScope];
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$continueScope = $continueExitPoint->getScope();
-				$finalScope = $continueScope->mergeWith($finalScope);
+				$scopesToMerge[] = $continueScope;
 				if ($originalKeyVarExpr === null || !$continueScope->hasExpressionType($originalKeyVarExpr)->yes()) {
 					$continueExitPointHasUnoriginalKeyType = true;
 					continue;
@@ -1337,8 +1339,10 @@ class NodeScopeResolver
 			}
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 			foreach ($breakExitPoints as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+				$scopesToMerge[] = $breakExitPoint->getScope();
 			}
+
+			$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			$exprType = $scope->getType($stmt->expr);
 			$hasExpr = $scope->hasExpressionType($stmt->expr);
@@ -1474,10 +1478,11 @@ class NodeScopeResolver
 					$storage = $originalStorage->duplicate();
 					$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
+					$scopesToMerge = [$bodyScopeResult->getScope()];
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						$scopesToMerge[] = $continueExitPoint->getScope();
 					}
+					$bodyScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 					if ($bodyScope->equals($prevScope)) {
 						break;
 					}
@@ -1503,15 +1508,16 @@ class NodeScopeResolver
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 				$neverIterates = $condBooleanType->isFalse()->yes();
 			}
+			$scopesToMerge = [$finalScope];
 			if (!$alwaysIterates) {
 				foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
+					$scopesToMerge[] = $continueExitPoint->getScope();
 				}
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 			foreach ($breakExitPoints as $breakExitPoint) {
-				$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+				$scopesToMerge[] = $breakExitPoint->getScope();
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
@@ -1528,8 +1534,10 @@ class NodeScopeResolver
 				if (!$this->polluteScopeWithLoopInitialAssignments) {
 					$condScope = $condScope->mergeWith($scope);
 				}
-				$finalScope = $finalScope->mergeWith($condScope);
+				$scopesToMerge[] = $condScope;
 			}
+
+			$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -1547,7 +1555,7 @@ class NodeScopeResolver
 				$impurePoints,
 			);
 		} elseif ($stmt instanceof Do_) {
-			$finalScope = null;
+			$finalScopesToMerge = [];
 			$bodyScope = $scope;
 			$count = 0;
 			$hasYield = false;
@@ -1561,15 +1569,15 @@ class NodeScopeResolver
 					$bodyScope = $bodyScope->mergeWith($scope);
 					$storage = $originalStorage->duplicate();
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-					$bodyScope = $bodyScopeResult->getScope();
+					//$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$scopesToMerge = [$bodyScopeResult->getScope()];
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						$scopesToMerge[] = $continueExitPoint->getScope();
 					}
-					$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
 					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+						$scopesToMerge[] = $breakExitPoint->getScope();
 					}
+					$bodyScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 					$bodyScope = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 					if ($bodyScope->equals($prevScope)) {
 						break;
@@ -1586,10 +1594,12 @@ class NodeScopeResolver
 
 			$storage = $originalStorage;
 			$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-			$bodyScope = $bodyScopeResult->getScope();
+			$scopesToMerge = [$bodyScopeResult->getScope()];
 			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+				$scopesToMerge[] = $continueExitPoint->getScope();
 			}
+
+			$bodyScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			$alwaysIterates = false;
 			if ($context->isTopLevel()) {
@@ -1604,25 +1614,25 @@ class NodeScopeResolver
 			} else {
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 			}
-			$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
-			if ($finalScope === null) {
-				$finalScope = $scope;
+			if (!$alwaysTerminating) {
+				$finalScopesToMerge[] = $bodyScope;
 			}
 			if (!$alwaysTerminating) {
 				$condResult = $this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 				$hasYield = $condResult->hasYield();
 				$throwPoints = $condResult->getThrowPoints();
 				$impurePoints = $condResult->getImpurePoints();
-				$finalScope = $condResult->getFalseyScope();
+				$finalScopesToMerge[] = $condResult->getFalseyScope();
 			} else {
 				$this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			}
+
 			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+				$finalScopesToMerge[] = $breakExitPoint->getScope();
 			}
 
 			return new InternalStatementResult(
-				$finalScope,
+				$finalScopesToMerge !== [] ? $finalScopesToMerge[0]->mergeWith(...array_slice($finalScopesToMerge, 1)) : $scope,
 				$bodyScopeResult->hasYield() || $hasYield,
 				$alwaysTerminating,
 				$bodyScopeResult->getExitPointsForOuterLoop(),
@@ -1679,10 +1689,12 @@ class NodeScopeResolver
 						$bodyScope = $this->processExprNode($stmt, $lastCondExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getTruthyScope();
 					}
 					$bodyScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep())->filterOutLoopExitPoints();
-					$bodyScope = $bodyScopeResult->getScope();
+					$scopesToMerge = [$bodyScopeResult->getScope()];
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+						$scopesToMerge[] = $continueExitPoint->getScope();
 					}
+
+					$bodyScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 					foreach ($stmt->loop as $loopExpr) {
 						$exprResult = $this->processExprNode($stmt, $loopExpr, $bodyScope, $storage, new NoopNodeCallback(), ExpressionContext::createTopLevel());
@@ -1714,10 +1726,12 @@ class NodeScopeResolver
 			}
 
 			$finalScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
-			$finalScope = $finalScopeResult->getScope();
+			$scopesToMerge = [$finalScopeResult->getScope()];
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
+				$scopesToMerge[] = $continueExitPoint->getScope();
 			}
+
+			$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			$loopScope = $finalScope;
 			foreach ($stmt->loop as $loopExpr) {
@@ -1729,9 +1743,12 @@ class NodeScopeResolver
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
 			}
 
+			$scopesToMerge = [$finalScope];
 			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+				$scopesToMerge[] = $breakExitPoint->getScope();
 			}
+
+			$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 				if ($this->polluteScopeWithLoopInitialAssignments) {
@@ -1772,7 +1789,6 @@ class NodeScopeResolver
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $condResult->getScope();
 			$scopeForBranches = $scope;
-			$finalScope = null;
 			$prevScope = null;
 			$hasDefaultCase = false;
 			$alwaysTerminating = true;
@@ -1781,6 +1797,7 @@ class NodeScopeResolver
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$fullCondExpr = null;
+			$scopesToMerge = [];
 			foreach ($stmt->cases as $caseNode) {
 				if ($caseNode->cond !== null) {
 					$condExpr = new BinaryOp\Equal($stmt->cond, $caseNode->cond);
@@ -1797,17 +1814,20 @@ class NodeScopeResolver
 					$branchScope = $scopeForBranches;
 				}
 
-				$branchScope = $branchScope->mergeWith($prevScope);
+				if ($prevScope !== null) {
+					$branchScope = $branchScope->mergeWith($prevScope);
+				}
 				$branchScopeResult = $this->processStmtNodesInternal($caseNode, $caseNode->stmts, $branchScope, $storage, $nodeCallback, $context);
 				$branchScope = $branchScopeResult->getScope();
 				$branchFinalScopeResult = $branchScopeResult->filterOutLoopExitPoints();
 				$hasYield = $hasYield || $branchFinalScopeResult->hasYield();
+
 				foreach ($branchScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 					$alwaysTerminating = false;
-					$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+					$scopesToMerge[] = $breakExitPoint->getScope();
 				}
 				foreach ($branchScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
+					$scopesToMerge[] = $continueExitPoint->getScope();
 				}
 				$exitPointsForOuterLoop = array_merge($exitPointsForOuterLoop, $branchFinalScopeResult->getExitPointsForOuterLoop());
 				$throwPoints = array_merge($throwPoints, $branchFinalScopeResult->getThrowPoints());
@@ -1820,7 +1840,7 @@ class NodeScopeResolver
 						$fullCondExpr = null;
 					}
 					if (!$branchFinalScopeResult->isAlwaysTerminating()) {
-						$finalScope = $branchScope->mergeWith($finalScope);
+						$scopesToMerge[] = $branchScope;
 					}
 				} else {
 					$prevScope = $branchScope;
@@ -1834,37 +1854,39 @@ class NodeScopeResolver
 			}
 
 			if ($prevScope !== null && isset($branchFinalScopeResult)) {
-				$finalScope = $prevScope->mergeWith($finalScope);
+				$scopesToMerge[] = $prevScope;
 				$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 			}
 
-			if ((!$hasDefaultCase && !$exhaustive) || $finalScope === null) {
-				$finalScope = $scope->mergeWith($finalScope);
+			if (!$hasDefaultCase && !$exhaustive) {
+				$scopesToMerge[] = $scope;
+			}
+
+			if ($scopesToMerge === []) {
+				$finalScope = $scope;
+			} else {
+				$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 			}
 
 			return new InternalStatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop, $throwPoints, $impurePoints);
 		} elseif ($stmt instanceof TryCatch) {
 			$branchScopeResult = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
 			$branchScope = $branchScopeResult->getScope();
-			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
+			$finalScopesToMerge = $branchScopeResult->isAlwaysTerminating() ? [] : [$branchScope];
 
 			$exitPoints = [];
 			$finallyExitPoints = [];
 			$alwaysTerminating = $branchScopeResult->isAlwaysTerminating();
 			$hasYield = $branchScopeResult->hasYield();
 
-			if ($stmt->finally !== null) {
-				$finallyScope = $branchScope;
-			} else {
-				$finallyScope = null;
-			}
+			$finallyScopesToMerge = [$branchScope];
 			foreach ($branchScopeResult->getExitPoints() as $exitPoint) {
 				$finallyExitPoints[] = $exitPoint->toPublic();
 				if ($exitPoint->getStatement() instanceof Node\Stmt\Expression && $exitPoint->getStatement()->expr instanceof Expr\Throw_) {
 					continue;
 				}
-				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
+				if ($stmt->finally !== null) {
+					$finallyScopesToMerge[] = $exitPoint->getScope();
 				}
 				$exitPoints[] = $exitPoint;
 			}
@@ -1980,13 +2002,9 @@ class NodeScopeResolver
 				}
 				$throwPoints = $newThrowPoints;
 
-				$catchScope = null;
+				$catchScopesToMerge = [];
 				foreach ($matchingThrowPoints as $matchingThrowPoint) {
-					if ($catchScope === null) {
-						$catchScope = $matchingThrowPoint->getScope();
-					} else {
-						$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
-					}
+					$catchScopesToMerge[] = $matchingThrowPoint->getScope();
 				}
 
 				$variableName = null;
@@ -1998,52 +2016,57 @@ class NodeScopeResolver
 					$variableName = $catchNode->var->name;
 				}
 
+				$catchScope = $catchScopesToMerge[0]->mergeWith(...array_slice($catchScopesToMerge, 1));
 				$catchScopeResult = $this->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);
 				$catchScopeForFinally = $catchScopeResult->getScope();
 
-				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
+				if (!$catchScopeResult->isAlwaysTerminating()) {
+					$finalScopesToMerge[] = $catchScopeResult->getScope();
+				}
 				$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();
 				$hasYield = $hasYield || $catchScopeResult->hasYield();
 				$catchThrowPoints = $catchScopeResult->getThrowPoints();
 				$impurePoints = array_merge($impurePoints, $catchScopeResult->getImpurePoints());
 				$throwPointsForLater = array_merge($throwPointsForLater, $catchThrowPoints);
 
-				if ($finallyScope !== null) {
-					$finallyScope = $finallyScope->mergeWith($catchScopeForFinally);
+				if ($stmt->finally !== null) {
+					$finallyScopesToMerge[] = $catchScopeForFinally;
 				}
 				foreach ($catchScopeResult->getExitPoints() as $exitPoint) {
 					$finallyExitPoints[] = $exitPoint->toPublic();
 					if ($exitPoint->getStatement() instanceof Node\Stmt\Expression && $exitPoint->getStatement()->expr instanceof Expr\Throw_) {
 						continue;
 					}
-					if ($finallyScope !== null) {
-						$finallyScope = $finallyScope->mergeWith($exitPoint->getScope());
+					if ($stmt->finally !== null) {
+						$finallyScopesToMerge[] = $exitPoint->getScope();
 					}
 					$exitPoints[] = $exitPoint;
 				}
 
 				foreach ($catchThrowPoints as $catchThrowPoint) {
-					if ($finallyScope === null) {
+					if ($stmt->finally === null) {
 						continue;
 					}
-					$finallyScope = $finallyScope->mergeWith($catchThrowPoint->getScope());
+					$finallyScopesToMerge[] = $catchThrowPoint->getScope();
 				}
 			}
 
-			if ($finalScope === null) {
+			if ($finalScopesToMerge === []) {
 				$finalScope = $scope;
+			} else {
+				$finalScope = $finalScopesToMerge[0]->mergeWith(...array_slice($finalScopesToMerge, 1));
 			}
 
 			foreach ($throwPoints as $throwPoint) {
-				if ($finallyScope === null) {
+				if ($stmt->finally === null) {
 					continue;
 				}
-				$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
+				$finallyScopesToMerge[] = $throwPoint->getScope();
 			}
 
-			if ($finallyScope !== null) {
-				$originalFinallyScope = $finallyScope;
-				$finallyResult = $this->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $finallyScope, $storage, $nodeCallback, $context);
+			if ($stmt->finally !== null) {
+				$originalFinallyScope = $finallyScopesToMerge[0]->mergeWith(...array_slice($finallyScopesToMerge, 1));
+				$finallyResult = $this->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $originalFinallyScope, $storage, $nodeCallback, $context);
 				$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
 				$hasYield = $hasYield || $finallyResult->hasYield();
 				$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
@@ -4143,6 +4166,7 @@ class NodeScopeResolver
 			$condType = $scope->getType($expr->cond);
 			$condResult = $this->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
 			$scope = $condResult->getScope();
+			$scopesToMerge = [];
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -4261,8 +4285,7 @@ class NodeScopeResolver
 							$nodeCallback,
 							ExpressionContext::createTopLevel(),
 						);
-						$armScope = $armResult->getScope();
-						$scope = $scope->mergeWith($armScope);
+						$scopesToMerge[] = $armResult->getScope();
 						$hasYield = $hasYield || $armResult->hasYield();
 						$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 						$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
@@ -4295,11 +4318,10 @@ class NodeScopeResolver
 					$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 					$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 					$armResult = $this->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
-					$matchScope = $armResult->getScope();
+					$scopesToMerge[] = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-					$scope = $scope->mergeWith($matchScope);
 					continue;
 				}
 
@@ -4342,12 +4364,15 @@ class NodeScopeResolver
 					$nodeCallback,
 					ExpressionContext::createTopLevel(),
 				);
-				$armScope = $armResult->getScope();
-				$scope = $scope->mergeWith($armScope);
+				$scopesToMerge[] = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+			}
+
+			if ($scopesToMerge !== []) {
+				$scope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 			}
 
 			if (!$hasDefaultCond && !$hasAlwaysTrueCond) {
@@ -5101,10 +5126,12 @@ class NodeScopeResolver
 
 			$storage = $originalStorage->duplicate();
 			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
-			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
+			$intermediaryClosureScopesToMerge = [$intermediaryClosureScopeResult->getScope()];
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
-				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
+				$intermediaryClosureScopesToMerge[] = $exitPoint->getScope();
 			}
+
+			$intermediaryClosureScope = $intermediaryClosureScopesToMerge[0]->mergeWith(...array_slice($intermediaryClosureScopesToMerge, 1));
 
 			if ($expr->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) === true) {
 				$closureResultScope = $intermediaryClosureScope;
@@ -7151,7 +7178,7 @@ class NodeScopeResolver
 			$returnStatement = $node;
 		});
 
-		$calledMethodEndScope = null;
+		$scopesToMerge = [];
 		if ($returnStatement !== null) {
 			foreach ($returnStatement->getExecutionEnds() as $executionEnd) {
 				$statementResult = $executionEnd->getStatementResult();
@@ -7162,21 +7189,17 @@ class NodeScopeResolver
 						continue;
 					}
 				}
-				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statementResult->getScope();
-					continue;
-				}
-
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
+				$scopesToMerge[] = $statementResult->getScope();
 			}
 			foreach ($returnStatement->getReturnStatements() as $statement) {
-				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statement->getScope();
-					continue;
-				}
-
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statement->getScope());
+				$scopesToMerge[] = $statement->getScope();
 			}
+		}
+
+		if ($scopesToMerge === []) {
+			$calledMethodEndScope = null;
+		} else {
+			$calledMethodEndScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 		}
 
 		unset($this->calledMethodStack[$stackName]);

@@ -1653,59 +1653,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\StaticCall) {
-			if ($node->name instanceof Node\Identifier) {
-				if ($this->nativeTypesPromoted) {
-					if ($node->class instanceof Name) {
-						$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-					} else {
-						$staticMethodCalledOnType = $this->getNativeType($node->class);
-					}
-					$methodReflection = $this->getMethodReflection(
-						$staticMethodCalledOnType,
-						$node->name->name,
-					);
-					if ($methodReflection === null) {
-						$callType = new ErrorType();
-					} else {
-						$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-					}
-
-					if ($node->class instanceof Expr) {
-						return $this->getNullsafeShortCircuitingType($node->class, $callType);
-					}
-
-					return $callType;
-				}
-
-				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-				} else {
-					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-				}
-
-				$callType = $this->methodCallReturnType(
-					$staticMethodCalledOnType,
-					$node->name->toString(),
-					$node,
-				);
-				if ($callType === null) {
-					$callType = new ErrorType();
-				}
-
-				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $callType);
-				}
-
+			$callType = $this->getStaticCallType($node);
+			if ($callType !== null) {
 				return $callType;
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
-				);
 			}
 		}
 
@@ -6501,6 +6451,66 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					->getType(
 						new PropertyFetch($node->var, new Identifier($constantString->getValue())),
 					), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
+	}
+
+	private function getStaticCallType(Expr\StaticCall $node): ?Type
+	{
+		if ($node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				if ($node->class instanceof Name) {
+					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+				} else {
+					$staticMethodCalledOnType = $this->getNativeType($node->class);
+				}
+				$methodReflection = $this->getMethodReflection(
+					$staticMethodCalledOnType,
+					$node->name->name,
+				);
+				if ($methodReflection === null) {
+					$callType = new ErrorType();
+				} else {
+					$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+				}
+
+				if ($node->class instanceof Expr) {
+					return $this->getNullsafeShortCircuitingType($node->class, $callType);
+				}
+
+				return $callType;
+			}
+
+			if ($node->class instanceof Name) {
+				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+			} else {
+				$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$callType = $this->methodCallReturnType(
+				$staticMethodCalledOnType,
+				$node->name->toString(),
+				$node,
+			);
+			if ($callType === null) {
+				$callType = new ErrorType();
+			}
+
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $callType);
+			}
+
+			return $callType;
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
 			);
 		}
 

@@ -19,13 +19,13 @@ use function strtolower;
 final class MemoizingReflector implements Reflector
 {
 
-	/** @var array<string, ReflectionClass|null> */
+	/** @var array<lowercase-string, ReflectionClass|null> */
 	private array $classReflections = [];
 
 	/** @var array<string, ReflectionConstant|null> */
 	private array $constantReflections = [];
 
-	/** @var array<string, ReflectionFunction|null> */
+	/** @var array<lowercase-string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
 	public function __construct(

@@ -19,7 +19,7 @@ use function strtolower;
 final class MemoizingReflector implements Reflector
 {
 
-	/** @var array<lowercase-string, ReflectionClass|null> */
+	/** @var array<string, ReflectionClass|null> */
 	private array $classReflections = [];
 
 	/** @var array<string, ReflectionConstant|null> */

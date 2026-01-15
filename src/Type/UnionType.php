@@ -1235,7 +1235,7 @@ class UnionType implements CompoundType
 	protected function unionTypes(callable $getType): Type
 	{
 		$newTypes = [];
-		foreach($this->types as $type) {
+		foreach ($this->types as $type) {
 			$newTypes[] = $getType($type);
 		}
 

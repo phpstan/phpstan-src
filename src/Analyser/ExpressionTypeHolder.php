@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 
 final class ExpressionTypeHolder
 {
@@ -33,21 +34,34 @@ final class ExpressionTypeHolder
 		return $this->type->equals($other->type);
 	}
 
-	public function and(self $other): self
+	public function and(self ...$others): self
 	{
-		if ($this->type->equals($other->type)) {
-			if ($this->certainty->equals($other->certainty)) {
-				return $this;
-			}
-
-			$type = $this->type;
-		} else {
-			$type = TypeCombinator::union($this->type, $other->type);
+		if ($others === []) {
+			return $this;
 		}
+
+		$types = [$this->type];
+		$certainty = $this->certainty;
+		foreach ($others as $other) {
+			$certainty = $certainty->and($other->certainty);
+			if ($types[0] === $other->type || $other->type->equals($types[0])) {
+				continue;
+			}
+			$types[] = $other->type;
+		}
+
+		if (count($types) === 1) {
+			return new self(
+				$this->expr,
+				$types[0],
+				$certainty,
+			);
+		}
+
 		return new self(
 			$this->expr,
-			$type,
-			$this->certainty->and($other->certainty),
+			TypeCombinator::union(...$types),
+			$certainty,
 		);
 	}
 

@@ -1113,64 +1113,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\Instanceof_) {
-			$expressionType = $this->getType($node->expr);
-			if (
-				$this->isInTrait()
-				&& TypeUtils::findThisType($expressionType) !== null
-			) {
-				return new BooleanType();
-			}
-			if ($expressionType instanceof NeverType) {
-				return new ConstantBooleanType(false);
-			}
-
-			$uncertainty = false;
-
-			if ($node->class instanceof Node\Name) {
-				$unresolvedClassName = $node->class->toString();
-				if (
-					strtolower($unresolvedClassName) === 'static'
-					&& $this->isInClass()
-				) {
-					$classType = new StaticType($this->getClassReflection());
-				} else {
-					$className = $this->resolveName($node->class);
-					$classType = new ObjectType($className);
-				}
-			} else {
-				$classType = $this->getType($node->class);
-				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
-					if ($type instanceof UnionType || $type instanceof IntersectionType) {
-						return $traverse($type);
-					}
-					if ($type->getObjectClassNames() !== []) {
-						$uncertainty = true;
-						return $type;
-					}
-					if ($type instanceof GenericClassStringType) {
-						$uncertainty = true;
-						return $type->getGenericType();
-					}
-					if ($type instanceof ConstantStringType) {
-						return new ObjectType($type->getValue());
-					}
-					return new MixedType();
-				});
-			}
-
-			if ($classType->isSuperTypeOf(new MixedType())->yes()) {
-				return new BooleanType();
-			}
-
-			$isSuperType = $classType->isSuperTypeOf($expressionType);
-
-			if ($isSuperType->no()) {
-				return new ConstantBooleanType(false);
-			} elseif ($isSuperType->yes() && !$uncertainty) {
-				return new ConstantBooleanType(true);
-			}
-
-			return new BooleanType();
+			return $this->getInstanceOfType($node);
 		}
 
 		if ($node instanceof Node\Expr\UnaryPlus) {
@@ -1358,389 +1301,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			return $this->initializerExprTypeResolver->getFirstClassCallableType($node, InitializerExprContext::fromScope($this), $this->nativeTypesPromoted);
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-			$parameters = [];
-			$isVariadic = false;
-			$firstOptionalParameterIndex = null;
-			foreach ($node->params as $i => $param) {
-				$isOptionalCandidate = $param->default !== null || $param->variadic;
-
-				if ($isOptionalCandidate) {
-					if ($firstOptionalParameterIndex === null) {
-						$firstOptionalParameterIndex = $i;
-					}
-				} else {
-					$firstOptionalParameterIndex = null;
-				}
-			}
-
-			foreach ($node->params as $i => $param) {
-				if ($param->variadic) {
-					$isVariadic = true;
-				}
-				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new ShouldNotHappenException();
-				}
-				$parameters[] = new NativeParameterReflection(
-					$param->var->name,
-					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
-					$param->byRef
-						? PassedByReference::createCreatesNewVariable()
-						: PassedByReference::createNo(),
-					$param->variadic,
-					$param->default !== null ? $this->getType($param->default) : null,
-				);
-			}
-
-			$callableParameters = null;
-			$arrayMapArgs = $node->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
-			$immediatelyInvokedArgs = $node->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
-			if ($arrayMapArgs !== null) {
-				$callableParameters = [];
-				foreach ($arrayMapArgs as $funcCallArg) {
-					$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
-				}
-			} elseif ($immediatelyInvokedArgs !== null) {
-				foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
-					$callableParameters[] = new DummyParameter('item', $this->getType($immediatelyInvokedArg->value), false, PassedByReference::createNo(), false, null);
-				}
-			} else {
-				$inFunctionCallsStackCount = count($this->inFunctionCallsStack);
-				if ($inFunctionCallsStackCount > 0) {
-					[, $inParameter] = $this->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
-					if ($inParameter !== null) {
-						$callableParameters = $this->nodeScopeResolver->createCallableParameters($this, $node, null, $inParameter->getType());
-					}
-				}
-			}
-
-			if ($node instanceof Expr\ArrowFunction) {
-				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
-
-				if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
-					$yieldNode = $node->expr;
-
-					if ($yieldNode instanceof Expr\Yield_) {
-						if ($yieldNode->key === null) {
-							$keyType = new IntegerType();
-						} else {
-							$keyType = $arrowScope->getType($yieldNode->key);
-						}
-
-						if ($yieldNode->value === null) {
-							$valueType = new NullType();
-						} else {
-							$valueType = $arrowScope->getType($yieldNode->value);
-						}
-					} else {
-						$yieldFromType = $arrowScope->getType($yieldNode->expr);
-						$keyType = $arrowScope->getIterableKeyType($yieldFromType);
-						$valueType = $arrowScope->getIterableValueType($yieldFromType);
-					}
-
-					$returnType = new GenericObjectType(Generator::class, [
-						$keyType,
-						$valueType,
-						new MixedType(),
-						new VoidType(),
-					]);
-				} else {
-					$returnType = $arrowScope->getKeepVoidType($node->expr);
-					if ($node->returnType !== null) {
-						$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
-						$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
-					}
-				}
-
-				$arrowFunctionImpurePoints = [];
-				$invalidateExpressions = [];
-				$arrowFunctionExprResult = $this->nodeScopeResolver->processExprNode(
-					new Node\Stmt\Expression($node->expr),
-					$node->expr,
-					$arrowScope,
-					new ExpressionResultStorage(),
-					static function (Node $node, Scope $scope) use ($arrowScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
-						if ($scope->getAnonymousFunctionReflection() !== $arrowScope->getAnonymousFunctionReflection()) {
-							return;
-						}
-
-						if ($node instanceof InvalidateExprNode) {
-							$invalidateExpressions[] = $node;
-							return;
-						}
-
-						if (!$node instanceof PropertyAssignNode) {
-							return;
-						}
-
-						$arrowFunctionImpurePoints[] = new ImpurePoint(
-							$scope,
-							$node,
-							'propertyAssign',
-							'property assignment',
-							true,
-						);
-					},
-					ExpressionContext::createDeep(),
-				);
-				$throwPoints = array_map(static fn ($throwPoint) => $throwPoint->toPublic(), $arrowFunctionExprResult->getThrowPoints());
-				$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
-				$usedVariables = [];
-			} else {
-				$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
-				$cacheKey = $this->getClosureScopeCacheKey();
-				if (array_key_exists($cacheKey, $cachedTypes)) {
-					$cachedClosureData = $cachedTypes[$cacheKey];
-
-					$mustUseReturnValue = TrinaryLogic::createNo();
-					foreach ($node->attrGroups as $attrGroup) {
-						foreach ($attrGroup->attrs as $attr) {
-							if ($attr->name->toLowerString() === 'nodiscard') {
-								$mustUseReturnValue = TrinaryLogic::createYes();
-								break;
-							}
-						}
-					}
-
-					return new ClosureType(
-						$parameters,
-						$cachedClosureData['returnType'],
-						$isVariadic,
-						TemplateTypeMap::createEmpty(),
-						TemplateTypeMap::createEmpty(),
-						TemplateTypeVarianceMap::createEmpty(),
-						throwPoints: $cachedClosureData['throwPoints'],
-						impurePoints: $cachedClosureData['impurePoints'],
-						invalidateExpressions: $cachedClosureData['invalidateExpressions'],
-						usedVariables: $cachedClosureData['usedVariables'],
-						acceptsNamedArguments: TrinaryLogic::createYes(),
-						mustUseReturnValue: $mustUseReturnValue,
-					);
-				}
-				if (self::$resolveClosureTypeDepth >= 2) {
-					return new ClosureType(
-						$parameters,
-						$this->getFunctionType($node->returnType, false, false),
-						$isVariadic,
-					);
-				}
-
-				self::$resolveClosureTypeDepth++;
-
-				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
-				$closureReturnStatements = [];
-				$closureYieldStatements = [];
-				$onlyNeverExecutionEnds = null;
-				$closureImpurePoints = [];
-				$invalidateExpressions = [];
-
-				try {
-					$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$onlyNeverExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
-						if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
-							return;
-						}
-
-						if ($node instanceof InvalidateExprNode) {
-							$invalidateExpressions[] = $node;
-							return;
-						}
-
-						if ($node instanceof PropertyAssignNode) {
-							$closureImpurePoints[] = new ImpurePoint(
-								$scope,
-								$node,
-								'propertyAssign',
-								'property assignment',
-								true,
-							);
-							return;
-						}
-
-						if ($node instanceof ExecutionEndNode) {
-							if ($node->getStatementResult()->isAlwaysTerminating()) {
-								foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
-									if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
-										$onlyNeverExecutionEnds = false;
-										continue;
-									}
-
-									if ($onlyNeverExecutionEnds === null) {
-										$onlyNeverExecutionEnds = true;
-									}
-
-									break;
-								}
-
-								if (count($node->getStatementResult()->getExitPoints()) === 0) {
-									if ($onlyNeverExecutionEnds === null) {
-										$onlyNeverExecutionEnds = true;
-									}
-								}
-							} else {
-								$onlyNeverExecutionEnds = false;
-							}
-
-							return;
-						}
-
-						if ($node instanceof Node\Stmt\Return_) {
-							$closureReturnStatements[] = [$node, $scope];
-						}
-
-						if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
-							return;
-						}
-
-						$closureYieldStatements[] = [$node, $scope];
-					}, StatementContext::createTopLevel());
-				} finally {
-					self::$resolveClosureTypeDepth--;
-				}
-
-				$throwPoints = $closureStatementResult->getThrowPoints();
-				$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
-
-				$returnTypes = [];
-				$hasNull = false;
-				foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
-					if ($returnNode->expr === null) {
-						$hasNull = true;
-						continue;
-					}
-
-					$returnTypes[] = $returnScope->toMutatingScope()->getType($returnNode->expr);
-				}
-
-				if (count($returnTypes) === 0) {
-					if ($onlyNeverExecutionEnds === true && !$hasNull) {
-						$returnType = new NonAcceptingNeverType();
-					} else {
-						$returnType = new VoidType();
-					}
-				} else {
-					if ($onlyNeverExecutionEnds === true) {
-						$returnTypes[] = new NonAcceptingNeverType();
-					}
-					if ($hasNull) {
-						$returnTypes[] = new NullType();
-					}
-					$returnType = TypeCombinator::union(...$returnTypes);
-				}
-
-				if (count($closureYieldStatements) > 0) {
-					$keyTypes = [];
-					$valueTypes = [];
-					foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
-						if ($yieldNode instanceof Expr\Yield_) {
-							if ($yieldNode->key === null) {
-								$keyTypes[] = new IntegerType();
-							} else {
-								$keyTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->key);
-							}
-
-							if ($yieldNode->value === null) {
-								$valueTypes[] = new NullType();
-							} else {
-								$valueTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->value);
-							}
-
-							continue;
-						}
-
-						$yieldFromType = $yieldScope->toMutatingScope()->getType($yieldNode->expr);
-						$keyTypes[] = $yieldScope->toMutatingScope()->getIterableKeyType($yieldFromType);
-						$valueTypes[] = $yieldScope->toMutatingScope()->getIterableValueType($yieldFromType);
-					}
-
-					$returnType = new GenericObjectType(Generator::class, [
-						TypeCombinator::union(...$keyTypes),
-						TypeCombinator::union(...$valueTypes),
-						new MixedType(),
-						$returnType,
-					]);
-				} else {
-					if ($node->returnType !== null) {
-						$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
-						$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
-					}
-				}
-
-				$usedVariables = [];
-				foreach ($node->uses as $use) {
-					if (!is_string($use->var->name)) {
-						continue;
-					}
-
-					$usedVariables[] = $use->var->name;
-				}
-
-				foreach ($node->uses as $use) {
-					if (!$use->byRef) {
-						continue;
-					}
-
-					$impurePoints[] = new ImpurePoint(
-						$this,
-						$node,
-						'functionCall',
-						'call to a Closure with by-ref use',
-						true,
-					);
-					break;
-				}
-			}
-
-			foreach ($parameters as $parameter) {
-				if ($parameter->passedByReference()->no()) {
-					continue;
-				}
-
-				$impurePoints[] = new ImpurePoint(
-					$this,
-					$node,
-					'functionCall',
-					'call to a Closure with by-ref parameter',
-					true,
-				);
-			}
-
-			$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
-			$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
-
-			$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
-			$cachedTypes[$this->getClosureScopeCacheKey()] = [
-				'returnType' => $returnType,
-				'throwPoints' => $throwPointsForClosureType,
-				'impurePoints' => $impurePointsForClosureType,
-				'invalidateExpressions' => $invalidateExpressions,
-				'usedVariables' => $usedVariables,
-			];
-			$node->setAttribute('phpstanCachedTypes', $cachedTypes);
-
-			$mustUseReturnValue = TrinaryLogic::createNo();
-			foreach ($node->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					if ($attr->name->toLowerString() === 'nodiscard') {
-						$mustUseReturnValue = TrinaryLogic::createYes();
-						break;
-					}
-				}
-			}
-
-			return new ClosureType(
-				$parameters,
-				$returnType,
-				$isVariadic,
-				TemplateTypeMap::createEmpty(),
-				TemplateTypeMap::createEmpty(),
-				TemplateTypeVarianceMap::createEmpty(),
-				throwPoints: $throwPointsForClosureType,
-				impurePoints: $impurePointsForClosureType,
-				invalidateExpressions: $invalidateExpressions,
-				usedVariables: $usedVariables,
-				acceptsNamedArguments: TrinaryLogic::createYes(),
-				mustUseReturnValue: $mustUseReturnValue,
-			);
+			return $this->getClosureType($node);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				return $this->exactInstantiation($node, $node->class);
@@ -1852,136 +1413,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			return $generatorReturnType;
 		} elseif ($node instanceof Expr\Match_) {
-			$cond = $node->cond;
-			$condType = $this->getType($cond);
-			$types = [];
-
-			$matchScope = $this;
-			$arms = $node->arms;
-			if ($condType->isEnum()->yes()) {
-				// enum match analysis would work even without this if branch
-				// but would be much slower
-				// this avoids using ObjectType::$subtractedType which is slow for huge enums
-				// because of repeated union type normalization
-				$enumCases = $condType->getEnumCases();
-				if (count($enumCases) > 0) {
-					$indexedEnumCases = [];
-					foreach ($enumCases as $enumCase) {
-						$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
-					}
-					$unusedIndexedEnumCases = $indexedEnumCases;
-
-					foreach ($arms as $i => $arm) {
-						if ($arm->conds === null) {
-							continue;
-						}
-
-						$conditionCases = [];
-						foreach ($arm->conds as $armCond) {
-							if (!$armCond instanceof Expr\ClassConstFetch) {
-								continue 2;
-							}
-							if (!$armCond->class instanceof Name) {
-								continue 2;
-							}
-							if (!$armCond->name instanceof Node\Identifier) {
-								continue 2;
-							}
-							$fetchedClassName = $this->resolveName($armCond->class);
-							$loweredFetchedClassName = strtolower($fetchedClassName);
-							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-								continue 2;
-							}
-
-							$caseName = $armCond->name->toString();
-							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								continue 2;
-							}
-
-							$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
-							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
-						}
-
-						$conditionCasesCount = count($conditionCases);
-						if ($conditionCasesCount === 0) {
-							throw new ShouldNotHappenException();
-						} elseif ($conditionCasesCount === 1) {
-							$conditionCaseType = $conditionCases[0];
-						} else {
-							$conditionCaseType = new UnionType($conditionCases);
-						}
-
-						$types[] = $matchScope->addTypeToExpression(
-							$cond,
-							$conditionCaseType,
-						)->getType($arm->body);
-						unset($arms[$i]);
-					}
-
-					$remainingCases = [];
-					foreach ($unusedIndexedEnumCases as $cases) {
-						foreach ($cases as $case) {
-							$remainingCases[] = $case;
-						}
-					}
-
-					$remainingCasesCount = count($remainingCases);
-					if ($remainingCasesCount === 0) {
-						$remainingType = new NeverType();
-					} elseif ($remainingCasesCount === 1) {
-						$remainingType = $remainingCases[0];
-					} else {
-						$remainingType = new UnionType($remainingCases);
-					}
-
-					$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
-				}
-			}
-
-			foreach ($arms as $arm) {
-				if ($arm->conds === null) {
-					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
-						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
-					}
-					$types[] = $matchScope->getType($arm->body);
-					continue;
-				}
-
-				if (count($arm->conds) === 0) {
-					throw new ShouldNotHappenException();
-				}
-
-				if (count($arm->conds) === 1) {
-					$filteringExpr = new BinaryOp\Identical($cond, $arm->conds[0]);
-				} else {
-					$items = [];
-					foreach ($arm->conds as $filteringExpr) {
-						$items[] = new Node\ArrayItem($filteringExpr);
-					}
-					$filteringExpr = new FuncCall(
-						new Name\FullyQualified('in_array'),
-						[
-							new Arg($cond),
-							new Arg(new Array_($items)),
-							new Arg(new ConstFetch(new Name\FullyQualified('true'))),
-						],
-					);
-				}
-
-				$filteringExprType = $matchScope->getType($filteringExpr);
-
-				if (!$filteringExprType->isFalse()->yes()) {
-					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-					if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
-						$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
-					}
-					$types[] = $truthyScope->getType($arm->body);
-				}
-
-				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
-			}
-
-			return TypeCombinator::union(...$types);
+			return $this->getMatchType($node);
 		}
 
 		if ($node instanceof Expr\Isset_) {
@@ -2221,59 +1653,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\StaticCall) {
-			if ($node->name instanceof Node\Identifier) {
-				if ($this->nativeTypesPromoted) {
-					if ($node->class instanceof Name) {
-						$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-					} else {
-						$staticMethodCalledOnType = $this->getNativeType($node->class);
-					}
-					$methodReflection = $this->getMethodReflection(
-						$staticMethodCalledOnType,
-						$node->name->name,
-					);
-					if ($methodReflection === null) {
-						$callType = new ErrorType();
-					} else {
-						$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-					}
-
-					if ($node->class instanceof Expr) {
-						return $this->getNullsafeShortCircuitingType($node->class, $callType);
-					}
-
-					return $callType;
-				}
-
-				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-				} else {
-					$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-				}
-
-				$callType = $this->methodCallReturnType(
-					$staticMethodCalledOnType,
-					$node->name->toString(),
-					$node,
-				);
-				if ($callType === null) {
-					$callType = new ErrorType();
-				}
-
-				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $callType);
-				}
-
+			$callType = $this->getStaticCallType($node);
+			if ($callType !== null) {
 				return $callType;
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
-				);
 			}
 		}
 
@@ -2298,43 +1680,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof PropertyFetch) {
-			if ($node->name instanceof Node\Identifier) {
-				if ($this->nativeTypesPromoted) {
-					$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
-					if ($propertyReflection === null) {
-						return new ErrorType();
-					}
-
-					if (!$propertyReflection->hasNativeType()) {
-						return new MixedType();
-					}
-
-					$nativeType = $propertyReflection->getNativeType();
-
-					return $this->getNullsafeShortCircuitingType($node->var, $nativeType);
-				}
-
-				$returnType = $this->propertyFetchType(
-					$this->getType($node->var),
-					$node->name->name,
-					$node,
-				);
-				if ($returnType === null) {
-					$returnType = new ErrorType();
-				}
-
-				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(
-							new PropertyFetch($node->var, new Identifier($constantString->getValue())),
-						), $nameType->getConstantStrings()),
-				);
+			$fetchType = $this->getPropertyFetchType($node);
+			if ($fetchType !== null) {
+				return $fetchType;
 			}
 		}
 
@@ -2355,153 +1703,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\StaticPropertyFetch) {
-			if ($node->name instanceof Node\VarLikeIdentifier) {
-				if ($this->nativeTypesPromoted) {
-					$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
-					if ($propertyReflection === null) {
-						return new ErrorType();
-					}
-					if (!$propertyReflection->hasNativeType()) {
-						return new MixedType();
-					}
-
-					$nativeType = $propertyReflection->getNativeType();
-
-					if ($node->class instanceof Expr) {
-						return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
-					}
-
-					return $nativeType;
-				}
-
-				if ($node->class instanceof Name) {
-					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
-				} else {
-					$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-				}
-
-				$fetchType = $this->propertyFetchType(
-					$staticPropertyFetchedOnType,
-					$node->name->toString(),
-					$node,
-				);
-				if ($fetchType === null) {
-					$fetchType = new ErrorType();
-				}
-
-				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
-				}
-
+			$fetchType = $this->getStaticPropertyFetchType($node);
+			if ($fetchType !== null) {
 				return $fetchType;
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(new Expr\StaticPropertyFetch($node->class, new Node\VarLikeIdentifier($constantString->getValue()))), $nameType->getConstantStrings()),
-				);
 			}
 		}
 
 		if ($node instanceof FuncCall) {
-			if ($node->name instanceof Expr) {
-				$calledOnType = $this->getType($node->name);
-				if ($calledOnType->isCallable()->no()) {
-					return new ErrorType();
-				}
-
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$this,
-					$node->getArgs(),
-					$calledOnType->getCallableParametersAcceptors($this),
-					null,
-				);
-
-				$functionName = null;
-				if ($node->name instanceof String_) {
-					/** @var non-empty-string $name */
-					$name = $node->name->value;
-					$functionName = new Name($name);
-				} elseif (
-					$node->name instanceof FuncCall
-					&& $node->name->name instanceof Name
-					&& $node->name->isFirstClassCallable()
-				) {
-					$functionName = $node->name->name;
-				}
-
-				$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-				if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $this)) {
-					$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
-					$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
-					if ($resolvedType !== null) {
-						return $resolvedType;
-					}
-				}
-
-				return $parametersAcceptor->getReturnType();
-			}
-
-			if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
-				return new ErrorType();
-			}
-
-			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
-			if ($this->nativeTypesPromoted) {
-				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
-			}
-
-			if ($functionReflection->getName() === 'call_user_func') {
-				$result = ArgumentsNormalizer::reorderCallUserFuncArguments($node, $this);
-				if ($result !== null) {
-					[, $innerFuncCall] = $result;
-
-					return $this->getType($innerFuncCall);
-				}
-			}
-
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$this,
-				$node->getArgs(),
-				$functionReflection->getVariants(),
-				$functionReflection->getNamedArgumentsVariants(),
-			);
-			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-			if ($normalizedNode !== null) {
-				if ($functionReflection->getName() === 'clone' && count($normalizedNode->getArgs()) > 0) {
-					$cloneType = $this->getType(new Expr\Clone_($normalizedNode->getArgs()[0]->value));
-					if (count($normalizedNode->getArgs()) === 2) {
-						$propertiesType = $this->getType($normalizedNode->getArgs()[1]->value);
-						if ($propertiesType->isConstantArray()->yes()) {
-							$constantArrays = $propertiesType->getConstantArrays();
-							if (count($constantArrays) === 1) {
-								$accessories = [];
-								foreach ($constantArrays[0]->getKeyTypes() as $keyType) {
-									$constantKeyTypes = $keyType->getConstantScalarValues();
-									if (count($constantKeyTypes) !== 1) {
-										return $cloneType;
-									}
-									$accessories[] = new HasPropertyType((string) $constantKeyTypes[0]);
-								}
-								if (count($accessories) > 0 && count($accessories) <= 16) {
-									return TypeCombinator::intersect($cloneType, ...$accessories);
-								}
-							}
-						}
-					}
-
-					return $cloneType;
-				}
-				$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
-				if ($resolvedType !== null) {
-					return $resolvedType;
-				}
-			}
-
-			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
+			return $this->getFunctionCallType($node);
 		}
 
 		return new MixedType();
@@ -6465,6 +5674,847 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$nodeCallback($node, $this);
+	}
+
+	private function getInstanceOfType(Expr\Instanceof_ $node): Type
+	{
+		$expressionType = $this->getType($node->expr);
+		if (
+			$this->isInTrait()
+			&& TypeUtils::findThisType($expressionType) !== null
+		) {
+			return new BooleanType();
+		}
+		if ($expressionType instanceof NeverType) {
+			return new ConstantBooleanType(false);
+		}
+
+		$uncertainty = false;
+
+		if ($node->class instanceof Node\Name) {
+			$unresolvedClassName = $node->class->toString();
+			if (
+				strtolower($unresolvedClassName) === 'static'
+				&& $this->isInClass()
+			) {
+				$classType = new StaticType($this->getClassReflection());
+			} else {
+				$className = $this->resolveName($node->class);
+				$classType = new ObjectType($className);
+			}
+		} else {
+			$classType = $this->getType($node->class);
+			$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type->getObjectClassNames() !== []) {
+					$uncertainty = true;
+					return $type;
+				}
+				if ($type instanceof GenericClassStringType) {
+					$uncertainty = true;
+					return $type->getGenericType();
+				}
+				if ($type instanceof ConstantStringType) {
+					return new ObjectType($type->getValue());
+				}
+				return new MixedType();
+			});
+		}
+
+		if ($classType->isSuperTypeOf(new MixedType())->yes()) {
+			return new BooleanType();
+		}
+
+		$isSuperType = $classType->isSuperTypeOf($expressionType);
+
+		if ($isSuperType->no()) {
+			return new ConstantBooleanType(false);
+		} elseif ($isSuperType->yes() && !$uncertainty) {
+			return new ConstantBooleanType(true);
+		}
+
+		return new BooleanType();
+	}
+
+	private function getClosureType(Expr\Closure|Expr\ArrowFunction $node): ClosureType
+	{
+		$parameters = [];
+		$isVariadic = false;
+		$firstOptionalParameterIndex = null;
+		foreach ($node->params as $i => $param) {
+			$isOptionalCandidate = $param->default !== null || $param->variadic;
+
+			if ($isOptionalCandidate) {
+				if ($firstOptionalParameterIndex === null) {
+					$firstOptionalParameterIndex = $i;
+				}
+			} else {
+				$firstOptionalParameterIndex = null;
+			}
+		}
+
+		foreach ($node->params as $i => $param) {
+			if ($param->variadic) {
+				$isVariadic = true;
+			}
+			if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+				throw new ShouldNotHappenException();
+			}
+			$parameters[] = new NativeParameterReflection(
+				$param->var->name,
+				$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
+				$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
+				$param->byRef
+					? PassedByReference::createCreatesNewVariable()
+					: PassedByReference::createNo(),
+				$param->variadic,
+				$param->default !== null ? $this->getType($param->default) : null,
+			);
+		}
+
+		$callableParameters = null;
+		$arrayMapArgs = $node->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+		$immediatelyInvokedArgs = $node->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
+		if ($arrayMapArgs !== null) {
+			$callableParameters = [];
+			foreach ($arrayMapArgs as $funcCallArg) {
+				$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+			}
+		} elseif ($immediatelyInvokedArgs !== null) {
+			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
+				$callableParameters[] = new DummyParameter('item', $this->getType($immediatelyInvokedArg->value), false, PassedByReference::createNo(), false, null);
+			}
+		} else {
+			$inFunctionCallsStackCount = count($this->inFunctionCallsStack);
+			if ($inFunctionCallsStackCount > 0) {
+				[, $inParameter] = $this->inFunctionCallsStack[$inFunctionCallsStackCount - 1];
+				if ($inParameter !== null) {
+					$callableParameters = $this->nodeScopeResolver->createCallableParameters($this, $node, null, $inParameter->getType());
+				}
+			}
+		}
+
+		if ($node instanceof Expr\ArrowFunction) {
+			$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
+
+			if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
+				$yieldNode = $node->expr;
+
+				if ($yieldNode instanceof Expr\Yield_) {
+					if ($yieldNode->key === null) {
+						$keyType = new IntegerType();
+					} else {
+						$keyType = $arrowScope->getType($yieldNode->key);
+					}
+
+					if ($yieldNode->value === null) {
+						$valueType = new NullType();
+					} else {
+						$valueType = $arrowScope->getType($yieldNode->value);
+					}
+				} else {
+					$yieldFromType = $arrowScope->getType($yieldNode->expr);
+					$keyType = $arrowScope->getIterableKeyType($yieldFromType);
+					$valueType = $arrowScope->getIterableValueType($yieldFromType);
+				}
+
+				$returnType = new GenericObjectType(Generator::class, [
+					$keyType,
+					$valueType,
+					new MixedType(),
+					new VoidType(),
+				]);
+			} else {
+				$returnType = $arrowScope->getKeepVoidType($node->expr);
+				if ($node->returnType !== null) {
+					$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
+					$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
+				}
+			}
+
+			$arrowFunctionImpurePoints = [];
+			$invalidateExpressions = [];
+			$arrowFunctionExprResult = $this->nodeScopeResolver->processExprNode(
+				new Node\Stmt\Expression($node->expr),
+				$node->expr,
+				$arrowScope,
+				new ExpressionResultStorage(),
+				static function (Node $node, Scope $scope) use ($arrowScope, &$arrowFunctionImpurePoints, &$invalidateExpressions): void {
+					if ($scope->getAnonymousFunctionReflection() !== $arrowScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
+					if ($node instanceof InvalidateExprNode) {
+						$invalidateExpressions[] = $node;
+						return;
+					}
+
+					if (!$node instanceof PropertyAssignNode) {
+						return;
+					}
+
+					$arrowFunctionImpurePoints[] = new ImpurePoint(
+						$scope,
+						$node,
+						'propertyAssign',
+						'property assignment',
+						true,
+					);
+				},
+				ExpressionContext::createDeep(),
+			);
+			$throwPoints = array_map(static fn ($throwPoint) => $throwPoint->toPublic(), $arrowFunctionExprResult->getThrowPoints());
+			$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
+			$usedVariables = [];
+		} else {
+			$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
+			$cacheKey = $this->getClosureScopeCacheKey();
+			if (array_key_exists($cacheKey, $cachedTypes)) {
+				$cachedClosureData = $cachedTypes[$cacheKey];
+
+				$mustUseReturnValue = TrinaryLogic::createNo();
+				foreach ($node->attrGroups as $attrGroup) {
+					foreach ($attrGroup->attrs as $attr) {
+						if ($attr->name->toLowerString() === 'nodiscard') {
+							$mustUseReturnValue = TrinaryLogic::createYes();
+							break;
+						}
+					}
+				}
+
+				return new ClosureType(
+					$parameters,
+					$cachedClosureData['returnType'],
+					$isVariadic,
+					TemplateTypeMap::createEmpty(),
+					TemplateTypeMap::createEmpty(),
+					TemplateTypeVarianceMap::createEmpty(),
+					throwPoints: $cachedClosureData['throwPoints'],
+					impurePoints: $cachedClosureData['impurePoints'],
+					invalidateExpressions: $cachedClosureData['invalidateExpressions'],
+					usedVariables: $cachedClosureData['usedVariables'],
+					acceptsNamedArguments: TrinaryLogic::createYes(),
+					mustUseReturnValue: $mustUseReturnValue,
+				);
+			}
+			if (self::$resolveClosureTypeDepth >= 2) {
+				return new ClosureType(
+					$parameters,
+					$this->getFunctionType($node->returnType, false, false),
+					$isVariadic,
+				);
+			}
+
+			self::$resolveClosureTypeDepth++;
+
+			$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
+			$closureReturnStatements = [];
+			$closureYieldStatements = [];
+			$onlyNeverExecutionEnds = null;
+			$closureImpurePoints = [];
+			$invalidateExpressions = [];
+
+			try {
+				$closureStatementResult = $this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$onlyNeverExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
+					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
+					if ($node instanceof InvalidateExprNode) {
+						$invalidateExpressions[] = $node;
+						return;
+					}
+
+					if ($node instanceof PropertyAssignNode) {
+						$closureImpurePoints[] = new ImpurePoint(
+							$scope,
+							$node,
+							'propertyAssign',
+							'property assignment',
+							true,
+						);
+						return;
+					}
+
+					if ($node instanceof ExecutionEndNode) {
+						if ($node->getStatementResult()->isAlwaysTerminating()) {
+							foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
+								if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+									$onlyNeverExecutionEnds = false;
+									continue;
+								}
+
+								if ($onlyNeverExecutionEnds === null) {
+									$onlyNeverExecutionEnds = true;
+								}
+
+								break;
+							}
+
+							if (count($node->getStatementResult()->getExitPoints()) === 0) {
+								if ($onlyNeverExecutionEnds === null) {
+									$onlyNeverExecutionEnds = true;
+								}
+							}
+						} else {
+							$onlyNeverExecutionEnds = false;
+						}
+
+						return;
+					}
+
+					if ($node instanceof Node\Stmt\Return_) {
+						$closureReturnStatements[] = [$node, $scope];
+					}
+
+					if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
+						return;
+					}
+
+					$closureYieldStatements[] = [$node, $scope];
+				}, StatementContext::createTopLevel());
+			} finally {
+				self::$resolveClosureTypeDepth--;
+			}
+
+			$throwPoints = $closureStatementResult->getThrowPoints();
+			$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
+
+			$returnTypes = [];
+			$hasNull = false;
+			foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
+				if ($returnNode->expr === null) {
+					$hasNull = true;
+					continue;
+				}
+
+				$returnTypes[] = $returnScope->toMutatingScope()->getType($returnNode->expr);
+			}
+
+			if (count($returnTypes) === 0) {
+				if ($onlyNeverExecutionEnds === true && !$hasNull) {
+					$returnType = new NonAcceptingNeverType();
+				} else {
+					$returnType = new VoidType();
+				}
+			} else {
+				if ($onlyNeverExecutionEnds === true) {
+					$returnTypes[] = new NonAcceptingNeverType();
+				}
+				if ($hasNull) {
+					$returnTypes[] = new NullType();
+				}
+				$returnType = TypeCombinator::union(...$returnTypes);
+			}
+
+			if (count($closureYieldStatements) > 0) {
+				$keyTypes = [];
+				$valueTypes = [];
+				foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
+					if ($yieldNode instanceof Expr\Yield_) {
+						if ($yieldNode->key === null) {
+							$keyTypes[] = new IntegerType();
+						} else {
+							$keyTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->key);
+						}
+
+						if ($yieldNode->value === null) {
+							$valueTypes[] = new NullType();
+						} else {
+							$valueTypes[] = $yieldScope->toMutatingScope()->getType($yieldNode->value);
+						}
+
+						continue;
+					}
+
+					$yieldFromType = $yieldScope->toMutatingScope()->getType($yieldNode->expr);
+					$keyTypes[] = $yieldScope->toMutatingScope()->getIterableKeyType($yieldFromType);
+					$valueTypes[] = $yieldScope->toMutatingScope()->getIterableValueType($yieldFromType);
+				}
+
+				$returnType = new GenericObjectType(Generator::class, [
+					TypeCombinator::union(...$keyTypes),
+					TypeCombinator::union(...$valueTypes),
+					new MixedType(),
+					$returnType,
+				]);
+			} else {
+				if ($node->returnType !== null) {
+					$nativeReturnType = $this->getFunctionType($node->returnType, false, false);
+					$returnType = self::intersectButNotNever($nativeReturnType, $returnType);
+				}
+			}
+
+			$usedVariables = [];
+			foreach ($node->uses as $use) {
+				if (!is_string($use->var->name)) {
+					continue;
+				}
+
+				$usedVariables[] = $use->var->name;
+			}
+
+			foreach ($node->uses as $use) {
+				if (!$use->byRef) {
+					continue;
+				}
+
+				$impurePoints[] = new ImpurePoint(
+					$this,
+					$node,
+					'functionCall',
+					'call to a Closure with by-ref use',
+					true,
+				);
+				break;
+			}
+		}
+
+		foreach ($parameters as $parameter) {
+			if ($parameter->passedByReference()->no()) {
+				continue;
+			}
+
+			$impurePoints[] = new ImpurePoint(
+				$this,
+				$node,
+				'functionCall',
+				'call to a Closure with by-ref parameter',
+				true,
+			);
+		}
+
+		$throwPointsForClosureType = array_map(static fn (ThrowPoint $throwPoint) => $throwPoint->isExplicit() ? SimpleThrowPoint::createExplicit($throwPoint->getType(), $throwPoint->canContainAnyThrowable()) : SimpleThrowPoint::createImplicit(), $throwPoints);
+		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
+
+		$cachedTypes = $node->getAttribute('phpstanCachedTypes', []);
+		$cachedTypes[$this->getClosureScopeCacheKey()] = [
+			'returnType' => $returnType,
+			'throwPoints' => $throwPointsForClosureType,
+			'impurePoints' => $impurePointsForClosureType,
+			'invalidateExpressions' => $invalidateExpressions,
+			'usedVariables' => $usedVariables,
+		];
+		$node->setAttribute('phpstanCachedTypes', $cachedTypes);
+
+		$mustUseReturnValue = TrinaryLogic::createNo();
+		foreach ($node->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				if ($attr->name->toLowerString() === 'nodiscard') {
+					$mustUseReturnValue = TrinaryLogic::createYes();
+					break;
+				}
+			}
+		}
+
+		return new ClosureType(
+			$parameters,
+			$returnType,
+			$isVariadic,
+			TemplateTypeMap::createEmpty(),
+			TemplateTypeMap::createEmpty(),
+			TemplateTypeVarianceMap::createEmpty(),
+			throwPoints: $throwPointsForClosureType,
+			impurePoints: $impurePointsForClosureType,
+			invalidateExpressions: $invalidateExpressions,
+			usedVariables: $usedVariables,
+			acceptsNamedArguments: TrinaryLogic::createYes(),
+			mustUseReturnValue: $mustUseReturnValue,
+		);
+	}
+
+	private function getMatchType(Match_ $node): Type
+	{
+		$cond = $node->cond;
+		$condType = $this->getType($cond);
+		$types = [];
+
+		$matchScope = $this;
+		$arms = $node->arms;
+		if ($condType->isEnum()->yes()) {
+			// enum match analysis would work even without this if branch
+			// but would be much slower
+			// this avoids using ObjectType::$subtractedType which is slow for huge enums
+			// because of repeated union type normalization
+			$enumCases = $condType->getEnumCases();
+			if (count($enumCases) > 0) {
+				$indexedEnumCases = [];
+				foreach ($enumCases as $enumCase) {
+					$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
+				}
+				$unusedIndexedEnumCases = $indexedEnumCases;
+
+				foreach ($arms as $i => $arm) {
+					if ($arm->conds === null) {
+						continue;
+					}
+
+					$conditionCases = [];
+					foreach ($arm->conds as $armCond) {
+						if (!$armCond instanceof Expr\ClassConstFetch) {
+							continue 2;
+						}
+						if (!$armCond->class instanceof Name) {
+							continue 2;
+						}
+						if (!$armCond->name instanceof Node\Identifier) {
+							continue 2;
+						}
+						$fetchedClassName = $this->resolveName($armCond->class);
+						$loweredFetchedClassName = strtolower($fetchedClassName);
+						if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
+							continue 2;
+						}
+
+						$caseName = $armCond->name->toString();
+						if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+							continue 2;
+						}
+
+						$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
+						unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
+					}
+
+					$conditionCasesCount = count($conditionCases);
+					if ($conditionCasesCount === 0) {
+						throw new ShouldNotHappenException();
+					} elseif ($conditionCasesCount === 1) {
+						$conditionCaseType = $conditionCases[0];
+					} else {
+						$conditionCaseType = new UnionType($conditionCases);
+					}
+
+					$types[] = $matchScope->addTypeToExpression(
+						$cond,
+						$conditionCaseType,
+					)->getType($arm->body);
+					unset($arms[$i]);
+				}
+
+				$remainingCases = [];
+				foreach ($unusedIndexedEnumCases as $cases) {
+					foreach ($cases as $case) {
+						$remainingCases[] = $case;
+					}
+				}
+
+				$remainingCasesCount = count($remainingCases);
+				if ($remainingCasesCount === 0) {
+					$remainingType = new NeverType();
+				} elseif ($remainingCasesCount === 1) {
+					$remainingType = $remainingCases[0];
+				} else {
+					$remainingType = new UnionType($remainingCases);
+				}
+
+				$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
+			}
+		}
+
+		foreach ($arms as $arm) {
+			if ($arm->conds === null) {
+				if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+					$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
+				}
+				$types[] = $matchScope->getType($arm->body);
+				continue;
+			}
+
+			if (count($arm->conds) === 0) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (count($arm->conds) === 1) {
+				$filteringExpr = new BinaryOp\Identical($cond, $arm->conds[0]);
+			} else {
+				$items = [];
+				foreach ($arm->conds as $filteringExpr) {
+					$items[] = new Node\ArrayItem($filteringExpr);
+				}
+				$filteringExpr = new FuncCall(
+					new Name\FullyQualified('in_array'),
+					[
+						new Arg($cond),
+						new Arg(new Array_($items)),
+						new Arg(new ConstFetch(new Name\FullyQualified('true'))),
+					],
+				);
+			}
+
+			$filteringExprType = $matchScope->getType($filteringExpr);
+
+			if (!$filteringExprType->isFalse()->yes()) {
+				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
+					$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
+				}
+				$types[] = $truthyScope->getType($arm->body);
+			}
+
+			$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	private function getFunctionCallType(FuncCall $node): Type
+	{
+		if ($node->name instanceof Expr) {
+			$calledOnType = $this->getType($node->name);
+			if ($calledOnType->isCallable()->no()) {
+				return new ErrorType();
+			}
+
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+				$this,
+				$node->getArgs(),
+				$calledOnType->getCallableParametersAcceptors($this),
+				null,
+			);
+
+			$functionName = null;
+			if ($node->name instanceof String_) {
+				/** @var non-empty-string $name */
+				$name = $node->name->value;
+				$functionName = new Name($name);
+			} elseif (
+				$node->name instanceof FuncCall
+				&& $node->name->name instanceof Name
+				&& $node->name->isFirstClassCallable()
+			) {
+				$functionName = $node->name->name;
+			}
+
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+			if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $this)) {
+				$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
+				$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
+				if ($resolvedType !== null) {
+					return $resolvedType;
+				}
+			}
+
+			return $parametersAcceptor->getReturnType();
+		}
+
+		if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
+			return new ErrorType();
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+		if ($this->nativeTypesPromoted) {
+			return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
+		}
+
+		if ($functionReflection->getName() === 'call_user_func') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArguments($node, $this);
+			if ($result !== null) {
+				[, $innerFuncCall] = $result;
+
+				return $this->getType($innerFuncCall);
+			}
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$this,
+			$node->getArgs(),
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		if ($normalizedNode !== null) {
+			if ($functionReflection->getName() === 'clone' && count($normalizedNode->getArgs()) > 0) {
+				$cloneType = $this->getType(new Expr\Clone_($normalizedNode->getArgs()[0]->value));
+				if (count($normalizedNode->getArgs()) === 2) {
+					$propertiesType = $this->getType($normalizedNode->getArgs()[1]->value);
+					if ($propertiesType->isConstantArray()->yes()) {
+						$constantArrays = $propertiesType->getConstantArrays();
+						if (count($constantArrays) === 1) {
+							$accessories = [];
+							foreach ($constantArrays[0]->getKeyTypes() as $keyType) {
+								$constantKeyTypes = $keyType->getConstantScalarValues();
+								if (count($constantKeyTypes) !== 1) {
+									return $cloneType;
+								}
+								$accessories[] = new HasPropertyType((string) $constantKeyTypes[0]);
+							}
+							if (count($accessories) > 0 && count($accessories) <= 16) {
+								return TypeCombinator::intersect($cloneType, ...$accessories);
+							}
+						}
+					}
+				}
+
+				return $cloneType;
+			}
+			$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
+			if ($resolvedType !== null) {
+				return $resolvedType;
+			}
+		}
+
+		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
+	}
+
+	private function getStaticPropertyFetchType(Expr\StaticPropertyFetch $node): ?Type
+	{
+		if ($node->name instanceof Node\VarLikeIdentifier) {
+			if ($this->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				$nativeType = $propertyReflection->getNativeType();
+
+				if ($node->class instanceof Expr) {
+					return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
+				}
+
+				return $nativeType;
+			}
+
+			if ($node->class instanceof Name) {
+				$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
+			} else {
+				$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$fetchType = $this->propertyFetchType(
+				$staticPropertyFetchedOnType,
+				$node->name->toString(),
+				$node,
+			);
+			if ($fetchType === null) {
+				$fetchType = new ErrorType();
+			}
+
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
+			}
+
+			return $fetchType;
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(new Expr\StaticPropertyFetch($node->class, new Node\VarLikeIdentifier($constantString->getValue()))), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
+	}
+
+	private function getPropertyFetchType(PropertyFetch $node): ?Type
+	{
+		if ($node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				$nativeType = $propertyReflection->getNativeType();
+
+				return $this->getNullsafeShortCircuitingType($node->var, $nativeType);
+			}
+
+			$returnType = $this->propertyFetchType(
+				$this->getType($node->var),
+				$node->name->name,
+				$node,
+			);
+			if ($returnType === null) {
+				$returnType = new ErrorType();
+			}
+
+			return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(
+						new PropertyFetch($node->var, new Identifier($constantString->getValue())),
+					), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
+	}
+
+	private function getStaticCallType(Expr\StaticCall $node): ?Type
+	{
+		if ($node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				if ($node->class instanceof Name) {
+					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+				} else {
+					$staticMethodCalledOnType = $this->getNativeType($node->class);
+				}
+				$methodReflection = $this->getMethodReflection(
+					$staticMethodCalledOnType,
+					$node->name->name,
+				);
+				if ($methodReflection === null) {
+					$callType = new ErrorType();
+				} else {
+					$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+				}
+
+				if ($node->class instanceof Expr) {
+					return $this->getNullsafeShortCircuitingType($node->class, $callType);
+				}
+
+				return $callType;
+			}
+
+			if ($node->class instanceof Name) {
+				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
+			} else {
+				$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$callType = $this->methodCallReturnType(
+				$staticMethodCalledOnType,
+				$node->name->toString(),
+				$node,
+			);
+			if ($callType === null) {
+				$callType = new ErrorType();
+			}
+
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $callType);
+			}
+
+			return $callType;
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
 	}
 
 }

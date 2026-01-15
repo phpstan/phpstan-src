@@ -3455,7 +3455,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $requireMoreCharacters)) {
+			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters)) {
 				continue;
 			}
 
@@ -3469,14 +3469,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if (count($holders) === 0) {
 				continue;
 			}
-			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
+			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
+			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr))) {
 				$invalidated = true;
 				continue;
 			}
 			foreach ($holders as $holder) {
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
+				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
+					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString)) {
 						$invalidated = true;
 						continue 3;
 					}
@@ -3509,15 +3510,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
-	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
+	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false): bool
 	{
-		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
+		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
 			return false;
 		}
 
 		// Variables will not contain traversable expressions. skip the NodeFinder overhead
 		if ($expr instanceof Variable && is_string($expr->name) && !$requireMoreCharacters) {
-			return $exprStringToInvalidate === $this->getNodeKey($expr);
+			return $exprStringToInvalidate === $exprString;
 		}
 
 		$nodeFinder = new NodeFinder();
@@ -4338,7 +4339,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr())) {
+				if (!$this->shouldInvalidateExpression($generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
 					continue;
 				}
 

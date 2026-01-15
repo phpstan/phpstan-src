@@ -1526,37 +1526,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\Ternary) {
-			$condResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($node->cond), $node->cond, $this, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
-			if ($node->if === null) {
-				$conditionType = $this->getType($node->cond);
-				$booleanConditionType = $conditionType->toBoolean();
-				if ($booleanConditionType->isTrue()->yes()) {
-					return $condResult->getTruthyScope()->getType($node->cond);
-				}
-
-				if ($booleanConditionType->isFalse()->yes()) {
-					return $condResult->getFalseyScope()->getType($node->else);
-				}
-
-				return TypeCombinator::union(
-					TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
-					$condResult->getFalseyScope()->getType($node->else),
-				);
-			}
-
-			$booleanConditionType = $this->getType($node->cond)->toBoolean();
-			if ($booleanConditionType->isTrue()->yes()) {
-				return $condResult->getTruthyScope()->getType($node->if);
-			}
-
-			if ($booleanConditionType->isFalse()->yes()) {
-				return $condResult->getFalseyScope()->getType($node->else);
-			}
-
-			return TypeCombinator::union(
-				$condResult->getTruthyScope()->getType($node->if),
-				$condResult->getFalseyScope()->getType($node->else),
-			);
+			return $this->getTernaryType($node);
 		}
 
 		if ($node instanceof Variable) {
@@ -6525,6 +6495,41 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return null;
+	}
+
+	private function getTernaryType(Expr\Ternary $node): Type
+	{
+		$condResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($node->cond), $node->cond, $this, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+		if ($node->if === null) {
+			$conditionType = $this->getType($node->cond);
+			$booleanConditionType = $conditionType->toBoolean();
+			if ($booleanConditionType->isTrue()->yes()) {
+				return $condResult->getTruthyScope()->getType($node->cond);
+			}
+
+			if ($booleanConditionType->isFalse()->yes()) {
+				return $condResult->getFalseyScope()->getType($node->else);
+			}
+
+			return TypeCombinator::union(
+				TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
+				$condResult->getFalseyScope()->getType($node->else),
+			);
+		}
+
+		$booleanConditionType = $this->getType($node->cond)->toBoolean();
+		if ($booleanConditionType->isTrue()->yes()) {
+			return $condResult->getTruthyScope()->getType($node->if);
+		}
+
+		if ($booleanConditionType->isFalse()->yes()) {
+			return $condResult->getFalseyScope()->getType($node->else);
+		}
+
+		return TypeCombinator::union(
+			$condResult->getTruthyScope()->getType($node->if),
+			$condResult->getFalseyScope()->getType($node->else),
+		);
 	}
 
 }

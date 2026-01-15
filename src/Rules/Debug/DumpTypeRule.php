@@ -35,16 +35,16 @@ final class DumpTypeRule implements Rule
 			return [];
 		}
 
+		if (count($node->getArgs()) === 0) {
+			return [];
+		}
+
 		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
 		if ($functionName === null) {
 			return [];
 		}
 
 		if (strtolower($functionName) !== 'phpstan\dumptype') {
-			return [];
-		}
-
-		if (count($node->getArgs()) === 0) {
 			return [];
 		}
 

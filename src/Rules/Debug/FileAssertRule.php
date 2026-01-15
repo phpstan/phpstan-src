@@ -42,6 +42,10 @@ final class FileAssertRule implements Rule
 			return [];
 		}
 
+		if (count($node->getArgs()) !== 2) {
+			return [];
+		}
+
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
 			return [];
 		}
@@ -67,15 +71,11 @@ final class FileAssertRule implements Rule
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param array{Node\Arg, Node\Arg} $args
 	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertType(array $args, Scope $scope): array
 	{
-		if (count($args) !== 2) {
-			return [];
-		}
-
 		$expectedTypeStrings = $scope->getType($args[0]->value)->getConstantStrings();
 		if (count($expectedTypeStrings) !== 1) {
 			return [
@@ -100,15 +100,11 @@ final class FileAssertRule implements Rule
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param array{Node\Arg, Node\Arg} $args
 	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertNativeType(array $args, Scope $scope): array
 	{
-		if (count($args) !== 2) {
-			return [];
-		}
-
 		$expectedTypeStrings = $scope->getNativeType($args[0]->value)->getConstantStrings();
 		if (count($expectedTypeStrings) !== 1) {
 			return [
@@ -133,15 +129,11 @@ final class FileAssertRule implements Rule
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param array{Node\Arg, Node\Arg} $args
 	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertSuperType(array $args, Scope $scope): array
 	{
-		if (count($args) !== 2) {
-			return [];
-		}
-
 		$expectedTypeStrings = $scope->getType($args[0]->value)->getConstantStrings();
 		if (count($expectedTypeStrings) !== 1) {
 			return [
@@ -167,15 +159,11 @@ final class FileAssertRule implements Rule
 	}
 
 	/**
-	 * @param Node\Arg[] $args
+	 * @param array{Node\Arg, Node\Arg} $args
 	 * @return list<IdentifierRuleError>
 	 */
 	private function processAssertVariableCertainty(array $args, Scope $scope): array
 	{
-		if (count($args) !== 2) {
-			return [];
-		}
-
 		$certainty = $args[0]->value;
 		if (!$certainty instanceof StaticCall) {
 			return [

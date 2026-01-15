@@ -1787,54 +1787,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\StaticPropertyFetch) {
-			if ($node->name instanceof Node\VarLikeIdentifier) {
-				if ($this->nativeTypesPromoted) {
-					$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
-					if ($propertyReflection === null) {
-						return new ErrorType();
-					}
-					if (!$propertyReflection->hasNativeType()) {
-						return new MixedType();
-					}
-
-					$nativeType = $propertyReflection->getNativeType();
-
-					if ($node->class instanceof Expr) {
-						return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
-					}
-
-					return $nativeType;
-				}
-
-				if ($node->class instanceof Name) {
-					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
-				} else {
-					$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-				}
-
-				$fetchType = $this->propertyFetchType(
-					$staticPropertyFetchedOnType,
-					$node->name->toString(),
-					$node,
-				);
-				if ($fetchType === null) {
-					$fetchType = new ErrorType();
-				}
-
-				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
-				}
-
+			$fetchType = $this->getStaticPropertyFetchType($node);
+			if ($fetchType !== null) {
 				return $fetchType;
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				return TypeCombinator::union(
-					...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-						->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-						->getType(new Expr\StaticPropertyFetch($node->class, new Node\VarLikeIdentifier($constantString->getValue()))), $nameType->getConstantStrings()),
-				);
 			}
 		}
 
@@ -6485,6 +6440,61 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
+	}
+
+	private function getStaticPropertyFetchType(Expr\StaticPropertyFetch $node): ?Type
+	{
+		if ($node->name instanceof Node\VarLikeIdentifier) {
+			if ($this->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				$nativeType = $propertyReflection->getNativeType();
+
+				if ($node->class instanceof Expr) {
+					return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
+				}
+
+				return $nativeType;
+			}
+
+			if ($node->class instanceof Name) {
+				$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
+			} else {
+				$staticPropertyFetchedOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$fetchType = $this->propertyFetchType(
+				$staticPropertyFetchedOnType,
+				$node->name->toString(),
+				$node,
+			);
+			if ($fetchType === null) {
+				$fetchType = new ErrorType();
+			}
+
+			if ($node->class instanceof Expr) {
+				return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
+			}
+
+			return $fetchType;
+		}
+
+		$nameType = $this->getType($node->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
+					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
+					->getType(new Expr\StaticPropertyFetch($node->class, new Node\VarLikeIdentifier($constantString->getValue()))), $nameType->getConstantStrings()),
+			);
+		}
+
+		return null;
 	}
 
 }

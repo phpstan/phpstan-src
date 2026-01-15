@@ -1269,37 +1269,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		} elseif ($node instanceof Node\Scalar\Float_) {
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
-			if ($node instanceof FuncCall && $node->name instanceof Expr) {
-				$callableType = $this->getType($node->name);
-				if (!$callableType->isCallable()->yes()) {
-					return new ObjectType(Closure::class);
-				}
-
-				return $this->initializerExprTypeResolver->createFirstClassCallable(
-					null,
-					$callableType->getCallableParametersAcceptors($this),
-					$this->nativeTypesPromoted,
-				);
-			}
-			if ($node instanceof MethodCall) {
-				if (!$node->name instanceof Node\Identifier) {
-					return new ObjectType(Closure::class);
-				}
-
-				$varType = $this->getType($node->var);
-				$method = $this->getMethodReflection($varType, $node->name->toString());
-				if ($method === null) {
-					return new ObjectType(Closure::class);
-				}
-
-				return $this->initializerExprTypeResolver->createFirstClassCallable(
-					$method,
-					$method->getVariants(),
-					$this->nativeTypesPromoted,
-				);
-			}
-
-			return $this->initializerExprTypeResolver->getFirstClassCallableType($node, InitializerExprContext::fromScope($this), $this->nativeTypesPromoted);
+			return $this->getFirstClassCallableType($node);
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
 			return $this->getClosureType($node);
 		} elseif ($node instanceof New_) {
@@ -6540,6 +6510,41 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $this->getType(new BinaryOp\Minus($node->var, new Node\Scalar\Int_(1)));
+	}
+
+	private function getFirstClassCallableType(Expr\CallLike $node): Type
+	{
+		if ($node instanceof FuncCall && $node->name instanceof Expr) {
+			$callableType = $this->getType($node->name);
+			if (!$callableType->isCallable()->yes()) {
+				return new ObjectType(Closure::class);
+			}
+
+			return $this->initializerExprTypeResolver->createFirstClassCallable(
+				null,
+				$callableType->getCallableParametersAcceptors($this),
+				$this->nativeTypesPromoted,
+			);
+		}
+		if ($node instanceof MethodCall) {
+			if (!$node->name instanceof Node\Identifier) {
+				return new ObjectType(Closure::class);
+			}
+
+			$varType = $this->getType($node->var);
+			$method = $this->getMethodReflection($varType, $node->name->toString());
+			if ($method === null) {
+				return new ObjectType(Closure::class);
+			}
+
+			return $this->initializerExprTypeResolver->createFirstClassCallable(
+				$method,
+				$method->getVariants(),
+				$this->nativeTypesPromoted,
+			);
+		}
+
+		return $this->initializerExprTypeResolver->getFirstClassCallableType($node, InitializerExprContext::fromScope($this), $this->nativeTypesPromoted);
 	}
 
 }

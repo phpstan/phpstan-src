@@ -839,17 +839,15 @@ final class TypeCombinator
 				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
 			}
 
-			$useTemplateArray = true;
 			$templateArrayType = null;
 			foreach ($arrayTypes as $arrayType) {
 				if (!$arrayType instanceof TemplateArrayType) {
-					$useTemplateArray = false;
+					$templateArrayType = null;
 					break;
 				}
 
 				if ($templateArrayType !== null) {
-					$useTemplateArray = false;
-					break;
+					continue;
 				}
 
 				$templateArrayType = $arrayType;
@@ -860,7 +858,7 @@ final class TypeCombinator
 				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
 			);
 
-			if ($useTemplateArray && $templateArrayType !== null) {
+			if ($templateArrayType !== null) {
 				$arrayType = new TemplateArrayType(
 					$templateArrayType->getScope(),
 					$templateArrayType->getStrategy(),

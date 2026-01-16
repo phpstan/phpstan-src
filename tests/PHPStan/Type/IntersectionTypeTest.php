@@ -80,7 +80,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			),
 			TypeCombinator::intersect(
 				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType(new ConstantStringType("some-key")),
+				new HasOffsetType(new ConstantStringType('some-key')),
 			),
 			TrinaryLogic::createYes(),
 		];
@@ -92,7 +92,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 			),
 			TypeCombinator::intersect(
 				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetValueType(new ConstantStringType("some-key"), new IntegerType()),
+				new HasOffsetValueType(new ConstantStringType('some-key'), new IntegerType()),
 			),
 			TrinaryLogic::createYes(),
 		];

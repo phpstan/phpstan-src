@@ -32,7 +32,7 @@ final class OperatorTypeSpecifyingExtensionRegistry
 		$operatorSigil = $expr->getOperatorSigil();
 		$operatorTypeSpecifyingExtensions = $this->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
 
-		/** @var Type[] $extensionTypes */
+		/** @var list<Type> $extensionTypes */
 		$extensionTypes = [];
 
 		foreach ($operatorTypeSpecifyingExtensions as $extension) {

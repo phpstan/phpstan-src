@@ -1150,11 +1150,17 @@ final class TypeCombinator
 			$slice1 = array_slice($types, 0, $i);
 			$slice2 = array_slice($types, $i + 1);
 			foreach ($innerTypes as $innerUnionSubType) {
-				$topLevelUnionSubTypes[] = self::intersect(
+				$intersected = self::intersect(
 					$innerUnionSubType,
 					...$slice1,
 					...$slice2,
 				);
+
+				if ($intersected instanceof NeverType) {
+					continue;
+				}
+
+				$topLevelUnionSubTypes[] = $intersected;
 			}
 
 			$union = self::union(...$topLevelUnionSubTypes);

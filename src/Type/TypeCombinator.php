@@ -838,15 +838,19 @@ final class TypeCombinator
 			if (count($reducedArrayTypes) === 1) {
 				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
 			}
-			$scopes = [];
-			$useTemplateArray = true;
+
+			$templateArrayType = null;
 			foreach ($arrayTypes as $arrayType) {
 				if (!$arrayType instanceof TemplateArrayType) {
-					$useTemplateArray = false;
+					$templateArrayType = null;
 					break;
 				}
 
-				$scopes[$arrayType->getScope()->describe()] = $arrayType;
+				if ($templateArrayType !== null) {
+					continue;
+				}
+
+				$templateArrayType = $arrayType;
 			}
 
 			$arrayType = new ArrayType(
@@ -854,15 +858,14 @@ final class TypeCombinator
 				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
 			);
 
-			if ($useTemplateArray && count($scopes) === 1) {
-				$templateArray = array_values($scopes)[0];
+			if ($templateArrayType !== null) {
 				$arrayType = new TemplateArrayType(
-					$templateArray->getScope(),
-					$templateArray->getStrategy(),
-					$templateArray->getVariance(),
-					$templateArray->getName(),
+					$templateArrayType->getScope(),
+					$templateArrayType->getStrategy(),
+					$templateArrayType->getVariance(),
+					$templateArrayType->getName(),
 					$arrayType,
-					$templateArray->getDefault(),
+					$templateArrayType->getDefault(),
 				);
 			}
 
@@ -1106,12 +1109,12 @@ final class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
-		$types = array_values($types);
-
 		$typesCount = count($types);
 		if ($typesCount === 0) {
 			return new NeverType();
 		}
+
+		$types = array_values($types);
 		if ($typesCount === 1) {
 			return $types[0];
 		}

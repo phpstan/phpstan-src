@@ -1109,12 +1109,12 @@ final class TypeCombinator
 
 	public static function intersect(Type ...$types): Type
 	{
-		$types = array_values($types);
-
 		$typesCount = count($types);
 		if ($typesCount === 0) {
 			return new NeverType();
 		}
+
+		$types = array_values($types);
 		if ($typesCount === 1) {
 			return $types[0];
 		}

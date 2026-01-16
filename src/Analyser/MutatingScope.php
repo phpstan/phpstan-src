@@ -4107,7 +4107,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$holder = $exprTypeHolders[0]->and(...array_slice($exprTypeHolders, 1));
 			}
 
-			if (!$inAllScopes) {
+			if (!$inAllScopes && $holder->getCertainty()->yes()) {
 				$holder = new ExpressionTypeHolder($holder->getExpr(), $holder->getType(), TrinaryLogic::createMaybe());
 			}
 

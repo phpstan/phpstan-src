@@ -1179,29 +1179,22 @@ final class TypeCombinator
 
 			return $union;
 		}
-		$typesCount = count($types);
 
-		// transform A & (B & C) to A & B & C
+		$newTypes = [];
+		$hasOffsetValueTypeCount = 0;
+		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 
-			if (!($type instanceof IntersectionType)) {
-				continue;
-			}
-
-			array_splice($types, $i--, 1, $type->getTypes());
-			$typesCount = count($types);
-		}
-
-		$hasOffsetValueTypeCount = 0;
-		$newTypes = [];
-		foreach ($types as $type) {
-			if (!$type instanceof HasOffsetValueType) {
+			if ($type instanceof IntersectionType) {
+				// transform A & (B & C) to A & B & C
+				array_splice($types, $i--, 1, $type->getTypes());
+				$typesCount = count($types);
+			} elseif ($type instanceof HasOffsetValueType) {
+				$hasOffsetValueTypeCount++;
+			} else {
 				$newTypes[] = $type;
-				continue;
 			}
-
-			$hasOffsetValueTypeCount++;
 		}
 
 		if ($hasOffsetValueTypeCount > 32) {

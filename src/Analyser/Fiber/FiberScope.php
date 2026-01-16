@@ -10,15 +10,9 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Type;
-use function count;
-use function defined;
 
 final class FiberScope extends MutatingScope
 {
-
-	private const EXPR_TYPE_ATTRIBUTE_NAME = 'fnsrType';
-
-	private const EXPR_NATIVE_TYPE_ATTRIBUTE_NAME = 'fnsrNativeType';
 
 	/** @var Expr[] */
 	private array $truthyValueExprs = [];
@@ -62,27 +56,13 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
-		$shouldCache = defined('__PHPSTAN_RUNNING__') && !$this->isInTrait() && count($this->truthyValueExprs) === 0 && count($this->falseyValueExprs) === 0 && !$this->nativeTypesPromoted;
-		if ($shouldCache) {
-			$cachedType = $node->getAttribute(self::EXPR_TYPE_ATTRIBUTE_NAME);
-			if ($cachedType !== null) {
-				return $cachedType;
-			}
-		}
-
 		/** @var Scope $beforeScope */
 		$beforeScope = Fiber::suspend(
 			new BeforeScopeForExprRequest($node, $this),
 		);
 
 		$scope = $this->preprocessScope($beforeScope->toMutatingScope());
-		$type = $scope->getType($node);
-
-		if ($shouldCache) {
-			$node->setAttribute(self::EXPR_TYPE_ATTRIBUTE_NAME, $type);
-		}
-
-		return $type;
+		return $scope->getType($node);
 	}
 
 	public function getScopeType(Expr $expr): Type
@@ -98,27 +78,13 @@ final class FiberScope extends MutatingScope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		$shouldCache = defined('__PHPSTAN_RUNNING__') && !$this->isInTrait() && count($this->truthyValueExprs) === 0 && count($this->falseyValueExprs) === 0 && !$this->nativeTypesPromoted;
-		if ($shouldCache) {
-			$cachedType = $expr->getAttribute(self::EXPR_NATIVE_TYPE_ATTRIBUTE_NAME);
-			if ($cachedType !== null) {
-				return $cachedType;
-			}
-		}
-
 		/** @var Scope $beforeScope */
 		$beforeScope = Fiber::suspend(
 			new BeforeScopeForExprRequest($expr, $this),
 		);
 
 		$scope = $this->preprocessScope($beforeScope->toMutatingScope());
-		$type = $scope->getNativeType($expr);
-
-		if ($shouldCache) {
-			$expr->setAttribute(self::EXPR_NATIVE_TYPE_ATTRIBUTE_NAME, $type);
-		}
-
-		return $type;
+		return $scope->getNativeType($expr);
 	}
 
 	public function getKeepVoidType(Expr $node): Type

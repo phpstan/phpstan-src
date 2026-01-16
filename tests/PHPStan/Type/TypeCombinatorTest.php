@@ -2805,7 +2805,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataUnion')]
@@ -2861,7 +2861,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataUnion')]
@@ -4760,7 +4760,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataIntersect')]
@@ -4803,7 +4803,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 * @param class-string<Type> $expectedTypeClass
 	 */
 	#[DataProvider('dataIntersect')]

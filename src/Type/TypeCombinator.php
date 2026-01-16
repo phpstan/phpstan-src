@@ -686,7 +686,7 @@ final class TypeCombinator
 
 	/**
 	 * @param Type[] $arrayTypes
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{

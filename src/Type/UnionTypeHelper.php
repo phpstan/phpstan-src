@@ -16,8 +16,9 @@ final class UnionTypeHelper
 {
 
 	/**
-	 * @param Type[] $types
-	 * @return Type[]
+	 * @template T of Type
+	 * @param list<T>|array<T> $types
+	 * @return ($types is list<T> ? list<T> : array<T>)
 	 */
 	public static function sortTypes(array $types): array
 	{

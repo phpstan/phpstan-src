@@ -1411,7 +1411,7 @@ class UnionTypeTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 * @param list<string> $expectedDescriptions
 	 */
 	#[DataProvider('dataGetConstantArrays')]

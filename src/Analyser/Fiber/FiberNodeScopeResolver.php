@@ -48,6 +48,12 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		$this->runFiberForNodeCallback($storage, $fiber, $request);
 	}
 
+	protected function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
+	{
+		$storage->storeBeforeScope($expr, $beforeScope);
+		$this->processPendingFibersForRequestedExpr($storage, $expr, $beforeScope);
+	}
+
 	/**
 	 * @param Fiber<mixed, Scope|array{callable(Node $node, Scope $scope): void, Node, Scope}, null, BeforeScopeForExprRequest|ParkFiberRequest> $fiber
 	 */
@@ -111,7 +117,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		}
 	}
 
-	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
+	private function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
 		start:
 

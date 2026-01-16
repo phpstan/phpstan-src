@@ -344,17 +344,11 @@ class NodeScopeResolver
 		$this->processPendingFibers($expressionResultStorage);
 	}
 
-	private function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
+	protected function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
 	{
-		$storage->storeBeforeScope($expr, $beforeScope);
-		$this->processPendingFibersForRequestedExpr($storage, $expr, $beforeScope);
 	}
 
 	protected function processPendingFibers(ExpressionResultStorage $storage): void
-	{
-	}
-
-	protected function processPendingFibersForRequestedExpr(ExpressionResultStorage $storage, Expr $expr, Scope $result): void
 	{
 	}
 

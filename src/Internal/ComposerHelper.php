@@ -23,6 +23,8 @@ final class ComposerHelper
 
 	private static ?string $betterReflectionVersion = null;
 
+	private static ?string $phpDocParserVersion = null;
+
 	/** @var array<string, mixed[]> */
 	private static array $decodedCache = [];
 
@@ -120,6 +122,21 @@ final class ComposerHelper
 		}
 
 		return self::$betterReflectionVersion = self::processPackageVersion($rootPackage);
+	}
+
+	public static function getPhpDocParserVersion(): string
+	{
+		if (self::$phpDocParserVersion !== null) {
+			return self::$phpDocParserVersion;
+		}
+
+		$installed = self::getInstalled();
+		$rootPackage = $installed['versions']['phpstan/phpdoc-parser'] ?? null;
+		if ($rootPackage === null) {
+			return self::$phpDocParserVersion = self::UNKNOWN_VERSION;
+		}
+
+		return self::$phpDocParserVersion = self::processPackageVersion($rootPackage);
 	}
 
 	/**

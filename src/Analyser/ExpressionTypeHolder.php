@@ -26,6 +26,10 @@ final class ExpressionTypeHolder
 
 	public function equals(self $other): bool
 	{
+		if ($this === $other) {
+			return true;
+		}
+
 		if (!$this->certainty->equals($other->certainty)) {
 			return false;
 		}

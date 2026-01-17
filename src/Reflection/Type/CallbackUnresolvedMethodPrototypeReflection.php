@@ -87,36 +87,45 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 		$selfOutType = $method->getSelfOutType() !== null ? $this->transformStaticType($method->getSelfOutType()) : null;
 		$variantFn = function (ExtendedParametersAcceptor $acceptor) use (&$selfOutType): ExtendedParametersAcceptor {
 			$originalReturnType = $acceptor->getReturnType();
+			$transformedReturnType = $this->transformStaticType($originalReturnType);
 			if ($originalReturnType instanceof ThisType && $selfOutType !== null) {
-				$returnType = TypeCombinator::intersect($selfOutType, $this->transformStaticType($originalReturnType));
+				$returnType = TypeCombinator::intersect($selfOutType, $transformedReturnType);
 				$selfOutType = $returnType;
 			} else {
-				$returnType = $this->transformStaticType($originalReturnType);
+				$returnType = $transformedReturnType;
 			}
+
+			$phpDocReturnType = $acceptor->getPhpDocReturnType();
+			$nativeReturnType = $acceptor->getNativeReturnType();
+
 			return new ExtendedFunctionVariant(
 				$acceptor->getTemplateTypeMap(),
 				$acceptor->getResolvedTemplateTypeMap(),
 				array_map(
-					fn (ExtendedParameterReflection $parameter): ExtendedParameterReflection => new ExtendedDummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue(),
-						$parameter->getNativeType(),
-						$this->transformStaticType($parameter->getPhpDocType()),
-						$parameter->getOutType() !== null ? $this->transformStaticType($parameter->getOutType()) : null,
-						$parameter->isImmediatelyInvokedCallable(),
-						$parameter->getClosureThisType() !== null ? $this->transformStaticType($parameter->getClosureThisType()) : null,
-						$parameter->getAttributes(),
-					),
+					function (ExtendedParameterReflection $parameter): ExtendedParameterReflection {
+						$originalType = $parameter->getType();
+						$transformedType = $this->transformStaticType($originalType);
+						return new ExtendedDummyParameter(
+							$parameter->getName(),
+							$transformedType,
+							$parameter->isOptional(),
+							$parameter->passedByReference(),
+							$parameter->isVariadic(),
+							$parameter->getDefaultValue(),
+							$parameter->getNativeType(),
+							$originalType->equals($parameter->getPhpDocType()) ? $transformedType : $this->transformStaticType($parameter->getPhpDocType()),
+							$parameter->getOutType() !== null ? $this->transformStaticType($parameter->getOutType()) : null,
+							$parameter->isImmediatelyInvokedCallable(),
+							$parameter->getClosureThisType() !== null ? $this->transformStaticType($parameter->getClosureThisType()) : null,
+							$parameter->getAttributes(),
+						);
+					},
 					$acceptor->getParameters(),
 				),
 				$acceptor->isVariadic(),
 				$returnType,
-				$this->transformStaticType($acceptor->getPhpDocReturnType()),
-				$this->transformStaticType($acceptor->getNativeReturnType()),
+				$originalReturnType->equals($phpDocReturnType) ? $transformedReturnType : $this->transformStaticType($phpDocReturnType),
+				$originalReturnType->equals($nativeReturnType) ? $transformedReturnType : $this->transformStaticType($nativeReturnType),
 				$acceptor->getCallSiteVarianceMap(),
 			);
 		};

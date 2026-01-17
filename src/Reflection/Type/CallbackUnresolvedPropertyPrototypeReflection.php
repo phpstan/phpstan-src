@@ -77,12 +77,26 @@ final class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedP
 
 	private function transformPropertyWithStaticType(ClassReflection $declaringClass, ExtendedPropertyReflection $property): ExtendedPropertyReflection
 	{
-		$readableType = $this->transformStaticType($property->getReadableType());
-		$writableType = $this->transformStaticType($property->getWritableType());
-		$phpDocType = $this->transformStaticType($property->getPhpDocType());
-		$nativeType = $this->transformStaticType($property->getNativeType());
+		$readableType = $property->getReadableType();
+		$transformedReadableType = $this->transformStaticType($property->getReadableType());
 
-		return new ChangedTypePropertyReflection($declaringClass, $property, $readableType, $writableType, $phpDocType, $nativeType);
+		$writableType = $property->getWritableType();
+		if ($readableType->equals($writableType)) {
+			$transformedWritableType = $transformedReadableType;
+		} else {
+			$transformedWritableType = $this->transformStaticType($writableType);
+		}
+		$phpDocType = $property->getPhpDocType();
+		$transformedPhpDocType = $this->transformStaticType($phpDocType);
+
+		$nativeType = $property->getNativeType();
+		if ($phpDocType->equals($nativeType)) {
+			$transformedNativeType = $transformedPhpDocType;
+		} else {
+			$transformedNativeType = $this->transformStaticType($property->getNativeType());
+		}
+
+		return new ChangedTypePropertyReflection($declaringClass, $property, $transformedReadableType, $transformedWritableType, $transformedPhpDocType, $transformedNativeType);
 	}
 
 	private function transformStaticType(Type $type): Type

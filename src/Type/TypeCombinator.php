@@ -494,54 +494,50 @@ final class TypeCombinator
 		if (
 			$a instanceof ConstantStringType
 		) {
-			$description = $b->describe(VerbosityLevel::value());
-			if (
-				$a->getValue() === ''
-				&& ($description === 'non-empty-string'
-				|| $description === 'non-falsy-string')
-			) {
-				return [null, self::intersect(
-					new StringType(),
-					...self::getAccessoryCaseStringTypes($b),
-				)];
+			if ($a->getValue() === '') {
+				$description = $b->describe(VerbosityLevel::value());
+				if ($description === 'non-empty-string' || $description === 'non-falsy-string') {
+					return [null, self::intersect(
+						new StringType(),
+						...self::getAccessoryCaseStringTypes($b),
+					)];
+				}
 			}
 
-			if (
-				$a->getValue() === '0'
-				&& $description === 'non-falsy-string'
-			) {
-				return [null, new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-					...self::getAccessoryCaseStringTypes($b),
-				])];
+			if ($a->getValue() === '0') {
+				$description = $b->describe(VerbosityLevel::value());
+				if ($description === 'non-falsy-string') {
+					return [null, new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+						...self::getAccessoryCaseStringTypes($b),
+					])];
+				}
 			}
 		}
 
 		if (
 			$b instanceof ConstantStringType
 		) {
-			$description = $a->describe(VerbosityLevel::value());
-			if (
-				$b->getValue() === ''
-				&& ($description === 'non-empty-string'
-				|| $description === 'non-falsy-string')
-			) {
-				return [self::intersect(
-					new StringType(),
-					...self::getAccessoryCaseStringTypes($a),
-				), null];
+			if ($b->getValue() === '') {
+				$description = $a->describe(VerbosityLevel::value());
+				if ($description === 'non-empty-string'	|| $description === 'non-falsy-string') {
+					return [self::intersect(
+						new StringType(),
+						...self::getAccessoryCaseStringTypes($a),
+					), null];
+				}
 			}
 
-			if (
-				$b->getValue() === '0'
-				&& $description === 'non-falsy-string'
-			) {
-				return [new IntersectionType([
-					new StringType(),
-					new AccessoryNonEmptyStringType(),
-					...self::getAccessoryCaseStringTypes($a),
-				]), null];
+			if ($b->getValue() === '0') {
+				$description = $a->describe(VerbosityLevel::value());
+				if ($description === 'non-falsy-string') {
+					return [new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+						...self::getAccessoryCaseStringTypes($a),
+					]), null];
+				}
 			}
 		}
 

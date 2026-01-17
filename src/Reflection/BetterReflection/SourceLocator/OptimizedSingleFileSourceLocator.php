@@ -17,6 +17,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\File\CouldNotReadFileException;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
@@ -79,7 +80,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		}
 
 		$reflectionCacheKey = sprintf('osfsl-%s-%s-%s', $this->fileName, $identifier->getType()->getName(), $identifier->getName());
-		$variableCacheKey = $this->getVariableCacheKey($this->fileName);
+		$variableCacheKey = sprintf('%s-%s', $this->getVariableCacheKey($this->fileName), ComposerHelper::getBetterReflectionVersion());
 		$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
 		if ($cachedReflection !== null) {
 			if ($identifier->isConstant()) {

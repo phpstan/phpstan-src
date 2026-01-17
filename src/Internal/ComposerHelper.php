@@ -21,6 +21,8 @@ final class ComposerHelper
 
 	private static ?string $phpstanVersion = null;
 
+	private static ?string $betterReflectionVersion = null;
+
 	/** @var array<string, mixed[]> */
 	private static array $decodedCache = [];
 
@@ -103,6 +105,21 @@ final class ComposerHelper
 		}
 
 		return self::$phpstanVersion = self::processPackageVersion($rootPackage);
+	}
+
+	public static function getBetterReflectionVersion(): string
+	{
+		if (self::$betterReflectionVersion !== null) {
+			return self::$betterReflectionVersion;
+		}
+
+		$installed = self::getInstalled();
+		$rootPackage = $installed['versions']['ondrejmirtes/better-reflection'] ?? null;
+		if ($rootPackage === null) {
+			return self::$betterReflectionVersion = self::UNKNOWN_VERSION;
+		}
+
+		return self::$betterReflectionVersion = self::processPackageVersion($rootPackage);
 	}
 
 	/**

@@ -49,7 +49,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		if ($fileHash === false) {
 			throw new CouldNotReadFileException($file);
 		}
-		return sprintf('v2-%s', $fileHash);
+		return sprintf('v2-%s-%s', $fileHash, $this->phpVersion->getVersionString());
 	}
 
 	#[Override]
@@ -82,8 +82,9 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 		}
 
 		$reflectionCacheKey = sprintf('osfsl-%s-%s-%s', $this->fileName, $identifier->getType()->getName(), $identifier->getName());
-		$variableCacheKey = sprintf('%s-%s-%s', $this->getVariableCacheKey($this->fileName), ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString());
-		$cachedReflection = $this->cache->load($reflectionCacheKey, $variableCacheKey);
+		$variableCacheKey ??= $this->getVariableCacheKey($this->fileName);
+		$reflectionVariableCacheKey = sprintf('%s-%s', $variableCacheKey, ComposerHelper::getBetterReflectionVersion());
+		$cachedReflection = $this->cache->load($reflectionCacheKey, $reflectionVariableCacheKey);
 		if ($cachedReflection !== null) {
 			if ($identifier->isConstant()) {
 				return ReflectionConstant::importFromCache($reflector, $cachedReflection);
@@ -140,7 +141,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$this->cache->save($reflectionCacheKey, $variableCacheKey, $classReflection->exportToCache());
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $classReflection->exportToCache());
 
 				return $classReflection;
 			}
@@ -164,7 +165,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$this->cache->save($reflectionCacheKey, $variableCacheKey, $functionReflection->exportToCache());
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $functionReflection->exportToCache());
 
 				return $functionReflection;
 			}
@@ -211,7 +212,7 @@ final class OptimizedSingleFileSourceLocator implements SourceLocator
 					throw new ShouldNotHappenException();
 				}
 
-				$this->cache->save($reflectionCacheKey, $variableCacheKey, $constantReflection->exportToCache());
+				$this->cache->save($reflectionCacheKey, $reflectionVariableCacheKey, $constantReflection->exportToCache());
 
 				return $constantReflection;
 			}

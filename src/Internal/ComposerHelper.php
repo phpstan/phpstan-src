@@ -150,7 +150,7 @@ final class ComposerHelper
 			return self::$phpstanVersion = $package['pretty_version'];
 		}
 
-		return self::$phpstanVersion = $package['pretty_version'] . '@' . substr((string) $package['reference'], 0, 7);
+		return $package['pretty_version'] . '@' . substr((string) $package['reference'], 0, 7);
 	}
 
 }

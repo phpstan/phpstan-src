@@ -118,6 +118,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
+	/** @var array<string, ExtendedMethodReflection> */
+	private array $methodCache = [];
+
 	/** @api */
 	public function __construct(
 		private string $className,
@@ -976,7 +979,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
-		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+		$key = $methodName;
+		if ($scope->isInClass()) {
+			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
+		}
+		return $this->methodCache[$key] ??= $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection

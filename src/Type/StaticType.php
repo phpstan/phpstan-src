@@ -38,6 +38,9 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	private string $baseClass;
 
+	/** @var array<string, ExtendedMethodReflection> */
+	private array $methodCache = [];
+
 	/**
 	 * @api
 	 */
@@ -313,7 +316,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
-		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
+		$key = $methodName;
+		if ($scope->isInClass()) {
+			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
+		}
+		return $this->methodCache[$key] ??= $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection

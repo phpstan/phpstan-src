@@ -2417,8 +2417,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$conditionalTypes = [];
 
 		if ($preserveConstructorScope) {
-			$expressionTypes = $this->rememberConstructorExpressions($this->expressionTypes);
-			$nativeExpressionTypes = $this->rememberConstructorExpressions($this->nativeExpressionTypes);
+			$expressionTypes = $this->expressionTypes;
+			$nativeExpressionTypes = $this->nativeExpressionTypes;
 		}
 
 		foreach ($functionReflection->getParameters() as $parameter) {

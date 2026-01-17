@@ -12,7 +12,7 @@ class BenevolentUnionType extends UnionType
 
 	/**
 	 * @api
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 */
 	public function __construct(array $types, bool $normalized = false)
 	{

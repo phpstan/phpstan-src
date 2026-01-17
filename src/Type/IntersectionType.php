@@ -71,7 +71,7 @@ class IntersectionType implements CompoundType
 
 	/**
 	 * @api
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 */
 	public function __construct(private array $types)
 	{
@@ -85,7 +85,7 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	public function getTypes(): array
 	{
@@ -93,7 +93,7 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	private function getSortedTypes(): array
 	{

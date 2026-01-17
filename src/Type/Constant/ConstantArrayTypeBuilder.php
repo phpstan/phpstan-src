@@ -40,7 +40,7 @@ final class ConstantArrayTypeBuilder
 	private bool $oversized = false;
 
 	/**
-	 * @param array<int, Type> $keyTypes
+	 * @param list<Type> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param array<int> $optionalKeys
@@ -308,7 +308,7 @@ final class ConstantArrayTypeBuilder
 		}
 
 		if (!$this->degradeToGeneralArray) {
-			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
+			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}

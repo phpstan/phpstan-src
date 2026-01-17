@@ -202,6 +202,10 @@ final class TypeCombinator
 			return new NeverType();
 		}
 
+		if ($typesCount === 1 && !$types[0]->isArray()->yes()) {
+			return $types[0];
+		}
+
 		$arrayTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];

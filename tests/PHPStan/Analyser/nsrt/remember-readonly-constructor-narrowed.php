@@ -143,3 +143,28 @@ class DeepPropertyFetching {
 		assertType('int', $this->prop->writable);
 	}
 }
+
+class HelloWorldReadonlyPropertyInClosureScope {
+	private readonly int $i;
+
+	public function __construct()
+	{
+		if (rand(0,1)) {
+			$this->i = 4;
+		} else {
+			$this->i = 10;
+		}
+	}
+
+	public function doFoo() {
+		assertType('4|10', $this->i);
+
+		(function() {
+			assertType('4|10', $this->i);
+		})();
+
+		$func = function() {
+			assertType('4|10', $this->i);
+		};
+	}
+}

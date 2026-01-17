@@ -24,6 +24,9 @@ final class ComposerHelper
 	/** @var array<string, mixed[]> */
 	private static array $decodedCache = [];
 
+	/** @var array<string, mixed>|null */
+	private static ?array $installed;
+
 	/** @return array<string, mixed>|null */
 	public static function getComposerConfig(string $root): ?array
 	{
@@ -79,24 +82,41 @@ final class ComposerHelper
 		return $root . '/' . trim($vendorDirectory, '/');
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function getInstalled(): array
+	{
+		return self::$installed ??= require __DIR__ . '/../../vendor/composer/installed.php';
+	}
+
 	public static function getPhpStanVersion(): string
 	{
 		if (self::$phpstanVersion !== null) {
 			return self::$phpstanVersion;
 		}
 
-		$installed = require __DIR__ . '/../../vendor/composer/installed.php';
+		$installed = self::getInstalled();
 		$rootPackage = $installed['root'] ?? null;
 		if ($rootPackage === null) {
 			return self::$phpstanVersion = self::UNKNOWN_VERSION;
 		}
 
-		if (preg_match('/[^v\d.]/', $rootPackage['pretty_version']) === 0) {
+		return self::$phpstanVersion = self::processPackageVersion($rootPackage);
+	}
+
+	/**
+	 * @param array<string, mixed> $package
+	 * @return string
+	 */
+	private static function processPackageVersion(array $package): string
+	{
+		if (preg_match('/[^v\d.]/', $package['pretty_version']) === 0) {
 			// Handles tagged versions, see https://github.com/Jean85/pretty-package-versions/blob/2.0.5/src/Version.php#L31
-			return self::$phpstanVersion = $rootPackage['pretty_version'];
+			return self::$phpstanVersion = $package['pretty_version'];
 		}
 
-		return self::$phpstanVersion = $rootPackage['pretty_version'] . '@' . substr((string) $rootPackage['reference'], 0, 7);
+		return self::$phpstanVersion = $package['pretty_version'] . '@' . substr((string) $package['reference'], 0, 7);
 	}
 
 }

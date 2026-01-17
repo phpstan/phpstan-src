@@ -33,6 +33,7 @@ use function array_splice;
 use function array_values;
 use function count;
 use function get_class;
+use function in_array;
 use function is_int;
 use function sprintf;
 use function usort;
@@ -496,7 +497,7 @@ final class TypeCombinator
 		) {
 			if ($a->getValue() === '') {
 				$description = $b->describe(VerbosityLevel::value());
-				if ($description === 'non-empty-string' || $description === 'non-falsy-string') {
+				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
 					return [null, self::intersect(
 						new StringType(),
 						...self::getAccessoryCaseStringTypes($b),
@@ -521,7 +522,7 @@ final class TypeCombinator
 		) {
 			if ($b->getValue() === '') {
 				$description = $a->describe(VerbosityLevel::value());
-				if ($description === 'non-empty-string'	|| $description === 'non-falsy-string') {
+				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
 					return [self::intersect(
 						new StringType(),
 						...self::getAccessoryCaseStringTypes($a),

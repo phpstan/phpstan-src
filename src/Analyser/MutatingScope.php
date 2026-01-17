@@ -3878,12 +3878,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		/** @var self[] $scopes */
 		$scopes = [$this, ...$otherScopes];
 		$listOfExpressionTypes = [];
-		foreach ($scopes as $scope) {
-			$listOfExpressionTypes[] = $scope->expressionTypes;
-		}
-
 		$listOfNativeExpressionTypes = [];
 		foreach ($scopes as $scope) {
+			$listOfExpressionTypes[] = $scope->expressionTypes;
 			$listOfNativeExpressionTypes[] = $scope->nativeExpressionTypes;
 		}
 

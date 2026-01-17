@@ -49,7 +49,7 @@ final class OptimizedDirectorySourceLocatorFactory
 	 */
 	private function createCachedDirectorySourceLocator(array $fileHashes, string $cacheKey): OptimizedDirectorySourceLocator
 	{
-		$variableCacheKey = 'v1';
+		$variableCacheKey = sprintf('v1-%s', $this->phpVersion->supportsEnums() ? 'enums' : 'no-enums');
 
 		$originalFileHashes = $fileHashes;
 

@@ -147,7 +147,7 @@ final class ComposerHelper
 	{
 		if (preg_match('/[^v\d.]/', $package['pretty_version']) === 0) {
 			// Handles tagged versions, see https://github.com/Jean85/pretty-package-versions/blob/2.0.5/src/Version.php#L31
-			return self::$phpstanVersion = $package['pretty_version'];
+			return $package['pretty_version'];
 		}
 
 		return $package['pretty_version'] . '@' . substr((string) $package['reference'], 0, 7);

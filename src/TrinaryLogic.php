@@ -119,9 +119,15 @@ final class TrinaryLogic
 
 	public function or(self ...$operands): self
 	{
-		$operandValues = array_column($operands, 'value');
-		$operandValues[] = $this->value;
-		return self::create(max($operandValues));
+		$max = $this->value;
+		foreach ($operands as $operand) {
+			if ($operand->value < $max) {
+				continue;
+			}
+
+			$max = $operand->value;
+		}
+		return self::create($max);
 	}
 
 	/**

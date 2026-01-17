@@ -9,8 +9,6 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
-use function array_slice;
-use function count;
 use function lcfirst;
 use function sprintf;
 
@@ -38,21 +36,29 @@ final class TooWideParameterOutTypeCheck
 		string $functionDescription,
 	): array
 	{
-		$scopesToMerge = [];
+		$finalScope = null;
 		foreach ($executionEnds as $executionEnd) {
-			$scopesToMerge[] = $executionEnd->getStatementResult()->getScope();
+			$endScope = $executionEnd->getStatementResult()->getScope();
+			if ($finalScope === null) {
+				$finalScope = $endScope;
+				continue;
+			}
+
+			$finalScope = $finalScope->mergeWith($endScope);
 		}
 
 		foreach ($returnStatements as $statement) {
-			$scopesToMerge[] = $statement->getScope();
+			if ($finalScope === null) {
+				$finalScope = $statement->getScope();
+				continue;
+			}
+
+			$finalScope = $finalScope->mergeWith($statement->getScope());
 		}
 
-		if (count($scopesToMerge) === 0) {
+		if ($finalScope === null) {
 			return [];
 		}
-
-		// @phpstan-ignore method.notFound
-		$finalScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 		$errors = [];
 		foreach ($parameters as $parameter) {

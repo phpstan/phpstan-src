@@ -11,8 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
-use function array_slice;
-use function count;
 use function sprintf;
 
 /**
@@ -46,7 +44,7 @@ final class SetNonVirtualPropertyHookAssignRule implements Rule
 			return [];
 		}
 
-		$scopesToMerge = [];
+		$finalHookScope = null;
 		foreach ($node->getExecutionEnds() as $executionEnd) {
 			$statementResult = $executionEnd->getStatementResult();
 			$endNode = $executionEnd->getNode();
@@ -58,19 +56,25 @@ final class SetNonVirtualPropertyHookAssignRule implements Rule
 					}
 				}
 			}
-			$scopesToMerge[] = $statementResult->getScope();
+			if ($finalHookScope === null) {
+				$finalHookScope = $statementResult->getScope();
+				continue;
+			}
+
+			$finalHookScope = $finalHookScope->mergeWith($statementResult->getScope());
 		}
 
 		foreach ($node->getReturnStatements() as $returnStatement) {
-			$scopesToMerge[] = $returnStatement->getScope();
+			if ($finalHookScope === null) {
+				$finalHookScope = $returnStatement->getScope();
+				continue;
+			}
+			$finalHookScope = $finalHookScope->mergeWith($returnStatement->getScope());
 		}
 
-		if (count($scopesToMerge) === 0) {
+		if ($finalHookScope === null) {
 			return [];
 		}
-
-		// @phpstan-ignore method.notFound
-		$finalHookScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 		$initExpr = new PropertyInitializationExpr($propertyName);
 		$hasInit = $finalHookScope->hasExpressionType($initExpr);

@@ -26,8 +26,6 @@ use PHPStan\Type\TypeUtils;
 use function array_diff_key;
 use function array_key_exists;
 use function array_keys;
-use function array_slice;
-use function count;
 use function in_array;
 use function strtolower;
 
@@ -271,7 +269,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			$returnStatementsNode = $this->returnStatementNodes[$lowerConstructorName];
-			$scopesToMerge = [];
+			$methodScope = null;
 			foreach ($returnStatementsNode->getExecutionEnds() as $executionEnd) {
 				$statementResult = $executionEnd->getStatementResult();
 				$endNode = $executionEnd->getNode();
@@ -283,19 +281,25 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 						}
 					}
 				}
-				$scopesToMerge[] = $statementResult->getScope();
+				if ($methodScope === null) {
+					$methodScope = $statementResult->getScope();
+					continue;
+				}
+
+				$methodScope = $methodScope->mergeWith($statementResult->getScope());
 			}
 
 			foreach ($returnStatementsNode->getReturnStatements() as $returnStatement) {
-				$scopesToMerge[] = $returnStatement->getScope();
+				if ($methodScope === null) {
+					$methodScope = $returnStatement->getScope();
+					continue;
+				}
+				$methodScope = $methodScope->mergeWith($returnStatement->getScope());
 			}
 
-			if (count($scopesToMerge) === 0) {
+			if ($methodScope === null) {
 				continue;
 			}
-
-			// @phpstan-ignore method.notFound
-			$methodScope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
 
 			foreach (array_keys($uninitializedProperties) as $propertyName) {
 				if (!$methodScope->hasExpressionType(new PropertyInitializationExpr($propertyName))->yes()) {

@@ -101,7 +101,7 @@ class Foo
 			assertType("'3'|'4'", $key2);
 		}
 		if (array_key_exists($key3, [3 => 'foo', 4 => 'bar'])) {
-			assertType("(3|4|'3'|'4')", $key3);
+			assertType("3|4|'3'|'4'", $key3);
 		}
 		if (array_key_exists($key4, [3 => 'foo', 4 => 'bar'])) {
 			assertType("(3|4|'3'|'4')", $key4);

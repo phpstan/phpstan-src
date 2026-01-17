@@ -17,6 +17,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
@@ -37,6 +38,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
 		private Cache $cache,
+		private PhpVersion $phpVersion,
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
@@ -55,7 +57,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		}
 
 		$reflectionCacheKey = sprintf('odsl-%s-%s-%s', $file, $identifier->getType()->getName(), $identifier->getName());
-		$variableCacheKey = sprintf('v2-%s-%s', ComposerHelper::getBetterReflectionVersion(), $fileHash);
+		$variableCacheKey = sprintf('v2-%s-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString(), $fileHash);
 
 		return [$reflectionCacheKey, $variableCacheKey];
 	}

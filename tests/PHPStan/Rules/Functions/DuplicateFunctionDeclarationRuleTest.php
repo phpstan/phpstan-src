@@ -6,6 +6,7 @@ use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\Cache\Cache;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator;
 use PHPStan\Rules\Rule;
@@ -27,6 +28,7 @@ class DuplicateFunctionDeclarationRuleTest extends RuleTestCase
 			new DefaultReflector(new OptimizedSingleFileSourceLocator(
 				self::getContainer()->getByType(FileNodesFetcher::class),
 				self::getContainer()->getByType(Cache::class),
+				self::getContainer()->getByType(PhpVersion::class),
 				self::FILENAME,
 			)),
 			new SimpleRelativePathHelper($fileHelper->normalizePath($fileHelper->getWorkingDirectory(), '/')),

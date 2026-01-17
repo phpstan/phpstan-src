@@ -304,50 +304,53 @@ class IntersectionType implements CompoundType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			function () use ($level): string {
-				$typeNames = [];
-				$isList = $this->isList()->yes();
-				$valueType = null;
-				foreach ($this->getSortedTypes() as $type) {
-					if ($isList) {
-						if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
-							$valueType = $type->getIterableValueType();
-							continue;
-						}
-						if ($type instanceof NonEmptyArrayType) {
-							continue;
-						}
-					}
-					if ($type instanceof AccessoryType) {
-						continue;
-					}
-					$typeNames[] = $type->generalize(GeneralizePrecision::lessSpecific())->describe($level);
-				}
-
-				if ($isList) {
-					$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
-					$innerType = '';
-					if ($valueType !== null && !$isMixedValueType) {
-						$innerType = sprintf('<%s>', $valueType->describe($level));
-					}
-
-					$typeNames[] = 'list' . $innerType;
-				}
-
-				usort($typeNames, static function ($a, $b) {
-					$cmp = strcasecmp($a, $b);
-					if ($cmp !== 0) {
-						return $cmp;
-					}
-
-					return $a <=> $b;
-				});
-
-				return implode('&', $typeNames);
-			},
+			fn (): string => $this->describeType($level),
 			fn (): string => $this->describeItself($level, true),
 			fn (): string => $this->describeItself($level, false),
 		);
+	}
+
+	private function describeType(VerbosityLevel $level): string
+	{
+		$typeNames = [];
+		$isList = $this->isList()->yes();
+		$valueType = null;
+		foreach ($this->getSortedTypes() as $type) {
+			if ($isList) {
+				if ($type instanceof ArrayType || $type instanceof ConstantArrayType) {
+					$valueType = $type->getIterableValueType();
+					continue;
+				}
+				if ($type instanceof NonEmptyArrayType) {
+					continue;
+				}
+			}
+			if ($type instanceof AccessoryType) {
+				continue;
+			}
+			$typeNames[] = $type->generalize(GeneralizePrecision::lessSpecific())->describe($level);
+		}
+
+		if ($isList) {
+			$isMixedValueType = $valueType instanceof MixedType && $valueType->describe(VerbosityLevel::precise()) === 'mixed' && !$valueType->isExplicitMixed();
+			$innerType = '';
+			if ($valueType !== null && !$isMixedValueType) {
+				$innerType = sprintf('<%s>', $valueType->describe($level));
+			}
+
+			$typeNames[] = 'list' . $innerType;
+		}
+
+		usort($typeNames, static function ($a, $b) {
+			$cmp = strcasecmp($a, $b);
+			if ($cmp !== 0) {
+				return $cmp;
+			}
+
+			return $a <=> $b;
+		});
+
+		return implode('&', $typeNames);
 	}
 
 	private function describeItself(VerbosityLevel $level, bool $skipAccessoryTypes): string

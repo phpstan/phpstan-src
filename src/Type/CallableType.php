@@ -40,6 +40,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
@@ -218,7 +219,100 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return false;
 		}
 
-		return $this->describe(VerbosityLevel::precise()) === $type->describe(VerbosityLevel::precise());
+		if ($this->isCommonCallable) {
+			if (!$type->isCommonCallable) {
+				return false;
+			}
+		} elseif ($type->isCommonCallable) {
+			return false;
+		}
+
+		if ($this->variadic !== $type->variadic) {
+			return false;
+		}
+
+		if ($this->isPure !== $type->isPure) {
+			return false;
+		}
+
+		if (!$this->returnType->equals($type->returnType)) {
+			return false;
+		}
+
+		if (count($this->parameters) !== count($type->parameters)) {
+			return false;
+		}
+
+		foreach ($this->parameters as $i => $parameter) {
+			$otherParameter = $type->parameters[$i];
+			if ($parameter->isOptional() !== $otherParameter->isOptional()) {
+				return false;
+			}
+			if (!$parameter->passedByReference()->equals($otherParameter->passedByReference())) {
+				return false;
+			}
+			if ($parameter->isVariadic() !== $otherParameter->isVariadic()) {
+				return false;
+			}
+			if (!$parameter->getType()->equals($otherParameter->getType())) {
+				return false;
+			}
+			if ($parameter->getDefaultValue() !== null) {
+				if ($otherParameter->getDefaultValue() === null) {
+					return false;
+				}
+
+				return $parameter->getDefaultValue()->equals($otherParameter->getDefaultValue());
+			} elseif ($otherParameter->getDefaultValue() !== null) {
+				return false;
+			}
+		}
+
+		foreach ([[$this->templateTypeMap, $type->templateTypeMap], [$this->resolvedTemplateTypeMap, $type->resolvedTemplateTypeMap]] as [$templateTypeMap, $otherTemplateTypeMap]) {
+			if ($templateTypeMap->count() !== $otherTemplateTypeMap->count()) {
+				return false;
+			}
+
+			foreach ($templateTypeMap->getTypes() as $typeName => $templateType) {
+				$otherTemplateType = $otherTemplateTypeMap->getType($typeName);
+				if ($otherTemplateType === null) {
+					return false;
+				}
+
+				if (!$templateType->equals($otherTemplateType)) {
+					return false;
+				}
+			}
+		}
+
+		foreach ($this->templateTags as $tagName => $tag) {
+			if (!array_key_exists($tagName, $type->templateTags)) {
+				return false;
+			}
+
+			$otherTag = $type->templateTags[$tagName];
+			if ($tag->getName() !== $otherTag->getName()) {
+				return false;
+			}
+
+			if (!$tag->getBound()->equals($otherTag->getBound())) {
+				return false;
+			}
+			if (!$tag->getVariance()->equals($otherTag->getVariance())) {
+				return false;
+			}
+			if ($tag->getDefault() !== null) {
+				if ($otherTag->getDefault() === null) {
+					return false;
+				}
+
+				return $tag->getDefault()->equals($otherTag->getDefault());
+			} elseif ($otherTag->getDefault() !== null) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public function describe(VerbosityLevel $level): string

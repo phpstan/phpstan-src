@@ -871,7 +871,7 @@ class NodeScopeResolver
 					}
 
 					if (count($scopesToMerge) > 0) {
-						$scope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1));
+						$scope = $scopesToMerge[0]->mergeWith(...array_slice($scopesToMerge, 1))->rememberConstructorScope();
 					}
 
 				}

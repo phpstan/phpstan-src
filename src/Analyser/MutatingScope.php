@@ -3928,9 +3928,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if (!$theirNativeExpressionTypes[$exprString]->equals($theirExpressionTypes[$exprString])) {
 				continue;
 			}
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
-				continue;
-			}
 			$mergedNativeExpressionTypes[$exprString] = $mergedExpressionTypes[$exprString];
 			unset($ourNativeExpressionTypes[$exprString]);
 			unset($theirNativeExpressionTypes[$exprString]);

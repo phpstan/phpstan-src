@@ -78,8 +78,17 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	{
 		$isArray = $type->isArray();
 		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
+		$isNonEmptyArray = $isArray->and($isIterableAtLeastOnce);
 
-		return new AcceptsResult($isArray->and($isIterableAtLeastOnce), []);
+		if ($isNonEmptyArray->yes()) {
+			return AcceptsResult::createYes();
+		}
+
+		if ($type instanceof CompoundType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
+		return new AcceptsResult($isNonEmptyArray, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

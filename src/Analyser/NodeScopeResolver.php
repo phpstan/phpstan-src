@@ -393,7 +393,7 @@ class NodeScopeResolver
 	): StatementResult
 	{
 		$storage = new ExpressionResultStorage();
-		$result = $this->processStmtNodesInternal(
+		return $this->processStmtNodesInternal(
 			$parentNode,
 			$stmts,
 			$scope,
@@ -401,9 +401,6 @@ class NodeScopeResolver
 			$nodeCallback,
 			$context,
 		)->toPublic();
-		$this->processPendingFibers($storage);
-
-		return $result;
 	}
 
 	/**
@@ -504,6 +501,8 @@ class NodeScopeResolver
 				$returnTypeNode !== null,
 			), $scope, $storage);
 		}
+
+		$this->processPendingFibers($storage);
 
 		return $statementResult;
 	}

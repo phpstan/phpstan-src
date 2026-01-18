@@ -948,18 +948,14 @@ class NodeScopeResolver
 			$hasAssign = false;
 			$currentScope = $scope;
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $currentScope, &$hasAssign): void {
+				if (
+					($node instanceof VariableAssignNode || $node instanceof PropertyAssignNode)
+					&& $scope->getAnonymousFunctionReflection() === $currentScope->getAnonymousFunctionReflection()
+					&& $scope->getFunction() === $currentScope->getFunction()
+				) {
+					$hasAssign = true;
+				}
 				$nodeCallback($node, $scope);
-				if (!$node instanceof VariableAssignNode && !$node instanceof PropertyAssignNode) {
-					return;
-				}
-				if ($scope->getAnonymousFunctionReflection() !== $currentScope->getAnonymousFunctionReflection()) {
-					return;
-				}
-				if ($scope->getFunction() !== $currentScope->getFunction()) {
-					return;
-				}
-
-				$hasAssign = true;
 			}, ExpressionContext::createTopLevel());
 			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 			if (

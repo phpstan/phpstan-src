@@ -180,7 +180,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 	}
 
 	/**
-	 * @return AccessoryType[]
+	 * @return list<AccessoryType>
 	 */
 	private function getAccessoryTypes(Type $arrayType, Type $valueType): array
 	{

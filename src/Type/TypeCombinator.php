@@ -399,14 +399,14 @@ final class TypeCombinator
 
 			if ($tempTypes === []) {
 				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
-					return $benevolentUnionObject->withTypes($types);
+					return $benevolentUnionObject->withTypes(array_values($types));
 				}
 
-				return new BenevolentUnionType($types, true);
+				return new BenevolentUnionType(array_values($types), true);
 			}
 		}
 
-		return new UnionType($types, true);
+		return new UnionType(array_values($types), true);
 	}
 
 	/**
@@ -564,7 +564,7 @@ final class TypeCombinator
 	}
 
 	/**
-	 * @return array<Type>
+	 * @return list<Type>
 	 */
 	private static function getAccessoryCaseStringTypes(Type $type): array
 	{
@@ -704,7 +704,7 @@ final class TypeCombinator
 
 	/**
 	 * @param Type[] $arrayTypes
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{
@@ -1497,7 +1497,7 @@ final class TypeCombinator
 			return $types[0];
 		}
 
-		return new IntersectionType($types);
+		return new IntersectionType(array_values($types));
 	}
 
 	public static function removeFalsey(Type $type): Type

@@ -95,7 +95,7 @@ class ConstantArrayType implements Type
 
 	/**
 	 * @api
-	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param int[] $optionalKeys
@@ -280,7 +280,7 @@ class ConstantArrayType implements Type
 	}
 
 	/**
-	 * @return array<int, ConstantIntegerType|ConstantStringType>
+	 * @return list<ConstantIntegerType|ConstantStringType>
 	 */
 	public function getKeyTypes(): array
 	{

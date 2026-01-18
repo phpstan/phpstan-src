@@ -63,7 +63,7 @@ class UnionType implements CompoundType
 
 	/**
 	 * @api
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 */
 	public function __construct(private array $types, private bool $normalized = false)
 	{
@@ -90,7 +90,7 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	public function getTypes(): array
 	{
@@ -126,7 +126,7 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @return Type[]
+	 * @return list<Type>
 	 */
 	protected function getSortedTypes(): array
 	{

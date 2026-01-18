@@ -34,7 +34,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		$this->default = $default;
 	}
 
-	/** @param Type[] $types */
+	/** @param list<Type> $types */
 	public function withTypes(array $types): self
 	{
 		return new self(

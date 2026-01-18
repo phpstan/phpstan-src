@@ -150,7 +150,7 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param list<Type> $types
 	 */
 	private function processType(
 		string $functionName,

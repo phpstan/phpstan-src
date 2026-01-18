@@ -210,7 +210,7 @@ final class TypeUtils
 	}
 
 	/**
-	 * @return AccessoryType[]
+	 * @return list<AccessoryType>
 	 */
 	public static function getAccessoryTypes(Type $type): array
 	{

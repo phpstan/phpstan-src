@@ -2535,4 +2535,60 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12234(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12234.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11982(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11982.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11386(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-11386.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11079(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-11079.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug10612(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-10612.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug9652(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-9652.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug8936(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-8936.php'], []);
+	}
+
 }

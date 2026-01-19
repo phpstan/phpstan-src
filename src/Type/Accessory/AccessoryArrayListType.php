@@ -76,14 +76,19 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		$isArray = $type->isArray();
+		$isList = $type->isList();
+		$isListArray = $isArray->and($isList);
+
+		if ($isListArray->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		$isArray = $type->isArray();
-		$isList = $type->isList();
-
-		return new AcceptsResult($isArray->and($isList), []);
+		return new AcceptsResult($isListArray, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

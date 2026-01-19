@@ -72,14 +72,17 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		if ($type->isNonEmptyString()->yes()) {
+		$isNonEmptyString = $type->isNonEmptyString();
+
+		if ($isNonEmptyString->yes()) {
 			return AcceptsResult::createYes();
 		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isNonEmptyString(), []);
+		return new AcceptsResult($isNonEmptyString, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

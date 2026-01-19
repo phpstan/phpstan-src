@@ -10,6 +10,8 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -69,6 +71,30 @@ class IntersectionTypeTest extends PHPStanTestCase
 			TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new CallableType()),
 			new CallableType(),
 			TrinaryLogic::createMaybe(),
+		];
+
+		yield [
+			TypeCombinator::intersect(
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			),
+			TypeCombinator::intersect(
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetType(new ConstantStringType('some-key')),
+			),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			TypeCombinator::intersect(
+				new ArrayType(new MixedType(), new MixedType()),
+				new NonEmptyArrayType(),
+			),
+			TypeCombinator::intersect(
+				new ArrayType(new MixedType(), new MixedType()),
+				new HasOffsetValueType(new ConstantStringType('some-key'), new IntegerType()),
+			),
+			TrinaryLogic::createYes(),
 		];
 	}
 

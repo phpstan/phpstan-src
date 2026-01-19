@@ -71,11 +71,17 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		$isUppercaseString = $type->isUppercaseString();
+
+		if ($isUppercaseString->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isUppercaseString(), []);
+		return new AcceptsResult($isUppercaseString, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

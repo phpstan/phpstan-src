@@ -1577,3 +1577,47 @@ function constantArrayBound(array $a): array
 function (): void {
 	assertType('array{\'string\', true}', constantArrayBound(['string', true]));
 };
+
+/**
+ * @phpstan-template TParametersTypes of non-empty-list<mixed>
+ */
+class InlineVar
+{
+
+	public function doFoo(): void
+	{
+		/** @var TParametersTypes $a */
+		$a = [1, 2, 3];
+		assertType('TParametersTypes of non-empty-list<mixed> (class PHPStan\Generics\FunctionsAssertType\InlineVar, parameter)', $a);
+	}
+
+	/**
+	 * @template T
+	 * @param T $b
+	 */
+	public function doBar($b): void
+	{
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\InlineVar::doBar(), argument)', $b);
+
+		/** @var T $c */
+		$c = 2;
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\InlineVar::doBar(), parameter)', $c);
+
+		/** @var TParametersTypes $a */
+		$a = [1, 2, 3];
+		assertType('TParametersTypes of non-empty-list<mixed> (class PHPStan\Generics\FunctionsAssertType\InlineVar, parameter)', $a);
+	}
+
+	/**
+	 * @param int $b
+	 */
+	public function doBaz($b): void
+	{
+		assertType('int', $b);
+
+		/** @var TParametersTypes $a */
+		$a = [1, 2, 3];
+		assertType('TParametersTypes of non-empty-list<mixed> (class PHPStan\Generics\FunctionsAssertType\InlineVar, parameter)', $a);
+	}
+
+}

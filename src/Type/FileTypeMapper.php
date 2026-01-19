@@ -325,7 +325,7 @@ final class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = sprintf('v2-%s', ComposerHelper::getPhpDocParserVersion());
+			$variableCacheKey = sprintf('v3-%s', ComposerHelper::getPhpDocParserVersion());
 			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 			if ($cached === null) {
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -507,6 +507,19 @@ final class FileTypeMapper
 						);
 					} elseif ($node instanceof Node\Stmt\ClassLike) {
 						$typeAliasStack[] = [];
+					} else {
+						$parentNameScope = array_last($typeMapStack) ?? null;
+						$typeMapStack[] = new IntermediaryNameScope(
+							$namespace,
+							$uses,
+							$className,
+							$functionName,
+							[],
+							$parentNameScope,
+							array_last($typeAliasStack) ?? [],
+							constUses: $constUses,
+							typeAliasClassName: $lookForTrait,
+						);
 					}
 				}
 
@@ -542,7 +555,7 @@ final class FileTypeMapper
 				}
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_ || $node instanceof Node\PropertyHook) {
-					if ($phpDocNode !== null) {
+					if ($phpDocNode !== null || !$node instanceof Node\Stmt\ClassLike) {
 						return self::POP_TYPE_MAP_STACK;
 					}
 

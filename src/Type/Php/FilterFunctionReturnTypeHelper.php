@@ -28,7 +28,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_filter;
 use function array_key_exists;
 use function array_merge;
 use function hexdec;
@@ -415,17 +414,11 @@ final class FilterFunctionReturnTypeHelper
 
 				$inString = $in->toString();
 				if ($inString instanceof UnionType) {
-					$inStringTypes = $inString->getTypes();
-					// Replace ConstantStringType of value === "" by NullType.
-					$types = array_filter(
-						$inStringTypes,
-						static fn (Type $type): bool => $type instanceof ConstantStringType && $type->getValue() !== '',
+					return $inString->traverse(
+						static fn (Type $type): Type => $type->getConstantStrings() === [$type] && $type->getValue() === ''
+							? new NullType()
+							: $type,
 					);
-					if ($types !== $inStringTypes) {
-						$types[] = new NullType();
-					}
-
-					return new UnionType($types);
 				}
 
 				return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);

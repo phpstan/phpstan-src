@@ -5961,7 +5961,7 @@ class NodeScopeResolver
 					if ($if === null) {
 						$if = $assignedExpr->cond;
 					}
-					$condScope = $this->processExprNode($stmt, $assignedExpr->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
+					$condScope = $this->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
 					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
 					$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);

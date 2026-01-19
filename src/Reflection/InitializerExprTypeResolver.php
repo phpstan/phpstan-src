@@ -643,16 +643,19 @@ final class InitializerExprTypeResolver
 				$constantArrays = $valueType->getConstantArrays();
 				if (count($constantArrays) === 1) {
 					$constantArrayType = $constantArrays[0];
+
 					$hasStringKey = false;
-					foreach ($constantArrayType->getKeyTypes() as $keyType) {
-						if ($keyType->isString()->yes()) {
-							$hasStringKey = true;
-							break;
+					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+						foreach ($constantArrayType->getKeyTypes() as $keyType) {
+							if ($keyType->isString()->yes()) {
+								$hasStringKey = true;
+								break;
+							}
 						}
 					}
 
 					foreach ($constantArrayType->getValueTypes() as $i => $innerValueType) {
-						if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+						if ($hasStringKey) {
 							$arrayBuilder->setOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType, $constantArrayType->isOptionalKey($i));
 						} else {
 							$arrayBuilder->setOffsetValueType(null, $innerValueType, $constantArrayType->isOptionalKey($i));

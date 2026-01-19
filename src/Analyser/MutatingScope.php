@@ -3909,6 +3909,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$mergedExpressionTypes,
 		);
 
+		$filter = static function (ExpressionTypeHolder $expressionTypeHolder) {
+			if ($expressionTypeHolder->getCertainty()->yes()) {
+				return true;
+			}
+
+			$expr = $expressionTypeHolder->getExpr();
+
+			return $expr instanceof Variable || $expr instanceof VirtualNode;
+		};
+
+		$mergedExpressionTypes = array_filter($mergedExpressionTypes, $filter);
+
 		$ourNativeExpressionTypes = $this->nativeExpressionTypes;
 		$theirNativeExpressionTypes = $otherScope->nativeExpressionTypes;
 		$mergedNativeExpressionTypes = [];
@@ -3942,7 +3954,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->getFunction(),
 			$this->getNamespace(),
 			$mergedExpressionTypes,
-			array_merge($mergedNativeExpressionTypes, $this->mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes)),
+			array_merge($mergedNativeExpressionTypes, array_filter($this->mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes), $filter)),
 			$conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
@@ -4078,11 +4090,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
 				$expr = $variableTypeHolder->getExpr();
-
-				if (!$expr instanceof Variable && !$expr instanceof VirtualNode) {
-					continue;
-				}
-
 				if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
 					$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
 				}
@@ -4100,11 +4107,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$expr = $variableTypeHolder->getExpr();
-
-			if (!$expr instanceof Variable && !$expr instanceof VirtualNode) {
-				continue;
-			}
-
 			if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
 				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
 			}

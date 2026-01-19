@@ -36,17 +36,6 @@ jobs:
           - "8.4"
           - "8.5"
         operating-system: [ ubuntu-latest, windows-latest ]
-        fnsr: ["0"]
-        include:
-          - php-version: "8.3"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.4"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.5"
-            operating-system: ubuntu-latest
-            fnsr: "1"
 
     steps:
       - name: "Checkout"
@@ -73,8 +62,6 @@ jobs:
 
       - name: "Tests"
         run: "php tests/vendor/bin/paratest --runner WrapperRunner --no-coverage"
-        env:
-          PHPSTAN_FNSR: "${{ matrix.fnsr }}"
 
   tests-phpunit11:
     name: "Tests PHPUnit 11.x"
@@ -87,11 +74,6 @@ jobs:
         php-version:
           - "8.2"
         operating-system: [ ubuntu-latest, windows-latest ]
-        fnsr: ["0"]
-        include:
-          - php-version: "8.2"
-            operating-system: ubuntu-latest
-            fnsr: "1"
 
     steps:
       - name: "Checkout"
@@ -114,8 +96,6 @@ jobs:
 
       - name: "Tests"
         run: "make tests"
-        env:
-          PHPSTAN_FNSR: "${{ matrix.fnsr }}"
 
   tests-integration:
     name: "Integration tests"
@@ -223,11 +203,9 @@ jobs:
           - "8.0"
           - "8.1"
         operating-system: [ ubuntu-latest, windows-latest ]
-        fnsr: ["0"]
         include:
           - php-version: "8.1"
             operating-system: ubuntu-latest
-            fnsr: "1"
 
     steps:
       - name: "Checkout"
@@ -259,8 +237,6 @@ jobs:
 
       - name: "Tests"
         run: "make tests"
-        env:
-          PHPSTAN_FNSR: "${{ matrix.fnsr }}"
 
   mutation-testing:
     name: "Mutation Testing"

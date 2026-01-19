@@ -36,23 +36,6 @@ jobs:
           - "8.4"
           - "8.5"
         operating-system: [ubuntu-latest, windows-latest]
-        fnsr: ["0"]
-        include:
-          - php-version: "8.1"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.2"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.3"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.4"
-            operating-system: ubuntu-latest
-            fnsr: "1"
-          - php-version: "8.5"
-            operating-system: ubuntu-latest
-            fnsr: "1"
 
     steps:
       - name: "Checkout"
@@ -79,14 +62,10 @@ jobs:
 
       - name: "PHPStan"
         run: "make phpstan"
-        env:
-          PHPSTAN_FNSR: "${{ matrix.fnsr }}"
 
       - name: "Generate baseline"
         if: failure() && (matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1')
         run: "php -d memory_limit=448M bin/phpstan analyse --generate-baseline baseline-php-${{ matrix.php-version }}.neon"
-        env:
-          PHPSTAN_FNSR: "${{ matrix.fnsr }}"
 
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}

@@ -100,14 +100,14 @@ final class TrinaryLogic
 		callable $callback,
 	): self
 	{
-		if ($this->no()) {
+		if ($this->value === self::NO) {
 			return $this;
 		}
 
 		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);
-			if ($result->no()) {
+			if ($result->value === self::NO) {
 				return $result;
 			}
 
@@ -140,14 +140,14 @@ final class TrinaryLogic
 		callable $callback,
 	): self
 	{
-		if ($this->yes()) {
+		if ($this->value === self::YES) {
 			return $this;
 		}
 
 		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);
-			if ($result->yes()) {
+			if ($result->value === self::YES) {
 				return $result;
 			}
 
@@ -221,7 +221,7 @@ final class TrinaryLogic
 		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);
-			if ($result->yes()) {
+			if ($result->value === self::YES) {
 				return $result;
 			}
 

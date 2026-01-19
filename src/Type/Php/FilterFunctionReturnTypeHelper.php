@@ -389,18 +389,45 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			if ($this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->yes() && $in->isString()->yes()) {
-				if ($in->isNonEmptyString()->yes()) {
-					return $in;
-				}
-
-				if ($in->isNonEmptyString()->maybe()) {
-					return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
-				}
-
-				if ($in->isNonEmptyString()->no()) {
+			if ($this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->yes()) {
+				if ($in->isFalse()->yes() || $in->isNull()->yes()) {
 					return new NullType();
 				}
+
+				if ($in->isFloat()->yes() || $in->isInteger()->yes() || $in->isTrue()->yes()) {
+					return $in->toString();
+				}
+
+				if ($in->isString()->yes()) {
+					if ($in->isNonEmptyString()->yes()) {
+						return $in;
+					}
+
+					if ($in->isNonEmptyString()->maybe()) {
+						return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
+					}
+
+					if ($in->isNonEmptyString()->no()) {
+						return new NullType();
+					}
+				}
+
+				$inString = $in->toString();
+				if ($inString instanceof UnionType) {
+					$inStringTypes = $inString->getTypes();
+					// Replace ConstantStringType of value === "" by NullType.
+					$types = array_filter(
+						$inStringTypes,
+						static fn (Type $type): bool => $type instanceof ConstantStringType && $type->getValue() !== '',
+					);
+					if ($types !== $inStringTypes) {
+						$types[] = new NullType();
+					}
+
+					return new UnionType($types);
+				}
+
+				return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
 			}
 
 			if ($this->canStringBeSanitized($filterValue, $flagsType)->no() && $in->isString()->yes()) {

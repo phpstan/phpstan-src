@@ -9,10 +9,23 @@ class Foo
 	/**
 	 * @param non-empty-string $str
 	 * @param string $maybe_empty_string
+	 * @param null|string $nullable_string
+	 * @param null|non-empty-string $nullable_non_empty_string
+	 * @param int $int
 	 * @param positive-int $positive_int
 	 * @param negative-int $negative_int
+	 * @param bool $bool
 	 */
-	public function run(string $str, string $maybe_empty_string, int $int, int $positive_int, int $negative_int): void
+	public function run(
+		string $str,
+		string $maybe_empty_string,
+		null|string $nullable_string,
+		null|string $nullable_non_empty_string,
+		int $int,
+		int $positive_int,
+		int $negative_int,
+		bool $bool,
+	): void
 	{
 		assertType('non-empty-string', $str);
 
@@ -139,5 +152,50 @@ class Foo
 
 		$return = filter_var('0x10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_HEX);
 		assertType('16', $return);
+
+		$return = filter_var(true, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'1'", $return);
+
+		$return = filter_var(false, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('null', $return);
+
+		$return = filter_var($bool, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'1'|null", $return);
+
+		$return = filter_var(0.0, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'-0'|'0'", $return);
+
+		$return = filter_var(0, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'0'", $return);
+
+		$return = filter_var(null, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('null', $return);
+
+		$return = filter_var($nullable_string, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('non-empty-string|null', $return);
+
+		$return = filter_var($nullable_non_empty_string, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('non-empty-string|null', $return);
+
+		$return = filter_var($this->anyOf(0.0, true), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'-0'|'0'|'1'", $return);
+
+		$return = filter_var($this->anyOf($bool, $maybe_empty_string), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("non-empty-string|null", $return);
+
+		$return = filter_var($this->anyOf(0, null), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType("'0'|null", $return);
+	}
+
+	/**
+	 * @template T
+	 * @template U
+	 * @param T $a
+	 * @param U $b
+	 * @return T|U
+	 */
+	private function anyOf(mixed $a, mixed $b): mixed
+	{
+		return random_int(0, 1) ? $a : $b;
 	}
 }

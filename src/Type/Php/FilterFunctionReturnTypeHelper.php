@@ -389,6 +389,20 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			if ($this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->yes() && $in->isString()->yes()) {
+				if ($in->isNonEmptyString()->yes()) {
+					return $in;
+				}
+
+				if ($in->isNonEmptyString()->maybe()) {
+					return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
+				}
+
+				if ($in->isNonEmptyString()->no()) {
+					return new NullType();
+				}
+			}
+
 			if ($this->canStringBeSanitized($filterValue, $flagsType)->no() && $in->isString()->yes()) {
 				return $in;
 			}

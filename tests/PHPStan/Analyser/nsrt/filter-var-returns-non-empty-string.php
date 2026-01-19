@@ -8,15 +8,22 @@ class Foo
 {
 	/**
 	 * @param non-empty-string $str
+	 * @param string $maybe_empty_string
 	 * @param positive-int $positive_int
 	 * @param negative-int $negative_int
 	 */
-	public function run(string $str, int $int, int $positive_int, int $negative_int): void
+	public function run(string $str, string $maybe_empty_string, int $int, int $positive_int, int $negative_int): void
 	{
 		assertType('non-empty-string', $str);
 
 		$return = filter_var($str, FILTER_DEFAULT);
 		assertType('non-empty-string', $return);
+
+		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('non-empty-string', $return);
+
+		$return = filter_var($maybe_empty_string, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('non-empty-string|null', $return);
 
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW);
 		assertType('string|false', $return);
@@ -99,6 +106,9 @@ class Foo
 		$str2 = '';
 		$return = filter_var($str2, FILTER_DEFAULT);
 		assertType("''", $return);
+
+		$return = filter_var('', FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('null', $return);
 
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
 		assertType('non-falsy-string|false', $return);

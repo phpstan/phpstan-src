@@ -524,7 +524,6 @@ class NodeScopeResolver
 		$overridingThrowPoints = null;
 		if (
 			!$stmt instanceof Static_
-			&& !$stmt instanceof Foreach_
 			&& !$stmt instanceof Node\Stmt\Global_
 			&& !$stmt instanceof Node\Stmt\Property
 			&& !$stmt instanceof Node\Stmt\ClassConst
@@ -533,7 +532,9 @@ class NodeScopeResolver
 			&& !$stmt instanceof Node\Stmt\Function_
 			&& !$stmt instanceof Node\Stmt\ClassMethod
 		) {
-			$scope = $this->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+			if (!$stmt instanceof Foreach_) {
+				$scope = $this->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
+			}
 			$overridingThrowPoints = $this->getOverridingThrowPoints($stmt, $scope);
 		}
 

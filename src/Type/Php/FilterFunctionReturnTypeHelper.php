@@ -419,9 +419,13 @@ final class FilterFunctionReturnTypeHelper
 				$inString = $in->toString();
 				if ($inString instanceof UnionType) {
 					return $inString->traverse(
-						static fn (Type $type): Type => $type->getConstantStrings() === [$type] && $type->getValue() === ''
-							? new NullType()
-							: $type,
+						static function (Type $type): Type {
+							$typeConstantStrings = $type->getConstantStrings();
+							if (count($typeConstantStrings) === 1 && $typeConstantStrings[0]->getValue() === '') {
+								return new NullType();
+							}
+							return $type;
+						},
 					);
 				}
 

@@ -28,6 +28,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_merge;
 use function hexdec;

@@ -77,6 +77,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		if ($isNonEmptyString->yes()) {
 			return AcceptsResult::createYes();
 		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}

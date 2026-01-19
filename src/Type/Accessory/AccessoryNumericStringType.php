@@ -71,11 +71,17 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		$isNumericString = $type->isNumericString();
+
+		if ($isNumericString->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isNumericString(), []);
+		return new AcceptsResult($isNumericString, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

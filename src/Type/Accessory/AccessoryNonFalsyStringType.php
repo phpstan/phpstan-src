@@ -74,11 +74,17 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		$isNonFalsyString = $type->isNonFalsyString();
+
+		if ($isNonFalsyString->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isNonFalsyString(), []);
+		return new AcceptsResult($isNonFalsyString, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

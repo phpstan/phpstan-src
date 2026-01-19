@@ -74,11 +74,17 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		if ($type instanceof MixedType) {
 			return AcceptsResult::createNo();
 		}
+
+		$isLiteralString = $type->isLiteralString();
+		if ($isLiteralString->yes()) {
+			return AcceptsResult::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isLiteralString(), []);
+		return new AcceptsResult($isLiteralString, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

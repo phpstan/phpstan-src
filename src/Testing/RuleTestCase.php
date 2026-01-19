@@ -43,6 +43,7 @@ use function getenv;
 use function implode;
 use function sprintf;
 use function str_replace;
+use const PHP_VERSION_ID;
 
 /**
  * @api
@@ -87,7 +88,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		$enableFnsr = getenv('PHPSTAN_FNSR');
 		$className = NodeScopeResolver::class;
-		if ($enableFnsr === '1') {
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0') {
 			$className = FiberNodeScopeResolver::class;
 		}
 

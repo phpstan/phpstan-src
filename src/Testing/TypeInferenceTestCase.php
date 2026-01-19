@@ -49,6 +49,7 @@ use function stripos;
 use function strtolower;
 use function version_compare;
 use const PHP_VERSION;
+use const PHP_VERSION_ID;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -62,7 +63,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 		$enableFnsr = getenv('PHPSTAN_FNSR');
 		$className = NodeScopeResolver::class;
-		if ($enableFnsr === '1') {
+		if (PHP_VERSION_ID >= 80100 && $enableFnsr !== '0') {
 			$className = FiberNodeScopeResolver::class;
 		}
 

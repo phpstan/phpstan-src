@@ -7,6 +7,7 @@ use Override;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\NodeScopeResolver;
 use function getenv;
+use const PHP_VERSION_ID;
 
 final class FnsrExtension extends CompilerExtension
 {
@@ -14,8 +15,12 @@ final class FnsrExtension extends CompilerExtension
 	#[Override]
 	public function beforeCompile()
 	{
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
 		$enable = getenv('PHPSTAN_FNSR');
-		if ($enable !== '1') {
+		if ($enable === '0') {
 			return;
 		}
 

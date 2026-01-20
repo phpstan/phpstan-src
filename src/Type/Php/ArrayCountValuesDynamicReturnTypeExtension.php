@@ -10,9 +10,11 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -44,22 +46,16 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 		$arrayTypes = $inputType->getArrays();
 
 		$outputTypes = [];
+		$allowedValues = new UnionType([new IntegerType(), new StringType()]);
 
 		foreach ($arrayTypes as $arrayType) {
-			$itemType = $arrayType->getItemType();
-
-			if ($itemType instanceof UnionType) {
-				$itemType = $itemType->filterTypes(
-					static fn ($type) => !$type->toArrayKey() instanceof ErrorType,
-				);
-			}
-
-			if ($itemType->toArrayKey() instanceof ErrorType) {
+			$itemType = TypeCombinator::intersect($arrayType->getItemType(), $allowedValues);
+			if ($itemType instanceof NeverType) {
 				continue;
 			}
 
 			$outputTypes[] = new IntersectionType([
-				new ArrayType($itemType, IntegerRangeType::fromInterval(1, null)),
+				new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null)),
 				new NonEmptyArrayType(),
 			]);
 		}

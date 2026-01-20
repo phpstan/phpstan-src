@@ -1746,7 +1746,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$classReflection = $reflectionProvider->getClass($this->className);
 		if ($classReflection->isGeneric()) {
-			// withTypes creates a new object, don't cache it in $this->classReflection
+			// withTypes() creates a new object, don't cache it in $this->classReflection
 			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
 		}
 

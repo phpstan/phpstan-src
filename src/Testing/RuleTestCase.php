@@ -43,6 +43,7 @@ use function getenv;
 use function implode;
 use function sprintf;
 use function str_replace;
+use function usort;
 use const PHP_VERSION_ID;
 
 /**
@@ -168,17 +169,13 @@ abstract class RuleTestCase extends PHPStanTestCase
 			return $message;
 		};
 
-		usort($expectedErrors, function (array $a, array $b) {
-			return $a[1] <=> $b[1];
-		});
+		usort($expectedErrors, static fn (array $a, array $b) => $a[1] <=> $b[1]);
 		$expectedErrors = array_map(
 			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
 			$expectedErrors,
 		);
 
-		usort($actualErrors, function (Error $a, Error $b) {
-			return ($a->getLine() ?? -1) <=> ($b->getLine() ?? -1);
-		});
+		usort($actualErrors, static fn (Error $a, Error $b) => ($a->getLine() ?? -1) <=> ($b->getLine() ?? -1));
 		$actualErrors = array_map(
 			static function (Error $error) use ($strictlyTypedSprintf): string {
 				$line = $error->getLine();

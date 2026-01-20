@@ -5542,14 +5542,26 @@ class NodeScopeResolver
 			$parameterType = null;
 			$parameterNativeType = null;
 			if ($parameters !== null) {
-				if (isset($parameters[$i])) {
-					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
-					$parameterType = $parameters[$i]->getType();
-
-					if ($parameters[$i] instanceof ExtendedParameterReflection) {
-						$parameterNativeType = $parameters[$i]->getNativeType();
+				$matchedParameter = null;
+				if ($arg->name !== null) {
+					foreach ($parameters as $p) {
+						if ($p->getName() === $arg->name->toString()) {
+							$matchedParameter = $p;
+							break;
+						}
 					}
-					$parameter = $parameters[$i];
+				} elseif (isset($parameters[$i])) {
+					$matchedParameter = $parameters[$i];
+				}
+
+				if ($matchedParameter !== null) {
+					$assignByReference = $matchedParameter->passedByReference()->createsNewVariable();
+					$parameterType = $matchedParameter->getType();
+
+					if ($matchedParameter instanceof ExtendedParameterReflection) {
+						$parameterNativeType = $matchedParameter->getNativeType();
+					}
+					$parameter = $matchedParameter;
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = array_last($parameters);
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();

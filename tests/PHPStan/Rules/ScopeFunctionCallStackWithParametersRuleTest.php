@@ -32,6 +32,16 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 				"var_dump (\$value)\nprint_r (\$value)\nsleep (\$seconds)",
 				13,
 			],
+			[
+				// Named argument test - should report $notImmediate, not $immediate
+				'ScopeFunctionCallStack\NamedArgumentTest::testMethod ($notImmediate)',
+				31,
+			],
+			[
+				// Named argument with missing required param - should still match by name
+				'ScopeFunctionCallStack\NamedArgumentTest::testMethod ($notImmediate)',
+				42,
+			],
 		]);
 	}
 

@@ -24,7 +24,7 @@ final class NullsafeMethodCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$calledOnType = $scope->getScopeType($node->var);
+		$calledOnType = $scope->getType($node->var);
 		if (!$calledOnType->isNull()->no()) {
 			return [];
 		}

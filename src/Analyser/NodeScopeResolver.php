@@ -6799,7 +6799,7 @@ class NodeScopeResolver
 			$originalType = $scope->getType($defaultExpr);
 			$varTag = $variableLessTags[0];
 			if (!$originalType->equals($varTag->getType())) {
-				$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
+				$this->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, clone $defaultExpr), $scope, $storage);
 			}
 			$scope = $scope->assignExpression($defaultExpr, $varTag->getType(), new MixedType());
 		}

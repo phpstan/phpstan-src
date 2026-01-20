@@ -118,11 +118,11 @@ final class AnalyserResultFinalizer
 			$linesToIgnore = $allLinesToIgnore[$file] ?? [];
 			$unmatchedLineIgnores = $allUnmatchedLineIgnores[$file] ?? [];
 			$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
-				[[$tempCollectorError, 0]],
+				[$tempCollectorError],
 				$linesToIgnore,
 				$unmatchedLineIgnores,
 			);
-			foreach ($localIgnoresProcessorResult->getFileErrors() as [$error]) {
+			foreach ($localIgnoresProcessorResult->getFileErrors() as $error) {
 				$errors[] = $error;
 				$collectorErrors[] = $error;
 			}

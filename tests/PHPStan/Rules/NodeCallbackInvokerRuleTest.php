@@ -19,12 +19,12 @@ class NodeCallbackInvokerRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/node-callback-invoker.php'], [
 			[
-				'found echo',
-				5,
-			],
-			[
 				'found virtual echo',
 				6,
+			],
+			[
+				'found echo',
+				5,
 			],
 		]);
 	}

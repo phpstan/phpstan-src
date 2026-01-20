@@ -19,8 +19,8 @@ class Foo
 	public function run(
 		string $str,
 		string $maybe_empty_string,
-		null|string $nullable_string,
-		null|string $nullable_non_empty_string,
+		?string $nullable_string,
+		?string $nullable_non_empty_string,
 		int $int,
 		int $positive_int,
 		int $negative_int,
@@ -211,7 +211,7 @@ class Foo
 	 * @param U $b
 	 * @return T|U
 	 */
-	private function anyOf(mixed $a, mixed $b): mixed
+	private function anyOf($a, $b): mixed
 	{
 		return random_int(0, 1) ? $a : $b;
 	}

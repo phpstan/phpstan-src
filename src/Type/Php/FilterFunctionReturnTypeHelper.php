@@ -195,9 +195,12 @@ final class FilterFunctionReturnTypeHelper
 			$type = TypeCombinator::intersect($type, $accessory);
 		}
 
-		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
-			// Default type is handled as the exactType when flag FILTER_FLAG_EMPTY_STRING_NULL is set.
-			if (!$defaultType->isSuperTypeOf($type)->yes() && $this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->no()) {
+		if (
+			$exactType === null
+			|| $hasOptions->maybe()
+			|| ($this->isValidationFilter($filterValue) && (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes()))
+		) {
+			if (!$defaultType->isSuperTypeOf($type)->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}

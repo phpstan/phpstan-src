@@ -877,16 +877,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->resolvedTypes[$key];
 	}
 
-	public function getScopeType(Expr $expr): Type
-	{
-		return $this->getType($expr);
-	}
-
-	public function getScopeNativeType(Expr $expr): Type
-	{
-		return $this->getNativeType($expr);
-	}
-
 	private function getNodeKey(Expr $node): string
 	{
 		$key = $this->exprPrinter->printExpr($node);

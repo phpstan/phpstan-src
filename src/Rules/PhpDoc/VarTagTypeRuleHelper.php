@@ -8,6 +8,7 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -36,6 +37,7 @@ final class VarTagTypeRuleHelper
 		private TypeNodeResolver $typeNodeResolver,
 		private FileTypeMapper $fileTypeMapper,
 		private ReflectionProvider $reflectionProvider,
+		private DeepNodeCloner $deepNodeCloner,
 		#[AutowiredParameter(ref: '%reportWrongPhpDocTypeInVarTag%')]
 		private bool $checkTypeAgainstPhpDocType,
 		#[AutowiredParameter(ref: '%reportAnyTypeWideningInVarTag%')]
@@ -90,7 +92,7 @@ final class VarTagTypeRuleHelper
 	public function checkExprType(Scope $scope, Node\Expr $expr, Type $varTagType): array
 	{
 		$errors = [];
-		$exprNativeType = $scope->getScopeNativeType($expr);
+		$exprNativeType = $scope->getNativeType($this->deepNodeCloner->cloneNode($expr));
 		$containsPhpStanType = $this->containsPhpStanType($varTagType);
 		if ($this->shouldVarTagTypeBeReported($scope, $expr, $exprNativeType, $varTagType)) {
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
@@ -100,7 +102,7 @@ final class VarTagTypeRuleHelper
 				$exprNativeType->describe($verbosity),
 			))->identifier('varTag.nativeType')->build();
 		} else {
-			$exprType = $scope->getScopeType($expr);
+			$exprType = $scope->getType($this->deepNodeCloner->cloneNode($expr));
 			if (
 				$this->shouldVarTagTypeBeReported($scope, $expr, $exprType, $varTagType)
 				&& ($this->checkTypeAgainstPhpDocType || $containsPhpStanType)
@@ -115,7 +117,7 @@ final class VarTagTypeRuleHelper
 		}
 
 		if (count($errors) === 0 && $containsPhpStanType) {
-			$exprType = $scope->getScopeType($expr);
+			$exprType = $scope->getType($this->deepNodeCloner->cloneNode($expr));
 			if (!$exprType->equals($varTagType)) {
 				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
 				$errors[] = RuleErrorBuilder::message(sprintf(

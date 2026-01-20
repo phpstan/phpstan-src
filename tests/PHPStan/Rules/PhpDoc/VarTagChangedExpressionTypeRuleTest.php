@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PHPStan\Node\DeepNodeCloner;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -20,6 +21,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 			$container->getByType(TypeNodeResolver::class),
 			$container->getByType(FileTypeMapper::class),
 			self::createReflectionProvider(),
+			$container->getByType(DeepNodeCloner::class),
 			true,
 			true,
 		));

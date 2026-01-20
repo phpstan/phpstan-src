@@ -3198,15 +3198,20 @@ class NodeScopeResolver
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
+			$this->processExprNode($stmt, new MethodCall(
+				$expr->var,
+				$expr->name,
+				$expr->args,
+			), $scope, $storage, new NoopNodeCallback(), $context);
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
 			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
 			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$exprResult = $this->processExprNode(
 				$stmt,
 				new MethodCall(
-					$expr->var,
-					$expr->name,
-					$expr->args,
+					$this->deepNodeCloner->cloneNode($expr->var),
+					$this->deepNodeCloner->cloneNode($expr->name),
+					array_map(fn ($node) => $this->deepNodeCloner->cloneNode($node), $expr->args),
 					$attributes,
 				),
 				$nonNullabilityResult->getScope(),
@@ -3423,12 +3428,16 @@ class NodeScopeResolver
 				}
 			}
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
+			$this->processExprNode($stmt, new PropertyFetch(
+				$expr->var,
+				$expr->name,
+			), $scope, $storage, new NoopNodeCallback(), $context);
 			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
 			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]);
 			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
 			$exprResult = $this->processExprNode($stmt, new PropertyFetch(
-				$expr->var,
-				$expr->name,
+				$this->deepNodeCloner->cloneNode($expr->var),
+				$this->deepNodeCloner->cloneNode($expr->name),
 				$attributes,
 			), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
@@ -3620,9 +3629,10 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
+			$this->processExprNode($stmt, $expr->left, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left);
 			$condScope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left);
-			$condResult = $this->processExprNode($stmt, $expr->left, $condScope, $storage, $nodeCallback, $context->enterDeep());
+			$condResult = $this->processExprNode($stmt, $this->deepNodeCloner->cloneNode($expr->left), $condScope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
 
@@ -3819,9 +3829,10 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
+			$this->processExprNode($stmt, $expr->expr, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);
 			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $this->processExprNode($stmt, $this->deepNodeCloner->cloneNode($expr->expr), $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -3836,9 +3847,10 @@ class NodeScopeResolver
 			$nonNullabilityResults = [];
 			$isAlwaysTerminating = false;
 			foreach ($expr->vars as $var) {
+				$this->processExprNode($stmt, $var, $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var);
 				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-				$result = $this->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$result = $this->processExprNode($stmt, $this->deepNodeCloner->cloneNode($var), $scope, $storage, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());

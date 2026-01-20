@@ -43,6 +43,8 @@ use function getenv;
 use function implode;
 use function sprintf;
 use function str_replace;
+use function strcmp;
+use function usort;
 use const PHP_VERSION_ID;
 
 /**
@@ -168,10 +170,54 @@ abstract class RuleTestCase extends PHPStanTestCase
 			return $message;
 		};
 
+		usort($expectedErrors, static function ($a, $b) {
+			if ($a[1] !== $b[1]) {
+				return $a[1] <=> $b[1];
+			}
+
+			if ($a[0] !== $b[0]) {
+				return strcmp($a[0], $b[0]);
+			}
+
+			if (!isset($a[2])) {
+				if (!isset($b[2])) {
+					return 0;
+				}
+
+				return 1;
+			} elseif (!isset($b[2])) {
+				return -1;
+			}
+
+			return strcmp($a[2], $b[2]);
+		});
+
 		$expectedErrors = array_map(
 			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
 			$expectedErrors,
 		);
+
+		usort($actualErrors, static function ($a, $b) {
+			if ($a->getLine() !== $b->getLine()) {
+				return $a->getLine() <=> $b->getLine();
+			}
+
+			if ($a->getMessage() !== $b->getMessage()) {
+				return strcmp($a->getMessage(), $b->getMessage());
+			}
+
+			if ($a->getTip() === null) {
+				if ($b->getTip() === null) {
+					return 0;
+				}
+
+				return 1;
+			} elseif ($b->getTip() === null) {
+				return -1;
+			}
+
+			return strcmp($a->getTip(), $b->getTip());
+		});
 
 		$actualErrors = array_map(
 			static function (Error $error) use ($strictlyTypedSprintf): string {

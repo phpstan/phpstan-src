@@ -196,7 +196,8 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
-			if (!$defaultType->isSuperTypeOf($type)->yes()) {
+			// Default type is handled as the exactType when flag FILTER_FLAG_EMPTY_STRING_NULL is set.
+			if (!$defaultType->isSuperTypeOf($type)->yes() && $this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->no()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}
@@ -393,55 +394,44 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			if ($this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType)->yes()) {
-				if ($in->isFalse()->yes() || $in->isNull()->yes()) {
-					return new NullType();
+			$scalarOrNull = new UnionType([
+				new StringType(),
+				new FloatType(),
+				new BooleanType(),
+				new IntegerType(),
+				new NullType(),
+			]);
+
+			if ($scalarOrNull->isSuperTypeOf($in)->yes()) {
+				$canBeSanitized = $this->canStringBeSanitized($filterValue, $flagsType);
+				if ($canBeSanitized->no()) {
+					$stringType = $in->toString();
+				} else {
+					$stringType = $in->isString()->no()
+						? $in->toString()
+						: TypeCombinator::union(TypeCombinator::remove($in, new StringType()), new StringType());
 				}
 
-				if ($in->isFloat()->yes() || $in->isInteger()->yes() || $in->isTrue()->yes()) {
-					return $in->toString();
-				}
-
-				if ($in->isString()->yes()) {
-					if ($in->isNonEmptyString()->yes()) {
-						return $in;
-					}
-
-					if ($in->isNonEmptyString()->maybe()) {
-						return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
-					}
-
-					if ($in->isNonEmptyString()->no()) {
-						return new NullType();
-					}
-				}
-
-				$inString = $in->toString();
-				if ($inString instanceof UnionType) {
-					return $inString->traverse(
-						static function (Type $type): Type {
-							$typeConstantStrings = $type->getConstantStrings();
-							if (count($typeConstantStrings) === 1 && $typeConstantStrings[0]->getValue() === '') {
-								return new NullType();
-							}
-							return $type;
-						},
-					);
-				}
-
-				return new UnionType([new AccessoryNonEmptyStringType(), new NullType()]);
-			}
-
-			if ($this->canStringBeSanitized($filterValue, $flagsType)->no() && $in->isString()->yes()) {
-				return $in;
-			}
-
-			if ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes()) {
-				return $in->toString();
+				return $this->handleEmptyStringNullFlag($stringType, $flagsType);
 			}
 		}
 
 		return null;
+	}
+
+	private function handleEmptyStringNullFlag(Type $in, ?Type $flagsType): Type
+	{
+		$hasFlag = $this->hasFlag('FILTER_FLAG_EMPTY_STRING_NULL', $flagsType);
+		if ($hasFlag->no()) {
+			return $in;
+		}
+
+		$hasEmptyString = !$in->isSuperTypeOf(new ConstantStringType(''))->no();
+		if ($hasFlag->maybe()) {
+			return $hasEmptyString ? TypeCombinator::addNull($in) : $in;
+		}
+
+		return $hasEmptyString ? TypeCombinator::remove(TypeCombinator::addNull($in), new ConstantStringType('')) : $in;
 	}
 
 	/** @param array<string, ?Type> $typeOptions */
@@ -585,7 +575,7 @@ final class FilterFunctionReturnTypeHelper
 	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): TrinaryLogic
 	{
 		// If it is a validation filter, the string will not be changed
-		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
+		if ($this->isValidationFilter($filterValue)) {
 			return TrinaryLogic::createNo();
 		}
 
@@ -598,6 +588,11 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		return TrinaryLogic::createYes();
+	}
+
+	private function isValidationFilter(int $filterValue): bool
+	{
+		return ($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0;
 	}
 
 }

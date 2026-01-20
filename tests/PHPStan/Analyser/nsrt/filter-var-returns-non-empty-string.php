@@ -27,6 +27,8 @@ class Foo
 		bool $bool,
 	): void
 	{
+		$object = (object)[];
+
 		assertType('non-empty-string', $str);
 
 		$return = filter_var($str, FILTER_DEFAULT);
@@ -38,14 +40,23 @@ class Foo
 		$return = filter_var($maybe_empty_string, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('non-empty-string|null', $return);
 
+		$return = filter_var($object, FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW);
+		assertType('false', $return);
+
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW);
-		assertType('string|false', $return);
+		assertType('string', $return);
+
+		$return = filter_var($object, FILTER_DEFAULT, FILTER_FLAG_STRIP_HIGH);
+		assertType('false', $return);
 
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_HIGH);
-		assertType('string|false', $return);
+		assertType('string', $return);
+
+		$return = filter_var($object, FILTER_DEFAULT, FILTER_FLAG_STRIP_BACKTICK);
+		assertType('false', $return);
 
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_BACKTICK);
-		assertType('string|false', $return);
+		assertType('string', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_EMAIL);
 		assertType('non-falsy-string|false', $return);
@@ -70,6 +81,9 @@ class Foo
 
 		$return = filter_var($str, FILTER_SANITIZE_STRING);
 		assertType('string|false', $return);
+
+		$return = filter_var($object, FILTER_SANITIZE_STRING);
+		assertType('false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_INT);
 		assertType('int|false', $return);
@@ -176,6 +190,9 @@ class Foo
 
 		$return = filter_var($nullable_non_empty_string, options: FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('non-empty-string|null', $return);
+
+		$return = filter_var($object, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		assertType('false', $return);
 
 		$return = filter_var($this->anyOf(0.0, true), options: FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'-0'|'0'|'1'", $return);

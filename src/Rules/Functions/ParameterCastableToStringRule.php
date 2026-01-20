@@ -71,7 +71,6 @@ final class ParameterCastableToStringRule implements Rule
 		);
 
 		$errorMessage = 'Parameter %s of function %s expects an array of values castable to string, %s given.';
-		$functionParameters = $parametersAcceptor->getParameters();
 
 		if (in_array($functionName, $checkAllArgsFunctions, true)) {
 			$argsToCheck = $origArgs;
@@ -92,7 +91,7 @@ final class ParameterCastableToStringRule implements Rule
 		}
 
 		$errors = [];
-
+		$functionParameters = $parametersAcceptor->getParameters();
 		foreach ($argsToCheck as $argIdx => $arg) {
 			$error = $this->parameterCastableToStringCheck->checkParameter(
 				$arg,

@@ -68,8 +68,6 @@ final class SortParameterCastableToStringRule implements Rule
 			$functionReflection->getNamedArgumentsVariants(),
 		);
 
-		$functionParameters = $parametersAcceptor->getParameters();
-
 		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 
 		if ($normalizedFuncCall === null) {
@@ -81,6 +79,7 @@ final class SortParameterCastableToStringRule implements Rule
 			return [];
 		}
 
+		$functionParameters = $parametersAcceptor->getParameters();
 		$argsToCheck = [0 => $normalizedArgs[0]];
 		$flags = null;
 		if (array_key_exists(1, $normalizedArgs)) {

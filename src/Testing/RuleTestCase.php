@@ -168,11 +168,17 @@ abstract class RuleTestCase extends PHPStanTestCase
 			return $message;
 		};
 
+		usort($expectedErrors, function (array $a, array $b) {
+			return $a[1] <=> $b[1];
+		});
 		$expectedErrors = array_map(
 			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
 			$expectedErrors,
 		);
 
+		usort($actualErrors, function (Error $a, Error $b) {
+			return ($a->getLine() ?? -1) <=> ($b->getLine() ?? -1);
+		});
 		$actualErrors = array_map(
 			static function (Error $error) use ($strictlyTypedSprintf): string {
 				$line = $error->getLine();

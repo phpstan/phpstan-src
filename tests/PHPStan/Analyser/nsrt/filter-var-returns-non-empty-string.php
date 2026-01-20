@@ -167,40 +167,40 @@ class Foo
 		$return = filter_var('0x10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_HEX);
 		assertType('16', $return);
 
-		$return = filter_var(true, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var(true, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'1'", $return);
 
-		$return = filter_var(false, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var(false, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('null', $return);
 
-		$return = filter_var($bool, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($bool, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'1'|null", $return);
 
-		$return = filter_var(0.0, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var(0.0, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'-0'|'0'", $return);
 
-		$return = filter_var(0, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var(0, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'0'", $return);
 
-		$return = filter_var(null, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var(null, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('null', $return);
 
-		$return = filter_var($nullable_string, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($nullable_string, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('non-empty-string|null', $return);
 
-		$return = filter_var($nullable_non_empty_string, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($nullable_non_empty_string, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('non-empty-string|null', $return);
 
-		$return = filter_var($object, options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($object, FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType('false', $return);
 
-		$return = filter_var($this->anyOf(0.0, true), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($this->anyOf(0.0, true), FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'-0'|'0'|'1'", $return);
 
-		$return = filter_var($this->anyOf($bool, $maybe_empty_string), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($this->anyOf($bool, $maybe_empty_string), FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("non-empty-string|null", $return);
 
-		$return = filter_var($this->anyOf(0, null), options: FILTER_FLAG_EMPTY_STRING_NULL);
+		$return = filter_var($this->anyOf(0, null), FILTER_DEFAULT, FILTER_FLAG_EMPTY_STRING_NULL);
 		assertType("'0'|null", $return);
 	}
 

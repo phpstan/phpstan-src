@@ -9,7 +9,7 @@ final class LocalIgnoresProcessorResult
 {
 
 	/**
-	 * @param list<array{Error, int}> $fileErrors
+	 * @param list<Error> $fileErrors
 	 * @param list<Error> $locallyIgnoredErrors
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
@@ -24,7 +24,7 @@ final class LocalIgnoresProcessorResult
 	}
 
 	/**
-	 * @return list<array{Error, int}>
+	 * @return list<Error>
 	 */
 	public function getFileErrors(): array
 	{

@@ -16,7 +16,7 @@ final class LocalIgnoresProcessor
 {
 
 	/**
-	 * @param list<array{Error, int}> $temporaryFileErrors
+	 * @param list<Error> $temporaryFileErrors
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
 	 */
@@ -28,7 +28,7 @@ final class LocalIgnoresProcessor
 	{
 		$fileErrors = [];
 		$locallyIgnoredErrors = [];
-		foreach ($temporaryFileErrors as [$tmpFileError, $order]) {
+		foreach ($temporaryFileErrors as $tmpFileError) {
 			$line = $tmpFileError->getLine();
 			if (
 				$line !== null
@@ -44,7 +44,7 @@ final class LocalIgnoresProcessor
 				}
 
 				if ($tmpFileError->getIdentifier() === null) {
-					$fileErrors[] = [$tmpFileError, $order];
+					$fileErrors[] = $tmpFileError;
 					continue;
 				}
 
@@ -89,7 +89,7 @@ final class LocalIgnoresProcessor
 				}
 			}
 
-			$fileErrors[] = [$tmpFileError, $order];
+			$fileErrors[] = $tmpFileError;
 		}
 
 		return new LocalIgnoresProcessorResult(

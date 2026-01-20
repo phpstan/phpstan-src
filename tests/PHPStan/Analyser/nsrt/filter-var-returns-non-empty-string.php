@@ -211,7 +211,7 @@ class Foo
 	 * @param U $b
 	 * @return T|U
 	 */
-	private function anyOf($a, $b): mixed
+	private function anyOf($a, $b)
 	{
 		return random_int(0, 1) ? $a : $b;
 	}

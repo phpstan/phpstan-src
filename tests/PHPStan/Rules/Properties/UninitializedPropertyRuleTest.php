@@ -83,7 +83,6 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 			parent::getAdditionalConfigFiles(),
 			[
 				__DIR__ . '/uninitialized-property-rule.neon',
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
 			],
 		);
 	}

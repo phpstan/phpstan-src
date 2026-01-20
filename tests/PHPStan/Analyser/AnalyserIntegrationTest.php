@@ -1198,7 +1198,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		return [
 			__DIR__ . '/../../../conf/bleedingEdge.neon',
-			__DIR__ . '/../../../src/Testing/narrowMethodScopeFromConstructor.neon',
 		];
 	}
 

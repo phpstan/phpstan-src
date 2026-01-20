@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function array_merge;
 
 /**
  * @extends RuleTestCase<CallToNonExistentFunctionRule>
@@ -253,16 +252,6 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
-			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
-			],
-		);
 	}
 
 }

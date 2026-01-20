@@ -8,7 +8,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function array_merge;
 use const PHP_VERSION_ID;
 
 /**
@@ -351,16 +350,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testPr4372(): void
 	{
 		$this->analyse([__DIR__ . '/data/pr-4372-null-coalesce.php'], []);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
-			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
-			],
-		);
 	}
 
 }

@@ -32,6 +32,14 @@ class ScopeFunctionCallStackRuleTest extends RuleTestCase
 				"var_dump\nprint_r\nsleep",
 				13,
 			],
+			[
+				'ScopeFunctionCallStack\NamedArgumentTest::testMethod',
+				31,
+			],
+			[
+				'ScopeFunctionCallStack\NamedArgumentTest::testMethod',
+				42,
+			],
 		]);
 	}
 

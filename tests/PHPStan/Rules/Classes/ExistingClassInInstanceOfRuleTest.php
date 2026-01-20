@@ -8,7 +8,6 @@ use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function array_merge;
 
 /**
  * @extends RuleTestCase<ExistingClassInInstanceOfRule>
@@ -85,16 +84,6 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 	public function testRememberClassExistsFromConstructor(): void
 	{
 		$this->analyse([__DIR__ . '/data/remember-class-exists-from-constructor.php'], []);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
-			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
-			],
-		);
 	}
 
 }

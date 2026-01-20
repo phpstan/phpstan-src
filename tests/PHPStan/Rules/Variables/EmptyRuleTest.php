@@ -9,7 +9,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function array_merge;
 
 /**
  * @extends RuleTestCase<EmptyRule>
@@ -225,16 +224,6 @@ class EmptyRuleTest extends RuleTestCase
 				95,
 			],
 		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
-			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
-			],
-		);
 	}
 
 }

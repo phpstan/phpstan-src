@@ -192,9 +192,6 @@ parametersSchema:
 	singleReflectionFile: schema(string(), nullable())
 	singleReflectionInsteadOfFile: schema(string(), nullable())
 
-	# internal for NodeScopeResolver
-	narrowMethodScopeFromConstructor: bool()
-
 expandRelativePaths:
 	- '[parameters][paths][]'
 	- '[parameters][excludePaths][]'

@@ -8,7 +8,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use function array_merge;
 
 /**
  * @extends RuleTestCase<IssetRule>
@@ -505,16 +504,6 @@ class IssetRuleTest extends RuleTestCase
 		$this->treatPhpDocTypesAsCertain = true;
 
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10640.php'], []);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
-			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
-			],
-		);
 	}
 
 }

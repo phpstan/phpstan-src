@@ -87,8 +87,6 @@ final class ParametersAcceptorSelector
 		) {
 			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
-				$acceptor = $parametersAcceptors[0];
-				$parameters = $acceptor->getParameters();
 				$callbackParameters = [];
 				foreach ($arrayMapArgs as $arg) {
 					$argType = $scope->getType($arg->value);
@@ -107,6 +105,8 @@ final class ParametersAcceptorSelector
 					}
 				}
 
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
 				if (isset($parameters[0])) {
 					$parameters[0] = new NativeParameterReflection(
 						$parameters[0]->getName(),

@@ -48,13 +48,12 @@ final class AttributeNamedArgumentsRule implements Rule
 			return [];
 		}
 
-		$parameters = $variants[0]->getParameters();
-
 		foreach ($node->args as $arg) {
 			if ($arg->name !== null) {
 				break;
 			}
 
+			$parameters = $variants[0]->getParameters();
 			return [
 				RuleErrorBuilder::message(sprintf('Attribute %s is not using named arguments.', $node->name->toString()))
 					->identifier('phpstan.attributeWithoutNamedArguments')

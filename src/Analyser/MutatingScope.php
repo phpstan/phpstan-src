@@ -2408,7 +2408,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$parametersByName = [];
 
-		foreach ($functionReflection->getParameters() as $parameter) {
+		$functionParameters = $functionReflection->getParameters();
+		foreach ($functionParameters as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
@@ -2421,7 +2422,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$nativeExpressionTypes = $this->nativeExpressionTypes;
 		}
 
-		foreach ($functionReflection->getParameters() as $parameter) {
+		foreach ($functionParameters as $parameter) {
 			$parameterType = $parameter->getType();
 
 			if ($parameterType instanceof ConditionalTypeForParameter) {

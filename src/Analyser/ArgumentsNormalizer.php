@@ -193,8 +193,6 @@ final class ArgumentsNormalizer
 			return [];
 		}
 
-		$signatureParameters = $parametersAcceptor->getParameters();
-
 		$hasNamedArgs = false;
 		foreach ($callArgs as $arg) {
 			if ($arg->name !== null) {
@@ -208,6 +206,7 @@ final class ArgumentsNormalizer
 
 		$hasVariadic = false;
 		$argumentPositions = [];
+		$signatureParameters = $parametersAcceptor->getParameters();
 		foreach ($signatureParameters as $i => $parameter) {
 			if ($hasVariadic) {
 				// variadic parameter must be last

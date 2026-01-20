@@ -110,7 +110,9 @@ final class MethodSignatureRule implements Rule
 				$errors[] = $builder->build();
 			}
 
-			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $method->getParameters(), $parentVariant->getParameters());
+			$methodParameters = $method->getParameters();
+			$parentVariantParameters = $parentVariant->getParameters();
+			$parameterResults = $this->checkParameterTypeCompatibility($declaringClass, $methodParameters, $parentVariantParameters);
 			foreach ($parameterResults as $parameterIndex => [$parameterResult, $parameterType, $parentParameterType]) {
 				if ($parameterResult->yes()) {
 					continue;
@@ -118,8 +120,8 @@ final class MethodSignatureRule implements Rule
 				if (!$parameterResult->no() && !$this->reportMaybes) {
 					continue;
 				}
-				$parameter = $method->getParameters()[$parameterIndex];
-				$parentParameter = $parentVariant->getParameters()[$parameterIndex];
+				$parameter = $methodParameters[$parameterIndex];
+				$parentParameter = $parentVariantParameters[$parameterIndex];
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() should be %s with parameter $%s (%s) of method %s::%s()',
 					$parameterIndex + 1,

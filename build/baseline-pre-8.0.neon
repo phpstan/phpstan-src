@@ -133,3 +133,21 @@ parameters:
 			message: '#^Parameter \#1 \$array \(non-empty-list<PHPStan\\Type\\Type>\) of array_values is already a list, call has no effect\.$#'
 			count: 1
 			path: ../src/Type/TypeCombinator.php
+
+		-
+			rawMessage: Access to property $id of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 1
+			path: ../src/Parser/RichParser.php
+
+		-
+			rawMessage: Access to property $line of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 4
+			path: ../src/Parser/RichParser.php
+
+		-
+			rawMessage: Access to property $text of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 3
+			path: ../src/Parser/RichParser.php

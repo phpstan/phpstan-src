@@ -33,15 +33,16 @@ final class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		$args = $functionCall->getArgs();
 		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
-		if (count($functionCall->getArgs()) === 0) {
+		if (count($args) === 0) {
 			return $defaultReturnType;
 		}
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		if ($argType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
@@ -57,7 +58,7 @@ final class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		// 2nd param $baseTimestamp is too non-deterministic so simply return int
-		if (count($functionCall->getArgs()) > 1) {
+		if (count($args) > 1) {
 			return new IntegerType();
 		}
 

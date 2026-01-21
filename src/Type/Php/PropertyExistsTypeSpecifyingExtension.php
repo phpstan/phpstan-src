@@ -55,7 +55,8 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$propertyNameType = $scope->getType($node->getArgs()[1]->value);
+		$args = $node->getArgs();
+		$propertyNameType = $scope->getType($args[1]->value);
 		if (!$propertyNameType instanceof ConstantStringType) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('property_exists'), $node->getRawArgs()),
@@ -69,12 +70,12 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectType = $scope->getType($node->getArgs()[0]->value);
+		$objectType = $scope->getType($args[0]->value);
 		if ($objectType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
 		} elseif ($objectType->isObject()->yes()) {
 			$propertyNode = new PropertyFetch(
-				$node->getArgs()[0]->value,
+				$args[0]->value,
 				new Identifier($propertyNameType->getValue()),
 			);
 		} else {
@@ -89,7 +90,7 @@ final class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecify
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			new IntersectionType([
 				new ObjectWithoutClassType(),
 				new HasPropertyType($propertyNameType->getValue()),

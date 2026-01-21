@@ -28,16 +28,17 @@ final class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$type = $scope->getType($functionCall->getArgs()[0]->value);
+		$type = $scope->getType($args[0]->value);
 		if ($type->isArray()->no()) {
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new ConstantBooleanType(false);
+		$preserveKeysType = isset($args[1]) ? $scope->getType($args[1]->value) : new ConstantBooleanType(false);
 
 		return $type->reverseArray($preserveKeysType->isTrue());
 	}

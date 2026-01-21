@@ -50,11 +50,12 @@ final class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionR
 		}
 		$argumentPosition = self::FUNCTION_NAMES[$functionReflection->getName()];
 
-		if (!isset($functionCall->getArgs()[$argumentPosition])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[$argumentPosition])) {
 			return null;
 		}
 
-		$argument = $functionCall->getArgs()[$argumentPosition];
+		$argument = $args[$argumentPosition];
 		$argumentType = $scope->getType($argument->value);
 		$argumentKeyType = $argumentType->getIterableKeyType();
 		$argumentValueType = $argumentType->getIterableValueType();

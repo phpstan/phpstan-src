@@ -27,17 +27,18 @@ final class ArrayFindFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
+		$arrayType = $scope->getType($args[0]->value);
 		if (count($arrayType->getArrays()) < 1) {
 			return null;
 		}
 
-		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
-		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
+		$arrayArg = $args[0]->value ?? null;
+		$callbackArg = $args[1]->value ?? null;
 
 		$resultTypes = $this->arrayFilterFunctionReturnTypeHelper->getType($scope, $arrayArg, $callbackArg, null);
 		$resultType = TypeCombinator::union(...array_map(static fn ($type) => $type->getIterableValueType(), $resultTypes->getArrays()));

@@ -29,11 +29,12 @@ final class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFun
 		Scope $scope,
 	): Type
 	{
-		if (!isset($functionCall->getArgs()[1])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[1])) {
 			return new StringType();
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[1]->value);
+		$argType = $scope->getType($args[1]->value);
 
 		if ($argType instanceof MixedType) {
 			return new BenevolentUnionType([new StringType(), new ConstantBooleanType(false)]);

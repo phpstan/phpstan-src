@@ -23,11 +23,12 @@ final class ArrayFindKeyFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
+		$arrayType = $scope->getType($args[0]->value);
 		if (count($arrayType->getArrays()) < 1) {
 			return null;
 		}

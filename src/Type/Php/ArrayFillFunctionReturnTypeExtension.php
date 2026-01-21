@@ -38,11 +38,12 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 3) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 3) {
 			return null;
 		}
 
-		$numberType = $scope->getType($functionCall->getArgs()[1]->value);
+		$numberType = $scope->getType($args[1]->value);
 		$isValidNumberType = IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($numberType);
 
 		// check against negative-int, which is not allowed
@@ -53,8 +54,8 @@ final class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return new ConstantBooleanType(false);
 		}
 
-		$startIndexType = $scope->getType($functionCall->getArgs()[0]->value);
-		$valueType = $scope->getType($functionCall->getArgs()[2]->value);
+		$startIndexType = $scope->getType($args[0]->value);
+		$valueType = $scope->getType($args[2]->value);
 
 		if (
 			$startIndexType instanceof ConstantIntegerType

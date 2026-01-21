@@ -50,7 +50,8 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$methodNameType = $scope->getType($node->getArgs()[1]->value);
+		$args = $node->getArgs();
+		$methodNameType = $scope->getType($args[1]->value);
 		if (!$methodNameType instanceof ConstantStringType) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('method_exists'), $node->getRawArgs()),
@@ -60,11 +61,11 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			);
 		}
 
-		$objectType = $scope->getType($node->getArgs()[0]->value);
+		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
 				return $this->typeSpecifier->create(
-					$node->getArgs()[0]->value,
+					$args[0]->value,
 					new IntersectionType([
 						$objectType,
 						new HasMethodType($methodNameType->getValue()),
@@ -78,7 +79,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			new UnionType([
 				new IntersectionType([
 					new ObjectWithoutClassType(),

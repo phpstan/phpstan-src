@@ -64,13 +64,13 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$encodings = [];
 
-		if (count($functionCall->getArgs()) === 1) {
+		if (count($args) === 1) {
 			// there is a chance to get an unsupported encoding 'pass' or 'none' here on PHP 7.3-7.4
 			$encodings = [mb_internal_encoding()];
-		} elseif (count($functionCall->getArgs()) === 2) { // custom encoding is specified
+		} elseif (count($args) === 2) { // custom encoding is specified
 			$encodings = array_map(
 				static fn (ConstantStringType $t) => $t->getValue(),
-				$scope->getType($functionCall->getArgs()[1]->value)->getConstantStrings(),
+				$scope->getType($args[1]->value)->getConstantStrings(),
 			);
 		}
 
@@ -138,7 +138,7 @@ final class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$range = TypeCombinator::remove(
 				ParametersAcceptorSelector::selectFromArgs(
 					$scope,
-					$functionCall->getArgs(),
+					$args,
 					$functionReflection->getVariants(),
 				)->getReturnType(),
 				new ConstantBooleanType(false),

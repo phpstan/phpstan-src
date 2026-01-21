@@ -61,11 +61,12 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (count($node->getArgs()) < 2) {
+		$args = $node->getArgs();
+		if (count($args) < 2) {
 			return new SpecifiedTypes();
 		}
-		$key = $node->getArgs()[0]->value;
-		$array = $node->getArgs()[1]->value;
+		$key = $args[0]->value;
+		$array = $args[1]->value;
 		$keyType = $scope->getType($key)->toArrayKey();
 		$arrayType = $scope->getType($array);
 

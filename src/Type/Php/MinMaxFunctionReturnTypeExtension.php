@@ -38,12 +38,13 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		if (count($functionCall->getArgs()) === 1) {
-			$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		if (count($args) === 1) {
+			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {
 				return $this->processArrayType(
 					$functionReflection->getName(),
@@ -57,8 +58,7 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		// rewrite min($x, $y) as $x < $y ? $x : $y
 		// we don't handle arrays, which have different semantics
 		$functionName = $functionReflection->getName();
-		$args = $functionCall->getArgs();
-		if (count($functionCall->getArgs()) === 2) {
+		if (count($args) === 2) {
 			$argType0 = $scope->getType($args[0]->value);
 			$argType1 = $scope->getType($args[1]->value);
 
@@ -85,7 +85,7 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		$argumentTypes = [];
-		foreach ($functionCall->getArgs() as $arg) {
+		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
 			if ($arg->unpack) {
 				$iterableValueType = $argType->getIterableValueType();

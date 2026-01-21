@@ -99,7 +99,8 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
@@ -110,8 +111,8 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		$functionData = self::SUPPORTED_FUNCTIONS[$lowerFunctionName];
 		if (is_bool($functionData['binary'])) {
 			$binaryType = new ConstantBooleanType($functionData['binary']);
-		} elseif (isset($functionCall->getArgs()[$functionData['binary']])) {
-			$binaryType = $scope->getType($functionCall->getArgs()[$functionData['binary']]->value);
+		} elseif (isset($args[$functionData['binary']])) {
+			$binaryType = $scope->getType($args[$functionData['binary']]->value);
 		} else {
 			$binaryType = new ConstantBooleanType(false);
 		}
@@ -125,7 +126,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 		$stringReturnType = new IntersectionType($stringTypes);
 
-		$algorithmType = $scope->getType($functionCall->getArgs()[0]->value);
+		$algorithmType = $scope->getType($args[0]->value);
 		$constantAlgorithmTypes = $algorithmType->getConstantStrings();
 		if (count($constantAlgorithmTypes) === 0) {
 			if ($functionData['possiblyFalse'] || !$this->phpVersion->throwsValueErrorForInternalFunctions()) {

@@ -24,9 +24,10 @@ final class ArrayFilterFunctionReturnTypeExtension implements DynamicFunctionRet
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
-		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
-		$flagArg = $functionCall->getArgs()[2]->value ?? null;
+		$args = $functionCall->getArgs();
+		$arrayArg = $args[0]->value ?? null;
+		$callbackArg = $args[1]->value ?? null;
+		$flagArg = $args[2]->value ?? null;
 
 		return $this->arrayFilterFunctionReturnTypeHelper->getType($scope, $arrayArg, $callbackArg, $flagArg);
 	}

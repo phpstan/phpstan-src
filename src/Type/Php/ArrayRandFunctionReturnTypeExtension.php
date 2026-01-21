@@ -28,12 +28,13 @@ final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$argsCount = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$argsCount = count($args);
 		if ($argsCount < 1) {
 			return null;
 		}
 
-		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
+		$firstArgType = $scope->getType($args[0]->value);
 		$isInteger = $firstArgType->getIterableKeyType()->isInteger();
 		$isString = $firstArgType->getIterableKeyType()->isString();
 
@@ -49,7 +50,7 @@ final class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return $valueType;
 		}
 
-		$secondArgType = $scope->getType($functionCall->getArgs()[1]->value);
+		$secondArgType = $scope->getType($args[1]->value);
 
 		$one = new ConstantIntegerType(1);
 		if ($one->isSuperTypeOf($secondArgType)->yes()) {

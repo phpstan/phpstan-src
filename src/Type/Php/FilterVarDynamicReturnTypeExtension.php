@@ -26,13 +26,14 @@ final class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
-		$filterType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
-		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$inputType = $scope->getType($args[0]->value);
+		$filterType = isset($args[1]) ? $scope->getType($args[1]->value) : null;
+		$flagsType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
 
 		return $this->filterFunctionReturnTypeHelper->getType($inputType, $filterType, $flagsType);
 	}

@@ -49,18 +49,19 @@ final class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		$args = $functionCall->getArgs();
 		$returnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 		$positionEncodingParam = $this->encodingPositionMap[$functionReflection->getName()];
 
-		if (count($functionCall->getArgs()) < $positionEncodingParam) {
+		if (count($args) < $positionEncodingParam) {
 			return TypeCombinator::remove($returnType, new BooleanType());
 		}
 
-		$strings = $scope->getType($functionCall->getArgs()[$positionEncodingParam - 1]->value)->getConstantStrings();
+		$strings = $scope->getType($args[$positionEncodingParam - 1]->value)->getConstantStrings();
 		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue()), $strings));
 
 		if ($returnType->equals(new UnionType([new StringType(), new BooleanType()]))) {

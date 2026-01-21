@@ -42,12 +42,13 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
 		$functionName = strtolower($functionReflection->getName());
-		$inputArgType = $scope->getType($functionCall->getArgs()[0]->value);
+		$inputArgType = $scope->getType($args[0]->value);
 		$inputConstantArrayType = null;
 		if ($functionName === 'filter_var_array') {
 			if ($inputArgType->isArray()->no()) {
@@ -73,9 +74,9 @@ final class FilterVarArrayDynamicReturnTypeExtension implements DynamicFunctionR
 			$inputArgType = new ArrayType(new StringType(), new MixedType());
 		}
 
-		$filterArgType = $scope->getType($functionCall->getArgs()[1]->value);
+		$filterArgType = $scope->getType($args[1]->value);
 		$filterConstantArrayType = $filterArgType->getConstantArrays()[0] ?? null;
-		$addEmptyType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$addEmptyType = isset($args[2]) ? $scope->getType($args[2]->value) : null;
 		$addEmpty = $addEmptyType === null || $addEmptyType->isTrue()->yes();
 
 		$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();

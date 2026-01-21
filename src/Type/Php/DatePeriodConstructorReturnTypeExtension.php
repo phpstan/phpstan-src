@@ -43,17 +43,18 @@ final class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMet
 			return null;
 		}
 
-		if (!isset($methodCall->getArgs()[0])) {
+		$args = $methodCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
+		$firstArgType = $scope->getType($args[0]->value);
 		if ($firstArgType->isString()->yes()) {
 			$firstArgType = new ObjectType(DateTime::class);
 		}
 		$thirdArgType = null;
-		if (isset($methodCall->getArgs()[2])) {
-			$thirdArgType = $scope->getType($methodCall->getArgs()[2]->value);
+		if (isset($args[2])) {
+			$thirdArgType = $scope->getType($args[2]->value);
 		}
 
 		if (!$thirdArgType instanceof Type) {

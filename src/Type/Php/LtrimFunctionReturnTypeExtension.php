@@ -31,11 +31,12 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$string = $scope->getType($functionCall->getArgs()[0]->value);
+		$string = $scope->getType($args[0]->value);
 
 		$accessory = [];
 		$defaultType = new StringType();
@@ -50,11 +51,11 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			$defaultType = new IntersectionType($accessory);
 		}
 
-		if (count($functionCall->getArgs()) !== 2) {
+		if (count($args) !== 2) {
 			return $defaultType;
 		}
 
-		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
+		$trimChars = $scope->getType($args[1]->value);
 
 		$trimConstantStrings = $trimChars->getConstantStrings();
 		if (count($trimConstantStrings) > 0) {

@@ -26,19 +26,20 @@ final class ArrayPadDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[2])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[2])) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
-		$itemType = $scope->getType($functionCall->getArgs()[2]->value);
+		$arrayType = $scope->getType($args[0]->value);
+		$itemType = $scope->getType($args[2]->value);
 
 		$returnType = new ArrayType(
 			TypeCombinator::union($arrayType->getIterableKeyType(), new IntegerType()),
 			TypeCombinator::union($arrayType->getIterableValueType(), $itemType),
 		);
 
-		$lengthType = $scope->getType($functionCall->getArgs()[1]->value);
+		$lengthType = $scope->getType($args[1]->value);
 		if (
 			$arrayType->isIterableAtLeastOnce()->yes()
 			|| $lengthType->isSuperTypeOf(new ConstantIntegerType(0))->no()

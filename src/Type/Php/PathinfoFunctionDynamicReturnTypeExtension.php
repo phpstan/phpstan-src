@@ -38,12 +38,13 @@ final class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): ?Type
 	{
-		$argsCount = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$argsCount = count($args);
 		if ($argsCount === 0) {
 			return null;
 		}
 
-		$pathType = $scope->getType($functionCall->getArgs()[0]->value);
+		$pathType = $scope->getType($args[0]->value);
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->setOffsetValueType(new ConstantStringType('dirname'), new StringType(), !$pathType->isNonEmptyString()->yes());
@@ -56,7 +57,7 @@ final class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			return $arrayType;
 		}
 
-		$flagsType = $scope->getType($functionCall->getArgs()[1]->value);
+		$flagsType = $scope->getType($args[1]->value);
 
 		$scalarValues = $flagsType->getConstantScalarValues();
 		if ($scalarValues !== []) {

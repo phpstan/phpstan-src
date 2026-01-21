@@ -27,18 +27,19 @@ final class PregFilterFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
+		$args = $functionCall->getArgs();
 		$defaultReturn = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 
-		$argsCount = count($functionCall->getArgs());
+		$argsCount = count($args);
 		if ($argsCount < 3) {
 			return $defaultReturn;
 		}
 
-		$subjectType = $scope->getType($functionCall->getArgs()[2]->value);
+		$subjectType = $scope->getType($args[2]->value);
 
 		if ($subjectType->isArray()->yes()) {
 			return new ArrayType(new IntegerType(), new StringType());

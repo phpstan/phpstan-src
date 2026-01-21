@@ -51,12 +51,13 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		if (count($functionCall->getArgs()) >= 2) {
-			$splitLengthType = $scope->getType($functionCall->getArgs()[1]->value);
+		if (count($args) >= 2) {
+			$splitLengthType = $scope->getType($args[1]->value);
 		} else {
 			$splitLengthType = new ConstantIntegerType(1);
 		}
@@ -70,8 +71,8 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$encoding = null;
 		if ($functionReflection->getName() === 'mb_str_split') {
-			if (count($functionCall->getArgs()) >= 3) {
-				$strings = $scope->getType($functionCall->getArgs()[2]->value)->getConstantStrings();
+			if (count($args) >= 3) {
+				$strings = $scope->getType($args[2]->value)->getConstantStrings();
 				$values = array_unique(array_map(static fn (ConstantStringType $encoding): string => $encoding->getValue(), $strings));
 
 				if (count($values) === 1) {
@@ -85,7 +86,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			}
 		}
 
-		$stringType = $scope->getType($functionCall->getArgs()[0]->value);
+		$stringType = $scope->getType($args[0]->value);
 		if (
 			isset($splitLength)
 			&& ($functionReflection->getName() === 'str_split' || $encoding !== null)

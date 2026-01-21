@@ -27,12 +27,13 @@ final class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$formats = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();
-		$datetimes = $scope->getType($functionCall->getArgs()[1]->value)->getConstantStrings();
+		$formats = $scope->getType($args[0]->value)->getConstantStrings();
+		$datetimes = $scope->getType($args[1]->value)->getConstantStrings();
 
 		if (count($formats) === 0 || count($datetimes) === 0) {
 			return null;

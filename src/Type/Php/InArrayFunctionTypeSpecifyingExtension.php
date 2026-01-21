@@ -41,19 +41,20 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$argsCount = count($node->getArgs());
+		$args = $node->getArgs();
+		$argsCount = count($args);
 		if ($argsCount < 2) {
 			return new SpecifiedTypes();
 		}
 
 		$isStrictComparison = false;
 		if ($argsCount >= 3) {
-			$strictNodeType = $scope->getType($node->getArgs()[2]->value);
+			$strictNodeType = $scope->getType($args[2]->value);
 			$isStrictComparison = $strictNodeType->isTrue()->yes();
 		}
 
-		$needleExpr = $node->getArgs()[0]->value;
-		$arrayExpr = $node->getArgs()[1]->value;
+		$needleExpr = $args[0]->value;
+		$arrayExpr = $args[1]->value;
 
 		$needleType = $scope->getType($needleExpr);
 		$arrayType = $scope->getType($arrayExpr);
@@ -101,7 +102,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 				&& $arrayType->getIterableValueType()->isSuperTypeOf($needleType)->yes()
 			) {
 				return $this->typeSpecifier->create(
-					$node->getArgs()[1]->value,
+					$args[1]->value,
 					TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 					$context,
 					$scope,
@@ -151,7 +152,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			}
 
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-				$node->getArgs()[1]->value,
+				$args[1]->value,
 				new ArrayType(new MixedType(), $arrayValueType),
 				TypeSpecifierContext::createTrue(),
 				$scope,
@@ -160,7 +161,7 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 		if ($context->true() && $arrayType->isArray()->yes()) {
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-				$node->getArgs()[1]->value,
+				$args[1]->value,
 				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
 				$context,
 				$scope,

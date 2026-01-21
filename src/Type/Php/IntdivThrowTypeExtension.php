@@ -26,14 +26,15 @@ final class IntdivThrowTypeExtension implements DynamicFunctionThrowTypeExtensio
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (count($funcCall->getArgs()) < 2) {
+		$args = $funcCall->getArgs();
+		if (count($args) < 2) {
 			return $functionReflection->getThrowType();
 		}
 
-		$valueType = $scope->getType($funcCall->getArgs()[0]->value)->toInteger();
+		$valueType = $scope->getType($args[0]->value)->toInteger();
 		$containsMin = $valueType->isSuperTypeOf(new ConstantIntegerType(PHP_INT_MIN));
 
-		$divisorType = $scope->getType($funcCall->getArgs()[1]->value)->toInteger();
+		$divisorType = $scope->getType($args[1]->value)->toInteger();
 		if (!$containsMin->no()) {
 			$divisionByMinusOne = $divisorType->isSuperTypeOf(new ConstantIntegerType(-1));
 			if (!$divisionByMinusOne->no()) {

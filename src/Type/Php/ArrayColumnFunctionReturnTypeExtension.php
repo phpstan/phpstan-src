@@ -28,14 +28,15 @@ final class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionRet
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$numArgs = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$numArgs = count($args);
 		if ($numArgs < 2) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
-		$columnType = $scope->getType($functionCall->getArgs()[1]->value);
-		$indexType = $numArgs >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : new NullType();
+		$arrayType = $scope->getType($args[0]->value);
+		$columnType = $scope->getType($args[1]->value);
+		$indexType = $numArgs >= 3 ? $scope->getType($args[2]->value) : new NullType();
 
 		$constantArrayTypes = $arrayType->getConstantArrays();
 		if (count($constantArrayTypes) === 1) {

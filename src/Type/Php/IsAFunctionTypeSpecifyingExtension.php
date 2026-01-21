@@ -36,17 +36,18 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (count($node->getArgs()) < 2) {
+		$args = $node->getArgs();
+		if (count($args) < 2) {
 			return new SpecifiedTypes();
 		}
-		$classType = $scope->getType($node->getArgs()[1]->value);
+		$classType = $scope->getType($args[1]->value);
 
 		if (!$classType instanceof ConstantStringType && !$context->true()) {
 			return new SpecifiedTypes([], []);
 		}
 
-		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
-		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(false);
+		$objectOrClassType = $scope->getType($args[0]->value);
+		$allowStringType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantBooleanType(false);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, true);
@@ -57,7 +58,7 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			$resultType,
 			$context,
 			$scope,

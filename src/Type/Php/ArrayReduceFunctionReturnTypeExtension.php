@@ -25,28 +25,29 @@ final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionRet
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[1])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[1])) {
 			return null;
 		}
 
-		$callbackType = $scope->getType($functionCall->getArgs()[1]->value);
+		$callbackType = $scope->getType($args[1]->value);
 		if ($callbackType->isCallable()->no()) {
 			return null;
 		}
 
 		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$callbackType->getCallableParametersAcceptors($scope),
 		)->getReturnType();
 
-		if (isset($functionCall->getArgs()[2])) {
-			$initialType = $scope->getType($functionCall->getArgs()[2]->value);
+		if (isset($args[2])) {
+			$initialType = $scope->getType($args[2]->value);
 		} else {
 			$initialType = new NullType();
 		}
 
-		$arraysType = $scope->getType($functionCall->getArgs()[0]->value);
+		$arraysType = $scope->getType($args[0]->value);
 		$constantArrays = $arraysType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$onlyEmpty = TrinaryLogic::createYes();

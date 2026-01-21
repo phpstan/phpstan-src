@@ -44,7 +44,8 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$constantName = $scope->getType($node->getArgs()[0]->value);
+		$args = $node->getArgs();
+		$constantName = $scope->getType($args[0]->value);
 		if (
 			!$constantName instanceof ConstantStringType
 			|| $constantName->getValue() === ''
@@ -52,7 +53,7 @@ final class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecify
 			return new SpecifiedTypes([], []);
 		}
 
-		$valueType = $scope->getType($node->getArgs()[1]->value);
+		$valueType = $scope->getType($args[1]->value);
 		$finalType = $scope->getConstantExplicitTypeFromConfig(
 			$constantName->getValue(),
 			$valueType,

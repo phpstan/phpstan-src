@@ -25,15 +25,16 @@ final class FilterInputDynamicReturnTypeExtension implements DynamicFunctionRetu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
 		return $this->filterFunctionReturnTypeHelper->getInputType(
-			$scope->getType($functionCall->getArgs()[0]->value),
-			$scope->getType($functionCall->getArgs()[1]->value),
-			isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null,
-			isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null,
+			$scope->getType($args[0]->value),
+			$scope->getType($args[1]->value),
+			isset($args[2]) ? $scope->getType($args[2]->value) : null,
+			isset($args[3]) ? $scope->getType($args[3]->value) : null,
 		);
 	}
 

@@ -23,11 +23,12 @@ final class AssertThrowTypeExtension implements DynamicFunctionThrowTypeExtensio
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (count($funcCall->getArgs()) < 2) {
+		$args = $funcCall->getArgs();
+		if (count($args) < 2) {
 			return $functionReflection->getThrowType();
 		}
 
-		$customThrow = $scope->getType($funcCall->getArgs()[1]->value);
+		$customThrow = $scope->getType($args[1]->value);
 		if ((new ObjectType(Throwable::class))->isSuperTypeOf($customThrow)->yes()) {
 			return $customThrow;
 		}

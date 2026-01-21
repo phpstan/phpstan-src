@@ -29,12 +29,13 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$argsCount = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$argsCount = count($args);
 		if ($argsCount < 2) {
 			return null;
 		}
 
-		$haystackArgType = $scope->getType($functionCall->getArgs()[1]->value);
+		$haystackArgType = $scope->getType($args[1]->value);
 		if ($haystackArgType->isArray()->no()) {
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
@@ -42,10 +43,10 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		if ($argsCount < 3) {
 			$strictArgType = new ConstantBooleanType(false);
 		} else {
-			$strictArgType = $scope->getType($functionCall->getArgs()[2]->value);
+			$strictArgType = $scope->getType($args[2]->value);
 		}
 
-		$needleArgType = $scope->getType($functionCall->getArgs()[0]->value);
+		$needleArgType = $scope->getType($args[0]->value);
 
 		return $haystackArgType->searchArray($needleArgType, $strictArgType->isTrue());
 	}

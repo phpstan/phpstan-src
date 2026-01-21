@@ -22,11 +22,12 @@ final class ArrayShiftFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
 			return new NullType();

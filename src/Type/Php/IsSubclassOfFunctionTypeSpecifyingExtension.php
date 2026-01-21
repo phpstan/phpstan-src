@@ -36,13 +36,14 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!$context->true() || count($node->getArgs()) < 2) {
+		$args = $node->getArgs();
+		if (!$context->true() || count($args) < 2) {
 			return new SpecifiedTypes();
 		}
 
-		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
-		$classType = $scope->getType($node->getArgs()[1]->value);
-		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
+		$objectOrClassType = $scope->getType($args[0]->value);
+		$classType = $scope->getType($args[1]->value);
+		$allowStringType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
@@ -58,7 +59,7 @@ final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeS
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			$resultType,
 			$context,
 			$scope,

@@ -40,12 +40,13 @@ final class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$firstArg = $functionCall->getArgs()[0]->value;
-		$secondArg = $functionCall->getArgs()[1]->value;
+		$firstArg = $args[0]->value;
+		$secondArg = $args[1]->value;
 
 		$keysParamType = $scope->getType($firstArg);
 		$valuesParamType = $scope->getType($secondArg);

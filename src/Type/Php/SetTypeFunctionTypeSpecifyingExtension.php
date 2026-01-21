@@ -34,9 +34,10 @@ final class SetTypeFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$value = $node->getArgs()[0]->value;
+		$args = $node->getArgs();
+		$value = $args[0]->value;
 		$valueType = $scope->getType($value);
-		$castType = $scope->getType($node->getArgs()[1]->value);
+		$castType = $scope->getType($args[1]->value);
 
 		$constantStrings = $castType->getConstantStrings();
 		if (count($constantStrings) < 1) {

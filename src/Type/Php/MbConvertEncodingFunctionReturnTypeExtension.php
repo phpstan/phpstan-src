@@ -42,15 +42,16 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 		Scope $scope,
 	): ?Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 
 		$initialReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 
@@ -60,10 +61,10 @@ final class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunct
 		}
 
 		if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
-			if (!isset($functionCall->getArgs()[2])) {
+			if (!isset($args[2])) {
 				return TypeCombinator::remove($result, new ConstantBooleanType(false));
 			}
-			$fromEncodingArgType = $scope->getType($functionCall->getArgs()[2]->value);
+			$fromEncodingArgType = $scope->getType($args[2]->value);
 
 			$returnFalseIfCannotDetectEncoding = false;
 			if (!$fromEncodingArgType->isArray()->no()) {

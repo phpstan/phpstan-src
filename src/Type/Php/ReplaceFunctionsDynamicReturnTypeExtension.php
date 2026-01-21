@@ -76,9 +76,10 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 	): Type
 	{
 		$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
+		$args = $functionCall->getArgs();
 		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 
@@ -94,8 +95,8 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		if (array_key_exists($functionReflection->getName(), self::FUNCTIONS_REPLACE_POSITION)) {
 			$replaceArgumentPosition = self::FUNCTIONS_REPLACE_POSITION[$functionReflection->getName()];
 
-			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
-				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);
+			if (count($args) > $replaceArgumentPosition) {
+				$replaceArgumentType = $scope->getType($args[$replaceArgumentPosition]->value);
 				if ($replaceArgumentType->isArray()->yes()) {
 					$replaceArgumentType = $replaceArgumentType->getIterableValueType();
 				}
@@ -202,10 +203,11 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
-		if (count($functionCall->getArgs()) <= $argumentPosition) {
+		$args = $functionCall->getArgs();
+		if (count($args) <= $argumentPosition) {
 			return null;
 		}
-		return $scope->getType($functionCall->getArgs()[$argumentPosition]->value);
+		return $scope->getType($args[$argumentPosition]->value);
 	}
 
 	private function canReturnNull(
@@ -214,9 +216,10 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): bool
 	{
+		$args = $functionCall->getArgs();
 		if (
 			in_array($functionReflection->getName(), ['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'], true)
-			&& count($functionCall->getArgs()) > 0
+			&& count($args) > 0
 		) {
 			$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
 
@@ -230,7 +233,7 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 
 		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 

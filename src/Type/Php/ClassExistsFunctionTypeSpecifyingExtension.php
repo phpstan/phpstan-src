@@ -44,7 +44,8 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$argType = $scope->getType($node->getArgs()[0]->value);
+		$args = $node->getArgs();
+		$argType = $scope->getType($args[0]->value);
 		if ($argType instanceof ConstantStringType) {
 			return $this->typeSpecifier->create(
 				new FuncCall(new FullyQualified('class_exists'), [
@@ -62,7 +63,7 @@ final class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSp
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			$narrowedType,
 			$context,
 			$scope,

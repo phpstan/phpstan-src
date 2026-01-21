@@ -38,13 +38,14 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$numArgs = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$numArgs = count($args);
 		if ($numArgs < 2) {
 			return null;
 		}
 
-		$singleArrayArgument = !isset($functionCall->getArgs()[2]);
-		$callback = $functionCall->getArgs()[0]->value;
+		$singleArrayArgument = !isset($args[2]);
+		$callback = $args[0]->value;
 		$callableType = $scope->getType($callback);
 		$callableIsNull = $callableType->isNull()->yes();
 
@@ -53,7 +54,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				$callback,
 				array_map(
 					static fn (Node\Arg $arg) => new Node\Arg(new TypeExpr($scope->getType($arg->value)->getIterableValueType())),
-					array_slice($functionCall->getArgs(), 1),
+					array_slice($args, 1),
 				),
 			));
 		} elseif ($callableIsNull) {
@@ -61,7 +62,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$argTypes = [];
 			$areAllSameSize = true;
 			$expectedSize = null;
-			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
+			foreach (array_slice($args, 1) as $index => $arg) {
 				$argTypes[$index] = $argType = $scope->getType($arg->value);
 				if (!$areAllSameSize || $numArgs === 2) {
 					continue;
@@ -85,9 +86,9 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			}
 
 			if (!$areAllSameSize) {
-				$firstArr = $functionCall->getArgs()[1]->value;
+				$firstArr = $args[1]->value;
 				$identities = [];
-				foreach (array_slice($functionCall->getArgs(), 2) as $arg) {
+				foreach (array_slice($args, 2) as $arg) {
 					$identities[] = new Node\Expr\BinaryOp\Identical($firstArr, $arg->value);
 				}
 
@@ -117,7 +118,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$valueType = new MixedType();
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[1]->value);
+		$arrayType = $scope->getType($args[1]->value);
 
 		if ($singleArrayArgument) {
 			if ($callableIsNull) {

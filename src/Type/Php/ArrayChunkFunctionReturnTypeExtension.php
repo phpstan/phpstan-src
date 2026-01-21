@@ -30,22 +30,23 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
+		$arrayType = $scope->getType($args[0]->value);
 		if ($arrayType->isArray()->no()) {
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$lengthType = $scope->getType($functionCall->getArgs()[1]->value);
+		$lengthType = $scope->getType($args[1]->value);
 		$negativeOrZero = IntegerRangeType::fromInterval(null, 0);
 		if ($negativeOrZero->isSuperTypeOf($lengthType)->yes()) {
 			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
 		}
 
-		$preserveKeysType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantBooleanType(false);
+		$preserveKeysType = isset($args[2]) ? $scope->getType($args[2]->value) : new ConstantBooleanType(false);
 
 		return $arrayType->chunkArray($lengthType, $preserveKeysType->isTrue());
 	}

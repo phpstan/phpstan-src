@@ -55,11 +55,11 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 			$defaultType = new IntersectionType($accessory);
 		}
 
-		if (count($functionCall->getArgs()) !== 2) {
+		if (count($args) !== 2) {
 			return $defaultType;
 		}
 
-		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
+		$trimChars = $scope->getType($args[1]->value);
 
 		$trimConstantStrings = $trimChars->getConstantStrings();
 		if (count($trimConstantStrings) > 0) {

@@ -59,15 +59,16 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
 		$this->cacheReturnTypes();
 
-		$urlType = $scope->getType($functionCall->getArgs()[0]->value);
-		if (count($functionCall->getArgs()) > 1) {
-			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
+		$urlType = $scope->getType($args[0]->value);
+		if (count($args) > 1) {
+			$componentType = $scope->getType($args[1]->value);
 
 			if (!$componentType->isConstantValue()->yes()) {
 				return $this->createAllComponentsReturnType($urlType->isLowercaseString()->yes());

@@ -28,16 +28,17 @@ final class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionR
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
+		$keysType = $scope->getType($args[0]->value);
 		if ($keysType->isArray()->no()) {
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		return $keysType->fillKeysArray($scope->getType($functionCall->getArgs()[1]->value));
+		return $keysType->fillKeysArray($scope->getType($args[1]->value));
 	}
 
 }

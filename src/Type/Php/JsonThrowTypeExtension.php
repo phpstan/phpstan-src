@@ -56,11 +56,12 @@ final class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 			throw new ShouldNotHappenException();
 		}
 		$argumentPosition = self::ARGUMENTS_POSITIONS[$functionReflection->getName()];
-		if (!isset($functionCall->getArgs()[$argumentPosition])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[$argumentPosition])) {
 			return null;
 		}
 
-		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
+		$optionsExpr = $args[$argumentPosition]->value;
 		if (!$this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')->no()) {
 			return new ObjectType('JsonException');
 		}

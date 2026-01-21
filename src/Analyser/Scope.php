@@ -108,6 +108,23 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getKeepVoidType(Expr $node): Type;
 
+	/**
+	 * The `getType()` method along with FNSR enabled
+	 * waits for the Expr analysis to be completed
+	 * in order to evaluate the type at the right place in the code.
+	 *
+	 * This prevents tricky bugs when reasoning about code like
+	 * `doFoo($a = 1, $a)`.
+	 *
+	 * Sometimes this is counter-productive because we actually want
+	 * to use the current Scope object contents to resolve the Expr type.
+	 *
+	 * In these cases use `getScopeType()`.
+	 */
+	public function getScopeType(Expr $expr): Type;
+
+	public function getScopeNativeType(Expr $expr): Type;
+
 	public function resolveName(Name $name): string;
 
 	public function resolveTypeByName(Name $name): TypeWithClassName;

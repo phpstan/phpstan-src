@@ -25,7 +25,7 @@ final class Bug13983Rule implements Rule
 	 */
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$type = $scope->getType($node->vars[0]);
+		$type = $scope->getScopeType($node->vars[0]);
 		$error = RuleErrorBuilder::message('Dumped: ' . $type->describe(VerbosityLevel::precise()))
 			->identifier('dump.isset')
 			->build();

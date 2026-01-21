@@ -54,7 +54,7 @@ final class IssetCheck
 						return null;
 					}
 
-					$type = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr);
+					$type = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr) : $scope->getScopeNativeType($expr);
 					if (!$type instanceof NeverType) {
 						return $this->generateError(
 							$type,
@@ -74,15 +74,15 @@ final class IssetCheck
 			return $error;
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
 			$type = $this->treatPhpDocTypesAsCertain
-				? $scope->getType($expr->var)
-				: $scope->getNativeType($expr->var);
+				? $scope->getScopeType($expr->var)
+				: $scope->getScopeNativeType($expr->var);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $error ?? $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
 			}
 
 			$dimType = $this->treatPhpDocTypesAsCertain
-				? $scope->getType($expr->dim)
-				: $scope->getNativeType($expr->dim);
+				? $scope->getScopeType($expr->dim)
+				: $scope->getScopeNativeType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if ($hasOffsetValue->no()) {
 				if (!$this->checkAdvancedIsset) {
@@ -241,7 +241,7 @@ final class IssetCheck
 		}
 
 		$error = $this->generateError(
-			$this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr),
+			$this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr) : $scope->getScopeNativeType($expr),
 			sprintf('Expression %s', $operatorDescription),
 			$typeMessageCallback,
 			$identifier,
@@ -283,8 +283,8 @@ final class IssetCheck
 		}
 
 		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr->var) : $scope->getNativeType($expr->var);
-			$dimType = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr->dim) : $scope->getNativeType($expr->dim);
+			$type = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr->var) : $scope->getScopeNativeType($expr->var);
+			$dimType = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr->dim) : $scope->getScopeNativeType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);

@@ -65,6 +65,16 @@ final class FiberScope extends MutatingScope
 		return $scope->getType($node);
 	}
 
+	public function getScopeType(Expr $expr): Type
+	{
+		return $this->toMutatingScope()->getType($expr);
+	}
+
+	public function getScopeNativeType(Expr $expr): Type
+	{
+		return $this->toMutatingScope()->getNativeType($expr);
+	}
+
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{

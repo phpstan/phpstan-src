@@ -1,5 +1,7 @@
 <?php
 
+namespace Bug13694;
+
 /**
  * @param int[] $keys
  * @param array<int, int|null> $things

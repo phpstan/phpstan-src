@@ -17,6 +17,10 @@ use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
+use function fclose;
+use function feof;
+use function fgets;
+use function fopen;
 use function hash_file;
 use function is_file;
 use function memory_get_peak_usage;
@@ -233,20 +237,33 @@ final class AnalyseApplication
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 		} else {
 			$startTime = null;
-			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
+			$linesOfCode = null;
+			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime, &$linesOfCode): void {
 				$stdOutput->writeLineFormatted($file);
 				$startTime = microtime(true);
+				$count = 0;
+				$handle = @fopen($file, 'r');
+				if ($handle === false) {
+					return;
+				}
+
+				while (!feof($handle)) {
+					fgets($handle);
+					$count++;
+				}
+				fclose($handle);
+				$linesOfCode = $count;
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
+				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));
+					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s, %.3f LoC/s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime, $linesOfCode / $elapsedTime));
 					$previousMemory = $currentTotalMemory;
 				};
 			}

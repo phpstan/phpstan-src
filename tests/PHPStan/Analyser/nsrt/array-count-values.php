@@ -25,7 +25,7 @@ function returnsStringOrObjectArray(): array
 }
 
 // Objects are ignored by array_count_values, with a warning emitted.
-assertType('non-empty-array<string, int<1, max>>', array_count_values(returnsStringOrObjectArray()));
+assertType('non-empty-array<int|string, int<1, max>>', array_count_values(returnsStringOrObjectArray()));
 
 class StringableObject
 {
@@ -50,3 +50,24 @@ assertType('array{}', $scalar);
 $intAsString = array_count_values(['1', '2', '2', '3']);
 
 assertType("non-empty-array<1|2|3, int<1, max>>", $intAsString);
+
+/**
+ * @param array<string> $strings
+ * @param array<int> $ints
+ * @param array<positive-int> $positives
+ * @param array<int<10, 30>> $ranges
+ * @param array<string|int> $stringOrInts
+ * @param array<string|bool> $stringsOrBool
+ */
+function strings(array $strings, array $ints, array $positives, array $ranges, array $stringOrInts, array $stringsOrBool): void
+{
+	// numeric-strings in array-keys are auto-casted to int, see https://3v4l.org/VQoSJQ#vnull
+	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($strings));
+
+	assertType("non-empty-array<int, int<1, max>>", array_count_values($ints));
+	assertType("non-empty-array<int<1, max>, int<1, max>>", array_count_values($positives));
+	assertType("non-empty-array<int<10, 30>, int<1, max>>", array_count_values($ranges));
+
+	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($stringOrInts));
+	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($stringsOrBool));
+}

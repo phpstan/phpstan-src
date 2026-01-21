@@ -54,6 +54,12 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
+			if (!$itemType->isString()->no() && !$itemType->isConstantScalarValue()->yes()) {
+				$itemType = $allowedValues;
+			} else {
+				$itemType = $itemType->toArrayKey();
+			}
+
 			$outputTypes[] = new IntersectionType([
 				new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null)),
 				new NonEmptyArrayType(),

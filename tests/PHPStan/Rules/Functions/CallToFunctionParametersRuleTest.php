@@ -605,12 +605,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				5,
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'non-empty-string' : 'non-falsy-string'),
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'non-falsy-string' : 'non-empty-string'),
 				13,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_reduce expects callable(non-empty-string|null, 1|2|3): (non-empty-string|null), Closure(string, int): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'non-empty-string' : 'non-falsy-string'),
+				sprintf('Parameter #2 $callback of function array_reduce expects callable(%1$s|null, 1|2|3): (%1$s|null), Closure(string, int): non-falsy-string given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'non-falsy-string' : 'non-empty-string'),
 				22,
 				'Type string of parameter #1 $foo of passed callable needs to be same or wider than parameter type string|null of accepting callable.',
 			],
@@ -683,7 +683,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				6,
 			],
 			[
-				sprintf('Parameter #3 $data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(int, int): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? '(lowercase-string&non-falsy-string&uppercase-string)' : "('11'|'12'|'13'|'14'|'15'|'16'|'21'|'22'|'23'|'24'|'25'|'26'|'31'|'32'|'33'|'34'|'35'|'36'|'41'|'42'|'43'|'44'|'45'|'46'|'51'|'52'|'53'|'54'|'55'|'56'|'61'|'62'|'63'|'64'|'65'|'66')"),
+				"Parameter #3 \$data_comp_func of function array_udiff expects callable(1|2|3|4|5|6, 1|2|3|4|5|6): int, Closure(int, int): ('11'|'12'|'13'|'14'|'15'|'16'|'21'|'22'|'23'|'24'|'25'|'26'|'31'|'32'|'33'|'34'|'35'|'36'|'41'|'42'|'43'|'44'|'45'|'46'|'51'|'52'|'53'|'54'|'55'|'56'|'61'|'62'|'63'|'64'|'65'|'66') given.",
 				14,
 			],
 			[
@@ -935,7 +935,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				30,
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'string' : '(\'bar\'|\'foo\')'),
+				'Parameter #2 $callback of function array_all expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
 				36,
 			],
 			[
@@ -962,7 +962,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				30,
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'string' : '(\'bar\'|\'foo\')'),
+				'Parameter #2 $callback of function array_any expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
 				36,
 			],
 			[
@@ -988,7 +988,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				30,
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_find expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'string' : '(\'bar\'|\'foo\')'),
+				'Parameter #2 $callback of function array_find expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
 				36,
 			],
 			[
@@ -1014,7 +1014,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				30,
 			],
 			[
-				sprintf('Parameter #2 $callback of function array_find_key expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): %s given.', getenv('PHPSTAN_FNSR') !== '0' && PHP_VERSION_ID >= 80100 ? 'string' : '(\'bar\'|\'foo\')'),
+				'Parameter #2 $callback of function array_find_key expects callable(1|2, \'bar\'|\'foo\'): bool, Closure(int, string): (\'bar\'|\'foo\') given.',
 				36,
 			],
 			[
@@ -2565,6 +2565,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-11079.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug10612(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-10612.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1')]

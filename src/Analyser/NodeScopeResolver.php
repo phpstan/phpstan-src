@@ -416,6 +416,32 @@ class NodeScopeResolver
 		StatementContext $context,
 	): InternalStatementResult
 	{
+		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers(
+			$parentNode,
+			$stmts,
+			$scope,
+			$storage,
+			$nodeCallback,
+			$context,
+		);
+		$this->processPendingFibers($storage);
+
+		return $statementResult;
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processStmtNodesInternalWithoutFlushingPendingFibers(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+	): InternalStatementResult
+	{
 		$exitPoints = [];
 		$throwPoints = [];
 		$impurePoints = [];
@@ -501,8 +527,6 @@ class NodeScopeResolver
 				$returnTypeNode !== null,
 			), $scope, $storage);
 		}
-
-		$this->processPendingFibers($storage);
 
 		return $statementResult;
 	}
@@ -5057,7 +5081,7 @@ class NodeScopeResolver
 		};
 
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+			$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 			$publicStatementResult = $statementResult->toPublic();
 			$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 				$expr,
@@ -5079,7 +5103,7 @@ class NodeScopeResolver
 			$prevScope = $closureScope;
 
 			$storage = $originalStorage->duplicate();
-			$intermediaryClosureScopeResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
+			$intermediaryClosureScopeResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, new NoopNodeCallback(), StatementContext::createTopLevel());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -5107,7 +5131,7 @@ class NodeScopeResolver
 		}
 
 		$storage = $originalStorage;
-		$statementResult = $this->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
+		$statementResult = $this->processStmtNodesInternalWithoutFlushingPendingFibers($expr, $expr->stmts, $closureScope, $storage, $closureStmtsCallback, StatementContext::createTopLevel());
 		$publicStatementResult = $statementResult->toPublic();
 		$this->callNodeCallback($nodeCallback, new ClosureReturnStatementsNode(
 			$expr,

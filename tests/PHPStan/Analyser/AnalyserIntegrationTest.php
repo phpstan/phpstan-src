@@ -1338,6 +1338,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Parameter #2 $callback of function array_filter expects (callable(1|2|3|null): bool)|null, false given.', $errors[1]->getMessage());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13987(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13987.php');

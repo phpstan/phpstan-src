@@ -58,8 +58,19 @@ assertType("non-empty-array<1|2|3, int<1, max>>", $intAsString);
  * @param array<int<10, 30>> $ranges
  * @param array<string|int> $stringOrInts
  * @param array<string|bool> $stringsOrBool
+ * @param array<int|"1"> $intOrConstNumericString
+ * @param array<int|"A"> $intOrConstNonNumericString
  */
-function strings(array $strings, array $ints, array $positives, array $ranges, array $stringOrInts, array $stringsOrBool): void
+function strings(
+	array $strings,
+	array $ints,
+	array $positives,
+	array $ranges,
+	array $stringOrInts,
+	array $stringsOrBool,
+	array $intOrConstNumericString,
+	array $intOrConstNonNumericString,
+): void
 {
 	// numeric-strings in array-keys are auto-casted to int, see https://3v4l.org/VQoSJQ#vnull
 	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($strings));
@@ -70,4 +81,6 @@ function strings(array $strings, array $ints, array $positives, array $ranges, a
 
 	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($stringOrInts));
 	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($stringsOrBool));
+	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($intOrConstNumericString)); // could have only "int" key
+	assertType("non-empty-array<int|string, int<1, max>>", array_count_values($intOrConstNonNumericString));
 }

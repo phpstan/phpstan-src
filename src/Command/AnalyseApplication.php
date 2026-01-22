@@ -261,6 +261,9 @@ final class AnalyseApplication
 					if ($startTime === null) {
 						throw new ShouldNotHappenException();
 					}
+					if ($linesOfCode === null) {
+						throw new ShouldNotHappenException();
+					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s, %.3f LoC/s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime, $linesOfCode / $elapsedTime));

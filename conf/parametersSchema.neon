@@ -135,7 +135,9 @@ parametersSchema:
 	)
 	internalErrorsCountLimit: int()
 	cache: structure([
-		nodesByStringCountMax: int()
+		nodesByStringCountMax: int(),
+		resolvedPhpDocBlockCacheCountMax: int(),
+		nameScopeMapMemoryCacheCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
 	typeAliases: arrayOf(string())

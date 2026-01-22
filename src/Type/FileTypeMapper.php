@@ -80,6 +80,10 @@ final class FileTypeMapper
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private FileHelper $fileHelper,
 		private Cache $cache,
+		#[AutowiredParameter(ref: '%cache.resolvedPhpDocBlockCacheCountMax%')]
+		private int $resolvedPhpDocBlockCacheCountMax,
+		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
+		private int $nameScopeMapMemoryCacheCountMax,
 	)
 	{
 	}
@@ -111,7 +115,7 @@ final class FileTypeMapper
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
 
-		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
+		if ($this->resolvedPhpDocBlockCacheCount >= $this->resolvedPhpDocBlockCacheCountMax) {
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
 				1,
@@ -338,7 +342,7 @@ final class FileTypeMapper
 			} else {
 				[$nameScopeMap, $files] = $cached;
 			}
-			if ($this->memoryCacheCount >= 2048) {
+			if ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
 					1,

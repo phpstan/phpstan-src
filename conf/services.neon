@@ -201,6 +201,8 @@ services:
 		class: PHPStan\Type\FileTypeMapper
 		arguments:
 			phpParser: @stubParser
+			resolvedPhpDocBlockCacheCountMax: %cache.resolvedPhpDocBlockCacheCountMax%
+			nameScopeMapMemoryCacheCountMax: %cache.nameScopeMapMemoryCacheCountMax%
 		autowired: false
 
 	fileExcluderAnalyse:

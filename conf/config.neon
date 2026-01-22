@@ -113,6 +113,8 @@ parameters:
 	internalErrorsCountLimit: 50
 	cache:
 		nodesByStringCountMax: 256
+		resolvedPhpDocBlockCacheCountMax: 2048
+		nameScopeMapMemoryCacheCountMax: 2048
 	reportUnmatchedIgnoredErrors: true
 	typeAliases: []
 	universalObjectCratesClasses:

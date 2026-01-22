@@ -32,6 +32,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -118,6 +119,7 @@ final class FileTypeMapper
 		if ($fileName === null) {
 			$this->sliceResolvedPhpDocBlockCache();
 			$this->resolvedPhpDocBlockCacheCount++;
+			echo sprintf("Adding to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 			return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock($this->phpDocStringResolver->resolve($docComment), new NameScope(null, []), $docComment, null);
 		}
 
@@ -141,6 +143,7 @@ final class FileTypeMapper
 						} catch (NameScopeAlreadyBeingCreatedException) {
 							$this->sliceResolvedPhpDocBlockCache();
 							$this->resolvedPhpDocBlockCacheCount++;
+							echo sprintf("Adding empty 1 to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 							return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
 						}
 						$phpDocKey = $traitPhpDocKey;
@@ -148,22 +151,27 @@ final class FileTypeMapper
 					} else {
 						$this->sliceResolvedPhpDocBlockCache();
 						$this->resolvedPhpDocBlockCacheCount++;
+						echo sprintf("Adding empty 2 to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 						return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
 					}
 				} else {
 					$this->sliceResolvedPhpDocBlockCache();
 					$this->resolvedPhpDocBlockCacheCount++;
+					echo sprintf("Adding empty 3 to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 					return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
 				}
 			} else {
 				$this->sliceResolvedPhpDocBlockCache();
 				$this->resolvedPhpDocBlockCacheCount++;
+				echo sprintf("Adding empty 4 to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 				return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
 			}
 		}
 
 		$this->sliceResolvedPhpDocBlockCache();
 		$this->resolvedPhpDocBlockCacheCount++;
+
+		echo sprintf("Adding to resolvedPhpDocBlockCache: %s (%s, %s, %s, %s)\n", $phpDocKey, $fileName, $className, $traitName, $functionName);
 
 		return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock(
 			$this->phpDocStringResolver->resolve($docComment),
@@ -178,6 +186,8 @@ final class FileTypeMapper
 		if ($this->resolvedPhpDocBlockCacheCount < $this->resolvedPhpDocBlockCacheCountMax) {
 			return;
 		}
+
+		echo sprintf("Evicting from resolvedPhpDocBlockCache: %s\n", array_key_first($this->resolvedPhpDocBlockCache));
 
 		$this->resolvedPhpDocBlockCache = array_slice(
 			$this->resolvedPhpDocBlockCache,
@@ -386,6 +396,8 @@ final class FileTypeMapper
 				[$nameScopeMap, $files] = $cached;
 			}
 			if ($this->memoryCacheCount >= $this->nameScopeMapMemoryCacheCountMax) {
+				$evictingFileName = array_key_first($this->memoryCache);
+				echo sprintf("Evicting from getNameScopeMap memoryCache: %s\n", $evictingFileName);
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
 					1,
@@ -393,6 +405,8 @@ final class FileTypeMapper
 				);
 				$this->memoryCacheCount--;
 			}
+
+			echo sprintf("Adding to getNameScopeMap memoryCache: %s\n", $fileName);
 
 			$this->memoryCache[$fileName] = [$nameScopeMap, $files];
 			$this->memoryCacheCount++;

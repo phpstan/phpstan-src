@@ -34,23 +34,27 @@ final class ExpressionTypeHolder
 			return false;
 		}
 
-		return $this->type->equals($other->type);
+		return $this->type === $other->type || $this->type->equals($other->type);
 	}
 
 	public function and(self $other): self
 	{
 		if ($this->type === $other->type || $this->type->equals($other->type)) {
-			if ($this->certainty->equals($other->certainty)) {
+			$certainty = $this->certainty->and($other->certainty);
+			if ($certainty->yes()) {
 				return $this;
 			}
 
-			$type = $this->type;
-		} else {
-			$type = TypeCombinator::union($this->type, $other->type);
+			if ($this->certainty->maybe()) {
+				return $this;
+			}
+
+			return $other;
 		}
+
 		return new self(
 			$this->expr,
-			$type,
+			TypeCombinator::union($this->type, $other->type),
 			$this->certainty->and($other->certainty),
 		);
 	}

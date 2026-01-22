@@ -26,16 +26,28 @@ final class AcceptsResult
 	{
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->no()
+	 * @phpstan-assert-if-true =false $this->maybe()
+	 */
 	public function yes(): bool
 	{
 		return $this->result->yes();
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->no()
+	 * @phpstan-assert-if-true =false $this->yes()
+	 */
 	public function maybe(): bool
 	{
 		return $this->result->maybe();
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->maybe()
+	 * @phpstan-assert-if-true =false $this->yes()
+	 */
 	public function no(): bool
 	{
 		return $this->result->no();

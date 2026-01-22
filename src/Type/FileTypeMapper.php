@@ -115,27 +115,55 @@ final class FileTypeMapper
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
 
-		if ($this->resolvedPhpDocBlockCacheCount >= $this->resolvedPhpDocBlockCacheCountMax) {
-			$this->resolvedPhpDocBlockCache = array_slice(
-				$this->resolvedPhpDocBlockCache,
-				1,
-				preserve_keys: true,
-			);
-
-			$this->resolvedPhpDocBlockCacheCount--;
-		}
-
-		$this->resolvedPhpDocBlockCacheCount++;
-
 		if ($fileName === null) {
+			$this->sliceResolvedPhpDocBlockCache();
+			$this->resolvedPhpDocBlockCacheCount++;
 			return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock($this->phpDocStringResolver->resolve($docComment), new NameScope(null, []), $docComment, null);
 		}
 
 		try {
 			$nameScope = $this->getNameScope($fileName, $className, $traitName, $functionName);
 		} catch (NameScopeAlreadyBeingCreatedException) {
-			return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+			if ($className !== null && $traitName !== null) {
+				$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+				if ($reflectionProvider->hasClass($traitName)) {
+					$traitReflection = $reflectionProvider->getClass($traitName);
+					if ($traitReflection->getFileName() !== null) {
+						$traitNameScopeKey = $this->getNameScopeKey($traitReflection->getFileName(), $traitName, null, $functionName);
+						$traitPhpDocKey = $this->getPhpDocKey($traitNameScopeKey, $docComment);
+						if (isset($this->resolvedPhpDocBlockCache[$traitPhpDocKey])) {
+							return $this->resolvedPhpDocBlockCache[$traitPhpDocKey];
+						}
+
+						try {
+							// taky v tomhle pripade neslicovat cache, az pri jistote ze tam budu vytvaret novy klic
+							$nameScope = $this->getNameScope($traitReflection->getFileName(), $traitName, null, $functionName);
+						} catch (NameScopeAlreadyBeingCreatedException) {
+							$this->sliceResolvedPhpDocBlockCache();
+							$this->resolvedPhpDocBlockCacheCount++;
+							return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+						}
+						$phpDocKey = $traitPhpDocKey;
+
+					} else {
+						$this->sliceResolvedPhpDocBlockCache();
+						$this->resolvedPhpDocBlockCacheCount++;
+						return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+					}
+				} else {
+					$this->sliceResolvedPhpDocBlockCache();
+					$this->resolvedPhpDocBlockCacheCount++;
+					return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+				}
+			} else {
+				$this->sliceResolvedPhpDocBlockCache();
+				$this->resolvedPhpDocBlockCacheCount++;
+				return $this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::createEmpty();
+			}
 		}
+
+		$this->sliceResolvedPhpDocBlockCache();
+		$this->resolvedPhpDocBlockCacheCount++;
 
 		return $this->resolvedPhpDocBlockCache[$phpDocKey] = $this->createResolvedPhpDocBlock(
 			$this->phpDocStringResolver->resolve($docComment),
@@ -143,6 +171,21 @@ final class FileTypeMapper
 			$docComment,
 			$fileName,
 		);
+	}
+
+	private function sliceResolvedPhpDocBlockCache(): void
+	{
+		if ($this->resolvedPhpDocBlockCacheCount < $this->resolvedPhpDocBlockCacheCountMax) {
+			return;
+		}
+
+		$this->resolvedPhpDocBlockCache = array_slice(
+			$this->resolvedPhpDocBlockCache,
+			1,
+			preserve_keys: true,
+		);
+
+		$this->resolvedPhpDocBlockCacheCount--;
 	}
 
 	private function createResolvedPhpDocBlock(
@@ -205,15 +248,6 @@ final class FileTypeMapper
 
 		[$nameScopeMap] = $this->getNameScopeMap($fileName);
 		if (!isset($nameScopeMap[$nameScopeKey])) {
-			if ($className !== null && $traitName !== null) {
-				$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
-				if ($reflectionProvider->hasClass($traitName)) {
-					$traitReflection = $reflectionProvider->getClass($traitName);
-					if ($traitReflection->getFileName() !== null) {
-						return $this->getNameScope($traitReflection->getFileName(), $traitName, null, $functionName);
-					}
-				}
-			}
 			throw new NameScopeAlreadyBeingCreatedException();
 		}
 

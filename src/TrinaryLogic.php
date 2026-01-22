@@ -53,16 +53,28 @@ final class TrinaryLogic
 		return self::$registry[$value];
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->no()
+	 * @phpstan-assert-if-true =false $this->maybe()
+	 */
 	public function yes(): bool
 	{
 		return $this->value === self::YES;
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->no()
+	 * @phpstan-assert-if-true =false $this->yes()
+	 */
 	public function maybe(): bool
 	{
 		return $this->value === self::MAYBE;
 	}
 
+	/**
+	 * @phpstan-assert-if-true =false $this->maybe()
+	 * @phpstan-assert-if-true =false $this->yes()
+	 */
 	public function no(): bool
 	{
 		return $this->value === self::NO;

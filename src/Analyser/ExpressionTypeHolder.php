@@ -40,8 +40,7 @@ final class ExpressionTypeHolder
 	public function and(self $other): self
 	{
 		if ($this->type === $other->type || $this->type->equals($other->type)) {
-			$certainty = $this->certainty->and($other->certainty);
-			if ($certainty->yes()) {
+			if ($this->certainty->and($other->certainty)->yes()) {
 				return $this;
 			}
 

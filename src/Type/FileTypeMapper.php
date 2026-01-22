@@ -205,6 +205,15 @@ final class FileTypeMapper
 
 		[$nameScopeMap] = $this->getNameScopeMap($fileName);
 		if (!isset($nameScopeMap[$nameScopeKey])) {
+			if ($className !== null && $traitName !== null) {
+				$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
+				if ($reflectionProvider->hasClass($traitName)) {
+					$traitReflection = $reflectionProvider->getClass($traitName);
+					if ($traitReflection->getFileName() !== null) {
+						return $this->getNameScope($traitReflection->getFileName(), $traitName, null, $functionName);
+					}
+				}
+			}
 			throw new NameScopeAlreadyBeingCreatedException();
 		}
 
@@ -329,7 +338,7 @@ final class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = sprintf('v3-%s', ComposerHelper::getPhpDocParserVersion());
+			$variableCacheKey = sprintf('v6-traits-%s', ComposerHelper::getPhpDocParserVersion());
 			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 			if ($cached === null) {
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -492,6 +501,10 @@ final class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_ || $node instanceof Node\PropertyHook) {
 					if ($phpDocNode !== null) {
+						$templateTagValueNodes = $this->chooseTemplateTagValueNodesByPriority($phpDocNode->getTags());
+						if ($lookForTrait !== null && $node instanceof Node\Stmt\Trait_ && count($templateTagValueNodes) === 0 && count($traitMethodAliases) === 0) {
+							return self::SKIP_NODE;
+						}
 						if ($node instanceof Node\Stmt\ClassLike) {
 							$typeAliasStack[] = $this->getTypeAliasesMap($phpDocNode);
 						}
@@ -503,12 +516,14 @@ final class FileTypeMapper
 							$uses,
 							$className,
 							$functionName,
-							$this->chooseTemplateTagValueNodesByPriority($phpDocNode->getTags()),
+							$templateTagValueNodes,
 							$parentNameScope,
 							array_last($typeAliasStack) ?? [],
 							constUses: $constUses,
 							typeAliasClassName: $lookForTrait,
 						);
+					} elseif ($lookForTrait !== null && $node instanceof Node\Stmt\Trait_ && count($traitMethodAliases) === 0) {
+						return self::SKIP_NODE;
 					} elseif ($node instanceof Node\Stmt\ClassLike) {
 						$typeAliasStack[] = [];
 					} else {

@@ -295,7 +295,6 @@ jobs:
               ../bashunit -a contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
           - script: |
               cd e2e/nested-trait-use
-              rm -rf ./tmp/cache
               ../../bin/phpstan analyze
 
     steps:

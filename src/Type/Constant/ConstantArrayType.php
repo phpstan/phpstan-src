@@ -563,13 +563,12 @@ class ConstantArrayType implements Type
 			if (
 				$has->yes()
 				&& !$phpVersion->supportsCallableInstanceMethods()
+				&& $classOrObject->isString()->yes()
 			) {
-				if ($classOrObject->isString()->yes()) {
-					$methodReflection = $type->getMethod($methodName->getValue(), new OutOfClassScope());
+				$methodReflection = $type->getMethod($methodName->getValue(), new OutOfClassScope());
 
-					if (!$methodReflection->isStatic()) {
-						continue;
-					}
+				if (!$methodReflection->isStatic()) {
+					continue;
 				}
 			}
 

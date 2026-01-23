@@ -42,6 +42,10 @@ final class NodeDependencies
 			if ($dependencyFile === null) {
 				continue;
 			}
+			if ($currentFile === $dependencyFile) {
+				continue;
+			}
+
 			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
 
 			if ($currentFile === $dependencyFile) {

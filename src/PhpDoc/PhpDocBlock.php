@@ -269,7 +269,7 @@ final class PhpDocBlock
 			$result[] = $parent;
 		}
 
-		foreach ($classReflection->getInterfaces() as $interface) {
+		foreach ($classReflection->getImmediateInterfaces() as $interface) {
 			$result[] = $interface;
 		}
 

@@ -329,7 +329,7 @@ final class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$cacheKey = sprintf('ftm-%s', $fileName);
-			$variableCacheKey = sprintf('v3-%s', ComposerHelper::getPhpDocParserVersion());
+			$variableCacheKey = sprintf('v4-%s', ComposerHelper::getPhpDocParserVersion());
 			$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 			if ($cached === null) {
 				[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
@@ -642,7 +642,7 @@ final class FileTypeMapper
 							$traitMethodAliases[$traitName] ?? [],
 							$originalClassFileName,
 						);
-						$nameScopeMap = array_merge($nameScopeMap, array_map(static fn ($originalNameScope) => $originalNameScope->getTraitData() === null ? $originalNameScope->withTraitData($fileName, $className, $traitName, $lookForTrait, $docComment) : $originalNameScope, $traitNameScopeMap));
+						$nameScopeMap = array_merge($nameScopeMap, array_map(static fn ($originalNameScope) => $originalNameScope->getTraitData() === null ? $originalNameScope->withTraitData($originalClassFileName, $className, $traitName, $lookForTrait, $docComment) : $originalNameScope, $traitNameScopeMap));
 						$files = array_merge($files, $traitFiles);
 					}
 				}

@@ -1,0 +1,8 @@
+parameters:
+	level: 9
+	tmpDir: tmp
+	paths:
+		- main.php
+	scanDirectories:
+		- src
+		- framework

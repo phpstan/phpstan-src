@@ -196,7 +196,7 @@ final class PhpDocBlock
 			$docBlocksFromParents[] = $oneResult;
 		}
 
-		foreach ($classReflection->getTraits(true) as $traitReflection) {
+		foreach ($classReflection->getTraits() as $traitReflection) {
 			if (!$traitReflection->hasNativeMethod($methodName)) {
 				continue;
 			}

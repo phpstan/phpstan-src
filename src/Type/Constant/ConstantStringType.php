@@ -209,15 +209,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				return TrinaryLogic::createMaybe();
 			}
 
-			$phpVersion = PhpVersionStaticAccessor::getInstance();
 			$classRef = $reflectionProvider->getClass($matches[1]);
 			if ($classRef->hasMethod($matches[2])) {
-				$method = $classRef->getMethod($matches[2], new OutOfClassScope());
-				if (
-					!$phpVersion->supportsCallableInstanceMethods()
-					&& !$method->isStatic()
-				) {
-					return TrinaryLogic::createNo();
+				$phpVersion = PhpVersionStaticAccessor::getInstance();
+				if (!$phpVersion->supportsCallableInstanceMethods()) {
+					$method = $classRef->getMethod($matches[2], new OutOfClassScope());
+
+					if (!$method->isStatic()) {
+						return TrinaryLogic::createNo();
+					}
 				}
 
 				return TrinaryLogic::createYes();

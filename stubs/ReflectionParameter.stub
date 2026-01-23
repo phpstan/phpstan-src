@@ -8,4 +8,12 @@ class ReflectionParameter
     public function getAttributes(?string $name = null, int $flags = 0)
     {
     }
+
+	/**
+	 * @phpstan-assert-if-true !null $this->getType()
+	 */
+	public function hasType(): bool
+	{
+	}
+
 }

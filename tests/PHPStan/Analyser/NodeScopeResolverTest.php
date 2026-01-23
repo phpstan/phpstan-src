@@ -77,6 +77,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield __DIR__ . '/data/explode-php80.php';
 		}
 
+		if (PHP_VERSION_ID >= 80100) {
+			yield __DIR__ . '/data/reflection-type-php81.php';
+		} else {
+			yield __DIR__ . '/data/reflection-type-prePhp81.php';
+		}
+
 		if (PHP_VERSION_ID >= 80000) {
 			yield __DIR__ . '/../Reflection/data/unionTypes.php';
 			yield __DIR__ . '/../Reflection/data/mixedType.php';

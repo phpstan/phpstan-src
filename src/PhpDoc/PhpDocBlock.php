@@ -210,6 +210,10 @@ final class PhpDocBlock
 				continue;
 			}
 
+			if ($traitMethod->getDocComment() === null) {
+				continue;
+			}
+
 			$methodVariant = $traitMethod->getOnlyVariant();
 			$positionalMethodParameterNames = [];
 			foreach ($methodVariant->getParameters() as $methodParameter) {
@@ -217,7 +221,7 @@ final class PhpDocBlock
 			}
 
 			$docBlocksFromParents[] = new self(
-				$traitMethod->getDocComment() ?? ResolvedPhpDocBlock::EMPTY_DOC_STRING,
+				$traitMethod->getDocComment(),
 				$classReflection->getFileName(),
 				$classReflection,
 				$traitReflection->getName(),

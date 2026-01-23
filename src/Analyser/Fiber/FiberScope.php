@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Type;
+use function array_pop;
 
 final class FiberScope extends MutatingScope
 {
@@ -140,14 +141,64 @@ final class FiberScope extends MutatingScope
 	 */
 	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
 	{
-		// no need to track this in rules, the type will be correct anyway
-		return $this;
+		// Track the function call stack so closure types can be properly inferred
+		// when the closure is passed as a callable argument
+		$stack = $this->inFunctionCallsStack;
+		$stack[] = [$reflection, $parameter];
+
+		/** @var self $scope */
+		$scope = $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->getAnonymousFunctionReflection(),
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$stack,
+			$this->afterExtractCall,
+			parent::getParentScope(),
+			$this->nativeTypesPromoted,
+		);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
+
+		return $scope;
 	}
 
 	public function popInFunctionCall(): self
 	{
-		// no need to track this in rules, the type will be correct anyway
-		return $this;
+		$stack = $this->inFunctionCallsStack;
+		array_pop($stack);
+
+		/** @var self $scope */
+		$scope = $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->getAnonymousFunctionReflection(),
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$stack,
+			$this->afterExtractCall,
+			parent::getParentScope(),
+			$this->nativeTypesPromoted,
+		);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
+
+		return $scope;
 	}
 
 	public function getParentScope(): ?MutatingScope

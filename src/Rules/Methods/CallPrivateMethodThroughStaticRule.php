@@ -38,6 +38,10 @@ final class CallPrivateMethodThroughStaticRule implements Rule
 			return [];
 		}
 
+		if ($scope->isInClass() && $scope->getClassReflection()->isFinal()) {
+			return [];
+		}
+
 		$classType = $scope->resolveTypeByName($className);
 		if (!$classType->hasMethod($methodName)->yes()) {
 			return [];
@@ -45,10 +49,6 @@ final class CallPrivateMethodThroughStaticRule implements Rule
 
 		$method = $classType->getMethod($methodName, $scope);
 		if (!$method->isPrivate()) {
-			return [];
-		}
-
-		if ($scope->isInClass() && $scope->getClassReflection()->isFinal()) {
 			return [];
 		}
 

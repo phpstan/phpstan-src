@@ -82,11 +82,7 @@ final class FileCacheStorage implements CacheStorage
 		}
 		FileWriter::write(
 			$tmpPath,
-			sprintf(
-				"<?php declare(strict_types = 1);\n\n%s\nreturn %s;",
-				sprintf('// %s', $key),
-				$exported,
-			),
+			"<?php declare(strict_types = 1);\n\n" . '// ' . $key . "\nreturn " . $exported . ';',
 		);
 
 		$renameSuccess = @rename($tmpPath, $path);

@@ -36,7 +36,7 @@ final class Analyser
 	/**
 	 * @param string[] $files
 	 * @param Closure(string $file): void|null $preFileCallback
-	 * @param Closure(int ): void|null $postFileCallback
+	 * @param Closure(int, list<string>): void|null $postFileCallback
 	 * @param string[]|null $allAnalysedFiles
 	 */
 	public function analyse(
@@ -91,6 +91,7 @@ final class Analyser
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$filteredPhpErrors = array_merge($filteredPhpErrors, $fileAnalyserResult->getFilteredPhpErrors());
 				$allPhpErrors = array_merge($allPhpErrors, $fileAnalyserResult->getAllPhpErrors());
+				$processedFiles = $fileAnalyserResult->getProcessedFiles();
 
 				$locallyIgnoredErrors = array_merge($locallyIgnoredErrors, $fileAnalyserResult->getLocallyIgnoredErrors());
 				$linesToIgnore[$file] = $fileAnalyserResult->getLinesToIgnore();
@@ -114,6 +115,7 @@ final class Analyser
 						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($t),
 						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $t->getTraceAsString(),
 					]);
+				$processedFiles = [$file];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
 					break;
@@ -124,7 +126,7 @@ final class Analyser
 				continue;
 			}
 
-			$postFileCallback(1);
+			$postFileCallback(1, $processedFiles);
 		}
 
 		return new AnalyserResult(

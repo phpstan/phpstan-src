@@ -23,6 +23,7 @@ final class FileAnalyserResult
 	 * @param list<RootExportedNode> $exportedNodes
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
+	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
 		private array $errors,
@@ -35,6 +36,7 @@ final class FileAnalyserResult
 		private array $exportedNodes,
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
+		private array $processedFiles,
 	)
 	{
 	}
@@ -117,6 +119,14 @@ final class FileAnalyserResult
 	public function getUnmatchedLineIgnores(): array
 	{
 		return $this->unmatchedLineIgnores;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getProcessedFiles(): array
+	{
+		return $this->processedFiles;
 	}
 
 }

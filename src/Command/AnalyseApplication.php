@@ -16,6 +16,7 @@ use PHPStan\PhpDoc\StubValidator;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
+use function array_unique;
 use function count;
 use function fclose;
 use function feof;
@@ -237,35 +238,34 @@ final class AnalyseApplication
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 		} else {
 			$startTime = null;
-			$linesOfCode = null;
-			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime, &$linesOfCode): void {
+			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
 				$stdOutput->writeLineFormatted($file);
 				$startTime = microtime(true);
-				$count = 0;
-				$handle = @fopen($file, 'r');
-				if ($handle === false) {
-					return;
-				}
-
-				while (!feof($handle)) {
-					fgets($handle);
-					$count++;
-				}
-				fclose($handle);
-				$linesOfCode = $count;
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
+				$postFileCallback = static function (int $step, array $processedFiles = []) use ($stdOutput, &$previousMemory, &$startTime, &$linesOfCode): void {
 					if ($startTime === null) {
-						throw new ShouldNotHappenException();
-					}
-					if ($linesOfCode === null) {
 						throw new ShouldNotHappenException();
 					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
+
+					$linesOfCode = 0;
+					foreach (array_unique($processedFiles) as $processedFile) {
+						$handle = @fopen($processedFile, 'r');
+						if ($handle === false) {
+							continue;
+						}
+
+						while (!feof($handle)) {
+							fgets($handle);
+							$linesOfCode++;
+						}
+						fclose($handle);
+					}
+
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s, %.3f LoC/s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime, $linesOfCode / $elapsedTime));
 					$previousMemory = $currentTotalMemory;
 				};

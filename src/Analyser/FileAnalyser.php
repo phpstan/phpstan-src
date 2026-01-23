@@ -83,6 +83,9 @@ final class FileAnalyser
 		/** @var list<Error> $fileErrors */
 		$fileErrors = [];
 
+		/** @var list<string> $processedFiles */
+		$processedFiles = [];
+
 		/** @var list<Error> $locallyIgnoredErrors */
 		$locallyIgnoredErrors = [];
 
@@ -98,10 +101,11 @@ final class FileAnalyser
 			try {
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
+				$processedFiles[] = $file;
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 				$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, $parserNodes, $ignoreErrorExtensions): void {
+				$nodeCallback = function (Node $node, $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$usedTraitFileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$unmatchedLineIgnores, &$temporaryFileErrors, &$processedFiles, $parserNodes, $ignoreErrorExtensions): void {
 					/** @var Scope&NodeCallbackInvoker $scope */
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
@@ -115,6 +119,11 @@ final class FileAnalyser
 					if ($node instanceof InTraitNode) {
 						$traitNode = $node->getOriginalNode();
 						$linesToIgnore[$scope->getFileDescription()] = $this->getLinesToIgnoreFromTokens([$traitNode]);
+
+						$traitFileName = $node->getTraitReflection()->getFileName();
+						if ($traitFileName !== null) {
+							$processedFiles[] = $traitFileName;
+						}
 					}
 
 					if ($scope->isInTrait()) {
@@ -330,6 +339,7 @@ final class FileAnalyser
 			$exportedNodes,
 			$linesToIgnore,
 			$unmatchedLineIgnores,
+			$processedFiles,
 		);
 	}
 

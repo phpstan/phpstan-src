@@ -1073,3 +1073,18 @@ function bug12792(string $string): void {
 		assertType('array{string, non-empty-string}', $match); // could be array{'acd'|'ayd'|'bd', 'c'|'xb'|'y'}
 	}
 }
+
+function testExtendedSyntaxEscapedHash(string $string): void {
+	// \# in extended mode should be treated as literal hash, not comment
+	if (preg_match('/^ ([\#.]) $/x', $string, $matches)) {
+		assertType("array{non-falsy-string, '#'|'.'}", $matches);
+	}
+
+	// Real comment vs escaped hash
+	if (preg_match('/
+		(\d+)      # this is a comment
+		([\#ab]+)  # hash in character class (escaped)
+	/x', $string, $matches)) {
+		assertType('array{non-falsy-string, numeric-string, non-empty-string}', $matches);
+	}
+}

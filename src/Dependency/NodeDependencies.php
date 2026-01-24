@@ -9,6 +9,10 @@ use function array_values;
 
 final class NodeDependencies
 {
+	/**
+	 * @var array<string, string>
+	 */
+	private static array $normalizedFileNames = [];
 
 	/**
 	 * @param array<int, ClassReflection|FunctionReflection> $reflections
@@ -46,7 +50,7 @@ final class NodeDependencies
 				continue;
 			}
 
-			$dependencyFile = $this->fileHelper->normalizePath($dependencyFile);
+			$dependencyFile = self::$normalizedFileNames[$dependencyFile] ??= $this->fileHelper->normalizePath($dependencyFile);
 
 			if ($currentFile === $dependencyFile) {
 				continue;

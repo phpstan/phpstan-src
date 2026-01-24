@@ -572,7 +572,7 @@ class ConstantArrayType implements Type
 						continue;
 					}
 				} elseif ($isString->maybe()) {
-					continue;
+					$has = $has->and(TrinaryLogic::createMaybe());
 				}
 			}
 

@@ -358,7 +358,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		$errors = [];
 		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
-				"Trying to invoke array{'MaybeNotCallable\\\Bar'|\$this(MaybeNotCallable\Bar), 'doFoo'} but it's not a callable.",
+				"Trying to invoke array{'MaybeNotCallable\\\Bar'|\$this(MaybeNotCallable\Bar), 'doFoo'} but it might not be a callable.",
 				15,
 			];
 		}

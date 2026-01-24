@@ -155,6 +155,14 @@ final class UnusedPrivateMethodRule implements Rule
 							return [];
 						}
 
+						$inMethod = $arrayScope->getFunction();
+						if (!$inMethod instanceof MethodReflection) {
+							continue;
+						}
+						if ($inMethod->getName() === $typeAndMethod->getMethod()) {
+							continue;
+						}
+
 						$calledOnType = $typeAndMethod->getType();
 						$methodReflection = $arrayScope->getMethodReflection($calledOnType, $typeAndMethod->getMethod());
 						if ($methodReflection === null) {
@@ -165,13 +173,6 @@ final class UnusedPrivateMethodRule implements Rule
 							continue;
 						}
 
-						$inMethod = $arrayScope->getFunction();
-						if (!$inMethod instanceof MethodReflection) {
-							continue;
-						}
-						if ($inMethod->getName() === $typeAndMethod->getMethod()) {
-							continue;
-						}
 						unset($methods[strtolower($typeAndMethod->getMethod())]);
 					}
 				}

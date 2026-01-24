@@ -428,16 +428,16 @@ final class ImpossibleCheckTypeHelper
 			if ($this->reflectionProvider->hasFunction($node->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
-				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+				$returnType = $parametersAcceptor->getReturnType();
 
-				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				return $parametersAcceptor->getReturnType()->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
 		} elseif ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($node->var);
 			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $node->name->name);
 			if ($methodReflection !== null) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());
-				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+				$returnType = $parametersAcceptor->getReturnType();
 
 				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
@@ -451,7 +451,7 @@ final class ImpossibleCheckTypeHelper
 			$staticMethodReflection = $scope->getMethodReflection($calleeType, $node->name->name);
 			if ($staticMethodReflection !== null) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $staticMethodReflection->getVariants(), $staticMethodReflection->getNamedArgumentsVariants());
-				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+				$returnType = $parametersAcceptor->getReturnType();
 
 				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}

@@ -24,6 +24,9 @@ use const DIRECTORY_SEPARATOR;
 final class FileHelper
 {
 
+	/** @var array<string, array<string, string>> */
+	private static array $normalizedPathsCache = [];
+
 	private string $workingDirectory;
 
 	public function __construct(
@@ -60,6 +63,11 @@ final class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
+		$cached = self::$normalizedPathsCache[$originalPath][$directorySeparator] ?? null;
+		if ($cached !== null) {
+			return $cached;
+		}
+
 		$isLocalPath = false;
 		if ($originalPath !== '') {
 			if ($originalPath[0] === '/') {
@@ -102,7 +110,7 @@ final class FileHelper
 			}
 		}
 
-		return ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
 	}
 
 }

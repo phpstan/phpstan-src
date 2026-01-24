@@ -418,6 +418,8 @@ final class ImpossibleCheckTypeHelper
 		);
 	}
 
+	private static array $contextCache = [];
+
 	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
 	{
 		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
@@ -425,12 +427,28 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		if ($node instanceof FuncCall && $node->name instanceof Node\Name) {
+			$cached = self::$contextCache['function'][$node->name->toString()] ?? null;
+			if ($cached !== null) {
+				return $cached;
+			}
+
 			if ($this->reflectionProvider->hasFunction($node->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
-				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
 
-				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				$functionVariants = $functionReflection->getVariants();
+				$namedArgumentsVariants = $functionReflection->getNamedArgumentsVariants();
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionVariants, $namedArgumentsVariants);
+				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+				$context = $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+
+				if (
+					count($functionVariants) === 1
+					&& !$functionVariants[0]->getReturnType()->hasTemplateOrLateResolvableType()
+					&& $namedArgumentsVariants === null
+				) {
+					return self::$contextCache['function'][$node->name->toString()] = $context;
+				}
+				return $context;
 			}
 		} elseif ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($node->var);

@@ -429,7 +429,7 @@ final class ImpossibleCheckTypeHelper
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
 				$returnType = $parametersAcceptor->getReturnType();
 
-				return $parametersAcceptor->getReturnType()->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
 		} elseif ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($node->var);

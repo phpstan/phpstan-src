@@ -9,9 +9,8 @@ use function array_values;
 
 final class NodeDependencies
 {
-	/**
-	 * @var array<string, string>
-	 */
+
+	/** @var array<string, string> */
 	private static array $normalizedFileNames = [];
 
 	/**

@@ -47,10 +47,7 @@ final class OverridingPropertyRule implements Rule
 		$classReflection = $node->getClassReflection();
 		$prototype = $this->findPrototype($classReflection, $node->getName());
 		if ($prototype === null) {
-			if (
-				$this->phpVersion->supportsOverrideAttribute()
-				&& $this->hasOverrideAttribute($node->getAttrGroups())
-			) {
+			if ($this->hasOverrideAttribute($node->getAttrGroups())) {
 				$originalNode = $node->getOriginalNode();
 				if ($originalNode instanceof Node\Stmt\Property) {
 					/** @var Node\Stmt\Property $originalNode */
@@ -77,8 +74,7 @@ final class OverridingPropertyRule implements Rule
 
 		$errors = [];
 		if (
-			$this->phpVersion->supportsOverrideAttributeOnProperty()
-			&& $this->checkMissingOverridePropertyAttribute
+			$this->checkMissingOverridePropertyAttribute
 			&& !$scope->isInTrait()
 			&& !$this->hasOverrideAttribute($node->getAttrGroups())
 		) {

@@ -286,7 +286,6 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
 	public function testOverrideAttribute(): void
 	{
 		$this->checkMissingOverridePropertyAttribute = true;
@@ -307,7 +306,6 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.5')]
 	public function testFixMissingOverrideAttribute(): void
 	{
 		$this->checkMissingOverridePropertyAttribute = true;

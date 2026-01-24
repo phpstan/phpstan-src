@@ -25,7 +25,7 @@ final class FileHelper
 {
 
 	/** @var array<string, array<string, string>> */
-	private static array $normalizedFileNames = [];
+	private static array $normalizedPathsCache = [];
 
 	private string $workingDirectory;
 
@@ -63,7 +63,7 @@ final class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$cached = self::$normalizedFileNames[$originalPath][$directorySeparator] ?? null;
+		$cached = self::$normalizedPathsCache[$originalPath][$directorySeparator] ?? null;
 		if ($cached !== null) {
 			return $cached;
 		}
@@ -110,7 +110,7 @@ final class FileHelper
 			}
 		}
 
-		return self::$normalizedFileNames[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
 	}
 
 }

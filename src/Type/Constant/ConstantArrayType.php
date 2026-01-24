@@ -563,12 +563,16 @@ class ConstantArrayType implements Type
 			if (
 				$has->yes()
 				&& !$phpVersion->supportsCallableInstanceMethods()
-				&& $classOrObject->isString()->yes()
 			) {
-				$methodReflection = $type->getMethod($methodName->getValue(), new OutOfClassScope());
+				$isString = $classOrObject->isString();
+				if ($isString->yes()) {
+					$methodReflection = $type->getMethod($methodName->getValue(), new OutOfClassScope());
 
-				if (!$methodReflection->isStatic()) {
-					continue;
+					if (!$methodReflection->isStatic()) {
+						continue;
+					}
+				} elseif ($isString->maybe()) {
+					$has = $has->and(TrinaryLogic::createMaybe());
 				}
 			}
 

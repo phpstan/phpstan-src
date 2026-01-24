@@ -353,4 +353,17 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMaybeNotCallable(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
+				"Trying to invoke array{'MaybeNotCallable\\\Bar'|\$this(MaybeNotCallable\Bar), 'doFoo'} but it might not be a callable.",
+				15,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/maybe-not-callable.php'], $errors);
+	}
+
 }

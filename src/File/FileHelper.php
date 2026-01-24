@@ -23,6 +23,7 @@ use const DIRECTORY_SEPARATOR;
 #[AutowiredService]
 final class FileHelper
 {
+
 	/** @var array<string, array<string, string>> */
 	private static array $normalizedFileNames = [];
 

@@ -117,7 +117,15 @@ class StaticMethodParameterClosureTypeExtension implements \PHPStan\Type\StaticM
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
 	{
-		return $methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticMethodWithClosure';
+		if ($methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticMethodWithClosure') {
+			return true;
+		}
+
+		if ($methodReflection->getDeclaringClass()->getName() === Bar::class && $methodReflection->getName() === '__construct') {
+			return true;
+		}
+
+		return false;
 	}
 
 	public function getTypeFromStaticMethodCall(
@@ -126,6 +134,32 @@ class StaticMethodParameterClosureTypeExtension implements \PHPStan\Type\StaticM
 		ParameterReflection $parameter,
 		Scope $scope
 	): ?Type {
+		if ($methodReflection->getDeclaringClass()->getName() === Bar::class && $methodReflection->getName() === '__construct') {
+			$args = $methodCall->getArgs();
+
+			if (count($args) < 2) {
+				return null;
+			}
+
+			$integer = $scope->getType($args[0]->value)->getConstantScalarValues()[0];
+
+			if ($integer === 1) {
+				return new ClosureType(
+					[
+						new NativeParameterReflection('test', false, new IntegerType(), PassedByReference::createNo(), false, null),
+					],
+					new VoidType()
+				);
+			}
+
+			return new ClosureType(
+				[
+					new NativeParameterReflection('test', false, new StringType(), PassedByReference::createNo(), false, null),
+				],
+				new VoidType()
+			);
+		}
+
 		return new ClosureType(
 			[
 				new NativeParameterReflection('test', false, new FloatType(), PassedByReference::createNo(), false, null),
@@ -185,6 +219,20 @@ class Generic
 	}
 }
 
+class Bar
+{
+
+	/**
+	 * @param int $foo
+	 * @param Closure(mixed): void $callback
+	 */
+	public function __construct(int $foo, Closure $callback)
+	{
+
+	}
+
+}
+
 /**
  * @param int $foo
  * @param Closure(Generic<array-key>): void $callback
@@ -208,6 +256,14 @@ function test(Foo $foo): void
 
 	Foo::staticMethodWithClosure(function ($i) {
 		assertType('float', $i);
+	});
+
+	new Bar(1, function ($i) {
+		assertType('int', $i);
+	});
+
+	new Bar(2, function ($i) {
+		assertType('string', $i);
 	});
 }
 

@@ -5874,6 +5874,17 @@ class NodeScopeResolver
 						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $callLike, $parameter, $scope);
 					}
 				}
+			} elseif ($callLike instanceof New_ && $callLike->class instanceof Name) {
+				$staticCall = new StaticCall(
+					$callLike->class,
+					new Identifier('__construct'),
+					$callLike->getArgs(),
+				);
+				foreach ($this->parameterClosureTypeExtensionProvider->getStaticMethodParameterClosureTypeExtensions() as $staticMethodParameterClosureTypeExtension) {
+					if ($staticMethodParameterClosureTypeExtension->isStaticMethodSupported($calleeReflection, $parameter)) {
+						return $staticMethodParameterClosureTypeExtension->getTypeFromStaticMethodCall($calleeReflection, $staticCall, $parameter, $scope);
+					}
+				}
 			} elseif ($callLike instanceof MethodCall) {
 				foreach ($this->parameterClosureTypeExtensionProvider->getMethodParameterClosureTypeExtensions() as $methodParameterClosureTypeExtension) {
 					if ($methodParameterClosureTypeExtension->isMethodSupported($calleeReflection, $parameter)) {

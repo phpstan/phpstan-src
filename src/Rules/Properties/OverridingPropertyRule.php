@@ -32,7 +32,9 @@ final class OverridingPropertyRule implements Rule
 		#[AutowiredParameter(ref: '%reportMaybesInPropertyPhpDocTypes%')]
 		private bool $reportMaybes,
 		#[AutowiredParameter]
-		private bool $checkMissingOverridePropertyAttribute,
+		private ?bool $checkMissingOverridePropertyAttribute,
+		#[AutowiredParameter]
+		private bool $checkMissingOverrideMethodAttribute,
 	)
 	{
 	}
@@ -74,7 +76,14 @@ final class OverridingPropertyRule implements Rule
 
 		$errors = [];
 		if (
-			$this->checkMissingOverridePropertyAttribute
+			(
+				$this->checkMissingOverridePropertyAttribute === true
+				|| (
+					$this->checkMissingOverridePropertyAttribute === null
+					&& $this->checkMissingOverrideMethodAttribute
+					&& $this->phpVersion->supportsOverrideAttributeOnProperty()
+				)
+			)
 			&& !$scope->isInTrait()
 			&& !$this->hasOverrideAttribute($node->getAttrGroups())
 		) {

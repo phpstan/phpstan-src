@@ -7,7 +7,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_merge;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<OverridingPropertyRule>
@@ -17,15 +19,20 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	private bool $reportMaybes;
 
-	private bool $checkMissingOverridePropertyAttribute = false;
+	private ?bool $checkMissingOverridePropertyAttribute = null;
+
+	private bool $checkMissingOverrideMethodAttribute = false;
+
+	private int $phpVersionId = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
 		return new OverridingPropertyRule(
-			self::getContainer()->getByType(PhpVersion::class),
+			new PhpVersion($this->phpVersionId),
 			true,
 			$this->reportMaybes,
 			$this->checkMissingOverridePropertyAttribute,
+			$this->checkMissingOverrideMethodAttribute,
 		);
 	}
 
@@ -286,11 +293,39 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testOverrideAttribute(): void
+	public static function dataOverrideAttribute(): iterable
 	{
-		$this->checkMissingOverridePropertyAttribute = true;
+		$errors = [
+			[
+				'Property PropertyOverrideAttr\Lorem::$foo overrides property PropertyOverrideAttr\Foo::$foo but is missing the #[\Override] attribute.',
+				44,
+			],
+		];
+		yield [null, false, 80400, []];
+		yield [null, false, 80500, []];
+		yield [null, true, 80400, []];
+		yield [null, true, 80500, $errors];
+		yield [true, false, 80400, $errors];
+		yield [true, false, 80500, $errors];
+		yield [true, true, 80400, $errors];
+		yield [true, true, 80500, $errors];
+		yield [false, false, 80400, []];
+		yield [false, false, 80500, []];
+		yield [false, true, 80400, []];
+		yield [false, true, 80500, []];
+	}
+
+	/**
+	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
+	 */
+	#[DataProvider('dataOverrideAttribute')]
+	public function testOverrideAttribute(?bool $checkMissingOverridePropertyAttribute, bool $checkMissingOverrideMethodAttribute, int $phpVersionId, array $expectedErrors): void
+	{
+		$this->checkMissingOverridePropertyAttribute = $checkMissingOverridePropertyAttribute;
+		$this->checkMissingOverrideMethodAttribute = $checkMissingOverrideMethodAttribute;
+		$this->phpVersionId = $phpVersionId;
 		$this->reportMaybes = true;
-		$this->analyse([__DIR__ . '/data/property-override-attr.php'], [
+		$errors = [
 			[
 				'Property PropertyOverrideAttr\Bar::$bar has #[\Override] attribute but does not override any property.',
 				19,
@@ -299,11 +334,8 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				'Property PropertyOverrideAttr\Baz::$bar has #[\Override] attribute but does not override any property.',
 				30,
 			],
-			[
-				'Property PropertyOverrideAttr\Lorem::$foo overrides property PropertyOverrideAttr\Foo::$foo but is missing the #[\Override] attribute.',
-				44,
-			],
-		]);
+		];
+		$this->analyse([__DIR__ . '/data/property-override-attr.php'], array_merge($errors, $expectedErrors));
 	}
 
 	public function testFixMissingOverrideAttribute(): void

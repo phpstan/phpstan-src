@@ -91,7 +91,7 @@ parametersSchema:
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
-	checkMissingOverridePropertyAttribute: bool()
+	checkMissingOverridePropertyAttribute: schema(bool(), nullable())
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),

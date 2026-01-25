@@ -24,6 +24,10 @@ final class TemplateTypeHelper
 		bool $keepErrorTypes = false,
 	): Type
 	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $references, $callSiteVariances, $keepErrorTypes): Type {

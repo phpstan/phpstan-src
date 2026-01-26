@@ -20,13 +20,13 @@ final class CachingVisitor extends NodeVisitorAbstract
 
 	private string $contents;
 
-	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
+	/** @var array<string, list<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
-	/** @var array<string, array<FetchedNode<Node\Stmt\Function_>>> */
+	/** @var array<string, list<FetchedNode<Node\Stmt\Function_>>> */
 	private array $functionNodes;
 
-	/** @var array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> */
+	/** @var array<string, list<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> */
 	private array $constantNodes;
 
 	private ?Node\Stmt\Namespace_ $currentNamespaceNode = null;
@@ -124,7 +124,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\ClassLike>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{
@@ -132,7 +132,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\Function_>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\Function_>>>
 	 */
 	public function getFunctionNodes(): array
 	{
@@ -140,7 +140,7 @@ final class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
 	 */
 	public function getConstantNodes(): array
 	{

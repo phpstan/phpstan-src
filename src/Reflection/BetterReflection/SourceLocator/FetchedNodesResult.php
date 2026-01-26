@@ -8,9 +8,9 @@ final class FetchedNodesResult
 {
 
 	/**
-	 * @param array<string, array<FetchedNode<Node\Stmt\ClassLike>>> $classNodes
-	 * @param array<string, array<FetchedNode<Node\Stmt\Function_>>> $functionNodes
-	 * @param array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> $constantNodes
+	 * @param array<string, list<FetchedNode<Node\Stmt\ClassLike>>> $classNodes
+	 * @param array<string, list<FetchedNode<Node\Stmt\Function_>>> $functionNodes
+	 * @param array<string, list<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> $constantNodes
 	 */
 	public function __construct(
 		private array $classNodes,
@@ -21,7 +21,7 @@ final class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\ClassLike>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\ClassLike>>>
 	 */
 	public function getClassNodes(): array
 	{
@@ -29,7 +29,7 @@ final class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\Function_>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\Function_>>>
 	 */
 	public function getFunctionNodes(): array
 	{
@@ -37,7 +37,7 @@ final class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
+	 * @return array<string, list<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
 	 */
 	public function getConstantNodes(): array
 	{

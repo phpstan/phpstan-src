@@ -41,10 +41,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';
 
-	/** @var array<string, array<string, array{ClassMethod, string}>> */
+	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
-	/** @var array<string, array<string, Type|null>> */
+	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
 	private array $constantTypes = [];
 
 	private Php8StubsMap $map;
@@ -82,8 +82,24 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	{
 		$lowerClassName = strtolower($className);
 		$lowerMethodName = strtolower($methodName);
+
+		$this->findClassStubs($className);
 		if (isset($this->methodNodes[$lowerClassName][$lowerMethodName])) {
 			return $this->methodNodes[$lowerClassName][$lowerMethodName];
+		}
+
+		return null;
+	}
+
+	private function findClassStubs(string $className): void
+	{
+		$lowerClassName = strtolower($className);
+
+		if (
+			isset($this->methodNodes[$lowerClassName])
+			|| isset($this->constantTypes[$lowerClassName])
+		) {
+			return;
 		}
 
 		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
@@ -98,20 +114,37 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
-		foreach ($class[0]->getNode()->stmts as $stmt) {
-			if (!$stmt instanceof ClassMethod) {
-				continue;
-			}
+		$this->methodNodes[$lowerClassName] = [];
+		$this->constantTypes[$lowerClassName] = [];
 
-			if ($stmt->name->toLowerString() === $lowerMethodName) {
+		// find and remember all methods/constants within the stubFile
+		foreach ($class[0]->getNode()->stmts as $stmt) {
+			if ($stmt instanceof ClassMethod) {
 				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
 					continue;
 				}
-				return $this->methodNodes[$lowerClassName][$lowerMethodName] = [$stmt, $stubFile];
+
+				$this->methodNodes[$lowerClassName][$stmt->name->toLowerString()] = [$stmt, $stubFile];
+
+				continue;
+			}
+
+			if (!$stmt instanceof ClassConst) {
+				continue;
+			}
+
+			foreach ($stmt->consts as $const) {
+				if ($stmt->type === null) {
+					continue;
+				}
+
+				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
+					continue;
+				}
+
+				$this->constantTypes[$lowerClassName][$const->name->toLowerString()] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
 			}
 		}
-
-		return null;
 	}
 
 	/**
@@ -481,42 +514,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	{
 		$lowerClassName = strtolower($className);
 		$lowerConstantName = strtolower($constantName);
+
+		$this->findClassStubs($className);
 		if (isset($this->constantTypes[$lowerClassName][$lowerConstantName])) {
 			return $this->constantTypes[$lowerClassName][$lowerConstantName];
-		}
-
-		$stubFile = self::DIRECTORY . '/' . $this->map->classes[$lowerClassName];
-		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
-		$classes = $nodes->getClassNodes();
-		if (count($classes) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		$class = $classes[$lowerClassName];
-		if (count($class) !== 1) {
-			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
-		}
-
-		foreach ($class[0]->getNode()->stmts as $stmt) {
-			if (!$stmt instanceof ClassConst) {
-				continue;
-			}
-
-			foreach ($stmt->consts as $const) {
-				if ($const->name->toString() !== $constantName) {
-					continue;
-				}
-
-				if (!$this->isForCurrentVersion($stmt->attrGroups)) {
-					continue;
-				}
-
-				if ($stmt->type === null) {
-					return null;
-				}
-
-				return $this->constantTypes[$lowerClassName][$lowerConstantName] = ParserNodeTypeToPHPStanType::resolve($stmt->type, null);
-			}
 		}
 
 		return null;

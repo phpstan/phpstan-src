@@ -1264,32 +1264,28 @@ final class ClassReflection
 			$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 			$isDeprecated = $deprecation !== null;
 
-			$declaringClass = $this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName());
+			$declaringClass = $this->getAncestorWithClassName($reflectionConstant->getDeclaringClass()->getName());
+			if ($declaringClass === null) {
+				throw new ShouldNotHappenException();
+			}
 			$fileName = $declaringClass->getFileName();
 			$phpDocType = null;
-			$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
+			$currentResolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
 				$declaringClass->getName(),
 				$name,
 			);
-			if ($resolvedPhpDoc === null) {
-				$docComment = null;
+			if ($currentResolvedPhpDoc === null) {
 				if ($reflectionConstant->getDocComment() !== false) {
-					$docComment = $reflectionConstant->getDocComment();
+					$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+						$fileName,
+						$declaringClass->getName(),
+						null,
+						null,
+						$reflectionConstant->getDocComment(),
+					);
 				}
-				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForConstant(
-					$docComment,
-					$declaringClass,
-					$fileName,
-					$name,
-				);
-			}
 
-			if (!$isDeprecated) {
-				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-				$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			}
-			$isInternal = $resolvedPhpDoc->isInternal();
-			$isFinal = $resolvedPhpDoc->isFinal();
 
 			$nativeType = null;
 			if ($reflectionConstant->getType() !== null) {
@@ -1298,11 +1294,32 @@ final class ClassReflection
 				$nativeType = $this->signatureMapProvider->getClassConstantMetadata($declaringClass->getName(), $name)['nativeType'];
 			}
 
-			$varTags = $resolvedPhpDoc->getVarTags();
-			if (isset($varTags[0]) && count($varTags) === 1) {
-				$varTag = $varTags[0];
-				if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
-					$phpDocType = $varTag->getType();
+			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForConstant(
+				$declaringClass,
+				$name,
+				$currentResolvedPhpDoc,
+			);
+
+			$isInternal = false;
+			$isFinal = false;
+			if ($resolvedPhpDoc !== null) {
+				if (!$isDeprecated) {
+					$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+					$isDeprecated = $resolvedPhpDoc->isDeprecated();
+				}
+				$isInternal = $resolvedPhpDoc->isInternal();
+				$isFinal = $resolvedPhpDoc->isFinal();
+				$varTags = $resolvedPhpDoc->getVarTags();
+				if (isset($varTags[0]) && count($varTags) === 1) {
+					$varTag = $varTags[0];
+					if ($varTag->isExplicit() || $nativeType === null || $nativeType->isSuperTypeOf($varTag->getType())->yes()) {
+						$phpDocType = TemplateTypeHelper::resolveTemplateTypes(
+							$varTag->getType(),
+							$declaringClass->getActiveTemplateTypeMap(),
+							$declaringClass->getCallSiteVarianceMap(),
+							TemplateTypeVariance::createInvariant(),
+						);
+					}
 				}
 			}
 
@@ -1312,6 +1329,7 @@ final class ClassReflection
 				$reflectionConstant,
 				$nativeType,
 				$phpDocType,
+				$resolvedPhpDoc,
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,

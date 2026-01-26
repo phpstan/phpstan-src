@@ -23,4 +23,4 @@ $arr[] = static function () {};
 assertType('array{Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void, Closure(): void}', $arr);
 
 $arr[] = static function () {};
-assertType('non-empty-list<callable(): void>&oversized-array', $arr);
+assertType('non-empty-list<callable(): mixed>&oversized-array', $arr);

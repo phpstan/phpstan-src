@@ -46,6 +46,7 @@
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.LessSpecificNativeTypeHint"/>
 		<properties>
 			<property name="enableIntersectionTypeHint" value="true"/>
 		</properties>

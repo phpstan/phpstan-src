@@ -222,7 +222,27 @@ final class PhpClassReflectionExtension
 
 				$phpDocType = TypeCombinator::union(...$types);
 
-				return new PhpPropertyReflection($declaringClassReflection, null, new MixedType(), $phpDocType, $phpDocType, $classReflection->getNativeReflection()->getProperty($propertyName), null, null, null, false, false, false, false, [], false, true, false, false, true);
+				return new PhpPropertyReflection(
+					$declaringClassReflection,
+					null,
+					new MixedType(),
+					$phpDocType,
+					$phpDocType,
+					$classReflection->getNativeReflection()->getProperty($propertyName),
+					getHook: null,
+					setHook: null,
+					deprecatedDescription: null,
+					isDeprecated: false,
+					isInternal: false,
+					isReadOnlyByPhpDoc: false,
+					isAllowedPrivateMutation: false,
+					attributes: [],
+					isFinal: false,
+					readable: true,
+					writable: false,
+					private: false,
+					public: true,
+				);
 			}
 		}
 

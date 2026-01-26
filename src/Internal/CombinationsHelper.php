@@ -2,7 +2,7 @@
 
 namespace PHPStan\Internal;
 
-use function array_shift;
+use function array_pop;
 
 final class CombinationsHelper
 {
@@ -19,14 +19,12 @@ final class CombinationsHelper
 			return;
 		}
 
-		$head = array_shift($arrays);
+		$last = array_pop($arrays);
 
-		foreach ($head as $elem) {
-			foreach (self::combinations($arrays) as $combination) {
-				$comb = [$elem];
-				foreach ($combination as $c) {
-					$comb[] = $c;
-				}
+		foreach (self::combinations($arrays) as $combination) {
+			foreach ($last as $elem) {
+				$comb = $combination;
+				$comb[] = $elem;
 				yield $comb;
 			}
 		}

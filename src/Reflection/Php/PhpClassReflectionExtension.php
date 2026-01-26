@@ -515,7 +515,7 @@ final class PhpClassReflectionExtension
 
 		$nativeMethodReflection = $classReflection->getNativeReflection()->getMethod($methodName);
 		if (!isset($this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$nativeMethodReflection->getName()])) {
-			$method = $this->createMethod($classReflection, $nativeMethodReflection, true);
+			$method = $this->createMethod($classReflection, $methodName, $nativeMethodReflection, true);
 			$this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$nativeMethodReflection->getName()] = $method;
 			if ($nativeMethodReflection->getName() !== $methodName) {
 				$this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName] = $method;
@@ -543,7 +543,7 @@ final class PhpClassReflectionExtension
 		$nativeMethodReflection = $classReflection->getNativeReflection()->getMethod($methodName);
 
 		if (!isset($this->nativeMethods[$classReflection->getCacheKey()][$nativeMethodReflection->getName()])) {
-			$method = $this->createMethod($classReflection, $nativeMethodReflection, false);
+			$method = $this->createMethod($classReflection, $methodName, $nativeMethodReflection, false);
 			$this->nativeMethods[$classReflection->getCacheKey()][$nativeMethodReflection->getName()] = $method;
 		}
 
@@ -552,30 +552,36 @@ final class PhpClassReflectionExtension
 
 	private function createMethod(
 		ClassReflection $classReflection,
+		string $methodName,
 		ReflectionMethod $methodReflection,
 		bool $includingAnnotations,
 	): ExtendedMethodReflection
 	{
-		if ($includingAnnotations && $this->annotationsMethodsClassReflectionExtension->hasMethod($classReflection, $methodReflection->getName())) {
-			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
-			$annotationMethod = $this->annotationsMethodsClassReflectionExtension->getMethod($classReflection, $methodReflection->getName());
-			if (!isset($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()])) {
-				throw new ShouldNotHappenException();
+		if ($includingAnnotations) {
+			if ($this->annotationsMethodsClassReflectionExtension->hasMethod($classReflection, $methodReflection->getName())) {
+				$hierarchyDistances = $classReflection->getClassHierarchyDistances();
+				$annotationMethod = $this->annotationsMethodsClassReflectionExtension->getMethod($classReflection, $methodReflection->getName());
+				if (!isset($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()])) {
+					throw new ShouldNotHappenException();
+				}
+
+				$distanceDeclaringClass = $methodReflection->getDeclaringClass()->getName();
+				$methodTrait = $this->findMethodTrait($methodReflection);
+				if ($methodTrait !== null) {
+					$distanceDeclaringClass = $methodTrait;
+				}
+				if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
+					throw new ShouldNotHappenException();
+				}
+
+				if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] <= $hierarchyDistances[$distanceDeclaringClass]) {
+					return $annotationMethod;
+				}
 			}
 
-			$distanceDeclaringClass = $methodReflection->getDeclaringClass()->getName();
-			$methodTrait = $this->findMethodTrait($methodReflection);
-			if ($methodTrait !== null) {
-				$distanceDeclaringClass = $methodTrait;
-			}
-			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
-				throw new ShouldNotHappenException();
-			}
-
-			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] <= $hierarchyDistances[$distanceDeclaringClass]) {
-				return $annotationMethod;
-			}
+			return $this->getNativeMethod($classReflection, $methodName);
 		}
+
 		$declaringClassName = $methodReflection->getDeclaringClass()->getName();
 		$declaringClass = $classReflection->getAncestorWithClassName($declaringClassName);
 

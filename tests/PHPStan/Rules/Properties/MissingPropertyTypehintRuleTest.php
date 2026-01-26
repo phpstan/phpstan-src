@@ -76,4 +76,9 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], []);
 	}
 
+	public function testBug14012(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14012.php'], []);
+	}
+
 }

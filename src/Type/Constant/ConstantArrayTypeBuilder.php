@@ -315,13 +315,15 @@ final class ConstantArrayTypeBuilder
 
 		if ($this->degradeClosures) {
 			$itemTypes = [];
-			$itemTypes[] = new CallableType();
+			$returnTypes = [];
 			foreach ($this->valueTypes as $valueType) {
 				if ($valueType instanceof ClosureType) {
+					$returnTypes[] = $valueType->getReturnType();
 					continue;
 				}
 				$itemTypes[] = $valueType;
 			}
+			$itemTypes[] = new CallableType(null, TypeCombinator::union(...$returnTypes));
 		} else {
 			$itemTypes = $this->valueTypes;
 		}

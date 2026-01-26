@@ -231,6 +231,7 @@ final class PhpClassReflectionExtension
 					$classReflection->getNativeReflection()->getProperty($propertyName),
 					getHook: null,
 					setHook: null,
+					resolvedPhpDocBlock: null,
 					deprecatedDescription: null,
 					isDeprecated: false,
 					isInternal: false,
@@ -269,14 +270,29 @@ final class PhpClassReflectionExtension
 		}
 
 		if ($constructorName === null) {
+			$currentResolvedPhpDoc = $this->stubPhpDocProvider->findPropertyPhpDoc($declaringClassName, $propertyName);
+			if (
+				$currentResolvedPhpDoc === null
+				&& $declaringTraitName !== null
+			) {
+				$currentResolvedPhpDoc = $this->stubPhpDocProvider->findPropertyPhpDoc($declaringTraitName, $propertyName);
+			}
+			if ($currentResolvedPhpDoc === null && $docComment !== null) {
+				$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+					$declaringClassReflection->getFileName(),
+					$declaringClassName,
+					$declaringTraitName,
+					null,
+					$docComment,
+				);
+			}
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-				$docComment,
 				$declaringClassReflection,
-				$declaringClassReflection->getFileName(),
-				$declaringTraitName,
 				$propertyName,
+				$currentResolvedPhpDoc,
 			);
 		} elseif ($docComment !== null) {
+			// todo could call phpDocInheritanceResolver too
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$declaringClassReflection->getFileName(),
 				$declaringClassName,
@@ -285,7 +301,6 @@ final class PhpClassReflectionExtension
 				$docComment,
 			);
 		}
-		$phpDocBlockClassReflection = $declaringClassReflection;
 
 		if ($resolvedPhpDoc !== null) {
 			$varTags = $resolvedPhpDoc->getVarTags();
@@ -297,8 +312,8 @@ final class PhpClassReflectionExtension
 
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
 				$phpDocType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+				$declaringClassReflection->getActiveTemplateTypeMap(),
+				$declaringClassReflection->getCallSiteVarianceMap(),
 				TemplateTypeVariance::createInvariant(),
 			) : null;
 
@@ -314,23 +329,12 @@ final class PhpClassReflectionExtension
 
 		if ($phpDocType === null) {
 			if (isset($constructorName)) {
-				$constructorDocComment = $declaringClassReflection->getConstructor()->getDocComment();
-				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
-				$positionalParameterNames = [];
-				if ($nativeClassReflection->getConstructor() !== null) {
-					$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $nativeClassReflection->getConstructor()->getParameters());
-				}
-				$resolvedConstructorPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
-					$constructorDocComment,
-					$declaringClassReflection->getFileName(),
-					$declaringClassReflection,
-					$declaringTraitName,
-					$constructorName,
-					$positionalParameterNames,
-				);
-				$paramTags = $resolvedConstructorPhpDoc->getParamTags();
-				if (isset($paramTags[$propertyReflection->getName()])) {
-					$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
+				$resolvedConstructorPhpDoc = $declaringClassReflection->getConstructor()->getResolvedPhpDoc();
+				if ($resolvedConstructorPhpDoc !== null) {
+					$paramTags = $resolvedConstructorPhpDoc->getParamTags();
+					if (isset($paramTags[$propertyReflection->getName()])) {
+						$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
+					}
 				}
 			}
 		}
@@ -428,6 +432,7 @@ final class PhpClassReflectionExtension
 			$propertyReflection,
 			$getHook,
 			$setHook,
+			$resolvedPhpDoc,
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
@@ -484,6 +489,7 @@ final class PhpClassReflectionExtension
 					$propertyReflection,
 					$getHook,
 					$setHook,
+					$nativeProperty->getResolvedPhpDoc(),
 					$deprecatedDescription,
 					$isDeprecated,
 					$isInternal,
@@ -624,112 +630,91 @@ final class PhpClassReflectionExtension
 					foreach ($methodSignature->getParameters() as $parameter) {
 						$phpDocParameterNameMapping[$parameter->getName()] = $parameter->getName();
 					}
-					$stubPhpDocReturnType = null;
-					$stubPhpDocParameterTypes = [];
-					$stubPhpDocParameterVariadicity = [];
 					$phpDocParameterTypes = [];
 					$phpDocReturnType = null;
-					$stubPhpDocPair = null;
-					$stubPhpParameterOutTypes = [];
 					$phpDocParameterOutTypes = [];
 					$immediatelyInvokedCallableParameters = [];
 					$closureThisParameters = [];
-					$stubImmediatelyInvokedCallableParameters = [];
-					$stubClosureThisParameters = [];
+					$currentResolvedPhpDoc = null;
+					$phpDocDeclaringClass = $declaringClass;
+					$phpDocFromStubs = false;
 					if (count($methodSignatures) === 1) {
 						$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 						if ($stubPhpDocPair !== null) {
-							[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
-							$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
-							$callSiteVarianceMap = $stubDeclaringClass->getCallSiteVarianceMap();
-							$returnTag = $stubPhpDoc->getReturnTag();
-							$stubImmediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $stubPhpDoc->getParamsImmediatelyInvokedCallable());
-							if ($returnTag !== null) {
-								$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
-									$returnTag->getType(),
-									$templateTypeMap,
-									$callSiteVarianceMap,
-									TemplateTypeVariance::createCovariant(),
-								);
-							}
-
-							$stubClosureThisParameters = array_map(static fn ($tag) => $tag->getType(), $stubPhpDoc->getParamClosureThisTags());
-							foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
-								$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
-									$paramTag->getType(),
-									$templateTypeMap,
-									$callSiteVarianceMap,
-									TemplateTypeVariance::createContravariant(),
-								);
-								$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
-							}
-
-							$throwsTag = $stubPhpDoc->getThrowsTag();
-							if ($throwsTag !== null) {
-								$throwType = $throwsTag->getType();
-							}
-
-							$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
-							$acceptsNamedArguments = $stubPhpDoc->acceptsNamedArguments();
-
-							$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
-							if ($selfOutTypeTag !== null) {
-								$selfOutType = $selfOutTypeTag->getType();
-							}
-
-							foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
-								$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
-									$paramOutTag->getType(),
-									$templateTypeMap,
-									$callSiteVarianceMap,
-									TemplateTypeVariance::createCovariant(),
-								);
-							}
-
-							if ($declaringClassName === $stubDeclaringClass->getName() && $stubPhpDoc->hasPhpDocString()) {
-								$phpDocComment = $stubPhpDoc->getPhpDocString();
-							}
+							[$currentResolvedPhpDoc, $phpDocDeclaringClass] = $stubPhpDocPair;
+							$phpDocFromStubs = true;
 						}
 					}
-					if ($stubPhpDocPair === null && $methodReflection->getDocComment() !== false) {
-						$filename = $methodReflection->getFileName();
-						if ($filename !== false) {
-							$phpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc(
-								$filename,
+					if (
+						$currentResolvedPhpDoc === null
+						&& $methodReflection->getDocComment() !== false
+						&& $methodReflection->getFileName() !== false
+					) {
+						$currentResolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
+							$declaringClass,
+							$methodReflection->getName(),
+							$this->fileTypeMapper->getResolvedPhpDoc(
+								$methodReflection->getFileName(),
 								$declaringClassName,
 								null,
 								$methodReflection->getName(),
 								$methodReflection->getDocComment(),
+							),
+							array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()),
+						);
+					}
+
+					if ($currentResolvedPhpDoc !== null) {
+						$templateTypeMap = $phpDocDeclaringClass->getActiveTemplateTypeMap();
+						$callSiteVarianceMap = $phpDocDeclaringClass->getCallSiteVarianceMap();
+						$returnTag = $currentResolvedPhpDoc->getReturnTag();
+						$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $currentResolvedPhpDoc->getParamsImmediatelyInvokedCallable());
+						if ($returnTag !== null && count($methodSignatures) === 1) {
+							$phpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
+								$returnTag->getType(),
+								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
 							);
-							$throwsTag = $phpDocBlock->getThrowsTag();
-							if ($throwsTag !== null) {
-								$throwType = $throwsTag->getType();
-							}
-							$returnTag = $phpDocBlock->getReturnTag();
-							if ($returnTag !== null && count($methodSignatures) === 1) {
-								$phpDocReturnType = $returnTag->getType();
-							}
-							$immediatelyInvokedCallableParameters = array_map(static fn ($immediate) => TrinaryLogic::createFromBoolean($immediate), $phpDocBlock->getParamsImmediatelyInvokedCallable());
-							$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $phpDocBlock->getParamClosureThisTags());
-							foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
-								$phpDocParameterTypes[$name] = $paramTag->getType();
-							}
-							$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
-							$acceptsNamedArguments = $phpDocBlock->acceptsNamedArguments();
+						}
 
-							$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
-							if ($selfOutTypeTag !== null) {
-								$selfOutType = $selfOutTypeTag->getType();
-							}
+						$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $currentResolvedPhpDoc->getParamClosureThisTags());
+						foreach ($currentResolvedPhpDoc->getParamTags() as $name => $paramTag) {
+							$phpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+								$paramTag->getType(),
+								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createContravariant(),
+							);
+						}
 
-							if ($phpDocBlock->hasPhpDocString()) {
-								$phpDocComment = $phpDocBlock->getPhpDocString();
-							}
+						$throwsTag = $currentResolvedPhpDoc->getThrowsTag();
+						if ($throwsTag !== null) {
+							$throwType = $throwsTag->getType();
+						}
 
-							foreach ($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
-								$phpDocParameterOutTypes[$name] = $paramOutTag->getType();
-							}
+						$asserts = Assertions::createFromResolvedPhpDocBlock($currentResolvedPhpDoc);
+						$acceptsNamedArguments = $currentResolvedPhpDoc->acceptsNamedArguments();
 
+						$selfOutTypeTag = $currentResolvedPhpDoc->getSelfOutTag();
+						if ($selfOutTypeTag !== null) {
+							$selfOutType = $selfOutTypeTag->getType();
+						}
+
+						foreach ($currentResolvedPhpDoc->getParamOutTags() as $name => $paramOutTag) {
+							$phpDocParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+								$paramOutTag->getType(),
+								$templateTypeMap,
+								$callSiteVarianceMap,
+								TemplateTypeVariance::createCovariant(),
+							);
+						}
+
+						if ($currentResolvedPhpDoc->hasPhpDocString()) {
+							$phpDocComment = $currentResolvedPhpDoc->getPhpDocString();
+						}
+
+						if (!$phpDocFromStubs) {
 							$signatureParameters = $methodSignature->getParameters();
 							foreach ($methodReflection->getParameters() as $paramI => $reflectionParameter) {
 								if (!array_key_exists($paramI, $signatureParameters)) {
@@ -740,7 +725,7 @@ final class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes, $stubImmediatelyInvokedCallableParameters, $immediatelyInvokedCallableParameters, $stubClosureThisParameters, $closureThisParameters, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
 				}
 			}
 
@@ -753,6 +738,7 @@ final class PhpClassReflectionExtension
 				$this->reflectionProviderProvider->getReflectionProvider(),
 				$declaringClass,
 				$methodReflection,
+				$currentResolvedPhpDoc ?? null,
 				$variantsByType['positional'],
 				$variantsByType['named'] ?? null,
 				$hasSideEffects,
@@ -778,8 +764,7 @@ final class PhpClassReflectionExtension
 		$deprecation = $this->deprecationProvider->getMethodDeprecation($methodReflection);
 		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
 		$isDeprecated = $deprecation !== null;
-
-		$resolvedPhpDoc = null;
+		$currentResolvedPhpDoc = null;
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $fileDeclaringClass;
 
@@ -800,23 +785,25 @@ final class PhpClassReflectionExtension
 		}
 
 		if ($stubPhpDocPair !== null) {
-			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
+			[$currentResolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}
 
-		if ($resolvedPhpDoc === null) {
-			$docComment = $methodReflection->getDocComment() !== false ? $methodReflection->getDocComment() : null;
-			$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
-
-			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
-				$docComment,
+		if ($currentResolvedPhpDoc === null && $methodReflection->getDocComment() !== false && $actualDeclaringClass->getFileName() !== null) {
+			$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$actualDeclaringClass->getFileName(),
-				$actualDeclaringClass,
+				$actualDeclaringClass->getName(),
 				$declaringTraitName,
 				$methodReflection->getName(),
-				$positionalParameterNames,
+				$methodReflection->getDocComment(),
 			);
-			$phpDocBlockClassReflection = $fileDeclaringClass;
 		}
+
+		$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
+			$actualDeclaringClass,
+			$methodReflection->getName(),
+			$currentResolvedPhpDoc,
+			array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()),
+		);
 
 		$declaringTrait = null;
 		$reflectionProvider = $this->reflectionProviderProvider->getReflectionProvider();
@@ -865,47 +852,11 @@ final class PhpClassReflectionExtension
 			}
 		}
 
-		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-		$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $resolvedPhpDoc->getParamsImmediatelyInvokedCallable());
-		$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
-
-		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
-			if (array_key_exists($paramName, $phpDocParameterTypes)) {
-				continue;
-			}
-			$phpDocParameterTypes[$paramName] = $paramTag->getType();
-		}
-		foreach ($phpDocParameterTypes as $paramName => $paramType) {
-			$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
-				$paramType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
-				TemplateTypeVariance::createContravariant(),
-			);
-		}
-
-		$phpDocParameterOutTypes = [];
-		foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
-			$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
-				$paramOutTag->getType(),
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
-				TemplateTypeVariance::createCovariant(),
-			);
-		}
-
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			selfClass: $actualDeclaringClass,
 		);
-		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
-		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
-		if (!$isDeprecated) {
-			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-			$isDeprecated = $resolvedPhpDoc->isDeprecated();
-		}
-		$isInternal = $resolvedPhpDoc->isInternal();
-		$isFinal = $resolvedPhpDoc->isFinal();
+
 		$isPure = null;
 		if ($actualDeclaringClass->isBuiltin() || $actualDeclaringClass->isEnum()) {
 			foreach (array_keys($actualDeclaringClass->getAncestors()) as $className) {
@@ -918,13 +869,59 @@ final class PhpClassReflectionExtension
 			}
 		}
 
-		$isPure ??= $resolvedPhpDoc->isPure();
-		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
-		$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
-		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
+		$phpDocParameterOutTypes = [];
+		$phpDocReturnType = null;
+		$templateTypeMap = TemplateTypeMap::createEmpty();
+		$immediatelyInvokedCallableParameters = [];
+		$closureThisParameters = [];
+		$phpDocThrowType = null;
+		$isInternal = false;
+		$isFinal = false;
+		$asserts = Assertions::createEmpty();
+		$acceptsNamedArguments = true;
+		$selfOutType = null;
 		$phpDocComment = null;
-		if ($resolvedPhpDoc->hasPhpDocString()) {
-			$phpDocComment = $resolvedPhpDoc->getPhpDocString();
+		if ($resolvedPhpDoc !== null) {
+			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+			$immediatelyInvokedCallableParameters = array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $resolvedPhpDoc->getParamsImmediatelyInvokedCallable());
+			$closureThisParameters = array_map(static fn ($tag) => $tag->getType(), $resolvedPhpDoc->getParamClosureThisTags());
+			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
+			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
+			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+				if (array_key_exists($paramName, $phpDocParameterTypes)) {
+					continue;
+				}
+				$phpDocParameterTypes[$paramName] = $paramTag->getType();
+			}
+			foreach ($phpDocParameterTypes as $paramName => $paramType) {
+				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+					$paramType,
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+					$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createContravariant(),
+				);
+			}
+			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+				$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+					$paramOutTag->getType(),
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+					$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+					TemplateTypeVariance::createCovariant(),
+				);
+			}
+			if (!$isDeprecated) {
+				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+				$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			}
+			$isInternal = $resolvedPhpDoc->isInternal();
+			$isFinal = $resolvedPhpDoc->isFinal();
+			$isPure ??= $resolvedPhpDoc->isPure();
+			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
+			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
+			if ($resolvedPhpDoc->hasPhpDocString()) {
+				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
+			}
 		}
 
 		return $this->methodReflectionFactory->create(
@@ -935,6 +932,7 @@ final class PhpClassReflectionExtension
 			$phpDocParameterTypes,
 			$phpDocReturnType,
 			$phpDocThrowType,
+			$resolvedPhpDoc,
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
@@ -952,31 +950,21 @@ final class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param array<string, Type> $stubPhpDocParameterTypes
-	 * @param array<string, bool> $stubPhpDocParameterVariadicity
 	 * @param array<string, Type> $phpDocParameterTypes
 	 * @param array<string, string> $phpDocParameterNameMapping
-	 * @param array<string, Type> $stubPhpDocParameterOutTypes
 	 * @param array<string, Type> $phpDocParameterOutTypes
-	 * @param array<string, TrinaryLogic> $stubImmediatelyInvokedCallableParameters
 	 * @param array<string, TrinaryLogic> $immediatelyInvokedCallableParameters
-	 * @param array<string, Type> $stubClosureThisParameters
 	 * @param array<string, Type> $closureThisParameters
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
-		array $stubPhpDocParameterTypes,
-		array $stubPhpDocParameterVariadicity,
-		?Type $stubPhpDocReturnType,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
-		array $stubPhpDocParameterOutTypes,
 		array $phpDocParameterOutTypes,
-		array $stubImmediatelyInvokedCallableParameters,
 		array $immediatelyInvokedCallableParameters,
-		array $stubClosureThisParameters,
 		array $closureThisParameters,
+		bool $phpDocFromStubs,
 		bool $usePhpDocParameterNames,
 	): ExtendedFunctionVariant
 	{
@@ -988,32 +976,23 @@ final class PhpClassReflectionExtension
 
 			$phpDocParameterName = $phpDocParameterNameMapping[$parameterSignature->getName()] ?? $parameterSignature->getName();
 
-			if (isset($stubPhpDocParameterTypes[$parameterSignature->getName()])) {
-				$type = $stubPhpDocParameterTypes[$parameterSignature->getName()];
-				$phpDocType = $stubPhpDocParameterTypes[$parameterSignature->getName()];
-			} elseif (isset($phpDocParameterTypes[$phpDocParameterName])) {
+			if (isset($phpDocParameterTypes[$phpDocParameterName])) {
 				$phpDocType = $phpDocParameterTypes[$phpDocParameterName];
-				$type = TypehintHelper::decideType($parameterSignature->getType(), $phpDocType);
+				$type = $phpDocFromStubs ? $phpDocType : TypehintHelper::decideType($parameterSignature->getType(), $phpDocType);
 			}
 
-			if (isset($stubPhpDocParameterOutTypes[$parameterSignature->getName()])) {
-				$parameterOutType = $stubPhpDocParameterOutTypes[$parameterSignature->getName()];
-			} elseif (isset($phpDocParameterOutTypes[$phpDocParameterName])) {
+			if (isset($phpDocParameterOutTypes[$phpDocParameterName])) {
 				$parameterOutType = $phpDocParameterOutTypes[$phpDocParameterName];
 			}
 
-			if (isset($stubImmediatelyInvokedCallableParameters[$parameterSignature->getName()])) {
-				$immediatelyInvoked = $stubImmediatelyInvokedCallableParameters[$parameterSignature->getName()];
-			} elseif (isset($immediatelyInvokedCallableParameters[$phpDocParameterName])) {
+			if (isset($immediatelyInvokedCallableParameters[$phpDocParameterName])) {
 				$immediatelyInvoked = $immediatelyInvokedCallableParameters[$phpDocParameterName];
 			} else {
 				$immediatelyInvoked = TrinaryLogic::createMaybe();
 			}
 
 			$closureThisType = null;
-			if (isset($stubClosureThisParameters[$parameterSignature->getName()])) {
-				$closureThisType = $stubClosureThisParameters[$parameterSignature->getName()];
-			} elseif (isset($closureThisParameters[$phpDocParameterName])) {
+			if (isset($closureThisParameters[$phpDocParameterName])) {
 				$closureThisType = $closureThisParameters[$phpDocParameterName];
 			}
 
@@ -1026,7 +1005,7 @@ final class PhpClassReflectionExtension
 				$phpDocType ?? new MixedType(),
 				$parameterSignature->getNativeType(),
 				$parameterSignature->passedByReference(),
-				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
+				$parameterSignature->isVariadic(),
 				$parameterSignature->getDefaultValue(),
 				$parameterOutType ?? $parameterSignature->getOutType(),
 				$immediatelyInvoked,
@@ -1035,9 +1014,8 @@ final class PhpClassReflectionExtension
 			);
 		}
 
-		if ($stubPhpDocReturnType !== null) {
-			$returnType = $stubPhpDocReturnType;
-			$phpDocReturnType = $stubPhpDocReturnType;
+		if ($phpDocFromStubs && $phpDocReturnType !== null) {
+			$returnType = $phpDocReturnType;
 		} else {
 			$returnType = TypehintHelper::decideType($methodSignature->getReturnType(), $phpDocReturnType);
 		}

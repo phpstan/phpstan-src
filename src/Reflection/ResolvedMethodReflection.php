@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -96,15 +96,6 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 	public function getDeclaringClass(): ClassReflection
 	{
 		return $this->reflection->getDeclaringClass();
-	}
-
-	public function getDeclaringTrait(): ?ClassReflection
-	{
-		if ($this->reflection instanceof PhpMethodReflection) {
-			return $this->reflection->getDeclaringTrait();
-		}
-
-		return null;
 	}
 
 	public function isStatic(): bool
@@ -234,6 +225,11 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->reflection->mustUseReturnValue();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return $this->reflection->getResolvedPhpDoc();
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -37,6 +38,7 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 		private ReflectionProperty $reflection,
 		private ?ExtendedMethodReflection $getHook,
 		private ?ExtendedMethodReflection $setHook,
+		private ?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
@@ -326,6 +328,11 @@ final class PhpPropertyReflection implements ExtendedPropertyReflection
 	public function isDummy(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return $this->resolvedPhpDocBlock;
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RestrictedUsage;
 
 use PhpParser\Node\Expr;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\TrinaryLogic;
@@ -106,6 +107,11 @@ final class RewrittenDeclaringClassClassConstantReflection implements ClassConst
 	public function getFileName(): ?string
 	{
 		return $this->constantReflection->getFileName();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return $this->constantReflection->getResolvedPhpDoc();
 	}
 
 }

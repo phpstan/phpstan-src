@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Native;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -31,6 +32,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		private ReflectionProvider $reflectionProvider,
 		private ClassReflection $declaringClass,
 		private ReflectionMethod $reflection,
+		private ?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 		private array $variants,
 		private ?array $namedArgumentsVariants,
 		private TrinaryLogic $hasSideEffects,
@@ -234,6 +236,11 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 			}
 		}
 		return TrinaryLogic::createNo();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return $this->resolvedPhpDocBlock;
 	}
 
 }

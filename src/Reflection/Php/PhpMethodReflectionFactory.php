@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassReflection;
@@ -28,6 +29,7 @@ interface PhpMethodReflectionFactory
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		?Type $phpDocThrowType,
+		?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,

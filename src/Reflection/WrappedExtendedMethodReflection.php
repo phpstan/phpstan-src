@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -177,6 +178,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 	{
 		// Align with the getAttributes() returning empty
 		return TrinaryLogic::createNo();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return null;
 	}
 
 }

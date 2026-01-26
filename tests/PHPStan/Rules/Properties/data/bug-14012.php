@@ -4,6 +4,7 @@ namespace Bug14012;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use function PHPStan\Testing\assertType;
 
 final class ExpectationMethodResolver
 {
@@ -38,3 +39,5 @@ final class ExpectationMethodResolver
 	 */
 	public static array $resolvers = [];
 }
+
+assertType("non-empty-array<'hasMethod'|'hasProperty'|'isArray'|'isBool'|'isCallable'|'isCountable'|'isFalse'|'isFloat'|'isInstanceOf'|'isInt'|'isIterable'|'isList'|'isMap'|'isNaturalInt'|'isNegativeInt'|'isNonEmptyString'|'isNull'|'isNumeric'|'isObject'|'isPositiveInt'|'isResource'|'isSameAs'|'isScalar'|'isString'|'isTrue', callable(): mixed>&oversized-array", ExpectationMethodResolver::$resolvers);

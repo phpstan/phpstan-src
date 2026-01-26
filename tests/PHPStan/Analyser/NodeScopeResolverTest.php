@@ -247,6 +247,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield __DIR__ . '/../Rules/Methods/data/bug-4801.php';
 		yield __DIR__ . '/../Rules/Arrays/data/narrow-superglobal.php';
 		yield __DIR__ . '/../Rules/Methods/data/bug-12927.php';
+		yield __DIR__ . '/../Rules/Properties/data/bug-14012.php';
 	}
 
 	/**

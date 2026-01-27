@@ -31,7 +31,7 @@ final class ConstantArrayTypeBuilder
 {
 
 	public const ARRAY_COUNT_LIMIT = 256;
-	private const CLOSURES_COUNT_LIMIT = 16;
+	private const CLOSURES_COUNT_LIMIT = 32;
 
 	private bool $degradeToGeneralArray = false;
 

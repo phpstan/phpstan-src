@@ -84,20 +84,14 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 		private array $templateTags = [],
 		?TrinaryLogic $isPure = null,
-		?bool $isCommonCallable = null,
 	)
 	{
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
+		$this->isCommonCallable = $parameters === null && $returnType === null;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->isPure = $isPure ?? TrinaryLogic::createMaybe();
-
-		if ($isCommonCallable !== null) {
-			$this->isCommonCallable = $isCommonCallable;
-		} else {
-			$this->isCommonCallable = $parameters === null && $returnType === null;
-		}
 	}
 
 	/**

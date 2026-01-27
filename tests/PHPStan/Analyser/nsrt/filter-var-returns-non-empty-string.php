@@ -26,7 +26,7 @@ class Foo
 		int $positive_int,
 		int $negative_int,
 		bool $bool,
-		mixed $mixed,
+		$mixed,
 	): void
 	{
 		$array = [];

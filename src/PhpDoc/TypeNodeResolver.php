@@ -1054,6 +1054,10 @@ final class TypeNodeResolver
 		}
 
 		foreach ($typeNode->items as $itemNode) {
+			if ($itemNode->valueType instanceof CallableTypeNode) {
+				$builder->degradeClosures(false); // explicit opt-out of closure degradation
+			}
+
 			$offsetType = $this->resolveArrayShapeOffsetType($itemNode, $nameScope);
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}

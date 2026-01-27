@@ -35,7 +35,7 @@ final class ConstantArrayTypeBuilder
 
 	private bool $degradeToGeneralArray = false;
 
-	private bool $degradeClosures = false;
+	private ?bool $degradeClosures = null;
 
 	private bool $oversized = false;
 
@@ -84,7 +84,7 @@ final class ConstantArrayTypeBuilder
 		}
 
 		if (!$this->degradeToGeneralArray) {
-			if ($valueType instanceof ClosureType) {
+			if ($valueType instanceof ClosureType && $this->degradeClosures !== false) {
 				$numClosures = 1;
 				foreach ($this->valueTypes as $innerType) {
 					if (!($innerType instanceof ClosureType)) {
@@ -300,6 +300,15 @@ final class ConstantArrayTypeBuilder
 		$this->oversized = $this->oversized || $oversized;
 	}
 
+	/**
+	 * @param bool|null $degrade Use `null` to auto-detect based on closures count;
+	 *                           Use boolean to explicitly enable/disable closure degradation.
+	 */
+	public function degradeClosures(?bool $degrade): void
+	{
+		$this->degradeClosures = $degrade;
+	}
+
 	public function getArray(): Type
 	{
 		$keyTypesCount = count($this->keyTypes);
@@ -313,7 +322,7 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}
 
-		if ($this->degradeClosures) {
+		if ($this->degradeClosures === true) {
 			$itemTypes = [];
 			$itemTypes[] = new CallableType();
 			foreach ($this->valueTypes as $valueType) {

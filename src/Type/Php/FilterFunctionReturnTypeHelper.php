@@ -24,6 +24,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -401,17 +402,41 @@ final class FilterFunctionReturnTypeHelper
 				new NullType(),
 			]);
 
+			$scalarOrNullType = null;
+			$useDefaultType = false;
+
 			if ($scalarOrNull->isSuperTypeOf($in)->yes()) {
+				$scalarOrNullType = $in;
+			}
+
+			if ($scalarOrNull->isSuperTypeOf($in)->maybe()) {
+				// $in is (array or object) or (scalar or null).
+				$scalarOrNullType = TypeCombinator::remove(
+					TypeCombinator::remove($in, new ObjectShapeType([], [])),
+					new ArrayType(new MixedType(), new MixedType()),
+				);
+				// Combine future results with defaultType as $in might be an array or an object.
+				$useDefaultType = true;
+			}
+
+			if (
+				$scalarOrNullType !== null
+				&& ($in->isSuperTypeOf(new MixedType())->yes() || $scalarOrNull->isSuperTypeOf($scalarOrNullType)->yes())
+			) {
 				$canBeSanitized = $this->canStringBeSanitized($filterValue, $flagsType);
 				if ($canBeSanitized->no()) {
-					$stringType = $in->toString();
+					$stringType = $scalarOrNullType->toString();
+				} elseif ($scalarOrNullType->isString()->no()) {
+					$stringType = $scalarOrNullType->toString();
 				} else {
-					$stringType = $in->isString()->no()
-						? $in->toString()
-						: TypeCombinator::union(TypeCombinator::remove($in, new StringType()), new StringType());
+					$stringType = TypeCombinator::union(
+						TypeCombinator::remove($scalarOrNullType, new StringType()),
+						new StringType(),
+					);
 				}
 
-				return $this->handleEmptyStringNullFlag($stringType, $flagsType);
+				$returnType = $this->handleEmptyStringNullFlag($stringType, $flagsType);
+				return $useDefaultType ? TypeCombinator::union($defaultType, $returnType) : $returnType;
 			}
 		}
 

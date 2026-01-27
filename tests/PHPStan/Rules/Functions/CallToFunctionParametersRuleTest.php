@@ -2664,19 +2664,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = false;
-		// would be great we would not have these 2 errors
-		$this->analyse([__DIR__ . '/../Properties/data/bug-14012.php'], [
-			[
-				'Parameter #1 $callable of function Bug14012\doFoo expects callable(PHPStan\Analyser\Scope, PhpParser\Node\Arg): PhpParser\Node\Expr, Closure(PHPStan\Analyser\Scope, PhpParser\Node\Arg, PhpParser\Node\Arg): PhpParser\Node\Expr given.',
-				49,
-				'Parameter #3 of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
-			],
-			[
-				'Parameter #1 $callable of function Bug14012\doBar expects Closure(PHPStan\Analyser\Scope, PhpParser\Node\Arg): PhpParser\Node\Expr, Closure(PHPStan\Analyser\Scope, PhpParser\Node\Arg, PhpParser\Node\Arg): PhpParser\Node\Expr given.',
-				55,
-				'Parameter #3 of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
-			],
-		]);
+		$this->analyse([__DIR__ . '/../Properties/data/bug-14012.php'], []);
 	}
 
 }

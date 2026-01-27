@@ -46,10 +46,10 @@ assertType("array{hasMethod: Closure(PHPStan\Analyser\Scope, PhpParser\Node\Arg,
  * @param callable(Scope, Node\Arg):Node\Expr $callable
  */
 function doFoo($callable):void {}
-doFoo(ExpectationMethodResolver::$resolvers['hasMethod']);
+doFoo(ExpectationMethodResolver::$resolvers['isArray']);
 
 /**
  * @param \Closure(Scope, Node\Arg):Node\Expr $callable
  */
 function doBar($callable):void {}
-doBar(ExpectationMethodResolver::$resolvers['hasMethod']);
+doBar(ExpectationMethodResolver::$resolvers['isArray']);

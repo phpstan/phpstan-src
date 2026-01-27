@@ -25,6 +25,7 @@ use PHPStan\Type\TypeUtils;
 use function array_keys;
 use function count;
 use function in_array;
+use function is_string;
 use function strtolower;
 
 #[AutowiredService]
@@ -138,7 +139,6 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 				];
 			}
 		}
-
 
 		$keyTypes = [];
 		$valueTypes = [];

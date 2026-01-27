@@ -300,13 +300,9 @@ final class ConstantArrayTypeBuilder
 		$this->oversized = $this->oversized || $oversized;
 	}
 
-	/**
-	 * @param bool|null $degrade Use `null` to auto-detect based on closures count;
-	 *                           Use boolean to explicitly enable/disable closure degradation.
-	 */
-	public function degradeClosures(?bool $degrade): void
+	public function disableClosureDegradation(): void
 	{
-		$this->degradeClosures = $degrade;
+		$this->degradeClosures = false;
 	}
 
 	public function getArray(): Type

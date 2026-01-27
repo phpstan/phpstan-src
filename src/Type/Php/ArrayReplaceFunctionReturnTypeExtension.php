@@ -8,6 +8,8 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -15,9 +17,11 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_keys;
 use function count;
 use function in_array;
@@ -97,6 +101,45 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 			return $newArrayBuilder->getArray();
 		}
 
+		$offsetTypes = [];
+		foreach ($argTypes as $argType) {
+			$constArrays = $argType->getConstantArrays();
+			if ($constArrays !== []) {
+				foreach ($constArrays as $constantArray) {
+					foreach ($constantArray->getKeyTypes() as $keyType) {
+						$hasOffsetValue = TrinaryLogic::createFromBoolean($argType->hasOffsetValueType($keyType)->yes());
+						$offsetTypes[$keyType->getValue()] = [
+							$hasOffsetValue,
+							$argType->getOffsetValueType($keyType),
+						];
+					}
+				}
+			} else {
+				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+					$offsetTypes[$key] = [
+						$hasOffsetValue->and(TrinaryLogic::createMaybe()),
+						new MixedType(),
+					];
+				}
+			}
+
+			foreach (TypeUtils::getAccessoryTypes($argType) as $accessoryType) {
+				if (
+					!($accessoryType instanceof HasOffsetType)
+					&& !($accessoryType instanceof HasOffsetValueType)
+				) {
+					continue;
+				}
+
+				$offsetType = $accessoryType->getOffsetType();
+				$offsetTypes[$offsetType->getValue()] = [
+					TrinaryLogic::createYes(),
+					$argType->getOffsetValueType($offsetType),
+				];
+			}
+		}
+
+
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
@@ -132,6 +175,31 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 		}
 		if ($isList) {
 			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+		}
+		if ($offsetTypes !== []) {
+			$knownOffsetValues = [];
+			foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetType]) {
+				$keyType = is_string($key) ? new ConstantStringType($key) : new ConstantIntegerType($key);
+
+				if ($hasOffsetValue->yes()) {
+					// the last known offset will overwrite previous values
+					$hasOffsetType = new HasOffsetValueType(
+						$keyType,
+						$offsetType,
+					);
+				} elseif ($hasOffsetValue->maybe()) {
+					$hasOffsetType = new HasOffsetType(
+						$keyType,
+					);
+				} else {
+					continue;
+				}
+
+				$knownOffsetValues[] = $hasOffsetType;
+			}
+			if ($knownOffsetValues !== []) {
+				$arrayType = TypeCombinator::intersect($arrayType, ...$knownOffsetValues);
+			}
 		}
 
 		return $arrayType;

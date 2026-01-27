@@ -107,3 +107,11 @@ function doAllOptional(array $allOptional, array $arr2): void {
 	assertType("array", array_replace($arr2, $allOptional));
 	assertType("array", array_replace($allOptional, $arr2));
 }
+
+function withArrayReplacement(array $base): void {
+	$replacements = [ 'citrus' => [ 'grapefruit' ] ];
+	$replacements2 = [ 'citrus' => [ 'kumquat', 'citron' ], 'pome' => [ 'loquat' ] ];
+
+	$basket = array_replace($base, $replacements, $replacements2);
+	assertType("non-empty-array&hasOffsetValue('citrus', array{'kumquat', 'citron'})&hasOffsetValue('pome', array{'loquat'})", $basket);
+}

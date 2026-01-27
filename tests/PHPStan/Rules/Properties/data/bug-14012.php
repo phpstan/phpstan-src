@@ -41,3 +41,15 @@ final class ExpectationMethodResolver
 }
 
 assertType("non-empty-array<'hasMethod'|'hasProperty'|'isArray'|'isBool'|'isCallable'|'isCountable'|'isFalse'|'isFloat'|'isInstanceOf'|'isInt'|'isIterable'|'isList'|'isMap'|'isNaturalInt'|'isNegativeInt'|'isNonEmptyString'|'isNull'|'isNumeric'|'isObject'|'isPositiveInt'|'isResource'|'isSameAs'|'isScalar'|'isString'|'isTrue', callable(): mixed>&oversized-array", ExpectationMethodResolver::$resolvers);
+
+/**
+ * @param callable(Scope, Node\Arg):Node\Expr $callable
+ */
+function doFoo($callable):void {}
+doFoo(ExpectationMethodResolver::$resolvers['hasMethod']);
+
+/**
+ * @param \Closure(Scope, Node\Arg):Node\Expr $callable
+ */
+function doBar($callable):void {}
+doBar(ExpectationMethodResolver::$resolvers['hasMethod']);

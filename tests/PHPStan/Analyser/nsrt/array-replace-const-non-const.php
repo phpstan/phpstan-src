@@ -115,3 +115,11 @@ function withArrayReplacement(array $base): void {
 	$basket = array_replace($base, $replacements, $replacements2);
 	assertType("non-empty-array&hasOffsetValue('citrus', array{'kumquat', 'citron'})&hasOffsetValue('pome', array{'loquat'})", $basket);
 }
+
+/**
+ * @param array{foo: int, x: string}|array{foo: string, y: 1} $arr1
+ */
+function doUnions(array $arr1, array $arr2): void {
+	assertType("non-empty-array&hasOffset('foo')", array_replace($arr1, $arr2));
+	assertType("non-empty-array&hasOffsetValue('foo', int|string)", array_replace($arr2, $arr1));
+}

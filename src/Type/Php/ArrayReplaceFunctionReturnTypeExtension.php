@@ -117,6 +117,8 @@ final class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionRe
 				}
 			} else {
 				foreach ($offsetTypes as $key => [$hasOffsetValue, $offsetValueType]) {
+					// more precise values-types will be calculated elsewhere.
+					// just remember the offset key.
 					$offsetTypes[$key] = [
 						$hasOffsetValue->and(TrinaryLogic::createMaybe()),
 						new MixedType(),

@@ -1658,7 +1658,7 @@ final class TypeSpecifier
 
 				$holder = new ConditionalExpressionHolder(
 					$conditions,
-					new ExpressionTypeHolder($expr, TypeCombinator::intersect($scope->getType($expr), $type), TrinaryLogic::createYes()),
+					ExpressionTypeHolder::createYes($expr, TypeCombinator::intersect($scope->getType($expr), $type)),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}
@@ -1725,7 +1725,7 @@ final class TypeSpecifier
 
 				$holder = new ConditionalExpressionHolder(
 					$conditions,
-					new ExpressionTypeHolder($expr, TypeCombinator::remove($scope->getType($expr), $type), TrinaryLogic::createYes()),
+					ExpressionTypeHolder::createYes($expr, TypeCombinator::remove($scope->getType($expr), $type)),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}

@@ -6970,11 +6970,11 @@ class NodeScopeResolver
 
 				$holder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
-				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));
+				], ExpressionTypeHolder::createYes($stmt->valueVar, $valueType));
 				$valueConditionalHolders[$holder->getKey()] = $holder;
 				$arrayDimFetchHolder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
-				], new ExpressionTypeHolder(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType, TrinaryLogic::createYes()));
+				], ExpressionTypeHolder::createYes(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType));
 				$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
 			}
 

@@ -25,7 +25,7 @@ jobs:
   download:
     name: "Download data"
 
-    runs-on: "ubuntu-latest"
+    runs-on: "blacksmith-2vcpu-ubuntu-2404"
 
     outputs:
       matrix: ${{ steps.shards.outputs.shards }}
@@ -84,7 +84,7 @@ jobs:
     name: "Analyse"
     needs: download
 
-    runs-on: "ubuntu-latest"
+    runs-on: "blacksmith-2vcpu-ubuntu-2404"
 
     strategy:
       fail-fast: false
@@ -149,7 +149,7 @@ jobs:
     name: "Evaluate results"
     needs: analyse
 
-    runs-on: "ubuntu-latest"
+    runs-on: "blacksmith-2vcpu-ubuntu-2404"
 
     steps:
       - name: "Checkout"

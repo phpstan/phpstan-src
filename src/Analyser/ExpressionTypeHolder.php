@@ -10,7 +10,11 @@ use PHPStan\Type\TypeCombinator;
 final class ExpressionTypeHolder
 {
 
-	public function __construct(private Expr $expr, private Type $type, private TrinaryLogic $certainty)
+	public function __construct(
+		private readonly Expr $expr,
+		private readonly Type $type,
+		private readonly TrinaryLogic $certainty,
+	)
 	{
 	}
 
@@ -22,6 +26,15 @@ final class ExpressionTypeHolder
 	public static function createMaybe(Expr $expr, Type $type): self
 	{
 		return new self($expr, $type, TrinaryLogic::createMaybe());
+	}
+
+	public function equalTypes(self $other): bool
+	{
+		if ($this === $other) {
+			return true;
+		}
+
+		return $this->type === $other->type || $this->type->equals($other->type);
 	}
 
 	public function equals(self $other): bool

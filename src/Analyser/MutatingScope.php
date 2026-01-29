@@ -4014,7 +4014,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			if (!$mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
+			if (!$mergedExpressionTypes[$exprString]->equalTypes($holder)) {
 				continue;
 			}
 
@@ -4023,13 +4023,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$typeGuards = [];
 		foreach ($newVariableTypes as $exprString => $holder) {
-			if (!$holder->getCertainty()->yes()) {
-				continue;
-			}
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
-			if ($mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
+			if (!$holder->getCertainty()->yes()) {
+				continue;
+			}
+			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
 				continue;
 			}
 
@@ -4194,7 +4194,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		foreach ($finallyVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (
 				isset($originalVariableTypeHolders[$exprString])
-				&& !$originalVariableTypeHolders[$exprString]->getType()->equals($variableTypeHolder->getType())
+				&& !$originalVariableTypeHolders[$exprString]->equalTypes($variableTypeHolder)
 			) {
 				$ourVariableTypeHolders[$exprString] = $variableTypeHolder;
 				continue;
@@ -4766,7 +4766,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				return false;
 			}
 
-			if (!$variableTypeHolder->getType()->equals($otherVariableTypeHolders[$variableExprString]->getType())) {
+			if (!$variableTypeHolder->equalTypes($otherVariableTypeHolders[$variableExprString])) {
 				return false;
 			}
 		}

@@ -10,7 +10,11 @@ use PHPStan\Type\TypeCombinator;
 final class ExpressionTypeHolder
 {
 
-	public function __construct(private Expr $expr, private Type $type, private TrinaryLogic $certainty)
+	public function __construct(
+		private readonly Expr $expr,
+		private readonly Type $type,
+		private readonly TrinaryLogic $certainty,
+	)
 	{
 	}
 

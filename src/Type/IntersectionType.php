@@ -806,7 +806,7 @@ class IntersectionType implements CompoundType
 
 	public function isVoid(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isVoid());
+		return TrinaryLogic::createNo();
 	}
 
 	public function isScalar(): TrinaryLogic

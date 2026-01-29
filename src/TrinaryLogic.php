@@ -38,13 +38,17 @@ use function min;
  */
 final class TrinaryLogic
 {
+	private const YES = 3;
+	private const MAYBE = 1;
+	private const NO = 0;
 
-	private const YES = 1;
-	private const MAYBE = 0;
-	private const NO = -1;
 
 	/** @var self[] */
 	private static array $registry = [];
+
+	private static self $YES;
+	private static self $MAYBE;
+	private static self $NO;
 
 	private function __construct(private int $value)
 	{
@@ -52,17 +56,17 @@ final class TrinaryLogic
 
 	public static function createYes(): self
 	{
-		return self::$registry[self::YES] ??= new self(self::YES);
+		return self::$YES ??= (self::$registry[self::YES] ??= new self(self::YES));
 	}
 
 	public static function createNo(): self
 	{
-		return self::$registry[self::NO] ??= new self(self::NO);
+		return self::$NO ??= (self::$registry[self::NO] ??= new self(self::NO));
 	}
 
 	public static function createMaybe(): self
 	{
-		return self::$registry[self::MAYBE] ??= new self(self::MAYBE);
+		return self::$MAYBE ??= (self::$registry[self::MAYBE] ??= new self(self::MAYBE));
 	}
 
 	public static function createFromBoolean(bool $value): self
@@ -73,8 +77,7 @@ final class TrinaryLogic
 
 	private static function create(int $value): self
 	{
-		self::$registry[$value] ??= new self($value);
-		return self::$registry[$value];
+		return self::$registry[$value] ??= new self($value);
 	}
 
 	/**
@@ -113,17 +116,13 @@ final class TrinaryLogic
 		return new ConstantBooleanType($this->value === self::YES);
 	}
 
-	public function and(self ...$operands): self
+	public function and(?self $operand = null, self ...$rest): self
 	{
-		$min = $this->value;
-		foreach ($operands as $operand) {
-			if ($operand->value >= $min) {
-				continue;
-			}
-
-			$min = $operand->value;
+		$min = $this->value & ($operand !== null ? $operand->value : self::YES);
+		foreach ($rest as $operand) {
+			$min &= $operand->value;
 		}
-		return self::create($min);
+		return self::$registry[$min] ??= new self($min);
 	}
 
 	/**
@@ -153,17 +152,13 @@ final class TrinaryLogic
 		return $this->and(...$results);
 	}
 
-	public function or(self ...$operands): self
+	public function or(?self $operand = null, self ...$rest): self
 	{
-		$max = $this->value;
-		foreach ($operands as $operand) {
-			if ($operand->value < $max) {
-				continue;
-			}
-
-			$max = $operand->value;
+		$max = $this->value | ($operand !== null ? $operand->value : self::NO);
+		foreach ($rest as $operand) {
+			$max |= $operand->value;
 		}
-		return self::create($max);
+		return self::$registry[$max] ??= new self($max);
 	}
 
 	/**
@@ -247,7 +242,7 @@ final class TrinaryLogic
 			throw new ShouldNotHappenException();
 		}
 		$operandValues = array_column($operands, 'value');
-		return self::create(max($operandValues) > 0 ? 1 : min($operandValues));
+		return self::create(max($operandValues) > self::MAYBE ? self::YES : min($operandValues));
 	}
 
 	/**
@@ -275,7 +270,10 @@ final class TrinaryLogic
 
 	public function negate(): self
 	{
-		return self::create(-$this->value);
+		// 0b11 >> 0 == 0b11 (3)
+		// 0b11 >> 1 == 0b01 (1)
+		// 0b11 >> 3 == 0b00 (0)
+		return self::create(3 >> $this->value);
 	}
 
 	public function equals(self $other): bool

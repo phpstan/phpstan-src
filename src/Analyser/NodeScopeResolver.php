@@ -6966,13 +6966,15 @@ class NodeScopeResolver
 			$arrayDimFetchConditionalHolders = [];
 			foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
 				$valueType = $constantArrays[0]->getValueTypes()[$i];
+				$keyExpressionTypeHolder = ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType);
+
 				$holder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType),
-				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));
+					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
+				], ExpressionTypeHolder::createYes($stmt->valueVar, $valueType));
 				$valueConditionalHolders[$holder->getKey()] = $holder;
 				$arrayDimFetchHolder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType),
-				], new ExpressionTypeHolder(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType, TrinaryLogic::createYes()));
+					'$' . $stmt->keyVar->name => $keyExpressionTypeHolder,
+				], ExpressionTypeHolder::createYes(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType));
 				$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
 			}
 

@@ -2435,12 +2435,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 					$holder = new ConditionalExpressionHolder([
 						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::intersect($targetParameter->getType(), $parameterType->getTarget())),
-					], new ExpressionTypeHolder(new Variable($parameter->getName()), $ifType, TrinaryLogic::createYes()));
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $ifType));
 					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 
 					$holder = new ConditionalExpressionHolder([
 						$parameterType->getParameterName() => ExpressionTypeHolder::createYes(new Variable($targetParameterName), TypeCombinator::remove($targetParameter->getType(), $parameterType->getTarget())),
-					], new ExpressionTypeHolder(new Variable($parameter->getName()), $elseType, TrinaryLogic::createYes()));
+					], ExpressionTypeHolder::createYes(new Variable($parameter->getName()), $elseType));
 					$conditionalTypes['$' . $parameter->getName()][$holder->getKey()] = $holder;
 				}
 			}
@@ -4250,8 +4250,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 			}
 
-			$expressionTypes[$variableExprString] = ExpressionTypeHolder::createYes($use->var, $variableType);
-			$nativeExpressionTypes[$variableExprString] = ExpressionTypeHolder::createYes($use->var, $variableType);
+			$holder = ExpressionTypeHolder::createYes($use->var, $variableType);
+			$expressionTypes[$variableExprString] = $holder;
+			$nativeExpressionTypes[$variableExprString] = $holder;
 		}
 
 		return $this->scopeFactory->create(

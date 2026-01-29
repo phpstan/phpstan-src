@@ -24,6 +24,15 @@ final class ExpressionTypeHolder
 		return new self($expr, $type, TrinaryLogic::createMaybe());
 	}
 
+	public function equalTypes(self $other): bool
+	{
+		if ($this === $other) {
+			return true;
+		}
+
+		return $this->type === $other->type || $this->type->equals($other->type);
+	}
+
 	public function equals(self $other): bool
 	{
 		if ($this === $other) {

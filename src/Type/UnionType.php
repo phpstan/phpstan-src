@@ -793,6 +793,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->setExistingOffsetValueType($offsetType, $valueType));
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->narrowItemType($narrowedItemType));
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));

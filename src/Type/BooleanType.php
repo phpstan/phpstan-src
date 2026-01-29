@@ -198,4 +198,9 @@ class BooleanType implements Type
 		return false;
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

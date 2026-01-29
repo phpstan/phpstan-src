@@ -816,4 +816,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->getReturnType()->hasTemplateOrLateResolvableType();
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

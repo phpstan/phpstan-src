@@ -713,6 +713,18 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+
+		// Narrow each offset's value type
+		foreach ($this->valueTypes as $i => $valueType) {
+			$builder->setOffsetValueType($this->keyTypes[$i], $narrowedItemType);
+		}
+
+		return $builder->getArray();
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		$offsetType = $offsetType->toArrayKey();

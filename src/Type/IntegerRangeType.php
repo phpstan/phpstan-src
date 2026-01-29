@@ -754,4 +754,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return parent::looseCompare($type, $phpVersion);
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

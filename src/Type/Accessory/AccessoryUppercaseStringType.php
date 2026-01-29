@@ -166,6 +166,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();

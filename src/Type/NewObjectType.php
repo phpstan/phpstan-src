@@ -91,4 +91,9 @@ class NewObjectType implements CompoundType, LateResolvableType
 		return new GenericTypeNode(new IdentifierTypeNode('new'), [$this->type->toPhpDocNode()]);
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

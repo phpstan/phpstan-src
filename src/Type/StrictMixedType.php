@@ -366,6 +366,11 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();

@@ -175,6 +175,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new self($this->isExplicitMixed);
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		if ($this->subtractedType !== null) {

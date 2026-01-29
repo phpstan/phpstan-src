@@ -210,6 +210,11 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this;

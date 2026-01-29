@@ -108,4 +108,9 @@ final class ValueOfType implements CompoundType, LateResolvableType
 		return new GenericTypeNode(new IdentifierTypeNode('value-of'), [$this->type->toPhpDocNode()]);
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

@@ -185,4 +185,9 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return false;
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

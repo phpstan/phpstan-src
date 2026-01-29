@@ -188,6 +188,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @var array<string, self> */
 	private array $falseyScopes = [];
 
+	/** @var array<string, ForeachSourceTracking> */
+	private array $foreachSources = [];
+
 	private ?self $fiberScope = null;
 
 	/** @var non-empty-string|null */
@@ -748,6 +751,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $variables;
+	}
+
+	/**
+	 * @return array<string, ForeachSourceTracking>
+	 */
+	public function getForeachSources(): array
+	{
+		return $this->foreachSources;
 	}
 
 	private function isGlobalVariable(string $variableName): bool
@@ -1986,6 +1997,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		if ($rememberTypes) {
 			$functionScope->resolvedTypes = $this->resolvedTypes;
 		}
+		$functionScope->foreachSources = $this->foreachSources;
 
 		return $functionScope;
 	}
@@ -2015,6 +2027,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 
 		$parentScope->resolvedTypes = $this->resolvedTypes;
+		$parentScope->foreachSources = $this->foreachSources;
 
 		return $parentScope;
 	}
@@ -3004,6 +3017,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$nativeValueType,
 			TrinaryLogic::createYes(),
 		);
+
+		// Track the foreach source for bidirectional narrowing
+		$scope->foreachSources = $this->foreachSources;
+		$scope->foreachSources[$valueName] = new ForeachSourceTracking(
+			$valueName,
+			$iteratee,
+			$iterateeType,
+		);
+
 		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 			$scope = $scope->assignExpression(
 				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetOffsetValueTypeExpr(
@@ -3026,6 +3048,37 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				);
 			}
 		}
+
+		return $scope;
+	}
+
+	public function exitForeach(string $valueName): self
+	{
+		$scope = $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
+
+		// Clean up the foreach source tracking for the exited loop
+		unset($scope->foreachSources[$valueName]);
 
 		return $scope;
 	}
@@ -3099,6 +3152,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
 		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
 
 		return $scope;
 	}
@@ -3130,6 +3184,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
 		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
 
 		return $scope;
 	}
@@ -3176,6 +3231,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
 		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
 
 		return $scope;
 	}
@@ -3207,6 +3263,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
 		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
 
 		return $scope;
 	}
@@ -3798,7 +3855,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		return $scope->scopeFactory->create(
+		$newScope = $scope->scopeFactory->create(
 			$scope->context,
 			$scope->isDeclareStrictTypes(),
 			$scope->getFunction(),
@@ -3816,6 +3873,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->parentScope,
 			$scope->nativeTypesPromoted,
 		);
+
+		// Preserve foreachSources when filtering by specified types
+		$newScope->foreachSources = $scope->foreachSources;
+
+		return $newScope;
 	}
 
 	/**
@@ -3876,6 +3938,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
 		$scope->falseyScopes = $this->falseyScopes;
+		$scope->foreachSources = $this->foreachSources;
 		$this->scopeOutOfFirstLevelStatement = $scope;
 
 		return $scope;
@@ -3949,7 +4012,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			unset($theirNativeExpressionTypes[$exprString]);
 		}
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
@@ -3967,6 +4030,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+
+		// Preserve foreachSources when merging scopes
+		$scope->foreachSources = $this->foreachSources;
+
+		return $scope;
 	}
 
 	/**

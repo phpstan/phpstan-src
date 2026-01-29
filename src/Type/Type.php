@@ -151,6 +151,8 @@ interface Type
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type;
 
+	public function narrowItemType(Type $narrowedItemType): Type;
+
 	public function unsetOffset(Type $offsetType): Type;
 
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type;

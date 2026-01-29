@@ -187,6 +187,28 @@ final class TypeSpecifier
 					}
 				}
 			}
+
+			// Handle instanceof on array elements: $array[0] instanceof Foo
+			if ($exprNode instanceof ArrayDimFetch) {
+				$dimFetch = $exprNode;
+				$arrayExpr = $dimFetch->var;
+				$dim = $dimFetch->dim;
+
+				// Only narrow when offset is constant (conservative approach)
+				if ($this->isConstantOffset($dim)) {
+					$arrayType = $scope->getType($arrayExpr);
+
+					// Narrow the array type based on the instanceof check
+					$narrowedArrayType = $this->narrowArrayFromElementCheck(
+						$arrayType,
+						$type,
+						$context,
+					);
+
+					return $this->create($arrayExpr, $narrowedArrayType, $context, $scope)->setRootExpr($expr);
+				}
+			}
+
 			if ($context->true()) {
 				return $this->create($exprNode, new ObjectWithoutClassType(), $context, $scope)->setRootExpr($exprNode);
 			}
@@ -1815,7 +1837,88 @@ final class TypeSpecifier
 			}
 		}
 
-		return $types;
+		return $this->addForeachNarrowingPropagation($types, $scope);
+	}
+
+	/**
+	 * Propagate type narrowing from foreach value variables to their source arrays
+	 *
+	 * WARNING: This method implements AGGRESSIVE type narrowing that may create
+	 * unsound inferences. When a foreach value variable is narrowed via instanceof,
+	 * the entire array's item type is narrowed to the same type. This assumes
+	 * all elements in the array share the narrowed type, which may not be true.
+	 *
+	 * Example:
+	 * ```php
+	 * foreach ($animals as $animal) {
+	 *     if ($animal instanceof Dog) {
+	 *         // $animals is narrowed to list<Dog>
+	 *         // BUT: Array may still contain Cat instances!
+	 *         // This is UNSAFE and could hide type errors
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * Users should be aware of this limitation when relying on array narrowing
+	 * in foreach loops. Consider using explicit type assertions or more precise
+	 * type guards when working with mixed-type arrays.
+	 *
+	 * @param SpecifiedTypes $types The types already specified in this condition
+	 * @param Scope $scope The current scope
+	 * @return SpecifiedTypes Updated types with foreach propagation applied
+	 */
+	private function addForeachNarrowingPropagation(SpecifiedTypes $types, Scope $scope): SpecifiedTypes
+	{
+		// Only MutatingScope has foreachSources tracking
+		if (!$scope instanceof MutatingScope) {
+			return $types;
+		}
+
+		$foreachSources = $scope->getForeachSources();
+		if ($foreachSources === []) {
+			return $types;
+		}
+
+		$additionalTypes = [];
+
+		// Process sureTypes (types that ARE true in if branch)
+		foreach ($types->getSureTypes() as $exprString => [$exprNode, $narrowedType]) {
+			// Extract variable name from exprString
+			$varName = null;
+			if ($exprNode instanceof Expr\Variable && is_string($exprNode->name)) {
+				$varName = $exprNode->name;
+			} else {
+				// Try to extract from exprString (remove leading $)
+				$varName = ltrim($exprString, '$');
+			}
+
+			if ($varName === null || $varName === '' || !isset($foreachSources[$varName])) {
+				continue;
+			}
+
+			$source = $foreachSources[$varName];
+			$sourceArrayExpr = $source->arrayExpr;
+			$originalArrayType = $source->originalArrayType;
+
+			// Narrow the array's item type using the method from Phase 2
+			$narrowedArrayType = $originalArrayType->narrowItemType($narrowedType);
+
+			// Only add if narrowing actually changed the type
+			if (!$narrowedArrayType->equals($originalArrayType)) {
+				$additionalTypes[] = new SpecifiedTypes(
+					[$this->exprPrinter->printExpr($sourceArrayExpr) => [$sourceArrayExpr, $narrowedArrayType]],
+					[]
+				);
+			}
+		}
+
+		// Union all the additional types with the original result
+		$result = $types;
+		foreach ($additionalTypes as $additional) {
+			$result = $result->unionWith($additional);
+		}
+
+		return $result;
 	}
 
 	private function createForExpr(
@@ -2666,6 +2769,29 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	private function isConstantOffset(?Expr $dim): bool
+	{
+		if ($dim === null) {
+			return false;
+		}
+
+		return $dim instanceof Node\Scalar\Int_ || $dim instanceof Node\Scalar\String_;
+	}
+
+	private function narrowArrayFromElementCheck(
+		Type $arrayType,
+		Type $instanceofType,
+		TypeSpecifierContext $context,
+	): Type {
+		if ($context->true()) {
+			// True branch: narrow array item type based on instanceof check
+			return $arrayType->narrowItemType($instanceofType);
+		}
+
+		// False branch: conservative approach, don't narrow
+		return $arrayType;
 	}
 
 }

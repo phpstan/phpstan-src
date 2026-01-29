@@ -955,6 +955,31 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->setExistingOffsetValueType($offsetType, $valueType));
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		$types = [];
+		$hasArrayListType = false;
+		$hasArrayType = false;
+
+		foreach ($this->types as $type) {
+			if ($type instanceof AccessoryArrayListType) {
+				$hasArrayListType = true;
+				$types[] = $type;
+			} elseif ($type instanceof ArrayType) {
+				$hasArrayType = true;
+				$types[] = $type->narrowItemType($narrowedItemType);
+			} else {
+				$types[] = $type;
+			}
+		}
+
+		if (!$hasArrayType) {
+			return $this;
+		}
+
+		return new IntersectionType($types);
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));

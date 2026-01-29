@@ -274,6 +274,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->setExistingOffsetValueType($offsetType, $valueType);
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this->resolve()->narrowItemType($narrowedItemType);
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return $this->resolve()->unsetOffset($offsetType);

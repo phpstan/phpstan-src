@@ -174,4 +174,9 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		);
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

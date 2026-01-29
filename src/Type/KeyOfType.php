@@ -91,4 +91,9 @@ class KeyOfType implements CompoundType, LateResolvableType
 		return new GenericTypeNode(new IdentifierTypeNode('key-of'), [$this->type->toPhpDocNode()]);
 	}
 
+
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return $this;
+	}
 }

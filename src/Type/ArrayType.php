@@ -416,6 +416,11 @@ class ArrayType implements Type
 		);
 	}
 
+	public function narrowItemType(Type $narrowedItemType): Type
+	{
+		return new self($this->keyType, $narrowedItemType);
+	}
+
 	public function unsetOffset(Type $offsetType): Type
 	{
 		$offsetType = $offsetType->toArrayKey();

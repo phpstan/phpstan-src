@@ -4091,10 +4091,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
 				$expr = $variableTypeHolder->getExpr();
-				if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
-					$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
+
+				$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
+				if ($containsSuperGlobal === null) {
+					$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
+					$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
 				}
-				if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) === true) {
+				if ($containsSuperGlobal === true) {
 					continue;
 				}
 
@@ -4108,10 +4111,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$expr = $variableTypeHolder->getExpr();
-			if (!$expr->hasAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME)) {
-				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $nodeFinder->findFirst($expr, $globalVariableCallback) !== null);
+
+			$containsSuperGlobal = $expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME);
+			if ($containsSuperGlobal === null) {
+				$containsSuperGlobal = $nodeFinder->findFirst($expr, $globalVariableCallback) !== null;
+				$expr->setAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME, $containsSuperGlobal);
 			}
-			if ($expr->getAttribute(self::CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME) === true) {
+			if ($containsSuperGlobal === true) {
 				continue;
 			}
 

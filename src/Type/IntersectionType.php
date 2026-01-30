@@ -69,6 +69,14 @@ class IntersectionType implements CompoundType
 
 	private bool $sortedTypes = false;
 
+	private ?TrinaryLogic $isBoolean = null;
+
+	private ?TrinaryLogic $isFloat = null;
+
+	private ?TrinaryLogic $isInteger = null;
+
+	private ?TrinaryLogic $isString = null;
+
 	private ?TrinaryLogic $isArray = null;
 
 	private ?TrinaryLogic $isList = null;
@@ -765,7 +773,7 @@ class IntersectionType implements CompoundType
 
 	public function isString(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isString());
+		return $this->isString ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isString());
 	}
 
 	public function isNumericString(): TrinaryLogic
@@ -1146,17 +1154,17 @@ class IntersectionType implements CompoundType
 
 	public function isBoolean(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isBoolean());
+		return $this->isBoolean ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isBoolean());
 	}
 
 	public function isFloat(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isFloat());
+		return $this->isFloat ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isFloat());
 	}
 
 	public function isInteger(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isInteger());
+		return $this->isInteger ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isInteger());
 	}
 
 	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

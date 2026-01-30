@@ -150,7 +150,7 @@ final class TypeSpecifier
 				} else {
 					$type = new ObjectType($className);
 				}
-				return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+				return $this->create($exprNode, $type, $context, $scope, true)->setRootExpr($expr);
 			}
 
 			$classType = $scope->getType($expr->class);
@@ -179,11 +179,11 @@ final class TypeSpecifier
 						$type,
 						new ObjectWithoutClassType(),
 					);
-					return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+					return $this->create($exprNode, $type, $context, $scope, true)->setRootExpr($expr);
 				} elseif ($context->false() && !$uncertainty) {
 					$exprType = $scope->getType($expr->expr);
 					if (!$type->isSuperTypeOf($exprType)->yes()) {
-						return $this->create($exprNode, $type, $context, $scope)->setRootExpr($expr);
+						return $this->create($exprNode, $type, $context, $scope, true)->setRootExpr($expr);
 					}
 				}
 			}
@@ -205,12 +205,12 @@ final class TypeSpecifier
 						$context,
 					);
 
-					return $this->create($arrayExpr, $narrowedArrayType, $context, $scope)->setRootExpr($expr);
+					return $this->create($arrayExpr, $narrowedArrayType, $context, $scope, true)->setRootExpr($expr);
 				}
 			}
 
 			if ($context->true()) {
-				return $this->create($exprNode, new ObjectWithoutClassType(), $context, $scope)->setRootExpr($exprNode);
+				return $this->create($exprNode, new ObjectWithoutClassType(), $context, $scope, true)->setRootExpr($exprNode);
 			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
 			return $this->resolveIdentical($expr, $scope, $context);
@@ -1799,6 +1799,7 @@ final class TypeSpecifier
 		Type $type,
 		TypeSpecifierContext $context,
 		Scope $scope,
+		bool $propagateForeachNarrowing = false,
 	): SpecifiedTypes
 	{
 		if ($expr instanceof Instanceof_ || $expr instanceof Expr\List_) {
@@ -1837,7 +1838,11 @@ final class TypeSpecifier
 			}
 		}
 
-		return $this->addForeachNarrowingPropagation($types, $scope);
+		if ($propagateForeachNarrowing) {
+			return $this->addForeachNarrowingPropagation($types, $scope);
+		}
+
+		return $types;
 	}
 
 	/**
@@ -1882,17 +1887,14 @@ final class TypeSpecifier
 		$additionalTypes = [];
 
 		// Process sureTypes (types that ARE true in if branch)
-		foreach ($types->getSureTypes() as $exprString => [$exprNode, $narrowedType]) {
-			// Extract variable name from exprString
-			$varName = null;
-			if ($exprNode instanceof Expr\Variable && is_string($exprNode->name)) {
-				$varName = $exprNode->name;
-			} else {
-				// Try to extract from exprString (remove leading $)
-				$varName = ltrim($exprString, '$');
+		foreach ($types->getSureTypes() as [$exprNode, $narrowedType]) {
+			// Only process simple variable expressions for foreach source tracking
+			if (!$exprNode instanceof Expr\Variable || !is_string($exprNode->name)) {
+				continue;
 			}
 
-			if ($varName === null || $varName === '' || !isset($foreachSources[$varName])) {
+			$varName = $exprNode->name;
+			if (!isset($foreachSources[$varName])) {
 				continue;
 			}
 
@@ -1904,12 +1906,14 @@ final class TypeSpecifier
 			$narrowedArrayType = $originalArrayType->narrowItemType($narrowedType);
 
 			// Only add if narrowing actually changed the type
-			if (!$narrowedArrayType->equals($originalArrayType)) {
-				$additionalTypes[] = new SpecifiedTypes(
-					[$this->exprPrinter->printExpr($sourceArrayExpr) => [$sourceArrayExpr, $narrowedArrayType]],
-					[]
-				);
+			if ($narrowedArrayType->equals($originalArrayType)) {
+				continue;
 			}
+
+			$additionalTypes[] = new SpecifiedTypes(
+				[$this->exprPrinter->printExpr($sourceArrayExpr) => [$sourceArrayExpr, $narrowedArrayType]],
+				[],
+			);
 		}
 
 		// Union all the additional types with the original result
@@ -2784,7 +2788,8 @@ final class TypeSpecifier
 		Type $arrayType,
 		Type $instanceofType,
 		TypeSpecifierContext $context,
-	): Type {
+	): Type
+	{
 		if ($context->true()) {
 			// True branch: narrow array item type based on instanceof check
 			return $arrayType->narrowItemType($instanceofType);

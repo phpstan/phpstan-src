@@ -754,6 +754,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
+	 * @internal
 	 * @return array<string, ForeachSourceTracking>
 	 */
 	public function getForeachSources(): array
@@ -3048,37 +3049,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				);
 			}
 		}
-
-		return $scope;
-	}
-
-	public function exitForeach(string $valueName): self
-	{
-		$scope = $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$this->expressionTypes,
-			$this->nativeExpressionTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->isInFirstLevelStatement(),
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
-			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
-		);
-		$scope->resolvedTypes = $this->resolvedTypes;
-		$scope->truthyScopes = $this->truthyScopes;
-		$scope->falseyScopes = $this->falseyScopes;
-		$scope->foreachSources = $this->foreachSources;
-
-		// Clean up the foreach source tracking for the exited loop
-		unset($scope->foreachSources[$valueName]);
 
 		return $scope;
 	}

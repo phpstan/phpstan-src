@@ -958,12 +958,10 @@ class IntersectionType implements CompoundType
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		$types = [];
-		$hasArrayListType = false;
 		$hasArrayType = false;
 
 		foreach ($this->types as $type) {
 			if ($type instanceof AccessoryArrayListType) {
-				$hasArrayListType = true;
 				$types[] = $type;
 			} elseif ($type instanceof ArrayType) {
 				$hasArrayType = true;

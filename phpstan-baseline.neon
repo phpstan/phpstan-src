@@ -1380,7 +1380,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 4
+			count: 5
 			path: src/Type/IntersectionType.php
 
 		-

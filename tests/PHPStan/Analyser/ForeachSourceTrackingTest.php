@@ -4,9 +4,9 @@ namespace PHPStan\Analyser;
 
 use Override;
 use PhpParser\Node\Expr\Variable;
-use PHPUnit\Framework\Attributes\Group;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\Group;
 
 #[Group('foreach-tracking')]
 class ForeachSourceTrackingTest extends PHPStanTestCase
@@ -28,8 +28,7 @@ class ForeachSourceTrackingTest extends PHPStanTestCase
 		$scope = $this->scopeFactory->create(ScopeContext::create('test.php'));
 
 		$foreachSources = $scope->getForeachSources();
-		$this->assertIsArray($foreachSources);
-		$this->assertEmpty($foreachSources);
+		$this->assertCount(0, $foreachSources);
 	}
 
 	public function testEnterForeachCreatesTracking(): void
@@ -40,26 +39,11 @@ class ForeachSourceTrackingTest extends PHPStanTestCase
 		$scope = $originalScope->enterForeach($originalScope, $arrayExpr, 'value', null, false);
 
 		$foreachSources = $scope->getForeachSources();
-		$this->assertIsArray($foreachSources);
 		$this->assertArrayHasKey('value', $foreachSources);
 
 		$tracking = $foreachSources['value'];
-		$this->assertInstanceOf(ForeachSourceTracking::class, $tracking);
 		$this->assertSame('value', $tracking->valueVarName);
 		$this->assertSame($arrayExpr, $tracking->arrayExpr);
 	}
 
-	public function testExitForeachRemovesTracking(): void
-	{
-		$originalScope = $this->scopeFactory->create(ScopeContext::create('test.php'));
-
-		$arrayExpr = new Variable('array');
-		$scope = $originalScope->enterForeach($originalScope, $arrayExpr, 'value', null, false);
-		$this->assertArrayHasKey('value', $scope->getForeachSources());
-
-		$scope = $scope->exitForeach('value');
-		$this->assertArrayNotHasKey('value', $scope->getForeachSources());
-	}
-
 }
-

@@ -717,9 +717,8 @@ class ConstantArrayType implements Type
 	{
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 
-		// Narrow each offset's value type
-		foreach ($this->valueTypes as $i => $valueType) {
-			$builder->setOffsetValueType($this->keyTypes[$i], $narrowedItemType);
+		foreach ($this->keyTypes as $keyType) {
+			$builder->setOffsetValueType($keyType, $narrowedItemType);
 		}
 
 		return $builder->getArray();

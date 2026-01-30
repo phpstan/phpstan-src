@@ -151,6 +151,10 @@ interface Type
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type;
 
+	/**
+	 * Narrows the item type of iterable types (arrays, lists).
+	 * Used for bidirectional type narrowing in foreach loops.
+	 */
 	public function narrowItemType(Type $narrowedItemType): Type;
 
 	public function unsetOffset(Type $offsetType): Type;

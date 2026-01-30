@@ -96,10 +96,18 @@ final class ApiInstanceofTypeRule implements Rule
 		AccessoryType::class => 'methods on PHPStan\\Type\\Type',
 	];
 
+	/** @var array<lowercase-string, string|null> */
+	private array $lowerMap;
+
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 	)
 	{
+		$lowerMap = [];
+		foreach (self::MAP as $className => $method) {
+			$lowerMap[strtolower($className)] = $method;
+		}
+		$this->lowerMap = $lowerMap;
 	}
 
 	public function getNodeType(): string
@@ -117,14 +125,9 @@ final class ApiInstanceofTypeRule implements Rule
 			return [];
 		}
 
-		$lowerMap = [];
-		foreach (self::MAP as $className => $method) {
-			$lowerMap[strtolower($className)] = $method;
-		}
-
 		$className = $scope->resolveName($node->class);
 		$lowerClassName = strtolower($className);
-		if (!array_key_exists($lowerClassName, $lowerMap)) {
+		if (!array_key_exists($lowerClassName, $this->lowerMap)) {
 			return [];
 		}
 
@@ -138,7 +141,7 @@ final class ApiInstanceofTypeRule implements Rule
 		}
 
 		$tip = 'Learn more: <fg=cyan>https://phpstan.org/blog/why-is-instanceof-type-wrong-and-getting-deprecated</>';
-		if ($lowerMap[$lowerClassName] === null) {
+		if ($this->lowerMap[$lowerClassName] === null) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Doing instanceof %s is error-prone and deprecated.',
@@ -151,7 +154,7 @@ final class ApiInstanceofTypeRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Doing instanceof %s is error-prone and deprecated. Use %s instead.',
 				$className,
-				$lowerMap[$lowerClassName],
+				$this->lowerMap[$lowerClassName],
 			))->identifier('phpstanApi.instanceofType')->tip($tip)->build(),
 		];
 	}

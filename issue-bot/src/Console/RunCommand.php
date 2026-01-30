@@ -3,28 +3,41 @@
 namespace PHPStan\IssueBot\Console;
 
 use Exception;
+use Fidry\CpuCoreCounter\CpuCoreCounter as FidryCpuCoreCounter;
+use Fidry\CpuCoreCounter\NumberOfCpuCoreNotFound;
 use Nette\Neon\Neon;
 use Nette\Utils\Json;
 use PHPStan\IssueBot\Playground\PlaygroundCache;
 use PHPStan\IssueBot\Playground\PlaygroundError;
 use PHPStan\IssueBot\Playground\PlaygroundResult;
+use PHPStan\IssueBot\Process\ProcessPromise;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\StreamSelectLoop;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 use function array_key_exists;
-use function exec;
+use function count;
+use function escapeshellarg;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
 use function is_file;
+use function ksort;
 use function microtime;
+use function mkdir;
+use function React\Promise\set_rejection_handler;
 use function serialize;
 use function sha1;
 use function sprintf;
 use function str_replace;
 use function strpos;
+use function sys_get_temp_dir;
 use function unserialize;
 
 class RunCommand extends Command
@@ -48,17 +61,47 @@ class RunCommand extends Command
 		$commaSeparatedPlaygroundHashes = $input->getArgument('playgroundHashes');
 		$playgroundHashes = explode(',', $commaSeparatedPlaygroundHashes);
 		$playgroundCache = $this->loadPlaygroundCache();
-		$errors = [];
+
+		try {
+			$cpuCount = (new FidryCpuCoreCounter())->getCount();
+		} catch (NumberOfCpuCoreNotFound) {
+			$cpuCount = 1;
+		}
+
+		$loop = new StreamSelectLoop();
+		$jobs = [];
 		foreach ($playgroundHashes as $hash) {
 			if (!array_key_exists($hash, $playgroundCache->getResults())) {
 				throw new Exception(sprintf('Hash %s must exist', $hash));
 			}
-			$errors[$hash] = $this->analyseHash($output, $phpVersion, $playgroundCache->getResults()[$hash]);
+			$jobs[] = [$phpVersion, $hash, $playgroundCache->getResults()[$hash]];
 		}
 
-		$data = ['phpVersion' => $phpVersion, 'errors' => $errors];
+		$allErrors = [];
 
-		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)), serialize($data));
+		set_rejection_handler(static function (Throwable $t): void {
+			throw $t;
+		});
+
+		$this->runPool($jobs, $cpuCount, function (array $job) use ($output, $loop): PromiseInterface {
+			[$phpVersion, $hash, $result] = $job;
+			return $this->analyseHash($loop, $output, $phpVersion, $result)->then(
+				static fn (array $errors) => [$hash, $errors],
+			);
+		})->then(static function (array $results) use (&$allErrors): void {
+			foreach ($results as [$hash, $errors]) {
+				$allErrors[$hash] = $errors;
+			}
+		});
+
+		$loop->run();
+
+		$data = ['phpVersion' => $phpVersion, 'errors' => $allErrors];
+
+		$writeSuccess = file_put_contents(
+			sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)),
+			serialize($data),
+		);
 		if ($writeSuccess === false) {
 			throw new Exception('Result write unsuccessful');
 		}
@@ -67,9 +110,64 @@ class RunCommand extends Command
 	}
 
 	/**
-	 * @return list<PlaygroundError>
+	 * @param array<array{int, string, PlaygroundResult}> $jobs
+	 * @param callable(array{int, string, PlaygroundResult}): PromiseInterface<array{string, list<PlaygroundError>}> $jobRunner
+	 * @return PromiseInterface<list<array{string, list<PlaygroundError>}>>
 	 */
-	private function analyseHash(OutputInterface $output, int $phpVersion, PlaygroundResult $result): array
+	private function runPool(array $jobs, int $concurrency, callable $jobRunner): PromiseInterface
+	{
+		$deferred = new Deferred();
+		$results = [];
+		$pending = 0;
+		$index = 0;
+		$total = count($jobs);
+		$rejected = false;
+
+		if ($total === 0) {
+			$deferred->resolve([]);
+			return $deferred->promise();
+		}
+
+		$runNext = static function () use (&$runNext, &$jobs, &$results, &$pending, &$index, &$rejected, $total, $concurrency, $jobRunner, $deferred): void {
+			if ($rejected) {
+				return;
+			}
+			while ($pending < $concurrency && $index < $total) {
+				$currentIndex = $index++;
+				$pending++;
+
+				$jobRunner($jobs[$currentIndex])->then(
+					static function ($result) use (&$results, &$pending, $currentIndex, $total, $runNext, $deferred): void {
+						$results[$currentIndex] = $result;
+						$pending--;
+
+						if (count($results) === $total) {
+							ksort($results);
+							$deferred->resolve($results);
+						} else {
+							$runNext();
+						}
+					},
+					static function ($error) use (&$rejected, $deferred): void {
+						if ($rejected) {
+							return;
+						}
+						$rejected = true;
+						$deferred->reject($error);
+					},
+				);
+			}
+		};
+
+		$runNext();
+
+		return $deferred->promise();
+	}
+
+	/**
+	 * @return PromiseInterface<list<PlaygroundError>>
+	 */
+	private function analyseHash(LoopInterface $loop, OutputInterface $output, int $phpVersion, PlaygroundResult $result): PromiseInterface
 	{
 		$configFiles = [
 			__DIR__ . '/../../playground.neon',
@@ -81,6 +179,8 @@ class RunCommand extends Command
 		if ($result->isStrictRules()) {
 			$configFiles[] = __DIR__ . '/../../vendor/phpstan/phpstan-strict-rules/rules.neon';
 		}
+		$tmpDir = sys_get_temp_dir() . '/phpstan-issue-bot-' . $result->getHash();
+		@mkdir($tmpDir, 0777, true);
 		$neon = Neon::encode([
 			'includes' => $configFiles,
 			'parameters' => [
@@ -88,6 +188,7 @@ class RunCommand extends Command
 				'inferPrivatePropertyTypeFromConstructor' => true,
 				'treatPhpDocTypesAsCertain' => $result->isTreatPhpDocTypesAsCertain(),
 				'phpVersion' => $phpVersion,
+				'tmpDir' => $tmpDir,
 			],
 		]);
 
@@ -98,40 +199,43 @@ class RunCommand extends Command
 		file_put_contents($codePath, $result->getCode());
 
 		$commandArray = [
-			__DIR__ . '/../../../bin/phpstan',
+			escapeshellarg(__DIR__ . '/../../../bin/phpstan'),
 			'analyse',
 			'--error-format',
 			'json',
 			'--no-progress',
 			'-c',
-			$neonPath,
-			$codePath,
+			escapeshellarg($neonPath),
+			escapeshellarg($codePath),
 		];
 
 		$output->writeln(sprintf('Starting analysis of %s', $hash));
-
+		$process = new ProcessPromise($loop, implode(' ', $commandArray));
 		$startTime = microtime(true);
-		exec(implode(' ', $commandArray), $outputLines, $exitCode);
-		$elapsedTime = microtime(true) - $startTime;
-		$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
-
-		if ($exitCode !== 0 && $exitCode !== 1) {
-			throw new Exception(sprintf('PHPStan exited with code %d during analysis of %s', $exitCode, $hash));
-		}
-
-		$json = Json::decode(implode("\n", $outputLines), Json::FORCE_ARRAY);
-		$errors = [];
-		foreach ($json['files'] as ['messages' => $messages]) {
-			foreach ($messages as $message) {
-				$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
-				if (strpos($messageText, 'Internal error') !== false) {
-					throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
-				}
-				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
+		return $process->run()->then(static function (string $stdout) use ($hash, $output, $startTime) {
+			try {
+				$json = Json::decode($stdout, Json::FORCE_ARRAY);
+			} catch (Throwable $e) {
+				echo $stdout . "\n";
+				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));
 			}
-		}
 
-		return $errors;
+			$errors = [];
+			foreach ($json['files'] as ['messages' => $messages]) {
+				foreach ($messages as $message) {
+					$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+					if (strpos($messageText, 'Internal error') !== false) {
+						throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
+					}
+					$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
+				}
+			}
+
+			$elapsedTime = microtime(true) - $startTime;
+			$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
+
+			return $errors;
+		});
 	}
 
 	private function loadPlaygroundCache(): PlaygroundCache

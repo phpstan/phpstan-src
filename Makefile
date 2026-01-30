@@ -146,19 +146,19 @@ phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=599M bin/phpstan -v
 
 phpstan-result-cache:
-	php -d memory_limit=499M bin/phpstan
+	php -d memory_limit=599M bin/phpstan
 
 phpstan-fix:
-	php -d memory_limit=499M bin/phpstan --fix
+	php -d memory_limit=599M bin/phpstan --fix
 
 phpstan-generate-baseline:
-	php -d memory_limit=499M bin/phpstan --generate-baseline
+	php -d memory_limit=599M bin/phpstan --generate-baseline
 
 phpstan-generate-baseline-php:
-	php -d memory_limit=499M bin/phpstan analyse --generate-baseline phpstan-baseline.php
+	php -d memory_limit=599M bin/phpstan analyse --generate-baseline phpstan-baseline.php
 
 phpstan-pro:
-	php -d memory_limit=448M bin/phpstan --pro
+	php -d memory_limit=599M bin/phpstan --pro
 
 name-collision:
 	php vendor/bin/detect-collisions --configuration build/collision-detector.json

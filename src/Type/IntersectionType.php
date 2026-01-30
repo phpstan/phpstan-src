@@ -69,6 +69,18 @@ class IntersectionType implements CompoundType
 
 	private bool $sortedTypes = false;
 
+	private ?TrinaryLogic $isArray = null;
+
+	private ?TrinaryLogic $isList = null;
+
+	private ?TrinaryLogic $isConstantArray = null;
+
+	private ?TrinaryLogic $isOversizedArray = null;
+
+	private ?TrinaryLogic $isIterableAtLeastOnce = null;
+
+	private ?TrinaryLogic $isConstantScalarValue = null;
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -675,7 +687,7 @@ class IntersectionType implements CompoundType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return $this->intersectResults(
+		return $this->isIterableAtLeastOnce ??= $this->intersectResults(
 			static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce(),
 			static fn (Type $type): bool => !$type->isIterable()->no(),
 		);
@@ -733,22 +745,22 @@ class IntersectionType implements CompoundType
 
 	public function isArray(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isArray());
+		return $this->isArray ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isArray());
 	}
 
 	public function isConstantArray(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantArray());
+		return $this->isConstantArray ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantArray());
 	}
 
 	public function isOversizedArray(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOversizedArray());
+		return $this->isOversizedArray ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOversizedArray());
 	}
 
 	public function isList(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
+		return $this->isList ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
 	}
 
 	public function isString(): TrinaryLogic
@@ -1095,7 +1107,7 @@ class IntersectionType implements CompoundType
 
 	public function isConstantScalarValue(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantScalarValue());
+		return $this->isConstantScalarValue ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantScalarValue());
 	}
 
 	public function getConstantScalarTypes(): array

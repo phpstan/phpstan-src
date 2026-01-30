@@ -11,6 +11,9 @@ class ParameterClosureTypeExtensionArrowFunctionTest extends TypeInferenceTestCa
 	public static function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/parameter-closure-type-extension-arrow-function.php');
+		if (PHP_VERSION_ID >= 80500) {
+			yield from self::gatherAssertTypes(__DIR__ . '/data/closure-type-in-constant-expression-php85.php');
+		}
 	}
 
 	/**

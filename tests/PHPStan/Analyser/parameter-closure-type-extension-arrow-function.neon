@@ -14,3 +14,8 @@ services:
 		tags:
 			- phpstan.staticMethodParameterClosureTypeExtension
 
+	-
+		class: \ClosureTypeInConstantExpressionPhp85\StaticMethodParameterClosureTypeExtension
+		tags:
+			- phpstan.staticMethodParameterClosureTypeExtension
+

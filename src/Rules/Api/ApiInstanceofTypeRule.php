@@ -97,7 +97,7 @@ final class ApiInstanceofTypeRule implements Rule
 	];
 
 	/** @var array<lowercase-string, string|null> */
-	private array $lowerMap;
+	private readonly array $lowerMap;
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,

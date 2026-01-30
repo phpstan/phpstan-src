@@ -29,32 +29,17 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		$lowerClassName = strtolower($className);
-		if (isset($this->hasClasses[$lowerClassName])) {
-			return $this->hasClasses[$lowerClassName];
-		}
-
-		return $this->hasClasses[$lowerClassName] = $this->provider->hasClass($className);
+		return $this->hasClasses[strtolower($className)] ??= $this->provider->hasClass($className);
 	}
 
 	public function getClass(string $className): ClassReflection
 	{
-		$lowerClassName = strtolower($className);
-		if (isset($this->classes[$lowerClassName])) {
-			return $this->classes[$lowerClassName];
-		}
-
-		return $this->classes[$lowerClassName] = $this->provider->getClass($className);
+		return $this->classes[strtolower($className)] ??= $this->provider->getClass($className);
 	}
 
 	public function getClassName(string $className): string
 	{
-		$lowerClassName = strtolower($className);
-		if (isset($this->classNames[$lowerClassName])) {
-			return $this->classNames[$lowerClassName];
-		}
-
-		return $this->classNames[$lowerClassName] = $this->provider->getClassName($className);
+		return $this->classNames[strtolower($className)] ??= $this->provider->getClassName($className);
 	}
 
 	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection

@@ -217,9 +217,9 @@ final class ConditionalType implements CompoundType, LateResolvableType
 		return $this->subjectWithTargetRemovedType ??= TypeCombinator::remove($this->subject, $this->target);
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

@@ -499,9 +499,9 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return false;
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

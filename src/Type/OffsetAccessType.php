@@ -114,9 +114,9 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 		);
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

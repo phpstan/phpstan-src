@@ -537,9 +537,9 @@ class IterableType implements CompoundType
 		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

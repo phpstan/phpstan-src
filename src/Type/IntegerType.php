@@ -204,9 +204,9 @@ class IntegerType implements Type
 		return false;
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

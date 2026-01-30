@@ -219,9 +219,9 @@ class ObjectWithoutClassType implements SubtractableType
 		return false;
 	}
 
-
 	public function narrowItemType(Type $narrowedItemType): Type
 	{
 		return $this;
 	}
+
 }

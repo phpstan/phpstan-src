@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use Closure;
 use PhpParser\Node;
 use PHPStan\Analyser\ArgumentsNormalizer;
-use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -498,14 +497,14 @@ final class ParametersAcceptorSelector
 				}
 			}
 
-			if ($parameter !== null && $scope instanceof MutatingScope && !$scope instanceof FiberScope) {
+			if ($parameter !== null && $scope instanceof MutatingScope) {
 				$rememberTypes = !$originalArg->value instanceof Node\Expr\Closure && !$originalArg->value instanceof Node\Expr\ArrowFunction;
 				$scope = $scope->pushInFunctionCall(null, $parameter, $rememberTypes);
 			}
 
 			$type = $scope->getType($originalArg->value);
 
-			if ($parameter !== null && $scope instanceof MutatingScope && !$scope instanceof FiberScope) {
+			if ($parameter !== null && $scope instanceof MutatingScope) {
 				$scope = $scope->popInFunctionCall();
 			}
 

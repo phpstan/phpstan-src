@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Type;
+use function array_pop;
 
 final class FiberScope extends MutatingScope
 {
@@ -140,14 +141,25 @@ final class FiberScope extends MutatingScope
 	 */
 	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
 	{
-		// no need to track this in rules, the type will be correct anyway
-		return $this;
+		/** @var self $scope */
+		$scope = parent::pushInFunctionCall($reflection, $parameter, $rememberTypes);
+		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
+
+		return $scope;
 	}
 
 	public function popInFunctionCall(): self
 	{
-		// no need to track this in rules, the type will be correct anyway
-		return $this;
+		$stack = $this->inFunctionCallsStack;
+		array_pop($stack);
+
+		/** @var self $scope */
+		$scope = parent::popInFunctionCall();
+		$scope->truthyValueExprs = $this->truthyValueExprs;
+		$scope->falseyValueExprs = $this->falseyValueExprs;
+
+		return $scope;
 	}
 
 	public function getParentScope(): ?MutatingScope

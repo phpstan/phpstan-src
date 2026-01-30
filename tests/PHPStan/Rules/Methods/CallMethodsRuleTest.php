@@ -3761,4 +3761,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12735.php'], []);
 	}
 
+	public function testBug13993(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13993.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13993b(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/closure-passed-to-type-fiberscope-php81.php'], []);
+	}
+
 }

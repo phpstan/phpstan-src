@@ -249,9 +249,9 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
-	private readonly Type $nonIntKeyOffsetValueType;
+	private Type $nonIntKeyOffsetValueType;
 
-	private readonly Type $intKeyOffsetValueType;
+	private Type $intKeyOffsetValueType;
 
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])

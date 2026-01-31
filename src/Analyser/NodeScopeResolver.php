@@ -6604,7 +6604,7 @@ class NodeScopeResolver
 			$offsetValueType = array_pop($offsetValueTypeStack);
 			if (
 				!$offsetValueType instanceof MixedType
-				&& !$offsetValueType->isConstantArray()->yes()
+				&& !$offsetValueType->isArray()->yes()
 			) {
 				$types = [
 					new ArrayType(new MixedType(), new MixedType()),

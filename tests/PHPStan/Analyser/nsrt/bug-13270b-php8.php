@@ -19,7 +19,7 @@ class Test
 			if (!array_key_exists('priceWithVat', $data['price'])) {
 				$data['price']['priceWithVat'] = null;
 			}
-			assertType("non-empty-array&hasOffsetValue('priceWithVat', mixed)", $data['price']);
+			assertType("non-empty-array&hasOffset('priceWithVat')", $data['price']);
 			if (!array_key_exists('priceWithoutVat', $data['price'])) {
 				$data['price']['priceWithoutVat'] = null;
 			}

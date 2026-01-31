@@ -249,9 +249,9 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
-	private Type $nonIntKeyOffsetValueType;
+	private ?Type $nonIntKeyOffsetValueType = null;
 
-	private Type $intKeyOffsetValueType;
+	private ?Type $intKeyOffsetValueType = null;
 
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
@@ -6615,12 +6615,13 @@ class NodeScopeResolver
 					new ObjectType(ArrayAccess::class),
 					new NullType(),
 				);
-				$this->intKeyOffsetValueType ??= TypeCombinator::union(
-					$this->nonIntKeyOffsetValueType,
-					new StringType(),
-				);
 
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
+					$this->intKeyOffsetValueType ??= TypeCombinator::union(
+						$this->nonIntKeyOffsetValueType,
+						new StringType(),
+					);
+
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->intKeyOffsetValueType);
 				} else {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->nonIntKeyOffsetValueType);

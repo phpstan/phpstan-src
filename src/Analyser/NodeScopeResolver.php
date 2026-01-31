@@ -300,16 +300,6 @@ class NodeScopeResolver
 			}
 		}
 		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
-
-		$this->nonIntKeyOffsetValueType = TypeCombinator::union(
-			new ArrayType(new MixedType(), new MixedType()),
-			new ObjectType(ArrayAccess::class),
-			new NullType(),
-		);
-		$this->intKeyOffsetValueType = TypeCombinator::union(
-			$this->nonIntKeyOffsetValueType,
-			new StringType(),
-		);
 	}
 
 	/**
@@ -6620,6 +6610,16 @@ class NodeScopeResolver
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isConstantArray()->yes()
 			) {
+				$this->nonIntKeyOffsetValueType ??= TypeCombinator::union(
+					new ArrayType(new MixedType(), new MixedType()),
+					new ObjectType(ArrayAccess::class),
+					new NullType(),
+				);
+				$this->intKeyOffsetValueType ??= TypeCombinator::union(
+					$this->nonIntKeyOffsetValueType,
+					new StringType(),
+				);
+
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->intKeyOffsetValueType);
 				} else {

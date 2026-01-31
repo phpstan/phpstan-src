@@ -249,6 +249,9 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
+	private readonly Type $nonIntKeyOffsetValueType;
+	private readonly Type $intKeyOffsetValueType;
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -296,6 +299,16 @@ class NodeScopeResolver
 			}
 		}
 		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
+
+		$this->nonIntKeyOffsetValueType = TypeCombinator::union(
+			new ArrayType(new MixedType(), new MixedType()),
+			new ObjectType(ArrayAccess::class),
+			new NullType(),
+		);
+		$this->intKeyOffsetValueType = TypeCombinator::union(
+			$this->nonIntKeyOffsetValueType,
+			new StringType()
+		);
 	}
 
 	/**
@@ -6606,15 +6619,11 @@ class NodeScopeResolver
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isConstantArray()->yes()
 			) {
-				$types = [
-					new ArrayType(new MixedType(), new MixedType()),
-					new ObjectType(ArrayAccess::class),
-					new NullType(),
-				];
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
-					$types[] = new StringType();
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->intKeyOffsetValueType);
+				} else {
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->nonIntKeyOffsetValueType);
 				}
-				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
 			}
 
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;

@@ -250,6 +250,7 @@ class NodeScopeResolver
 	private array $calledMethodResults = [];
 
 	private readonly Type $nonIntKeyOffsetValueType;
+
 	private readonly Type $intKeyOffsetValueType;
 
 	/**
@@ -307,7 +308,7 @@ class NodeScopeResolver
 		);
 		$this->intKeyOffsetValueType = TypeCombinator::union(
 			$this->nonIntKeyOffsetValueType,
-			new StringType()
+			new StringType(),
 		);
 	}
 

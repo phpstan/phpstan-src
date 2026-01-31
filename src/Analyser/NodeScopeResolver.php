@@ -249,6 +249,10 @@ class NodeScopeResolver
 	/** @var array<string, MutatingScope|null> */
 	private array $calledMethodResults = [];
 
+	private ?Type $nonIntKeyOffsetValueType = null;
+
+	private ?Type $intKeyOffsetValueType = null;
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -6606,15 +6610,22 @@ class NodeScopeResolver
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isArray()->yes()
 			) {
-				$types = [
+				$this->nonIntKeyOffsetValueType ??= TypeCombinator::union(
 					new ArrayType(new MixedType(), new MixedType()),
 					new ObjectType(ArrayAccess::class),
 					new NullType(),
-				];
+				);
+
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
-					$types[] = new StringType();
+					$this->intKeyOffsetValueType ??= TypeCombinator::union(
+						$this->nonIntKeyOffsetValueType,
+						new StringType(),
+					);
+
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->intKeyOffsetValueType);
+				} else {
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, $this->nonIntKeyOffsetValueType);
 				}
-				$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
 			}
 
 			$arrayDimFetch = $dimFetchStack[$i] ?? null;

@@ -110,4 +110,9 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13022.php'], []);
 	}
 
+	public function testBug14041(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14041.php'], []);
+	}
+
 }

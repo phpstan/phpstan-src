@@ -2,8 +2,8 @@
 
 namespace PHPStan\Internal;
 
-use function array_pop;
 use Traversable;
+use function array_pop;
 
 final class CombinationsHelper
 {

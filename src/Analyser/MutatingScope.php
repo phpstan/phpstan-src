@@ -3386,24 +3386,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
-		$scope = $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$nativeTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
-			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
-		);
+		if (
+			!isset($scope->expressionTypes[$exprString])
+			|| !isset($scope->nativeExpressionTypes[$exprString])
+			|| !$expressionTypes[$exprString]->equals($scope->expressionTypes[$exprString])
+			|| !$nativeTypes[$exprString]->equals($scope->nativeExpressionTypes[$exprString])
+		) {
+			$scope = $this->scopeFactory->create(
+				$this->context,
+				$this->isDeclareStrictTypes(),
+				$this->getFunction(),
+				$this->getNamespace(),
+				$expressionTypes,
+				$nativeTypes,
+				$this->conditionalExpressions,
+				$this->inClosureBindScopeClasses,
+				$this->anonymousFunctionReflection,
+				$this->inFirstLevelStatement,
+				$this->currentlyAssignedExpressions,
+				$this->currentlyAllowedUndefinedExpressions,
+				$this->inFunctionCallsStack,
+				$this->afterExtractCall,
+				$this->parentScope,
+				$this->nativeTypesPromoted,
+			);
+		}
+
+
 
 		if ($expr instanceof AlwaysRememberedExpr) {
 			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);

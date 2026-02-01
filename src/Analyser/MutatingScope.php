@@ -125,6 +125,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -3349,21 +3350,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
-					$this->nonIntKeyOffsetValueType ??= TypeCombinator::union(
-						new ArrayType(new MixedType(), new MixedType()),
-						new ObjectType(ArrayAccess::class),
-						new NullType(),
-					);
-
 					if ($dimType->isInteger()->yes()) {
-						$this->intKeyOffsetValueType ??= TypeCombinator::union(
-							$this->nonIntKeyOffsetValueType,
-							new StringType(),
-						);
-
-						$offsetValueType = TypeCombinator::intersect($exprVarType, $this->intKeyOffsetValueType);
+						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::getIntArrayKeyValueType());
 					} else {
-						$offsetValueType = TypeCombinator::intersect($exprVarType, $this->nonIntKeyOffsetValueType);
+						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::getNonIntArrayKeyValueType());
 					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {

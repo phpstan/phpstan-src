@@ -28,7 +28,7 @@ class NodeList {
 	{
 		$newNodes = array_splice($this->nodes, $offset, $length);
 
-		assertType('array<T of Bug4743\\Node (class Bug4743\\NodeList, argument)>', $this->nodes);
+		assertType('array<int<0, max>|string, T of Bug4743\\Node (class Bug4743\\NodeList, argument)>', $this->nodes);
 		assertType('array<T of Bug4743\\Node (class Bug4743\\NodeList, argument)>', $newNodes);
 	}
 }

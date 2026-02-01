@@ -15,7 +15,7 @@ use const PHP_VERSION_ID;
 class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 {
 
-	private bool $allowFloatBoolNullAsArrayKey = true;
+	private bool $allowBoolFloatNullAsArrayKey = true;
 
 	private bool $checkExplicitMixed = false;
 
@@ -28,7 +28,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		return new InvalidKeyInArrayItemRule(
 			$ruleLevelHelper,
 			self::getContainer()->getByType(PhpVersion::class),
-			$this->allowFloatBoolNullAsArrayKey,
+			$this->allowBoolFloatNullAsArrayKey,
 		);
 	}
 
@@ -107,7 +107,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 
 	public function testInvalidKeyReportingCastedArrayKey(): void
 	{
-		$this->allowFloatBoolNullAsArrayKey = false;
+		$this->allowBoolFloatNullAsArrayKey = false;
 
 		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
 			[

@@ -92,7 +92,6 @@ return [
 	'lchgrp' => ['hasSideEffects' => true],
 	'lchown' => ['hasSideEffects' => true],
 	'link' => ['hasSideEffects' => true],
-	'mb_str_pad' => ['hasSideEffects' => false],
 	'mkdir' => ['hasSideEffects' => true],
 	'move_uploaded_file' => ['hasSideEffects' => true],
 	'ob_clean' => ['hasSideEffects' => true],

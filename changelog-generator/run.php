@@ -42,7 +42,7 @@ use function sprintf;
 
 		protected function execute(InputInterface $input, OutputInterface $output)
 		{
-			$token = $_SERVER['GITHUB_TOKEN'];
+			$token = $_SERVER['GITHUB_PAT_TOKEN'];
 
 			$rateLimitPlugin = new RateLimitPlugin();
 			$httpBuilder = new Builder();

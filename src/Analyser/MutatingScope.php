@@ -125,6 +125,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -3349,26 +3350,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
-					$types = [
-						new ArrayType(new MixedType(), new MixedType()),
-						new ObjectType(ArrayAccess::class),
-						new NullType(),
-					];
 					if ($dimType->isInteger()->yes()) {
-						$types[] = new StringType();
+						$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::intOffsetAccessibleType());
+					} else {
+						$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::generalOffsetAccessibleType());
 					}
-					$offsetValueType = TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types));
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-						$offsetValueType = TypeCombinator::intersect(
-							$offsetValueType,
+						$varType = TypeCombinator::intersect(
+							$varType,
 							new HasOffsetValueType($dimType, $type),
 						);
 					}
 
 					$scope = $scope->specifyExpressionType(
 						$expr->var,
-						$offsetValueType,
+						$varType,
 						$scope->getNativeType($expr->var),
 						$certainty,
 					);

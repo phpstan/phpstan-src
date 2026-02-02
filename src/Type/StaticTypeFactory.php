@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use ArrayAccess;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -16,7 +17,7 @@ final class StaticTypeFactory
 		static $falsey;
 
 		if ($falsey === null) {
-			$falsey = new UnionType([
+			$falsey = TypeCombinator::union(
 				new NullType(),
 				new ConstantBooleanType(false),
 				new ConstantIntegerType(0),
@@ -24,7 +25,7 @@ final class StaticTypeFactory
 				new ConstantStringType(''),
 				new ConstantStringType('0'),
 				new ConstantArrayType([], []),
-			]);
+			);
 		}
 
 		return $falsey;
@@ -39,6 +40,35 @@ final class StaticTypeFactory
 		}
 
 		return $truthy;
+	}
+
+	public static function generalOffsetAccessibleType(): Type
+	{
+		static $generalOffsetAccessible;
+
+		if ($generalOffsetAccessible === null) {
+			$generalOffsetAccessible = TypeCombinator::union(
+				new ArrayType(new MixedType(), new MixedType()),
+				new ObjectType(ArrayAccess::class),
+				new NullType(),
+			);
+		}
+
+		return $generalOffsetAccessible;
+	}
+
+	public static function intOffsetAccessibleType(): Type
+	{
+		static $intOffsetAccessible;
+
+		if ($intOffsetAccessible === null) {
+			$intOffsetAccessible = TypeCombinator::union(
+				self::generalOffsetAccessibleType(),
+				new StringType(),
+			);
+		}
+
+		return $intOffsetAccessible;
 	}
 
 }

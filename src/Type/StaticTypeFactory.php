@@ -42,7 +42,7 @@ final class StaticTypeFactory
 		return $truthy;
 	}
 
-	public static function getNonIntArrayKeyValueType(): Type
+	public static function generalOffsetValueType(): Type
 	{
 		static $nonIntArrayKeyType;
 
@@ -57,13 +57,13 @@ final class StaticTypeFactory
 		return $nonIntArrayKeyType;
 	}
 
-	public static function getIntArrayKeyValueType(): Type
+	public static function intOffsetValueType(): Type
 	{
 		static $intArrayKeyType;
 
 		if ($intArrayKeyType === null) {
 			$intArrayKeyType = TypeCombinator::union(
-				self::getNonIntArrayKeyValueType(),
+				self::generalOffsetValueType(),
 				new StringType(),
 			);
 		}

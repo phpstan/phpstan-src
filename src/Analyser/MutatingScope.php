@@ -3351,9 +3351,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$exprVarType = $scope->getType($expr->var);
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
 					if ($dimType->isInteger()->yes()) {
-						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::getIntArrayKeyValueType());
+						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::intOffsetValueType());
 					} else {
-						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::getNonIntArrayKeyValueType());
+						$offsetValueType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::generalOffsetValueType());
 					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {

@@ -3382,35 +3382,38 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$exprString = $this->getNodeKey($expr);
 		$expressionTypes = $scope->expressionTypes;
-		$expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
+		$newHolder = new ExpressionTypeHolder($expr, $type, $certainty);
 		$nativeTypes = $scope->nativeExpressionTypes;
-		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
+		$newNativeHolder = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
 		if (
 			!isset($scope->expressionTypes[$exprString])
 			|| !isset($scope->nativeExpressionTypes[$exprString])
-			|| !$expressionTypes[$exprString]->equals($scope->expressionTypes[$exprString])
-			|| !$nativeTypes[$exprString]->equals($scope->nativeExpressionTypes[$exprString])
+			|| !$newHolder->equals($scope->expressionTypes[$exprString])
+			|| !$newNativeHolder->equals($scope->nativeExpressionTypes[$exprString])
 		) {
-			$scope = $this->scopeFactory->create(
-				$this->context,
-				$this->isDeclareStrictTypes(),
-				$this->getFunction(),
-				$this->getNamespace(),
-				$expressionTypes,
-				$nativeTypes,
-				$this->conditionalExpressions,
-				$this->inClosureBindScopeClasses,
-				$this->anonymousFunctionReflection,
-				$this->inFirstLevelStatement,
-				$this->currentlyAssignedExpressions,
-				$this->currentlyAllowedUndefinedExpressions,
-				$this->inFunctionCallsStack,
-				$this->afterExtractCall,
-				$this->parentScope,
-				$this->nativeTypesPromoted,
-			);
+			$expressionTypes[$exprString] = $newHolder;
+			$nativeTypes[$exprString] = $newNativeHolder;
 		}
+
+		$scope = $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 
 		if ($expr instanceof AlwaysRememberedExpr) {
 			return $scope->specifyExpressionType($expr->expr, $type, $nativeType, $certainty);

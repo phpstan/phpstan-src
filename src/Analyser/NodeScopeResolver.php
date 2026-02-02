@@ -6607,9 +6607,9 @@ class NodeScopeResolver
 				&& !$offsetValueType->isArray()->yes()
 			) {
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
-					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::intOffsetValueType());
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::intOffsetAccessibleType());
 				} else {
-					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::generalOffsetValueType());
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::generalOffsetAccessibleType());
 				}
 			}
 

@@ -42,33 +42,33 @@ final class StaticTypeFactory
 		return $truthy;
 	}
 
-	public static function generalOffsetValueType(): Type
+	public static function generalOffsetAccessibleType(): Type
 	{
-		static $generalOffsetValueType;
+		static $generalOffsetAccessible;
 
-		if ($generalOffsetValueType === null) {
-			$generalOffsetValueType = TypeCombinator::union(
+		if ($generalOffsetAccessible === null) {
+			$generalOffsetAccessible = TypeCombinator::union(
 				new ArrayType(new MixedType(), new MixedType()),
 				new ObjectType(ArrayAccess::class),
 				new NullType(),
 			);
 		}
 
-		return $generalOffsetValueType;
+		return $generalOffsetAccessible;
 	}
 
-	public static function intOffsetValueType(): Type
+	public static function intOffsetAccessibleType(): Type
 	{
-		static $intOffsetValueType;
+		static $intOffsetAccessible;
 
-		if ($intOffsetValueType === null) {
-			$intOffsetValueType = TypeCombinator::union(
-				self::generalOffsetValueType(),
+		if ($intOffsetAccessible === null) {
+			$intOffsetAccessible = TypeCombinator::union(
+				self::generalOffsetAccessibleType(),
 				new StringType(),
 			);
 		}
 
-		return $intOffsetValueType;
+		return $intOffsetAccessible;
 	}
 
 }

@@ -199,6 +199,7 @@ final class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
+		ConstantArrayTypeLimitAccessor::setLimit($container->getParameter('constantArrayTypeBuilderArrayCountLimit'));
 	}
 
 	public function getCurrentWorkingDirectory(): string

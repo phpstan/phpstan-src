@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\DependencyInjection\ConstantArrayTypeLimitAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -30,8 +31,16 @@ use function min;
 final class ConstantArrayTypeBuilder
 {
 
+	/**
+	 * @deprecated Use getArrayCountLimit() instead
+	 */
 	public const ARRAY_COUNT_LIMIT = 256;
 	private const CLOSURES_COUNT_LIMIT = 16;
+
+	public static function getArrayCountLimit(): int
+	{
+		return ConstantArrayTypeLimitAccessor::getLimit();
+	}
 
 	private bool $degradeToGeneralArray = false;
 
@@ -70,7 +79,7 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->isList(),
 		);
 
-		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
+		if (count($startArrayType->getKeyTypes()) > self::getArrayCountLimit()) {
 			$builder->degradeToGeneralArray(true);
 		}
 
@@ -147,7 +156,7 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (count($this->keyTypes) > self::getArrayCountLimit()) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -220,7 +229,7 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (count($this->keyTypes) > self::getArrayCountLimit()) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -244,7 +253,7 @@ final class ConstantArrayTypeBuilder
 					}
 				}
 			}
-			if (count($scalarTypes) > 0 && count($scalarTypes) < self::ARRAY_COUNT_LIMIT) {
+			if (count($scalarTypes) > 0 && count($scalarTypes) < self::getArrayCountLimit()) {
 				$match = true;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {

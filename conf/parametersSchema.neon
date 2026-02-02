@@ -134,6 +134,7 @@ parametersSchema:
 		)
 	)
 	internalErrorsCountLimit: int()
+	constantArrayTypeBuilderArrayCountLimit: int()
 	cache: structure([
 		nodesByStringCountMax: int(),
 		resolvedPhpDocBlockCacheCountMax: int(),

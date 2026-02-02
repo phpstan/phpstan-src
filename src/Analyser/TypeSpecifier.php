@@ -1151,7 +1151,7 @@ final class TypeSpecifier
 
 			if (
 				$sizeType instanceof ConstantIntegerType
-				&& $sizeType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& $sizeType->getValue() < ConstantArrayTypeBuilder::getArrayCountLimit()
 				&& $isList->yes()
 				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, $sizeType->getValue() - 1))->yes()
 			) {
@@ -1168,7 +1168,7 @@ final class TypeSpecifier
 			if (
 				$sizeType instanceof IntegerRangeType
 				&& $sizeType->getMin() !== null
-				&& $sizeType->getMin() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& $sizeType->getMin() < ConstantArrayTypeBuilder::getArrayCountLimit()
 				&& $isList->yes()
 				&& $arrayType->getKeyType()->isSuperTypeOf(IntegerRangeType::fromInterval(0, ($sizeType->getMax() ?? $sizeType->getMin()) - 1))->yes()
 			) {
@@ -1179,7 +1179,7 @@ final class TypeSpecifier
 					$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), false];
 				}
 				if ($sizeType->getMax() !== null) {
-					if ($sizeType->getMax() - $sizeType->getMin() > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+					if ($sizeType->getMax() - $sizeType->getMin() > ConstantArrayTypeBuilder::getArrayCountLimit()) {
 						$resultTypes[] = $arrayType;
 						continue;
 					}
@@ -1201,7 +1201,7 @@ final class TypeSpecifier
 					continue;
 				}
 
-				if (count($builderData) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				if (count($builderData) > ConstantArrayTypeBuilder::getArrayCountLimit()) {
 					$resultTypes[] = $arrayType;
 					continue;
 				}

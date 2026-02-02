@@ -128,7 +128,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if (count($constantArrays) > 0) {
 				$arrayTypes = [];
 				$totalCount = TypeCombinator::countConstantArrayValueTypes($constantArrays) * TypeCombinator::countConstantArrayValueTypes([$valueType]);
-				if ($totalCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				if ($totalCount < ConstantArrayTypeBuilder::getArrayCountLimit()) {
 					foreach ($constantArrays as $constantArray) {
 						$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 						$valueTypes = $constantArray->getValueTypes();

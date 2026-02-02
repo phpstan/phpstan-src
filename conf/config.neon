@@ -111,6 +111,7 @@ parameters:
 	reportMagicProperties: false
 	ignoreErrors: []
 	internalErrorsCountLimit: 50
+	constantArrayTypeBuilderArrayCountLimit: 256
 	cache:
 		nodesByStringCountMax: 256
 		resolvedPhpDocBlockCacheCountMax: 2048

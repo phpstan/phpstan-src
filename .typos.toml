@@ -8,6 +8,8 @@ ignore-hidden = false
 # Known typos
 NonRemoveableTypeTrait = "NonRemoveableTypeTrait"
 supportsLessOverridenParametersWithVariadic = "supportsLessOverridenParametersWithVariadic"
+# API property name
+consts = "consts"
 
 [default.extend-words]
 # override false-positives

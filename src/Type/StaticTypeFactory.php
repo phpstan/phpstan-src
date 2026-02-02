@@ -44,31 +44,31 @@ final class StaticTypeFactory
 
 	public static function generalOffsetValueType(): Type
 	{
-		static $nonIntArrayKeyType;
+		static $generalOffsetValueType;
 
-		if ($nonIntArrayKeyType === null) {
-			$nonIntArrayKeyType = TypeCombinator::union(
+		if ($generalOffsetValueType === null) {
+			$generalOffsetValueType = TypeCombinator::union(
 				new ArrayType(new MixedType(), new MixedType()),
 				new ObjectType(ArrayAccess::class),
 				new NullType(),
 			);
 		}
 
-		return $nonIntArrayKeyType;
+		return $generalOffsetValueType;
 	}
 
 	public static function intOffsetValueType(): Type
 	{
-		static $intArrayKeyType;
+		static $intOffsetValueType;
 
-		if ($intArrayKeyType === null) {
-			$intArrayKeyType = TypeCombinator::union(
+		if ($intOffsetValueType === null) {
+			$intOffsetValueType = TypeCombinator::union(
 				self::generalOffsetValueType(),
 				new StringType(),
 			);
 		}
 
-		return $intArrayKeyType;
+		return $intOffsetValueType;
 	}
 
 }

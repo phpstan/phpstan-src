@@ -202,6 +202,95 @@ PHPStan is highly extensible. Key extension interfaces:
 - **Allowed subtypes** - define sealed class hierarchies
 - **Always-read/written properties, always-used constants/methods** - suppress false positives for dead code detection
 
+## Common bug fix patterns and development guidance
+
+Based on analysis of recent releases (2.1.30-2.1.38), these are the recurring patterns for how bugs are found and fixed:
+
+### Type system: never use `instanceof` to check types
+
+A recurring cleanup theme: never use `$type instanceof StringType` or similar. This misses union types, intersection types with accessory types, and other composite forms. Always use `$type->isString()->yes()` or `(new StringType())->isSuperTypeOf($type)`. Multiple PRs have systematically replaced `instanceof *Type` checks throughout the codebase.
+
+### MutatingScope: expression invalidation during scope merging
+
+When two scopes are merged (e.g. after if/else branches), `MutatingScope::generalizeWith()` must invalidate dependent expressions. If variable `$i` changes, then `$locations[$i]` must be invalidated too. Bugs arise when stale `ExpressionTypeHolder` entries survive scope merges. Fix pattern: in `MutatingScope`, when a root expression changes, skip/invalidate all deep expressions that depend on it.
+
+### Array type tracking: SetExistingOffsetValueTypeExpr vs SetOffsetValueTypeExpr
+
+When assigning to an array offset, NodeScopeResolver must distinguish:
+- `SetExistingOffsetValueTypeExpr` - modifying a key known to exist (preserves list type, doesn't widen the array)
+- `SetOffsetValueTypeExpr` - adding a potentially new key (may break list type, widens the array)
+
+Misusing these leads to false positives like "might not be a list" or incorrect offset-exists checks. The fix is in `NodeScopeResolver` where property/variable assignments are processed.
+
+### ConstantArrayType and offset tracking
+
+Many bugs involve `ConstantArrayType` (array shapes with known keys). Common issues:
+- `hasOffsetValueType()` returning wrong results for expression-based offsets
+- Offset types not being unioned with empty array when the offset might not exist
+- `array_key_exists()` not properly narrowing to `non-empty-array`
+- `OversizedArrayType` (array shapes that grew too large to track precisely) needing correct `isSuperTypeOf()` and truthiness behavior
+
+Fixes typically involve `ConstantArrayType`, `TypeSpecifier` (for narrowing after `array_key_exists`/`isset`), and `MutatingScope` (for tracking assignments).
+
+### Loop analysis: foreach, for, while
+
+Loops are a frequent source of false positives because PHPStan must reason about types across iterations:
+- **List type preservation in for loops**: When appending to a list inside a `for` loop, the list type must be preserved if operations maintain sequential integer keys.
+- **Always-overwritten arrays in foreach**: NodeScopeResolver examines `$a[$k]` at loop body end and `continue` statements. If no `break` exists, the entire array type can be rewritten based on the observed value types.
+- **Variable types across iterations**: PHP Fibers are used (PHP 8.1+) for more precise analysis of repeated variable assignments in loops, by running the loop body analysis multiple times to reach a fixpoint.
+
+### PHPDoc inheritance
+
+PHPDoc types (`@return`, `@param`, `@throws`, `@property`) are inherited through class hierarchies. Bugs arise when:
+- Child methods with narrower native return types don't inherit parent PHPDoc return types
+- `@property` tags on parent classes don't consider native property types on children
+- Trait PHPDoc resolution uses wrong file context
+
+The `PhpDocInheritanceResolver` and `PhpDocBlock` classes handle this. Recent optimization: resolve through reflection instead of re-walking the hierarchy manually.
+
+### Dynamic return type extensions for built-in functions
+
+Many built-in PHP functions need `DynamicFunctionReturnTypeExtension` implementations because their return types depend on arguments:
+- `array_rand()`, `array_count_values()`, `array_first()`/`array_last()`, `filter_var()`, `curl_setopt()`, DOM methods, etc.
+- Extensions live in `src/Type/Php/` and are registered in `conf/services.neon`
+- Each reads the argument types from `Scope::getType()` and returns a more precise `Type`
+
+### Function signature corrections (`src/Reflection/SignatureMap/`)
+
+PHPStan maintains its own signature map for built-in PHP functions in `functionMap.php` and delta files. Fixes involve:
+- Correcting return types (e.g. `DOMNode::C14N` returning `string|false`)
+- Adding `@param-out` for reference parameters (e.g. `stream_socket_client`)
+- Marking functions as impure (e.g. `time()`, Redis methods)
+- PHP-version-specific signatures (e.g. `bcround` only in PHP 8.4+)
+
+### Impure points and side effects
+
+PHPStan tracks whether expressions/statements have side effects ("impure points"). This enables:
+- Reporting useless calls to pure methods (`expr.resultUnused`)
+- Detecting void methods with no side effects
+- `@phpstan-pure` enforcement
+
+Bugs occur when impure points are missed (e.g. inherited constructors of anonymous classes) or when `clearstatcache()` calls don't invalidate filesystem function return types.
+
+### Testing patterns
+
+- **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.
+- **Type inference tests**: Use `assertType()` and `assertNativeType()` helper functions in test data files. The test runner verifies PHPStan infers the declared types at each `assertType()` call.
+- **Regression tests**: For each bug fix, add a test data file reproducing the issue (e.g. `tests/PHPStan/Rules/*/data/bug-12345.php` or `tests/PHPStan/Analyser/nsrt/bug-12345.php`).
+- **Integration tests**: `AnalyserIntegrationTest` runs full analysis on test files and checks error output.
+
+### Adding support for new PHP versions
+
+Recent work on PHP 8.5 support shows the pattern:
+- **Parser support**: Update nikic/php-parser dependency, handle new AST node types
+- **NodeScopeResolver**: Handle new syntax (pipe operator, clone-with, void cast)
+- **Type system**: New type representations if needed
+- **Rules**: Version-gated rules (e.g. deprecated casts only reported on PHP 8.5+, `#[NoDiscard]` only on PHP 8.5+)
+- **InitializerExprTypeResolver**: Support new constant expression forms (casts, first-class callables, static closures in initializers)
+- **Reflection**: Support new attributes, property features (asymmetric visibility on static properties, `#[Override]` on properties)
+- **PhpVersion**: Add detection methods like `supportsPropertyHooks()`, `supportsPipeOperator()`, etc.
+- **Stubs**: Update function/class stubs for new built-in functions and changed signatures
+
 ## Important dependencies
 
 - `nikic/php-parser` ^5.7.0 - PHP AST parsing

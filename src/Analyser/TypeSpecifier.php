@@ -2446,7 +2446,7 @@ final class TypeSpecifier
 						TypeCombinator::intersect($argType, new AccessoryLowercaseStringType()),
 						$context,
 						$scope,
-					);
+					)->setRootExpr($expr);
 				}
 				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtoupper', 'mb_strtoupper'], true)) {
 					$specifiedTypes = $this->create(
@@ -2454,7 +2454,7 @@ final class TypeSpecifier
 						TypeCombinator::intersect($argType, new AccessoryUppercaseStringType()),
 						$context,
 						$scope,
-					);
+					)->setRootExpr($expr);
 				}
 
 				if ($rightType->isNonFalsyString()->yes()) {

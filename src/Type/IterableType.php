@@ -241,13 +241,7 @@ class IterableType implements CompoundType
 		return TypeCombinator::union(
 			$this,
 			new ArrayType(
-				TypeCombinator::intersect(
-					$this->keyType->toArrayKey(),
-					new UnionType([
-						new IntegerType(),
-						new StringType(),
-					]),
-				),
+				$this->keyType->toArrayKey(),
 				$this->itemType,
 			),
 			new GenericObjectType(Traversable::class, [

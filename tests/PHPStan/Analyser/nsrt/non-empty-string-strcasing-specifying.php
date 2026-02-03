@@ -8,11 +8,11 @@ class Foo {
 	public function strtolower(string $s): void
 	{
 		if (strtolower($s) === 'hallo') {
-			assertType('lowercase-string&non-falsy-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === strtolower($s)) {
-			assertType('lowercase-string&non-falsy-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -28,11 +28,11 @@ class Foo {
 	public function strtoupper(string $s): void
 	{
 		if (strtoupper($s) === 'HA') {
-			assertType('non-falsy-string&uppercase-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === strtoupper($s)) {
-			assertType('non-falsy-string&uppercase-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -48,11 +48,11 @@ class Foo {
 	public function mb_strtoupper(string $s): void
 	{
 		if (mb_strtoupper($s) === 'HA') {
-			assertType('non-falsy-string&uppercase-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === mb_strtoupper($s)) {
-			assertType('non-falsy-string&uppercase-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -68,11 +68,11 @@ class Foo {
 	public function mb_strtolower(string $s): void
 	{
 		if (mb_strtolower($s) === 'hallo') {
-			assertType('lowercase-string&non-falsy-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === mb_strtolower($s)) {
-			assertType('lowercase-string&non-falsy-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 

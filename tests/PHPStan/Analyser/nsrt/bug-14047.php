@@ -7,6 +7,11 @@ use function PHPStan\Testing\assertType;
 
 function test_strings(string $a, string $b): void
 {
+	if ($a !== '' && strtolower($a) === $b) {
+		assertType('non-empty-string', $a);
+		assertType('lowercase-string&non-empty-string', $b);
+	}
+
 	if ($a !== '' && strtolower($a) === $a) {
 		assertType('lowercase-string&non-empty-string', $a);
 	} elseif ($a !== '' && strtoupper($a) === $a) {

@@ -22,6 +22,11 @@ function test_strings(string $a, string $b): void
 		assertType('lowercase-string&non-empty-string', $b);
 	}
 
+	if ($a !== '' && strtolower($a) == $b && $b !== '0') {
+		assertType('non-empty-string', $a);
+		assertType('lowercase-string&non-falsy-string', $b);
+	}
+
 	if ($a !== '' && strtolower($a) === $a) {
 		assertType('lowercase-string&non-empty-string', $a);
 	} elseif ($a !== '' && strtoupper($a) === $a) {

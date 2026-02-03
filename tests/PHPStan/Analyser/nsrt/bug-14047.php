@@ -32,4 +32,18 @@ function test_strings(string $a, string $b): void
 	if (strtolower($b) === $b && $b !== '' && is_numeric($b)) {
 		assertType('lowercase-string&non-empty-string&numeric-string', $b);
 	}
+
+	assertType('string', $b);
+	if (is_numeric($b)) {
+		assertType('numeric-string', $b);
+		if (strtolower($b) === $b) {
+			assertType('lowercase-string&non-empty-string&numeric-string', $b);
+			if ($b !== '') {
+				assertType('lowercase-string&non-empty-string&numeric-string', $b);
+			}
+		}
+		if ($b !== '') {
+			assertType('numeric-string', $b);
+		}
+	}
 }

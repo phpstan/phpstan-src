@@ -2443,7 +2443,7 @@ final class TypeSpecifier
 				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtolower', 'mb_strtolower'], true)) {
 					$specifiedTypes = $this->create(
 						$unwrappedRightExpr,
-						TypeCombinator::intersect($argType, new AccessoryLowercaseStringType()),
+						TypeCombinator::intersect($rightType, new AccessoryLowercaseStringType()),
 						$context,
 						$scope,
 					)->setRootExpr($expr);
@@ -2451,7 +2451,7 @@ final class TypeSpecifier
 				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtoupper', 'mb_strtoupper'], true)) {
 					$specifiedTypes = $this->create(
 						$unwrappedRightExpr,
-						TypeCombinator::intersect($argType, new AccessoryUppercaseStringType()),
+						TypeCombinator::intersect($rightType, new AccessoryUppercaseStringType()),
 						$context,
 						$scope,
 					)->setRootExpr($expr);

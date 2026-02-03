@@ -635,6 +635,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return false;
 		}
 
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null) {
+			$otherClassReflection = $type->getClassReflection();
+			if (
+				$otherClassReflection !== null
+				&& (
+					$classReflection->hasFinalByKeywordOverride()
+					!== $otherClassReflection->hasFinalByKeywordOverride()
+				)
+			) {
+				return false;
+			}
+		}
+
 		if ($this->subtractedType === null) {
 			return $type->subtractedType === null;
 		}

@@ -573,10 +573,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function afterOpenSslCall(string $openSslFunctionName): self
 	{
-		$expressionTypes = $this->expressionTypes;
-		$nativeExpressionTypes = $this->nativeExpressionTypes;
-
-		if (in_array($openSslFunctionName, [
+		if (!in_array($openSslFunctionName, [
 			'openssl_cipher_iv_length',
 			'openssl_cms_decrypt',
 			'openssl_cms_encrypt',
@@ -631,9 +628,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			'openssl_x509_read',
 			'openssl_x509_verify',
 		], true)) {
-			unset($expressionTypes['\openssl_error_string()']);
-			unset($nativeExpressionTypes['\openssl_error_string()']);
+			return $this;
 		}
+
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		unset($expressionTypes['\openssl_error_string()']);
+		unset($nativeExpressionTypes['\openssl_error_string()']);
 
 		return $this->scopeFactory->create(
 			$this->context,

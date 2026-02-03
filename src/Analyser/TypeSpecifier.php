@@ -2439,28 +2439,39 @@ final class TypeSpecifier
 			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 
 			if ($argType->isString()->yes()) {
+				$specifiedTypes = new SpecifiedTypes();
 				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtolower', 'mb_strtolower'], true)) {
-					$argType = TypeCombinator::intersect($argType, new AccessoryLowercaseStringType());
+					$specifiedTypes = $this->create(
+						$unwrappedRightExpr,
+						TypeCombinator::intersect($argType, new AccessoryLowercaseStringType()),
+						$context,
+						$scope,
+					);
 				}
 				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtoupper', 'mb_strtoupper'], true)) {
-					$argType = TypeCombinator::intersect($argType, new AccessoryUppercaseStringType());
+					$specifiedTypes = $this->create(
+						$unwrappedRightExpr,
+						TypeCombinator::intersect($argType, new AccessoryUppercaseStringType()),
+						$context,
+						$scope,
+					);
 				}
 
 				if ($rightType->isNonFalsyString()->yes()) {
-					return $this->create(
+					return $specifiedTypes->unionWith($this->create(
 						$unwrappedLeftExpr->getArgs()[0]->value,
 						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
 						$context,
 						$scope,
-					)->setRootExpr($expr);
+					)->setRootExpr($expr));
 				}
 
-				return $this->create(
+				return $specifiedTypes->unionWith($this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
 					TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
 					$context,
 					$scope,
-				)->setRootExpr($expr);
+				)->setRootExpr($expr));
 			}
 		}
 

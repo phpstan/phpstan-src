@@ -35,8 +35,10 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -2437,6 +2439,13 @@ final class TypeSpecifier
 			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 
 			if ($argType->isString()->yes()) {
+				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtolower', 'mb_strtolower'], true)) {
+					$argType = TypeCombinator::intersect($argType, new AccessoryLowercaseStringType());
+				}
+				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtoupper', 'mb_strtoupper'], true)) {
+					$argType = TypeCombinator::intersect($argType, new AccessoryUppercaseStringType());
+				}
+
 				if ($rightType->isNonFalsyString()->yes()) {
 					return $this->create(
 						$unwrappedLeftExpr->getArgs()[0]->value,

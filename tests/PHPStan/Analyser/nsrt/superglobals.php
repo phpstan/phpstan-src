@@ -31,7 +31,7 @@ class Superglobals
 	public function canBePartlyOverwritten(): void
 	{
 		$GLOBALS['foo'] = 'foo';
-		assertType("non-empty-array&hasOffsetValue('foo', 'foo')", $GLOBALS);
+		assertType("non-empty-array<mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
 		assertNativeType("non-empty-array<mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
 	}
 

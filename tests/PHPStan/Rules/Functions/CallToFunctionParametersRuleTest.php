@@ -1299,7 +1299,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-2911.php'], [
 			[
-				'Parameter #1 $array of function Bug2911\bar expects array{bar: string}, non-empty-array given.',
+				'Parameter #1 $array of function Bug2911\bar expects array{bar: string}, non-empty-array<mixed> given.',
 				23,
 			],
 		]);

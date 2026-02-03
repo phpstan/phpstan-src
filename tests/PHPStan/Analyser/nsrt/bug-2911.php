@@ -134,6 +134,6 @@ final class ArrayItemRemoval2
 	function foo(array $array): void {
 		$array['bar'] = 'string';
 
-		assertType("non-empty-array&hasOffsetValue('bar', 'string')", $array);
+		assertType("non-empty-array<mixed>&hasOffsetValue('bar', 'string')", $array);
 	}
 }

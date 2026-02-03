@@ -58,11 +58,11 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
 
-		if ($this->canReturnNull($functionReflection, $functionCall, $scope)) {
+		if ($type !== null && $this->canReturnNull($functionReflection, $functionCall, $scope)) {
 			$type = TypeCombinator::addNull($type);
 		}
 
@@ -73,21 +73,22 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
 		$args = $functionCall->getArgs();
-		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$args,
-			$functionReflection->getVariants(),
-		)->getReturnType();
 
 		if ($subjectArgumentType === null) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		if ($subjectArgumentType instanceof MixedType) {
+			$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$args,
+				$functionReflection->getVariants(),
+			)->getReturnType();
+
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
@@ -229,18 +230,11 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 			) {
 				return false;
 			}
+
+			return true;
 		}
 
-		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$args,
-			$functionReflection->getVariants(),
-		)->getReturnType();
-
-		// resolve conditional return types
-		$possibleTypes = TypeUtils::resolveLateResolvableTypes($possibleTypes);
-
-		return TypeCombinator::containsNull($possibleTypes);
+		return false;
 	}
 
 }

@@ -73,21 +73,22 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
 		$args = $functionCall->getArgs();
-		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$args,
-			$functionReflection->getVariants(),
-		)->getReturnType();
 
 		if ($subjectArgumentType === null) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		if ($subjectArgumentType instanceof MixedType) {
+			$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$args,
+				$functionReflection->getVariants(),
+			)->getReturnType();
+			
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 

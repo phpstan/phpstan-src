@@ -30,7 +30,6 @@ use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ObjectType;
 use function array_diff_key;
 use function array_intersect;
@@ -200,7 +199,6 @@ final class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
-		ConstantArrayTypeBuilder::setArrayCountLimit(256);
 	}
 
 	public function getCurrentWorkingDirectory(): string

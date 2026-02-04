@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
@@ -855,8 +856,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8223.php'], $errors);
 	}
 
+	/** @runInSeparateProcess */
 	public function testBug8146bErrors(): void
 	{
+		ConstantArrayTypeBuilder::setArrayCountLimit(256);
+
 		$this->checkBenevolentUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-8146b-errors.php'], [
 			[
@@ -1289,6 +1293,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug10771(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10771.php'], []);
+	}
+
+	public function testBug8636(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8636.php'], []);
 	}
 
 }

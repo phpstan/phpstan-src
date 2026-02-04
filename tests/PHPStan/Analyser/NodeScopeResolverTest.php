@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use EnumTypeAssertions\Foo;
 use PHPStan\File\FileHelper;
 use PHPStan\Testing\TypeInferenceTestCase;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function array_merge;
@@ -19,6 +20,9 @@ use const DIRECTORY_SEPARATOR;
 use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
+/**
+ * @runInSeparateProcess
+ */
 class NodeScopeResolverTest extends TypeInferenceTestCase
 {
 
@@ -273,6 +277,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	#[DataProvider('dataFile')]
 	public function testFile(string $file): void
 	{
+		ConstantArrayTypeBuilder::setArrayCountLimit(256);
+
 		$asserts = self::gatherAssertTypes($file);
 		$this->assertNotCount(0, $asserts, sprintf('File %s has no asserts.', $file));
 		$failures = [];

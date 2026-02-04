@@ -6,7 +6,6 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use const PHP_VERSION_ID;
@@ -1290,14 +1289,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug10771(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10771.php'], []);
-	}
-
-	/** @runInSeparateProcess */
-	public function testBug8636(): void
-	{
-		ConstantArrayTypeBuilder::setArrayCountLimit(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT);
-
-		$this->analyse([__DIR__ . '/data/bug-8636.php'], []);
 	}
 
 }

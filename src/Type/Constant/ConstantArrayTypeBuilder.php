@@ -30,6 +30,9 @@ use function min;
 final class ConstantArrayTypeBuilder
 {
 
+	/**
+	 * @internal Use getArrayCountLimit() instead
+	 */
 	public const ARRAY_COUNT_LIMIT = 512;
 	private const CLOSURES_COUNT_LIMIT = 16;
 
@@ -38,6 +41,8 @@ final class ConstantArrayTypeBuilder
 	private bool $degradeClosures = false;
 
 	private bool $oversized = false;
+
+	private static int $arrayCountLimit = self::ARRAY_COUNT_LIMIT;
 
 	/**
 	 * @param list<Type> $keyTypes
@@ -70,11 +75,22 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->isList(),
 		);
 
-		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
+		if (count($startArrayType->getKeyTypes()) > self::getArrayCountLimit()) {
 			$builder->degradeToGeneralArray(true);
 		}
 
 		return $builder;
+	}
+
+	/** @internal */
+	public static function setArrayCountLimit(int $limit): void
+	{
+		self::$arrayCountLimit = $limit;
+	}
+
+	public static function getArrayCountLimit(): int
+	{
+		return self::$arrayCountLimit;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
@@ -147,7 +163,7 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (count($this->keyTypes) > self::getArrayCountLimit()) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -220,7 +236,7 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (count($this->keyTypes) > self::getArrayCountLimit()) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -244,7 +260,7 @@ final class ConstantArrayTypeBuilder
 					}
 				}
 			}
-			if (count($scalarTypes) > 0 && count($scalarTypes) < self::ARRAY_COUNT_LIMIT) {
+			if (count($scalarTypes) > 0 && count($scalarTypes) < self::getArrayCountLimit()) {
 				$match = true;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {

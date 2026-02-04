@@ -631,7 +631,7 @@ final class InitializerExprTypeResolver
 	 */
 	public function getArrayType(Expr\Array_ $expr, callable $getTypeCallback): Type
 	{
-		if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+		if (count($expr->items) > ConstantArrayTypeBuilder::getArrayCountLimit()) {
 			return $this->oversizedArrayBuilder->build($expr, $getTypeCallback);
 		}
 
@@ -1464,7 +1464,7 @@ final class InitializerExprTypeResolver
 		$leftCount = count($leftConstantArrays);
 		$rightCount = count($rightConstantArrays);
 		if ($leftCount > 0 && $rightCount > 0
-			&& ($leftCount + $rightCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
+			&& ($leftCount + $rightCount < ConstantArrayTypeBuilder::getArrayCountLimit())) {
 			$resultTypes = [];
 			foreach ($rightConstantArrays as $rightConstantArray) {
 				foreach ($leftConstantArrays as $leftConstantArray) {

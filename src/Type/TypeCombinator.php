@@ -904,7 +904,7 @@ final class TypeCombinator
 	{
 		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
 
-		if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+		if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::getArrayCountLimit()) {
 			return $types;
 		}
 
@@ -991,7 +991,7 @@ final class TypeCombinator
 			$keyType = self::union(...$keyTypes);
 			$valueType = self::union(...$valueTypes);
 
-			if ($valueType instanceof UnionType && count($valueType->getTypes()) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			if ($valueType instanceof UnionType && count($valueType->getTypes()) > ConstantArrayTypeBuilder::getArrayCountLimit()) {
 				$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
 			}
 

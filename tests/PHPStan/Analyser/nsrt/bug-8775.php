@@ -273,7 +273,7 @@ class Test
 	public static $fixtures;
 
 	function doFoo():void {
-		assertType('int', Test::$fixtures['257']);
+		assertType('(int|string)', Test::$fixtures['257']);
 	}
 }
 

@@ -9,6 +9,7 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -683,6 +684,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug5081(): void
 	{
+		ConstantArrayTypeBuilder::setArrayCountLimit(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT);
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5081.php');
 		$this->assertNoErrors($errors);
 	}
@@ -1203,6 +1206,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug8004(): void
 	{
+		ConstantArrayTypeBuilder::setArrayCountLimit(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT);
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8004.php');
 		$this->assertCount(2, $errors);
 		$this->assertSame('Strict comparison using !== between null and DateTimeInterface|string will always evaluate to true.', $errors[0]->getMessage());

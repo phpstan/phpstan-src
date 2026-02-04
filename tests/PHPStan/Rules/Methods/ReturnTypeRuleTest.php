@@ -1292,6 +1292,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10771.php'], []);
 	}
 
+	/** @runInSeparateProcess */
 	public function testBug8636(): void
 	{
 		ConstantArrayTypeBuilder::setArrayCountLimit(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT);

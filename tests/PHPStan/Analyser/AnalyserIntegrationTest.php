@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use function extension_loaded;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -1203,6 +1204,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	}
 
 	/** @runInSeparateProcess */
+	#[RunInSeparateProcess]
 	public function testBug8004(): void
 	{
 		ConstantArrayTypeBuilder::setArrayCountLimit(256);

@@ -7,6 +7,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Testing\TypeInferenceTestCase;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunClassInSeparateProcess;
 use stdClass;
 use function array_merge;
 use function define;
@@ -23,6 +24,7 @@ use const PHP_VERSION_ID;
 /**
  * @runInSeparateProcess
  */
+#[RunClassInSeparateProcess]
 class NodeScopeResolverTest extends TypeInferenceTestCase
 {
 

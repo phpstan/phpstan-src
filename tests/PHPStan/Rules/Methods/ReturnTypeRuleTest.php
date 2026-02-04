@@ -9,6 +9,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use const PHP_VERSION_ID;
 
 /**
@@ -857,6 +858,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 	}
 
 	/** @runInSeparateProcess */
+	#[RunInSeparateProcess]
 	public function testBug8146bErrors(): void
 	{
 		ConstantArrayTypeBuilder::setArrayCountLimit(256);

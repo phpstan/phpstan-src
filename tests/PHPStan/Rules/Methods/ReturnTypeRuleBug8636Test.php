@@ -19,6 +19,7 @@ class ReturnTypeRuleBug8636Test extends RuleTestCase
 		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true)));
 	}
 
+	/** @runInSeparateProcess */
 	public function testBug8636(): void
 	{
 		ConstantArrayTypeBuilder::setArrayCountLimit(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT);

@@ -96,8 +96,8 @@ class Foo
 	{
 		assertType('int', ~$a);
 		assertNativeType('int', ~$b);
-		assertType('int', ~1);
-		assertNativeType('int', ~1);
+		assertType('-2', ~1);
+		assertNativeType('-2', ~1);
 		assertType('int', ~$b);
 		assertNativeType('int', ~$b);
 	}

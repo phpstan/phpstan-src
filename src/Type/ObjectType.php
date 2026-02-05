@@ -1735,21 +1735,20 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getClassReflection(): ?ClassReflection
 	{
-		if ($this->classReflection !== null) {
-			return $this->classReflection;
+		if ($this->classReflection === null) {
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+			if (!$reflectionProvider->hasClass($this->className)) {
+				return null;
+			}
+
+			$this->classReflection = $reflectionProvider->getClass($this->className);
 		}
 
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		if (!$reflectionProvider->hasClass($this->className)) {
-			return null;
+		if ($this->classReflection->isGeneric()) {
+			return $this->classReflection->withTypes(array_values($this->classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
 		}
 
-		$classReflection = $reflectionProvider->getClass($this->className);
-		if ($classReflection->isGeneric()) {
-			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
-		}
-
-		return $this->classReflection = $classReflection;
+		return $this->classReflection;
 	}
 
 	public function getAncestorWithClassName(string $className): ?self

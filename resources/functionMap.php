@@ -8912,7 +8912,7 @@ return [
 'RedisCluster::pubsub' => ['array', 'nodeParams'=>'string', 'keyword'=>'string', '...argument='=>'string'],
 'RedisCluster::punSubscribe' => ['', 'channels'=>'', 'callback'=>'', 'pattern='=>'string', '...other_patterns='=>'string'],
 'RedisCluster::randomKey' => ['string', 'nodeParams'=>'string'],
-'RedisCluster::rawCommand' => ['mixed', 'key_or_address='=>'string|array', 'command'=>'string', '...arguments'=>'mixed'],
+'RedisCluster::rawCommand' => ['mixed', 'key_or_address'=>'string|array', 'command'=>'string', '...arguments'=>'mixed'],
 'RedisCluster::rename' => ['bool', 'srcKey'=>'string', 'dstKey'=>'string'],
 'RedisCluster::renameNx' => ['bool', 'srcKey'=>'string', 'dstKey'=>'string'],
 'RedisCluster::restore' => ['bool', 'key'=>'string', 'ttl'=>'int', 'value'=>'string', 'options='=>'array|null'],

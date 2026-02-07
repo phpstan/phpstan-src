@@ -35,8 +35,10 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -2437,21 +2439,39 @@ final class TypeSpecifier
 			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 
 			if ($argType->isString()->yes()) {
-				if ($rightType->isNonFalsyString()->yes()) {
-					return $this->create(
-						$unwrappedLeftExpr->getArgs()[0]->value,
-						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
+				$specifiedTypes = new SpecifiedTypes();
+				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtolower', 'mb_strtolower'], true)) {
+					$specifiedTypes = $this->create(
+						$unwrappedRightExpr,
+						TypeCombinator::intersect($rightType, new AccessoryLowercaseStringType()),
+						$context,
+						$scope,
+					)->setRootExpr($expr);
+				}
+				if (in_array(strtolower($unwrappedLeftExpr->name->toString()), ['strtoupper', 'mb_strtoupper'], true)) {
+					$specifiedTypes = $this->create(
+						$unwrappedRightExpr,
+						TypeCombinator::intersect($rightType, new AccessoryUppercaseStringType()),
 						$context,
 						$scope,
 					)->setRootExpr($expr);
 				}
 
-				return $this->create(
+				if ($rightType->isNonFalsyString()->yes()) {
+					return $specifiedTypes->unionWith($this->create(
+						$unwrappedLeftExpr->getArgs()[0]->value,
+						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
+						$context,
+						$scope,
+					)->setRootExpr($expr));
+				}
+
+				return $specifiedTypes->unionWith($this->create(
 					$unwrappedLeftExpr->getArgs()[0]->value,
 					TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
 					$context,
 					$scope,
-				)->setRootExpr($expr);
+				)->setRootExpr($expr));
 			}
 		}
 

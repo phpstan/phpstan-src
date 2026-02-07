@@ -973,8 +973,8 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-9384.php'], [
 			[
-				'Static property Bug9384\Deprecation::$type (int<0, 3>|null) does not accept 10|int<0, 3>.',
-				18,
+				'Static property Bug9384\Deprecation::$type (int<0, 3>) does not accept 10|11.',
+				21,
 			],
 		]);
 	}

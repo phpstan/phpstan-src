@@ -3220,10 +3220,7 @@ class NodeScopeResolver
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
 					if ($hasSideEffects) {
-						$classNames = $scope->getType($normalizedExpr->var)->getObjectClassNames();
-						foreach ($classNames as $className) {
-							$scope = $scope->invalidateStaticMembers($className);
-						}
+						$scope = $scope->invalidateStaticMembers($normalizedExpr->var);
 					}
 				}
 				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {

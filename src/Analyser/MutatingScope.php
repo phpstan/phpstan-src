@@ -3656,16 +3656,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
-	public function invalidateStaticMembers(string $className): self
+	public function invalidateStaticMembers(Expr $var): self
 	{
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return $this;
-		}
-
-		$classReflection = $this->reflectionProvider->getClass($className);
-		$classNamesToInvalidate = [strtolower($className)];
-		foreach ($classReflection->getParents() as $parentClass) {
-			$classNamesToInvalidate[] = strtolower($parentClass->getName());
+		$classReflections = $this->getType($var)->getObjectClassReflections();
+		$classNamesToInvalidate = [];
+		foreach ($classReflections as $classReflection) {
+			$classNamesToInvalidate[] = strtolower($classReflection->getName());
+			foreach ($classReflection->getParents() as $parentClass) {
+				$classNamesToInvalidate[] = strtolower($parentClass->getName());
+			}
 		}
 
 		$expressionTypes = $this->expressionTypes;

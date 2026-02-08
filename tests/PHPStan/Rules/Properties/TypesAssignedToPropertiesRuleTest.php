@@ -956,6 +956,29 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13035.php'], []);
 	}
 
+	public function testBug7912(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7912.php'], [
+			[
+				'Property Bug7912\A::$has (int<0, 1>) does not accept 999.',
+				35,
+			],
+		]);
+	}
+
+	public function testBug9384(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-9384.php'], [
+			[
+				'Static property Bug9384\Deprecation::$type (int<0, 3>) does not accept 10|11.',
+				21,
+			],
+		]);
+	}
+
 	public function testBug13654(): void
 	{
 		$this->checkExplicitMixed = true;

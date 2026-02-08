@@ -976,8 +976,17 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
+		if ($leftType instanceof IntegerRangeType) {
+			$leftTypes = $leftType->getFiniteTypes();
+		} else {
+			$leftTypes = $leftType->getConstantScalarTypes();
+		}
+		if ($rightType instanceof IntegerRangeType) {
+			$rightTypes = $rightType->getFiniteTypes();
+		} else {
+			$rightTypes = $rightType->getConstantScalarTypes();
+		}
+
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1062,8 +1071,17 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
+		if ($leftType instanceof IntegerRangeType) {
+			$leftTypes = $leftType->getFiniteTypes();
+		} else {
+			$leftTypes = $leftType->getConstantScalarTypes();
+		}
+		if ($rightType instanceof IntegerRangeType) {
+			$rightTypes = $rightType->getFiniteTypes();
+		} else {
+			$rightTypes = $rightType->getConstantScalarTypes();
+		}
+
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
@@ -1138,8 +1156,17 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $leftType->getConstantScalarTypes();
-		$rightTypes = $rightType->getConstantScalarTypes();
+		if ($leftType instanceof IntegerRangeType) {
+			$leftTypes = $leftType->getFiniteTypes();
+		} else {
+			$leftTypes = $leftType->getConstantScalarTypes();
+		}
+		if ($rightType instanceof IntegerRangeType) {
+			$rightTypes = $rightType->getFiniteTypes();
+		} else {
+			$rightTypes = $rightType->getConstantScalarTypes();
+		}
+
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {

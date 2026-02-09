@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -51,8 +52,17 @@ final class ValueOfType implements CompoundType, LateResolvableType
 	protected function getResult(): Type
 	{
 		if ($this->type->isEnum()->yes()) {
+			$enumCases = $this->type->getEnumCases();
+			if (
+				$enumCases === []
+				&& $this->type instanceof TemplateType
+				&& (new ObjectType('BackedEnum'))->isSuperTypeOf($this->type->getBound())->yes()
+			) {
+				return new UnionType([new IntegerType(), new StringType()]);
+			}
+
 			$valueTypes = [];
-			foreach ($this->type->getEnumCases() as $enumCase) {
+			foreach ($enumCases as $enumCase) {
 				$valueType = $enumCase->getBackingValueType();
 				if ($valueType === null) {
 					continue;

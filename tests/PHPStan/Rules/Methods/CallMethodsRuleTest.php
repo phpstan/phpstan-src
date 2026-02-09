@@ -3684,6 +3684,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13881.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12219(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12219.php'], [
+			[
+				'Parameter #2 $value of method Bug12219\Bug3::foo() contains unresolvable type.',
+				75,
+			],
+		]);
+	}
+
 	public function testBug13511(): void
 	{
 		$this->checkThisOnly = false;

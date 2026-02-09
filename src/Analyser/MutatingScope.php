@@ -278,24 +278,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return null;
 		}
 
-		if ($operatorString === '<' || $operatorString === 'lt') {
+		if (in_array($operatorString, ['<', 'lt'], true)) {
 			return IntegerRangeType::fromInterval(null, $parsedVersion->getVersionId() - 1);
 		}
-		if ($operatorString === '<=' || $operatorString === 'le') {
+		if (in_array($operatorString, ['<=', 'le'], true)) {
 			return IntegerRangeType::fromInterval(null, $parsedVersion->getVersionId());
 		}
 
-		if ($operatorString === '>' || $operatorString === 'gt') {
+		if (in_array($operatorString, ['>', 'gt'], true)) {
 			return IntegerRangeType::fromInterval($parsedVersion->getVersionId() + 1, null);
 		}
-		if ($operatorString === '>=' || $operatorString === 'ge') {
+		if (in_array($operatorString, ['>=', 'ge'], true)) {
 			return IntegerRangeType::fromInterval($parsedVersion->getVersionId(), null);
 		}
 
 		if (
-			$operatorString === '=='
-			|| $operatorString === '='
-			|| $operatorString === 'eq'
+			in_array($operatorString, ['==', '=', 'eq'], true)
 		) {
 			return new ConstantIntegerType($parsedVersion->getVersionId());
 		}

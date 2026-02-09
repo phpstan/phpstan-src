@@ -1,6 +1,8 @@
 <?php
 
-namespace Bug6560;
+declare(strict_types=1);
+
+namespace Bug6560Strict;
 
 $array = [];
 $string = '';

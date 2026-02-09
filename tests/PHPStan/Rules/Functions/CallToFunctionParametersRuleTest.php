@@ -2462,39 +2462,87 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6560.php'], [
 			[
 				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
-				20,
+				23,
 			],
 			[
 				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $varName),
-				74,
-			],
-			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
 				77,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
 				80,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
-				86,
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				83,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
 				89,
 			],
 			[
-				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
 				92,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
 				95,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
 				98,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				101,
+			],
+		]);
+	}
+
+	public function testBug6560Strict(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$varName = PHP_VERSION_ID < 80000 ? '$var' : '$value';
+		$stringableName = PHP_VERSION_ID < 80000 ? 'class' : 'Stringable';
+
+		$this->analyse([__DIR__ . '/data/bug-6560-strict.php'], [
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
+				25,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $varName),
+				79,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				82,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				85,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				91,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				94,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
+				97,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				100,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				103,
 			],
 		]);
 	}

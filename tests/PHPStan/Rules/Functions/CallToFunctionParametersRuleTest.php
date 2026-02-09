@@ -2460,7 +2460,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$varName = PHP_VERSION_ID < 80000 ? '$var' : '$value';
 		$stringableName = PHP_VERSION_ID < 80000 ? 'class' : 'Stringable';
 
-		$this->analyse([__DIR__.'/data/' . $fileName], [
+		$this->analyse([__DIR__ . '/data/' . $fileName], [
 			[
 				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
 				23,

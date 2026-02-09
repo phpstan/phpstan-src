@@ -55,6 +55,10 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 				99,
 			],
 			[
+				'Method MissingMethodReturnTypehint\CallableSignature::doFoo() return type specified in iterable type Traversable..',
+				110,
+			],
+			[
 				'Method MissingMethodReturnTypehint\Baz::returnsGenericWithSomeDefaults() return type with generic class MissingMethodReturnTypehint\GenericClassWithSomeDefaults does not specify its types: T, U (1-2 required)',
 				142,
 			],

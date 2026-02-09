@@ -63,7 +63,7 @@ namespace MissingFunctionParameterTypehint
 	}
 
 	/**
-	 * @param iterable<int>&\Traversable<array-key,int> $a
+	 * @param iterable<int>&\Traversable $a
 	 */
 	function iterableIntersectionTypehint($a)
 	{
@@ -71,7 +71,7 @@ namespace MissingFunctionParameterTypehint
 	}
 
 	/**
-	 * @param iterable<mixed>&\Traversable<array-key,mixed> $a
+	 * @param iterable<mixed>&\Traversable $a
 	 */
 	function iterableIntersectionTypehint2($a)
 	{
@@ -151,7 +151,7 @@ namespace MissingFunctionParameterTypehint
 	}
 
 	/**
-	 * @param \Traversable<array-key, mixed> $traversable
+	 * @param \Traversable $traversable
 	 */
 	function missingTraversableTypehintPhpDoc($traversable)
 	{

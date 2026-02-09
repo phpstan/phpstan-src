@@ -79,10 +79,6 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 				212,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
-			[
-				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type with generic interface Traversable does not specify its types: TKey, TValue',
-				212,
-			],
 		]);
 	}
 

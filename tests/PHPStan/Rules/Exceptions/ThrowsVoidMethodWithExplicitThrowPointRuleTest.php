@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use ThrowsVoidMethod\MyException;
 use UnhandledMatchError;
+use ValueError;
 
 /**
  * @extends RuleTestCase<ThrowsVoidMethodWithExplicitThrowPointRule>
@@ -97,6 +98,19 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 		$this->missingCheckedExceptionInThrows = $missingCheckedExceptionInThrows;
 		$this->checkedExceptionClasses = $checkedExceptionClasses;
 		$this->analyse([__DIR__ . '/data/throws-void-method.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13642(): void
+	{
+		$this->missingCheckedExceptionInThrows = false;
+		$this->checkedExceptionClasses = [ValueError::class];
+		$this->analyse([__DIR__ . '/data/bug-13642.php'], [
+			[
+				'Method Bug13642\HelloWorld::sayHello2() throws exception ValueError but the PHPDoc contains @throws void.',
+				21,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.0')]

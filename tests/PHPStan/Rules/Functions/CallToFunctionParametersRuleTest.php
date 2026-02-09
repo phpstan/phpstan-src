@@ -2477,11 +2477,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				83,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:13 given.', $varName, $stringableName),
 				89,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:13 given.', $varName, $stringableName),
 				92,
 			],
 			[
@@ -2525,11 +2525,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				85,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560-strict.php:15 given.', $varName, $stringableName),
 				91,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560.php:10 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/bug-6560-strict.php:15 given.', $varName, $stringableName),
 				94,
 			],
 			[

@@ -1099,40 +1099,41 @@ final class InitializerExprTypeResolver
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
-							$resultValue = $operationCallable($leftTypeInner->getValue(), $rightTypeInner->getValue());
-							$resultType = $this->getTypeFromValue($resultValue);
-						} else {
-							$leftNumberType = $leftTypeInner->toNumber();
-							$rightNumberType = $rightTypeInner->toNumber();
 
-							if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-								return new ErrorType();
-							}
+		if ($leftTypesCount === 0 || $rightTypesCount === 0) {
+			return self::IS_UNKNOWN;
+		}
 
-							if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-								throw new ShouldNotHappenException();
-							}
-
-							$resultValue = $operationCallable($leftNumberType->getValue(), $rightNumberType->getValue());
-							$resultType = $this->getTypeFromValue($resultValue);
-						}
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
-
+		$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
+		if ($generalize) {
 			return self::IS_SCALAR_TYPE;
 		}
 
-		return self::IS_UNKNOWN;
+		$resultTypes = [];
+		foreach ($leftTypes as $leftTypeInner) {
+			foreach ($rightTypes as $rightTypeInner) {
+				if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
+					$resultValue = $operationCallable($leftTypeInner->getValue(), $rightTypeInner->getValue());
+					$resultType = $this->getTypeFromValue($resultValue);
+				} else {
+					$leftNumberType = $leftTypeInner->toNumber();
+					$rightNumberType = $rightTypeInner->toNumber();
+
+					if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+						return new ErrorType();
+					}
+
+					if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
+						throw new ShouldNotHappenException();
+					}
+
+					$resultValue = $operationCallable($leftNumberType->getValue(), $rightNumberType->getValue());
+					$resultType = $this->getTypeFromValue($resultValue);
+				}
+				$resultTypes[] = $resultType;
+			}
+		}
+		return TypeCombinator::union(...$resultTypes);
 	}
 
 	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type

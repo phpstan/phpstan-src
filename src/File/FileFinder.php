@@ -9,6 +9,7 @@ use function array_values;
 use function file_exists;
 use function implode;
 use function is_file;
+use function sort;
 
 final class FileFinder
 {
@@ -47,6 +48,8 @@ final class FileFinder
 		}
 
 		$files = array_values(array_unique(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file))));
+
+		sort($files);
 
 		return new FileFinderResult($files, $onlyFiles);
 	}

@@ -37,7 +37,7 @@ final class ContinueBreakInLoopRule implements Rule
 			$value = $node->num->value;
 		}
 
-		$parentStmtTypes = array_reverse($node->getAttribute(ParentStmtTypesVisitor::ATTRIBUTE_NAME));
+		$parentStmtTypes = array_reverse($node->getAttribute(ParentStmtTypesVisitor::ATTRIBUTE_NAME, []));
 		foreach ($parentStmtTypes as $parentStmtType) {
 			if ($parentStmtType === Stmt\Case_::class) {
 				continue;

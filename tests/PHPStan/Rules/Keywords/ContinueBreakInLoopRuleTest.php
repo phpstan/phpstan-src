@@ -74,4 +74,24 @@ class ContinueBreakInLoopRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13790(): void
+	{
+		$this->analyse(
+			[
+				__DIR__ . '/data/bug-13790-break.php',
+				__DIR__ . '/data/bug-13790-continue.php',
+			],
+			[
+				[
+					'Keyword break used outside of a loop or a switch statement.',
+					2,
+				],
+				[
+					'Keyword continue used outside of a loop or a switch statement.',
+					2,
+				],
+			],
+		);
+	}
+
 }

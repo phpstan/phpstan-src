@@ -2460,7 +2460,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$varName = PHP_VERSION_ID < 80000 ? '$var' : '$value';
 		$stringableName = PHP_VERSION_ID < 80000 ? 'class' : 'Stringable';
 
-		$this->analyse([__DIR__.'/data/'.$fileName], [
+		$this->analyse([__DIR__.'/data/' . $fileName], [
 			[
 				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
 				23,
@@ -2478,11 +2478,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				83,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/'.$fileName.':13 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
 				89,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/'.$fileName.':13 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
 				92,
 			],
 			[

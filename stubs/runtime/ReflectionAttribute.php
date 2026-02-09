@@ -23,15 +23,12 @@ if (\PHP_VERSION_ID < 80000) {
 		}
 
 		/**
-		 * @return array<array-key, mixed>;
+		 * @return array<array-key, mixed>
 		 */
 		public function getArguments(): array
 		{
 		}
 
-		/**
-		 * @return self
-		 */
 		public function newInstance(): object
 		{
 		}

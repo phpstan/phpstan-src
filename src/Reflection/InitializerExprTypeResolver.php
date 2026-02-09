@@ -976,39 +976,10 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
-		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
-
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
-							$resultType = $this->getTypeFromValue($leftTypeInner->getValue() & $rightTypeInner->getValue());
-						} else {
-							$leftNumberType = $leftTypeInner->toNumber();
-							$rightNumberType = $rightTypeInner->toNumber();
-
-							if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-								return new ErrorType();
-							}
-
-							if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-								throw new ShouldNotHappenException();
-							}
-
-							$resultType = $this->getTypeFromValue($leftNumberType->getValue() & $rightNumberType->getValue());
-						}
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
-
+		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a & $b);
+		if ($result instanceof Type) {
+			return $result;
+		} elseif ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1063,39 +1034,10 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
-		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
-
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			if (!$generalize) {
-				foreach ($leftTypes as $leftTypeInner) {
-					foreach ($rightTypes as $rightTypeInner) {
-						if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
-							$resultType = $this->getTypeFromValue($leftTypeInner->getValue() | $rightTypeInner->getValue());
-						} else {
-							$leftNumberType = $leftTypeInner->toNumber();
-							$rightNumberType = $rightTypeInner->toNumber();
-
-							if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-								return new ErrorType();
-							}
-
-							if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-								throw new ShouldNotHappenException();
-							}
-
-							$resultType = $this->getTypeFromValue($leftNumberType->getValue() | $rightNumberType->getValue());
-						}
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
-
+		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a | $b);
+		if ($result instanceof Type) {
+			return $result;
+		} elseif ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}
@@ -1134,26 +1076,26 @@ final class InitializerExprTypeResolver
 		return $this->getBitwiseXorTypeFromTypes($leftType, $rightType);
 	}
 
+	private const IS_SCALAR_TYPE = 1;
+	private const IS_UNKNOWN = 2;
+
 	/**
-	 * @return array<Type>
+	 * @param callable(bool|float|int|string|null, bool|float|int|string|null):string $operationCallable
+	 *
+	 * @return self::IS_UNKNOWN|self::IS_SCALAR_TYPE|Type
 	 */
-	private function getFiniteOrConstantScalarTypes(Type $type): array
+	private function getFiniteOrConstantScalarTypes(Type $leftType, Type $rightType, callable $operationCallable): int|Type
 	{
-		if ($type instanceof IntegerRangeType) {
-			return $type->getFiniteTypes();
+		if ($leftType instanceof IntegerRangeType) {
+			$leftTypes = $leftType->getFiniteTypes();
+		} else {
+			$leftTypes = $leftType->getConstantScalarTypes();
 		}
-
-		return $type->getConstantScalarTypes();
-	}
-
-	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type
-	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return $this->getNeverType($leftType, $rightType);
+		if ($rightType instanceof IntegerRangeType) {
+			$rightTypes = $rightType->getFiniteTypes();
+		} else {
+			$rightTypes = $rightType->getConstantScalarTypes();
 		}
-
-		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
-		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
@@ -1164,7 +1106,8 @@ final class InitializerExprTypeResolver
 				foreach ($leftTypes as $leftTypeInner) {
 					foreach ($rightTypes as $rightTypeInner) {
 						if ($leftTypeInner instanceof ConstantStringType && $rightTypeInner instanceof ConstantStringType) {
-							$resultType = $this->getTypeFromValue($leftTypeInner->getValue() ^ $rightTypeInner->getValue());
+							$resultValue = $operationCallable($leftTypeInner->getValue(), $rightTypeInner->getValue());
+							$resultType = $this->getTypeFromValue($resultValue);
 						} else {
 							$leftNumberType = $leftTypeInner->toNumber();
 							$rightNumberType = $rightTypeInner->toNumber();
@@ -1177,7 +1120,8 @@ final class InitializerExprTypeResolver
 								throw new ShouldNotHappenException();
 							}
 
-							$resultType = $this->getTypeFromValue($leftNumberType->getValue() ^ $rightNumberType->getValue());
+							$resultValue = $operationCallable($leftNumberType->getValue(), $rightNumberType->getValue());
+							$resultType = $this->getTypeFromValue($resultValue);
 						}
 						$resultTypes[] = $resultType;
 					}
@@ -1185,6 +1129,22 @@ final class InitializerExprTypeResolver
 				return TypeCombinator::union(...$resultTypes);
 			}
 
+			return self::IS_SCALAR_TYPE;
+		}
+
+		return self::IS_UNKNOWN;
+	}
+
+	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type
+	{
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return $this->getNeverType($leftType, $rightType);
+		}
+
+		$result = $this->getFiniteOrConstantScalarTypes($leftType, $rightType, static fn ($a, $b) => $a ^ $b);
+		if ($result instanceof Type) {
+			return $result;
+		} elseif ($result === self::IS_SCALAR_TYPE) {
 			$leftType = $this->optimizeScalarType($leftType);
 			$rightType = $this->optimizeScalarType($rightType);
 		}

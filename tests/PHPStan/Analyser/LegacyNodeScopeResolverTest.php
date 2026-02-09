@@ -8684,19 +8684,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_last($constantArrayOptionalKeys3)',
 			],
 			[
-				'array{int, int}',
+				'array{int<1, max>, int<0, 999999999>}',
 				'$hrtime1',
 			],
 			[
-				'array{int, int}',
+				'array{int<1, max>, int<0, 999999999>}',
 				'$hrtime2',
 			],
 			[
-				'(float|int)',
+				'(float|int<1, max>)',
 				'$hrtime3',
 			],
 			[
-				'array{int, int}|float|int',
+				'array{int<1, max>, int<0, 999999999>}|float|int<1, max>',
 				'$hrtime4',
 			],
 		];

@@ -12,7 +12,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -28,8 +28,13 @@ final class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], [2], isList: TrinaryLogic::createYes());
-		$numberType = new BenevolentUnionType([new IntegerType(), new FloatType()]);
+		$arrayType = new ConstantArrayType(
+			[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+			[IntegerRangeType::fromInterval(1, null), IntegerRangeType::fromInterval(0, 999999999)],
+			[2],
+			isList: TrinaryLogic::createYes(),
+		);
+		$numberType = new BenevolentUnionType([IntegerRangeType::fromInterval(1, null), new FloatType()]);
 
 		if (count($functionCall->getArgs()) < 1) {
 			return $arrayType;

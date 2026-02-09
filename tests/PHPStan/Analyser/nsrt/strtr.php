@@ -38,6 +38,10 @@ function doFoo(string $s, $nonEmptyString, $nonFalseyString, $mixed) {
 	assertType('non-falsy-string', strtr($nonFalseyString, [$nonEmptyString => $nonFalseyString]));
 	assertType('non-falsy-string', strtr($nonFalseyString, [$nonFalseyString => $nonFalseyString]));
 
+	// see https://3v4l.org/jCUhW/rfc#vgit.master
+	assertType('string', strtr($nonFalseyString, [$nonFalseyString => $s]));
+	assertType('string', strtr($nonEmptyString, [$nonEmptyString => $s]));
+
 	assertType('non-empty-string', strtr($nonEmptyString, rand(0, 1) ? [$s => $nonEmptyString] : null));
 	assertType('non-empty-string', strtr($nonEmptyString, rand(0, 1) ? [$nonEmptyString => $nonEmptyString] : null));
 	assertType('non-empty-string', strtr($nonEmptyString, rand(0, 1) ? [$nonFalseyString => $nonFalseyString] : null));

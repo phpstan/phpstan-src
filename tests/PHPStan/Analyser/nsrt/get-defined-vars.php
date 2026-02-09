@@ -44,3 +44,13 @@ function doRandom(int $param) {
 	}
 	assertType('array{param: int, local: \'foo\', random2?: \'baz\', random1?: \'bar\'}', get_defined_vars());
 }
+
+class A
+{
+	public function test(): void
+	{
+		$local = 'foo';
+
+		assertType('array{local: \'foo\'}', get_defined_vars());
+	}
+}

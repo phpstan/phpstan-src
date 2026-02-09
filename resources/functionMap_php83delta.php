@@ -28,6 +28,6 @@ return [
 		'gc_status' => ['array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}'],
 	],
 	'old' => [
-
+		'dba_fetch\'1' => ['string|false', 'key'=>'string', 'handle'=>'resource'],
 	]
 ];

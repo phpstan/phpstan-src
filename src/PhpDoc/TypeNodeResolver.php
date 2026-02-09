@@ -98,6 +98,7 @@ use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
+use PHPStan\Type\StringNeverAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -462,6 +463,8 @@ final class TypeNodeResolver
 				return StaticTypeFactory::falsey();
 			case '__stringandstringable':
 				return new StringAlwaysAcceptingObjectWithToStringType();
+			case '__stringnotstringable':
+				return new StringNeverAcceptingObjectWithToStringType();
 		}
 
 		if ($nameScope->getClassName() !== null) {

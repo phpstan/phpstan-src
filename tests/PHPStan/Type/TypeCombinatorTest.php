@@ -51,6 +51,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RecursionCallable\Foo;
 use stdClass;
+use Stringable;
 use Test\ClassWithNullableProperty;
 use Test\ClassWithToString;
 use Test\FirstInterface;
@@ -2141,6 +2142,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 				MixedType::class,
 				'mixed=implicit',
 			],
+			[
+				[
+					new StringNeverAcceptingObjectWithToStringType(),
+					new StringType(),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new StringNeverAcceptingObjectWithToStringType(),
+					new StringAlwaysAcceptingObjectWithToStringType(),
+				],
+				StringAlwaysAcceptingObjectWithToStringType::class,
+				'string',
+			],
 		];
 
 		if (PHP_VERSION_ID < 80100) {
@@ -4158,6 +4175,46 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				ObjectType::class,
 				'stdClass',
+			],
+			[
+				[
+					new StringAlwaysAcceptingObjectWithToStringType(),
+					new ObjectType(Stringable::class),
+				],
+				ObjectType::class,
+				'Stringable',
+			],
+			[
+				[
+					new StringNeverAcceptingObjectWithToStringType(),
+					new ObjectType(Stringable::class),
+				],
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				[
+					new StringNeverAcceptingObjectWithToStringType(),
+					new StringAlwaysAcceptingObjectWithToStringType(),
+				],
+				StringNeverAcceptingObjectWithToStringType::class,
+				'string',
+			],
+			[
+				[
+					new StringNeverAcceptingObjectWithToStringType(),
+					new StringType(),
+				],
+				StringNeverAcceptingObjectWithToStringType::class,
+				'string',
+			],
+			[
+				[
+					new StringAlwaysAcceptingObjectWithToStringType(),
+					new StringType(),
+				],
+				StringType::class,
+				'string',
 			],
 		];
 

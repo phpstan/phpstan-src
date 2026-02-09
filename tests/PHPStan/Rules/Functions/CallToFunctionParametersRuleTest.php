@@ -2451,6 +2451,64 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[DataProvider('bug6560File')]
+	public function testBug6560(string $fileName): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$varName = PHP_VERSION_ID < 80000 ? '$var' : '$value';
+		$stringableName = PHP_VERSION_ID < 80000 ? 'class' : 'Stringable';
+
+		$this->analyse([__DIR__ . '/data/' . $fileName], [
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
+				23,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $varName),
+				77,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				80,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				83,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
+				89,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
+				92,
+			],
+			[
+				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
+				95,
+			],
+			[
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				98,
+			],
+			[
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				101,
+			],
+		]);
+	}
+
+	/**
+	 * @return iterable<array{string}>
+	 */
+	public static function bug6560File(): iterable
+	{
+		yield ['bug-6560.php'];
+		yield ['bug-6560-strict.php'];
+	}
+
 	#[RequiresPhp('< 8.0')]
 	public function testArrayRandPhp7(): void
 	{

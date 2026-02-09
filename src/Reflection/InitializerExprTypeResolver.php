@@ -976,16 +976,8 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		if ($leftType instanceof IntegerRangeType) {
-			$leftTypes = $leftType->getFiniteTypes();
-		} else {
-			$leftTypes = $leftType->getConstantScalarTypes();
-		}
-		if ($rightType instanceof IntegerRangeType) {
-			$rightTypes = $rightType->getFiniteTypes();
-		} else {
-			$rightTypes = $rightType->getConstantScalarTypes();
-		}
+		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
+		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
@@ -1071,16 +1063,8 @@ final class InitializerExprTypeResolver
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		if ($leftType instanceof IntegerRangeType) {
-			$leftTypes = $leftType->getFiniteTypes();
-		} else {
-			$leftTypes = $leftType->getConstantScalarTypes();
-		}
-		if ($rightType instanceof IntegerRangeType) {
-			$rightTypes = $rightType->getFiniteTypes();
-		} else {
-			$rightTypes = $rightType->getConstantScalarTypes();
-		}
+		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
+		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
@@ -1150,22 +1134,26 @@ final class InitializerExprTypeResolver
 		return $this->getBitwiseXorTypeFromTypes($leftType, $rightType);
 	}
 
+	/**
+	 * @return array<Type>
+	 */
+	private function getFiniteOrConstantScalarTypes(Type $type): array
+	{
+		if ($type instanceof IntegerRangeType) {
+			return $type->getFiniteTypes();
+		}
+
+		return $type->getConstantScalarTypes();
+	}
+
 	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return $this->getNeverType($leftType, $rightType);
 		}
 
-		if ($leftType instanceof IntegerRangeType) {
-			$leftTypes = $leftType->getFiniteTypes();
-		} else {
-			$leftTypes = $leftType->getConstantScalarTypes();
-		}
-		if ($rightType instanceof IntegerRangeType) {
-			$rightTypes = $rightType->getFiniteTypes();
-		} else {
-			$rightTypes = $rightType->getConstantScalarTypes();
-		}
+		$leftTypes = $this->getFiniteOrConstantScalarTypes($leftType);
+		$rightTypes = $this->getFiniteOrConstantScalarTypes($rightType);
 
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);

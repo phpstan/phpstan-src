@@ -514,6 +514,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function afterClearstatcacheCall(): self
 	{
+		$changed = false;
+
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		foreach (array_keys($expressionTypes) as $exprString) {
@@ -547,8 +549,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				unset($expressionTypes[$exprString]);
 				unset($nativeExpressionTypes[$exprString]);
+				$changed = true;
 				continue 2;
 			}
+		}
+
+		if (!$changed) {
+			return $this;
 		}
 
 		return $this->scopeFactory->create(
@@ -576,6 +583,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 
+		$errorStringFunction = '\openssl_error_string()';
+		if (
+			!array_key_exists($errorStringFunction, $expressionTypes)
+			&& !array_key_exists($errorStringFunction, $nativeExpressionTypes)
+		) {
+			return $this;
+		}
+
+		$changed = false;
 		if (in_array($openSslFunctionName, [
 			'openssl_cipher_iv_length',
 			'openssl_cms_decrypt',
@@ -631,8 +647,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			'openssl_x509_read',
 			'openssl_x509_verify',
 		], true)) {
-			unset($expressionTypes['\openssl_error_string()']);
-			unset($nativeExpressionTypes['\openssl_error_string()']);
+			unset($expressionTypes[$errorStringFunction]);
+			unset($nativeExpressionTypes[$errorStringFunction]);
+			$changed = true;
+		}
+
+		if (!$changed) {
+			return $this;
 		}
 
 		return $this->scopeFactory->create(

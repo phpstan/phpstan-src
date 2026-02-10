@@ -22,14 +22,14 @@ use PHPStan\Type\UnionType;
 final class AllowedArrayKeysTypes
 {
 
-	public static function getType(?PhpVersion $phpVersion = null, bool $allowFloatBoolNull = true): Type
+	public static function getType(?PhpVersion $phpVersion = null, bool $reportNonIntStringArrayKey = false): Type
 	{
 		$types = [
 			new IntegerType(),
 			new StringType(),
 		];
 
-		if ($allowFloatBoolNull) {
+		if (!$reportNonIntStringArrayKey) {
 			$types[] = new BooleanType();
 
 			if ($phpVersion === null || !$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {

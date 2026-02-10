@@ -28,7 +28,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 		#[AutowiredParameter]
 		private bool $reportMaybes,
 		#[AutowiredParameter]
-		private bool $allowBoolFloatNullAsArrayKey,
+		private bool $reportNonIntStringArrayKey,
 	)
 	{
 	}
@@ -60,7 +60,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion, $this->allowBoolFloatNullAsArrayKey);
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion, $this->reportNonIntStringArrayKey);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->dim,

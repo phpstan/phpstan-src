@@ -88,7 +88,7 @@ parametersSchema:
 	reportStaticMethodSignatures: bool()
 	reportWrongPhpDocTypeInVarTag: bool()
 	reportAnyTypeWideningInVarTag: bool()
-	allowBoolFloatNullAsArrayKey: bool()
+	reportNonIntStringArrayKey: bool()
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()

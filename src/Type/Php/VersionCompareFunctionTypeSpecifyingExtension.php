@@ -60,12 +60,6 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 		$version1 = $args[0]->value;
 		$version2 = $args[1]->value;
 
-		if ($scope->getNamespace() !== null) {
-			$constName = 'PHP_VERSION_ID';
-		} else {
-			$constName = '\\PHP_VERSION_ID';
-		}
-
 		if (
 			$version1 instanceof ConstFetch
 			&& $version1->name->name === 'PHP_VERSION'
@@ -76,7 +70,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			if ($integerVersionRange !== null) {
 				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
 				return $this->typeSpecifier->create(
-					new ConstFetch(new Name($constName)),
+					new ConstFetch(new Name('\\PHP_VERSION_ID')),
 					$narrowedVersion,
 					$context,
 					$scope,
@@ -93,7 +87,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			if ($integerVersionRange !== null) {
 				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
 				return $this->typeSpecifier->create(
-					new ConstFetch(new Name($constName)),
+					new ConstFetch(new Name('\\PHP_VERSION_ID')),
 					$narrowedVersion,
 					$context,
 					$scope,

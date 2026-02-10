@@ -8,11 +8,14 @@ use const PHP_VERSION_ID;
 
 function lower(): void
 {
+	$x = PHP_VERSION_ID;
+	assertType('int<50207, 80599>', $x);
+
 	if (
 		version_compare( PHP_VERSION, '8.4', '<' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<50207, 80599>', $x);
+		assertType('int<50207, 80399>', $x);
 	}
 
 	if (
@@ -149,6 +152,6 @@ function narrow(): void {
 		version_compare( PHP_VERSION, '8.4', '<' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<min, 80399>', $x);
+		assertType('int<80000, 80399>', $x);
 	}
 }

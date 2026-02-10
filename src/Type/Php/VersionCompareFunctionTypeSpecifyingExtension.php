@@ -6,7 +6,6 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -16,7 +15,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\SimplePhpVersionParser;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -25,16 +23,13 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
+use function strtolower;
 
 #[AutowiredService]
 final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
+
 	private TypeSpecifier $typeSpecifier;
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
-	{
-	}
-
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
@@ -43,7 +38,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return strtolower($functionReflection->getName())==='version_compare' && $context->true();
+		return strtolower($functionReflection->getName()) === 'version_compare' && $context->true();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
@@ -142,4 +137,5 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 
 		return TypeCombinator::remove(new IntegerType(), new ConstantIntegerType($parsedVersion->getVersionId()));
 	}
+
 }

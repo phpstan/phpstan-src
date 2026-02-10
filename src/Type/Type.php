@@ -68,6 +68,9 @@ interface Type
 	/** @return list<ClassReflection> */
 	public function getObjectClassReflections(): array;
 
+	/**
+	 * Return class-string<Foo> for object type Foo.
+	 */
 	public function getClassStringType(): Type;
 
 	/**

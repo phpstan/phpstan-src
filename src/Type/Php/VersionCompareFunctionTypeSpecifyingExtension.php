@@ -74,9 +74,10 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			$integerVersionRange = $this->getVersionCompareType($version2->value, isset($args[2]) ? $args[2]->value : null, $scope);
 
 			if ($integerVersionRange !== null) {
+				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
 				return $this->typeSpecifier->create(
 					new ConstFetch(new Name($constName)),
-					TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange),
+					$narrowedVersion,
 					$context,
 					$scope,
 				);
@@ -90,9 +91,10 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 		) {
 			$integerVersionRange = $this->getVersionCompareType($version1->value, isset($args[2]) ? $args[2]->value : null, $scope);
 			if ($integerVersionRange !== null) {
+				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
 				return $this->typeSpecifier->create(
 					new ConstFetch(new Name($constName)),
-					TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange),
+					$narrowedVersion,
 					$context,
 					$scope,
 				);

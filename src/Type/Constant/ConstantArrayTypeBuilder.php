@@ -85,10 +85,11 @@ final class ConstantArrayTypeBuilder
 			$offsetType = $offsetType->toArrayKey();
 		}
 
-		if (!$this->degradeToGeneralArray || $this->disableArrayDegradation) {
+		if (!$this->degradeToGeneralArray) {
 			if (
 				$valueType instanceof ClosureType
 				&& $this->degradeClosures !== false
+				&& !$this->disableArrayDegradation
 			) {
 				$numClosures = 1;
 				foreach ($this->valueTypes as $innerType) {
@@ -152,7 +153,10 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (
+					!$this->disableArrayDegradation
+					&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+				) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -225,7 +229,10 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (
+					!$this->disableArrayDegradation
+					&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+				) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -328,7 +335,7 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType([], []);
 		}
 
-		if (!$this->degradeToGeneralArray || $this->disableArrayDegradation) {
+		if (!$this->degradeToGeneralArray) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);

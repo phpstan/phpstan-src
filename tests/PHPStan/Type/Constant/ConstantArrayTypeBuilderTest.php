@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
@@ -110,6 +111,19 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 		$array = $builder->getArray();
 		$this->assertSame('non-empty-array<string, string>', $array->describe(VerbosityLevel::precise()));
+	}
+
+	public function testDegradesWhileDisableArrayDegradation(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->disableArrayDegradation();
+		for ($i = 0; $i < 30; $i++) {
+			$builder->setOffsetValueType(new StringType(), new ConstantIntegerType($i));
+		}
+		$builder->setOffsetValueType(new StringType(), new IntegerType());
+
+		$array = $builder->getArray();
+		$this->assertSame('non-empty-array<string, int>', $array->describe(VerbosityLevel::precise()));
 	}
 
 	public function testIsList(): void

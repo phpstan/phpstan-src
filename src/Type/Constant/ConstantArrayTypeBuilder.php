@@ -35,6 +35,8 @@ final class ConstantArrayTypeBuilder
 
 	private bool $degradeToGeneralArray = false;
 
+	private bool $disableArrayDegradation = false;
+
 	private ?bool $degradeClosures = null;
 
 	private bool $oversized = false;
@@ -84,7 +86,11 @@ final class ConstantArrayTypeBuilder
 		}
 
 		if (!$this->degradeToGeneralArray) {
-			if ($valueType instanceof ClosureType && $this->degradeClosures !== false) {
+			if (
+				$valueType instanceof ClosureType
+				&& $this->degradeClosures !== false
+				&& !$this->disableArrayDegradation
+			) {
 				$numClosures = 1;
 				foreach ($this->valueTypes as $innerType) {
 					if (!($innerType instanceof ClosureType)) {
@@ -147,7 +153,10 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (
+					!$this->disableArrayDegradation
+					&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+				) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -220,7 +229,10 @@ final class ConstantArrayTypeBuilder
 					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
-				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+				if (
+					!$this->disableArrayDegradation
+					&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+				) {
 					$this->degradeToGeneralArray = true;
 					$this->oversized = true;
 				}
@@ -296,6 +308,10 @@ final class ConstantArrayTypeBuilder
 
 	public function degradeToGeneralArray(bool $oversized = false): void
 	{
+		if ($this->disableArrayDegradation) {
+			throw new ShouldNotHappenException();
+		}
+
 		$this->degradeToGeneralArray = true;
 		$this->oversized = $this->oversized || $oversized;
 	}
@@ -303,6 +319,13 @@ final class ConstantArrayTypeBuilder
 	public function disableClosureDegradation(): void
 	{
 		$this->degradeClosures = false;
+	}
+
+	public function disableArrayDegradation(): void
+	{
+		$this->degradeToGeneralArray = false;
+		$this->oversized = false;
+		$this->disableArrayDegradation = true;
 	}
 
 	public function getArray(): Type

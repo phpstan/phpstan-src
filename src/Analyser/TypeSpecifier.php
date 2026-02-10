@@ -2383,6 +2383,22 @@ final class TypeSpecifier
 			}
 		}
 
+		// array_key_first($a) !== null
+		// array_key_last($a) !== null
+		if (
+			$unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& in_array($unwrappedLeftExpr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
+			&& isset($unwrappedLeftExpr->getArgs()[0])
+			&& $rightType->isNull()->yes()
+		) {
+			$args = $unwrappedLeftExpr->getArgs();
+			$argType = $scope->getType($args[0]->value);
+			if ($argType->isArray()->yes()) {
+				return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
+			}
+		}
+
 		// preg_match($a) === $b
 		if (
 			$context->true()

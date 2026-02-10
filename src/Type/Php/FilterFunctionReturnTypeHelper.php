@@ -416,10 +416,7 @@ final class FilterFunctionReturnTypeHelper
 				$useDefaultType = true;
 			}
 
-			$canBeSanitized = $this->canStringBeSanitized($filterValue, $flagsType);
-			if ($canBeSanitized->no()) {
-				$stringType = $scalarOrNullType->toString();
-			} elseif ($scalarOrNullType->isString()->no()) {
+			if ($this->canStringBeSanitized($filterValue, $flagsType)->no()) {
 				$stringType = $scalarOrNullType->toString();
 			} else {
 				$stringType = TypeCombinator::union(

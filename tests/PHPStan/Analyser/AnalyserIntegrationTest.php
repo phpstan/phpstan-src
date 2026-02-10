@@ -1637,6 +1637,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBigPhpdocArrayShape(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-14012b.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

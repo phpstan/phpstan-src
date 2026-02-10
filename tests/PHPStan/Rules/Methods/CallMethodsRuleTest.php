@@ -3817,4 +3817,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/closure-passed-to-type-fiberscope-php81.php'], []);
 	}
 
+	public function testDiscussion14038(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/discussion-14038.php'], []);
+	}
+
 }

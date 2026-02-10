@@ -5549,6 +5549,8 @@ class NodeScopeResolver
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		/** @var list<array{InvalidateExprNode[], string[]}> $deferredInvalidateExpressions */
+		$deferredInvalidateExpressions = [];
 		foreach ($args as $i => $arg) {
 			$assignByReference = false;
 			$parameter = null;
@@ -5676,7 +5678,7 @@ class NodeScopeResolver
 					$scope = $scope->restoreThis($restoreThisScope);
 				}
 
-				$scope = $this->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses);
+				$deferredInvalidateExpressions[] = [$invalidateExpressions, $uses];
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 				if (
 					$closureBindScope === null
@@ -5717,7 +5719,7 @@ class NodeScopeResolver
 				if ($exprType->isCallable()->yes()) {
 					$acceptors = $exprType->getCallableParametersAcceptors($scope);
 					if (count($acceptors) === 1) {
-						$scope = $this->processImmediatelyCalledCallable($scope, $acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables());
+						$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
@@ -5745,6 +5747,10 @@ class NodeScopeResolver
 			}
 
 			$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
+		}
+
+		foreach ($deferredInvalidateExpressions as [$invalidateExpressions, $uses]) {
+			$scope = $this->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses);
 		}
 
 		if ($parameters !== null) {

@@ -41,8 +41,6 @@ final class AcceptsResult
 	}
 
 	/**
-	 * Returns true if the type is definitely accepted.
-	 *
 	 * @phpstan-assert-if-true =false $this->no()
 	 * @phpstan-assert-if-true =false $this->maybe()
 	 */
@@ -52,8 +50,6 @@ final class AcceptsResult
 	}
 
 	/**
-	 * Returns true if acceptance is uncertain.
-	 *
 	 * @phpstan-assert-if-true =false $this->no()
 	 * @phpstan-assert-if-true =false $this->yes()
 	 */
@@ -63,8 +59,6 @@ final class AcceptsResult
 	}
 
 	/**
-	 * Returns true if the type is definitely not accepted.
-	 *
 	 * @phpstan-assert-if-true =false $this->maybe()
 	 * @phpstan-assert-if-true =false $this->yes()
 	 */
@@ -73,37 +67,27 @@ final class AcceptsResult
 		return $this->result->no();
 	}
 
-	/** Creates a definite acceptance result with no reasons. */
 	public static function createYes(): self
 	{
 		return new self(TrinaryLogic::createYes(), []);
 	}
 
-	/**
-	 * Creates a definite rejection result with optional reasons.
-	 *
-	 * @param list<string> $reasons
-	 */
+	/** @param list<string> $reasons */
 	public static function createNo(array $reasons = []): self
 	{
 		return new self(TrinaryLogic::createNo(), $reasons);
 	}
 
-	/** Creates an uncertain acceptance result with no reasons. */
 	public static function createMaybe(): self
 	{
 		return new self(TrinaryLogic::createMaybe(), []);
 	}
 
-	/** Converts a boolean to an AcceptsResult (true → Yes, false → No). */
 	public static function createFromBoolean(bool $value): self
 	{
 		return new self(TrinaryLogic::createFromBoolean($value), []);
 	}
 
-	/**
-	 * Logical AND — combines this result with another, merging reasons.
-	 */
 	public function and(self $other): self
 	{
 		return new self(
@@ -112,9 +96,6 @@ final class AcceptsResult
 		);
 	}
 
-	/**
-	 * Logical OR — combines this result with another, merging reasons.
-	 */
 	public function or(self $other): self
 	{
 		return new self(
@@ -123,14 +104,7 @@ final class AcceptsResult
 		);
 	}
 
-	/**
-	 * Transforms all reason strings using the given callback.
-	 *
-	 * Useful for adding context to reasons, e.g. wrapping them in
-	 * "Parameter $foo: ..." format.
-	 *
-	 * @param callable(string): string $cb
-	 */
+	/** @param callable(string): string $cb */
 	public function decorateReasons(callable $cb): self
 	{
 		$reasons = [];
@@ -141,11 +115,7 @@ final class AcceptsResult
 		return new self($this->result, $reasons);
 	}
 
-	/**
-	 * Returns Yes if all operands agree, Maybe if any disagree.
-	 *
-	 * @see TrinaryLogic::extremeIdentity()
-	 */
+	/** @see TrinaryLogic::extremeIdentity() */
 	public static function extremeIdentity(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -163,11 +133,7 @@ final class AcceptsResult
 		return new self($result, array_values(array_unique($reasons)));
 	}
 
-	/**
-	 * Returns Yes if any operand is Yes, otherwise the minimum.
-	 *
-	 * @see TrinaryLogic::maxMin()
-	 */
+	/** @see TrinaryLogic::maxMin() */
 	public static function maxMin(self ...$operands): self
 	{
 		if ($operands === []) {

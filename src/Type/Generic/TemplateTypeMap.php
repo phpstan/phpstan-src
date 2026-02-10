@@ -49,9 +49,6 @@ final class TemplateTypeMap
 	{
 	}
 
-	/**
-	 * Moves all upper-bound types to lower-bound types, intersecting with existing lower bounds.
-	 */
 	public function convertToLowerBoundTypes(): self
 	{
 		$lowerBoundTypes = $this->types;
@@ -70,7 +67,6 @@ final class TemplateTypeMap
 		return new self([], $lowerBoundTypes);
 	}
 
-	/** Returns a shared empty TemplateTypeMap instance. */
 	public static function createEmpty(): self
 	{
 		$empty = self::$empty;
@@ -95,11 +91,7 @@ final class TemplateTypeMap
 		return count($this->types + $this->lowerBoundTypes);
 	}
 
-	/**
-	 * Returns all template type bindings (upper-bound types with lower-bound fallbacks).
-	 *
-	 * @return array<string, Type>
-	 */
+	/** @return array<string, Type> */
 	public function getTypes(): array
 	{
 		$types = $this->types;
@@ -143,11 +135,6 @@ final class TemplateTypeMap
 		return new self($types, $lowerBoundTypes);
 	}
 
-	/**
-	 * Unions this map with another — for each template, the types are unioned.
-	 *
-	 * Used when merging type information from different branches (e.g. if/else).
-	 */
 	public function union(self $other): self
 	{
 		$result = $this->types;
@@ -204,11 +191,6 @@ final class TemplateTypeMap
 		return new self($result, $resultLowerBoundTypes);
 	}
 
-	/**
-	 * Intersects this map with another — for each template, the types are intersected.
-	 *
-	 * Used when combining constraints from multiple sources.
-	 */
 	public function intersect(self $other): self
 	{
 		$result = $this->types;
@@ -245,11 +227,7 @@ final class TemplateTypeMap
 	}
 
 	/**
-	 * Replaces any unresolved TemplateType values with their declared bounds.
-	 *
-	 * For `@template T of Countable`, if T is still unresolved, it becomes `Countable`.
-	 * If a default type is specified (`@template T of Countable = array`), uses the default.
-	 * Result is cached.
+	 * Replaces unresolved TemplateType values with their declared bounds (or defaults).
 	 */
 	public function resolveToBounds(): self
 	{

@@ -60,138 +60,56 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	];
 
 	/**
-	 * Returns the absolute path of the file being analysed.
-	 *
-	 * When analysing a trait, this returns the file where the trait is used (the class file),
-	 * not the trait file itself. Use getFileDescription() to get the trait file path
-	 * with class context information.
+	 * When analysing a trait, returns the file where the trait is used,
+	 * not the trait file itself. Use getFileDescription() for the trait file path.
 	 */
 	public function getFile(): string;
 
 	/**
-	 * Returns a human-readable file description for error messages.
-	 *
-	 * For regular files, this is the same as getFile().
-	 * For traits, this returns the trait file path with the using class context,
+	 * For traits, returns the trait file path with the using class context,
 	 * e.g. "TraitFile.php (in context of class MyClass)".
 	 */
 	public function getFileDescription(): string;
 
-	/**
-	 * Returns whether the current file has declare(strict_types=1).
-	 *
-	 * When true, PHP enforces strict type checking for function/method arguments
-	 * and return values — no implicit type coercion is performed. This affects
-	 * how Type::accepts() behaves (e.g. int is not accepted by float in strict mode).
-	 */
 	public function isDeclareStrictTypes(): bool;
 
 	/**
-	 * Returns whether the current analysis context is inside a trait.
-	 *
-	 * When true, getTraitReflection() is guaranteed to return non-null.
-	 * Used by rules that need trait-specific behavior, such as skipping
-	 * certain checks that don't apply in trait context.
-	 *
 	 * @phpstan-assert-if-true !null $this->getTraitReflection()
 	 */
 	public function isInTrait(): bool;
 
 	/**
-	 * Returns the ClassReflection of the trait being analysed, or null.
-	 *
-	 * Only non-null when isInTrait() is true. The returned reflection
-	 * represents the trait itself, not the class using the trait.
-	 * Use getClassReflection() (from ClassMemberAccessAnswerer) to get the
-	 * class that uses the trait.
+	 * Returns the trait itself, not the class using the trait.
+	 * Use getClassReflection() for the using class.
 	 */
 	public function getTraitReflection(): ?ClassReflection;
 
-	/**
-	 * Returns the reflection of the current function or method, or null.
-	 *
-	 * Returns null when outside of any function/method (e.g. at the top level
-	 * of a file, or in a class but outside a method). For closures and arrow
-	 * functions, returns their reflection.
-	 */
 	public function getFunction(): ?PhpFunctionFromParserNodeReflection;
 
-	/**
-	 * Returns the name of the current function or method, or null.
-	 *
-	 * For methods, returns the method name (not the fully qualified name).
-	 * For closures and arrow functions, returns null.
-	 * For top-level code, returns null.
-	 */
 	public function getFunctionName(): ?string;
 
-	/**
-	 * Returns the parent scope, or null if this is the top-level scope.
-	 *
-	 * The parent scope is the scope that encloses the current one. For example,
-	 * when inside a closure, the parent scope is the scope of the function
-	 * that contains the closure. Used for variable resolution in closures
-	 * and arrow functions.
-	 */
 	public function getParentScope(): ?self;
 
-	/**
-	 * Returns whether a variable with the given name exists in the current scope.
-	 *
-	 * Returns TrinaryLogic::Yes if the variable is definitely defined,
-	 * TrinaryLogic::Maybe if it might be defined (e.g. defined in one branch of an if),
-	 * and TrinaryLogic::No if it is not defined.
-	 */
 	public function hasVariableType(string $variableName): TrinaryLogic;
 
-	/**
-	 * Returns the type of a variable in the current scope.
-	 *
-	 * If the variable is not defined, returns ErrorType.
-	 * Check hasVariableType() first if you need to distinguish between
-	 * undefined variables and variables with unknown types.
-	 */
 	public function getVariableType(string $variableName): Type;
 
 	/**
-	 * Returns whether any variable can potentially exist in this scope.
-	 *
-	 * Returns true at the top level of a file (outside functions/closures)
-	 * or after an extract() call — contexts where arbitrary variables may exist.
-	 * Returns false inside functions, methods, and closures (unless extract()
-	 * was called), where the set of available variables is known.
-	 *
-	 * Used by the DefinedVariableRule to suppress "undefined variable" errors
-	 * when the full variable set is not known.
+	 * True at the top level of a file or after extract() — contexts where
+	 * arbitrary variables may exist.
 	 */
 	public function canAnyVariableExist(): bool;
 
-	/**
-	 * Returns the names of all variables that are definitely defined in this scope.
-	 *
-	 * Only includes variables with TrinaryLogic::Yes certainty.
-	 *
-	 * @return array<int, string>
-	 */
+	/** @return array<int, string> */
 	public function getDefinedVariables(): array;
 
 	/**
-	 * Returns the names of variables that might be defined in this scope.
-	 *
-	 * Only includes variables with TrinaryLogic::Maybe certainty — variables
-	 * that are defined in some code paths but not others (e.g. defined inside
-	 * an if-branch but not in the else-branch).
+	 * Variables with TrinaryLogic::Maybe certainty — defined in some code paths but not others.
 	 *
 	 * @return array<int, string>
 	 */
 	public function getMaybeDefinedVariables(): array;
 
-	/**
-	 * Returns whether a global constant with the given name exists.
-	 *
-	 * Checks both PHP built-in constants and user-defined constants.
-	 * The Name node is resolved according to the current namespace.
-	 */
 	public function hasConstant(Name $name): bool;
 
 	/**
@@ -199,152 +117,52 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 */
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
 
-	/**
-	 * Returns the reflection for an instance property on the given type, or null.
-	 *
-	 * Resolves the property through the type system, handling union types,
-	 * intersection types, and visibility checks. Returns null if the property
-	 * doesn't exist or is not accessible from the current scope.
-	 */
 	public function getInstancePropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
 
-	/**
-	 * Returns the reflection for a static property on the given type, or null.
-	 *
-	 * Like getInstancePropertyReflection() but for static properties (Foo::$bar).
-	 * Returns null if the property doesn't exist or is not accessible.
-	 */
 	public function getStaticPropertyReflection(Type $typeWithProperty, string $propertyName): ?ExtendedPropertyReflection;
 
-	/**
-	 * Returns the reflection for a method on the given type, or null.
-	 *
-	 * Resolves the method through the type system, handling union types,
-	 * intersection types, and visibility checks. Returns null if the method
-	 * doesn't exist or is not accessible from the current scope.
-	 */
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection;
 
-	/**
-	 * Returns the reflection for a class constant on the given type, or null.
-	 *
-	 * Resolves the constant through the type system. Returns null if the
-	 * constant doesn't exist or is not accessible from the current scope.
-	 */
 	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ClassConstantReflection;
 
-	/**
-	 * Returns the explicitly configured type for a global constant, if any.
-	 *
-	 * Checks the PHPStan configuration for user-specified constant type overrides
-	 * (via the `constants` configuration option). Falls back to the given $constantType
-	 * if no override is configured.
-	 */
 	public function getConstantExplicitTypeFromConfig(string $constantName, Type $constantType): Type;
 
-	/**
-	 * Returns the key type of an iterable type.
-	 *
-	 * Unlike calling $iteratee->getIterableKeyType() directly, this method
-	 * goes through the Scope to properly resolve template types and handle
-	 * scope-specific type refinements.
-	 */
 	public function getIterableKeyType(Type $iteratee): Type;
 
-	/**
-	 * Returns the value type of an iterable type.
-	 *
-	 * Unlike calling $iteratee->getIterableValueType() directly, this method
-	 * goes through the Scope to properly resolve template types and handle
-	 * scope-specific type refinements.
-	 */
 	public function getIterableValueType(Type $iteratee): Type;
 
 	/**
-	 * Returns whether the current analysis context is inside an anonymous function
-	 * (closure or arrow function).
-	 *
-	 * When true, both getAnonymousFunctionReflection() and
-	 * getAnonymousFunctionReturnType() are guaranteed to return non-null.
-	 *
 	 * @phpstan-assert-if-true !null $this->getAnonymousFunctionReflection()
 	 * @phpstan-assert-if-true !null $this->getAnonymousFunctionReturnType()
 	 */
 	public function isInAnonymousFunction(): bool;
 
-	/**
-	 * Returns the ClosureType reflection of the current anonymous function, or null.
-	 *
-	 * Only non-null when isInAnonymousFunction() is true. The ClosureType
-	 * contains the closure's parameter types, return type, and template types.
-	 */
 	public function getAnonymousFunctionReflection(): ?ClosureType;
 
-	/**
-	 * Returns the declared return type of the current anonymous function, or null.
-	 *
-	 * Only non-null when isInAnonymousFunction() is true. Used by return type
-	 * rules to validate that the closure returns the correct type.
-	 */
 	public function getAnonymousFunctionReturnType(): ?Type;
 
 	/**
-	 * Returns the type of a PHP expression at this point in the analysis.
-	 *
-	 * This is the most important method on Scope. It evaluates the type of any
-	 * expression AST node, taking into account all type information available at
-	 * the current analysis position — variable assignments, type narrowing from
-	 * conditions, PHPDoc annotations, and more.
-	 *
-	 * The returned type reflects PHPDoc-enhanced types. Use getNativeType() to get
-	 * the type based only on PHP's native type system (typehints, assignments).
-	 *
-	 * Note: This method may defer evaluation until the expression's analysis is
-	 * complete (see getScopeType() for cases where immediate evaluation is needed).
+	 * Returns the PHPDoc-enhanced type. Use getNativeType() for native types only.
 	 */
 	public function getType(Expr $node): Type;
 
 	/**
-	 * Returns the native PHP type of an expression, ignoring PHPDoc annotations.
-	 *
-	 * Unlike getType() which includes PHPDoc-enhanced type information (like
-	 * generic types, more specific return types from @return tags, etc.), this
-	 * method returns only what PHP's native type system knows.
-	 *
-	 * Used when you need to distinguish between what PHP enforces at runtime
-	 * vs. what PHPDoc promises at the documentation level.
+	 * Returns only what PHP's native type system knows, ignoring PHPDoc.
 	 */
 	public function getNativeType(Expr $expr): Type;
 
 	/**
-	 * Like getType(), but preserves the void type for function/method calls.
-	 *
-	 * Normally, getType() replaces void return types with null (since void
-	 * functions effectively return null). This method keeps the void type,
-	 * which is needed by return type rules that must distinguish between
-	 * "returns null" and "returns void".
+	 * Like getType(), but preserves void for function/method calls
+	 * (normally getType() replaces void with null).
 	 */
 	public function getKeepVoidType(Expr $node): Type;
 
 	/**
-	 * Returns the type of an expression using the current scope state directly.
-	 *
-	 * Unlike getType(), which may defer evaluation until the expression's
-	 * full analysis is complete (to handle cases like `doFoo($a = 1, $a)`
-	 * where argument evaluation order matters), this method uses the scope's
+	 * Unlike getType() which may defer evaluation, this uses the scope's
 	 * current state immediately.
-	 *
-	 * Use this when you intentionally want the type as it exists in the
-	 * current scope snapshot, not the final resolved type.
 	 */
 	public function getScopeType(Expr $expr): Type;
 
-	/**
-	 * Like getScopeType(), but returns the native PHP type only.
-	 *
-	 * Combines the immediate-evaluation behavior of getScopeType() with
-	 * the PHPDoc-ignoring behavior of getNativeType().
-	 */
 	public function getScopeNativeType(Expr $expr): Type;
 
 	/**

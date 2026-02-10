@@ -110,13 +110,6 @@ final class TemplateTypeVariance
 		return $this->value === self::BIVARIANT;
 	}
 
-	/**
-	 * Composes two variances together for nested generic types.
-	 *
-	 * For example, if a type appears in a contravariant position inside a
-	 * covariant container, the effective variance is contravariant.
-	 * Composition rules follow standard type theory.
-	 */
 	public function compose(self $other): self
 	{
 		if ($this->contravariant()) {
@@ -156,14 +149,6 @@ final class TemplateTypeVariance
 		return $other;
 	}
 
-	/**
-	 * Checks whether two types satisfy this variance constraint.
-	 *
-	 * For invariant: types must be equal.
-	 * For covariant: $a must be a supertype of $b.
-	 * For contravariant: $b must be a supertype of $a.
-	 * For bivariant: always valid.
-	 */
 	public function isValidVariance(TemplateType $templateType, Type $a, Type $b): IsSuperTypeOfResult
 	{
 		if ($b instanceof NeverType) {

@@ -28,48 +28,28 @@ use PHPStan\TrinaryLogic;
 interface CallableParametersAcceptor extends ParametersAcceptor
 {
 
-	/**
-	 * Returns the points where this callable may throw exceptions.
-	 *
-	 * @return SimpleThrowPoint[]
-	 */
+	/** @return SimpleThrowPoint[] */
 	public function getThrowPoints(): array;
 
-	/** Whether this callable is known to be pure (no side effects). */
 	public function isPure(): TrinaryLogic;
 
-	/** Whether this callable accepts named arguments. */
 	public function acceptsNamedArguments(): TrinaryLogic;
 
-	/**
-	 * Returns the points where this callable may have side effects.
-	 *
-	 * @return SimpleImpurePoint[]
-	 */
+	/** @return SimpleImpurePoint[] */
 	public function getImpurePoints(): array;
 
 	/**
-	 * Returns expressions that become invalid after this callable is invoked.
-	 *
-	 * Used to track when calling a closure invalidates cached type information
+	 * Tracks when calling a closure invalidates cached type information
 	 * for variables it captures by reference.
 	 *
 	 * @return InvalidateExprNode[]
 	 */
 	public function getInvalidateExpressions(): array;
 
-	/**
-	 * Returns the names of outer-scope variables captured by this callable.
-	 *
-	 * Relevant for `use ($var)` in closures.
-	 *
-	 * @return string[]
-	 */
+	/** @return string[] */
 	public function getUsedVariables(): array;
 
 	/**
-	 * Whether this callable has the #[\NoDiscard] attribute.
-	 *
 	 * On PHP 8.5+ if the return value is unused at runtime, a warning is emitted.
 	 * PHPStan reports this during analysis regardless of PHP version.
 	 */

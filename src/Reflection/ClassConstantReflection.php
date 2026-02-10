@@ -23,36 +23,18 @@ use PHPStan\Type\Type;
 interface ClassConstantReflection extends ClassMemberReflection, ConstantReflection
 {
 
-	/**
-	 * Returns the AST expression for this constant's value.
-	 *
-	 * This is the raw expression from the parser, useful for rules that
-	 * need to inspect the constant's definition.
-	 */
 	public function getValueExpr(): Expr;
 
-	/** Whether this constant is declared final (PHP 8.1+). */
 	public function isFinal(): bool;
 
-	/** Whether this constant has a PHPDoc @var type. */
 	public function hasPhpDocType(): bool;
 
-	/**
-	 * Returns the PHPDoc @var type for this constant, or null if none.
-	 */
 	public function getPhpDocType(): ?Type;
 
-	/** Whether this constant has a native PHP type declaration (PHP 8.3+). */
 	public function hasNativeType(): bool;
 
-	/**
-	 * Returns the native PHP type declaration, or null if none.
-	 */
 	public function getNativeType(): ?Type;
 
-	/**
-	 * Returns the resolved PHPDoc block for this constant, or null if none exists.
-	 */
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock;
 
 }

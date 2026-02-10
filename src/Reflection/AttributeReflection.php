@@ -20,24 +20,18 @@ final class AttributeReflection
 {
 
 	/**
-	 * @param string $name The fully qualified attribute class name
 	 * @param array<string, Type> $argumentTypes Argument types keyed by parameter name
 	 */
 	public function __construct(private string $name, private array $argumentTypes)
 	{
 	}
 
-	/** Returns the fully qualified attribute class name. */
 	public function getName(): string
 	{
 		return $this->name;
 	}
 
-	/**
-	 * Returns the types of the attribute's constructor arguments, keyed by parameter name.
-	 *
-	 * @return array<string, Type>
-	 */
+	/** @return array<string, Type> */
 	public function getArgumentTypes(): array
 	{
 		return $this->argumentTypes;

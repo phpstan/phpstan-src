@@ -13,11 +13,7 @@ namespace PHPStan\Reflection;
 interface NamespaceAnswerer
 {
 
-	/**
-	 * Returns the current namespace, or null if in the global namespace.
-	 *
-	 * @return non-empty-string|null
-	 */
+	/** @return non-empty-string|null */
 	public function getNamespace(): ?string;
 
 }

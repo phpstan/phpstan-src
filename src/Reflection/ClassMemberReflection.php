@@ -18,27 +18,17 @@ interface ClassMemberReflection
 {
 
 	/**
-	 * Returns the class where this member is declared.
-	 *
 	 * For inherited members, this returns the original declaring class,
 	 * not the class where the member was accessed.
 	 */
 	public function getDeclaringClass(): ClassReflection;
 
-	/** Whether this member is declared static. */
 	public function isStatic(): bool;
 
-	/** Whether this member has private visibility. */
 	public function isPrivate(): bool;
 
-	/** Whether this member has public visibility. */
 	public function isPublic(): bool;
 
-	/**
-	 * Returns the raw PHPDoc comment for this member, or null if none exists.
-	 *
-	 * This is the unparsed comment string including the /** delimiters.
-	 */
 	public function getDocComment(): ?string;
 
 }

@@ -23,18 +23,11 @@ final class TemplateTypeReference
 	{
 	}
 
-	/** Returns the template type being referenced. */
 	public function getType(): TemplateType
 	{
 		return $this->type;
 	}
 
-	/**
-	 * Returns the variance of the position where this template type appears.
-	 *
-	 * For example, in `function foo(): T`, T is in a covariant position.
-	 * In `function foo(T $x)`, T is in a contravariant position.
-	 */
 	public function getPositionVariance(): TemplateTypeVariance
 	{
 		return $this->positionVariance;

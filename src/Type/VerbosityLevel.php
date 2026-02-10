@@ -70,47 +70,26 @@ final class VerbosityLevel
 		return $this->value;
 	}
 
-	/**
-	 * Least verbose: only type names, no values or refinements.
-	 *
-	 * E.g. "string", "int", "array<string, int>".
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function typeOnly(): self
 	{
 		return self::create(self::TYPE_ONLY);
 	}
 
-	/**
-	 * Includes constant values and basic refinements.
-	 *
-	 * E.g. "'hello'", "42", "array{foo: int, bar: string}", "non-empty-string".
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function value(): self
 	{
 		return self::create(self::VALUE);
 	}
 
-	/**
-	 * Maximum verbosity: includes all refinements like lowercase/uppercase.
-	 *
-	 * E.g. "non-empty-lowercase-string", "non-falsy-string".
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function precise(): self
 	{
 		return self::create(self::PRECISE);
 	}
 
 	/**
-	 * Internal level used to generate unique cache keys for types.
-	 *
-	 * Produces the most specific string possible to distinguish any two
-	 * structurally different types. Not intended for user-facing messages.
+	 * Internal level for generating unique cache keys — not for user-facing messages.
 	 *
 	 * @api
 	 */
@@ -140,11 +119,7 @@ final class VerbosityLevel
 	}
 
 	/**
-	 * Chooses the minimum verbosity level needed to distinguish the accepting and accepted types.
-	 *
-	 * Examines both types and picks a level that provides enough detail to make the
-	 * error message clear. For example, if the types differ only in constant values,
-	 * it picks value(). If they differ in lowercase/uppercase, it picks precise().
+	 * Chooses the minimum verbosity needed to distinguish the two types in error messages.
 	 *
 	 * @api
 	 */
@@ -262,12 +237,6 @@ final class VerbosityLevel
 	}
 
 	/**
-	 * Dispatches to the appropriate callback based on the current level.
-	 *
-	 * Type implementations use this in their describe() method to provide
-	 * different representations at each verbosity level. Falls back to less
-	 * specific callbacks when more specific ones are not provided.
-	 *
 	 * @param callable(): string $typeOnlyCallback
 	 * @param callable(): string $valueCallback
 	 * @param callable(): string|null $preciseCallback

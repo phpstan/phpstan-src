@@ -23,15 +23,8 @@ use PHPStan\Type\Type;
 interface UnresolvedMethodPrototypeReflection
 {
 
-	/**
-	 * Returns a new instance that keeps template types unresolved instead of
-	 * falling back to their bounds. Used during type inference.
-	 */
 	public function doNotResolveTemplateTypeMapToBounds(): self;
 
-	/**
-	 * Returns the method reflection without any template type substitution.
-	 */
 	public function getNakedMethod(): ExtendedMethodReflection;
 
 	/**
@@ -40,11 +33,6 @@ interface UnresolvedMethodPrototypeReflection
 	 */
 	public function getTransformedMethod(): ExtendedMethodReflection;
 
-	/**
-	 * Returns a new instance configured for the given called-on type.
-	 *
-	 * The called-on type provides the generic arguments used for template substitution.
-	 */
 	public function withCalledOnType(Type $type): self;
 
 }

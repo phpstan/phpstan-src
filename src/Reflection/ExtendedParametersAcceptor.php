@@ -21,28 +21,13 @@ use PHPStan\Type\Type;
 interface ExtendedParametersAcceptor extends ParametersAcceptor
 {
 
-	/**
-	 * Returns extended parameter reflections with separate PHPDoc/native types.
-	 *
-	 * @return list<ExtendedParameterReflection>
-	 */
+	/** @return list<ExtendedParameterReflection> */
 	public function getParameters(): array;
 
-	/**
-	 * Returns the PHPDoc @return type, separate from the native type.
-	 */
 	public function getPhpDocReturnType(): Type;
 
-	/**
-	 * Returns the native PHP return type declaration.
-	 */
 	public function getNativeReturnType(): Type;
 
-	/**
-	 * Returns the variance map for template types at the call site.
-	 *
-	 * Used for @template-covariant and other call-site variance specifications.
-	 */
 	public function getCallSiteVarianceMap(): TemplateTypeVarianceMap;
 
 }

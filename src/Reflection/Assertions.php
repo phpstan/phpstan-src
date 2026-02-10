@@ -38,20 +38,14 @@ final class Assertions
 	{
 	}
 
-	/**
-	 * Returns all assert tags regardless of condition.
-	 *
-	 * @return AssertTag[]
-	 */
+	/** @return AssertTag[] */
 	public function getAll(): array
 	{
 		return $this->asserts;
 	}
 
 	/**
-	 * Returns unconditional assertions (@phpstan-assert).
-	 *
-	 * These narrow parameter types regardless of the method's return value.
+	 * Unconditional assertions — narrow parameter types regardless of the method's return value.
 	 *
 	 * @return AssertTag[]
 	 */
@@ -61,9 +55,7 @@ final class Assertions
 	}
 
 	/**
-	 * Returns assertions that apply when the method returns true.
-	 *
-	 * Includes `@phpstan-assert-if-true` tags and negated `@phpstan-assert-if-false` tags.
+	 * Includes @phpstan-assert-if-true tags and negated @phpstan-assert-if-false tags.
 	 *
 	 * @return AssertTag[]
 	 */
@@ -79,9 +71,7 @@ final class Assertions
 	}
 
 	/**
-	 * Returns assertions that apply when the method returns false.
-	 *
-	 * Includes `@phpstan-assert-if-false` tags and negated `@phpstan-assert-if-true` tags.
+	 * Includes @phpstan-assert-if-false tags and negated @phpstan-assert-if-true tags.
 	 *
 	 * @return AssertTag[]
 	 */
@@ -96,14 +86,7 @@ final class Assertions
 		);
 	}
 
-	/**
-	 * Transforms all assertion types using the given callback.
-	 *
-	 * Used when resolving template types — the assertion types need to be
-	 * substituted with concrete type arguments.
-	 *
-	 * @param callable(Type): Type $callable
-	 */
+	/** @param callable(Type): Type $callable */
 	public function mapTypes(callable $callable): self
 	{
 		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withType($callable($tag->getType()));

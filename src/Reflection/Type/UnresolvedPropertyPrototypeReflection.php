@@ -25,15 +25,8 @@ use PHPStan\Type\Type;
 interface UnresolvedPropertyPrototypeReflection
 {
 
-	/**
-	 * Returns a new instance that keeps template types unresolved instead of
-	 * falling back to their bounds. Used during type inference.
-	 */
 	public function doNotResolveTemplateTypeMapToBounds(): self;
 
-	/**
-	 * Returns the property reflection without any template type substitution.
-	 */
 	public function getNakedProperty(): ExtendedPropertyReflection;
 
 	/**
@@ -42,11 +35,6 @@ interface UnresolvedPropertyPrototypeReflection
 	 */
 	public function getTransformedProperty(): ExtendedPropertyReflection;
 
-	/**
-	 * Returns a new instance configured for the given fetched-on type.
-	 *
-	 * The fetched-on type provides the generic arguments used for template substitution.
-	 */
 	public function withFechedOnType(Type $type): self;
 
 }

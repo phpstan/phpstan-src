@@ -28,40 +28,26 @@ final class SimpleThrowPoint
 	{
 	}
 
-	/**
-	 * Creates a throw point from an explicit @throws annotation.
-	 *
-	 * @param Type $type The exception type declared in @throws
-	 * @param bool $canContainAnyThrowable Whether the type could match any Throwable
-	 */
 	public static function createExplicit(Type $type, bool $canContainAnyThrowable): self
 	{
 		return new self($type, true, $canContainAnyThrowable);
 	}
 
-	/**
-	 * Creates an implicit throw point that could throw any Throwable.
-	 *
-	 * Used when no @throws annotation is present and the callable is not marked pure.
-	 */
 	public static function createImplicit(): self
 	{
 		return new self(new ObjectType(Throwable::class), false, true);
 	}
 
-	/** Returns the type of exceptions that may be thrown. */
 	public function getType(): Type
 	{
 		return $this->type;
 	}
 
-	/** Whether this throw point comes from an explicit @throws annotation. */
 	public function isExplicit(): bool
 	{
 		return $this->explicit;
 	}
 
-	/** Whether the exception type is broad enough to include any Throwable. */
 	public function canContainAnyThrowable(): bool
 	{
 		return $this->canContainAnyThrowable;

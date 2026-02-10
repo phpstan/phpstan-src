@@ -36,9 +36,7 @@ final class SimpleImpurePoint
 	];
 
 	/**
-	 * @param ImpurePointIdentifier $identifier Category of the side effect
-	 * @param string $description Human-readable description of the impure action
-	 * @param bool $certain Whether the side effect is certain (true) or possible (false)
+	 * @param ImpurePointIdentifier $identifier
 	 */
 	public function __construct(
 		private string $identifier,
@@ -49,11 +47,7 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * Creates a SimpleImpurePoint from a function/method and its selected variant.
-	 *
 	 * Returns null if the function is known to be pure (no side effects).
-	 * Handles special cases like print_r() where a parameter can flip the
-	 * function between impure (prints to output) and pure (returns string).
 	 *
 	 * @param Arg[] $args
 	 */
@@ -122,28 +116,17 @@ final class SimpleImpurePoint
 		return null;
 	}
 
-	/**
-	 * Returns the category identifier for this side effect (e.g. "functionCall", "methodCall").
-	 *
-	 * @return ImpurePointIdentifier
-	 */
+	/** @return ImpurePointIdentifier */
 	public function getIdentifier(): string
 	{
 		return $this->identifier;
 	}
 
-	/** Returns a human-readable description of the impure action. */
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
-	/**
-	 * Whether the side effect is certain (vs. merely possible).
-	 *
-	 * Certain when the function is known to be impure (e.g. void return, or
-	 * explicitly marked @phpstan-impure). Uncertain when purity is unknown.
-	 */
 	public function isCertain(): bool
 	{
 		return $this->certain;

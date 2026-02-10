@@ -42,31 +42,19 @@ final class GeneralizePrecision
 		return self::$registry[$value];
 	}
 
-	/**
-	 * Aggressive generalization — constant values become their general types.
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function lessSpecific(): self
 	{
 		return self::create(self::LESS_SPECIFIC);
 	}
 
-	/**
-	 * Preserves more detail during generalization.
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function moreSpecific(): self
 	{
 		return self::create(self::MORE_SPECIFIC);
 	}
 
-	/**
-	 * Used when generalizing template type arguments.
-	 *
-	 * @api
-	 */
+	/** @api */
 	public static function templateArgument(): self
 	{
 		return self::create(self::TEMPLATE_ARGUMENT);

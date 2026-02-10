@@ -23,24 +23,13 @@ use PHPStan\Reflection\ClassReflection;
 interface TypeWithClassName extends Type
 {
 
-	/**
-	 * Returns the fully qualified class name (without leading backslash).
-	 */
 	public function getClassName(): string;
 
 	/**
-	 * Walks the type's class hierarchy to find an ancestor matching the given class name.
-	 *
-	 * Returns a TypeWithClassName representing the type projected onto that ancestor,
-	 * or null if the class is not in the hierarchy. Preserves generic type arguments
-	 * when walking through the hierarchy.
+	 * Returns this type projected onto an ancestor class, preserving generic type arguments.
 	 */
 	public function getAncestorWithClassName(string $className): ?self;
 
-	/**
-	 * Returns the ClassReflection for this type's class, or null if the class
-	 * cannot be reflected (e.g. the class doesn't exist).
-	 */
 	public function getClassReflection(): ?ClassReflection;
 
 }

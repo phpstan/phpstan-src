@@ -19,7 +19,7 @@ class FilterVarRuleTest extends RuleTestCase
 		);
 	}
 
-	#[RequiresPhp('8.5')]
+	#[RequiresPhp('>= 8.5')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/filter_var_null_and_throw.php'], [

@@ -71,7 +71,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& $version1->name->name === 'PHP_VERSION'
 			&& $version2 instanceof String_
 		) {
-			$integerVersionRange = $this->getComparePhpVersionType($version2->value, isset($args[2]) ? $args[2]->value : null, $scope);
+			$integerVersionRange = $this->getVersionCompareType($version2->value, isset($args[2]) ? $args[2]->value : null, $scope);
 
 			if ($integerVersionRange !== null) {
 				return $this->typeSpecifier->create(
@@ -88,7 +88,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& $version2->name->name === 'PHP_VERSION'
 			&& $version1 instanceof String_
 		) {
-			$integerVersionRange = $this->getComparePhpVersionType($version1->value, isset($args[2]) ? $args[2]->value : null, $scope);
+			$integerVersionRange = $this->getVersionCompareType($version1->value, isset($args[2]) ? $args[2]->value : null, $scope);
 			if ($integerVersionRange !== null) {
 				return $this->typeSpecifier->create(
 					new ConstFetch(new Name($constName)),
@@ -102,7 +102,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 		return new SpecifiedTypes();
 	}
 
-	private function getComparePhpVersionType(string $value, ?Expr $operator, Scope $scope): ?Type
+	private function getVersionCompareType(string $value, ?Expr $operator, Scope $scope): ?Type
 	{
 		$parsedVersion = SimplePhpVersionParser::parseVersion($value);
 		if ($parsedVersion === null) {

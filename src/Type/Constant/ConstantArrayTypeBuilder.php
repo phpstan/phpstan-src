@@ -35,6 +35,8 @@ final class ConstantArrayTypeBuilder
 
 	private bool $degradeToGeneralArray = false;
 
+	private bool $disableArrayDegradation = false;
+
 	private ?bool $degradeClosures = null;
 
 	private bool $oversized = false;
@@ -83,8 +85,11 @@ final class ConstantArrayTypeBuilder
 			$offsetType = $offsetType->toArrayKey();
 		}
 
-		if (!$this->degradeToGeneralArray) {
-			if ($valueType instanceof ClosureType && $this->degradeClosures !== false) {
+		if (!$this->degradeToGeneralArray || $this->disableArrayDegradation) {
+			if (
+				$valueType instanceof ClosureType
+				&& $this->degradeClosures !== false
+			) {
 				$numClosures = 1;
 				foreach ($this->valueTypes as $innerType) {
 					if (!($innerType instanceof ClosureType)) {
@@ -296,6 +301,10 @@ final class ConstantArrayTypeBuilder
 
 	public function degradeToGeneralArray(bool $oversized = false): void
 	{
+		if ($this->disableArrayDegradation) {
+			throw new ShouldNotHappenException();
+		}
+
 		$this->degradeToGeneralArray = true;
 		$this->oversized = $this->oversized || $oversized;
 	}
@@ -309,6 +318,7 @@ final class ConstantArrayTypeBuilder
 	{
 		$this->degradeToGeneralArray = false;
 		$this->oversized = false;
+		$this->disableArrayDegradation = true;
 	}
 
 	public function getArray(): Type
@@ -318,7 +328,7 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType([], []);
 		}
 
-		if (!$this->degradeToGeneralArray) {
+		if (!$this->degradeToGeneralArray || $this->disableArrayDegradation) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);

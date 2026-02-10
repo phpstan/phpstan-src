@@ -31,11 +31,11 @@ final class ConstantArrayTypeBuilder
 {
 
 	public const ARRAY_COUNT_LIMIT = 256;
-	private const CLOSURES_COUNT_LIMIT = 16;
+	private const CLOSURES_COUNT_LIMIT = 32;
 
 	private bool $degradeToGeneralArray = false;
 
-	private bool $degradeClosures = false;
+	private ?bool $degradeClosures = null;
 
 	private bool $oversized = false;
 
@@ -84,7 +84,7 @@ final class ConstantArrayTypeBuilder
 		}
 
 		if (!$this->degradeToGeneralArray) {
-			if ($valueType instanceof ClosureType) {
+			if ($valueType instanceof ClosureType && $this->degradeClosures !== false) {
 				$numClosures = 1;
 				foreach ($this->valueTypes as $innerType) {
 					if (!($innerType instanceof ClosureType)) {
@@ -300,6 +300,11 @@ final class ConstantArrayTypeBuilder
 		$this->oversized = $this->oversized || $oversized;
 	}
 
+	public function disableClosureDegradation(): void
+	{
+		$this->degradeClosures = false;
+	}
+
 	public function getArray(): Type
 	{
 		$keyTypesCount = count($this->keyTypes);
@@ -313,7 +318,7 @@ final class ConstantArrayTypeBuilder
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}
 
-		if ($this->degradeClosures) {
+		if ($this->degradeClosures === true) {
 			$itemTypes = [];
 			$itemTypes[] = new CallableType();
 			foreach ($this->valueTypes as $valueType) {

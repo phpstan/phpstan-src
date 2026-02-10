@@ -1049,10 +1049,6 @@ final class TypeNodeResolver
 	private function resolveArrayShapeNode(ArrayShapeNode $typeNode, NameScope $nameScope): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		if (count($typeNode->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-			$builder->degradeToGeneralArray(true);
-		}
-
 		foreach ($typeNode->items as $itemNode) {
 			if ($itemNode->valueType instanceof CallableTypeNode) {
 				$builder->disableClosureDegradation();
@@ -1062,6 +1058,7 @@ final class TypeNodeResolver
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
+		$builder->disableArrayDegradation();
 		$arrayType = $builder->getArray();
 
 		$accessories = [];

@@ -305,6 +305,12 @@ final class ConstantArrayTypeBuilder
 		$this->degradeClosures = false;
 	}
 
+	public function disableArrayDegradation(): void
+	{
+		$this->degradeToGeneralArray = false;
+		$this->oversized = false;
+	}
+
 	public function getArray(): Type
 	{
 		$keyTypesCount = count($this->keyTypes);

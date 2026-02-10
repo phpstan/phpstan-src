@@ -12,6 +12,17 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
+ * Represents a point where a callable may have side effects (impure behavior).
+ *
+ * Used by CallableParametersAcceptor::getImpurePoints() to describe what side effects
+ * a closure or callable value may have. Each impure point has an identifier (e.g.
+ * "functionCall", "methodCall"), a human-readable description, and a certainty flag.
+ *
+ * PHPStan uses impure points to:
+ * - Detect calls to impure functions inside @phpstan-pure contexts
+ * - Report unused return values of pure functions (expr.resultUnused)
+ * - Determine whether expressions have side effects
+ *
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
  */
 final class SimpleImpurePoint
@@ -25,7 +36,9 @@ final class SimpleImpurePoint
 	];
 
 	/**
-	 * @param ImpurePointIdentifier $identifier
+	 * @param ImpurePointIdentifier $identifier Category of the side effect
+	 * @param string $description Human-readable description of the impure action
+	 * @param bool $certain Whether the side effect is certain (true) or possible (false)
 	 */
 	public function __construct(
 		private string $identifier,
@@ -36,6 +49,12 @@ final class SimpleImpurePoint
 	}
 
 	/**
+	 * Creates a SimpleImpurePoint from a function/method and its selected variant.
+	 *
+	 * Returns null if the function is known to be pure (no side effects).
+	 * Handles special cases like print_r() where a parameter can flip the
+	 * function between impure (prints to output) and pure (returns string).
+	 *
 	 * @param Arg[] $args
 	 */
 	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = []): ?self
@@ -104,6 +123,8 @@ final class SimpleImpurePoint
 	}
 
 	/**
+	 * Returns the category identifier for this side effect (e.g. "functionCall", "methodCall").
+	 *
 	 * @return ImpurePointIdentifier
 	 */
 	public function getIdentifier(): string
@@ -111,11 +132,18 @@ final class SimpleImpurePoint
 		return $this->identifier;
 	}
 
+	/** Returns a human-readable description of the impure action. */
 	public function getDescription(): string
 	{
 		return $this->description;
 	}
 
+	/**
+	 * Whether the side effect is certain (vs. merely possible).
+	 *
+	 * Certain when the function is known to be impure (e.g. void return, or
+	 * explicitly marked @phpstan-impure). Uncertain when purity is unknown.
+	 */
 	public function isCertain(): bool
 	{
 		return $this->certain;

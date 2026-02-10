@@ -14,6 +14,29 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 
+/**
+ * Controls the verbosity of type descriptions in error messages.
+ *
+ * When PHPStan describes a type for an error message, it uses VerbosityLevel to
+ * decide how much detail to include. Higher levels include more detail like constant
+ * values and array shapes.
+ *
+ * The four levels (from least to most verbose):
+ * - **typeOnly**: Just the type name, e.g. "string", "array", "Foo"
+ * - **value**: Includes constant values, e.g. "'hello'", "array{foo: int}", "non-empty-string"
+ * - **precise**: Maximum detail including lowercase/uppercase string distinctions
+ * - **cache**: Internal level used for generating cache keys
+ *
+ * Used as a parameter to Type::describe() to control output detail:
+ *
+ *     $type->describe(VerbosityLevel::typeOnly())  // "string"
+ *     $type->describe(VerbosityLevel::value())      // "'hello'"
+ *     $type->describe(VerbosityLevel::precise())    // "non-empty-lowercase-string"
+ *
+ * The getRecommendedLevelByType() factory method automatically chooses the right level
+ * for error messages based on what types are involved — it picks the minimum verbosity
+ * needed to distinguish the accepting type from the accepted type.
+ */
 final class VerbosityLevel
 {
 
@@ -47,25 +70,50 @@ final class VerbosityLevel
 		return $this->value;
 	}
 
-	/** @api */
+	/**
+	 * Least verbose: only type names, no values or refinements.
+	 *
+	 * E.g. "string", "int", "array<string, int>".
+	 *
+	 * @api
+	 */
 	public static function typeOnly(): self
 	{
 		return self::create(self::TYPE_ONLY);
 	}
 
-	/** @api */
+	/**
+	 * Includes constant values and basic refinements.
+	 *
+	 * E.g. "'hello'", "42", "array{foo: int, bar: string}", "non-empty-string".
+	 *
+	 * @api
+	 */
 	public static function value(): self
 	{
 		return self::create(self::VALUE);
 	}
 
-	/** @api */
+	/**
+	 * Maximum verbosity: includes all refinements like lowercase/uppercase.
+	 *
+	 * E.g. "non-empty-lowercase-string", "non-falsy-string".
+	 *
+	 * @api
+	 */
 	public static function precise(): self
 	{
 		return self::create(self::PRECISE);
 	}
 
-	/** @api */
+	/**
+	 * Internal level used to generate unique cache keys for types.
+	 *
+	 * Produces the most specific string possible to distinguish any two
+	 * structurally different types. Not intended for user-facing messages.
+	 *
+	 * @api
+	 */
 	public static function cache(): self
 	{
 		return self::create(self::CACHE);
@@ -91,7 +139,15 @@ final class VerbosityLevel
 		return $this->value === self::CACHE;
 	}
 
-	/** @api */
+	/**
+	 * Chooses the minimum verbosity level needed to distinguish the accepting and accepted types.
+	 *
+	 * Examines both types and picks a level that provides enough detail to make the
+	 * error message clear. For example, if the types differ only in constant values,
+	 * it picks value(). If they differ in lowercase/uppercase, it picks precise().
+	 *
+	 * @api
+	 */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
 		$moreVerbose = false;
@@ -206,6 +262,12 @@ final class VerbosityLevel
 	}
 
 	/**
+	 * Dispatches to the appropriate callback based on the current level.
+	 *
+	 * Type implementations use this in their describe() method to provide
+	 * different representations at each verbosity level. Falls back to less
+	 * specific callbacks when more specific ones are not provided.
+	 *
 	 * @param callable(): string $typeOnlyCallback
 	 * @param callable(): string $valueCallback
 	 * @param callable(): string|null $preciseCallback

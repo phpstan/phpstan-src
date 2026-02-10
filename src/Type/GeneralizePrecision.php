@@ -2,6 +2,26 @@
 
 namespace PHPStan\Type;
 
+/**
+ * Controls how aggressively Type::generalize() widens a type.
+ *
+ * Generalization is the process of widening a specific type to a broader one.
+ * For example, generalizing ConstantStringType('hello') yields StringType.
+ * This is used when PHPStan needs to merge types across loop iterations or
+ * branches where tracking precise constant values is impractical.
+ *
+ * Three levels of precision:
+ * - **lessSpecific**: Aggressive generalization — constant values become their
+ *   general type (e.g. 'hello' → string, array{foo: int} → array<string, int>)
+ * - **moreSpecific**: Preserves more detail — e.g. non-empty-string stays
+ *   non-empty-string instead of widening to string
+ * - **templateArgument**: Used when generalizing template type arguments,
+ *   preserving template-specific structure
+ *
+ * Used as a parameter to Type::generalize():
+ *
+ *     $type->generalize(GeneralizePrecision::lessSpecific())
+ */
 final class GeneralizePrecision
 {
 
@@ -22,19 +42,31 @@ final class GeneralizePrecision
 		return self::$registry[$value];
 	}
 
-	/** @api */
+	/**
+	 * Aggressive generalization — constant values become their general types.
+	 *
+	 * @api
+	 */
 	public static function lessSpecific(): self
 	{
 		return self::create(self::LESS_SPECIFIC);
 	}
 
-	/** @api */
+	/**
+	 * Preserves more detail during generalization.
+	 *
+	 * @api
+	 */
 	public static function moreSpecific(): self
 	{
 		return self::create(self::MORE_SPECIFIC);
 	}
 
-	/** @api */
+	/**
+	 * Used when generalizing template type arguments.
+	 *
+	 * @api
+	 */
 	public static function templateArgument(): self
 	{
 		return self::create(self::TEMPLATE_ARGUMENT);

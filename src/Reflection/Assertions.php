@@ -11,6 +11,19 @@ use function array_merge;
 use function count;
 
 /**
+ * Collection of @phpstan-assert annotations on a function or method.
+ *
+ * PHPStan supports type assertions via PHPDoc annotations:
+ * - `@phpstan-assert Type $param` — narrows the parameter type unconditionally
+ * - `@phpstan-assert-if-true Type $param` — narrows when the method returns true
+ * - `@phpstan-assert-if-false Type $param` — narrows when the method returns false
+ *
+ * This class collects all such assertions and provides methods to retrieve them
+ * by condition type. It also handles negation: an `@phpstan-assert-if-true` assertion
+ * is automatically negated and included in the `getAssertsIfFalse()` result.
+ *
+ * Returned by ExtendedMethodReflection::getAsserts() and FunctionReflection::getAsserts().
+ *
  * @api
  */
 final class Assertions
@@ -26,6 +39,8 @@ final class Assertions
 	}
 
 	/**
+	 * Returns all assert tags regardless of condition.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAll(): array
@@ -34,6 +49,10 @@ final class Assertions
 	}
 
 	/**
+	 * Returns unconditional assertions (@phpstan-assert).
+	 *
+	 * These narrow parameter types regardless of the method's return value.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAsserts(): array
@@ -42,6 +61,10 @@ final class Assertions
 	}
 
 	/**
+	 * Returns assertions that apply when the method returns true.
+	 *
+	 * Includes `@phpstan-assert-if-true` tags and negated `@phpstan-assert-if-false` tags.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAssertsIfTrue(): array
@@ -56,6 +79,10 @@ final class Assertions
 	}
 
 	/**
+	 * Returns assertions that apply when the method returns false.
+	 *
+	 * Includes `@phpstan-assert-if-false` tags and negated `@phpstan-assert-if-true` tags.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAssertsIfFalse(): array
@@ -70,6 +97,11 @@ final class Assertions
 	}
 
 	/**
+	 * Transforms all assertion types using the given callback.
+	 *
+	 * Used when resolving template types — the assertion types need to be
+	 * substituted with concrete type arguments.
+	 *
 	 * @param callable(Type): Type $callable
 	 */
 	public function mapTypes(callable $callable): self

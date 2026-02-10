@@ -6,21 +6,43 @@ use PHPStan\DependencyInjection\AutowiredService;
 use function floor;
 
 /**
+ * Represents a specific PHP version for version-dependent analysis behavior.
+ *
+ * PHPStan uses this to gate behavior based on PHP version — e.g. whether enums are
+ * supported (8.1+), whether property hooks exist (8.4+), whether non-standard casts
+ * are deprecated (8.5+), etc.
+ *
+ * The version is stored as PHP_VERSION_ID format (e.g. 80100 for PHP 8.1.0).
+ * The source indicates where the version came from: runtime, phpstan.neon config,
+ * or composer.json platform config.
+ *
+ * This class provides numerous `supports*()` and `deprecates*()` methods that rules
+ * and extensions use to conditionally apply version-specific analysis. Extension
+ * developers can access it via `Scope::getPhpVersion()` (which returns PhpVersions,
+ * a range-aware wrapper) or by injecting PhpVersion directly.
+ *
  * @api
  */
 #[AutowiredService(factory: '@PHPStan\Php\PhpVersionFactory::create')]
 final class PhpVersion
 {
 
+	/** Version was detected from the running PHP runtime. */
 	public const SOURCE_RUNTIME = 1;
+
+	/** Version was set in phpstan.neon configuration. */
 	public const SOURCE_CONFIG = 2;
+
+	/** Version was read from config.platform.php in composer.json. */
 	public const SOURCE_COMPOSER_PLATFORM_PHP = 3;
+
+	/** Version source is not known. */
 	public const SOURCE_UNKNOWN = 4;
 
 	/**
 	 * @api
 	 *
-	 * @param self::SOURCE_* $source
+	 * @param self::SOURCE_* $source Where this version number came from
 	 */
 	public function __construct(private int $versionId, private int $source = self::SOURCE_UNKNOWN)
 	{

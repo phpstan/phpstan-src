@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\ClosureUse;
 use PHPStan\Node\InvalidateExprNode;
 
 final class ProcessClosureResult
@@ -11,6 +12,7 @@ final class ProcessClosureResult
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
 	 * @param InvalidateExprNode[] $invalidateExpressions
+	 * @param ClosureUse[] $byRefUses
 	 */
 	public function __construct(
 		private MutatingScope $scope,
@@ -18,6 +20,8 @@ final class ProcessClosureResult
 		private array $impurePoints,
 		private array $invalidateExpressions,
 		private bool $isAlwaysTerminating,
+		private ?MutatingScope $byRefClosureResultScope = null,
+		private array $byRefUses = [],
 	)
 	{
 	}
@@ -25,6 +29,15 @@ final class ProcessClosureResult
 	public function getScope(): MutatingScope
 	{
 		return $this->scope;
+	}
+
+	public function applyByRefUseScope(MutatingScope $scope): MutatingScope
+	{
+		if ($this->byRefClosureResultScope === null) {
+			return $scope;
+		}
+
+		return $scope->processClosureScope($this->byRefClosureResultScope, null, $this->byRefUses);
 	}
 
 	/**

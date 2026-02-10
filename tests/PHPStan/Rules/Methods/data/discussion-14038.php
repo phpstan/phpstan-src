@@ -30,3 +30,21 @@ class HelloWorld
 		);
 	}
 }
+
+class ByRefTest
+{
+	private function foo(callable $c, string $s): void
+	{
+	}
+
+	public function testByRef(): void
+	{
+		$x = 'hello';
+		$this->foo(
+			function() use (&$x): void {
+				$x = 42;
+			},
+			$x,
+		);
+	}
+}

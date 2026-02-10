@@ -3493,7 +3493,7 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof Expr\Closure) {
 			$processClosureResult = $this->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
-			$scope = $processClosureResult->getScope();
+			$scope = $processClosureResult->applyByRefUseScope($processClosureResult->getScope());
 
 			return new ExpressionResult(
 				$scope,
@@ -5142,7 +5142,7 @@ class NodeScopeResolver
 			array_merge($publicStatementResult->getImpurePoints(), $closureImpurePoints),
 		), $closureScope, $storage);
 
-		return new ProcessClosureResult($scope->processClosureScope($closureResultScope, null, $byRefUses), $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating);
+		return new ProcessClosureResult($scope, $statementResult->getThrowPoints(), $statementResult->getImpurePoints(), $invalidateExpressions, $isAlwaysTerminating, $closureResultScope, $byRefUses);
 	}
 
 	/**
@@ -5551,6 +5551,8 @@ class NodeScopeResolver
 		$isAlwaysTerminating = false;
 		/** @var list<array{InvalidateExprNode[], string[]}> $deferredInvalidateExpressions */
 		$deferredInvalidateExpressions = [];
+		/** @var ProcessClosureResult[] $deferredByRefClosureResults */
+		$deferredByRefClosureResults = [];
 		foreach ($args as $i => $arg) {
 			$assignByReference = false;
 			$parameter = null;
@@ -5662,6 +5664,7 @@ class NodeScopeResolver
 				}
 
 				$scope = $closureResult->getScope();
+				$deferredByRefClosureResults[] = $closureResult;
 				$invalidateExpressions = $closureResult->getInvalidateExpressions();
 				if ($restoreThisScope !== null) {
 					$nodeFinder = new NodeFinder();
@@ -5751,6 +5754,10 @@ class NodeScopeResolver
 
 		foreach ($deferredInvalidateExpressions as [$invalidateExpressions, $uses]) {
 			$scope = $this->processImmediatelyCalledCallable($scope, $invalidateExpressions, $uses);
+		}
+
+		foreach ($deferredByRefClosureResults as $deferredClosureResult) {
+			$scope = $deferredClosureResult->applyByRefUseScope($scope);
 		}
 
 		if ($parameters !== null) {

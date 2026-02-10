@@ -44,24 +44,20 @@ final class DoWhileLoopConstantConditionRule implements Rule
 			if ($exprType->getValue()) {
 				foreach ($node->getExitPoints() as $exitPoint) {
 					$statement = $exitPoint->getStatement();
-					if ($statement instanceof Break_) {
-						return [];
-					}
 					if (!$statement instanceof Continue_) {
 						return [];
-					}
-					if ($statement->num === null) {
-						continue;
 					}
 					if (!$statement->num instanceof Int_) {
 						continue;
 					}
-					$value = $statement->num->value;
-					if ($value === 1) {
-						continue;
+					if ($statement->num->value > 1) {
+						return [];
 					}
-
-					if ($value > 1) {
+				}
+			} else {
+				foreach ($node->getExitPoints() as $exitPoint) {
+					$statement = $exitPoint->getStatement();
+					if ($statement instanceof Break_) {
 						return [];
 					}
 				}

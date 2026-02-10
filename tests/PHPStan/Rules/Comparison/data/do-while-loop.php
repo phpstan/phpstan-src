@@ -52,7 +52,7 @@ class Foo
 			if (rand(0, 1)) {
 				break;
 			}
-		} while (false); // report
+		} while (false); // do not report
 	}
 
 	public function doFoo4()
@@ -93,6 +93,63 @@ class Foo
 				}
 			} while (true); // do not report
 		}
+	}
+
+	public function doFoo8(array $a)
+	{
+		foreach ($a as $v) {
+			do {
+				if (rand(0, 1)) {
+					continue 2;
+				}
+			} while (false); // report
+		}
+	}
+
+	public function doFoo9(array $a)
+	{
+		do {
+			foreach ($a as $v) {
+				break;
+			}
+		} while (false); // report
+	}
+
+	public function doFoo10(array $a)
+	{
+		do {
+			foreach ($a as $v) {
+				break 2;
+			}
+		} while (false); // do not report
+	}
+
+	public function doFoo11(array $a)
+	{
+		do {
+			throw new \Exception;
+		} while (true); // do not report
+	}
+
+	public function doFoo12(array $a)
+	{
+		do {
+			throw new \Exception;
+		} while (false); // report
+	}
+
+	public function doFoo13(array $a)
+	{
+		do {
+			exit;
+		} while (true); // do not report
+	}
+
+	public function doFoo14(array $a)
+	{
+		do {
+			exit;
+		} while (false); // report
 	}
 
 }

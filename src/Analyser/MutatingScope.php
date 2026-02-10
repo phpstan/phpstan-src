@@ -3361,49 +3361,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$scope = $this;
-		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			$args = $expr->getArgs();
-			if (count($args) >= 2) {
-				$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
-				if ($functionName === 'version_compare') {
-					$version1 = $args[0]->value;
-					$version2 = $args[1]->value;
-
-					if (
-						$version1 instanceof ConstFetch
-						&& $version1->name->name === 'PHP_VERSION'
-						&& $version2 instanceof String_
-					) {
-						$integerVersionRange = $this->getComparePhpVersionType($version2->value, isset($args[2]) ? $args[2]->value : null);
-						if ($integerVersionRange !== null) {
-							$scope = $scope->specifyExpressionType(
-								new ConstFetch(new Name('\\PHP_VERSION_ID')),
-								$integerVersionRange,
-								$integerVersionRange,
-								TrinaryLogic::createYes(),
-							);
-						}
-					}
-
-					if (
-						$version2 instanceof ConstFetch
-						&& $version2->name->name === 'PHP_VERSION'
-						&& $version1 instanceof String_
-					) {
-						$integerVersionRange = $this->getComparePhpVersionType($version1->value, isset($args[2]) ? $args[2]->value : null);
-						if ($integerVersionRange !== null) {
-							$scope = $scope->specifyExpressionType(
-								new ConstFetch(new Name('\\PHP_VERSION_ID')),
-								$integerVersionRange,
-								$integerVersionRange,
-								TrinaryLogic::createYes(),
-							);
-						}
-					}
-				}
-			}
-		}
-
 		if (
 			$expr instanceof Expr\ArrayDimFetch
 			&& $expr->dim !== null
@@ -3473,51 +3430,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $scope;
-	}
-
-	private function getComparePhpVersionType(string $value, ?Expr $operator): ?Type
-	{
-		$parsedVersion = SimplePhpVersionParser::parseVersion($value);
-		if ($parsedVersion === null) {
-			return null;
-		}
-
-		if ($operator !== null) {
-			$operators = $this->getType($operator)->getConstantStrings();
-			if (count($operators) !== 1) {
-				return null;
-			}
-
-			$operatorString = $operators[0]->getValue();
-		} else {
-			$operatorString = '<';
-		}
-
-		if (!in_array($operatorString, VersionCompareFunctionDynamicReturnTypeExtension::VALID_OPERATORS, true)) {
-			return null;
-		}
-
-		if (in_array($operatorString, ['<', 'lt'], true)) {
-			return IntegerRangeType::fromInterval(null, $parsedVersion->getVersionId() - 1);
-		}
-		if (in_array($operatorString, ['<=', 'le'], true)) {
-			return IntegerRangeType::fromInterval(null, $parsedVersion->getVersionId());
-		}
-
-		if (in_array($operatorString, ['>', 'gt'], true)) {
-			return IntegerRangeType::fromInterval($parsedVersion->getVersionId() + 1, null);
-		}
-		if (in_array($operatorString, ['>=', 'ge'], true)) {
-			return IntegerRangeType::fromInterval($parsedVersion->getVersionId(), null);
-		}
-
-		if (
-			in_array($operatorString, ['==', '=', 'eq'], true)
-		) {
-			return new ConstantIntegerType($parsedVersion->getVersionId());
-		}
-
-		return TypeCombinator::remove(new IntegerType(), new ConstantIntegerType($parsedVersion->getVersionId()));
 	}
 
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self

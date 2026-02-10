@@ -402,15 +402,12 @@ final class FilterFunctionReturnTypeHelper
 				new NullType(),
 			]);
 
-			$scalarOrNullType = null;
+			$scalarOrNullType = $in;
 			$useDefaultType = false;
 
-			if ($scalarOrNull->isSuperTypeOf($in)->yes()) {
-				$scalarOrNullType = $in;
-			}
-
 			if ($scalarOrNull->isSuperTypeOf($in)->maybe()) {
-				// $in is (array or object) or (scalar or null).
+				// $in is a union of maybe null, maybe scalar, and a non-scalar.
+				// Force it to a union of maybe null and maybe scalar.
 				$scalarOrNullType = TypeCombinator::remove(
 					TypeCombinator::remove($in, new ObjectShapeType([], [])),
 					new ArrayType(new MixedType(), new MixedType()),
@@ -419,25 +416,20 @@ final class FilterFunctionReturnTypeHelper
 				$useDefaultType = true;
 			}
 
-			if (
-				$scalarOrNullType !== null
-				&& ($in->isSuperTypeOf(new MixedType())->yes() || $scalarOrNull->isSuperTypeOf($scalarOrNullType)->yes())
-			) {
-				$canBeSanitized = $this->canStringBeSanitized($filterValue, $flagsType);
-				if ($canBeSanitized->no()) {
-					$stringType = $scalarOrNullType->toString();
-				} elseif ($scalarOrNullType->isString()->no()) {
-					$stringType = $scalarOrNullType->toString();
-				} else {
-					$stringType = TypeCombinator::union(
-						TypeCombinator::remove($scalarOrNullType, new StringType()),
-						new StringType(),
-					);
-				}
-
-				$returnType = $this->handleEmptyStringNullFlag($stringType, $flagsType);
-				return $useDefaultType ? TypeCombinator::union($defaultType, $returnType) : $returnType;
+			$canBeSanitized = $this->canStringBeSanitized($filterValue, $flagsType);
+			if ($canBeSanitized->no()) {
+				$stringType = $scalarOrNullType->toString();
+			} elseif ($scalarOrNullType->isString()->no()) {
+				$stringType = $scalarOrNullType->toString();
+			} else {
+				$stringType = TypeCombinator::union(
+					TypeCombinator::remove($scalarOrNullType, new StringType()),
+					new StringType(),
+				);
 			}
+
+			$returnType = $this->handleEmptyStringNullFlag($stringType, $flagsType);
+			return $useDefaultType ? TypeCombinator::union($defaultType, $returnType) : $returnType;
 		}
 
 		return null;
@@ -450,12 +442,19 @@ final class FilterFunctionReturnTypeHelper
 			return $in;
 		}
 
-		$hasEmptyString = !$in->isSuperTypeOf(new ConstantStringType(''))->no();
 		if ($hasFlag->maybe()) {
-			return $hasEmptyString ? TypeCombinator::addNull($in) : $in;
+			return $in->isNonEmptyString()->maybe() ? TypeCombinator::addNull($in) : $in;
 		}
 
-		return $hasEmptyString ? TypeCombinator::remove(TypeCombinator::addNull($in), new ConstantStringType('')) : $in;
+		if ($in->isNonEmptyString()->yes()) {
+			return $in;
+		}
+
+		if ($in->isNonEmptyString()->maybe()) {
+			return TypeCombinator::remove(TypeCombinator::addNull($in), new ConstantStringType(''));
+		}
+
+		return new NullType();
 	}
 
 	/** @param array<string, ?Type> $typeOptions */

@@ -2392,9 +2392,10 @@ final class TypeSpecifier
 			&& isset($unwrappedLeftExpr->getArgs()[0])
 			&& $rightType->isNull()->yes()
 		) {
-			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
+			$args = $unwrappedLeftExpr->getArgs();
+			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {
-				return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
+				return $this->create($args[0]->value, new NonEmptyArrayType(), $context->negate(), $scope)->setRootExpr($expr);
 			}
 		}
 

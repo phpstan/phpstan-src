@@ -122,6 +122,36 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13775(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13775.php'], $this->hackPhp74ErrorMessages([
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, string> given.',
+				13,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, string> given.',
+				19,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, string> given.',
+				22,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, string> given.',
+				25,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, array> given.',
+				28,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, stdClass> given.',
+				31,
+			],
+		]));
+	}
+
 	public function testBug12146(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackPhp74ErrorMessages([

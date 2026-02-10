@@ -30,7 +30,7 @@ vendor/bin/phpstan analyse --debug
 ## Running tests
 
 ```bash
-vendor/bin/phpunit
+make tests
 ```
 
 Rules are tested using `PHPStan\Testing\RuleTestCase`, type extensions with `PHPStan\Testing\TypeInferenceTestCase`.

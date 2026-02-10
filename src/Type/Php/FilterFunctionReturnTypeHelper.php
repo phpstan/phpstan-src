@@ -394,33 +394,23 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			$scalarOrNull = new UnionType([
-				new StringType(),
-				new FloatType(),
-				new BooleanType(),
-				new IntegerType(),
-				new NullType(),
-			]);
-
-			$scalarOrNullType = $in;
+			$inputType = $in;
 			$useDefaultType = false;
 
-			if ($scalarOrNull->isSuperTypeOf($in)->maybe()) {
-				// $in is a union of maybe null, maybe scalar, and a non-scalar.
-				// Force it to a union of maybe null and maybe scalar.
-				$scalarOrNullType = TypeCombinator::remove(
-					TypeCombinator::remove($in, new ObjectShapeType([], [])),
-					new ArrayType(new MixedType(), new MixedType()),
-				);
-				// Combine future results with defaultType as $in might be an array or an object.
+			if ($inputType->isArray()->maybe()) {
+				$inputType = TypeCombinator::remove($inputType, new ArrayType(new MixedType(), new MixedType()));
+				$useDefaultType = true;
+			}
+			if ($inputType->isObject()->maybe()) {
+				$inputType = TypeCombinator::remove($inputType, new ObjectShapeType([], []));
 				$useDefaultType = true;
 			}
 
 			if ($this->canStringBeSanitized($filterValue, $flagsType)->no()) {
-				$stringType = $scalarOrNullType->toString();
+				$stringType = $inputType->toString();
 			} else {
 				$stringType = TypeCombinator::union(
-					TypeCombinator::remove($scalarOrNullType, new StringType()),
+					TypeCombinator::remove($inputType, new StringType()),
 					new StringType(),
 				);
 			}

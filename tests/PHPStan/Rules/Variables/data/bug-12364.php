@@ -4,7 +4,7 @@ namespace Bug12364;
 
 use function PHPStan\Testing\assertType;
 
-/** @return array{x: string, y?: string} */
+/** @return array{x: string, y?: string, z?: string} */
 function foo(): array {
 	return [ 'x' => 'foo' ];
 }
@@ -15,6 +15,7 @@ assertType('null', $y);
 extract(foo());
 assertType('string', $x);
 assertType('string|null', $y); // <-- should be: null|string
+assertType('mixed', $z);
 var_dump($x);
 var_dump($y); // <-- does exist
 

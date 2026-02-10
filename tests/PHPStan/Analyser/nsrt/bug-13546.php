@@ -83,4 +83,12 @@ function maybeNull(array $array, ?int $nullOrInt, ?string $nullOrString): void
 		assertType('list<string>', $array);
 	}
 	assertType('list<string>', $array);
+
+	if (array_key_last($array) !== $nullOrInt) {
+		assertType('list<string>', $array);
+	}
+	if (array_key_last($array) !== $nullOrString) {
+		assertType('list<string>', $array);
+	}
+	assertType('list<string>', $array);
 }

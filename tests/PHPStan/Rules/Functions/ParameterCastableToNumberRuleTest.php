@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -20,7 +21,11 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
-		return new ParameterCastableToNumberRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
+		return new ParameterCastableToNumberRule(
+			$broker,
+			new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)),
+			self::getContainer()->getByType(PhpVersion::class),
+		);
 	}
 
 	public function testRule(): void
@@ -124,7 +129,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 
 	public function testBug13775(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-13775.php'], $this->hackPhp74ErrorMessages([
+		$errors = [
 			[
 				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, string> given.',
 				13,
@@ -149,7 +154,63 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, stdClass> given.',
 				31,
 			],
-		]));
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, GMP|stdClass> given.',
+				34,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, GMP> given.',
+				37,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-13775.php'], $this->hackPhp74ErrorMessages($errors));
+	}
+
+	public function testBug13775Bis(): void
+	{
+		$errors = [
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, string> given.',
+				13,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, string> given.',
+				19,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, string> given.',
+				22,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, string> given.',
+				25,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, array> given.',
+				28,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, stdClass> given.',
+				31,
+			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, GMP|stdClass> given.',
+				34,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, GMP> given.',
+				37,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-13775-bis.php'], $this->hackPhp74ErrorMessages($errors));
 	}
 
 	public function testBug12146(): void

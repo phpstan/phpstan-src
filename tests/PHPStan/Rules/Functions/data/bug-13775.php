@@ -30,5 +30,8 @@ echo 'array, invalid cast: ' . array_product($a) . "\n\n";
 $a = [new stdClass()];
 echo 'class that does not auto-cast, invalid cast: ' . array_product($a) . "\n\n";
 
+$a = [rand(0, 1) ? new stdClass() : gmp_init(42)];
+echo 'possibly invalid cast: ' . array_product($a) . "\n\n";
+
 $a = [gmp_init(42)];
 echo 'gmp, valid cast: ' . array_product($a) . "\n\n";

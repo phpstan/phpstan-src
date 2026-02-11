@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser\Traverser;
 
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
@@ -16,7 +15,7 @@ final class VoidToNullTraverser implements TypeTraverserCallable
 	 */
 	public function traverse(Type $type, callable $traverse): Type
 	{
-		if ($type instanceof UnionType || $type instanceof IntersectionType) {
+		if ($type instanceof UnionType) {
 			return $traverse($type);
 		}
 

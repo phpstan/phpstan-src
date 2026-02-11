@@ -101,7 +101,7 @@ final class FileAnalyser
 				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 				$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 
-				$nodeCallback = new FileAnalyserCallable(
+				$nodeCallback = new FileAnalyserCallback(
 					$file,
 					$analysedFiles,
 					$ruleRegistry,

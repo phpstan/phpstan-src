@@ -40,6 +40,6 @@ function wrongNumberOfArguments(): void
 
 function validUsages(): void
 {
-	var_dump(array_sum(['5.5', false, true, new \SimpleXMLElement('<a>7.7</a>'), 5, 5.5, null]));
-	var_dump(array_product(['5.5', false, true, new \SimpleXMLElement('<a>7.7</a>'), 5, 5.5, null]));
+	var_dump(array_sum(['5.5', false, true, 5, 5.5, null]));
+	var_dump(array_product(['5.5', false, true, 5, 5.5, null]));
 }

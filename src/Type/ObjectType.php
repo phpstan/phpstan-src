@@ -752,7 +752,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toNumber(): Type
 	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+		if (
+			$this->isInstanceOf('SimpleXMLElement')->yes()
+			|| $this->isInstanceOf('GMP')->yes()
+		) {
 			return new UnionType([
 				new FloatType(),
 				new IntegerType(),

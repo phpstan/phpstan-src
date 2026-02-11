@@ -496,4 +496,9 @@ final class PhpVersion
 		return $this->versionId >= 80500;
 	}
 
+	public function supportsObjectsInArraySumProduct(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

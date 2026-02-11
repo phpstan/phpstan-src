@@ -5,10 +5,12 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use function count;
 use function in_array;
@@ -22,6 +24,7 @@ final class ParameterCastableToNumberRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ParameterCastableToStringCheck $parameterCastableToStringCheck,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -63,11 +66,16 @@ final class ParameterCastableToNumberRule implements Rule
 
 		$errorMessage = 'Parameter %s of function %s expects an array of values castable to number, %s given.';
 		$functionParameters = $parametersAcceptor->getParameters();
+
+		$castFn = $this->phpVersion->supportsObjectsInArraySumProduct()
+			? static fn (Type $t) => $t->toNumber()
+			: static fn (Type $t) => !$t->isObject()->no() ? new ErrorType() : $t->toNumber();
+
 		$error = $this->parameterCastableToStringCheck->checkParameter(
 			$origArgs[0],
 			$scope,
 			$errorMessage,
-			static fn (Type $t) => $t->toNumber(),
+			$castFn,
 			$functionName,
 			$this->parameterCastableToStringCheck->getParameterName(
 				$origArgs[0],

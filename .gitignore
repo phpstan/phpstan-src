@@ -3,6 +3,8 @@
 /compiler/vendor
 /conf/config.local.yml
 /build-cs
+/infection.json5
+/build-infection
 /vendor
 /.idea/*
 !.idea/icon.png

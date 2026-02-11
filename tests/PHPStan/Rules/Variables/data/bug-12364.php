@@ -19,7 +19,7 @@ assertType('string', $x);
 assertType('string|null', $y); // <-- should be: null|string
 assertType('mixed', $z);
 assertVariableCertainty(TrinaryLogic::createYes(), $x);
-assertVariableCertainty(TrinaryLogic::createYes(), $y); // <-- should be: null|string
+assertVariableCertainty(TrinaryLogic::createYes(), $y);
 assertVariableCertainty(TrinaryLogic::createMaybe(), $z);
 var_dump($x);
 var_dump($y); // <-- does exist

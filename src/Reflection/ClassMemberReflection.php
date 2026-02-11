@@ -2,10 +2,25 @@
 
 namespace PHPStan\Reflection;
 
-/** @api */
+/**
+ * Base interface for all class members: properties, methods, and constants.
+ *
+ * Provides common metadata shared by all class members — their declaring class,
+ * visibility (public/private/protected), static-ness, and raw PHPDoc comment.
+ *
+ * This is the parent interface for PropertyReflection, MethodReflection, and
+ * (via ConstantReflection) ClassConstantReflection. Extension developers typically
+ * work with the more specific child interfaces.
+ *
+ * @api
+ */
 interface ClassMemberReflection
 {
 
+	/**
+	 * For inherited members, this returns the original declaring class,
+	 * not the class where the member was accessed.
+	 */
 	public function getDeclaringClass(): ClassReflection;
 
 	public function isStatic(): bool;

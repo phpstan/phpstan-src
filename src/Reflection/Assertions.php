@@ -11,6 +11,19 @@ use function array_merge;
 use function count;
 
 /**
+ * Collection of @phpstan-assert annotations on a function or method.
+ *
+ * PHPStan supports type assertions via PHPDoc annotations:
+ * - `@phpstan-assert Type $param` — narrows the parameter type unconditionally
+ * - `@phpstan-assert-if-true Type $param` — narrows when the method returns true
+ * - `@phpstan-assert-if-false Type $param` — narrows when the method returns false
+ *
+ * This class collects all such assertions and provides methods to retrieve them
+ * by condition type. It also handles negation: an `@phpstan-assert-if-true` assertion
+ * is automatically negated and included in the `getAssertsIfFalse()` result.
+ *
+ * Returned by ExtendedMethodReflection::getAsserts() and FunctionReflection::getAsserts().
+ *
  * @api
  */
 final class Assertions
@@ -25,15 +38,15 @@ final class Assertions
 	{
 	}
 
-	/**
-	 * @return AssertTag[]
-	 */
+	/** @return AssertTag[] */
 	public function getAll(): array
 	{
 		return $this->asserts;
 	}
 
 	/**
+	 * Unconditional assertions — narrow parameter types regardless of the method's return value.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAsserts(): array
@@ -42,6 +55,8 @@ final class Assertions
 	}
 
 	/**
+	 * Includes @phpstan-assert-if-true tags and negated @phpstan-assert-if-false tags.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAssertsIfTrue(): array
@@ -56,6 +71,8 @@ final class Assertions
 	}
 
 	/**
+	 * Includes @phpstan-assert-if-false tags and negated @phpstan-assert-if-true tags.
+	 *
 	 * @return AssertTag[]
 	 */
 	public function getAssertsIfFalse(): array
@@ -69,9 +86,7 @@ final class Assertions
 		);
 	}
 
-	/**
-	 * @param callable(Type): Type $callable
-	 */
+	/** @param callable(Type): Type $callable */
 	public function mapTypes(callable $callable): self
 	{
 		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withType($callable($tag->getType()));

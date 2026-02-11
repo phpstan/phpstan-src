@@ -6,6 +6,17 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
 
+/**
+ * Represents a point where a callable may throw an exception.
+ *
+ * Used by CallableParametersAcceptor::getThrowPoints() to describe what exceptions
+ * a closure or callable value may throw. This is a simplified version of the full
+ * ThrowPoint used in the analyser — it carries just the exception type, whether the
+ * throw was explicitly declared (@throws), and whether it could be any Throwable.
+ *
+ * Explicit throw points come from @throws annotations. Implicit throw points represent
+ * the possibility that any function call could throw.
+ */
 final class SimpleThrowPoint
 {
 

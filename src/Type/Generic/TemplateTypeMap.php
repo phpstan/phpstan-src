@@ -11,6 +11,26 @@ use function array_key_exists;
 use function count;
 
 /**
+ * Maps template type parameter names to their resolved types.
+ *
+ * This is the core data structure for PHPStan's generics support. When a class declares
+ * `@template T`, `@template U of object`, etc., the TemplateTypeMap tracks what concrete
+ * types T and U resolve to in a particular context.
+ *
+ * Two kinds of type bindings are tracked:
+ * - **types** (upper bounds): The concrete type inferred or declared for each template.
+ *   For `@template T of Countable`, if T is inferred as `array`, types maps T → array.
+ * - **lowerBoundTypes**: Types inferred from contravariant positions (e.g. parameter types).
+ *   Used during type inference to narrow template types from below.
+ *
+ * TemplateTypeMap supports set operations (union, intersect, benevolentUnion) that combine
+ * maps from different code paths, and resolveToBounds() which replaces unresolved template
+ * types with their declared bounds.
+ *
+ * Common usage: ParametersAcceptor::getTemplateTypeMap() returns the template declarations,
+ * and ParametersAcceptor::getResolvedTemplateTypeMap() returns inferred concrete types.
+ * Type::inferTemplateTypes() produces a TemplateTypeMap from a concrete type.
+ *
  * @api
  */
 final class TemplateTypeMap
@@ -22,8 +42,8 @@ final class TemplateTypeMap
 
 	/**
 	 * @api
-	 * @param array<string, Type> $types
-	 * @param array<string, Type> $lowerBoundTypes
+	 * @param array<string, Type> $types Concrete types for each template parameter (upper bounds)
+	 * @param array<string, Type> $lowerBoundTypes Types inferred from contravariant positions
 	 */
 	public function __construct(private array $types, private array $lowerBoundTypes = [])
 	{
@@ -206,6 +226,9 @@ final class TemplateTypeMap
 		return new self($types);
 	}
 
+	/**
+	 * Replaces unresolved TemplateType values with their declared bounds (or defaults).
+	 */
 	public function resolveToBounds(): self
 	{
 		if ($this->resolvedToBounds !== null) {

@@ -10,6 +10,22 @@ use function array_unique;
 use function array_values;
 
 /**
+ * Result of a Type::isSuperTypeOf() check — whether one type is a supertype of another.
+ *
+ * Wraps a TrinaryLogic result together with human-readable reasons explaining the
+ * relationship. This is the primary mechanism for comparing types in PHPStan's type system.
+ *
+ * `isSuperTypeOf()` answers: "Can all values of type B also be values of type A?"
+ * For example:
+ * - `(new StringType())->isSuperTypeOf(new ConstantStringType('hello'))` → Yes
+ * - `(new IntegerType())->isSuperTypeOf(new StringType())` → No
+ * - `(new StringType())->isSuperTypeOf(new MixedType())` → Maybe
+ *
+ * This is distinct from `accepts()` which also considers rule levels and PHPDoc context.
+ * Use `isSuperTypeOf()` for type-theoretic comparisons and `accepts()` for assignability checks.
+ *
+ * Can be converted to AcceptsResult via toAcceptsResult().
+ *
  * @api
  */
 final class IsSuperTypeOfResult
@@ -17,7 +33,7 @@ final class IsSuperTypeOfResult
 
 	/**
 	 * @api
-	 * @param list<string> $reasons
+	 * @param list<string> $reasons Human-readable explanations of the type relationship
 	 */
 	public function __construct(
 		public readonly TrinaryLogic $result,
@@ -58,9 +74,7 @@ final class IsSuperTypeOfResult
 		return new self(TrinaryLogic::createYes(), []);
 	}
 
-	/**
-	 * @param list<string> $reasons
-	 */
+	/** @param list<string> $reasons */
 	public static function createNo(array $reasons = []): self
 	{
 		return new self(TrinaryLogic::createNo(), $reasons);
@@ -111,9 +125,7 @@ final class IsSuperTypeOfResult
 		);
 	}
 
-	/**
-	 * @param callable(string): string $cb
-	 */
+	/** @param callable(string): string $cb */
 	public function decorateReasons(callable $cb): self
 	{
 		$reasons = [];
@@ -124,6 +136,7 @@ final class IsSuperTypeOfResult
 		return new self($this->result, $reasons);
 	}
 
+	/** @see TrinaryLogic::extremeIdentity() */
 	public static function extremeIdentity(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -135,6 +148,7 @@ final class IsSuperTypeOfResult
 		return new self($result, self::mergeReasons($operands));
 	}
 
+	/** @see TrinaryLogic::maxMin() */
 	public static function maxMin(self ...$operands): self
 	{
 		if ($operands === []) {

@@ -5,6 +5,22 @@ namespace PHPStan\Reflection;
 use function array_key_exists;
 
 /**
+ * Describes how a function/method parameter is passed: by value or by reference.
+ *
+ * Three modes:
+ * - **No**: Passed by value — the argument expression is evaluated and its value is copied.
+ * - **ReadsArgument**: Passed by reference, but the function reads the existing variable.
+ *   The variable must already exist. Example: `sort(&$array)`.
+ * - **CreatesNewVariable**: Passed by reference, and the function may create the variable
+ *   if it doesn't exist. Example: `preg_match($pattern, $subject, &$matches)` where
+ *   `$matches` doesn't need to be defined beforehand.
+ *
+ * This distinction matters for PHPStan's scope analysis — when a function takes a
+ * parameter by reference with "creates new variable" semantics, PHPStan knows the
+ * variable will exist after the call even if it wasn't defined before.
+ *
+ * Used as the return type of ParameterReflection::passedByReference().
+ *
  * @api
  */
 final class PassedByReference
@@ -65,6 +81,7 @@ final class PassedByReference
 		return $this->value === self::CREATES_NEW_VARIABLE;
 	}
 
+	/** CreatesNewVariable > ReadsArgument > No. */
 	public function combine(self $other): self
 	{
 		if ($this->value > $other->value) {

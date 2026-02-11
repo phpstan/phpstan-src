@@ -9,6 +9,30 @@ use function max;
 use function min;
 
 /**
+ * Three-valued logic used throughout PHPStan's type system.
+ *
+ * Unlike boolean logic, TrinaryLogic has three states: Yes, No, and Maybe.
+ * This is essential for static analysis because type relationships aren't always
+ * certain. For example, a `mixed` type *might* be a string — that's `Maybe`.
+ *
+ * Many Type methods return TrinaryLogic instead of bool because the answer may
+ * depend on runtime values that can't be known statically. Extension developers
+ * encounter TrinaryLogic extensively when querying type properties:
+ *
+ *     if ($type->isString()->yes()) {
+ *         // Definitely a string
+ *     }
+ *     if ($type->isString()->maybe()) {
+ *         // Could be a string (e.g. mixed)
+ *     }
+ *     if ($type->isString()->no()) {
+ *         // Definitely not a string
+ *     }
+ *
+ * TrinaryLogic supports logical operations (and, or, negate) that propagate
+ * uncertainty correctly. It is used as a flyweight — instances are cached and
+ * compared by identity.
+ *
  * @api
  * @see https://phpstan.org/developing-extensions/trinary-logic
  */
@@ -169,6 +193,9 @@ final class TrinaryLogic
 		return $this->or(...$results);
 	}
 
+	/**
+	 * Returns the operands' value if they all agree, Maybe if any differ.
+	 */
 	public static function extremeIdentity(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -211,6 +238,9 @@ final class TrinaryLogic
 		return $lastResult;
 	}
 
+	/**
+	 * Returns Yes if any operand is Yes, otherwise the minimum.
+	 */
 	public static function maxMin(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -253,6 +283,9 @@ final class TrinaryLogic
 		return $this === $other;
 	}
 
+	/**
+	 * Returns the stronger of the two values, or null if they are equal (Yes > Maybe > No).
+	 */
 	public function compareTo(self $other): ?self
 	{
 		if ($this->value > $other->value) {

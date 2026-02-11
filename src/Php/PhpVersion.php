@@ -6,6 +6,11 @@ use PHPStan\DependencyInjection\AutowiredService;
 use function floor;
 
 /**
+ * Represents a specific PHP version for version-dependent analysis behavior.
+ *
+ * The version is stored as PHP_VERSION_ID format (e.g. 80100 for PHP 8.1.0).
+ * Extension developers can access it by injecting PhpVersion via constructor injection.
+ *
  * @api
  */
 #[AutowiredService(factory: '@PHPStan\Php\PhpVersionFactory::create')]
@@ -19,7 +24,6 @@ final class PhpVersion
 
 	/**
 	 * @api
-	 *
 	 * @param self::SOURCE_* $source
 	 */
 	public function __construct(private int $versionId, private int $source = self::SOURCE_UNKNOWN)

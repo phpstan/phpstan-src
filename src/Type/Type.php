@@ -21,6 +21,25 @@ use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 
 /**
+ * Represents a PHPStan type in the type system.
+ *
+ * This is the central interface of PHPStan's type system. Every type that PHPStan
+ * can reason about implements this interface — from simple scalars like StringType
+ * to complex generics like GenericObjectType.
+ *
+ * Each Type knows what it accepts, what is a supertype of it, what properties/methods/constants
+ * it has, what operations it supports, and how to describe itself for error messages.
+ *
+ * Important: Never use `instanceof` to check types. For example, `$type instanceof StringType`
+ * will miss union types, intersection types with accessory types, and other composite forms.
+ * Always use the `is*()` methods or `isSuperTypeOf()` instead:
+ *
+ *     // Wrong:
+ *     if ($type instanceof StringType) { ... }
+ *
+ *     // Correct:
+ *     if ($type->isString()->yes()) { ... }
+ *
  * @api
  * @see https://phpstan.org/developing-extensions/type-system
  */
@@ -28,26 +47,35 @@ interface Type
 {
 
 	/**
+	 * Returns all class names referenced anywhere in this type, recursively
+	 * (including generic arguments, callable signatures, etc.).
+	 *
+	 * @see Type::getObjectClassNames() for only direct object type class names
+	 *
 	 * @return list<non-empty-string>
 	 */
 	public function getReferencedClasses(): array;
 
-	/** @return list<non-empty-string> */
+	/**
+	 * Returns class names of the object types this type directly represents.
+	 * Unlike getReferencedClasses(), excludes classes in generic arguments, etc.
+	 *
+	 * @return list<non-empty-string>
+	 */
 	public function getObjectClassNames(): array;
 
-	/**
-	 * @return list<ClassReflection>
-	 */
+	/** @return list<ClassReflection> */
 	public function getObjectClassReflections(): array;
 
 	/**
-	 * Returns object type Foo for class-string<Foo> and 'Foo' (if Foo is a valid class).
+	 * Returns the object type for a class-string or literal class name string.
+	 * For non-class-string types, returns ErrorType.
 	 */
 	public function getClassStringObjectType(): Type;
 
 	/**
-	 * Returns object type Foo for class-string<Foo>, 'Foo' (if Foo is a valid class),
-	 * and object type Foo.
+	 * Like getClassStringObjectType(), but also returns object types as-is.
+	 * Used for `$classOrObject::method()` where the left side can be either.
 	 */
 	public function getObjectTypeOrClassStringObjectType(): Type;
 
@@ -58,14 +86,29 @@ interface Type
 	/** @return list<ArrayType|ConstantArrayType> */
 	public function getArrays(): array;
 
-	/** @return list<ConstantArrayType> */
+	/**
+	 * Only ConstantArrayType instances (array shapes with known keys).
+	 *
+	 * @return list<ConstantArrayType>
+	 */
 	public function getConstantArrays(): array;
 
 	/** @return list<ConstantStringType> */
 	public function getConstantStrings(): array;
 
+	/**
+	 * Unlike isSuperTypeOf(), accepts() takes into account PHP's implicit type coercion.
+	 * With $strictTypes = false, int is accepted by float, and Stringable objects are
+	 * accepted by string.
+	 */
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult;
 
+	/**
+	 * "Does every value of $type belong to $this type?"
+	 *
+	 * Preferable to instanceof checks because it correctly handles
+	 * union types, intersection types, and all other composite types.
+	 */
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult;
 
 	public function equals(Type $type): bool;
@@ -87,6 +130,10 @@ interface Type
 
 	public function getInstanceProperty(string $propertyName, ClassMemberAccessAnswerer $scope): ExtendedPropertyReflection;
 
+	/**
+	 * Unlike getInstanceProperty(), this defers template type resolution.
+	 * Use getInstanceProperty() in most rule implementations.
+	 */
 	public function getUnresolvedInstancePropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection;
 
 	public function hasStaticProperty(string $propertyName): TrinaryLogic;
@@ -101,6 +148,10 @@ interface Type
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection;
 
+	/**
+	 * Unlike getMethod(), this defers template type and static type resolution.
+	 * Use getMethod() in most rule implementations.
+	 */
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection;
 
 	public function canAccessConstants(): TrinaryLogic;
@@ -113,8 +164,14 @@ interface Type
 
 	public function isIterableAtLeastOnce(): TrinaryLogic;
 
+	/**
+	 * Returns the count of elements as a Type (typically IntegerRangeType).
+	 */
 	public function getArraySize(): Type;
 
+	/**
+	 * Works for both arrays and Traversable objects.
+	 */
 	public function getIterableKeyType(): Type;
 
 	/** @deprecated use getIterableKeyType */
@@ -135,61 +192,96 @@ interface Type
 
 	public function isConstantArray(): TrinaryLogic;
 
+	/**
+	 * An oversized array is a constant array shape that grew too large to track
+	 * precisely and was degraded to a generic array type.
+	 */
 	public function isOversizedArray(): TrinaryLogic;
 
+	/**
+	 * A list is an array with sequential integer keys starting from 0 with no gaps.
+	 */
 	public function isList(): TrinaryLogic;
 
 	public function isOffsetAccessible(): TrinaryLogic;
 
+	/**
+	 * Whether accessing a non-existent offset is safe (won't cause errors).
+	 * Unlike isOffsetAccessible() which checks if offset access is supported at all.
+	 */
 	public function isOffsetAccessLegal(): TrinaryLogic;
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic;
 
 	public function getOffsetValueType(Type $offsetType): Type;
 
+	/**
+	 * May add a new key. When $offsetType is null, appends (like $a[] = $value).
+	 *
+	 * @see Type::setExistingOffsetValueType() for modifying an existing key without widening
+	 */
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type;
 
+	/**
+	 * Unlike setOffsetValueType(), assumes the key already exists.
+	 * Preserves the array shape and list type.
+	 */
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type;
 
 	public function unsetOffset(Type $offsetType): Type;
 
+	/** Models array_keys($array, $searchValue, $strict). */
 	public function getKeysArrayFiltered(Type $filterValueType, TrinaryLogic $strict): Type;
 
+	/** Models array_keys($array). */
 	public function getKeysArray(): Type;
 
+	/** Models array_values($array). */
 	public function getValuesArray(): Type;
 
+	/** Models array_chunk($array, $length, $preserveKeys). */
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type;
 
+	/** Models array_fill_keys($keys, $value). */
 	public function fillKeysArray(Type $valueType): Type;
 
+	/** Models array_flip($array). */
 	public function flipArray(): Type;
 
+	/** Models array_intersect_key($array, ...$otherArrays). */
 	public function intersectKeyArray(Type $otherArraysType): Type;
 
+	/** Models array_pop() effect on the array. */
 	public function popArray(): Type;
 
+	/** Models array_reverse($array, $preserveKeys). */
 	public function reverseArray(TrinaryLogic $preserveKeys): Type;
 
+	/** Models array_search($needle, $array, $strict). */
 	public function searchArray(Type $needleType, ?TrinaryLogic $strict = null): Type;
 
+	/** Models array_shift() effect on the array. */
 	public function shiftArray(): Type;
 
+	/** Models shuffle() effect on the array. Result is always a list. */
 	public function shuffleArray(): Type;
 
+	/** Models array_slice($array, $offset, $length, $preserveKeys). */
 	public function sliceArray(Type $offsetType, Type $lengthType, TrinaryLogic $preserveKeys): Type;
 
+	/** Models array_splice() effect on the array (the modified array, not the removed portion). */
 	public function spliceArray(Type $offsetType, Type $lengthType, Type $replacementType): Type;
 
-	/**
-	 * @return list<EnumCaseObjectType>
-	 */
+	/** @return list<EnumCaseObjectType> */
 	public function getEnumCases(): array;
 
+	/**
+	 * Returns the single enum case this type represents, or null if not exactly one case.
+	 */
 	public function getEnumCaseObject(): ?EnumCaseObjectType;
 
 	/**
-	 * Returns a list of finite values.
+	 * Returns a list of finite values this type can take.
 	 *
 	 * Examples:
 	 *
@@ -204,37 +296,51 @@ interface Type
 	 */
 	public function getFiniteTypes(): array;
 
+	/** Models the ** operator. */
 	public function exponentiate(Type $exponent): Type;
 
 	public function isCallable(): TrinaryLogic;
 
-	/**
-	 * @return list<CallableParametersAcceptor>
-	 */
+	/** @return list<CallableParametersAcceptor> */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array;
 
 	public function isCloneable(): TrinaryLogic;
 
+	/** Models the (bool) cast. */
 	public function toBoolean(): BooleanType;
 
+	/** Models numeric coercion for arithmetic operators. */
 	public function toNumber(): Type;
 
+	/** Models the (int) cast. */
 	public function toInteger(): Type;
 
+	/** Models the (float) cast. */
 	public function toFloat(): Type;
 
+	/** Models the (string) cast. */
 	public function toString(): Type;
 
+	/** Models the (array) cast. */
 	public function toArray(): Type;
 
+	/**
+	 * Models PHP's implicit array key coercion: floats truncated to int,
+	 * booleans become 0/1, null becomes '', numeric strings become int.
+	 */
 	public function toArrayKey(): Type;
 
 	/**
-	 * Tells how a type might change when passed to an argument
+	 * Returns how this type might change when passed to a typed parameter
 	 * or assigned to a typed property.
 	 *
-	 * Example: int is accepted by int|float with strict_types = 1
-	 * Stringable is accepted by string|Stringable even without strict_types.
+	 * With $strictTypes = true: int widens to int|float (since int is accepted
+	 * by float parameters in strict mode).
+	 * With $strictTypes = false: additional coercions apply, e.g. Stringable
+	 * objects are accepted by string parameters.
+	 *
+	 * Used internally to determine what types a value might be coerced to
+	 * when checking parameter acceptance.
 	 */
 	public function toCoercedArgumentType(bool $strictTypes): self;
 
@@ -244,22 +350,24 @@ interface Type
 
 	/**
 	 * Is Type of a known constant value? Includes literal strings, integers, floats, true, false, null, and array shapes.
+	 *
+	 * Unlike isConstantScalarValue(), this also returns yes for constant array types (array shapes
+	 * with known keys and values). Use this when you need to detect any constant value including arrays.
 	 */
 	public function isConstantValue(): TrinaryLogic;
 
 	/**
 	 * Is Type of a known constant scalar value? Includes literal strings, integers, floats, true, false, and null.
+	 *
+	 * Unlike isConstantValue(), this does NOT return yes for array shapes.
+	 * Use this when you specifically need scalar constants only.
 	 */
 	public function isConstantScalarValue(): TrinaryLogic;
 
-	/**
-	 * @return list<ConstantScalarType>
-	 */
+	/** @return list<ConstantScalarType> */
 	public function getConstantScalarTypes(): array;
 
-	/**
-	 * @return list<int|float|string|bool|null>
-	 */
+	/** @return list<int|float|string|bool|null> */
 	public function getConstantScalarValues(): array;
 
 	public function isNull(): TrinaryLogic;
@@ -280,8 +388,16 @@ interface Type
 
 	public function isNonEmptyString(): TrinaryLogic;
 
+	/**
+	 * Non-falsy string is a non-empty string that is also not '0'.
+	 * Stricter subset of non-empty-string.
+	 */
 	public function isNonFalsyString(): TrinaryLogic;
 
+	/**
+	 * A literal-string is a string composed entirely from string literals
+	 * in the source code (not from user input). Used for SQL injection prevention.
+	 */
 	public function isLiteralString(): TrinaryLogic;
 
 	public function isLowercaseString(): TrinaryLogic;
@@ -296,6 +412,10 @@ interface Type
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
+	/**
+	 * Type narrowing methods for comparison operators.
+	 * For example, for ConstantIntegerType(5), getSmallerType() returns int<min, 4>.
+	 */
 	public function getSmallerType(PhpVersion $phpVersion): Type;
 
 	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type;
@@ -323,15 +443,14 @@ interface Type
 	public function getTemplateType(string $ancestorClassName, string $templateTypeName): Type;
 
 	/**
-	 * Infers template types
-	 *
-	 * Infers the real Type of the TemplateTypes found in $this, based on
-	 * the received Type.
+	 * Infers the real types of TemplateTypes found in $this, based on
+	 * the received Type. E.g. if $this is array<T> and $receivedType
+	 * is array<int>, infers T = int.
 	 */
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap;
 
 	/**
-	 * Returns the template types referenced by this Type, recursively
+	 * Returns the template types referenced by this Type, recursively.
 	 *
 	 * The return value is a list of TemplateTypeReferences, who contain the
 	 * referenced template type as well as the variance position in which it was
@@ -348,20 +467,23 @@ interface Type
 	 */
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array;
 
+	/** Models abs(). */
 	public function toAbsoluteNumber(): Type;
 
 	/**
-	 * Traverses inner types
+	 * Returns a new instance with all inner types mapped through $cb.
+	 * Returns the same instance if inner types did not change.
 	 *
-	 * Returns a new instance with all inner types mapped through $cb. Might
-	 * return the same instance if inner types did not change.
+	 * Not used directly — use TypeTraverser::map() instead.
 	 *
 	 * @param callable(Type):Type $cb
 	 */
 	public function traverse(callable $cb): Type;
 
 	/**
-	 * Traverses inner types while keeping the same context in another type.
+	 * Like traverse(), but walks two types simultaneously.
+	 *
+	 * Not used directly — use SimultaneousTypeTraverser::map() instead.
 	 *
 	 * @param callable(Type $left, Type $right): Type $cb
 	 */
@@ -369,15 +491,18 @@ interface Type
 
 	public function toPhpDocNode(): TypeNode;
 
-	/**
-	 * Return the difference with another type, or null if it cannot be represented.
-	 *
-	 * @see TypeCombinator::remove()
-	 */
+	/** @see TypeCombinator::remove() */
 	public function tryRemove(Type $typeToRemove): ?Type;
 
+	/**
+	 * Removes constant value information. E.g. 'foo' -> string, 1 -> int.
+	 * Used when types become too complex to track precisely (e.g. loop iterations).
+	 */
 	public function generalize(GeneralizePrecision $precision): Type;
 
+	/**
+	 * Performance optimization to skip template resolution when no templates are present.
+	 */
 	public function hasTemplateOrLateResolvableType(): bool;
 
 }

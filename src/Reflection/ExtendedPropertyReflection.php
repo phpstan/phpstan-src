@@ -6,16 +6,22 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 /**
- * The purpose of this interface is to be able to
- * answer more questions about properties
- * without breaking backward compatibility
- * with existing PropertiesClassReflectionExtension.
+ * Extended property reflection with additional metadata beyond PropertyReflection.
  *
- * Developers are meant to only implement PropertyReflection
- * and its methods in their code.
+ * This interface exists to allow PHPStan to add new property query methods in minor
+ * versions without breaking existing PropertiesClassReflectionExtension implementations.
+ * Extension developers should implement PropertyReflection, not this interface — PHPStan
+ * wraps PropertyReflection implementations to provide ExtendedPropertyReflection.
  *
- * New methods on ExtendedPropertyReflection will be added
- * in minor versions.
+ * Provides access to:
+ * - Separate PHPDoc type vs native type (for resolving the effective type)
+ * - Property hooks (PHP 8.4+) — get/set hooks with their own method reflections
+ * - Asymmetric visibility (PHP 8.4+) — different read/write visibility
+ * - Abstract/final/virtual modifiers
+ * - PHP attributes
+ *
+ * This is the return type of Type::getProperty(), Type::getInstanceProperty(),
+ * and Type::getStaticProperty().
  *
  * @api
  */
@@ -42,14 +48,18 @@ interface ExtendedPropertyReflection extends PropertyReflection
 
 	public function isFinal(): TrinaryLogic;
 
+	/**
+	 * Virtual properties (PHP 8.4+) exist only through their get/set hooks
+	 * and don't occupy memory in the object.
+	 */
 	public function isVirtual(): TrinaryLogic;
 
-	/**
-	 * @param self::HOOK_* $hookType
-	 */
+	/** @param self::HOOK_* $hookType */
 	public function hasHook(string $hookType): bool;
 
 	/**
+	 * Property hooks (PHP 8.4+) are internally represented as methods.
+	 *
 	 * @param self::HOOK_* $hookType
 	 */
 	public function getHook(string $hookType): ExtendedMethodReflection;
@@ -58,16 +68,13 @@ interface ExtendedPropertyReflection extends PropertyReflection
 
 	public function isPrivateSet(): bool;
 
-	/**
-	 * @return list<AttributeReflection>
-	 */
+	/** @return list<AttributeReflection> */
 	public function getAttributes(): array;
 
 	/**
-	 * If property has been declared in code then this returns `no()`
-	 *
-	 * Returns `yes()` if the property represents possibly-defined property
-	 * in non-final classes, on mixed, on object etc.
+	 * Returns yes() for properties that represent possibly-defined properties
+	 * on non-final classes, mixed, object, etc. — placeholders PHPStan creates
+	 * when it cannot prove a property doesn't exist.
 	 */
 	public function isDummy(): TrinaryLogic;
 

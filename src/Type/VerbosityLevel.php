@@ -14,6 +14,30 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 
+/**
+ * Controls the verbosity of type descriptions in error messages.
+ *
+ * When PHPStan describes a type for an error message, it uses VerbosityLevel to
+ * decide how much detail to include. Higher levels include more detail like constant
+ * values and array shapes.
+ *
+ * The four levels (from least to most verbose):
+ * - **typeOnly**: Just the type name, e.g. "string", "array", "Foo"
+ * - **value**: Includes constant values, e.g. "'hello'", "array{foo: int}", "non-empty-string"
+ * - **precise**: Maximum detail — adds subtracted types on object/mixed (e.g. "object~Bar"),
+ *   lowercase/uppercase string distinctions, untruncated array shapes, and template type scope
+ * - **cache**: Internal level used for generating cache keys
+ *
+ * Used as a parameter to Type::describe() to control output detail:
+ *
+ *     $type->describe(VerbosityLevel::typeOnly())  // "string"
+ *     $type->describe(VerbosityLevel::value())      // "'hello'"
+ *     $type->describe(VerbosityLevel::precise())    // "non-empty-lowercase-string"
+ *
+ * The getRecommendedLevelByType() factory method automatically chooses the right level
+ * for error messages based on what types are involved — it picks the minimum verbosity
+ * needed to distinguish the accepting type from the accepted type.
+ */
 final class VerbosityLevel
 {
 
@@ -65,7 +89,11 @@ final class VerbosityLevel
 		return self::create(self::PRECISE);
 	}
 
-	/** @api */
+	/**
+	 * Internal level for generating unique cache keys — not for user-facing messages.
+	 *
+	 * @api
+	 */
 	public static function cache(): self
 	{
 		return self::create(self::CACHE);
@@ -91,7 +119,11 @@ final class VerbosityLevel
 		return $this->value === self::CACHE;
 	}
 
-	/** @api */
+	/**
+	 * Chooses the minimum verbosity needed to distinguish the two types in error messages.
+	 *
+	 * @api
+	 */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{
 		$moreVerbose = false;

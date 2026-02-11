@@ -12,6 +12,17 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
+ * Represents a point where a callable may have side effects (impure behavior).
+ *
+ * Used by CallableParametersAcceptor::getImpurePoints() to describe what side effects
+ * a closure or callable value may have. Each impure point has an identifier (e.g.
+ * "functionCall", "methodCall"), a human-readable description, and a certainty flag.
+ *
+ * PHPStan uses impure points to:
+ * - Detect calls to impure functions inside @phpstan-pure contexts
+ * - Report unused return values of pure functions (expr.resultUnused)
+ * - Determine whether expressions have side effects
+ *
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
  */
 final class SimpleImpurePoint
@@ -36,6 +47,8 @@ final class SimpleImpurePoint
 	}
 
 	/**
+	 * Returns null if the function is known to be pure (no side effects).
+	 *
 	 * @param Arg[] $args
 	 */
 	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = []): ?self
@@ -103,9 +116,7 @@ final class SimpleImpurePoint
 		return null;
 	}
 
-	/**
-	 * @return ImpurePointIdentifier
-	 */
+	/** @return ImpurePointIdentifier */
 	public function getIdentifier(): string
 	{
 		return $this->identifier;

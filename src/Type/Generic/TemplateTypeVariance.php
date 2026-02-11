@@ -13,6 +13,24 @@ use PHPStan\Type\Type;
 use function sprintf;
 
 /**
+ * Represents the variance of a template type parameter.
+ *
+ * Variance describes how subtyping of a generic type relates to subtyping of its
+ * type arguments. For a class `Box<T>`:
+ *
+ * - **Invariant** (default): `Box<Cat>` is NOT a subtype of `Box<Animal>`, even though
+ *   Cat extends Animal. The type argument must match exactly. Declared with `@template T`.
+ * - **Covariant**: `Box<Cat>` IS a subtype of `Box<Animal>`. Safe when T only appears
+ *   in "output" positions (return types). Declared with `@template-covariant T`.
+ * - **Contravariant**: `Box<Animal>` IS a subtype of `Box<Cat>`. Safe when T only
+ *   appears in "input" positions (parameter types). Declared with `@template-contravariant T`.
+ * - **Bivariant**: The type argument is ignored for subtyping purposes. Rarely used.
+ * - **Static**: Special variance for `static` return type in template context.
+ *
+ * Variance composition follows standard rules — e.g. covariant composed with
+ * contravariant yields contravariant. This is used when template types appear
+ * inside nested generic types.
+ *
  * @api
  */
 final class TemplateTypeVariance
@@ -37,26 +55,31 @@ final class TemplateTypeVariance
 		return self::$registry[$value];
 	}
 
+	/** Type argument must match exactly. This is the default for @template T. */
 	public static function createInvariant(): self
 	{
 		return self::create(self::INVARIANT);
 	}
 
+	/** Subtyping flows with the type argument: Cat <: Animal ⟹ Box<Cat> <: Box<Animal>. */
 	public static function createCovariant(): self
 	{
 		return self::create(self::COVARIANT);
 	}
 
+	/** Subtyping flows against the type argument: Cat <: Animal ⟹ Box<Animal> <: Box<Cat>. */
 	public static function createContravariant(): self
 	{
 		return self::create(self::CONTRAVARIANT);
 	}
 
+	/** Special variance for static return type in template context. */
 	public static function createStatic(): self
 	{
 		return self::create(self::STATIC);
 	}
 
+	/** Type argument is ignored for subtyping — all types are compatible. */
 	public static function createBivariant(): self
 	{
 		return self::create(self::BIVARIANT);

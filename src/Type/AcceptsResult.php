@@ -10,6 +10,20 @@ use function array_unique;
 use function array_values;
 
 /**
+ * Result of a Type::accepts() check — whether one type accepts another.
+ *
+ * Wraps a TrinaryLogic result together with human-readable reasons explaining
+ * why the acceptance failed. These reasons are surfaced in PHPStan error messages
+ * to help developers understand type mismatches.
+ *
+ * For example, when checking if `int` accepts `string`, the result would be No
+ * with a reason like "string is not a subtype of int".
+ *
+ * The `accepts()` method is used to check assignability — whether a value of one
+ * type can be assigned to a variable/parameter of another type. This is stricter
+ * than `isSuperTypeOf()` because it accounts for PHPStan's rule level and
+ * generics variance.
+ *
  * @api
  */
 final class AcceptsResult
@@ -17,7 +31,7 @@ final class AcceptsResult
 
 	/**
 	 * @api
-	 * @param list<string> $reasons
+	 * @param list<string> $reasons Human-readable explanations of why acceptance failed
 	 */
 	public function __construct(
 		public readonly TrinaryLogic $result,
@@ -58,9 +72,7 @@ final class AcceptsResult
 		return new self(TrinaryLogic::createYes(), []);
 	}
 
-	/**
-	 * @param list<string> $reasons
-	 */
+	/** @param list<string> $reasons */
 	public static function createNo(array $reasons = []): self
 	{
 		return new self(TrinaryLogic::createNo(), $reasons);
@@ -92,9 +104,7 @@ final class AcceptsResult
 		);
 	}
 
-	/**
-	 * @param callable(string): string $cb
-	 */
+	/** @param callable(string): string $cb */
 	public function decorateReasons(callable $cb): self
 	{
 		$reasons = [];
@@ -105,6 +115,7 @@ final class AcceptsResult
 		return new self($this->result, $reasons);
 	}
 
+	/** @see TrinaryLogic::extremeIdentity() */
 	public static function extremeIdentity(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -122,6 +133,7 @@ final class AcceptsResult
 		return new self($result, array_values(array_unique($reasons)));
 	}
 
+	/** @see TrinaryLogic::maxMin() */
 	public static function maxMin(self ...$operands): self
 	{
 		if ($operands === []) {

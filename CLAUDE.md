@@ -210,6 +210,24 @@ Based on analysis of recent releases (2.1.30-2.1.38), these are the recurring pa
 
 A recurring cleanup theme: never use `$type instanceof StringType` or similar. This misses union types, intersection types with accessory types, and other composite forms. Always use `$type->isString()->yes()` or `(new StringType())->isSuperTypeOf($type)`. Multiple PRs have systematically replaced `instanceof *Type` checks throughout the codebase.
 
+### Type system: add methods to the Type interface instead of one-offing conditions
+
+When a bug requires checking a type property across the codebase, the fix is often to add a new method to the `Type` interface rather than scattering `instanceof` checks or utility function calls throughout rules and extensions. This ensures every type implementation handles the query correctly (including union/intersection types which delegate to their inner types) and keeps the logic centralized.
+
+Historical analysis of `Type.php` via `git blame` shows that new methods are added for several recurring reasons:
+
+- **Replacing scattered `instanceof` checks (~30%)**: Methods like `isNull()`, `isTrue()`, `isFalse()`, `isString()`, `isInteger()`, `isFloat()`, `isBoolean()`, `isArray()`, `isScalar()`, `isObject()`, `isEnum()`, `getClassStringObjectType()`, `getObjectClassNames()`, `getObjectClassReflections()` were added to replace `$type instanceof ConstantBooleanType`, `$type instanceof StringType`, etc. Each type implements the method correctly — e.g., `UnionType::isNull()` returns `yes` only if all members are null, `maybe` if some are, `no` if none are. This is impossible to get right with a single `instanceof` check.
+
+- **Moving logic from TypeUtils/extensions into Type (~35%)**: Methods like `toArrayKey()`, `toBoolean()`, `toNumber()`, `toFloat()`, `toInteger()`, `toString()`, `toArray()`, `flipArray()`, `getKeysArray()`, `getValuesArray()`, `popArray()`, `shiftArray()`, `shuffleArray()`, `reverseSortArray()`, `getEnumCases()`, `isCallable()`, `getCallableParametersAcceptors()`, `isList()` moved scattered utility logic into polymorphic dispatch. When logic lives in a utility function it typically uses a chain of `if ($type instanceof X) ... elseif ($type instanceof Y) ...` which breaks when new type classes are added or misses edge cases in composite types.
+
+- **Supporting new type features (~15%)**: Methods like `isNonEmptyString()`, `isNonFalsyString()`, `isLiteralString()`, `isClassString()`, `isNonEmptyArray()`, `isIterableAtLeastOnce()` were added as PHPStan gained support for more refined types (accessory types in intersections). These enable rules to query refined properties without knowing how the refinement is represented internally.
+
+- **Bug fixes through better polymorphism (~10%)**: Some bugs are directly fixed by adding a new Type method. For example, `isOffsetAccessLegal()` fixed false positives about illegal offset access by letting each type declare whether `$x[...]` is valid. `setExistingOffsetValueType()` (distinct from `setOffsetValueType()`) fixed array list type preservation bugs. `toCoercedArgumentType()` fixed parameter type contravariance issues during type coercion.
+
+- **Richer return types (~5%)**: Methods that returned `TrinaryLogic` were changed to return `AcceptsResult` or `IsSuperTypeOfResult`, which carry human-readable reasons for why a type relationship holds or doesn't. This enabled better error messages without changing the call sites significantly.
+
+When considering a bug fix that involves checking "is this type a Foo?", first check whether an appropriate method already exists on `Type`. If not, consider whether adding one would be the right fix — especially if the check is needed in more than one place or involves logic that varies by type class.
+
 ### MutatingScope: expression invalidation during scope merging
 
 When two scopes are merged (e.g. after if/else branches), `MutatingScope::generalizeWith()` must invalidate dependent expressions. If variable `$i` changes, then `$locations[$i]` must be invalidated too. Bugs arise when stale `ExpressionTypeHolder` entries survive scope merges. Fix pattern: in `MutatingScope`, when a root expression changes, skip/invalidate all deep expressions that depend on it.
@@ -290,6 +308,32 @@ Recent work on PHP 8.5 support shows the pattern:
 - **Reflection**: Support new attributes, property features (asymmetric visibility on static properties, `#[Override]` on properties)
 - **PhpVersion**: Add detection methods like `supportsPropertyHooks()`, `supportsPipeOperator()`, etc.
 - **Stubs**: Update function/class stubs for new built-in functions and changed signatures
+
+## Writing PHPDocs
+
+When adding or editing PHPDoc comments in this codebase, follow these guidelines:
+
+### What to document
+
+- **Class-level docs on interfaces and key abstractions**: Explain the role of the interface, what implements it, and how it fits into the architecture. Mention non-obvious patterns like double-dispatch (CompoundType), the intersection-with-base-type requirement (AccessoryType), or the instanceof-avoidance rule (TypeWithClassName).
+- **Non-obvious behavior**: Document when a method's behavior differs from what its name suggests, or when there are subtle contracts. For example: `getDeclaringClass()` returning the declaring class even for inherited members, `setExistingOffsetValueType()` vs `setOffsetValueType()` preserving list types differently, or `getWritableType()` potentially differing from `getReadableType()` due to asymmetric visibility.
+- **`@api` tags**: Keep these — they mark the public API for extension developers.
+- **`@phpstan-assert` tags**: Keep these — they provide type narrowing information that PHPStan uses.
+- **`@return`, `@param`, `@template` tags**: Keep when they provide type information not expressible in native PHP types (e.g. `@return self::SOURCE_*`, `@param array<string, Type>`).
+
+### What NOT to document
+
+- **Obvious from the method name**: Do not write "Returns the name" above `getName()`, "Returns the value type" above `getValueType()`, or "Returns whether deprecated" above `isDeprecated()`. If the method name says it all, add no description.
+- **Obvious to experienced PHP developers**: Do not explain standard visibility rules ("public methods are always callable, protected methods are callable from subclasses..."), standard PHP semantics, or basic design patterns.
+- **Obvious from tags**: Do not add prose that restates what `@return`, `@phpstan-assert`, or `@param` tags already say. If `@return non-empty-string|null` is present, do not also write "Returns a non-empty string or null".
+- **Factory method descriptions that repeat the class-level doc**: If the class doc already explains the levels/variants (like VerbosityLevel or GeneralizePrecision), don't repeat those descriptions on each factory method. A bare `@api` tag is sufficient.
+- **Getter/setter/query methods on value objects**: Methods like `isInvariant()`, `isCovariant()`, `isEmpty()`, `count()`, `getType()`, `hasType()` on simple value objects need no PHPDoc.
+
+### Style
+
+- Keep descriptions concise — one or two sentences for method docs when needed.
+- Use imperative voice without "Returns the..." preambles when a brief note suffices. Prefer `/** Replaces unresolved TemplateTypes with their bounds. */` over a multi-line block.
+- Preserve `@api` and type tags on their own lines, with no redundant description alongside them.
 
 ## Important dependencies
 

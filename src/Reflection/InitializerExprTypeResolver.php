@@ -1157,7 +1157,7 @@ final class InitializerExprTypeResolver
 
 	public function getBitwiseXorTypeFromTypes(Type $leftType, Type $rightType): Type
 	{
-		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+		if ($leftType->isNever()->or($rightType->isNever())->yes()) {
 			return $this->getNeverType($leftType, $rightType);
 		}
 

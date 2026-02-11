@@ -167,7 +167,7 @@ final class TypeCombinator
 			) {
 				return $types[$i];
 			}
-			if ($types[$i] instanceof NeverType && !$types[$i]->isExplicit()) {
+			if ($types[$i]->isNever()->yes() && $types[$i]->isExplicitNever()->no()) {
 				array_splice($types, $i--, 1);
 				$typesCount--;
 				continue;
@@ -1137,7 +1137,7 @@ final class TypeCombinator
 		}
 
 		foreach ($types as $type) {
-			if ($type instanceof NeverType && !$type->isExplicit()) {
+			if ($type->isNever()->yes() && $type->isExplicitNever()->no()) {
 				return $type;
 			}
 		}

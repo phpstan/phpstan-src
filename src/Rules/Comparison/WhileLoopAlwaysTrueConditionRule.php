@@ -13,7 +13,6 @@ use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\NeverType;
 
 /**
  * @implements Rule<BreaklessWhileLoopNode>
@@ -75,7 +74,7 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 
 			$ref = $scope->getFunction() ?? $scope->getAnonymousFunctionReflection();
 
-			if ($ref !== null && $ref->getReturnType() instanceof NeverType) {
+			if ($ref !== null && $ref->getReturnType()->isNever()->yes()) {
 				return [];
 			}
 

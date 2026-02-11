@@ -13,7 +13,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -51,7 +50,7 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 
 		foreach ($arrayTypes as $arrayType) {
 			$itemType = TypeCombinator::intersect($arrayType->getItemType(), $allowedValues);
-			if ($itemType instanceof NeverType) {
+			if ($itemType->isNever()->yes()) {
 				continue;
 			}
 

@@ -33,7 +33,7 @@ class MixinRuleTest extends RuleTestCase
 					$container,
 				),
 				new GenericObjectTypeCheck(),
-				new MissingTypehintCheck(true, []),
+				new MissingTypehintCheck(true, [], true),
 				new UnresolvableTypeHelper(),
 				true,
 				true,
@@ -67,6 +67,10 @@ class MixinRuleTest extends RuleTestCase
 			],
 			[
 				'PHPDoc tag @mixin contains generic class ReflectionClass but does not specify its types: T',
+				50,
+			],
+			[
+				'PHPDoc tag @mixin contains generic interface Iterator but does not specify its types: TKey, TValue',
 				50,
 			],
 			[

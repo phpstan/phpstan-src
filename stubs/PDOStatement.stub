@@ -21,7 +21,7 @@ class PDOStatement implements Traversable, IteratorAggregate
     public function getColumnMeta(int $column) {}
 
     /**
-     * @return Iterator
+     * @return Iterator<mixed, array<int|string, mixed>>
      */
     public function getIterator() {}
 }

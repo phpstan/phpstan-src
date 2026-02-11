@@ -29,7 +29,7 @@ class MethodAssertRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$container,
 			),
-			new MissingTypehintCheck(true, []),
+			new MissingTypehintCheck(true, [], true),
 			new GenericObjectTypeCheck(),
 			true,
 			true,

@@ -14,7 +14,7 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck(true, []));
+		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck(true, [], true));
 	}
 
 	public function testRule(): void
@@ -57,6 +57,27 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 			[
 				'Function MissingFunctionReturnTypehint\callableNestedNoPrototype() return type has no signature specified for callable.',
 				141,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGeneratorOfIntegersNoPrototype() return type with generic class Generator does not specify its types: TKey, TValue, TSend, TReturn',
+				152,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsGeneratorOfIntegersByStringNoPrototype() return type with generic class Generator does not specify its types: TKey, TValue, TSend, TReturn',
+				169,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsIteratorNoPrototype() return type with generic interface Iterator does not specify its types: TKey, TValue',
+				186,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsIteratorAggregateNoPrototype() return type with generic interface IteratorAggregate does not specify its types: TKey, TValue',
+				199,
+			],
+			[
+				'Function MissingFunctionReturnTypehint\returnsTraversableNoPrototype() return type has no value type specified in iterable type Traversable.',
+				212,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);
 	}

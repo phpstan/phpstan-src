@@ -28,7 +28,7 @@ class LocalTypeTraitAliasesRuleTest extends RuleTestCase
 				['GlobalTypeAlias' => 'int|string'],
 				self::createReflectionProvider(),
 				$container->getByType(TypeNodeResolver::class),
-				new MissingTypehintCheck(true, []),
+				new MissingTypehintCheck(true, [], true),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck($container),

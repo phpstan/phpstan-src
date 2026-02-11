@@ -22,6 +22,9 @@ if (\PHP_VERSION_ID < 80000) {
 		{
 		}
 
+		/**
+		 * @return array<array-key, mixed>
+		 */
 		public function getArguments(): array
 		{
 		}

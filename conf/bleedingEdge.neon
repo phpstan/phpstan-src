@@ -10,6 +10,7 @@ parameters:
 		internalTag: true
 		newStaticInAbstractClassStaticMethod: true
 		checkExtensionsForComparisonOperators: true
+		checkGenericIterableClasses: true
 		reportTooWideBool: true
 		rawMessageInBaseline: true
 		reportNestedTooWideType: false # tmp

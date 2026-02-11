@@ -15,7 +15,7 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true, []));
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck(true, [], true));
 	}
 
 	public function testRule(): void
@@ -53,6 +53,11 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodReturnTypehint\CallableSignature::doFoo() return type has no signature specified for callable.',
 				99,
+			],
+			[
+				'Method MissingMethodReturnTypehint\IterableIntersection::doFoo() return type has no value type specified in iterable type Traversable.',
+				110,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Method MissingMethodReturnTypehint\Baz::returnsGenericWithSomeDefaults() return type with generic class MissingMethodReturnTypehint\GenericClassWithSomeDefaults does not specify its types: T, U (1-2 required)',

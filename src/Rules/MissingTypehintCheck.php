@@ -54,6 +54,8 @@ final class MissingTypehintCheck
 		private bool $checkMissingCallableSignature,
 		#[AutowiredParameter(ref: '%featureToggles.skipCheckGenericClasses%')]
 		private array $skipCheckGenericClasses,
+		#[AutowiredParameter(ref: '%featureToggles.checkGenericIterableClasses%')]
+		private bool $checkGenericIterableClasses,
 	)
 	{
 	}
@@ -118,7 +120,13 @@ final class MissingTypehintCheck
 				if ($classReflection === null) {
 					return $type;
 				}
-				if (in_array($classReflection->getName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)) {
+				if (
+					$classReflection->getName() === Traversable::class // already covered by getIterableTypesWithMissingValueTypehint
+					|| (
+						!$this->checkGenericIterableClasses &&
+						in_array($classReflection->getName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)
+					)
+				) {
 					// checked by getIterableTypesWithMissingValueTypehint() already
 					return $type;
 				}

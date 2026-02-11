@@ -148,4 +148,77 @@ namespace MissingFunctionReturnTypehint
 	function callableNestedWithPrototype() : callable{
 
 	}
+
+	function returnsGeneratorOfIntegersNoPrototype(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield 3;
+	}
+
+	/**
+	 * @return \Generator<int, int>
+	 */
+	function returnsGeneratorOfIntegersWithPrototype(): \Generator
+	{
+		yield 1;
+		yield 2;
+		yield 3;
+	}
+
+	function returnsGeneratorOfIntegersByStringNoPrototype(): \Generator
+	{
+		yield '1' => 1;
+		yield '2' => 2;
+		yield '3' => 3;
+	}
+
+	/**
+	 * @return \Generator<string, int>
+	 */
+	function returnsGeneratorOfIntegersByStringWithPrototype(): \Generator
+	{
+		yield '1' => 1;
+		yield '2' => 2;
+		yield '3' => 3;
+	}
+
+	function returnsIteratorNoPrototype(): \Iterator
+	{
+		yield 'test';
+	}
+
+	/**
+	 * @return \Iterator<array-key,string>
+	 */
+	function returnsIteratorWithPrototype(): \Iterator
+	{
+		yield 'test';
+	}
+
+	function returnsIteratorAggregateNoPrototype(): \IteratorAggregate
+	{
+		return new \ArrayObject([]);
+	}
+
+	/**
+	 * @return \IteratorAggregate<array-key,string>
+	 */
+	function returnsIteratorAggregateWithPrototype(): \IteratorAggregate
+	{
+		return new \ArrayObject([]);
+	}
+
+	function returnsTraversableNoPrototype(): \Traversable
+	{
+		yield 'test';
+	}
+
+	/**
+	 * @return \Traversable<array-key,string>
+	 */
+	function returnsTraversableWithPrototype(): \Traversable
+	{
+		yield 'test';
+	}
 }

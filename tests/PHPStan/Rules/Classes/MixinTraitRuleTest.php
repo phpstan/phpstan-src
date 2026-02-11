@@ -32,7 +32,7 @@ class MixinTraitRuleTest extends RuleTestCase
 					$container,
 				),
 				new GenericObjectTypeCheck(),
-				new MissingTypehintCheck(true, []),
+				new MissingTypehintCheck(true, [], true),
 				new UnresolvableTypeHelper(),
 				true,
 				true,

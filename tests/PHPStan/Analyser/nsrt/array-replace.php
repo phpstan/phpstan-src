@@ -76,11 +76,11 @@ class Foo
 	 */
 	public function arrayReplaceArrayShapeAndGeneralArray($array1, $array2, $array3): void
 	{
-		assertType("non-empty-array<string, '1'|'2'|int>", array_replace($array1, $array2));
-		assertType("non-empty-array<string, '1'|'2'|int>", array_replace($array2, $array1));
+		assertType("non-empty-array<string, '1'|'2'|int>&hasOffset('bar')&hasOffset('foo')", array_replace($array1, $array2));
+		assertType("non-empty-array<string, '1'|'2'|int>&hasOffsetValue('bar', '2')&hasOffsetValue('foo', '1')", array_replace($array2, $array1));
 
-		assertType("non-empty-array<'bar'|'foo'|int, string>", array_replace($array1, $array3));
-		assertType("non-empty-array<'bar'|'foo'|int, string>", array_replace($array3, $array1));
+		assertType("non-empty-array<'bar'|'foo'|int, string>&hasOffset('bar')&hasOffset('foo')", array_replace($array1, $array3));
+		assertType("non-empty-array<'bar'|'foo'|int, string>&hasOffsetValue('bar', '2')&hasOffsetValue('foo', '1')", array_replace($array3, $array1));
 
 		assertType("array<int|string, int|string>", array_replace($array2, $array3));
 	}

@@ -50,4 +50,20 @@ class HelloWorld
 		assert(property_exists($entity, 'foo'));
 		assertType('class-string<object{foo: Bug4890\HelloWorld, bar: int, baz?: string}>', get_class($entity));
 	}
+
+	/**
+	 * @phpstan-template T of Proxy
+	 *
+	 * @param T $entity
+	 *
+	 * @return T
+	 */
+	public function updateGeneric($entity): object
+	{
+		assertType('class-string<T of Bug4890\Proxy (method Bug4890\HelloWorld::updateGeneric(), argument)>', get_class($entity));
+		assert(property_exists($entity, 'myProp'));
+		assertType('class-string<T of Bug4890\Proxy (method Bug4890\HelloWorld::updateGeneric(), argument)&hasProperty(myProp)>', get_class($entity));
+
+		return $entity;
+	}
 }

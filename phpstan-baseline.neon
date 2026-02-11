@@ -1744,15 +1744,9 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/TypeUtils.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 4
+			count: 3
 			path: src/Type/TypeUtils.php
 
 		-

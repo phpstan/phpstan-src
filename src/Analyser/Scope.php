@@ -46,7 +46,6 @@ use PHPStan\Type\TypeWithClassName;
 interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 {
 
-	/** @var list<string> PHP superglobal variable names that are always available */
 	public const SUPERGLOBAL_VARIABLES = [
 		'GLOBALS',
 		'_SERVER',

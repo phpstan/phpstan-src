@@ -138,7 +138,17 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public static function createPure(): self
 	{
-		return new self(null, null, true, null, null, null, [], [], []);
+		return new self(
+			parameters: null,
+			returnType: null,
+			variadic: true,
+			templateTypeMap: null,
+			resolvedTemplateTypeMap: null,
+			callSiteVarianceMap: null,
+			templateTags: [],
+			throwPoints: [],
+			impurePoints: [],
+		);
 	}
 
 	public function isPure(): TrinaryLogic
@@ -263,10 +273,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 					array_map(static fn (ParameterReflection $p): ParameterReflection => new DummyParameter(
 						'',
 						$p->getType(),
-						$p->isOptional() && !$p->isVariadic(),
-						PassedByReference::createNo(),
-						$p->isVariadic(),
-						$p->getDefaultValue(),
+						optional: $p->isOptional() && !$p->isVariadic(),
+						passedByReference: PassedByReference::createNo(),
+						variadic: $p->isVariadic(),
+						defaultValue: $p->getDefaultValue(),
 					), $this->parameters),
 					$this->returnType,
 					$this->variadic,

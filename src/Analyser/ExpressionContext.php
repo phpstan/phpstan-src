@@ -17,12 +17,12 @@ final class ExpressionContext
 
 	public static function createTopLevel(): self
 	{
-		return new self(false, null, null);
+		return new self(isDeep: false, inAssignRightSideVariableName: null, inAssignRightSideExpr: null);
 	}
 
 	public static function createDeep(): self
 	{
-		return new self(true, null, null);
+		return new self(isDeep: true, inAssignRightSideVariableName: null, inAssignRightSideExpr: null);
 	}
 
 	public function enterDeep(): self

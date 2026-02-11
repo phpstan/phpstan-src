@@ -419,7 +419,7 @@ final class ConstantResolver
 				$phpdocTypes = $this->dynamicConstantNames[$constantName];
 				if ($this->container !== null) {
 					$typeStringResolver = $this->container->getByType(TypeStringResolver::class);
-					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], null));
+					return $typeStringResolver->resolve($phpdocTypes, new NameScope(null, [], className: null));
 				}
 				return $constantType;
 			}

@@ -142,7 +142,7 @@ abstract class PHPStanTestCase extends TestCase
 
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		$composerPhpVersionFactory = $container->getByType(ComposerPhpVersionFactory::class);
-		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, null, $composerPhpVersionFactory, $container);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames, phpVersion: null, composerPhpVersionFactory: $composerPhpVersionFactory, container: $container);
 
 		$initializerExprTypeResolver = new InitializerExprTypeResolver(
 			$constantResolver,

@@ -47,7 +47,7 @@ final class InternalThrowPoint
 	 */
 	public static function createImplicit(MutatingScope $scope, Node $node): self
 	{
-		return new self($scope, new ObjectType(Throwable::class), $node, false, true);
+		return new self($scope, new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
 	}
 
 	public static function createFromPublic(ThrowPoint $throwPoint): self

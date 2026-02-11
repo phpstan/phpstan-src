@@ -102,27 +102,27 @@ final class ParallelAnalyser
 				$internalErrors[] = new InternalError(
 					'Some parallel worker jobs have not finished.',
 					'running parallel worker',
-					[],
-					null,
-					true,
+					trace: [],
+					traceAsString: null,
+					shouldReportBug: true,
 				);
 				$internalErrorsCount++;
 			}
 
 			$deferred->resolve(new AnalyserResult(
-				$errors,
-				$filteredPhpErrors,
-				$allPhpErrors,
-				$locallyIgnoredErrors,
-				$linesToIgnore,
-				$unmatchedLineIgnores,
-				$internalErrors,
-				$collectedData,
-				$internalErrorsCount === 0 ? $dependencies : null,
-				$internalErrorsCount === 0 ? $usedTraitDependencies : null,
-				$exportedNodes,
-				$reachedInternalErrorsCountLimit,
-				array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
+				unorderedErrors: $errors,
+				filteredPhpErrors: $filteredPhpErrors,
+				allPhpErrors: $allPhpErrors,
+				locallyIgnoredErrors: $locallyIgnoredErrors,
+				linesToIgnore: $linesToIgnore,
+				unmatchedLineIgnores: $unmatchedLineIgnores,
+				internalErrors: $internalErrors,
+				collectedData: $collectedData,
+				dependencies: $internalErrorsCount === 0 ? $dependencies : null,
+				usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
+				exportedNodes: $exportedNodes,
+				reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
+				peakMemoryUsageBytes: array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
 			));
 		});
 		$server->on('connection', function (ConnectionInterface $connection) use (&$jobs): void {
@@ -160,7 +160,7 @@ final class ParallelAnalyser
 				'communicating with parallel worker',
 				InternalError::prepareTrace($error),
 				$error->getTraceAsString(),
-				!$error instanceof ProcessTimedOutException,
+				shouldReportBug: !$error instanceof ProcessTimedOutException,
 			);
 			$internalErrorsCount++;
 			$reachedInternalErrorsCountLimit = true;
@@ -332,13 +332,13 @@ final class ParallelAnalyser
 						$memoryLimitMessage,
 						ini_get('memory_limit'),
 						'Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.',
-					), 'running parallel worker', [], null, false);
+					), 'running parallel worker', trace: [], traceAsString: null, shouldReportBug: false);
 					$internalErrorsCount++;
 					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
 
-				$internalErrors[] = new InternalError(sprintf('Child process error (exit code %d): %s', $exitCode, $output), 'running parallel worker', [], null, true);
+				$internalErrors[] = new InternalError(sprintf('Child process error (exit code %d): %s', $exitCode, $output), 'running parallel worker', trace: [], traceAsString: null, shouldReportBug: true);
 				$internalErrorsCount++;
 				$this->processPool->tryQuitProcess($processIdentifier);
 			});

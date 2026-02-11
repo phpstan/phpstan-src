@@ -578,20 +578,20 @@ final class PhpDocNodeResolver
 
 		foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
 			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-			$parameter = new AssertTagParameter($assertTagValue->parameter, null, null);
-			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, true);
+			$parameter = new AssertTagParameter($assertTagValue->parameter, property: null, method: null);
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, isExplicit: true);
 		}
 
 		foreach ($phpDocNode->getAssertPropertyTagValues($tagName) as $assertTagValue) {
 			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-			$parameter = new AssertTagParameter($assertTagValue->parameter, $assertTagValue->property, null);
-			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, true);
+			$parameter = new AssertTagParameter($assertTagValue->parameter, property: $assertTagValue->property, method: null);
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, isExplicit: true);
 		}
 
 		foreach ($phpDocNode->getAssertMethodTagValues($tagName) as $assertTagValue) {
 			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-			$parameter = new AssertTagParameter($assertTagValue->parameter, null, $assertTagValue->method);
-			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, true);
+			$parameter = new AssertTagParameter($assertTagValue->parameter, property: null, method: $assertTagValue->method);
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated, $assertTagValue->isEquality, isExplicit: true);
 		}
 
 		return $resolved;

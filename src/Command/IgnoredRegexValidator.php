@@ -33,20 +33,20 @@ final class IgnoredRegexValidator
 			/** @var TreeNode $ast */
 			$ast = $this->parser->parse($regex);
 		} catch (Exception) {
-			return new IgnoredRegexValidatorResult([], false, false);
+			return new IgnoredRegexValidatorResult(ignoredTypes: [], anchorsInTheMiddle: false, allErrorsIgnored: false);
 		}
 
 		if (Strings::match($regex, '~(?<!\\\\)(?:\\\\\\\\)*\|\|~')) {
-			return new IgnoredRegexValidatorResult([], false, true, '||', '\|\|');
+			return new IgnoredRegexValidatorResult(ignoredTypes: [], anchorsInTheMiddle: false, allErrorsIgnored: true, wrongSequence: '||', escapedWrongSequence: '\|\|');
 		}
 		if (Strings::match($regex, '~(?<!\\\\)(?:\\\\\\\\)*\(\)~')) {
-			return new IgnoredRegexValidatorResult([], false, true, '()', '\(\)');
+			return new IgnoredRegexValidatorResult(ignoredTypes: [], anchorsInTheMiddle: false, allErrorsIgnored: true, wrongSequence: '()', escapedWrongSequence: '\(\)');
 		}
 
 		return new IgnoredRegexValidatorResult(
-			$this->getIgnoredTypes($ast),
-			$this->hasAnchorsInTheMiddle($ast),
-			false,
+			ignoredTypes: $this->getIgnoredTypes($ast),
+			anchorsInTheMiddle: $this->hasAnchorsInTheMiddle($ast),
+			allErrorsIgnored: false,
 		);
 	}
 

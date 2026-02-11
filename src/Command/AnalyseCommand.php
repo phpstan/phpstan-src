@@ -401,7 +401,7 @@ final class AnalyseCommand extends Command
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
-				$internalError->shouldReportBug(),
+				shouldReportBug: $internalError->shouldReportBug(),
 			), false];
 		}
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
@@ -431,7 +431,7 @@ final class AnalyseCommand extends Command
 				sprintf('analysing file %s', $fileSpecificError->getTraitFilePath() ?? $fileSpecificError->getFilePath()),
 				$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
 				$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
-				true,
+				shouldReportBug: true,
 			), !$hasStackTrace];
 		}
 
@@ -453,7 +453,7 @@ final class AnalyseCommand extends Command
 				$internalError->getContextDescription(),
 				$internalError->getTrace(),
 				$internalError->getTraceAsString(),
-				$internalError->shouldReportBug(),
+				shouldReportBug: $internalError->shouldReportBug(),
 			);
 		}
 

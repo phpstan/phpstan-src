@@ -209,7 +209,15 @@ final class InitializerExprContext implements NamespaceAnswerer
 
 	public static function createEmpty(): self
 	{
-		return new self(null, null, null, null, null, null, null);
+		return new self(
+			file: null,
+			namespace: null,
+			className: null,
+			traitName: null,
+			function: null,
+			method: null,
+			property: null,
+		);
 	}
 
 	public function getFile(): ?string

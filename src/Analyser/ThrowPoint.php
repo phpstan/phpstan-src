@@ -40,7 +40,7 @@ final class ThrowPoint
 	 */
 	public static function createImplicit(Scope $scope, Node $node): self
 	{
-		return new self($scope, new ObjectType(Throwable::class), $node, false, true);
+		return new self($scope, new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
 	}
 
 	public function getScope(): Scope

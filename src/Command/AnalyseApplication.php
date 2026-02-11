@@ -108,19 +108,19 @@ final class AnalyseApplication
 			) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(
-					array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
-					$intermediateAnalyserResult->getFilteredPhpErrors(),
-					$intermediateAnalyserResult->getAllPhpErrors(),
-					$intermediateAnalyserResult->getLocallyIgnoredErrors(),
-					$intermediateAnalyserResult->getLinesToIgnore(),
-					$intermediateAnalyserResult->getUnmatchedLineIgnores(),
-					$intermediateAnalyserResult->getInternalErrors(),
-					$intermediateAnalyserResult->getCollectedData(),
-					$intermediateAnalyserResult->getDependencies(),
-					$intermediateAnalyserResult->getUsedTraitDependencies(),
-					$intermediateAnalyserResult->getExportedNodes(),
-					$intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
-					$intermediateAnalyserResult->getPeakMemoryUsageBytes(),
+					unorderedErrors: array_merge($intermediateAnalyserResult->getUnorderedErrors(), $stubErrors),
+					filteredPhpErrors: $intermediateAnalyserResult->getFilteredPhpErrors(),
+					allPhpErrors: $intermediateAnalyserResult->getAllPhpErrors(),
+					locallyIgnoredErrors: $intermediateAnalyserResult->getLocallyIgnoredErrors(),
+					linesToIgnore: $intermediateAnalyserResult->getLinesToIgnore(),
+					unmatchedLineIgnores: $intermediateAnalyserResult->getUnmatchedLineIgnores(),
+					internalErrors: $intermediateAnalyserResult->getInternalErrors(),
+					collectedData: $intermediateAnalyserResult->getCollectedData(),
+					dependencies: $intermediateAnalyserResult->getDependencies(),
+					usedTraitDependencies: $intermediateAnalyserResult->getUsedTraitDependencies(),
+					exportedNodes: $intermediateAnalyserResult->getExportedNodes(),
+					reachedInternalErrorsCountLimit: $intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
+					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
 				);
 			}
 
@@ -225,7 +225,21 @@ final class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult(
+				unorderedErrors: [],
+				filteredPhpErrors: [],
+				allPhpErrors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				internalErrors: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				reachedInternalErrorsCountLimit: false,
+				peakMemoryUsageBytes: memory_get_peak_usage(true),
+			);
 		}
 
 		if (!$debug) {
@@ -319,19 +333,19 @@ final class AnalyseApplication
 		}
 
 		return new AnalyserResult(
-			$this->switchTmpFileInErrors($analyserResult->getUnorderedErrors(), $insteadOfFile, $tmpFile),
-			$this->switchTmpFileInErrors($analyserResult->getFilteredPhpErrors(), $insteadOfFile, $tmpFile),
-			$this->switchTmpFileInErrors($analyserResult->getAllPhpErrors(), $insteadOfFile, $tmpFile),
-			$this->switchTmpFileInErrors($analyserResult->getLocallyIgnoredErrors(), $insteadOfFile, $tmpFile),
-			$this->switchTmpFileInLinesToIgnore($analyserResult->getLinesToIgnore(), $insteadOfFile, $tmpFile),
-			$this->switchTmpFileInLinesToIgnore($analyserResult->getUnmatchedLineIgnores(), $insteadOfFile, $tmpFile),
-			$analyserResult->getInternalErrors(),
-			$newCollectedData,
-			$dependencies,
-			$usedTraitDependencies,
-			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getPeakMemoryUsageBytes(),
+			unorderedErrors: $this->switchTmpFileInErrors($analyserResult->getUnorderedErrors(), $insteadOfFile, $tmpFile),
+			filteredPhpErrors: $this->switchTmpFileInErrors($analyserResult->getFilteredPhpErrors(), $insteadOfFile, $tmpFile),
+			allPhpErrors: $this->switchTmpFileInErrors($analyserResult->getAllPhpErrors(), $insteadOfFile, $tmpFile),
+			locallyIgnoredErrors: $this->switchTmpFileInErrors($analyserResult->getLocallyIgnoredErrors(), $insteadOfFile, $tmpFile),
+			linesToIgnore: $this->switchTmpFileInLinesToIgnore($analyserResult->getLinesToIgnore(), $insteadOfFile, $tmpFile),
+			unmatchedLineIgnores: $this->switchTmpFileInLinesToIgnore($analyserResult->getUnmatchedLineIgnores(), $insteadOfFile, $tmpFile),
+			internalErrors: $analyserResult->getInternalErrors(),
+			collectedData: $newCollectedData,
+			dependencies: $dependencies,
+			usedTraitDependencies: $usedTraitDependencies,
+			exportedNodes: $exportedNodes,
+			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
+			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 		);
 	}
 

@@ -522,7 +522,7 @@ final class FixerApplication
 					'running PHPStan Pro worker',
 					$trace,
 					$traceAsString,
-					false,
+					shouldReportBug: false,
 				)],
 			]]);
 		});

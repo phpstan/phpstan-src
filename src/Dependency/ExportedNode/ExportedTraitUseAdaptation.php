@@ -30,7 +30,7 @@ final class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 		?string $newName,
 	): self
 	{
-		return new self($traitName, $method, $newModifier, $newName, null);
+		return new self($traitName, $method, $newModifier, $newName, insteadOfs: null);
 	}
 
 	/**
@@ -42,7 +42,7 @@ final class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 		array $insteadOfs,
 	): self
 	{
-		return new self($traitName, $method, null, null, $insteadOfs);
+		return new self($traitName, $method, newModifier: null, newName: null, insteadOfs: $insteadOfs);
 	}
 
 	public function equals(ExportedNode $node): bool

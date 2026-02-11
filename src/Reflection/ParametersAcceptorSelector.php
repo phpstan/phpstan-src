@@ -95,12 +95,12 @@ final class ParametersAcceptorSelector
 							foreach ($constantArrays as $constantArray) {
 								$valueTypes = $constantArray->getValueTypes();
 								foreach ($valueTypes as $valueType) {
-									$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($valueType), false, PassedByReference::createNo(), false, null);
+									$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($valueType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 								}
 							}
 						}
 					} else {
-						$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null);
+						$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 					}
 				}
 
@@ -233,12 +233,12 @@ final class ParametersAcceptorSelector
 					if ($mode instanceof ConstantIntegerType) {
 						if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
 							$arrayFilterParameters = [
-								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 						} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
 							$arrayFilterParameters = [
-								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
-								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							];
 						}
 					}
@@ -253,7 +253,7 @@ final class ParametersAcceptorSelector
 						new UnionType([
 							new CallableType(
 								$arrayFilterParameters ?? [
-									new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+									new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 								],
 								new BooleanType(),
 								false,
@@ -285,12 +285,12 @@ final class ParametersAcceptorSelector
 					&& isset($parameters[0]) && isset($parameters[1])
 				) {
 					$parameters = [
-						new NativeParameterReflection($parameters[0]->getName(), false, new StringType(), PassedByReference::createNo(), false, null),
-						new NativeParameterReflection($parameters[1]->getName(), false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection($parameters[0]->getName(), optional: false, type: new StringType(), passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+						new NativeParameterReflection($parameters[1]->getName(), optional: false, type: new ArrayType(new MixedType(), new MixedType()), passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 					];
 				} elseif (isset($parameters[0])) {
 					$parameters = [
-						new NativeParameterReflection($parameters[0]->getName(), false, new ArrayType(new MixedType(), new MixedType()), PassedByReference::createNo(), false, null),
+						new NativeParameterReflection($parameters[0]->getName(), optional: false, type: new ArrayType(new MixedType(), new MixedType()), passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 					];
 				}
 
@@ -308,11 +308,11 @@ final class ParametersAcceptorSelector
 
 			if ((bool) $args[0]->getAttribute(ArrayWalkArgVisitor::ATTRIBUTE_NAME)) {
 				$arrayWalkParameters = [
-					new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createReadsArgument(), false, null),
-					new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+					new DummyParameter('item', $scope->getIterableValueType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createReadsArgument(), variadic: false, defaultValue: null),
+					new DummyParameter('key', $scope->getIterableKeyType($scope->getType($args[0]->value)), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 				];
 				if (isset($args[2])) {
-					$arrayWalkParameters[] = new DummyParameter('arg', $scope->getType($args[2]->value), false, PassedByReference::createNo(), false, null);
+					$arrayWalkParameters[] = new DummyParameter('arg', $scope->getType($args[2]->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				}
 
 				$acceptor = $parametersAcceptors[0];
@@ -349,8 +349,8 @@ final class ParametersAcceptorSelector
 						$parameters[1]->isOptional(),
 						new CallableType(
 							[
-								new DummyParameter('value', $scope->getIterableValueType($argType), false, PassedByReference::createNo(), false, null),
-								new DummyParameter('key', $scope->getIterableKeyType($argType), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('value', $scope->getIterableValueType($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
+								new DummyParameter('key', $scope->getIterableKeyType($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null),
 							],
 							new BooleanType(),
 							false,

@@ -569,12 +569,12 @@ class NodeScopeResolver
 			) {
 				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
 				if ($methodReflection instanceof NativeMethodReflection) {
-					return new InternalStatementResult($scope, false, false, [], [], []);
+					return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 				}
 				if ($methodReflection instanceof PhpMethodReflection) {
 					$declaringTrait = $methodReflection->getDeclaringTrait();
 					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
-						return new InternalStatementResult($scope, false, false, [], [], []);
+						return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 					}
 				}
 			}
@@ -1013,10 +1013,10 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$impurePoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Trait_) {
-			return new InternalStatementResult($scope, false, false, [], [], []);
+			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 		} elseif ($stmt instanceof Node\Stmt\ClassLike) {
 			if (!$context->isTopLevel()) {
-				return new InternalStatementResult($scope, false, false, [], [], []);
+				return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
 			}
 			$hasYield = false;
 			$throwPoints = [];
@@ -3889,7 +3889,7 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
-			return new ExpressionResult($scope, false, false, [], []);
+			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
 		} elseif ($expr instanceof New_) {
 			$parametersAcceptor = null;
 			$constructorReflection = null;
@@ -6445,7 +6445,7 @@ class NodeScopeResolver
 					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
-					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
 					$enterExpressionAssign,
 				);
 				$scope = $result->getScope();
@@ -6553,7 +6553,7 @@ class NodeScopeResolver
 			$assignedExpr,
 			new VirtualAssignNodeCallback($nodeCallback),
 			ExpressionContext::createDeep(),
-			static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, false, [], []),
+			static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
 			false,
 		);
 	}

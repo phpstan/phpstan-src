@@ -28,3 +28,15 @@ class foo2
         $this->store[2] = false;
     }
 }
+
+class foo3
+{
+    private readonly object $store;
+
+    public function __construct()
+    {
+        $this->store = new SplObjectStorage();
+        $this->store[(object) ['foo' => 'bar']] = true;
+        unset($this->store[(object) ['foo' => 'bar']]);
+    }
+}

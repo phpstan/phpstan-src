@@ -350,17 +350,11 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property Bug13856\foo2::$store is already assigned.',
 				28,
 			],
-		]);
-	}
-
-	public static function getAdditionalConfigFiles(): array
-	{
-		return array_merge(
-			parent::getAdditionalConfigFiles(),
 			[
-				__DIR__ . '/../../../../src/Testing/narrowMethodScopeFromConstructor.neon',
+				'Readonly property Bug13856\foo3::$store is already assigned.',
+				39,
 			],
-		);
+		]);
 	}
 
 }

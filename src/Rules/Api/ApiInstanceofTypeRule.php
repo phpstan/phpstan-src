@@ -126,18 +126,18 @@ final class ApiInstanceofTypeRule implements Rule
 			return [];
 		}
 
+		$className = $scope->resolveName($node->class);
+		$lowerClassName = strtolower($className);
+		if (!array_key_exists($lowerClassName, $this->lowerMap)) {
+			return [];
+		}
+
 		if ($scope->isInClass()) {
 			$classReflection = $scope->getClassReflection();
 
 			if ($classReflection->implementsInterface(TypeTraverserCallable::class)) {
 				return [];
 			}
-		}
-
-		$className = $scope->resolveName($node->class);
-		$lowerClassName = strtolower($className);
-		if (!array_key_exists($lowerClassName, $this->lowerMap)) {
-			return [];
 		}
 
 		if ($this->reflectionProvider->hasClass($className)) {

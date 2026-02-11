@@ -24,6 +24,7 @@ use PHPStan\TrinaryLogic;
  * - Expressions that are invalidated by calling this callable
  *
  * @api
+ * @api-do-not-implement
  */
 interface CallableParametersAcceptor extends ParametersAcceptor
 {

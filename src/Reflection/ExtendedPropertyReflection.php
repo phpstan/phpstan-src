@@ -24,6 +24,7 @@ use PHPStan\Type\Type;
  * and Type::getStaticProperty().
  *
  * @api
+ * @api-do-not-implement
  */
 interface ExtendedPropertyReflection extends PropertyReflection
 {

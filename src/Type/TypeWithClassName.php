@@ -19,6 +19,7 @@ use PHPStan\Reflection\ClassReflection;
  * handles union types and intersection types.
  *
  * @api
+ * @api-do-not-implement
  */
 interface TypeWithClassName extends Type
 {

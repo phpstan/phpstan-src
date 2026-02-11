@@ -2,7 +2,10 @@
 
 namespace PHPStan\Command;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface Output
 {
 

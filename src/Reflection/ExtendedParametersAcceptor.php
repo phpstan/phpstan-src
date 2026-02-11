@@ -17,6 +17,7 @@ use PHPStan\Type\Type;
  * ExtendedMethodReflection::getVariants().
  *
  * @api
+ * @api-do-not-implement
  */
 interface ExtendedParametersAcceptor extends ParametersAcceptor
 {

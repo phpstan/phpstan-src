@@ -7,7 +7,10 @@ use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface ReturnStatementsNode extends VirtualNode
 {
 

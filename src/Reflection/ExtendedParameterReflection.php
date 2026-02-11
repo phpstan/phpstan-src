@@ -5,7 +5,10 @@ namespace PHPStan\Reflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface ExtendedParameterReflection extends ParameterReflection
 {
 

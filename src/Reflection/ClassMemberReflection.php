@@ -13,6 +13,7 @@ namespace PHPStan\Reflection;
  * work with the more specific child interfaces.
  *
  * @api
+ * @api-do-not-implement
  */
 interface ClassMemberReflection
 {

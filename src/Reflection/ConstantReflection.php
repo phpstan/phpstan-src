@@ -13,6 +13,7 @@ use PHPStan\Type\Type;
  * with class-specific features (declaring class, value expression, native type).
  *
  * @api
+ * @api-do-not-implement
  */
 interface ConstantReflection
 {

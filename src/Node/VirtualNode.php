@@ -4,7 +4,10 @@ namespace PHPStan\Node;
 
 use PhpParser\Node;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface VirtualNode extends Node
 {
 

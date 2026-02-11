@@ -2,7 +2,10 @@
 
 namespace PHPStan\Rules;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface NonIgnorableRuleError extends RuleError
 {
 

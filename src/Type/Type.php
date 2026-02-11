@@ -41,6 +41,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
  *     if ($type->isString()->yes()) { ... }
  *
  * @api
+ * @api-do-not-implement
  * @see https://phpstan.org/developing-extensions/type-system
  */
 interface Type

@@ -26,6 +26,7 @@ use PHPStan\Type\Type;
  * This is the return type of Type::getMethod() and Scope::getMethodReflection().
  *
  * @api
+ * @api-do-not-implement
  */
 interface ExtendedMethodReflection extends MethodReflection
 {

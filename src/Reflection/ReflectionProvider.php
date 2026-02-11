@@ -5,7 +5,10 @@ namespace PHPStan\Reflection;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface ReflectionProvider
 {
 

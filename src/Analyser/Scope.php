@@ -42,6 +42,7 @@ use PHPStan\Type\TypeWithClassName;
  * $x is of type Foo.
  *
  * @api
+ * @api-do-not-implement
  */
 interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 {

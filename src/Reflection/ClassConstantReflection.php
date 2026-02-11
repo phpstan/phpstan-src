@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
  * This is the return type of Type::getConstant() and Scope::getConstantReflection().
  *
  * @api
+ * @api-do-not-implement
  */
 interface ClassConstantReflection extends ClassMemberReflection, ConstantReflection
 {

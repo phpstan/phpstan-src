@@ -19,6 +19,7 @@ use PHPStan\Type\Type;
  * FunctionReflection or MethodReflection.
  *
  * @api
+ * @api-do-not-implement
  */
 interface FunctionReflection
 {

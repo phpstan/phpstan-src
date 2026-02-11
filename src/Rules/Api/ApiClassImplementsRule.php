@@ -12,7 +12,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_merge;
 use function count;
-use function in_array;
 use function sprintf;
 
 /**
@@ -67,18 +66,19 @@ final class ApiClassImplementsRule implements Rule
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
-		if (in_array($implementedClassReflection->getName(), BcUncoveredInterface::CLASSES, true)) {
-			return [$ruleError];
-		}
-
 		$docBlock = $implementedClassReflection->getResolvedPhpDoc();
 		if ($docBlock === null) {
 			return [$ruleError];
 		}
 
 		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
-			$apiTags = $phpDocNode->getTagsByName('@api');
-			if (count($apiTags) > 0) {
+			if (count($phpDocNode->getTagsByName('@api-do-not-implement')) > 0) {
+				return [$ruleError];
+			}
+		}
+
+		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+			if (count($phpDocNode->getTagsByName('@api')) > 0) {
 				return [];
 			}
 		}

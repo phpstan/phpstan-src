@@ -41,6 +41,7 @@ use PHPStan\TrinaryLogic;
  * - `ConditionalType`, `KeyOfType`, `ValueOfType`, etc. — late-resolvable types
  *
  * @api
+ * @api-do-not-implement
  */
 interface CompoundType extends Type
 {

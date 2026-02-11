@@ -15,6 +15,7 @@ namespace PHPStan\Reflection;
  * OutOfClassScope, is used when accessing members from outside any class.
  *
  * @api
+ * @api-do-not-implement
  */
 interface ClassMemberAccessAnswerer
 {

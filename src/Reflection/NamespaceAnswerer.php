@@ -9,6 +9,7 @@ namespace PHPStan\Reflection;
  * against the current namespace and use statements.
  *
  * @api
+ * @api-do-not-implement
  */
 interface NamespaceAnswerer
 {

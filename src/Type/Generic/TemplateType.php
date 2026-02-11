@@ -6,7 +6,10 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 
-/** @api */
+/**
+ * @api
+ * @api-do-not-implement
+ */
 interface TemplateType extends CompoundType
 {
 

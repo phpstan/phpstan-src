@@ -120,7 +120,7 @@ final class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicF
 						}
 
 						$value = version_compare($version1String->getValue(), $version2String->getValue(), $operatorValue);
-						$types[$value] = new ConstantBooleanType($value); // @phpstan-ignore offsetAccess.invalidOffset
+						$types[(int) $value] = new ConstantBooleanType($value);
 					}
 				} else {
 					$value = version_compare($version1String->getValue(), $version2String->getValue());

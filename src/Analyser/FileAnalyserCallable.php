@@ -38,7 +38,6 @@ final class FileAnalyserCallable
 
 	private array $temporaryFileErrors = [];
 
-
 	/**
 	 * @param array<string, true> $analysedFiles
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
@@ -58,7 +57,7 @@ final class FileAnalyserCallable
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
-		private array $processedFiles
+		private array $processedFiles,
 	)
 	{
 	}

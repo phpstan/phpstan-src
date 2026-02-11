@@ -181,9 +181,9 @@ final class FilterFunctionReturnTypeHelper
 		$type = $this->applyRangeOptions($type, $options, $defaultType);
 
 		if (
-			$inputType->isNonEmptyString()->yes()
+			!$this->canStringBeSanitized($filterValue, $flagsType)
+			&& $inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
-			&& $this->canStringBeSanitized($filterValue, $flagsType)->no()
 		) {
 			$accessory = new AccessoryNonEmptyStringType();
 			if ($inputType->isNonFalsyString()->yes()) {
@@ -406,7 +406,7 @@ final class FilterFunctionReturnTypeHelper
 				$useDefaultType = true;
 			}
 
-			if ($this->canStringBeSanitized($filterValue, $flagsType)->no()) {
+			if (!$this->canStringBeSanitized($filterValue, $flagsType)) {
 				$stringType = $inputType->toString();
 			} else {
 				$stringType = TypeCombinator::union(
@@ -572,22 +572,27 @@ final class FilterFunctionReturnTypeHelper
 		);
 	}
 
-	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): TrinaryLogic
+	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): bool
 	{
 		// If it is a validation filter, the string will not be changed
 		if ($this->isValidationFilter($filterValue)) {
-			return TrinaryLogic::createNo();
+			return false;
 		}
 
 		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
 		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			return $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
+			$hasStripFlags = $this->hasFlag('FILTER_FLAG_STRIP_LOW', $flagsType)
 				->or($this->hasFlag('FILTER_FLAG_STRIP_HIGH', $flagsType))
 				->or($this->hasFlag('FILTER_FLAG_STRIP_BACKTICK', $flagsType));
+			if ($hasStripFlags->maybe()) {
+				// Too complicated, considering strip flags are not defined (default behavior).
+				return false;
+			}
+			return $hasStripFlags->yes();
 		}
 
-		return TrinaryLogic::createYes();
+		return true;
 	}
 
 	private function isValidationFilter(int $filterValue): bool

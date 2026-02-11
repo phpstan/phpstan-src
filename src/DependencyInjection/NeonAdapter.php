@@ -70,7 +70,7 @@ final class NeonAdapter implements Adapter
 				if (!is_array($val) && $val !== null) {
 					throw new InvalidConfigurationException(sprintf('Replacing operator is available only for arrays, item \'%s\' is not array.', $key));
 				}
-				$key = substr($key, 0, -1);
+				$key = substr($key, 0, -1) ?: '';
 				$val[Helpers::PREVENT_MERGING] = true;
 			}
 

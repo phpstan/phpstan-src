@@ -13,7 +13,7 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 {
 
 	public function __construct(
-		private TemplateTypeMap $resolvedTemplateTypeMap,
+		private readonly TemplateTypeMap $resolvedTemplateTypeMap,
 	)
 	{
 	}

@@ -22,19 +22,22 @@ use PHPStan\Type\UnionType;
 final class AllowedArrayKeysTypes
 {
 
-	public static function getType(?PhpVersion $phpVersion = null): Type
+	public static function getType(?PhpVersion $phpVersion = null, bool $reportNonIntStringArrayKey = false): Type
 	{
 		$types = [
 			new IntegerType(),
 			new StringType(),
-			new BooleanType(),
 		];
 
-		if ($phpVersion === null || !$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {
-			$types[] = new FloatType();
-		}
-		if ($phpVersion === null || !$phpVersion->deprecatesNullArrayOffset()) {
-			$types[] = new NullType();
+		if (!$reportNonIntStringArrayKey) {
+			$types[] = new BooleanType();
+
+			if ($phpVersion === null || !$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {
+				$types[] = new FloatType();
+			}
+			if ($phpVersion === null || !$phpVersion->deprecatesNullArrayOffset()) {
+				$types[] = new NullType();
+			}
 		}
 
 		return new UnionType($types);

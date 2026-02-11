@@ -15,6 +15,8 @@ use const PHP_VERSION_ID;
 class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 {
 
+	private bool $reportNonIntStringArrayKey = false;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
@@ -26,6 +28,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		return new InvalidKeyInArrayItemRule(
 			$ruleLevelHelper,
 			self::getContainer()->getByType(PhpVersion::class),
+			$this->reportNonIntStringArrayKey,
 		);
 	}
 
@@ -100,6 +103,38 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], $errors);
+	}
+
+	public function testInvalidKeyReportingCastedArrayKey(): void
+	{
+		$this->reportNonIntStringArrayKey = true;
+
+		$this->analyse([__DIR__ . '/data/invalid-key-array-item.php'], [
+			[
+				'Invalid array key type DateTimeImmutable.',
+				12,
+			],
+			[
+				'Invalid array key type array.',
+				13,
+			],
+			[
+				'Possibly invalid array key type stdClass|string.',
+				14,
+			],
+			[
+				'Invalid array key type float.',
+				26,
+			],
+			[
+				'Invalid array key type null.',
+				27,
+			],
+			[
+				'Invalid array key type false.',
+				31,
+			],
+		]);
 	}
 
 	public function testInvalidKeyInList(): void

@@ -81,6 +81,7 @@ parameters:
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
 	reportAnyTypeWideningInVarTag: false
+	reportNonIntStringArrayKey: false
 	reportPossiblyNonexistentGeneralArrayOffset: false
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false

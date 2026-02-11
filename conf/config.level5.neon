@@ -14,6 +14,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.checkDateIntervalConstructor%
 	PHPStan\Rules\Functions\SortWithoutEffectRule:
 		phpstan.rules.rule: %featureToggles.sortWithoutEffect%
+	PHPStan\Rules\Functions\UnserializeRule:
+		phpstan.rules.rule: %featureToggles.checkUnserializeFunction%
 
 autowiredAttributeServices:
 	# registers rules with #[RegisteredRule] attribute
@@ -33,3 +35,7 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			treatPhpDocTypesAsCertainTip: %tips.treatPhpDocTypesAsCertain%
+	-
+		class: PHPStan\Rules\Functions\UnserializeRule
+		arguments:
+			checkInsecureUnserialize: %checkInsecureUnserialize%

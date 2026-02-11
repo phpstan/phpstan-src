@@ -36,6 +36,7 @@ parametersSchema:
 		stricterFunctionMap: bool()
 		reportPreciseLineForUnusedFunctionParameter: bool()
 		checkPrintfParameterTypes: bool()
+		checkUnserializeFunction: bool()
 		internalTag: bool()
 		newStaticInAbstractClassStaticMethod: bool()
 		checkExtensionsForComparisonOperators: bool()

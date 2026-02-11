@@ -5048,6 +5048,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				$traverser = new ConstructorClassTemplateTraverser($classTemplateTypes);
 				foreach ($constructorVariant->getParameters() as $parameter) {
+					if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
+						continue;
+					}
 					TypeTraverser::map($parameter->getType(), $traverser);
 				}
 				$classTemplateTypes = $traverser->getClassTemplateTypes();
@@ -5219,6 +5222,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				[],
 			);
 		}
+
+		if (!$newGenericType->hasTemplateOrLateResolvableType()) {
+			return $newGenericType;
+		}
+
 		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
 	}
 

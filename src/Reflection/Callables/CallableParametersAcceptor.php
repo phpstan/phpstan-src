@@ -50,6 +50,7 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 	public function getUsedVariables(): array;
 
 	/**
+	 * Whether the callable is marked with the `#[\NoDiscard]` attribute.
 	 * On PHP 8.5+ if the return value is unused at runtime, a warning is emitted.
 	 * PHPStan reports this during analysis regardless of PHP version.
 	 */

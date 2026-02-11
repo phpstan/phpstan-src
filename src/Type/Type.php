@@ -149,7 +149,7 @@ interface Type
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection;
 
 	/**
-	 * Unlike getMethod(), this defers template type resolution.
+	 * Unlike getMethod(), this defers template type and static type resolution.
 	 * Use getMethod() in most rule implementations.
 	 */
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection;
@@ -474,12 +474,16 @@ interface Type
 	 * Returns a new instance with all inner types mapped through $cb.
 	 * Returns the same instance if inner types did not change.
 	 *
+	 * Not used directly — use TypeTraverser::map() instead.
+	 *
 	 * @param callable(Type):Type $cb
 	 */
 	public function traverse(callable $cb): Type;
 
 	/**
 	 * Like traverse(), but walks two types simultaneously.
+	 *
+	 * Not used directly — use SimultaneousTypeTraverser::map() instead.
 	 *
 	 * @param callable(Type $left, Type $right): Type $cb
 	 */

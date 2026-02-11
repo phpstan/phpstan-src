@@ -33,8 +33,10 @@ interface PropertyReflection extends ClassMemberReflection
 	public function getWritableType(): Type;
 
 	/**
-	 * Returns false for typed properties (which always retain their declared type)
-	 * and true for untyped properties (which take on the type of whatever is assigned).
+	 * Returns true when the readable and writable types are the same and no property hooks
+	 * transform the value — PHPStan can then narrow the property's type based on assignments.
+	 * Returns false when read and write types differ (e.g. `@property` with asymmetric types,
+	 * property hooks, virtual properties).
 	 */
 	public function canChangeTypeAfterAssignment(): bool;
 

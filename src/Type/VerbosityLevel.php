@@ -24,7 +24,8 @@ use PHPStan\Type\Generic\TemplateType;
  * The four levels (from least to most verbose):
  * - **typeOnly**: Just the type name, e.g. "string", "array", "Foo"
  * - **value**: Includes constant values, e.g. "'hello'", "array{foo: int}", "non-empty-string"
- * - **precise**: Maximum detail including lowercase/uppercase string distinctions
+ * - **precise**: Maximum detail — adds subtracted types on object/mixed (e.g. "object~Bar"),
+ *   lowercase/uppercase string distinctions, untruncated array shapes, and template type scope
  * - **cache**: Internal level used for generating cache keys
  *
  * Used as a parameter to Type::describe() to control output detail:

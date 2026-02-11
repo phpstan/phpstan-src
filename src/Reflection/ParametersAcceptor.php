@@ -9,7 +9,7 @@ use PHPStan\Type\Type;
  * Describes one signature variant of a function or method.
  *
  * A function/method may have multiple ParametersAcceptor variants — for example,
- * the built-in `array_map` function has different signatures depending on argument count.
+ * the built-in `strtok` function has different signatures depending on argument count.
  * Each variant describes the template type parameters, positional parameters, variadicity,
  * and return type.
  *

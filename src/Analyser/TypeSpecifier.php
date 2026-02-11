@@ -2297,7 +2297,7 @@ final class TypeSpecifier
 
 		$rightType = $scope->getType($rightExpr);
 
-		// (count($a) === $b)
+		// (count($a) === $expr)
 		if (
 			!$context->null()
 			&& $unwrappedLeftExpr instanceof FuncCall
@@ -2306,6 +2306,37 @@ final class TypeSpecifier
 			&& in_array(strtolower((string) $unwrappedLeftExpr->name), ['count', 'sizeof'], true)
 			&& $rightType->isInteger()->yes()
 		) {
+			// count($a) === count($b)
+			if (
+				$context->true()
+				&& $unwrappedRightExpr instanceof FuncCall
+				&& $unwrappedRightExpr->name instanceof Name
+				&& in_array($unwrappedRightExpr->name->toLowerString(), ['count', 'sizeof'], true)
+				&& count($unwrappedRightExpr->getArgs()) >= 1
+			) {
+				$argType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
+				$sizeType = $scope->getType($leftExpr);
+
+				$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedRightExpr, $argType, $sizeType, $context, $scope, $expr);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
+
+				$leftArrayType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
+				$rightArrayType = $scope->getType($unwrappedRightExpr->getArgs()[0]->value);
+				if (
+					$leftArrayType->isArray()->yes()
+					&& $rightArrayType->isArray()->yes()
+					&& !$rightType->isConstantScalarValue()->yes()
+					&& ($leftArrayType->isIterableAtLeastOnce()->yes() || $rightArrayType->isIterableAtLeastOnce()->yes())
+				) {
+					$arrayTypes = $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr);
+					return $arrayTypes->unionWith(
+						$this->create($unwrappedRightExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
+					);
+				}
+			}
+
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($rightType)->yes()) {
 				return $this->create($unwrappedLeftExpr->getArgs()[0]->value, new NeverType(), $context, $scope)->setRootExpr($expr);
 			}

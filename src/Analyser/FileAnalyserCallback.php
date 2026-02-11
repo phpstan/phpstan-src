@@ -39,6 +39,7 @@ final class FileAnalyserCallback
 	private array $temporaryFileErrors = [];
 
 	private array $linesToIgnore;
+
 	private array $unmatchedLineIgnores;
 
 	/**

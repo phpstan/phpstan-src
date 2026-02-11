@@ -38,6 +38,9 @@ final class FileAnalyserCallback
 
 	private array $temporaryFileErrors = [];
 
+	private array $linesToIgnore;
+	private array $unmatchedLineIgnores;
+
 	/**
 	 * @param array<string, true> $analysedFiles
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
@@ -55,11 +58,10 @@ final class FileAnalyserCallback
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
-		private array $linesToIgnore,
-		private array $unmatchedLineIgnores,
 		private array $processedFiles,
 	)
 	{
+		$this->linesToIgnore = $this->unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
 	}
 
 	public function __invoke(Node $node, Scope $scope): void

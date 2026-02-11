@@ -98,8 +98,6 @@ final class FileAnalyser
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
 				$processedFiles[] = $file;
-				$linesToIgnore = $unmatchedLineIgnores = [$file => $this->getLinesToIgnoreFromTokens($parserNodes)];
-				$ignoreErrorExtensions = $this->ignoreErrorExtensionProvider->getExtensions();
 
 				$nodeCallback = new FileAnalyserCallback(
 					$file,
@@ -108,12 +106,10 @@ final class FileAnalyser
 					$collectorRegistry,
 					$outerNodeCallback,
 					$parserNodes,
-					$ignoreErrorExtensions,
+					$this->ignoreErrorExtensionProvider->getExtensions(),
 					$this->parser,
 					$this->dependencyResolver,
 					$this->ruleErrorTransformer,
-					$linesToIgnore,
-					$unmatchedLineIgnores,
 					$processedFiles,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
@@ -211,20 +207,6 @@ final class FileAnalyser
 			$unmatchedLineIgnores,
 			$processedFiles,
 		);
-	}
-
-	/**
-	 * @param Node[] $nodes
-	 * @return array<int, non-empty-list<string>|null>
-	 */
-	private function getLinesToIgnoreFromTokens(array $nodes): array
-	{
-		if (!isset($nodes[0])) {
-			return [];
-		}
-
-		/** @var array<int, non-empty-list<string>|null> */
-		return $nodes[0]->getAttribute('linesToIgnore', []);
 	}
 
 	/**

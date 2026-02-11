@@ -36,13 +36,8 @@ final class FileAnalyserCallable
 
 	private array $exportedNodes = [];
 
-	private array $linesToIgnore = [];
-
-	private array $unmatchedLineIgnores = [];
-
 	private array $temporaryFileErrors = [];
 
-	private array $processedFiles = [];
 
 	/**
 	 * @param array<string, true> $analysedFiles
@@ -61,6 +56,9 @@ final class FileAnalyserCallable
 		private Parser $parser,
 		private DependencyResolver $dependencyResolver,
 		private RuleErrorTransformer $ruleErrorTransformer,
+		private array $linesToIgnore,
+		private array $unmatchedLineIgnores,
+		private array $processedFiles
 	)
 	{
 	}

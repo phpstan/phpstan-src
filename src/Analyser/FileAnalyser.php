@@ -112,6 +112,9 @@ final class FileAnalyser
 					$this->parser,
 					$this->dependencyResolver,
 					$this->ruleErrorTransformer,
+					$linesToIgnore,
+					$unmatchedLineIgnores,
+					$processedFiles,
 				);
 				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);

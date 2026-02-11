@@ -167,7 +167,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 			];
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-13775.php'], $errors);
+		$this->analyse([__DIR__ . '/data/bug-13775.php'], $this->hackPhp74ErrorMessages($errors));
 	}
 
 	public function testBug13775Bis(): void
@@ -210,7 +210,7 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 			];
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-13775-bis.php'], $errors);
+		$this->analyse([__DIR__ . '/data/bug-13775-bis.php'], $this->hackPhp74ErrorMessages($errors));
 	}
 
 	public function testBug12146(): void

@@ -183,7 +183,7 @@ class HelloWorld
 
 		if (count($arrA, COUNT_RECURSIVE) == count($arrB)) {
 			assertType('array{int, int, int}', $arrA);
-			assertType('non-empty-list', $arrB);
+			assertType('array{mixed, mixed, mixed}', $arrB);
 		}
 		assertType('array{int, int, int}', $arrA);
 		assertType('non-empty-list', $arrB);

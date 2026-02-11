@@ -309,6 +309,32 @@ Recent work on PHP 8.5 support shows the pattern:
 - **PhpVersion**: Add detection methods like `supportsPropertyHooks()`, `supportsPipeOperator()`, etc.
 - **Stubs**: Update function/class stubs for new built-in functions and changed signatures
 
+## Writing PHPDocs
+
+When adding or editing PHPDoc comments in this codebase, follow these guidelines:
+
+### What to document
+
+- **Class-level docs on interfaces and key abstractions**: Explain the role of the interface, what implements it, and how it fits into the architecture. Mention non-obvious patterns like double-dispatch (CompoundType), the intersection-with-base-type requirement (AccessoryType), or the instanceof-avoidance rule (TypeWithClassName).
+- **Non-obvious behavior**: Document when a method's behavior differs from what its name suggests, or when there are subtle contracts. For example: `getDeclaringClass()` returning the declaring class even for inherited members, `setExistingOffsetValueType()` vs `setOffsetValueType()` preserving list types differently, or `getWritableType()` potentially differing from `getReadableType()` due to asymmetric visibility.
+- **`@api` tags**: Keep these — they mark the public API for extension developers.
+- **`@phpstan-assert` tags**: Keep these — they provide type narrowing information that PHPStan uses.
+- **`@return`, `@param`, `@template` tags**: Keep when they provide type information not expressible in native PHP types (e.g. `@return self::SOURCE_*`, `@param array<string, Type>`).
+
+### What NOT to document
+
+- **Obvious from the method name**: Do not write "Returns the name" above `getName()`, "Returns the value type" above `getValueType()`, or "Returns whether deprecated" above `isDeprecated()`. If the method name says it all, add no description.
+- **Obvious to experienced PHP developers**: Do not explain standard visibility rules ("public methods are always callable, protected methods are callable from subclasses..."), standard PHP semantics, or basic design patterns.
+- **Obvious from tags**: Do not add prose that restates what `@return`, `@phpstan-assert`, or `@param` tags already say. If `@return non-empty-string|null` is present, do not also write "Returns a non-empty string or null".
+- **Factory method descriptions that repeat the class-level doc**: If the class doc already explains the levels/variants (like VerbosityLevel or GeneralizePrecision), don't repeat those descriptions on each factory method. A bare `@api` tag is sufficient.
+- **Getter/setter/query methods on value objects**: Methods like `isInvariant()`, `isCovariant()`, `isEmpty()`, `count()`, `getType()`, `hasType()` on simple value objects need no PHPDoc.
+
+### Style
+
+- Keep descriptions concise — one or two sentences for method docs when needed.
+- Use imperative voice without "Returns the..." preambles when a brief note suffices. Prefer `/** Replaces unresolved TemplateTypes with their bounds. */` over a multi-line block.
+- Preserve `@api` and type tags on their own lines, with no redundant description alongside them.
+
 ## Important dependencies
 
 - `nikic/php-parser` ^5.7.0 - PHP AST parsing

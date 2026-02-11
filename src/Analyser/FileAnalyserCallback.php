@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
@@ -20,6 +21,7 @@ use function sprintf;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
+ * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
 final class FileAnalyserCallback
 {
@@ -30,16 +32,22 @@ final class FileAnalyserCallback
 	/** @var CollectorData */
 	private array $fileCollectedData = [];
 
+	/** @var array<string> */
 	private array $fileDependencies = [];
 
+	/** @var array<string> */
 	private array $usedTraitFileDependencies = [];
 
+	/** @var list<RootExportedNode> */
 	private array $exportedNodes = [];
 
+	/** @var list<Error> */
 	private array $temporaryFileErrors = [];
 
+	/** @var LinesToIgnore */
 	private array $linesToIgnore;
 
+	/** @var LinesToIgnore */
 	private array $unmatchedLineIgnores;
 
 	/**
@@ -47,6 +55,7 @@ final class FileAnalyserCallback
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @param Node\Stmt[] $parserNodes
 	 * @param IgnoreErrorExtension[] $ignoreErrorExtensions
+	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
 		private string $file,
@@ -242,41 +251,65 @@ final class FileAnalyserCallback
 		return $this->fileErrors;
 	}
 
+	/**
+	 * @return CollectorData
+	 */
 	public function getFileCollectedData(): array
 	{
 		return $this->fileCollectedData;
 	}
 
+	/**
+	 * @return array<string>
+	 */
 	public function getFileDependencies(): array
 	{
 		return $this->fileDependencies;
 	}
 
+	/**
+	 * @return array<string>
+	 */
 	public function getUsedTraitFileDependencies(): array
 	{
 		return $this->usedTraitFileDependencies;
 	}
 
+	/**
+	 * @return list<RootExportedNode>
+	 */
 	public function getExportedNodes(): array
 	{
 		return $this->exportedNodes;
 	}
 
+	/**
+	 * @return LinesToIgnore
+	 */
 	public function getLinesToIgnore(): array
 	{
 		return $this->linesToIgnore;
 	}
 
+	/**
+	 * @return LinesToIgnore
+	 */
 	public function getUnmatchedLineIgnores(): array
 	{
 		return $this->unmatchedLineIgnores;
 	}
 
+	/**
+	 * @return list<Error>
+	 */
 	public function getTemporaryFileErrors(): array
 	{
 		return $this->temporaryFileErrors;
 	}
 
+	/**
+	 * @return list<string>
+	 */
 	public function getProcessedFiles(): array
 	{
 		return $this->processedFiles;

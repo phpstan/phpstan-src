@@ -6,15 +6,16 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 use PHPStan\Type\UnionType;
 
-final class CloneTypeTraverser
+final class CloneTypeTraverser implements TypeTraverserCallable
 {
 
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
 			return $traverse($type);

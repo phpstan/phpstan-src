@@ -73,36 +73,6 @@ parameters:
 			path: src/Analyser/RuleErrorTransformer.php
 
 		-
-			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Analyser/Traverser/CloneTypeTraverser.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
-
-		-
-			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Analyser/Traverser/InstanceOfClassTypeTraverser.php
-
-		-
-			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Analyser/Traverser/VoidToNullTraverser.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -1706,12 +1676,6 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 2
 			path: src/Type/StringType.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Traverser/LateResolvableTraverser.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'

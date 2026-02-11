@@ -7,8 +7,9 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 
-final class GenericTypeTemplateTraverser
+final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 {
 
 	public function __construct(
@@ -20,7 +21,7 @@ final class GenericTypeTemplateTraverser
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		if ($type instanceof TemplateType && !$type->isArgument()) {
 			$newType = $this->resolvedTemplateTypeMap->getType($type->getName());

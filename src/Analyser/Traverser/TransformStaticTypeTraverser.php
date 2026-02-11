@@ -6,8 +6,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 
-final class TransformStaticTypeTraverser
+final class TransformStaticTypeTraverser implements TypeTraverserCallable
 {
 
 	public function __construct(
@@ -19,7 +20,7 @@ final class TransformStaticTypeTraverser
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		if (!$this->scope->isInClass()) {
 			return $type;

@@ -8,9 +8,10 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 use PHPStan\Type\UnionType;
 
-final class InstanceOfClassTypeTraverser
+final class InstanceOfClassTypeTraverser implements TypeTraverserCallable
 {
 
 	private bool $uncertainty = false;
@@ -18,7 +19,7 @@ final class InstanceOfClassTypeTraverser
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
 			return $traverse($type);

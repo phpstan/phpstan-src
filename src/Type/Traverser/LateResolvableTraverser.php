@@ -6,8 +6,9 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 
-final class LateResolvableTraverser
+final class LateResolvableTraverser implements TypeTraverserCallable
 {
 
 	private int $ignoreResolveUnresolvableTypesLevel;
@@ -22,7 +23,7 @@ final class LateResolvableTraverser
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		while ($type instanceof LateResolvableType && (($this->resolveUnresolvableTypes && $this->ignoreResolveUnresolvableTypesLevel === 0) || $type->isResolvable())) {
 			$type = $type->resolve();

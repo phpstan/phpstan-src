@@ -4,9 +4,10 @@ namespace PHPStan\Analyser\Traverser;
 
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverserCallable;
 use function array_key_exists;
 
-final class ConstructorClassTemplateTraverser
+final class ConstructorClassTemplateTraverser implements TypeTraverserCallable
 {
 
 	/**
@@ -21,7 +22,7 @@ final class ConstructorClassTemplateTraverser
 	/**
 	 * @param callable(Type): Type $traverse
 	 */
-	public function __invoke(Type $type, callable $traverse): Type
+	public function traverse(Type $type, callable $traverse): Type
 	{
 		if ($type instanceof TemplateType && array_key_exists($type->getName(), $this->classTemplateTypes)) {
 			$classTemplateType = $this->classTemplateTypes[$type->getName()];

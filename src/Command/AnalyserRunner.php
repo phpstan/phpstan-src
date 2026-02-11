@@ -54,7 +54,21 @@ final class AnalyserRunner
 	{
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return new AnalyserResult([], [], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true));
+			return new AnalyserResult(
+				unorderedErrors: [],
+				filteredPhpErrors: [],
+				allPhpErrors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				internalErrors: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				reachedInternalErrorsCountLimit: false,
+				peakMemoryUsageBytes: memory_get_peak_usage(true),
+			);
 		}
 
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);

@@ -130,19 +130,19 @@ final class Analyser
 		}
 
 		return new AnalyserResult(
-			$errors,
-			$filteredPhpErrors,
-			$allPhpErrors,
-			$locallyIgnoredErrors,
-			$linesToIgnore,
-			$unmatchedLineIgnores,
-			[],
-			$collectedData,
-			$internalErrorsCount === 0 ? $dependencies : null,
-			$internalErrorsCount === 0 ? $usedTraitDependencies : null,
-			$exportedNodes,
-			$reachedInternalErrorsCountLimit,
-			memory_get_peak_usage(true),
+			unorderedErrors: $errors,
+			filteredPhpErrors: $filteredPhpErrors,
+			allPhpErrors: $allPhpErrors,
+			locallyIgnoredErrors: $locallyIgnoredErrors,
+			linesToIgnore: $linesToIgnore,
+			unmatchedLineIgnores: $unmatchedLineIgnores,
+			internalErrors: [],
+			collectedData: $collectedData,
+			dependencies: $internalErrorsCount === 0 ? $dependencies : null,
+			usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
+			exportedNodes: $exportedNodes,
+			reachedInternalErrorsCountLimit: $reachedInternalErrorsCountLimit,
+			peakMemoryUsageBytes: memory_get_peak_usage(true),
 		);
 	}
 

@@ -35,7 +35,7 @@ final class SimpleThrowPoint
 
 	public static function createImplicit(): self
 	{
-		return new self(new ObjectType(Throwable::class), false, true);
+		return new self(new ObjectType(Throwable::class), explicit: false, canContainAnyThrowable: true);
 	}
 
 	public function getType(): Type

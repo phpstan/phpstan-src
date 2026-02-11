@@ -215,7 +215,7 @@ final class TypeUtils
 	 */
 	public static function getAccessoryTypes(Type $type): array
 	{
-		return self::map(AccessoryType::class, $type, true, false);
+		return self::map(AccessoryType::class, $type, inspectIntersections: true, stopOnUnmatched: false);
 	}
 
 	public static function containsTemplateType(Type $type): bool

@@ -5611,11 +5611,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];
 			foreach ($arrayMapArgs as $funcCallArg) {
-				$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+				$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
-				$callableParameters[] = new DummyParameter('item', $this->getType($immediatelyInvokedArg->value), false, PassedByReference::createNo(), false, null);
+				$callableParameters[] = new DummyParameter('item', $this->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} else {
 			$inFunctionCallsStackCount = count($this->inFunctionCallsStack);

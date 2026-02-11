@@ -133,13 +133,43 @@ final class ResultCacheManager
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 		if ($onlyFiles) {
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
@@ -147,7 +177,22 @@ final class ResultCacheManager
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		try {
@@ -159,7 +204,22 @@ final class ResultCacheManager
 
 			@unlink($cacheFilePath);
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		if (!is_array($data)) {
@@ -168,7 +228,22 @@ final class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $this->getMeta($allAnalysedFiles, $projectConfigArray),
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
@@ -177,7 +252,22 @@ final class ResultCacheManager
 				$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
 				$output->writeLineFormatted('Result cache not used because the metadata do not match: ' . implode(', ', $diffs));
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $meta,
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		$daysOldForSkip = $this->skipResultCacheIfOlderThanDays;
@@ -187,7 +277,22 @@ final class ResultCacheManager
 			}
 
 			// run full analysis if the result cache is older than X days
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $meta,
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		/**
@@ -202,7 +307,22 @@ final class ResultCacheManager
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
 				}
-				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], [], [], $currentFileHashes);
+				return new ResultCache(
+					filesToAnalyse: $allAnalysedFiles,
+					fullAnalysis: true,
+					lastFullAnalysisTime: time(),
+					meta: $meta,
+					errors: [],
+					locallyIgnoredErrors: [],
+					linesToIgnore: [],
+					unmatchedLineIgnores: [],
+					collectedData: [],
+					dependencies: [],
+					usedTraitDependencies: [],
+					exportedNodes: [],
+					projectExtensionFiles: [],
+					currentFileHashes: $currentFileHashes,
+				);
 			}
 
 			if ($this->getFileHash($extensionFile) === $fileHash) {
@@ -213,7 +333,22 @@ final class ResultCacheManager
 				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], [], [], [], [], [], [], $currentFileHashes);
+			return new ResultCache(
+				filesToAnalyse: $allAnalysedFiles,
+				fullAnalysis: true,
+				lastFullAnalysisTime: time(),
+				meta: $meta,
+				errors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				projectExtensionFiles: [],
+				currentFileHashes: $currentFileHashes,
+			);
 		}
 
 		$invertedDependencies = $data['dependencies'];
@@ -365,7 +500,22 @@ final class ResultCacheManager
 			));
 		}
 
-		return new ResultCache($filesToAnalyse, false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredLocallyIgnoredErrors, $filteredLinesToIgnore, $filteredUnmatchedLineIgnores, $filteredCollectedData, $invertedDependenciesToReturn, $invertedUsedTraitDependenciesToReturn, $filteredExportedNodes, $data['projectExtensionFiles'], $currentFileHashes);
+		return new ResultCache(
+			filesToAnalyse: $filesToAnalyse,
+			fullAnalysis: false,
+			lastFullAnalysisTime: $data['lastFullAnalysisTime'],
+			meta: $meta,
+			errors: $filteredErrors,
+			locallyIgnoredErrors: $filteredLocallyIgnoredErrors,
+			linesToIgnore: $filteredLinesToIgnore,
+			unmatchedLineIgnores: $filteredUnmatchedLineIgnores,
+			collectedData: $filteredCollectedData,
+			dependencies: $invertedDependenciesToReturn,
+			usedTraitDependencies: $invertedUsedTraitDependenciesToReturn,
+			exportedNodes: $filteredExportedNodes,
+			projectExtensionFiles: $data['projectExtensionFiles'],
+			currentFileHashes: $currentFileHashes,
+		);
 	}
 
 	/**
@@ -597,19 +747,19 @@ final class ResultCacheManager
 		}
 
 		return new ResultCacheProcessResult(new AnalyserResult(
-			$flatErrors,
-			$analyserResult->getFilteredPhpErrors(),
-			$analyserResult->getAllPhpErrors(),
-			$flatLocallyIgnoredErrors,
-			$linesToIgnore,
-			$unmatchedLineIgnores,
-			$internalErrors,
-			$collectedDataByFile,
-			$dependencies,
-			$usedTraitDependencies,
-			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getPeakMemoryUsageBytes(),
+			unorderedErrors: $flatErrors,
+			filteredPhpErrors: $analyserResult->getFilteredPhpErrors(),
+			allPhpErrors: $analyserResult->getAllPhpErrors(),
+			locallyIgnoredErrors: $flatLocallyIgnoredErrors,
+			linesToIgnore: $linesToIgnore,
+			unmatchedLineIgnores: $unmatchedLineIgnores,
+			internalErrors: $internalErrors,
+			collectedData: $collectedDataByFile,
+			dependencies: $dependencies,
+			usedTraitDependencies: $usedTraitDependencies,
+			exportedNodes: $exportedNodes,
+			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
+			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 		), $saved);
 	}
 

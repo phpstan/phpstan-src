@@ -281,9 +281,9 @@ final class FixerWorkerCommand extends Command
 							new InternalError(
 								'Internal error occurred',
 								'running analyser in PHPStan Pro worker',
-								[],
-								null,
-								false,
+								trace: [],
+								traceAsString: null,
+								shouldReportBug: false,
 							),
 						],
 					]]);
@@ -349,7 +349,7 @@ final class FixerWorkerCommand extends Command
 			sprintf('analysing file %s', $error->getTraitFilePath() ?? $error->getFilePath()),
 			$metadata[InternalError::STACK_TRACE_METADATA_KEY] ?? [],
 			$metadata[InternalError::STACK_TRACE_AS_STRING_METADATA_KEY] ?? null,
-			true,
+			shouldReportBug: true,
 		);
 	}
 
@@ -390,7 +390,21 @@ final class FixerWorkerCommand extends Command
 		$parallelAnalyser = $container->getByType(ParallelAnalyser::class);
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return resolve(new AnalyserResult([], [], [], [], [], [], [], [], [], [], [], false, memory_get_peak_usage(true)));
+			return resolve(new AnalyserResult(
+				unorderedErrors: [],
+				filteredPhpErrors: [],
+				allPhpErrors: [],
+				locallyIgnoredErrors: [],
+				linesToIgnore: [],
+				unmatchedLineIgnores: [],
+				internalErrors: [],
+				collectedData: [],
+				dependencies: [],
+				usedTraitDependencies: [],
+				exportedNodes: [],
+				reachedInternalErrorsCountLimit: false,
+				peakMemoryUsageBytes: memory_get_peak_usage(true),
+			));
 		}
 
 		/** @var Scheduler $scheduler */

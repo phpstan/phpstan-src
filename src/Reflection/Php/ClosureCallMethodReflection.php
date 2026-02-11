@@ -72,11 +72,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		$parameters = $this->closureType->getParameters();
 		$newThis = new NativeParameterReflection(
 			'newThis',
-			false,
-			new ObjectWithoutClassType(),
-			PassedByReference::createNo(),
-			false,
-			null,
+			optional: false,
+			type: new ObjectWithoutClassType(),
+			passedByReference: PassedByReference::createNo(),
+			variadic: false,
+			defaultValue: null,
 		);
 
 		array_unshift($parameters, $newThis);

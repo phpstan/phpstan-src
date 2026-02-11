@@ -202,8 +202,8 @@ final class StubValidator
 		$methodTagTemplateTypeCheck = $container->getByType(MethodTagTemplateTypeCheck::class);
 		$mixinCheck = $container->getByType(MixinCheck::class);
 		$discoveringSymbolsTip = $container->getParameter('tips')['discoveringSymbols'];
-		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true, $discoveringSymbolsTip);
-		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, true, true, $discoveringSymbolsTip);
+		$methodTagCheck = new MethodTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, checkClassCaseSensitivity: true, checkMissingTypehints: true, discoveringSymbolsTip: $discoveringSymbolsTip);
+		$propertyTagCheck = new PropertyTagCheck($reflectionProvider, $classNameCheck, $genericObjectTypeCheck, $missingTypehintCheck, $unresolvableTypeHelper, checkClassCaseSensitivity: true, checkMissingTypehints: true, discoveringSymbolsTip: $discoveringSymbolsTip);
 		$reflector = $container->getService('stubReflector');
 		$relativePathHelper = $container->getService('simpleRelativePathHelper');
 		$assertRuleHelper = $container->getByType(AssertRuleHelper::class);
@@ -218,10 +218,10 @@ final class StubValidator
 			new ExistingClassInTraitUseRule($classNameCheck, $reflectionProvider, $discoveringSymbolsTip),
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
-			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, true, false, $discoveringSymbolsTip),
+			new ExistingClassesInPropertiesRule($reflectionProvider, $classNameCheck, $unresolvableTypeHelper, $phpVersion, checkClassCaseSensitivity: true, checkThisOnly: false, discoveringSymbolsTip: $discoveringSymbolsTip),
 			new OverridingMethodRule(
 				$phpVersion,
-				new MethodSignatureRule($parentMethodHelper, true, true),
+				new MethodSignatureRule($parentMethodHelper, reportMaybes: true, reportStatic: true),
 				true,
 				new MethodParameterComparisonHelper($phpVersion),
 				new MethodVisibilityComparisonHelper(),

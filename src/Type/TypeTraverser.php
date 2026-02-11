@@ -31,19 +31,23 @@ final class TypeTraverser
 	 * });
 	 *
 	 * @api
-	 * @param callable(Type $type, callable(Type): Type $traverse): Type $cb
+	 * @param TypeTraverserCallable|callable(Type $type, callable(Type): Type $traverse): Type $cb
 	 */
-	public static function map(Type $type, callable $cb): Type
+	public static function map(Type $type, TypeTraverserCallable|callable $cb): Type
 	{
 		$self = new self($cb);
 
 		return $self->mapInternal($type);
 	}
 
-	/** @param callable(Type $type, callable(Type): Type $traverse): Type $cb */
-	private function __construct(callable $cb)
+	/** @param TypeTraverserCallable|callable(Type $type, callable(Type): Type $traverse): Type $cb */
+	private function __construct(TypeTraverserCallable|callable $cb)
 	{
-		$this->cb = $cb;
+		if ($cb instanceof TypeTraverserCallable) {
+			$this->cb = static fn (Type $type, callable $traverse): Type => $cb->traverse($type, $traverse);
+		} else {
+			$this->cb = $cb;
+		}
 	}
 
 	/** @internal */

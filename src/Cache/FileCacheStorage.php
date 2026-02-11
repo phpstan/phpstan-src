@@ -49,7 +49,7 @@ final class FileCacheStorage implements CacheStorage
 	{
 		[,, $filePath] = $this->getFilePaths($key);
 
-		return (static function () use ($variableKey, $filePath) {
+		return (static function ($variableKey, $filePath) {
 			$cacheItem = @include $filePath;
 			if (!$cacheItem instanceof CacheItem) {
 				return null;
@@ -59,7 +59,7 @@ final class FileCacheStorage implements CacheStorage
 			}
 
 			return $cacheItem->getData();
-		})();
+		})($variableKey, $filePath);
 	}
 
 	/**

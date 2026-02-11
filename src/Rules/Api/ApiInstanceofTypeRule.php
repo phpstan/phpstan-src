@@ -43,6 +43,7 @@ use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\TypeTraverserCallable;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VoidType;
 use function array_key_exists;
@@ -129,6 +130,14 @@ final class ApiInstanceofTypeRule implements Rule
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, $this->lowerMap)) {
 			return [];
+		}
+
+		if ($scope->isInClass()) {
+			$classReflection = $scope->getClassReflection();
+
+			if ($classReflection->implementsInterface(TypeTraverserCallable::class)) {
+				return [];
+			}
 		}
 
 		if ($this->reflectionProvider->hasClass($className)) {

@@ -21,7 +21,7 @@ use function sprintf;
 /**
  * @phpstan-import-type CollectorData from CollectedData
  */
-final class FileAnalyserCallable
+final class FileAnalyserCallback
 {
 
 	/** @var list<Error> */

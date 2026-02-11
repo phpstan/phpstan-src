@@ -44,7 +44,7 @@ final class TypeTraverser
 	private function __construct(TypeTraverserCallable|callable $cb)
 	{
 		if ($cb instanceof TypeTraverserCallable) {
-			$this->cb = $cb->traverse(...);
+			$this->cb = static fn (Type $type, callable $traverse): Type => $cb->traverse($type, $traverse);
 		} else {
 			$this->cb = $cb;
 		}

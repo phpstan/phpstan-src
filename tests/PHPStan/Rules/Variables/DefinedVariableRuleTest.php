@@ -1224,4 +1224,37 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug10909(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10909.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug7705(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-7705.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug12944(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-12944.php'], []);
+	}
+
 }

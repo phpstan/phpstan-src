@@ -3844,6 +3844,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12875.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug13805(): void
 	{
 		$this->checkThisOnly = false;

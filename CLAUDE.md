@@ -335,6 +335,14 @@ Bugs occur when impure points are missed (e.g. inherited constructors of anonymo
 - **Regression tests**: For each bug fix, add a test data file reproducing the issue (e.g. `tests/PHPStan/Rules/*/data/bug-12345.php` or `tests/PHPStan/Analyser/nsrt/bug-12345.php`).
 - **Integration tests**: `AnalyserIntegrationTest` runs full analysis on test files and checks error output.
 
+### RuleLevelHelper transformAcceptedType and asymmetric null stripping in generics
+
+`RuleLevelHelper::transformAcceptedType()` uses `TypeTraverser::map` to strip `null` from the accepted type when `checkNullables=false` (levels < 8). Because `GenericObjectType::traverse` recurses into inner type arguments, null gets stripped from inside generic type arguments too (e.g. `Foo<string|null>` → `Foo<string>`). The accepting type is NOT transformed the same way, so for invariant template parameters, `TemplateTypeVariance::isValidVariance()` compares `string|null` (accepting) vs `string` (accepted) using `equals()`, which fails — producing false positives where the error message shows identical types on both sides.
+
+The fix is in `GenericObjectType::isSuperTypeOfInternal()`: when in `$acceptsContext` (the `accepts()` path), if the invariance check fails, also check whether the mismatch is solely due to null stripping by verifying `TypeCombinator::removeNull($this->types[$i])` equals the ancestor type. This approach avoids modifying `RuleLevelHelper` or `TemplateTypeVariance` and keeps the fix localized.
+
+**Key insight**: Fixes to `RuleLevelHelper::transformAcceptedType` null stripping can have unintended effects on callable parameter types (which have contravariant parameters). Changes should be tested against `testCallablesWithoutCheckNullables` and `testBug4801`.
+
 ### Adding support for new PHP versions
 
 Recent work on PHP 8.5 support shows the pattern:

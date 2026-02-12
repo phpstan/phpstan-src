@@ -20,6 +20,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -186,7 +187,17 @@ class GenericObjectType extends ObjectType
 			if (!$thisVariance->invariant()) {
 				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i]);
 			} else {
-				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
+				$result = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
+				if ($acceptsContext && !$result->yes()) {
+					$thisWithoutNull = TypeCombinator::removeNull($this->types[$i]);
+					if (
+						$this->types[$i]->isSuperTypeOf($ancestor->types[$i])->yes()
+						&& $ancestor->types[$i]->isSuperTypeOf($thisWithoutNull)->yes()
+					) {
+						$result = IsSuperTypeOfResult::createYes();
+					}
+				}
+				$results[] = $result;
 			}
 
 			$results[] = IsSuperTypeOfResult::createFromBoolean($thisVariance->validPosition($ancestorVariance));

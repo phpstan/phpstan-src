@@ -20,6 +20,7 @@ jobs:
         with:
           ref: "2.1.x"
           fetch-depth: 0
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -34,7 +35,7 @@ jobs:
       - name: "Pick a random Easy fix issue"
         id: pick-issue
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: |
           ISSUE_JSON=$(gh issue list \
             --repo phpstan/phpstan \
@@ -72,6 +73,12 @@ jobs:
 
           echo "### Selected issue: #$ISSUE_NUMBER - $ISSUE_TITLE" >> "$GITHUB_STEP_SUMMARY"
           echo "$ISSUE_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       - name: "Install Claude Code"
         run: npm install -g @anthropic-ai/claude-code
@@ -148,15 +155,7 @@ jobs:
           3. Run PHPStan self-analysis: make phpstan
           4. Fix any failures that come up
 
-          ## Step 5: Create a branch and PR
-
-          1. Create a branch named fix/bug-{n}
-          2. Commit all changes with message: "Fix #{n}"
-          3. Push the branch
-          4. Create a PR targeting the 2.1.x branch with:
-             - Title: "Fix #{n}: {title}"
-             - Body referencing the issue: "Fixes phpstan/phpstan#{n}"
-             - Include a description of the fix and what was wrong
+          Do not create a branch, push, or create a PR - this will be handled automatically.
           """
 
           with open("/tmp/claude-prompt.txt", "w") as f:
@@ -166,12 +165,23 @@ jobs:
       - name: "Run Claude Code"
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
 
           claude -p \
             --model claude-opus-4-6 \
-            --max-turns 50 \
             "$(cat /tmp/claude-prompt.txt)"
+
+      - name: "Create Pull Request"
+        id: create-pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          branch-suffix: random
+          delete-branch: true
+          title: "Fix #${{ steps.pick-issue.outputs.issue_number }}: ${{ steps.pick-issue.outputs.issue_title }}"
+          body: "Fixes phpstan/phpstan#${{ steps.pick-issue.outputs.issue_number }}"
+          committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          commit-message: "Fix #${{ steps.pick-issue.outputs.issue_number }}"

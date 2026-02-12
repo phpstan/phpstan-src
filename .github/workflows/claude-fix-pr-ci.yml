@@ -1,0 +1,235 @@
+name: "Claude Fix CI"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: claude-ci-fix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  wait-for-checks:
+    name: "Wait for CI checks"
+    if: github.event.pull_request.user.login == 'phpstan-bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      status: ${{ steps.waitforstatuschecks.outputs.status }}
+    steps:
+      - name: "Wait for status checks"
+        id: waitforstatuschecks
+        uses: "WyriHaximus/github-action-wait-for-status@v1"
+        with:
+          ignoreActions: "Wait for CI checks,Fix CI failure,Automerge PRs"
+          checkInterval: 13
+        env:
+          GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
+
+  fix-ci:
+    name: "Fix CI failure"
+    needs: wait-for-checks
+    if: needs.wait-for-checks.outputs.status == 'failure'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 60
+
+    steps:
+      - name: "Check fix attempt count"
+        id: check-attempts
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          COMMITS=$(gh api "repos/${{ github.repository }}/commits?sha=$HEAD_BRANCH&per_page=50" \
+            --jq '[.[] | select(.commit.message | test("\\[claude-ci-fix\\]"))] | length')
+
+          if [ "$COMMITS" -ge 2 ]; then
+            echo "Already made $COMMITS CI fix attempts, stopping to avoid infinite loop"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "CI fix attempt $((COMMITS + 1)) of 2"
+            echo "attempt_number=$((COMMITS + 1))" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Collect failure logs"
+        if: steps.check-attempts.outputs.skip != 'true'
+        id: failures
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          FAILED_RUNS=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$HEAD_SHA&status=failure&per_page=20" \
+            --jq '.workflow_runs[] | {id: .id, name: .name}')
+
+          if [ -z "$FAILED_RUNS" ]; then
+            echo "No failed workflow runs found"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          : > /tmp/ci-failure-logs.txt
+
+          RUN_COUNT=0
+          echo "$FAILED_RUNS" | jq -c '.' | while read -r RUN; do
+            if [ "$RUN_COUNT" -ge 3 ]; then break; fi
+            RUN_ID=$(echo "$RUN" | jq -r '.id')
+            RUN_NAME=$(echo "$RUN" | jq -r '.name')
+
+            echo "========================================" >> /tmp/ci-failure-logs.txt
+            echo "Failed workflow: $RUN_NAME (run $RUN_ID)" >> /tmp/ci-failure-logs.txt
+            echo "========================================" >> /tmp/ci-failure-logs.txt
+            echo "" >> /tmp/ci-failure-logs.txt
+
+            FAILED_JOBS=$(gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/jobs?filter=latest&per_page=50" \
+              --jq '.jobs[] | select(.conclusion == "failure") | {id: .id, name: .name}')
+
+            JOB_COUNT=0
+            echo "$FAILED_JOBS" | jq -c '.' | while read -r JOB; do
+              if [ "$JOB_COUNT" -ge 5 ]; then break; fi
+              JOB_ID=$(echo "$JOB" | jq -r '.id')
+              JOB_NAME=$(echo "$JOB" | jq -r '.name')
+
+              echo "--- Failed job: $JOB_NAME ---" >> /tmp/ci-failure-logs.txt
+              gh api "repos/${{ github.repository }}/actions/jobs/$JOB_ID/logs" 2>/dev/null | \
+                tail -150 >> /tmp/ci-failure-logs.txt 2>/dev/null || \
+                echo "(Could not fetch logs for job $JOB_ID)" >> /tmp/ci-failure-logs.txt
+              echo "" >> /tmp/ci-failure-logs.txt
+
+              JOB_COUNT=$((JOB_COUNT + 1))
+            done
+
+            RUN_COUNT=$((RUN_COUNT + 1))
+          done
+
+          # Truncate to ~50KB to keep Claude's context manageable
+          head -c 50000 /tmp/ci-failure-logs.txt > /tmp/ci-failure-context.txt
+
+      - name: "Checkout PR branch"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+
+      - name: "Install PHP"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.4"
+          ini-file: development
+          extensions: mbstring
+
+      - name: "Install dependencies"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        uses: "ramsey/composer-install@v3"
+
+      - name: "Install Claude Code"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: "Build prompt"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ATTEMPT: ${{ steps.check-attempts.outputs.attempt_number }}
+        run: |
+          python3 << 'PYEOF'
+          import os
+
+          pr_number = os.environ["PR_NUMBER"]
+          attempt = os.environ["ATTEMPT"]
+
+          with open("/tmp/ci-failure-context.txt", "r") as f:
+              failure_logs = f.read()
+
+          prompt = f"""You are working on phpstan/phpstan-src. CI has failed on PR #{pr_number} which was created by an automated process.
+
+          This is CI fix attempt {attempt} of maximum 2.
+
+          ## CI Failure Logs
+
+          {failure_logs}
+
+          ## Your Task
+
+          1. Read the failure logs above carefully to understand what went wrong
+          2. Read CLAUDE.md for codebase architecture guidance
+          3. Look at the recent commits on this branch (`git log origin/2.1.x..HEAD`) to understand what changes were made
+          4. Fix the issue(s) causing CI failures
+
+          ## Common CI failure categories
+
+          - **Test failures**: A test assertion is wrong or the code change broke existing behavior. Fix the code or update the test expectations.
+          - **PHPStan self-analysis errors**: The code change introduced type errors that PHPStan catches on itself. Fix the type issues.
+          - **Coding standard violations**: Run `make cs-fix` to auto-fix, or fix manually.
+          - **Name collision**: Two test files define the same class/function in the same namespace. Fix by using unique namespaces.
+          - **Lint errors**: PHP syntax errors in test data files, usually needing `// lint >= 8.x` comments for version-specific syntax.
+          - **Backward compatibility**: A public API change broke BC. May need to preserve old signatures or add `@api` tags.
+
+          ## Verification
+
+          After making fixes, run these commands to verify:
+          1. Run the specific failing test if identifiable: `vendor/bin/phpunit <test-file> --filter <test-name>`
+          2. `make tests` - full test suite
+          3. `make phpstan` - PHPStan self-analysis
+          4. `make cs-fix` - coding standards
+          5. `make name-collision` - namespace collision check
+
+          ## Important
+
+          - Do NOT create a branch, push, or create a PR — this is handled automatically after you finish
+          - Focus only on fixing the CI failures, do not refactor or add unrelated changes
+          - If you cannot determine how to fix the failure, create a file /tmp/ci-fix-failed.txt with an explanation
+          """
+
+          with open("/tmp/claude-ci-prompt.txt", "w") as f:
+              f.write(prompt)
+          PYEOF
+
+      - name: "Run Claude Code"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude -p \
+            --model claude-opus-4-6 \
+            --dangerously-skip-permissions \
+            "$(cat /tmp/claude-ci-prompt.txt)"
+
+      - name: "Commit and push fixes"
+        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        env:
+          ATTEMPT: ${{ steps.check-attempts.outputs.attempt_number }}
+        run: |
+          if [ -f /tmp/ci-fix-failed.txt ]; then
+            echo "Claude could not fix the CI failure:"
+            cat /tmp/ci-fix-failed.txt
+            exit 0
+          fi
+
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes made by Claude"
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "Fix CI failures [claude-ci-fix]
+
+          Automated fix attempt $ATTEMPT for CI failures."
+
+          git push

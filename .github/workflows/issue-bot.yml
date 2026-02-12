@@ -337,8 +337,9 @@ jobs:
             exit 0
           fi
 
-          # Get current PR body
-          gh pr view "${{ github.event.pull_request.number }}" --json body --jq '.body' > /tmp/pr-body.txt
+          # Get current PR body via REST API (avoids GraphQL scope requirements)
+          PR_API="repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
+          gh api "$PR_API" --jq '.body' > /tmp/pr-body.txt
 
           # Append closes lines for issues not already in the body
           ADDED=false
@@ -358,4 +359,4 @@ jobs:
             exit 0
           fi
 
-          gh pr edit "${{ github.event.pull_request.number }}" --body-file /tmp/pr-body.txt
+          gh api "$PR_API" -X PATCH -f body="$(cat /tmp/pr-body.txt)"

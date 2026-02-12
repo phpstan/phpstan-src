@@ -14,8 +14,11 @@ use function strtolower;
 final class MemoizingReflectionProvider implements ReflectionProvider
 {
 
-	/** @var array<lowercase-string, bool> */
-	private array $hasClasses = [];
+	/** @var array<lowercase-string, true> */
+	private array $knownClasses = [];
+
+	/** @var array<string, true> */
+	private array $unknownClasses = [];
 
 	/** @var array<lowercase-string, ClassReflection> */
 	private array $classes = [];
@@ -29,7 +32,23 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function hasClass(string $className): bool
 	{
-		return $this->hasClasses[strtolower($className)] ??= $this->provider->hasClass($className);
+		if (isset($this->knownClasses[strtolower($className)])) {
+			return true;
+		}
+
+		if (isset($this->unknownClasses[$className])) {
+			return false;
+		}
+
+		$result = $this->provider->hasClass($className);
+
+		if ($result) {
+			$this->knownClasses[strtolower($className)] = true;
+		} else {
+			$this->unknownClasses[$className] = true;
+		}
+
+		return $result;
 	}
 
 	public function getClass(string $className): ClassReflection

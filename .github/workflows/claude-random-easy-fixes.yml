@@ -1,4 +1,4 @@
-name: "Claude Easy Fixes"
+name: "Claude Random Easy Fixes"
 
 on:
   workflow_dispatch:

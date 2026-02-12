@@ -2869,12 +2869,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$arrowFunctionScope = $this;
 		foreach ($arrowFunction->params as $i => $parameter) {
-			if ($parameter->type === null) {
-				$parameterType = new MixedType();
-			} else {
-				$isNullable = $this->isParameterValueNullable($parameter);
-				$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
-			}
+			$isNullable = $this->isParameterValueNullable($parameter);
+			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {

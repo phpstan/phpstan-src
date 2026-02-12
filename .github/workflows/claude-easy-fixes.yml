@@ -166,6 +166,7 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
+            --output-format stream-json \
             "$(cat /tmp/claude-prompt.txt)"
 
       - name: "Create Pull Request"

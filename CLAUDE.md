@@ -202,6 +202,18 @@ PHPStan is highly extensible. Key extension interfaces:
 - **Allowed subtypes** - define sealed class hierarchies
 - **Always-read/written properties, always-used constants/methods** - suppress false positives for dead code detection
 
+## Backward compatibility promise
+
+Code marked with `@api` must not break backward compatibility for existing usages in third-party extensions and packages. The `@api` tag signals that the code is part of the public API for extension developers and is protected from breaking changes across minor versions. Key rules:
+
+- **`@api` classes**: All public methods can be called by extensions. Non-final classes can be extended.
+- **`@api` interfaces**: All methods can be called. Interfaces can be implemented unless also marked with `@api-do-not-implement` or similar restrictions.
+- **Constructors**: Changing a constructor that is NOT marked with `@api` in an `@api`-marked class is okay — extensions should use dependency injection, not direct instantiation.
+- **`@api` + `@api-do-not-implement` interfaces**: Adding new methods is okay, since third parties are not expected to implement these interfaces.
+- **Non-`@api` code**: Any code without `@api` may change in minor versions without notice.
+
+When making changes, check whether the affected code has `@api` tags. If it does, ensure existing call sites in third-party code would not break.
+
 ## Common bug fix patterns and development guidance
 
 Based on analysis of recent releases (2.1.30-2.1.38), these are the recurring patterns for how bugs are found and fixed:

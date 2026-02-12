@@ -192,8 +192,10 @@ jobs:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
-          ./console.php evaluate >> $GITHUB_STEP_SUMMARY
+          ./console.php evaluate > tmp/step-summary.md
           exit_code="$?"
+
+          cat tmp/step-summary.md >> $GITHUB_STEP_SUMMARY
 
           if [[ "$exit_code" == "2" ]]; then
             echo "::notice file=.github/workflows/issue-bot.yml,line=3 ::Issue bot detected open issues which are affected by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -201,6 +203,13 @@ jobs:
           fi
 
           exit $exit_code
+
+      - name: "Upload step summary"
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: step-summary
+          path: issue-bot/tmp/step-summary.md
 
       - name: "Evaluate results - push"
         working-directory: "issue-bot"
@@ -220,3 +229,84 @@ jobs:
           fi
 
           exit $exit_code
+
+  regression-tests:
+    name: "Generate regression tests"
+    needs: evaluate
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'phpstan-bot'
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 60
+
+    steps:
+      - name: "Check for feedback loop"
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: |
+          COMMIT_MSG=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.pull_request.head.sha }}" --jq '.commit.message' 2>/dev/null || true)
+          if [[ "$COMMIT_MSG" == "Add regression test for #"* ]]; then
+            echo "Last commit was regression test addition, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Checkout"
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+
+      - name: "Download step summary"
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: step-summary
+          path: ./tmp
+
+      - name: "Install PHP"
+        if: steps.check.outputs.skip != 'true'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.4"
+          ini-file: development
+          extensions: mbstring
+
+      - name: "Install dependencies"
+        if: steps.check.outputs.skip != 'true'
+        uses: "ramsey/composer-install@v3"
+
+      - name: "Install Claude Code"
+        if: steps.check.outputs.skip != 'true'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: "Generate regression tests"
+        if: steps.check.outputs.skip != 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude -p \
+            --model claude-opus-4-6 \
+            --output-format stream-json \
+            --verbose \
+            --dangerously-skip-permissions \
+            "Read the file ./tmp/step-summary.md which contains the Issue Bot step summary from CI in Markdown format. Interpret this Markdown to figure out which GitHub issues need regression tests added. For each affected issue (where behavior changed), run /regression-test with the issue number.
+
+          Do not create a branch or push - this will be handled automatically."
+
+      - name: "Push"
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse @{u})" ]; then
+            echo "No new commits to push"
+            exit 0
+          fi
+
+          git push

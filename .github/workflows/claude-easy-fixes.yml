@@ -2,6 +2,12 @@ name: "Claude Easy Fixes"
 
 on:
   workflow_dispatch:
+    inputs:
+      issue_count:
+        description: "Number of issues to pick and fix in parallel"
+        required: false
+        default: "1"
+        type: string
 
 permissions:
   contents: write
@@ -9,10 +15,89 @@ permissions:
   issues: write
 
 jobs:
+  pick-issues:
+    name: "Pick easy fix issues"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      matrix: ${{ steps.pick-issues.outputs.matrix }}
+
+    steps:
+      - name: "Pick random Easy fix issues"
+        id: pick-issues
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          ISSUE_COUNT: ${{ inputs.issue_count || '1' }}
+        run: |
+          ISSUE_JSON=$(gh issue list \
+            --repo phpstan/phpstan \
+            --milestone "Easy fixes" \
+            --state open \
+            --json number,title,body,url \
+            --limit 100 \
+          )
+
+          TOTAL=$(echo "$ISSUE_JSON" | jq 'length')
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "No issues found in Easy fixes milestone"
+            exit 1
+          fi
+
+          COUNT=$ISSUE_COUNT
+          if [ "$COUNT" -gt "$TOTAL" ]; then
+            COUNT=$TOTAL
+          fi
+
+          # Pick COUNT random unique issues
+          SELECTED=$(echo "$ISSUE_JSON" | python3 -c "
+          import json, sys, random
+          issues = json.load(sys.stdin)
+          random.shuffle(issues)
+          count = min(int('$COUNT'), len(issues))
+          print(json.dumps(issues[:count]))
+          ")
+
+          echo "Selected $COUNT issue(s) for fixing"
+
+          # Build matrix JSON - each entry has issue details
+          # We need to fetch full body for each issue separately since list may truncate
+          MATRIX="[]"
+          for NUMBER in $(echo "$SELECTED" | jq -r '.[].number'); do
+            TITLE=$(echo "$SELECTED" | jq -r --argjson n "$NUMBER" '.[] | select(.number == $n) | .title')
+            URL=$(echo "$SELECTED" | jq -r --argjson n "$NUMBER" '.[] | select(.number == $n) | .url')
+
+            BODY=$(gh issue view "$NUMBER" \
+              --repo phpstan/phpstan \
+              --json body \
+              --jq '.body')
+
+            # Base64 encode the body to safely pass through JSON matrix
+            BODY_B64=$(echo "$BODY" | base64 -w 0)
+
+            MATRIX=$(echo "$MATRIX" | jq -c \
+              --argjson number "$NUMBER" \
+              --arg title "$TITLE" \
+              --arg url "$URL" \
+              --arg body_b64 "$BODY_B64" \
+              '. + [{number: $number, title: $title, url: $url, body_b64: $body_b64}]')
+
+            echo "### Selected issue: #$NUMBER - $TITLE" >> "$GITHUB_STEP_SUMMARY"
+            echo "$URL" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          echo "matrix=$(echo "$MATRIX" | jq -c '.')" >> "$GITHUB_OUTPUT"
+
   easy-fix:
-    name: "Pick and fix an easy issue"
+    name: "Fix #${{ matrix.issue.number }}: ${{ matrix.issue.title }}"
+    needs: pick-issues
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        issue: ${{ fromJson(needs.pick-issues.outputs.matrix) }}
 
     steps:
       - name: "Checkout"
@@ -32,65 +117,24 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
-      - name: "Pick a random Easy fix issue"
-        id: pick-issue
-        env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: |
-          ISSUE_JSON=$(gh issue list \
-            --repo phpstan/phpstan \
-            --milestone "Easy fixes" \
-            --state open \
-            --json number,title,body,url \
-            --limit 100 \
-          )
-
-          TOTAL=$(echo "$ISSUE_JSON" | jq 'length')
-          if [ "$TOTAL" -eq 0 ]; then
-            echo "No issues found in Easy fixes milestone"
-            exit 1
-          fi
-
-          RANDOM_INDEX=$(( RANDOM % TOTAL ))
-          ISSUE=$(echo "$ISSUE_JSON" | jq -c ".[$RANDOM_INDEX]")
-
-          ISSUE_NUMBER=$(echo "$ISSUE" | jq -r '.number')
-          ISSUE_TITLE=$(echo "$ISSUE" | jq -r '.title')
-          ISSUE_URL=$(echo "$ISSUE" | jq -r '.url')
-          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
-          echo "issue_url=$ISSUE_URL" >> "$GITHUB_OUTPUT"
-
-          FIRST_COMMENT_BODY=$(gh issue view "$ISSUE_NUMBER" \
-            --repo phpstan/phpstan \
-            --json body \
-            --jq '.body')
-
-          EOF_MARKER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "first_comment<<$EOF_MARKER" >> "$GITHUB_OUTPUT"
-          echo "$FIRST_COMMENT_BODY" >> "$GITHUB_OUTPUT"
-          echo "$EOF_MARKER" >> "$GITHUB_OUTPUT"
-
-          echo "### Selected issue: #$ISSUE_NUMBER - $ISSUE_TITLE" >> "$GITHUB_STEP_SUMMARY"
-          echo "$ISSUE_URL" >> "$GITHUB_STEP_SUMMARY"
-
       - name: "Install Claude Code"
         run: npm install -g @anthropic-ai/claude-code
 
       - name: "Build prompt"
         env:
-          ISSUE_NUMBER: ${{ steps.pick-issue.outputs.issue_number }}
-          ISSUE_TITLE: ${{ steps.pick-issue.outputs.issue_title }}
-          ISSUE_URL: ${{ steps.pick-issue.outputs.issue_url }}
-          ISSUE_BODY: ${{ steps.pick-issue.outputs.first_comment }}
+          ISSUE_NUMBER: ${{ matrix.issue.number }}
+          ISSUE_TITLE: ${{ matrix.issue.title }}
+          ISSUE_URL: ${{ matrix.issue.url }}
+          ISSUE_BODY_B64: ${{ matrix.issue.body_b64 }}
         run: |
           python3 << 'PYEOF'
           import os
+          import base64
 
           n = os.environ["ISSUE_NUMBER"]
           title = os.environ["ISSUE_TITLE"]
           url = os.environ["ISSUE_URL"]
-          body = os.environ["ISSUE_BODY"]
+          body = base64.b64decode(os.environ["ISSUE_BODY_B64"]).decode("utf-8")
 
           prompt = f"""You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 
@@ -178,7 +222,7 @@ jobs:
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           branch-suffix: random
           delete-branch: true
-          title: "Fix #${{ steps.pick-issue.outputs.issue_number }}: ${{ steps.pick-issue.outputs.issue_title }}"
-          body: "Fixes phpstan/phpstan#${{ steps.pick-issue.outputs.issue_number }}"
+          title: "Fix #${{ matrix.issue.number }}: ${{ matrix.issue.title }}"
+          body: "Fixes phpstan/phpstan#${{ matrix.issue.number }}"
           committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
-          commit-message: "Fix #${{ steps.pick-issue.outputs.issue_number }}"
+          commit-message: "Fix #${{ matrix.issue.number }}"

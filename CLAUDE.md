@@ -228,6 +228,10 @@ Historical analysis of `Type.php` via `git blame` shows that new methods are add
 
 When considering a bug fix that involves checking "is this type a Foo?", first check whether an appropriate method already exists on `Type`. If not, consider whether adding one would be the right fix — especially if the check is needed in more than one place or involves logic that varies by type class.
 
+### Arrow function vs closure parameter handling parity
+
+`MutatingScope` has separate methods for entering arrow functions (`enterArrowFunctionWithoutReflection`) and closures (`enterAnonymousFunctionWithoutReflection`). Both iterate over parameters and assign types, but they must use the same logic for computing parameter types. In particular, both must call `getFunctionType($parameter->type, $isNullable, $parameter->variadic)` to properly handle variadic parameters (wrapping the inner type in `ArrayType`). Shortcuts like `new MixedType()` for untyped parameters skip the variadic wrapping and cause variadic args to be typed as `mixed` instead of `array<int|string, mixed>`. When fixing bugs in one method, check the other for the same issue.
+
 ### MutatingScope: expression invalidation during scope merging
 
 When two scopes are merged (e.g. after if/else branches), `MutatingScope::generalizeWith()` must invalidate dependent expressions. If variable `$i` changes, then `$locations[$i]` must be invalidated too. Bugs arise when stale `ExpressionTypeHolder` entries survive scope merges. Fix pattern: in `MutatingScope`, when a root expression changes, skip/invalidate all deep expressions that depend on it.

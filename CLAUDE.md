@@ -348,6 +348,12 @@ Bugs occur when impure points are missed (e.g. inherited constructors of anonymo
 
 `FunctionCallParametersCheck` (`src/Rules/FunctionCallParametersCheck.php`) validates arguments passed to functions/methods. For by-reference parameters, it checks whether the argument is a valid lvalue (variable, array dim fetch, property fetch). It also allows function/method calls that return by reference (`&getString()`, `&staticGetString()`, `&refFunction()`), using `returnsByReference()` on the resolved reflection. The class is manually instantiated in ~20 test files, so adding a constructor parameter requires updating all of them. The `Scope` interface provides `getMethodReflection()` for method calls, while `ReflectionProvider` (injected into the class) is needed for resolving function reflections.
 
+### FunctionCallParametersCheck: spread argument expansion with optional named keys
+
+When spreading a constant array into a function/method call (`foo(...$array)`), `FunctionCallParametersCheck::check()` (lines 139-213) expands each array position into an individual argument. For each position, it checks whether the key is optional (`getOptionalKeys()`), extracts the value type, and determines the key name. Optional keys (array positions that might not exist) are normally skipped to avoid asserting they're always present.
+
+However, when the optional key has a string name (named argument), skipping it causes a fallback path (lines 195-203) that loses the key-to-type correspondence. The fallback uses `getIterableValueType()` which unions ALL value types, then passes this as a single generic unpacked argument. This causes false positives when different keys have different value types — e.g., `non-empty-array{width?: int, bgColor?: string}` spread into `Foo(int|null $width, string|null $bgColor)` reports "int|string given" for `$width` because the fallback unions `int` and `string`. The fix: only skip optional keys when they don't have a named key (`$keyArgumentName === null`), so named optional keys are still expanded as individual named arguments with their correct per-key types.
+
 ### Testing patterns
 
 - **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.

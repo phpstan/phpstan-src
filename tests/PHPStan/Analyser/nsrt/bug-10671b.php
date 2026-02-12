@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bug10671;
+namespace Bug10671b;
 
 use Closure;
 use function PHPStan\Testing\assertType;

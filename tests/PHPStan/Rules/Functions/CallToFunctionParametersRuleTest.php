@@ -30,7 +30,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$broker = self::createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $broker, true, true, true, true),
 		);
 	}
 
@@ -304,6 +304,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $s of function PassedByReference\bar expects string, int given.',
 				48,
+			],
+		]);
+	}
+
+	public function testBug757(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-757.php'], [
+			[
+				'Parameter #1 $s of function Bug757\useString is passed by reference, so it expects variables only.',
+				37,
+			],
+			[
+				'Parameter #1 $s of function Bug757\useString is passed by reference, so it expects variables only.',
+				40,
 			],
 		]);
 	}

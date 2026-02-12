@@ -23,13 +23,15 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, false, true);
+		$reflectionProvider = self::createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, false, false, true);
 		return new CallCallablesRule(
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
 				new NullsafeCheck(),
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
+				$reflectionProvider,
 				true,
 				true,
 				true,

@@ -11,7 +11,6 @@ use function ini_get;
 use function is_bool;
 use function php_ini_loaded_file;
 use function sprintf;
-use function sys_get_temp_dir;
 use const PHP_BINARY;
 
 final class ProcessHelper
@@ -33,8 +32,6 @@ final class ProcessHelper
 
 		$processCommandArray = [
 			$phpCmd,
-			'-d',
-			'sys_temp_dir=' . escapeshellarg(sys_get_temp_dir()),
 		];
 
 		if ($input->getOption('memory-limit') === null) {

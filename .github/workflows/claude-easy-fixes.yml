@@ -196,7 +196,8 @@ jobs:
           3. Run PHPStan self-analysis: make phpstan
           4. Fix any failures that come up
           5. Run make cs-fix to fix any coding standard violations
-          6. Update CLAUDE.md with a few concise points about what new you learnt about the codebase
+          6. Run make name-collision and fix violations - add different tests in unique namespaces. If the function and class declarations are exactly the same, you can reuse them across files instead of duplicating them.
+          7. Update CLAUDE.md with a few concise points about what new you learnt about the codebase
 
           Do not create a branch, push, or create a PR - this will be handled automatically.
 

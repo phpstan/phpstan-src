@@ -322,6 +322,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13711(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13711.php'], []);
+	}
+
 	public function testImplodeOnPhp74(): void
 	{
 		$errors = [

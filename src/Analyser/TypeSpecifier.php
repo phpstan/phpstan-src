@@ -2585,6 +2585,18 @@ final class TypeSpecifier
 			}
 		}
 
+		// (int) $obj?->prop === 0, (string) $obj?->prop === '', (float) $obj?->prop === 0.0
+		// Casting null produces a specific value (0, '', 0.0). When the cast result
+		// is compared with !== to that value, the inner nullsafe expression was not null.
+		if ($context->false()) {
+			$castNullsafeTypes = $this->resolveNullsafeCastIdentical($unwrappedLeftExpr, $rightType, $scope);
+			if ($castNullsafeTypes === null) {
+				$castNullsafeTypes = $this->resolveNullsafeCastIdentical($unwrappedRightExpr, $scope->getType($leftExpr), $scope);
+			}
+		} else {
+			$castNullsafeTypes = null;
+		}
+
 		// $a::class === 'Foo'
 		if (
 			$context->true() &&
@@ -2661,7 +2673,11 @@ final class TypeSpecifier
 				} else {
 					$rightTypes = $this->create($rightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				}
-				return $leftTypes->unionWith($rightTypes);
+				$result = $leftTypes->unionWith($rightTypes);
+				if ($castNullsafeTypes !== null) {
+					$result = $result->unionWith($castNullsafeTypes);
+				}
+				return $result;
 			}
 		}
 
@@ -2720,6 +2736,9 @@ final class TypeSpecifier
 		}
 
 		if ($types !== null) {
+			if ($castNullsafeTypes !== null) {
+				$types = $types->unionWith($castNullsafeTypes);
+			}
 			return $types;
 		}
 
@@ -2746,11 +2765,38 @@ final class TypeSpecifier
 			}
 			return $leftTypes->unionWith($rightTypes);
 		} elseif ($context->false()) {
-			return $this->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)->normalize($scope)
+			$result = $this->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)->normalize($scope)
 				->intersectWith($this->create($rightExpr, $rightType, $context, $scope)->setRootExpr($expr)->normalize($scope));
+			if ($castNullsafeTypes !== null) {
+				$result = $result->unionWith($castNullsafeTypes);
+			}
+			return $result;
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	private function resolveNullsafeCastIdentical(Expr $castExpr, Type $constantType, Scope $scope): ?SpecifiedTypes
+	{
+		if (!$castExpr instanceof Expr\Cast) {
+			return null;
+		}
+
+		$isNullEquivalent = false;
+
+		if ($castExpr instanceof Expr\Cast\Int_ && $constantType->isConstantScalarValue()->yes()) {
+			$isNullEquivalent = (new ConstantIntegerType(0))->isSuperTypeOf($constantType)->yes();
+		} elseif ($castExpr instanceof Expr\Cast\String_ && $constantType->isConstantScalarValue()->yes()) {
+			$isNullEquivalent = (new ConstantStringType(''))->isSuperTypeOf($constantType)->yes();
+		} elseif ($castExpr instanceof Expr\Cast\Double && $constantType->isConstantScalarValue()->yes()) {
+			$isNullEquivalent = (new ConstantFloatType(0.0))->isSuperTypeOf($constantType)->yes();
+		}
+
+		if (!$isNullEquivalent) {
+			return null;
+		}
+
+		return $this->createNullsafeTypes($castExpr->expr, $scope, TypeSpecifierContext::createFalse(), null);
 	}
 
 }

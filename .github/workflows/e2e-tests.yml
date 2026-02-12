@@ -413,7 +413,7 @@ jobs:
           - script: |
               cd e2e/bug-14036
               composer install
-              ../../bin/phpstan analyze test.php --level=0
+              ../../bin/phpstan analyze
 
     steps:
       - name: "Checkout"

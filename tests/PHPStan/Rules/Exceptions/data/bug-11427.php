@@ -50,3 +50,36 @@ function test(C $c): void {
 		// offsetUnset can throw
 	}
 }
+
+/**
+ * Union type where isArray() returns maybe and isSuperTypeOf(ArrayAccess) returns maybe.
+ * This ensures the conditions in NodeScopeResolver are tested with types
+ * that distinguish !->yes() from ->no() and !->no() from ->yes().
+ *
+ * @param array<int, int>|C $c
+ */
+function testArrayOrArrayAccess($c): void {
+	try {
+		$x = isset($c[1]);
+	} catch (\Exception $e) {
+		// offsetExists can throw when $c is C
+	}
+
+	try {
+		$x = $c[1];
+	} catch (\Exception $e) {
+		// offsetGet can throw when $c is C
+	}
+
+	try {
+		$c[1] = 1;
+	} catch (\Exception $e) {
+		// offsetSet can throw when $c is C
+	}
+
+	try {
+		unset($c[1]);
+	} catch (\Exception $e) {
+		// offsetUnset can throw when $c is C
+	}
+}

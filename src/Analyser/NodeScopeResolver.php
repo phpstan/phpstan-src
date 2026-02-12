@@ -2081,7 +2081,9 @@ class NodeScopeResolver
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
 					$varType = $scope->getType($var->var);
-					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+					/** @infection-ignore-all */
+					$isArrayAccess = (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType);
+					if (!$varType->isArray()->yes() && !$isArrayAccess->no()) {
 						$throwPoints = array_merge($throwPoints, $this->processExprNode(
 							$stmt,
 							new MethodCall($this->deepNodeCloner->cloneNode($var->var), 'offsetUnset'),
@@ -3616,7 +3618,9 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($expr->var);
-			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+			/** @infection-ignore-all */
+			$isArrayAccess = (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType);
+			if (!$varType->isArray()->yes() && !$isArrayAccess->no()) {
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					$stmt,
 					new MethodCall($this->deepNodeCloner->cloneNode($expr->var), 'offsetGet'),
@@ -3927,7 +3931,9 @@ class NodeScopeResolver
 				}
 
 				$varType = $scope->getType($var->var);
-				if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+				/** @infection-ignore-all */
+				$isArrayAccess = (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType);
+				if ($varType->isArray()->yes() || $isArrayAccess->no()) {
 					continue;
 				}
 

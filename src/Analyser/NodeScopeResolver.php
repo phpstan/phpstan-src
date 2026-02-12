@@ -4166,6 +4166,7 @@ class NodeScopeResolver
 			$hasAlwaysTrueCond = false;
 			$arms = $expr->arms;
 			$armCondsToSkip = [];
+			$armBodyScopes = [];
 			if ($condType->isEnum()->yes()) {
 				// enum match analysis would work even without this if branch
 				// but would be much slower
@@ -4275,7 +4276,7 @@ class NodeScopeResolver
 							ExpressionContext::createTopLevel(),
 						);
 						$armScope = $armResult->getScope();
-						$scope = $scope->mergeWith($armScope);
+						$armBodyScopes[] = $armScope;
 						$hasYield = $hasYield || $armResult->hasYield();
 						$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 						$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
@@ -4312,7 +4313,7 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-					$scope = $scope->mergeWith($matchScope);
+					$armBodyScopes[] = $matchScope;
 					continue;
 				}
 
@@ -4356,18 +4357,36 @@ class NodeScopeResolver
 					ExpressionContext::createTopLevel(),
 				);
 				$armScope = $armResult->getScope();
-				$scope = $scope->mergeWith($armScope);
+				$armBodyScopes[] = $armScope;
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
 
-			if (!$hasDefaultCond && !$hasAlwaysTrueCond) {
+			$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
+			if (!$isExhaustive) {
 				$remainingType = $matchScope->getType($expr->cond);
-				if (!$remainingType instanceof NeverType) {
-					$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
+				if ($remainingType instanceof NeverType) {
+					$isExhaustive = true;
 				}
+			}
+
+			if ($isExhaustive) {
+				$armBodyFinalScope = null;
+				foreach ($armBodyScopes as $armBodyScope) {
+					$armBodyFinalScope = $armBodyScope->mergeWith($armBodyFinalScope);
+				}
+				$scope = $armBodyFinalScope ?? $scope;
+			} else {
+				$armBodyFinalScope = null;
+				foreach ($armBodyScopes as $armBodyScope) {
+					$armBodyFinalScope = $armBodyScope->mergeWith($armBodyFinalScope);
+				}
+				if ($armBodyFinalScope !== null) {
+					$scope = $scope->mergeWith($armBodyFinalScope);
+				}
+				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 
 			ksort($armNodes, SORT_NUMERIC);

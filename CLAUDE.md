@@ -257,6 +257,10 @@ Loops are a frequent source of false positives because PHPStan must reason about
 - **Always-overwritten arrays in foreach**: NodeScopeResolver examines `$a[$k]` at loop body end and `continue` statements. If no `break` exists, the entire array type can be rewritten based on the observed value types.
 - **Variable types across iterations**: PHP Fibers are used (PHP 8.1+) for more precise analysis of repeated variable assignments in loops, by running the loop body analysis multiple times to reach a fixpoint.
 
+### Match expression scope merging
+
+Match expressions in `NodeScopeResolver` (around line 4154) process each arm and merge the resulting scopes. The critical pattern for variable certainty is: when a match is exhaustive (has a `default` arm or an always-true condition), arm body scopes should be merged only with each other (not with the original pre-match scope). This mirrors how if/else merging works — `$finalScope` starts as `null`, and each branch's scope is merged via `$branchScope->mergeWith($finalScope)`. When the match is NOT exhaustive, the original scope must also participate in the merge (via `$scope->mergeWith($armBodyFinalScope)`) because execution may skip all arms and throw `UnhandledMatchError`. The `mergeVariableHolders()` method in `MutatingScope` uses `ExpressionTypeHolder::createMaybe()` for variables present in only one scope, so merging an arm scope that defines `$x` with the original scope that lacks `$x` degrades certainty to "maybe" — this is the root cause of false "might not be defined" reports for exhaustive match expressions.
+
 ### PHPDoc inheritance
 
 PHPDoc types (`@return`, `@param`, `@throws`, `@property`) are inherited through class hierarchies. Bugs arise when:

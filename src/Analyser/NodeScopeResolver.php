@@ -2080,6 +2080,18 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
+					$varType = $scope->getType($var->var);
+					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+						$throwPoints = array_merge($throwPoints, $this->processExprNode(
+							$stmt,
+							new MethodCall($var->var, 'offsetUnset'),
+							$scope,
+							$storage,
+							new NoopNodeCallback(),
+							ExpressionContext::createDeep(),
+						)->getThrowPoints());
+					}
+
 					$clonedVar = $this->deepNodeCloner->cloneNode($var->var);
 					$traverser = new NodeTraverser();
 					$traverser->addVisitor(new class () extends NodeVisitorAbstract {
@@ -3602,6 +3614,18 @@ class NodeScopeResolver
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
+
+			$varType = $scope->getType($expr->var);
+			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+				$throwPoints = array_merge($throwPoints, $this->processExprNode(
+					$stmt,
+					new MethodCall($expr->var, 'offsetGet'),
+					$scope,
+					$storage,
+					new NoopNodeCallback(),
+					$context,
+				)->getThrowPoints());
+			}
 		} elseif ($expr instanceof Array_) {
 			$itemNodes = [];
 			$hasYield = false;
@@ -3897,6 +3921,24 @@ class NodeScopeResolver
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 				$nonNullabilityResults[] = $nonNullabilityResult;
+
+				if (!($var instanceof ArrayDimFetch)) {
+					continue;
+				}
+
+				$varType = $scope->getType($var->var);
+				if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+					continue;
+				}
+
+				$throwPoints = array_merge($throwPoints, $this->processExprNode(
+					$stmt,
+					new MethodCall($var->var, 'offsetExists'),
+					$scope,
+					$storage,
+					new NoopNodeCallback(),
+					$context->enterDeep(),
+				)->getThrowPoints());
 			}
 			foreach (array_reverse($expr->vars) as $var) {
 				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);

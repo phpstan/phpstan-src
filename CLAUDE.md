@@ -344,6 +344,10 @@ PHPStan tracks whether expressions/statements have side effects ("impure points"
 
 Bugs occur when impure points are missed (e.g. inherited constructors of anonymous classes) or when `clearstatcache()` calls don't invalidate filesystem function return types.
 
+### ArrayAccess throw point synthesis in NodeScopeResolver
+
+When PHP code uses array syntax (`$x[1]`) on an `ArrayAccess` object, the corresponding `offsetGet`/`offsetSet`/`offsetExists`/`offsetUnset` methods are called implicitly. For dead-catch detection to work, `NodeScopeResolver` must synthesize `MethodCall` nodes for these implicit calls and collect their throw points. The pattern: check `!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()`, then `processExprNode` a synthetic `new MethodCall($var, 'offsetXxx')` with `NoopNodeCallback` to extract throw points. This is done in four places: `ArrayDimFetch` handler (offsetGet), assignment to `ArrayDimFetch` (offsetSet), `Unset_` handler (offsetUnset), and `Isset_` handler (offsetExists).
+
 ### FunctionCallParametersCheck: by-reference argument validation
 
 `FunctionCallParametersCheck` (`src/Rules/FunctionCallParametersCheck.php`) validates arguments passed to functions/methods. For by-reference parameters, it checks whether the argument is a valid lvalue (variable, array dim fetch, property fetch). It also allows function/method calls that return by reference (`&getString()`, `&staticGetString()`, `&refFunction()`), using `returnsByReference()` on the resolved reflection. The class is manually instantiated in ~20 test files, so adding a constructor parameter requires updating all of them. The `Scope` interface provides `getMethodReflection()` for method calls, while `ReflectionProvider` (injected into the class) is needed for resolving function reflections.

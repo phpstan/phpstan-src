@@ -335,8 +335,8 @@ final class LocalTypeAliasesCheck
 		}
 
 		$aliasNameResolvedType = $this->typeNodeResolver->resolve(new IdentifierTypeNode($aliasName), $nameScope->bypassTypeAliases());
-		return ($aliasNameResolvedType->isObject()->yes() && !in_array($aliasName, ['self', 'parent'], true))
-			|| $aliasNameResolvedType instanceof TemplateType; // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
+		return $aliasNameResolvedType instanceof TemplateType || // aliases take precedence over type parameters, this is reported by other rules using TemplateTypeCheck
+			($aliasNameResolvedType->isObject()->yes() && !in_array($aliasName, ['self', 'parent'], true));
 	}
 
 	/**

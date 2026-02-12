@@ -236,7 +236,7 @@ jobs:
 
       - name: "Run Claude Code"
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: |
           git config user.name "phpstan-bot"

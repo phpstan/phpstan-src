@@ -70,3 +70,12 @@ printf('%2$*s', 5, 'a');
 printf('%s %2$*s', 'a', 5, 'a');
 printf('%1$-+\'X10.2f', 5);
 printf('%1$*.*f %s %2$d', 5, 6, new FooStringable()); // 5.000000 foo 6
+
+// Bug #13609 - numeric-string should be accepted by %d placeholder
+/** @param numeric-string $numericStr */
+function testNumericStringWithIntPlaceholder(string $numericStr): void {
+	printf('%d', $numericStr);
+	printf('%04d-%02d-%02d', $numericStr, $numericStr, $numericStr);
+	sprintf('%d', $numericStr);
+	printf('%f', $numericStr);
+}

@@ -34,7 +34,11 @@ final class PrintfPlaceholder
 				return (new IntegerType())->accepts($argumentType, true)->yes();
 			case 'int':
 				return $strictPlaceholderTypes
-					? (new IntegerType())->accepts($argumentType, true)->yes()
+					? (new UnionType([
+						new IntegerType(),
+						// numeric-string is allowed for consistency with the float case and phpstan-strict-rules.
+						new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+					]))->accepts($argumentType, true)->yes()
 					: ! $argumentType->toInteger() instanceof ErrorType;
 			case 'float':
 				return $strictPlaceholderTypes

@@ -2084,7 +2084,7 @@ class NodeScopeResolver
 					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 						$throwPoints = array_merge($throwPoints, $this->processExprNode(
 							$stmt,
-							new MethodCall($var->var, 'offsetUnset'),
+							new MethodCall($this->deepNodeCloner->cloneNode($var->var), 'offsetUnset'),
 							$scope,
 							$storage,
 							new NoopNodeCallback(),
@@ -3619,11 +3619,11 @@ class NodeScopeResolver
 			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					$stmt,
-					new MethodCall($expr->var, 'offsetGet'),
+					new MethodCall($this->deepNodeCloner->cloneNode($expr->var), 'offsetGet'),
 					$scope,
 					$storage,
 					new NoopNodeCallback(),
-					$context,
+					ExpressionContext::createDeep(),
 				)->getThrowPoints());
 			}
 		} elseif ($expr instanceof Array_) {
@@ -3933,11 +3933,11 @@ class NodeScopeResolver
 
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					$stmt,
-					new MethodCall($var->var, 'offsetExists'),
+					new MethodCall($this->deepNodeCloner->cloneNode($var->var), 'offsetExists'),
 					$scope,
 					$storage,
 					new NoopNodeCallback(),
-					$context->enterDeep(),
+					ExpressionContext::createDeep(),
 				)->getThrowPoints());
 			}
 			foreach (array_reverse($expr->vars) as $var) {

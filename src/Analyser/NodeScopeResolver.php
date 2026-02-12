@@ -1845,7 +1845,7 @@ class NodeScopeResolver
 			}
 
 			if ((!$hasDefaultCase && !$exhaustive) || $finalScope === null) {
-				$finalScope = $scope->mergeWith($finalScope);
+				$finalScope = $scopeForBranches->mergeWith($finalScope);
 			}
 
 			return new InternalStatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop, $throwPoints, $impurePoints);

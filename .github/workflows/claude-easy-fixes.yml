@@ -72,15 +72,12 @@ jobs:
               --json body \
               --jq '.body')
 
-            # Base64 encode the body to safely pass through JSON matrix
-            BODY_B64=$(echo "$BODY" | base64 -w 0)
-
             MATRIX=$(echo "$MATRIX" | jq -c \
               --argjson number "$NUMBER" \
               --arg title "$TITLE" \
               --arg url "$URL" \
-              --arg body_b64 "$BODY_B64" \
-              '. + [{number: $number, title: $title, url: $url, body_b64: $body_b64}]')
+              --arg body "$BODY" \
+              '. + [{number: $number, title: $title, url: $url, body: $body}]')
 
             echo "### Selected issue: #$NUMBER - $TITLE" >> "$GITHUB_STEP_SUMMARY"
             echo "$URL" >> "$GITHUB_STEP_SUMMARY"
@@ -125,16 +122,15 @@ jobs:
           ISSUE_NUMBER: ${{ matrix.issue.number }}
           ISSUE_TITLE: ${{ matrix.issue.title }}
           ISSUE_URL: ${{ matrix.issue.url }}
-          ISSUE_BODY_B64: ${{ matrix.issue.body_b64 }}
+          ISSUE_BODY: ${{ matrix.issue.body }}
         run: |
           python3 << 'PYEOF'
           import os
-          import base64
 
           n = os.environ["ISSUE_NUMBER"]
           title = os.environ["ISSUE_TITLE"]
           url = os.environ["ISSUE_URL"]
-          body = base64.b64decode(os.environ["ISSUE_BODY_B64"]).decode("utf-8")
+          body = os.environ["ISSUE_BODY"]
 
           prompt = f"""You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 

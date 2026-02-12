@@ -1,0 +1,156 @@
+name: "Claude Easy Fixes"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  easy-fix:
+    name: "Pick and fix an easy issue"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.4"
+          ini-file: development
+          extensions: mbstring
+
+      - uses: "ramsey/composer-install@v3"
+
+      - name: "Pick a random Easy fix issue"
+        id: pick-issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_JSON=$(gh issue list \
+            --repo phpstan/phpstan \
+            --milestone "Easy fixes" \
+            --state open \
+            --json number,title,body,url \
+            --limit 100 \
+          )
+
+          TOTAL=$(echo "$ISSUE_JSON" | jq 'length')
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "No issues found in Easy fixes milestone"
+            exit 1
+          fi
+
+          RANDOM_INDEX=$(( RANDOM % TOTAL ))
+          ISSUE=$(echo "$ISSUE_JSON" | jq -c ".[$RANDOM_INDEX]")
+
+          ISSUE_NUMBER=$(echo "$ISSUE" | jq -r '.number')
+          ISSUE_TITLE=$(echo "$ISSUE" | jq -r '.title')
+          ISSUE_URL=$(echo "$ISSUE" | jq -r '.url')
+          ISSUE_BODY=$(echo "$ISSUE" | jq -r '.body')
+
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
+          echo "issue_url=$ISSUE_URL" >> "$GITHUB_OUTPUT"
+
+          EOF_MARKER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "issue_body<<$EOF_MARKER" >> "$GITHUB_OUTPUT"
+          echo "$ISSUE_BODY" >> "$GITHUB_OUTPUT"
+          echo "$EOF_MARKER" >> "$GITHUB_OUTPUT"
+
+          # Also fetch the first comment (issue body is the first comment)
+          FIRST_COMMENT_BODY=$(gh issue view "$ISSUE_NUMBER" \
+            --repo phpstan/phpstan \
+            --json body \
+            --jq '.body')
+
+          echo "first_comment<<$EOF_MARKER" >> "$GITHUB_OUTPUT"
+          echo "$FIRST_COMMENT_BODY" >> "$GITHUB_OUTPUT"
+          echo "$EOF_MARKER" >> "$GITHUB_OUTPUT"
+
+          echo "### Selected issue: #$ISSUE_NUMBER - $ISSUE_TITLE" >> "$GITHUB_STEP_SUMMARY"
+          echo "$ISSUE_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Run Claude Code"
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
+
+            Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
+            Issue #${{ steps.pick-issue.outputs.issue_number }}: ${{ steps.pick-issue.outputs.issue_title }}
+            URL: ${{ steps.pick-issue.outputs.issue_url }}
+
+            Issue body:
+            ${{ steps.pick-issue.outputs.first_comment }}
+
+            ## Step 1: Retrieve playground code
+
+            From the issue body above, find any referenced PHPStan playground links (URLs matching https://phpstan.org/r/<UUID>).
+
+            For each playground link, extract the UUID and fetch the code and analysis results using the API:
+            ```
+            curl https://api.phpstan.org/sample?id=<UUID>
+            ```
+
+            The API returns JSON with:
+            - `code`: The PHP code that was analyzed
+            - `level`: The PHPStan rule level
+            - `config.strictRules`: Whether strict rules are enabled
+            - `config.bleedingEdge`: Whether bleeding edge is enabled
+            - `config.treatPhpDocTypesAsCertain`: PHPDoc type certainty setting
+            - `versionedErrors`: Array of `{phpVersion, errors: [{line, message, identifier}]}`
+
+            ## Step 2: Write a regression test
+
+            Based on the issue and the playground code:
+
+            - If the problem is **only about type inference** (wrong type reported, missing type narrowing, etc.), add a test file in `tests/PHPStan/Analyser/nsrt/` using `assertType()` and `assertNativeType()` calls. Name it `bug-<issue_number>.php`. Look at existing files in that directory for examples.
+
+            - If the problem is about a **rule false positive/negative** (wrong error reported or missing error), add a rule-specific test. Find the relevant rule test case in `tests/PHPStan/Rules/` and add a test data file. Look at existing bug test files in those directories for the pattern.
+
+            The regression test **should fail** without the fix - verify this by running it before implementing the fix.
+
+            Run individual test files with: `php vendor/bin/phpunit <test-file>`
+            Run all tests with: `make tests`
+            Run PHPStan with: `make phpstan`
+
+            ## Step 3: Fix the bug
+
+            Implement the fix in the source code under `src/`. Common areas to look:
+            - `src/Analyser/NodeScopeResolver.php` - AST traversal and scope management
+            - `src/Analyser/MutatingScope.php` - Type tracking
+            - `src/Analyser/TypeSpecifier.php` - Type narrowing from conditions
+            - `src/Type/` - Type system implementations
+            - `src/Rules/` - Rule implementations
+            - `src/Reflection/` - Reflection layer
+
+            Read CLAUDE.md for important guidelines about the codebase architecture and common patterns.
+
+            ## Step 4: Verify the fix
+
+            1. Run the regression test to confirm it passes now
+            2. Run the full test suite: `make tests`
+            3. Run PHPStan self-analysis: `make phpstan`
+            4. Fix any failures that come up
+
+            ## Step 5: Create a branch and PR
+
+            1. Create a branch named `fix/bug-${{ steps.pick-issue.outputs.issue_number }}`
+            2. Commit all changes with message: "Fix #${{ steps.pick-issue.outputs.issue_number }}"
+            3. Push the branch
+            4. Create a PR targeting the `2.1.x` branch with:
+               - Title: "Fix #${{ steps.pick-issue.outputs.issue_number }}: ${{ steps.pick-issue.outputs.issue_title }}"
+               - Body referencing the issue: "Fixes phpstan/phpstan#${{ steps.pick-issue.outputs.issue_number }}"
+               - Include a description of the fix and what was wrong
+          claude_args: "--model claude-sonnet-4-5-20250929 --max-turns 50"

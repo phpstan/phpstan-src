@@ -74,12 +74,6 @@ jobs:
           echo "### Selected issue: #$ISSUE_NUMBER - $ISSUE_TITLE" >> "$GITHUB_STEP_SUMMARY"
           echo "$ISSUE_URL" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: "Setup Node.js"
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
       - name: "Install Claude Code"
         run: npm install -g @anthropic-ai/claude-code
 

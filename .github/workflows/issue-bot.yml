@@ -294,8 +294,6 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
-            --output-format stream-json \
-            --verbose \
             --dangerously-skip-permissions \
             "Read the file ./tmp/step-summary.md which contains the Issue Bot step summary from CI in Markdown format. Interpret this Markdown to figure out which GitHub issues need regression tests added. For each affected issue (where behavior changed), run /regression-test with the issue number.
 

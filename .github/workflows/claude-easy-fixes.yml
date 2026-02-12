@@ -244,8 +244,6 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
-            --output-format stream-json \
-            --verbose \
             --dangerously-skip-permissions \
             "$(cat /tmp/claude-prompt.txt)"
 

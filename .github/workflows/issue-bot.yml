@@ -283,6 +283,11 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         run: npm install -g @anthropic-ai/claude-code
 
+      - name: "Save HEAD before generation"
+        if: steps.check.outputs.skip != 'true'
+        id: before
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: "Generate regression tests"
         if: steps.check.outputs.skip != 'true'
         env:
@@ -308,3 +313,47 @@ jobs:
           fi
 
           git push
+
+      - name: "Update PR description"
+        if: steps.check.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: |
+          BEFORE_SHA="${{ steps.before.outputs.sha }}"
+          CURRENT_SHA="$(git rev-parse HEAD)"
+
+          if [ "$BEFORE_SHA" = "$CURRENT_SHA" ]; then
+            echo "No new commits, skipping PR description update"
+            exit 0
+          fi
+
+          # Extract issue numbers from new commit messages
+          ISSUE_NUMBERS=$(git log --format='%s' "$BEFORE_SHA".."$CURRENT_SHA" | grep -oP '#\K[0-9]+' | sort -u)
+
+          if [ -z "$ISSUE_NUMBERS" ]; then
+            echo "No issue numbers found in new commits"
+            exit 0
+          fi
+
+          # Get current PR body
+          gh pr view "${{ github.event.pull_request.number }}" --json body --jq '.body' > /tmp/pr-body.txt
+
+          # Append closes lines for issues not already in the body
+          ADDED=false
+          for NUM in $ISSUE_NUMBERS; do
+            ISSUE_URL="https://github.com/phpstan/phpstan/issues/$NUM"
+            if ! grep -qF "$ISSUE_URL" /tmp/pr-body.txt; then
+              if [ "$ADDED" = false ]; then
+                echo "" >> /tmp/pr-body.txt
+              fi
+              echo "Closes $ISSUE_URL" >> /tmp/pr-body.txt
+              ADDED=true
+            fi
+          done
+
+          if [ "$ADDED" = false ]; then
+            echo "All issues already referenced in PR description"
+            exit 0
+          fi
+
+          gh pr edit "${{ github.event.pull_request.number }}" --body-file /tmp/pr-body.txt

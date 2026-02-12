@@ -188,6 +188,8 @@ jobs:
           2. Run the full test suite: make tests
           3. Run PHPStan self-analysis: make phpstan
           4. Fix any failures that come up
+          5. Run make cs-fix to fix any coding standard violations
+          6. Update CLAUDE.md with a few concise points about what new you learnt about the codebase
 
           Do not create a branch, push, or create a PR - this will be handled automatically.
           """

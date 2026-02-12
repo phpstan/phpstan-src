@@ -3818,7 +3818,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			array_merge($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
+			$this->mergeConditionalExpressions($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
 			$scope->inClosureBindScopeClasses,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,
@@ -4005,6 +4005,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $existingConditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function mergeConditionalExpressions(array $newConditionalExpressions, array $existingConditionalExpressions): array
+	{
+		$result = $existingConditionalExpressions;
+		foreach ($newConditionalExpressions as $exprString => $holders) {
+			if (!array_key_exists($exprString, $result)) {
+				$result[$exprString] = $holders;
+			} else {
+				$result[$exprString] = array_merge($result[$exprString], $holders);
+			}
+		}
+
+		return $result;
 	}
 
 	/**

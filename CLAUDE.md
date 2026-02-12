@@ -281,6 +281,10 @@ PHPStan maintains its own signature map for built-in PHP functions in `functionM
 - Marking functions as impure (e.g. `time()`, Redis methods)
 - PHP-version-specific signatures (e.g. `bcround` only in PHP 8.4+)
 
+### PHP-parser name resolution and `originalName` attribute
+
+PHP-parser's `NameResolver` resolves names through `use` statements. When `preserveOriginalNames: true` is configured (as PHPStan does in `conf/services.neon`), the original unresolved Name node is preserved as an `originalName` attribute on the resolved `FullyQualified` node. This matters for case-sensitivity checking: when `use DateTimeImmutable;` is followed by `dateTimeImmutable` in a typehint, the resolved node has the case from the `use` statement (`DateTimeImmutable`), losing the wrong case from the source. The `originalName` attribute preserves the source-code case (`dateTimeImmutable`). Rules that check class name case (like `class.nameCase` via `ClassCaseSensitivityCheck`) must use this attribute rather than relying on `Type::getReferencedClasses()` which returns already-resolved names. The fix pattern is in `FunctionDefinitionCheck::getOriginalClassNamePairsFromTypeNode()` which extracts original-case class names from AST type nodes.
+
 ### Impure points and side effects
 
 PHPStan tracks whether expressions/statements have side effects ("impure points"). This enables:

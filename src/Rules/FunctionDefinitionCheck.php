@@ -41,7 +41,9 @@ use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_slice;
 use function count;
+use function implode;
 use function in_array;
 use function is_string;
 use function sprintf;
@@ -183,17 +185,23 @@ final class FunctionDefinitionCheck
 						->build();
 					continue;
 				}
-
-				$errors = array_merge(
-					$errors,
-					$this->classCheck->checkClassNames($scope, [
-						new ClassNameNodePair($class, $param->type),
-					], ClassNameUsageLocation::from(ClassNameUsageLocation::PARAMETER_TYPE, [
-						'parameterName' => $param->var->name,
-						'isInAnonymousFunction' => true,
-					]), $this->checkClassCaseSensitivity),
-				);
 			}
+
+			$anonParamOriginalCasePairs = $this->getOriginalClassNamePairsFromTypeNode($param->type);
+
+			$errors = array_merge(
+				$errors,
+				$this->classCheck->checkClassNames($scope, array_map(static function (string $class) use ($param, $anonParamOriginalCasePairs): ClassNameNodePair {
+					$lowerClass = strtolower($class);
+					if (isset($anonParamOriginalCasePairs[$lowerClass])) {
+						return $anonParamOriginalCasePairs[$lowerClass];
+					}
+					return new ClassNameNodePair($class, $param->type);
+				}, $type->getReferencedClasses()), ClassNameUsageLocation::from(ClassNameUsageLocation::PARAMETER_TYPE, [
+					'parameterName' => $param->var->name,
+					'isInAnonymousFunction' => true,
+				]), $this->checkClassCaseSensitivity),
+			);
 		}
 
 		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
@@ -260,16 +268,22 @@ final class FunctionDefinitionCheck
 					->build();
 				continue;
 			}
-
-			$errors = array_merge(
-				$errors,
-				$this->classCheck->checkClassNames($scope, [
-					new ClassNameNodePair($returnTypeClass, $returnTypeNode),
-				], ClassNameUsageLocation::from(ClassNameUsageLocation::RETURN_TYPE, [
-					'isInAnonymousFunction' => true,
-				]), $this->checkClassCaseSensitivity),
-			);
 		}
+
+		$anonReturnOriginalCasePairs = $this->getOriginalClassNamePairsFromTypeNode($returnTypeNode);
+
+		$errors = array_merge(
+			$errors,
+			$this->classCheck->checkClassNames($scope, array_map(static function (string $class) use ($returnTypeNode, $anonReturnOriginalCasePairs): ClassNameNodePair {
+				$lowerClass = strtolower($class);
+				if (isset($anonReturnOriginalCasePairs[$lowerClass])) {
+					return $anonReturnOriginalCasePairs[$lowerClass];
+				}
+				return new ClassNameNodePair($class, $returnTypeNode);
+			}, $returnType->getReferencedClasses()), ClassNameUsageLocation::from(ClassNameUsageLocation::RETURN_TYPE, [
+				'isInAnonymousFunction' => true,
+			]), $this->checkClassCaseSensitivity),
+		);
 
 		return $errors;
 	}
@@ -469,11 +483,19 @@ final class FunctionDefinitionCheck
 				$locationData['function'] = $parametersAcceptor;
 			}
 
+			$originalCasePairs = $this->getOriginalClassNamePairsFromTypeNode($parameterNodeCallback()->type);
+
 			$errors = array_merge(
 				$errors,
 				$this->classCheck->checkClassNames(
 					$scope,
-					array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $parameterNodeCallback()), $referencedClasses),
+					array_map(static function (string $class) use ($parameterNodeCallback, $originalCasePairs): ClassNameNodePair {
+						$lowerClass = strtolower($class);
+						if (isset($originalCasePairs[$lowerClass])) {
+							return $originalCasePairs[$lowerClass];
+						}
+						return new ClassNameNodePair($class, $parameterNodeCallback());
+					}, $referencedClasses),
 					ClassNameUsageLocation::from(ClassNameUsageLocation::PARAMETER_TYPE, $locationData),
 					$this->checkClassCaseSensitivity,
 				),
@@ -541,11 +563,19 @@ final class FunctionDefinitionCheck
 			$locationData['function'] = $parametersAcceptor;
 		}
 
+		$returnOriginalCasePairs = $this->getOriginalClassNamePairsFromTypeNode($functionNode->getReturnType());
+
 		$errors = array_merge(
 			$errors,
 			$this->classCheck->checkClassNames(
 				$scope,
-				array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $returnTypeNode), $returnTypeReferencedClasses),
+				array_map(static function (string $class) use ($returnTypeNode, $returnOriginalCasePairs): ClassNameNodePair {
+					$lowerClass = strtolower($class);
+					if (isset($returnOriginalCasePairs[$lowerClass])) {
+						return $returnOriginalCasePairs[$lowerClass];
+					}
+					return new ClassNameNodePair($class, $returnTypeNode);
+				}, $returnTypeReferencedClasses),
 				ClassNameUsageLocation::from(ClassNameUsageLocation::RETURN_TYPE, $locationData),
 				$this->checkClassCaseSensitivity,
 			),
@@ -805,6 +835,57 @@ final class FunctionDefinitionCheck
 		))->line($line)
 			->identifier('parameter.implicitlyNullable')
 			->build();
+	}
+
+	/**
+	 * @return array<string, ClassNameNodePair>
+	 */
+	private function getOriginalClassNamePairsFromTypeNode(Identifier|Name|ComplexType|null $typeNode): array
+	{
+		if ($typeNode === null) {
+			return [];
+		}
+
+		if ($typeNode instanceof Name) {
+			$originalName = $typeNode->getAttribute('originalName');
+			if (!$originalName instanceof Name) {
+				return [];
+			}
+
+			$resolvedName = $typeNode->toString();
+			$originalParts = $originalName->getParts();
+			$resolvedParts = $typeNode->getParts();
+
+			$originalPartsCount = count($originalParts);
+			$resolvedPartsCount = count($resolvedParts);
+
+			if ($originalPartsCount <= $resolvedPartsCount) {
+				$prefixParts = array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount);
+				$originalCaseClassName = implode('\\', array_merge($prefixParts, $originalParts));
+			} else {
+				$originalCaseClassName = $originalName->toString();
+			}
+
+			if ($originalCaseClassName === $resolvedName) {
+				return [];
+			}
+
+			return [strtolower($resolvedName) => new ClassNameNodePair($originalCaseClassName, $typeNode)];
+		}
+
+		if ($typeNode instanceof NullableType) {
+			return $this->getOriginalClassNamePairsFromTypeNode($typeNode->type);
+		}
+
+		if ($typeNode instanceof UnionType || $typeNode instanceof IntersectionType) {
+			$pairs = [];
+			foreach ($typeNode->types as $innerType) {
+				$pairs += $this->getOriginalClassNamePairsFromTypeNode($innerType);
+			}
+			return $pairs;
+		}
+
+		return [];
 	}
 
 }

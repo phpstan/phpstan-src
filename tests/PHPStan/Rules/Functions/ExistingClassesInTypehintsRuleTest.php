@@ -490,6 +490,25 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11470(): void
+	{
+		require_once __DIR__ . '/data/bug-11470.php';
+		$this->analyse([__DIR__ . '/data/bug-11470.php'], [
+			[
+				'Class DateTimeImmutable referenced with incorrect case: dateTimeImmutable.',
+				7,
+			],
+			[
+				'Class DateTimeImmutable referenced with incorrect case: dateTimeImmutable.',
+				12,
+			],
+			[
+				'Class DateTimeImmutable referenced with incorrect case: dateTimeImmutable.',
+				16,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.2')]
 	public function testNoDiscardVoid(): void
 	{

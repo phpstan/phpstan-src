@@ -2,7 +2,7 @@
 name: regression-test
 description: Add a regression test for an already-fixed PHPStan bug given a GitHub issue number
 argument-hint: "[issue-number]"
-allowed-tools: Read, Grep, Glob, Bash(curl *), Bash(gh *), Bash(git *), Bash(make tests), Bash(vendor/bin/phpunit *), Bash(php *)
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash(curl *), Bash(gh *), Bash(git *), Bash(make tests), Bash(vendor/bin/phpunit *), Bash(php *)
 ---
 
 # Adding a regression test for a fixed PHPStan bug
@@ -184,3 +184,14 @@ git stash pop
 ```
 
 If the test passes even with the fix reverted, the test is not correctly covering the bug — revisit the assertions or the reproducing code.
+
+## Step 6 — Commit
+
+Stage the new/modified test files and commit. The commit message must include `Closes https://github.com/phpstan/phpstan/issues/<number>` so the upstream issue is closed automatically.
+
+```bash
+git add tests/
+git commit -m "Add regression test for #<number>
+
+Closes https://github.com/phpstan/phpstan/issues/<number>"
+```

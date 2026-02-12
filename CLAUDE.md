@@ -232,6 +232,10 @@ When considering a bug fix that involves checking "is this type a Foo?", first c
 
 When two scopes are merged (e.g. after if/else branches), `MutatingScope::generalizeWith()` must invalidate dependent expressions. If variable `$i` changes, then `$locations[$i]` must be invalidated too. Bugs arise when stale `ExpressionTypeHolder` entries survive scope merges. Fix pattern: in `MutatingScope`, when a root expression changes, skip/invalidate all deep expressions that depend on it.
 
+### Closure::bind() scope leaking into argument evaluation
+
+`NodeScopeResolver::processArgs()` has special handling for `Closure::bind()` and `Closure::bindTo()` calls. When the first argument is a closure/arrow function literal, a `$closureBindScope` is created with `$this` rebound to the second argument's type, and this scope is used to process the closure body. However, this `$closureBindScope` must ONLY be applied when the first argument is actually an `Expr\Closure` or `Expr\ArrowFunction`. If the first argument is a general expression that returns a closure (e.g. `$this->hydrate()`), the expression itself must be evaluated in the original scope — otherwise `$this` in the expression gets incorrectly resolved as the bound object type instead of the current class. The condition at the `$scopeToPass` assignment must check the argument node type.
+
 ### Array type tracking: SetExistingOffsetValueTypeExpr vs SetOffsetValueTypeExpr
 
 When assigning to an array offset, NodeScopeResolver must distinguish:

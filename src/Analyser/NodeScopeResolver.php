@@ -5628,7 +5628,7 @@ class NodeScopeResolver
 
 			$originalScope = $scope;
 			$scopeToPass = $scope;
-			if ($i === 0 && $closureBindScope !== null) {
+			if ($i === 0 && $closureBindScope !== null && ($arg->value instanceof Expr\Closure || $arg->value instanceof Expr\ArrowFunction)) {
 				$scopeToPass = $closureBindScope;
 			}
 

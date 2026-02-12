@@ -405,4 +405,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13048.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13303(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13303.php'], [
+			[
+				'Match expression does not handle remaining value: true',
+				34,
+			],
+		]);
+	}
+
 }

@@ -495,6 +495,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/bug-3632.php'], [
 			[
+				'Instanceof between null and Bug3632\NiceClass will always evaluate to false.',
+				32,
+				$tipText,
+			],
+			[
 				'Instanceof between Bug3632\NiceClass and Bug3632\NiceClass will always evaluate to true.',
 				36,
 				$tipText,

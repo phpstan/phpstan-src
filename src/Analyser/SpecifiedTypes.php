@@ -188,6 +188,16 @@ final class SpecifiedTypes
 			$result = $result->setAlwaysOverwriteTypes();
 		}
 
+		$conditionalExpressionHolders = $this->newConditionalExpressionHolders;
+		foreach ($other->newConditionalExpressionHolders as $exprString => $holders) {
+			if (!array_key_exists($exprString, $conditionalExpressionHolders)) {
+				$conditionalExpressionHolders[$exprString] = $holders;
+			} else {
+				$conditionalExpressionHolders[$exprString] = array_merge($conditionalExpressionHolders[$exprString], $holders);
+			}
+		}
+		$result->newConditionalExpressionHolders = $conditionalExpressionHolders;
+
 		return $result->setRootExpr($rootExpr);
 	}
 

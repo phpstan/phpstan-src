@@ -4364,6 +4364,13 @@ class NodeScopeResolver
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
 
+			if (!$hasDefaultCond && !$hasAlwaysTrueCond && $condType->isBoolean()->yes() && $condType->isConstantScalarValue()->yes()) {
+				if ($this->isScopeConditionallyImpossible($matchScope)) {
+					$hasAlwaysTrueCond = true;
+					$matchScope = $matchScope->addTypeToExpression($expr->cond, new NeverType());
+				}
+			}
+
 			$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
 			if (!$isExhaustive) {
 				$remainingType = $matchScope->getType($expr->cond);
@@ -7596,6 +7603,57 @@ class NodeScopeResolver
 				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
 			],
 		);
+	}
+
+	/**
+	 * Checks if a scope's conditional expressions form a contradiction,
+	 * meaning no combination of variable values is possible.
+	 * Used for match(true) exhaustiveness detection.
+	 */
+	private function isScopeConditionallyImpossible(MutatingScope $scope): bool
+	{
+		$boolVars = [];
+		foreach ($scope->getDefinedVariables() as $varName) {
+			$varType = $scope->getVariableType($varName);
+			if ($varType->isBoolean()->yes() && !$varType->isConstantScalarValue()->yes()) {
+				$boolVars[] = $varName;
+			}
+		}
+
+		if ($boolVars === []) {
+			return false;
+		}
+
+		// Check if any boolean variable's both truth values lead to contradictions
+		foreach ($boolVars as $varName) {
+			$varExpr = new Variable($varName);
+			$truthyScope = $scope->filterByTruthyValue($varExpr);
+			$falseyScope = $scope->filterByFalseyValue($varExpr);
+
+			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
+			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
+
+			if ($truthyContradiction && $falseyContradiction) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param string[] $varNames
+	 */
+	private function scopeHasNeverVariable(MutatingScope $scope, array $varNames): bool
+	{
+		foreach ($varNames as $varName) {
+			$type = $scope->getVariableType($varName);
+			if ($type instanceof NeverType) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope

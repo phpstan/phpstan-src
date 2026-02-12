@@ -1291,4 +1291,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10771.php'], []);
 	}
 
+	public function testBug5946(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5946.php'], [
+			[
+				'Method Bug5946\Model::getModel() should return $this(Bug5946\Model) but returns static(Bug5946\Model).',
+				21,
+			],
+			[
+				'Method Bug5946\Model::getModel() should return $this(Bug5946\Model) but returns static(Bug5946\Model).',
+				23,
+			],
+		]);
+	}
+
 }

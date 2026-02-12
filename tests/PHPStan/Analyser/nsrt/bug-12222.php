@@ -1,6 +1,6 @@
 <?php // lint >= 8.1
 
-namespace Bug12222;
+namespace Bug12222Nsrt;
 
 use function PHPStan\Testing\assertType;
 
@@ -51,11 +51,11 @@ class DataProcessor
 			'startDate' => $data['startDate'],
 		];
 
-		assertType('Bug12222\ContractStatus|null', $contract['status']);
+		assertType('Bug12222Nsrt\ContractStatus|null', $contract['status']);
 		$contract['isActive'] = $contract['status']?->isActive();
-		assertType('Bug12222\ContractStatus|null', $contract['status']);
+		assertType('Bug12222Nsrt\ContractStatus|null', $contract['status']);
 		$contract['isBeingTerminated'] = $contract['status']?->isBeingTerminated();
-		assertType('Bug12222\ContractStatus|null', $contract['status']);
+		assertType('Bug12222Nsrt\ContractStatus|null', $contract['status']);
 		$contract['isTerminated'] = $contract['status']?->isTerminated();
 
 		return $contract;

@@ -306,6 +306,10 @@ PHPStan tracks whether expressions/statements have side effects ("impure points"
 
 Bugs occur when impure points are missed (e.g. inherited constructors of anonymous classes) or when `clearstatcache()` calls don't invalidate filesystem function return types.
 
+### FunctionCallParametersCheck: by-reference argument validation
+
+`FunctionCallParametersCheck` (`src/Rules/FunctionCallParametersCheck.php`) validates arguments passed to functions/methods. For by-reference parameters, it checks whether the argument is a valid lvalue (variable, array dim fetch, property fetch). It also allows function/method calls that return by reference (`&getString()`, `&staticGetString()`, `&refFunction()`), using `returnsByReference()` on the resolved reflection. The class is manually instantiated in ~20 test files, so adding a constructor parameter requires updating all of them. The `Scope` interface provides `getMethodReflection()` for method calls, while `ReflectionProvider` (injected into the class) is needed for resolving function reflections.
+
 ### Testing patterns
 
 - **Rule tests**: Extend `RuleTestCase`, implement `getRule()`, call `$this->analyse([__DIR__ . '/data/my-test.php'], [...expected errors...])`. Expected errors are `[message, line]` pairs. Test data files live in `tests/PHPStan/Rules/*/data/`.

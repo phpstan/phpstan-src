@@ -11,6 +11,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -47,6 +48,7 @@ final class FunctionCallParametersCheck
 		private NullsafeCheck $nullsafeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter(ref: '%checkFunctionArgumentTypes%')]
 		private bool $checkArgumentTypes,
 		#[AutowiredParameter]
@@ -462,6 +464,10 @@ final class FunctionCallParametersCheck
 				continue;
 			}
 
+			if ($this->callReturnsByReference($argumentValue, $scope)) {
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$parameterPassedByReferenceMessage,
 				$this->describeParameter($parameter, $argumentName === null ? $i + 1 : null),
@@ -688,6 +694,48 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
+	}
+
+	private function callReturnsByReference(Expr $expr, Scope $scope): bool
+	{
+		if ($expr instanceof Node\Expr\MethodCall) {
+			if (!$expr->name instanceof Node\Identifier) {
+				return false;
+			}
+			$calledOnType = $scope->getType($expr->var);
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->name);
+			if ($methodReflection === null) {
+				return false;
+			}
+			return $methodReflection->returnsByReference()->yes();
+		}
+
+		if ($expr instanceof Node\Expr\StaticCall) {
+			if (!$expr->name instanceof Node\Identifier) {
+				return false;
+			}
+			if ($expr->class instanceof Node\Name) {
+				$calledOnType = $scope->resolveTypeByName($expr->class);
+			} else {
+				$calledOnType = $scope->getType($expr->class);
+			}
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->name);
+			if ($methodReflection === null) {
+				return false;
+			}
+			return $methodReflection->returnsByReference()->yes();
+		}
+
+		if ($expr instanceof Node\Expr\FuncCall) {
+			if ($expr->name instanceof Node\Name) {
+				if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
+					$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+					return $functionReflection->returnsByReference()->yes();
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

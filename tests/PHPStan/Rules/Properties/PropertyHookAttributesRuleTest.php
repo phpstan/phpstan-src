@@ -32,6 +32,7 @@ class PropertyHookAttributesRuleTest extends RuleTestCase
 					new NullsafeCheck(),
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
+					$reflectionProvider,
 					true,
 					true,
 					true,

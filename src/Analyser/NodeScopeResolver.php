@@ -214,6 +214,7 @@ use function array_merge;
 use function array_pop;
 use function array_reverse;
 use function array_slice;
+use function array_unshift;
 use function array_values;
 use function base64_decode;
 use function count;
@@ -2462,6 +2463,29 @@ class NodeScopeResolver
 		}
 
 		$nativeType = $scope->getNativeType($exprToSpecify);
+
+		$specifiedExpressions = [
+			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
+		];
+
+		// When narrowing an ArrayDimFetch, specifyExpressionType also recursively
+		// narrows the parent array's offset type via intersection with HasOffsetValueType.
+		// To properly revert this, we must also save and restore the parent expression's type.
+		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
+			$parentExpr = $exprToSpecify->var;
+			$parentCertainty = TrinaryLogic::createYes();
+			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
+			if (!$hasParentExpressionType->no()) {
+				$parentCertainty = $hasParentExpressionType;
+			}
+			array_unshift($specifiedExpressions, new EnsuredNonNullabilityResultExpression(
+				$parentExpr,
+				$scope->getType($parentExpr),
+				$scope->getNativeType($parentExpr),
+				$parentCertainty,
+			));
+		}
+
 		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,
 			$exprTypeWithoutNull,
@@ -2471,9 +2495,7 @@ class NodeScopeResolver
 
 		return new EnsuredNonNullabilityResult(
 			$scope,
-			[
-				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
-			],
+			$specifiedExpressions,
 		);
 	}
 

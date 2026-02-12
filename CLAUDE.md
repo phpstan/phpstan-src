@@ -280,6 +280,10 @@ Fixes typically involve `ConstantArrayType`, `TypeSpecifier` (for narrowing afte
 
 The degradation loses specific key information. To preserve it, `getArrayType()` tracks `HasOffsetValueType` accessories for non-optional keys from constant array spreads with string keys. After building, these are intersected with the degraded result. When a non-constant spread appears later that could overwrite tracked keys (its key type is a supertype of the tracked offsets), those entries are invalidated. This ensures correct handling of PHP's spread ordering semantics where later spreads override earlier ones for same-named string keys.
 
+### Nullsafe operator and ensureShallowNonNullability / revertNonNullability
+
+`NodeScopeResolver` handles `NullsafeMethodCall` and `NullsafePropertyFetch` by temporarily removing null from the variable's type (`ensureShallowNonNullability`), processing the inner expression, then restoring the original nullable type (`revertNonNullability`). When the expression is an `ArrayDimFetch` (e.g. `$arr['key']?->method()`), `specifyExpressionType` recursively narrows the parent array type via `TypeCombinator::intersect` with `HasOffsetValueType`. This intersection only narrows and cannot widen, so `revertNonNullability` fails to restore the parent array's offset type. The fix is to also save and restore the parent expression's type in `ensureShallowNonNullability`. Without this, subsequent uses of the same nullsafe call are falsely reported as "Using nullsafe method call on non-nullable type" because the parent array retains the narrowed (non-null) offset type.
+
 ### Loop analysis: foreach, for, while
 
 Loops are a frequent source of false positives because PHPStan must reason about types across iterations:

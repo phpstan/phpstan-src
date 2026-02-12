@@ -102,6 +102,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_values;
 use function assert;
 use function ceil;
 use function count;
@@ -637,6 +638,7 @@ final class InitializerExprTypeResolver
 
 		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$isList = null;
+		$hasOffsetValueTypes = [];
 		foreach ($expr->items as $arrayItem) {
 			$valueType = $getTypeCallback($arrayItem->value);
 			if ($arrayItem->unpack) {
@@ -657,6 +659,9 @@ final class InitializerExprTypeResolver
 					foreach ($constantArrayType->getValueTypes() as $i => $innerValueType) {
 						if ($hasStringKey) {
 							$arrayBuilder->setOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType, $constantArrayType->isOptionalKey($i));
+							if (!$constantArrayType->isOptionalKey($i)) {
+								$hasOffsetValueTypes[$constantArrayType->getKeyTypes()[$i]->getValue()] = new HasOffsetValueType($constantArrayType->getKeyTypes()[$i], $innerValueType);
+							}
 						} else {
 							$arrayBuilder->setOffsetValueType(null, $innerValueType, $constantArrayType->isOptionalKey($i));
 						}
@@ -667,6 +672,14 @@ final class InitializerExprTypeResolver
 					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys() && !$valueType->getIterableKeyType()->isString()->no()) {
 						$isList = false;
 						$offsetType = $valueType->getIterableKeyType();
+
+						foreach ($hasOffsetValueTypes as $key => $hasOffsetValueType) {
+							if (!$offsetType->isSuperTypeOf($hasOffsetValueType->getOffsetType())->yes()) {
+								continue;
+							}
+
+							unset($hasOffsetValueTypes[$key]);
+						}
 					} else {
 						$isList ??= $arrayBuilder->isList();
 						$offsetType = new IntegerType();
@@ -684,7 +697,11 @@ final class InitializerExprTypeResolver
 
 		$arrayType = $arrayBuilder->getArray();
 		if ($isList === true) {
-			return TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+		}
+
+		if (count($hasOffsetValueTypes) > 0 && !$arrayType->isConstantArray()->yes()) {
+			$arrayType = TypeCombinator::intersect($arrayType, ...array_values($hasOffsetValueTypes));
 		}
 
 		return $arrayType;

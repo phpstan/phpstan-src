@@ -258,6 +258,12 @@ Many bugs involve `ConstantArrayType` (array shapes with known keys). Common iss
 
 Fixes typically involve `ConstantArrayType`, `TypeSpecifier` (for narrowing after `array_key_exists`/`isset`), and `MutatingScope` (for tracking assignments).
 
+### Array literal spread operator and ConstantArrayTypeBuilder degradation
+
+`InitializerExprTypeResolver::getArrayType()` computes the type of array literals like `[...$a, ...$b]`. It uses `ConstantArrayTypeBuilder` to build the result type. When a spread item is a single constant array (`getConstantArrays()` returns exactly one), its key/value pairs are added individually. When it's not (e.g., `array<string, mixed>`), the builder is degraded via `degradeToGeneralArray()`, and all subsequent items are merged into a general `ArrayType` with unioned keys and values.
+
+The degradation loses specific key information. To preserve it, `getArrayType()` tracks `HasOffsetValueType` accessories for non-optional keys from constant array spreads with string keys. After building, these are intersected with the degraded result. When a non-constant spread appears later that could overwrite tracked keys (its key type is a supertype of the tracked offsets), those entries are invalidated. This ensures correct handling of PHP's spread ordering semantics where later spreads override earlier ones for same-named string keys.
+
 ### Loop analysis: foreach, for, while
 
 Loops are a frequent source of false positives because PHPStan must reason about types across iterations:

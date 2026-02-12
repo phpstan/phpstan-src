@@ -1,4 +1,4 @@
-<?php // onlyForPhpVersions: 80100
+<?php // lint >= 8.1
 
 declare(strict_types = 1);
 

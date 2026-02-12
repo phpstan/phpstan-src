@@ -72,8 +72,9 @@ trait TemplateTypeTrait
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
 			$defaultDescription = '';
-			if ($this->default !== null) {
-				$recursionGuard = RecursionGuard::runOnObjectIdentity($this->default, fn () => $this->default->describe($level));
+			$default = $this->default;
+			if ($default !== null) {
+				$recursionGuard = RecursionGuard::runOnObjectIdentity($default, fn () => $default->describe($level));
 				if (!$recursionGuard instanceof ErrorType) {
 					$defaultDescription .= sprintf(' = %s', $recursionGuard);
 				}

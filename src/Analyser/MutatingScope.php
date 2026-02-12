@@ -2830,6 +2830,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private function invalidateNonReadonlyPropertyFetches(array $expressionTypes): array
+	{
+		$filteredExpressionTypes = [];
+		$nodeFinder = new NodeFinder();
+		foreach ($expressionTypes as $exprString => $expressionType) {
+			$expr = $expressionType->getExpr();
+
+			$propertyFetch = $nodeFinder->findFirst(
+				[$expr],
+				fn ($node) => $node instanceof PropertyFetch
+					&& $node->var instanceof Variable
+					&& $node->var->name === 'this'
+					&& !$this->isReadonlyPropertyFetch($node, true),
+			);
+			if ($propertyFetch !== null) {
+				continue;
+			}
+
+			$filteredExpressionTypes[$exprString] = $expressionType;
+		}
+		return $filteredExpressionTypes;
+	}
+
+	/**
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
 	 */
@@ -2901,13 +2928,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$arrowFunctionScope = $arrowFunctionScope->invalidateExpression(new Variable('this'));
 		}
 
+		$expressionTypes = $this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes);
+		$nativeExpressionTypes = $arrowFunctionScope->nativeExpressionTypes;
+		if (!$arrowFunction->static && $this->hasVariableType('this')->yes()) {
+			$expressionTypes = $this->invalidateNonReadonlyPropertyFetches($expressionTypes);
+			$nativeExpressionTypes = $this->invalidateNonReadonlyPropertyFetches($nativeExpressionTypes);
+		}
+
 		return $this->scopeFactory->create(
 			$arrowFunctionScope->context,
 			$this->isDeclareStrictTypes(),
 			$arrowFunctionScope->getFunction(),
 			$arrowFunctionScope->getNamespace(),
-			$this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes),
-			$arrowFunctionScope->nativeExpressionTypes,
+			$expressionTypes,
+			$nativeExpressionTypes,
 			$arrowFunctionScope->conditionalExpressions,
 			$arrowFunctionScope->inClosureBindScopeClasses,
 			new ClosureType(),

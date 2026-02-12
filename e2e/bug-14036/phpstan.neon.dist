@@ -1,5 +1,5 @@
 includes:
-    - phar://phpstan.phar/conf/bleedingEdge.neon
+	- ../../conf/bleedingEdge.neon
 
 parameters:
     level: 6

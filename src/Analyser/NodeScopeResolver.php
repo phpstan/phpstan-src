@@ -3426,6 +3426,25 @@ class NodeScopeResolver
 				foreach ($additionalThrowPoints as $throwPoint) {
 					$throwPoints[] = $throwPoint;
 				}
+
+				if ($expr->name instanceof Identifier && $methodReflection === null) {
+					$staticMethodCalledOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+					$methodName = $expr->name->name;
+					if ($staticMethodCalledOnType->hasMethod($methodName)->yes()) {
+						$methodReflection = $staticMethodCalledOnType->getMethod($methodName, $scope);
+						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+							$scope,
+							$expr->getArgs(),
+							$methodReflection->getVariants(),
+							$methodReflection->getNamedArgumentsVariants(),
+						);
+
+						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+						if ($methodThrowPoint !== null) {
+							$throwPoints[] = $methodThrowPoint;
+						}
+					}
+				}
 			}
 
 			if ($methodReflection !== null) {
@@ -3455,6 +3474,7 @@ class NodeScopeResolver
 
 			if (
 				$methodReflection !== null
+				&& $expr->class instanceof Name
 				&& (
 					(
 						!$methodReflection->isStatic()
@@ -3484,6 +3504,7 @@ class NodeScopeResolver
 
 			if (
 				$methodReflection !== null
+				&& $expr->class instanceof Name
 				&& !$methodReflection->isStatic()
 				&& $methodReflection->getName() === '__construct'
 				&& $scopeFunction instanceof MethodReflection

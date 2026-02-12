@@ -1,0 +1,10 @@
+includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+    level: 6
+    checkMissingOverrideMethodAttribute: true
+    paths:
+        - .
+    excludePaths:
+        - vendor

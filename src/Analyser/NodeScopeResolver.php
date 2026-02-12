@@ -3185,7 +3185,7 @@ class NodeScopeResolver
 			if ($methodReflection !== null) {
 				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
-					$scope = $scope->invalidateExpression($normalizedExpr->var, true);
+					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
 				}
 				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();
@@ -3395,7 +3395,7 @@ class NodeScopeResolver
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
-				$scope = $scope->invalidateExpression(new Variable('this'), true);
+				$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
 			}
 
 			if (
@@ -7615,9 +7615,11 @@ class NodeScopeResolver
 		$boolVars = [];
 		foreach ($scope->getDefinedVariables() as $varName) {
 			$varType = $scope->getVariableType($varName);
-			if ($varType->isBoolean()->yes() && !$varType->isConstantScalarValue()->yes()) {
-				$boolVars[] = $varName;
+			if (!$varType->isBoolean()->yes() || $varType->isConstantScalarValue()->yes()) {
+				continue;
 			}
+
+			$boolVars[] = $varName;
 		}
 
 		if ($boolVars === []) {
@@ -7627,13 +7629,13 @@ class NodeScopeResolver
 		// Check if any boolean variable's both truth values lead to contradictions
 		foreach ($boolVars as $varName) {
 			$varExpr = new Variable($varName);
-			
+
 			$truthyScope = $scope->filterByTruthyValue($varExpr);
 			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
 			if (!$truthyContradiction) {
 				continue;
 			}
-			
+
 			$falseyScope = $scope->filterByFalseyValue($varExpr);
 			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
 			if ($falseyContradiction) {

@@ -410,6 +410,10 @@ jobs:
           - script: |
               cd e2e/bug13425
               timeout 15 ../bashunit -a exit_code "1" "../../bin/phpstan analyze src/ plugins/"
+          - script: |
+              cd e2e/bug-14036
+              composer install
+              ../../bin/phpstan analyze
 
     steps:
       - name: "Checkout"

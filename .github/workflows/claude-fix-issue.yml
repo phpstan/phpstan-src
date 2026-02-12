@@ -1,6 +1,12 @@
 name: "Claude Fix Issue"
 
 on:
+  workflow_dispatch:
+    inputs:
+      issue-number:
+        description: "Issue number from phpstan/phpstan repository"
+        required: true
+        type: number
   workflow_call:
     inputs:
       issue-number:

@@ -211,10 +211,27 @@ class GenericClassStringType extends ClassStringType
 			$generic = $this->getGenericType();
 
 			$genericObjectClassNames = $generic->getObjectClassNames();
+			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+
 			if (count($genericObjectClassNames) === 1) {
-				$classReflection = ReflectionProviderStaticAccessor::getInstance()->getClass($genericObjectClassNames[0]);
-				if ($classReflection->isFinal() && $genericObjectClassNames[0] === $typeToRemove->getValue()) {
-					return new NeverType();
+				if ($reflectionProvider->hasClass($genericObjectClassNames[0])) {
+					$classReflection = $reflectionProvider->getClass($genericObjectClassNames[0]);
+					if ($classReflection->isFinal() && $genericObjectClassNames[0] === $typeToRemove->getValue()) {
+						return new NeverType();
+					}
+				}
+			} elseif (count($genericObjectClassNames) > 1) {
+				$objectTypeToRemove = new ObjectType($typeToRemove->getValue());
+				if ($reflectionProvider->hasClass($typeToRemove->getValue())) {
+					$classReflection = $reflectionProvider->getClass($typeToRemove->getValue());
+					if ($classReflection->isFinal()) {
+						$remainingType = TypeCombinator::remove($generic, $objectTypeToRemove);
+						if ($remainingType instanceof NeverType) {
+							return new NeverType();
+						}
+
+						return new self($remainingType);
+					}
 				}
 			}
 		}

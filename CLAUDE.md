@@ -269,6 +269,14 @@ Loops are a frequent source of false positives because PHPStan must reason about
 
 Match expressions in `NodeScopeResolver` (around line 4154) process each arm and merge the resulting scopes. The critical pattern for variable certainty is: when a match is exhaustive (has a `default` arm or an always-true condition), arm body scopes should be merged only with each other (not with the original pre-match scope). This mirrors how if/else merging works — `$finalScope` starts as `null`, and each branch's scope is merged via `$branchScope->mergeWith($finalScope)`. When the match is NOT exhaustive, the original scope must also participate in the merge (via `$scope->mergeWith($armBodyFinalScope)`) because execution may skip all arms and throw `UnhandledMatchError`. The `mergeVariableHolders()` method in `MutatingScope` uses `ExpressionTypeHolder::createMaybe()` for variables present in only one scope, so merging an arm scope that defines `$x` with the original scope that lacks `$x` degrades certainty to "maybe" — this is the root cause of false "might not be defined" reports for exhaustive match expressions.
 
+### GenericClassStringType narrowing and tryRemove
+
+`GenericClassStringType` represents `class-string<T>` where `T` is the generic object type. When the generic type is a union (e.g., `class-string<Car|Bike|Boat>`), it's a single `GenericClassStringType` with an inner `UnionType`. This is distinct from `class-string<Car>|class-string<Bike>|class-string<Boat>` which is a `UnionType` of individual `GenericClassStringType`s.
+
+The `tryRemove()` method handles removing a `ConstantStringType` (e.g., `'Car'`) from the class-string type. It must check whether the class is final — only for final classes can exact class-string removal be performed, since non-final classes could have subclasses whose class-strings would still be valid values. When the inner generic type is a union, `TypeCombinator::remove()` is used to remove the corresponding `ObjectType` from the inner union.
+
+This affects match expression exhaustiveness: `class-string<FinalA|FinalB>` matched against `FinalA::class` and `FinalB::class` is exhaustive only because both classes are final.
+
 ### PHPDoc inheritance
 
 PHPDoc types (`@return`, `@param`, `@throws`, `@property`) are inherited through class hierarchies. Bugs arise when:

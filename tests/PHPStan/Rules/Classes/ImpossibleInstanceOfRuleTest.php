@@ -569,4 +569,17 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
+	public static function dataBug13975(): iterable
+	{
+		yield [__DIR__ . '/data/bug-13975-a.php'];
+		yield [__DIR__ . '/data/bug-13975-b.php'];
+	}
+
+	#[DataProvider('dataBug13975')]
+	public function testBug13975(string $file): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([$file], []);
+	}
+
 }

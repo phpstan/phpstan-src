@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use Closure;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -17,6 +18,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -83,7 +85,11 @@ class HasMethodType implements AccessoryType, CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		if ($this->isCallable()->yes() && $otherType->isCallable()->yes()) {
+		if (
+			$this->isCallable()->yes()
+			&& $otherType->isCallable()->yes()
+			&& !(new ObjectType(Closure::class))->isSuperTypeOf($otherType)->yes()
+		) {
 			return IsSuperTypeOfResult::createYes();
 		}
 

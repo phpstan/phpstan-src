@@ -179,7 +179,7 @@ final class FunctionCallParametersCheck
 							$keyArgumentName = $commonKey;
 							$hasNamedArguments = true;
 						}
-						if ($isOptionalKey) {
+						if ($isOptionalKey && $keyArgumentName === null) {
 							continue;
 						}
 

@@ -564,6 +564,12 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/named-arguments-phpversion.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14097(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14097.php'], []);
+	}
+
 	public function testNewStaticWithConsistentConstructor(): void
 	{
 		$this->analyse([__DIR__ . '/data/instantiation-new-static-consistent-constructor.php'], [

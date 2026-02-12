@@ -7627,13 +7627,16 @@ class NodeScopeResolver
 		// Check if any boolean variable's both truth values lead to contradictions
 		foreach ($boolVars as $varName) {
 			$varExpr = new Variable($varName);
+			
 			$truthyScope = $scope->filterByTruthyValue($varExpr);
-			$falseyScope = $scope->filterByFalseyValue($varExpr);
-
 			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
+			if (!$truthyContradiction) {
+				continue;
+			}
+			
+			$falseyScope = $scope->filterByFalseyValue($varExpr);
 			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
-
-			if ($truthyContradiction && $falseyContradiction) {
+			if ($falseyContradiction) {
 				return true;
 			}
 		}

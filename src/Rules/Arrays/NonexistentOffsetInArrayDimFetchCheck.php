@@ -120,6 +120,9 @@ final class NonexistentOffsetInArrayDimFetchCheck
 					if (
 						$innerType->hasOffsetValueType($innerDimType)->no()
 					) {
+						if ($innerType->isString()->yes() && $innerDimType->isInteger()->yes()) {
+							continue;
+						}
 						$report = true;
 						break 2;
 					}

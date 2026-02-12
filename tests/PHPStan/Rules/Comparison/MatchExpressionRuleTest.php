@@ -416,4 +416,23 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug9534(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9534.php'], [
+			[
+				'Match expression does not handle remaining value: class-string<Bug9534\Bike|Bug9534\Boat|Bug9534\Car>',
+				21,
+			],
+			[
+				'Match expression does not handle remaining value: class-string<Bug9534\FinalBike|Bug9534\FinalBoat>',
+				47,
+			],
+			[
+				'Match expression does not handle remaining value: class-string<Bug9534\Bike|Bug9534\Car>',
+				58,
+			],
+		]);
+	}
+
 }

@@ -645,10 +645,14 @@ final class TypeSpecifier
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
 			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
 			if ($context->false()) {
-				return (new SpecifiedTypes(
+				$result = new SpecifiedTypes(
 					$types->getSureTypes(),
 					$types->getSureNotTypes(),
-				))->setNewConditionalExpressionHolders(array_merge(
+				);
+				if ($types->shouldOverwrite()) {
+					$result = $result->setAlwaysOverwriteTypes();
+				}
+				return $result->setNewConditionalExpressionHolders(array_merge(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),
@@ -683,10 +687,14 @@ final class TypeSpecifier
 			}
 
 			if ($context->true()) {
-				return (new SpecifiedTypes(
+				$result = new SpecifiedTypes(
 					$types->getSureTypes(),
 					$types->getSureNotTypes(),
-				))->setNewConditionalExpressionHolders(array_merge(
+				);
+				if ($types->shouldOverwrite()) {
+					$result = $result->setAlwaysOverwriteTypes();
+				}
+				return $result->setNewConditionalExpressionHolders(array_merge(
 					$this->processBooleanNotSureConditionalTypes($scope, $leftTypes, $rightTypes),
 					$this->processBooleanNotSureConditionalTypes($scope, $rightTypes, $leftTypes),
 					$this->processBooleanSureConditionalTypes($scope, $leftTypes, $rightTypes),

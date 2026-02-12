@@ -356,6 +356,14 @@ class StaticType implements TypeWithClassName, SubtractableType
 					$isFinal = $classReflection->isFinal();
 				}
 				$type = $type->changeBaseClass($classReflection);
+
+				// When calling a method on a `static` type (not `$this`),
+				// `$this` return type should be downgraded to `static`
+				// because we can't guarantee the exact instance.
+				if ($type instanceof ThisType && !$this instanceof ThisType) {
+					$type = new self($type->getClassReflection(), $type->getSubtractedType());
+				}
+
 				if (!$isFinal || $type instanceof ThisType) {
 					return $traverse($type);
 				}

@@ -287,6 +287,10 @@ The `tryRemove()` method handles removing a `ConstantStringType` (e.g., `'Car'`)
 
 This affects match expression exhaustiveness: `class-string<FinalA|FinalB>` matched against `FinalA::class` and `FinalB::class` is exhaustive only because both classes are final.
 
+### StaticType::transformStaticType and ThisType downgrading
+
+`StaticType::transformStaticType()` is used when resolving method return types on a `StaticType` caller. It traverses the return type and transforms `StaticType`/`ThisType` instances via `changeBaseClass()`. Since `ThisType extends StaticType`, both are caught by the `$type instanceof StaticType` check. The critical invariant: when the **caller** is a `StaticType` (not `ThisType`) and the method's return type contains `ThisType`, the `ThisType` must be downgraded to a plain `StaticType`. This is because `$this` (the exact instance) cannot be guaranteed when calling on a `static` type (which could be any subclass instance). `ThisType::changeBaseClass()` returns a new `ThisType`, which preserves the `$this` semantics — so the downgrade must happen explicitly after `changeBaseClass()`. The `CallbackUnresolvedMethodPrototypeReflection` at line 91 also has special handling for `ThisType` return types intersected with `selfOutType`.
+
 ### PHPDoc inheritance
 
 PHPDoc types (`@return`, `@param`, `@throws`, `@property`) are inherited through class hierarchies. Bugs arise when:

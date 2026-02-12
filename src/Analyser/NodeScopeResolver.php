@@ -7634,33 +7634,54 @@ class NodeScopeResolver
 	 */
 	private function isScopeConditionallyImpossible(MutatingScope $scope): bool
 	{
-		$boolVars = [];
+		$boolExprs = [];
 		foreach ($scope->getDefinedVariables() as $varName) {
 			$varType = $scope->getVariableType($varName);
-			if (!$varType->isBoolean()->yes() || $varType->isConstantScalarValue()->yes()) {
+			if ($varType->isBoolean()->yes() && !$varType->isConstantScalarValue()->yes()) {
+				$boolExprs[] = new Variable($varName);
 				continue;
 			}
 
-			$boolVars[] = $varName;
+			$constantArrays = $varType->getConstantArrays();
+			if (count($constantArrays) !== 1) {
+				continue;
+			}
+			foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
+				$valueType = $constantArrays[0]->getValueTypes()[$i];
+				if (!$valueType->isBoolean()->yes() || $valueType->isConstantScalarValue()->yes()) {
+					continue;
+				}
+				$constantStrings = $keyType->getConstantStrings();
+				if (count($constantStrings) === 1) {
+					$boolExprs[] = new Expr\ArrayDimFetch(
+						new Variable($varName),
+						new Node\Scalar\String_($constantStrings[0]->getValue()),
+					);
+				} elseif ($keyType->isInteger()->yes()) {
+					$keyValues = $keyType->getConstantScalarValues();
+					if (count($keyValues) === 1 && is_int($keyValues[0])) {
+						$boolExprs[] = new Expr\ArrayDimFetch(
+							new Variable($varName),
+							new Node\Scalar\Int_($keyValues[0]),
+						);
+					}
+				}
+			}
 		}
 
-		if ($boolVars === []) {
+		if ($boolExprs === []) {
 			return false;
 		}
 
-		// Check if any boolean variable's both truth values lead to contradictions
-		foreach ($boolVars as $varName) {
-			$varExpr = new Variable($varName);
-
-			$truthyScope = $scope->filterByTruthyValue($varExpr);
-			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
-			if (!$truthyContradiction) {
+		// Check if any boolean expression's both truth values lead to contradictions
+		foreach ($boolExprs as $boolExpr) {
+			$truthyScope = $scope->filterByTruthyValue($boolExpr);
+			if (!$this->scopeHasNeverBooleanExpr($truthyScope, $boolExprs)) {
 				continue;
 			}
 
-			$falseyScope = $scope->filterByFalseyValue($varExpr);
-			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
-			if ($falseyContradiction) {
+			$falseyScope = $scope->filterByFalseyValue($boolExpr);
+			if ($this->scopeHasNeverBooleanExpr($falseyScope, $boolExprs)) {
 				return true;
 			}
 		}
@@ -7669,12 +7690,12 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param string[] $varNames
+	 * @param Expr[] $boolExprs
 	 */
-	private function scopeHasNeverVariable(MutatingScope $scope, array $varNames): bool
+	private function scopeHasNeverBooleanExpr(MutatingScope $scope, array $boolExprs): bool
 	{
-		foreach ($varNames as $varName) {
-			$type = $scope->getVariableType($varName);
+		foreach ($boolExprs as $boolExpr) {
+			$type = $scope->getType($boolExpr);
 			if ($type instanceof NeverType) {
 				return true;
 			}

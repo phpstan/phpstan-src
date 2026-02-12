@@ -1629,10 +1629,7 @@ final class TypeSpecifier
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureTypes() as $exprString => [$expr, $type]) {
-			if (!$expr instanceof Expr\Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
+			if ($expr instanceof Expr\Variable && !is_string($expr->name)) {
 				continue;
 			}
 
@@ -1645,10 +1642,7 @@ final class TypeSpecifier
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
 			foreach ($rightTypes->getSureTypes() as $exprString => [$expr, $type]) {
-				if (!$expr instanceof Expr\Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
+				if ($expr instanceof Expr\Variable && !is_string($expr->name)) {
 					continue;
 				}
 
@@ -1658,14 +1652,7 @@ final class TypeSpecifier
 
 				$conditions = $conditionExpressionTypes;
 				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					$conditionExpr = $conditionExprTypeHolder->getExpr();
-					if (!$conditionExpr instanceof Expr\Variable) {
-						continue;
-					}
-					if (!is_string($conditionExpr->name)) {
-						continue;
-					}
-					if ($conditionExpr->name !== $expr->name) {
+					if ($conditionExprString !== $exprString) {
 						continue;
 					}
 
@@ -1696,10 +1683,7 @@ final class TypeSpecifier
 	{
 		$conditionExpressionTypes = [];
 		foreach ($leftTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-			if (!$expr instanceof Expr\Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
+			if ($expr instanceof Expr\Variable && !is_string($expr->name)) {
 				continue;
 			}
 
@@ -1712,10 +1696,7 @@ final class TypeSpecifier
 		if (count($conditionExpressionTypes) > 0) {
 			$holders = [];
 			foreach ($rightTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
-				if (!$expr instanceof Expr\Variable) {
-					continue;
-				}
-				if (!is_string($expr->name)) {
+				if ($expr instanceof Expr\Variable && !is_string($expr->name)) {
 					continue;
 				}
 
@@ -1725,14 +1706,7 @@ final class TypeSpecifier
 
 				$conditions = $conditionExpressionTypes;
 				foreach ($conditions as $conditionExprString => $conditionExprTypeHolder) {
-					$conditionExpr = $conditionExprTypeHolder->getExpr();
-					if (!$conditionExpr instanceof Expr\Variable) {
-						continue;
-					}
-					if (!is_string($conditionExpr->name)) {
-						continue;
-					}
-					if ($conditionExpr->name !== $expr->name) {
+					if ($conditionExprString !== $exprString) {
 						continue;
 					}
 

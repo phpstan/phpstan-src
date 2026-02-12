@@ -591,6 +591,10 @@ final class FunctionDefinitionCheck
 		$templateTypes = $templateTypeMap->getTypes();
 		if (count($templateTypes) > 0) {
 			foreach ($parametersAcceptor->getParameters() as $parameter) {
+				if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
+					continue;
+				}
+
 				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {
 						unset($templateTypes[$type->getName()]);

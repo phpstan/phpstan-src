@@ -77,14 +77,16 @@ final class ConditionalReturnTypeRuleHelper
 					continue;
 				}
 				$templateTypes = [];
-				TypeTraverser::map($subjectType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
-					if ($type instanceof TemplateType) {
-						$templateTypes[] = $type;
-						return $type;
-					}
+				if ($subjectType->hasTemplateOrLateResolvableType()) {
+					TypeTraverser::map($subjectType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+						if ($type instanceof TemplateType) {
+							$templateTypes[] = $type;
+							return $type;
+						}
 
-					return $traverse($type);
-				});
+						return $traverse($type);
+					});
+				}
 
 				if (count($templateTypes) === 0) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))

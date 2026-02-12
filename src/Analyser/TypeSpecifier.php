@@ -1553,36 +1553,43 @@ final class TypeSpecifier
 
 		foreach ($asserts as $assert) {
 			foreach ($argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? [] as $parameterExpr) {
-				$assertedType = TypeTraverser::map($assert->getType(), static function (Type $type, callable $traverse) use ($argsMap, $scope): Type {
-					if ($type instanceof ConditionalTypeForParameter) {
-						$parameterName = substr($type->getParameterName(), 1);
-						if (array_key_exists($parameterName, $argsMap)) {
-							$argType = TypeCombinator::union(...array_map(static fn (Expr $expr) => $scope->getType($expr), $argsMap[$parameterName]));
-							$type = $type->toConditional($argType);
-						}
-					}
+				$assertedType = $assert->getType();
 
-					return $traverse($type);
-				});
-
-				$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
-
-				$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
-				$containsUnresolvedTemplate = false;
-				TypeTraverser::map(
-					$assert->getOriginalType(),
-					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
-						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
-							$resolvedType = $templateTypeMap->getType($type->getName());
-							if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
-								$containsUnresolvedTemplate = true;
-								return $type;
+				if ($assertedType->hasTemplateOrLateResolvableType()) {
+					$assertedType = TypeTraverser::map($assertedType, static function (Type $type, callable $traverse) use ($argsMap, $scope): Type {
+						if ($type instanceof ConditionalTypeForParameter) {
+							$parameterName = substr($type->getParameterName(), 1);
+							if (array_key_exists($parameterName, $argsMap)) {
+								$argType = TypeCombinator::union(...array_map(static fn (Expr $expr) => $scope->getType($expr), $argsMap[$parameterName]));
+								$type = $type->toConditional($argType);
 							}
 						}
 
 						return $traverse($type);
-					},
-				);
+					});
+				}
+
+				$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
+
+				$containsUnresolvedTemplate = false;
+				if ($assert->getOriginalType()->hasTemplateOrLateResolvableType()) {
+					$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+
+					TypeTraverser::map(
+						$assert->getOriginalType(),
+						static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
+							if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
+								$resolvedType = $templateTypeMap->getType($type->getName());
+								if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
+									$containsUnresolvedTemplate = true;
+									return $type;
+								}
+							}
+
+							return $traverse($type);
+						},
+					);
+				}
 
 				$newTypes = $this->create(
 					$assertExpr,

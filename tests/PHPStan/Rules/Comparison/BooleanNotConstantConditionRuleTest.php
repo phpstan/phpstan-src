@@ -157,6 +157,24 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7937.php'], []);
 	}
 
+	public function testBug11903(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = true;
+		$this->analyse([__DIR__ . '/data/bug-11903.php'], [
+			[
+				'Negated boolean expression is always true.',
+				13,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Negated boolean expression is always true.',
+				21,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [

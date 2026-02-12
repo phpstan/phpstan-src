@@ -23,6 +23,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
+          repository: phpstan/phpstan-src
           ref: "2.1.x"
           fetch-depth: 0
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}

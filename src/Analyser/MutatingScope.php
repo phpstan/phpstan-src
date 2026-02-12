@@ -3460,7 +3460,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
 	}
 
-	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
+	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
@@ -3469,7 +3469,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters)) {
+			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}
 
@@ -3484,14 +3484,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 			$firstExpr = $holders[array_key_first($holders)]->getTypeHolder()->getExpr();
-			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr))) {
+			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $firstExpr, $this->getNodeKey($firstExpr), false, $invalidatingClass)) {
 				$invalidated = true;
 				continue;
 			}
 			foreach ($holders as $holder) {
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString)) {
+					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, false, $invalidatingClass)) {
 						$invalidated = true;
 						continue 3;
 					}
@@ -3524,7 +3524,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
-	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false): bool
+	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
 	{
 		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
 			return false;
@@ -3570,7 +3570,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return false;
 		}
 
+		if (
+			$invalidatingClass !== null
+			&& $requireMoreCharacters
+			&& $this->isPrivatePropertyOfDifferentClass($expr, $invalidatingClass)
+		) {
+			return false;
+		}
+
 		return true;
+	}
+
+	private function isPrivatePropertyOfDifferentClass(Expr $expr, ClassReflection $invalidatingClass): bool
+	{
+		if ($expr instanceof Expr\StaticPropertyFetch || $expr instanceof PropertyFetch) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection === null) {
+				return false;
+			}
+			if (!$propertyReflection->isPrivate()) {
+				return false;
+			}
+			return $propertyReflection->getDeclaringClass()->getName() !== $invalidatingClass->getName();
+		}
+
+		return false;
 	}
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self

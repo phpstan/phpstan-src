@@ -2653,7 +2653,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			[],
+			$scope->conditionalExpressions,
 			$scope->inClosureBindScopeClasses,
 			$anonymousFunctionReflection,
 			true,
@@ -2703,12 +2703,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$nonRefVariableNames = [];
+		$useVariableNames = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
 			}
 			$variableName = $use->var->name;
 			$paramExprString = '$' . $use->var->name;
+			$useVariableNames[$paramExprString] = true;
 			if ($use->byRef) {
 				$holder = ExpressionTypeHolder::createYes($use->var, new MixedType());
 				$expressionTypes[$paramExprString] = $holder;
@@ -2774,6 +2776,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
+		$filteredConditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+			if (!array_key_exists($conditionalExprString, $useVariableNames)) {
+				continue;
+			}
+			$filteredHolders = [];
+			foreach ($holders as $holder) {
+				foreach ($holder->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if (!array_key_exists($holderExprString, $useVariableNames)) {
+						continue 2;
+					}
+				}
+				$filteredHolders[] = $holder;
+			}
+			if ($filteredHolders !== []) {
+				$filteredConditionalExpressions[$conditionalExprString] = $filteredHolders;
+			}
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2781,7 +2802,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->getNamespace(),
 			array_merge($this->getConstantTypes(), $expressionTypes),
 			array_merge($this->getNativeConstantTypes(), $nativeTypes),
-			[],
+			$filteredConditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			new ClosureType(),
 			true,

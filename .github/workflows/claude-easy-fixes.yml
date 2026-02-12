@@ -11,7 +11,7 @@ permissions:
 jobs:
   easy-fix:
     name: "Pick and fix an easy issue"
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
 
     steps:
@@ -153,4 +153,4 @@ jobs:
                - Title: "Fix #${{ steps.pick-issue.outputs.issue_number }}: ${{ steps.pick-issue.outputs.issue_title }}"
                - Body referencing the issue: "Fixes phpstan/phpstan#${{ steps.pick-issue.outputs.issue_number }}"
                - Include a description of the fix and what was wrong
-          claude_args: "--model claude-sonnet-4-5-20250929 --max-turns 50"
+          claude_args: "--model claude-opus-4-6 --max-turns 50"

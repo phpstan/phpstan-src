@@ -2853,6 +2853,29 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private function invalidateNonReadonlyThisPropertyFetches(array $expressionTypes): array
+	{
+		$filteredExpressionTypes = [];
+		foreach ($expressionTypes as $exprString => $expressionType) {
+			$expr = $expressionType->getExpr();
+			if (
+				$expr instanceof PropertyFetch
+				&& $expr->var instanceof Variable
+				&& is_string($expr->var->name)
+				&& $expr->var->name === 'this'
+				&& !$this->isReadonlyPropertyFetch($expr, true)
+			) {
+				continue;
+			}
+			$filteredExpressionTypes[$exprString] = $expressionType;
+		}
+		return $filteredExpressionTypes;
+	}
+
+	/**
 	 * @api
 	 * @param ParameterReflection[]|null $callableParameters
 	 */
@@ -2920,13 +2943,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$arrowFunctionScope = $arrowFunctionScope->invalidateExpression(new Variable('this'));
 		}
 
+		$expressionTypes = $this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes);
+		$nativeExpressionTypes = $arrowFunctionScope->nativeExpressionTypes;
+
+		if (!$arrowFunction->static && $this->hasVariableType('this')->yes()) {
+			$expressionTypes = $this->invalidateNonReadonlyThisPropertyFetches($expressionTypes);
+			$nativeExpressionTypes = $this->invalidateNonReadonlyThisPropertyFetches($nativeExpressionTypes);
+		}
+
 		return $this->scopeFactory->create(
 			$arrowFunctionScope->context,
 			$this->isDeclareStrictTypes(),
 			$arrowFunctionScope->getFunction(),
 			$arrowFunctionScope->getNamespace(),
-			$this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes),
-			$arrowFunctionScope->nativeExpressionTypes,
+			$expressionTypes,
+			$nativeExpressionTypes,
 			$arrowFunctionScope->conditionalExpressions,
 			$arrowFunctionScope->inClosureBindScopeClasses,
 			new ClosureType(),

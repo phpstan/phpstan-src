@@ -30,13 +30,20 @@ jobs:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           ISSUE_COUNT: ${{ inputs.issue_count || '1' }}
         run: |
-          ISSUE_JSON=$(gh issue list \
-            --repo phpstan/phpstan \
-            --milestone "Easy fixes" \
-            --state open \
-            --json number,title,body,url \
-            --limit 100 \
-          )
+          # Look up milestone number for "Easy fixes"
+          MILESTONE_NUMBER=$(gh api "repos/phpstan/phpstan/milestones?per_page=100" \
+            --jq '.[] | select(.title == "Easy fixes") | .number')
+
+          if [ -z "$MILESTONE_NUMBER" ]; then
+            echo "Could not find 'Easy fixes' milestone"
+            exit 1
+          fi
+
+          # Fetch all open issues in the milestone using pagination
+          ISSUE_JSON=$(gh api --paginate \
+            "repos/phpstan/phpstan/issues?state=open&milestone=${MILESTONE_NUMBER}&per_page=100" \
+            --jq '[.[] | {number: .number, title: .title, url: .html_url}]' \
+          | jq -s 'add // []')
 
           TOTAL=$(echo "$ISSUE_JSON" | jq 'length')
           if [ "$TOTAL" -eq 0 ]; then

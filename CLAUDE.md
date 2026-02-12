@@ -373,6 +373,10 @@ When adding or editing PHPDoc comments in this codebase, follow these guidelines
 - Use imperative voice without "Returns the..." preambles when a brief note suffices. Prefer `/** Replaces unresolved TemplateTypes with their bounds. */` over a multi-line block.
 - Preserve `@api` and type tags on their own lines, with no redundant description alongside them.
 
+### UnionTypeMethodReflection and IntersectionTypeMethodReflection parity
+
+When methods are called on union types (`Foo|Bar`), the resolved method reflection is a `UnionTypeMethodReflection` that wraps the individual method reflections. Similarly, `IntersectionTypeMethodReflection` handles intersection types. These two classes must maintain feature parity for things like `getAsserts()`, `getSelfOutType()`, etc. When one class correctly combines member data (e.g. `IntersectionTypeMethodReflection::getAsserts()` iterating over methods and calling `intersectWith()`), the other should do the same rather than returning empty/null. The `Assertions::intersectWith()` method merges assertion tag lists from multiple sources.
+
 ## Important dependencies
 
 - `nikic/php-parser` ^5.7.0 - PHP AST parsing

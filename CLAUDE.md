@@ -256,6 +256,12 @@ When a method with side effects is called, `invalidateExpression()` invalidates 
 
 `NodeScopeResolver::processArgs()` has special handling for `Closure::bind()` and `Closure::bindTo()` calls. When the first argument is a closure/arrow function literal, a `$closureBindScope` is created with `$this` rebound to the second argument's type, and this scope is used to process the closure body. However, this `$closureBindScope` must ONLY be applied when the first argument is actually an `Expr\Closure` or `Expr\ArrowFunction`. If the first argument is a general expression that returns a closure (e.g. `$this->hydrate()`), the expression itself must be evaluated in the original scope — otherwise `$this` in the expression gets incorrectly resolved as the bound object type instead of the current class. The condition at the `$scopeToPass` assignment must check the argument node type.
 
+### Variable static calls ($var::method()) and method reflection resolution
+
+When `NodeScopeResolver` processes `StaticCall` with `$expr->class instanceof Expr` (variable class like `$var::method()`), the code at ~line 3303 only resolves `$methodReflection` and `$parametersAcceptor` for `$expr->class instanceof Name` calls. For Expr-based class references, the method reflection was previously left as `null`, causing by-reference parameter types and other parameter-dependent analysis to be skipped. The fix resolves the class type via `getObjectTypeOrClassStringObjectType()` and looks up the method when the class can be determined from the expression type (ConstantStringType, GenericClassStringType, or ObjectType).
+
+When adding method reflection for Expr-based static calls, the `$this` invalidation and constructor property initialization blocks (~lines 3427-3460) must be guarded with `$expr->class instanceof Name`. These blocks handle `self::__construct()`, `parent::__construct()`, and similar Name-based calls that affect `$this`. Without the guard, `$other::__construct()` (calling on a different object) would incorrectly trigger `$this` property initialization and invalidation.
+
 ### Array type tracking: SetExistingOffsetValueTypeExpr vs SetOffsetValueTypeExpr
 
 When assigning to an array offset, NodeScopeResolver must distinguish:

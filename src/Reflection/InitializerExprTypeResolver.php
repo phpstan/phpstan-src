@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use Closure;
 use Nette\Utils\Strings;
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
@@ -96,6 +97,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VoidType;
 use stdClass;
 use Throwable;
 use function array_key_exists;
@@ -249,6 +251,24 @@ final class InitializerExprTypeResolver
 			$returnType = new MixedType(false);
 			if ($expr->returnType !== null) {
 				$returnType = $this->getFunctionType($expr->returnType, false, false, $context);
+			}
+
+			$variableTypes = [];
+			foreach ($expr->params as $param) {
+				if (!($param->var instanceof Variable) || !is_string($param->var->name)) {
+					continue;
+				}
+
+				$variableTypes[$param->var->name] = $this->getFunctionType($param->type, $this->isParameterValueNullable($param), $param->variadic, $context);
+			}
+
+			$inferredReturnType = $this->inferClosureReturnType($expr->stmts, $context, $variableTypes);
+			if ($inferredReturnType !== null) {
+				if ($expr->returnType !== null) {
+					$returnType = self::intersectButNotNever($returnType, $inferredReturnType);
+				} else {
+					$returnType = $inferredReturnType;
+				}
 			}
 
 			return new ClosureType(
@@ -501,6 +521,157 @@ final class InitializerExprTypeResolver
 		}
 
 		return new MixedType();
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @param array<string, Type> $variableTypes
+	 */
+	private function inferClosureReturnType(array $stmts, InitializerExprContext $context, array $variableTypes): ?Type
+	{
+		$returnExprs = [];
+		$hasNull = false;
+		$this->collectReturnExpressions($stmts, $returnExprs, $hasNull);
+
+		if ($returnExprs === [] && !$hasNull) {
+			return null;
+		}
+
+		$returnTypes = [];
+		foreach ($returnExprs as $returnExpr) {
+			$returnTypes[] = $this->resolveExprTypeWithVariables($returnExpr, $context, $variableTypes);
+		}
+
+		if ($returnTypes === []) {
+			return new VoidType();
+		}
+
+		if ($hasNull) {
+			$returnTypes[] = new NullType();
+		}
+
+		return TypeCombinator::union(...$returnTypes);
+	}
+
+	/**
+	 * @param array<string, Type> $variableTypes
+	 */
+	private function resolveExprTypeWithVariables(Expr $expr, InitializerExprContext $context, array $variableTypes): Type
+	{
+		if ($expr instanceof Variable && is_string($expr->name) && isset($variableTypes[$expr->name])) {
+			return $variableTypes[$expr->name];
+		}
+
+		if ($expr instanceof Expr\Array_) {
+			return $this->getArrayType($expr, fn (Expr $expr): Type => $this->resolveExprTypeWithVariables($expr, $context, $variableTypes));
+		}
+
+		return $this->getType($expr, $context);
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 * @param Expr[] $returnExprs
+	 */
+	private function collectReturnExpressions(array $stmts, array &$returnExprs, bool &$hasNull): void
+	{
+		foreach ($stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\Return_) {
+				if ($stmt->expr !== null) {
+					$returnExprs[] = $stmt->expr;
+				} else {
+					$hasNull = true;
+				}
+				continue;
+			}
+
+			// Skip nested closures, functions, and classes - they have their own scope
+			if (
+				$stmt instanceof Node\Stmt\Function_
+				|| $stmt instanceof Node\Stmt\Class_
+				|| $stmt instanceof Node\Stmt\Interface_
+				|| $stmt instanceof Node\Stmt\Trait_
+				|| $stmt instanceof Node\Stmt\Enum_
+			) {
+				continue;
+			}
+
+			// Check for expression statements containing closures/arrow functions
+			if ($stmt instanceof Node\Stmt\Expression) {
+				if ($stmt->expr instanceof Expr\Closure || $stmt->expr instanceof Expr\ArrowFunction) {
+					continue;
+				}
+			}
+
+			// Recurse into compound statements
+			if ($stmt instanceof Node\Stmt\If_) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				foreach ($stmt->elseifs as $elseif) {
+					$this->collectReturnExpressions($elseif->stmts, $returnExprs, $hasNull);
+				}
+				if ($stmt->else !== null) {
+					$this->collectReturnExpressions($stmt->else->stmts, $returnExprs, $hasNull);
+				}
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\Foreach_) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\For_) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\While_) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\Do_) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\Switch_) {
+				foreach ($stmt->cases as $case) {
+					$this->collectReturnExpressions($case->stmts, $returnExprs, $hasNull);
+				}
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\TryCatch) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				foreach ($stmt->catches as $catch) {
+					$this->collectReturnExpressions($catch->stmts, $returnExprs, $hasNull);
+				}
+				if ($stmt->finally !== null) {
+					$this->collectReturnExpressions($stmt->finally->stmts, $returnExprs, $hasNull);
+				}
+				continue;
+			}
+
+			if ($stmt instanceof Node\Stmt\Block) {
+				$this->collectReturnExpressions($stmt->stmts, $returnExprs, $hasNull);
+				continue;
+			}
+		}
+	}
+
+	private static function intersectButNotNever(Type $nativeType, Type $inferredType): Type
+	{
+		if ($nativeType->isSuperTypeOf($inferredType)->no()) {
+			return $nativeType;
+		}
+
+		$result = TypeCombinator::intersect($nativeType, $inferredType);
+		if (TypeCombinator::containsNull($nativeType)) {
+			return TypeCombinator::addNull($result);
+		}
+
+		return $result;
 	}
 
 	/**

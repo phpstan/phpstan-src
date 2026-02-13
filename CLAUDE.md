@@ -407,6 +407,10 @@ When adding or editing PHPDoc comments in this codebase, follow these guidelines
 
 When methods are called on union types (`Foo|Bar`), the resolved method reflection is a `UnionTypeMethodReflection` that wraps the individual method reflections. Similarly, `IntersectionTypeMethodReflection` handles intersection types. These two classes must maintain feature parity for things like `getAsserts()`, `getSelfOutType()`, etc. When one class correctly combines member data (e.g. `IntersectionTypeMethodReflection::getAsserts()` iterating over methods and calling `intersectWith()`), the other should do the same rather than returning empty/null. The `Assertions::intersectWith()` method merges assertion tag lists from multiple sources.
 
+### InitializerExprTypeResolver: closure return type inference from body
+
+`InitializerExprTypeResolver` resolves types for constant expressions (class constant initializers, global constant initializers, default parameter values). For static closures, it constructs a `ClosureType` using parameter types and the return type annotation. Unlike `MutatingScope::getClosureType()` which performs full closure body analysis via `NodeScopeResolver`, `InitializerExprTypeResolver` has no scope — it resolves expressions statically. When inferring closure return types from the body, a `$variableTypes` map must be built from the closure's parameters and passed through to expression resolution, since variables fall through to `MixedType` in the normal `getType()` path. The `resolveExprTypeWithVariables()` helper intercepts `Variable` nodes and `Array_` expressions (which need the variable-aware callback passed to `getArrayType()`) to provide parameter-aware type resolution. The inferred return type is then intersected with the declared return type annotation via `intersectButNotNever()`.
+
 ## Important dependencies
 
 - `nikic/php-parser` ^5.7.0 - PHP AST parsing

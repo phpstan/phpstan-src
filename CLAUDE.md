@@ -405,7 +405,11 @@ When adding or editing PHPDoc comments in this codebase, follow these guidelines
 
 ### UnionTypeMethodReflection and IntersectionTypeMethodReflection parity
 
-When methods are called on union types (`Foo|Bar`), the resolved method reflection is a `UnionTypeMethodReflection` that wraps the individual method reflections. Similarly, `IntersectionTypeMethodReflection` handles intersection types. These two classes must maintain feature parity for things like `getAsserts()`, `getSelfOutType()`, etc. When one class correctly combines member data (e.g. `IntersectionTypeMethodReflection::getAsserts()` iterating over methods and calling `intersectWith()`), the other should do the same rather than returning empty/null. The `Assertions::intersectWith()` method merges assertion tag lists from multiple sources.
+When methods are called on union types (`Foo|Bar`), the resolved method reflection is a `UnionTypeMethodReflection` that wraps the individual method reflections. Similarly, `IntersectionTypeMethodReflection` handles intersection types. These two classes must maintain feature parity for things like `getAsserts()`, `getSelfOutType()`, etc.
+
+**Critical distinction for `getAsserts()`**: Intersection types use `Assertions::intersectWith()` which concatenates all assert tags — this is correct because both assertions must hold simultaneously, so `specifyTypesFromAsserts` intersects the sureTypes (e.g., `list & non-empty-array = non-empty-list`). Union types must use `Assertions::unionWith()` which groups assertions by the same parameter/condition and **unions their types** — this is correct because only one union member's assertion applies at runtime (e.g., `string | int` not `string & int = never`). Assertions that don't have a matching counterpart in the other union member are dropped since they cannot be guaranteed.
+
+The `Assertions::intersectWith()` method merges assertion tag lists by concatenation. The `Assertions::unionWith()` method groups assertions by parameter identity (parameter name + if-condition + negated + equality) and unions the asserted types via `TypeCombinator::union()`.
 
 ## Important dependencies
 

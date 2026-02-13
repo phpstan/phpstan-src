@@ -5,10 +5,12 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_filter;
 use function array_map;
 use function array_merge;
 use function count;
+use function sprintf;
 
 /**
  * Collection of @phpstan-assert annotations on a function or method.
@@ -97,6 +99,66 @@ final class Assertions
 	public function intersectWith(Assertions $other): self
 	{
 		return new self(array_merge($this->getAll(), $other->getAll()));
+	}
+
+	/**
+	 * Combines assertions from union type members by unioning the asserted types
+	 * for assertions that target the same parameter with the same condition.
+	 */
+	public function unionWith(Assertions $other): self
+	{
+		$otherAsserts = $other->getAll();
+		if (count($otherAsserts) === 0) {
+			return $this;
+		}
+
+		$thisAsserts = $this->getAll();
+		if (count($thisAsserts) === 0) {
+			return $other;
+		}
+
+		$merged = [];
+		$usedOther = [];
+
+		foreach ($thisAsserts as $thisAssert) {
+			$key = self::getAssertKey($thisAssert);
+			$found = false;
+
+			foreach ($otherAsserts as $j => $otherAssert) {
+				if (isset($usedOther[$j])) {
+					continue;
+				}
+
+				if (self::getAssertKey($otherAssert) !== $key) {
+					continue;
+				}
+
+				$merged[] = $thisAssert->withType(TypeCombinator::union($thisAssert->getType(), $otherAssert->getType()));
+				$usedOther[$j] = true;
+				$found = true;
+				break;
+			}
+
+			if ($found) {
+				continue;
+			}
+
+			// No matching assertion in other — this assertion cannot be guaranteed
+			// for the union type, so we drop it
+		}
+
+		return new self($merged);
+	}
+
+	private static function getAssertKey(AssertTag $assert): string
+	{
+		return sprintf(
+			'%s-%s-%s-%s',
+			$assert->getParameter()->describe(),
+			$assert->getIf(),
+			$assert->isNegated() ? '1' : '0',
+			$assert->isEquality() ? '1' : '0',
+		);
 	}
 
 	public static function createEmpty(): self

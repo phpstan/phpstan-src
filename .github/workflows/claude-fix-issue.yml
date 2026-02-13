@@ -6,13 +6,13 @@ on:
       issue-number:
         description: "Issue number from phpstan/phpstan repository"
         required: true
-        type: number
+        type: string
   workflow_call:
     inputs:
       issue-number:
         description: "Issue number from phpstan/phpstan repository"
         required: true
-        type: number
+        type: string
 
 permissions:
   contents: write

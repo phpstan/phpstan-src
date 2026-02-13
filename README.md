@@ -11,7 +11,6 @@ This repository (`phpstan/phpstan-src`) is for PHPStan's development only. Head 
 
 Any contributions are welcome.
 
-
 ### Installation
 
 ```bash

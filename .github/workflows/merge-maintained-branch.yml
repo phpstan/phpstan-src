@@ -5,7 +5,7 @@ name: Merge maintained branch
 on:
   push:
     branches:
-      - "1.12.x"
+      - "2.1.x"
 
 jobs:
   merge:
@@ -20,5 +20,5 @@ jobs:
         with:
           github_token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
           source_ref: ${{ github.ref }}
-          target_branch: '2.1.x'
+          target_branch: '2.2.x'
           commit_message_template: 'Merge branch {source_ref} into {target_branch}'

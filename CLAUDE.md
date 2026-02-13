@@ -417,3 +417,7 @@ When methods are called on union types (`Foo|Bar`), the resolved method reflecti
 - `react/child-process`, `react/async` - Parallel analysis
 - `symfony/console` - CLI interface
 - `hoa/compiler` - Used for regex type parsing
+
+### Ternary expression type narrowing in TypeSpecifier
+
+`TypeSpecifier::specifyTypesInCondition()` handles ternary expressions (`$cond ? $a : $b`) for type narrowing. In a truthy context (e.g., inside `assert()`), the ternary is semantically equivalent to `($cond && $a) || (!$cond && $b)` — meaning if the condition is true, the "if" branch must be truthy, and if false, the "else" branch must be truthy. The fix converts ternary expressions to this `BooleanOr(BooleanAnd(...), BooleanAnd(...))` form so the existing OR/AND narrowing logic handles both branches correctly. This enables `assert($cond ? $x instanceof A : $x instanceof B)` to narrow `$x` to `A|B`. The `AssertFunctionTypeSpecifyingExtension` calls `specifyTypesInCondition` with `TypeSpecifierContext::createTruthy()` context for the assert argument.

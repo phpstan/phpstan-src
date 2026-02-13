@@ -198,7 +198,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		$assertions = Assertions::createEmpty();
 
 		foreach ($this->methods as $method) {
-			$assertions = $assertions->intersectWith($method->getAsserts());
+			$assertions = $assertions->union($method->getAsserts());
 		}
 
 		return $assertions;

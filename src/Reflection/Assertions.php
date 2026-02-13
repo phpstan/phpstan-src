@@ -96,7 +96,15 @@ final class Assertions
 		return new self(array_map($assertTagsCallback, $this->asserts));
 	}
 
+	/**
+	 * @deprecated use union() or intersect() instead
+	 */
 	public function intersectWith(Assertions $other): self
+	{
+		return $this->union($other);
+	}
+
+	public function union(Assertions $other): self
 	{
 		return new self(array_merge($this->getAll(), $other->getAll()));
 	}
@@ -105,7 +113,7 @@ final class Assertions
 	 * Combines assertions from union type members by unioning the asserted types
 	 * for assertions that target the same parameter with the same condition.
 	 */
-	public function unionWith(Assertions $other): self
+	public function intersect(Assertions $other): self
 	{
 		$otherAsserts = $other->getAll();
 		if (count($otherAsserts) === 0) {

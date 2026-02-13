@@ -181,7 +181,7 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		$assertions = Assertions::createEmpty();
 
 		foreach ($this->methods as $method) {
-			$assertions = $assertions->unionWith($method->getAsserts());
+			$assertions = $assertions->intersect($method->getAsserts());
 		}
 
 		return $assertions;

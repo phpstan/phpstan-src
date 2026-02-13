@@ -3684,13 +3684,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
 	{
-		$exprType = $this->getType($expr);
-		if (
-			$exprType instanceof NeverType ||
-			$typeToRemove instanceof NeverType
-		) {
+		if ($typeToRemove instanceof NeverType) {
 			return $this;
 		}
+
+		$exprType = $this->getType($expr);
+		if ($exprType instanceof NeverType) {
+			return $this;
+		}
+
 		return $this->specifyExpressionType(
 			$expr,
 			TypeCombinator::remove($exprType, $typeToRemove),

@@ -526,10 +526,10 @@ final class DependencyResolver
 		if (isset($this->seenClasses[$className])) {
 			return;
 		}
-		$this->seenClasses[$className] = true;
 
 		try {
 			$classReflection = $this->reflectionProvider->getClass($className);
+			$this->seenClasses[$className] = true;
 		} catch (ClassNotFoundException) {
 			return;
 		}

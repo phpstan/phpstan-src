@@ -1062,12 +1062,12 @@ final class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Ternary
 			&& !$context->null()
-			&& $scope->getType($expr->else)->isFalse()->yes()
 		) {
-			$conditionExpr = $expr->cond;
-			if ($expr->if !== null) {
-				$conditionExpr = new BooleanAnd($conditionExpr, $expr->if);
-			}
+			$ifExpr = $expr->if ?? $expr->cond;
+			$conditionExpr = new BooleanOr(
+				new BooleanAnd($expr->cond, $ifExpr),
+				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+			);
 
 			return $this->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
 

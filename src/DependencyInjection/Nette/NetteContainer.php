@@ -17,7 +17,12 @@ use function array_map;
 final class NetteContainer implements Container
 {
 
-	public function __construct(private \Nette\DI\Container $container)
+	/** @var mixed[] */
+	private ?array $parameters = null;
+
+	public function __construct(
+		private readonly \Nette\DI\Container $container,
+	)
 	{
 	}
 
@@ -74,12 +79,14 @@ final class NetteContainer implements Container
 	 */
 	public function getParameters(): array
 	{
-		return $this->container->getParameters();
+		return $this->parameters ??= $this->container->getParameters();
 	}
 
 	public function hasParameter(string $parameterName): bool
 	{
-		return array_key_exists($parameterName, $this->container->getParameters());
+		$parameters = $this->parameters ??= $this->container->getParameters();
+
+		return array_key_exists($parameterName, $parameters);
 	}
 
 	/**
@@ -87,11 +94,13 @@ final class NetteContainer implements Container
 	 */
 	public function getParameter(string $parameterName)
 	{
-		if (!$this->hasParameter($parameterName)) {
+		$parameters = $this->parameters ??= $this->container->getParameters();
+
+		if (!array_key_exists($parameterName, $parameters)) {
 			throw new ParameterNotFoundException($parameterName);
 		}
 
-		return $this->container->getParameter($parameterName);
+		return $parameters[$parameterName];
 	}
 
 	/**

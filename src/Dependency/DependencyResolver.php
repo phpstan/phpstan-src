@@ -529,14 +529,11 @@ final class DependencyResolver
 			return;
 		}
 
-		$fileName = $classReflection->getFileName();
-		if ($fileName !== null) {
-			$classKey = $className . '-' . $fileName;
-			if (isset($this->seenClasses[$classKey])) {
-				return;
-			}
-			$this->seenClasses[$classKey] = true;
+		$cacheKey = $classReflection->getCacheKey();
+		if (isset($this->seenClasses[$cacheKey])) {
+			return;
 		}
+		$this->seenClasses[$cacheKey] = true;
 
 		do {
 			$dependenciesReflections[] = $classReflection;

@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -55,12 +54,12 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
+			$keyType = $itemType->toArrayKey();
+
 			// PHP casts numeric strings to integer keys, so a general string
 			// that might be numeric should produce int|string keys
 			if ($itemType->isString()->yes() && $itemType->isNumericString()->maybe()) {
-				$keyType = TypeCombinator::union($itemType->toArrayKey(), TypeCombinator::intersect($itemType, new StringType(), new AccessoryNumericStringType())->toArrayKey());
-			} else {
-				$keyType = $itemType->toArrayKey();
+				$keyType = TypeCombinator::union($keyType, new IntegerType());
 			}
 
 			$outputTypes[] = new IntersectionType([

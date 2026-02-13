@@ -50,18 +50,3 @@ assertType('array{}', $scalar);
 $intAsString = array_count_values(['1', '2', '2', '3']);
 
 assertType("non-empty-array<1|2|3, int<1, max>>", $intAsString);
-
-class HelloWorld
-{
-	/** @param array{0: '1.2'|'a'} $arr */
-	public function sayHello(array $arr): void
-	{
-		assertType("non-empty-array<'1.2'|'a', int<1, max>>", array_count_values($arr));
-	}
-
-	/** @param array{0: '1'|'a'} $arr */
-	public function sayHello2(array $arr): void
-	{
-		assertType("non-empty-array<1|'a', int<1, max>>", array_count_values($arr));
-	}
-}

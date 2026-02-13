@@ -30,15 +30,13 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
-use function array_merge;
 use function count;
 
 #[AutowiredService]
 final class DependencyResolver
 {
-	/**
-	 * @var array<string, true>
-	 */
+
+	/** @var array<string, true> */
 	private array $seenClasses = [];
 
 	public function __construct(

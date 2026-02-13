@@ -9,7 +9,7 @@ on:
       - '.github/workflows/changelog-generator.yml'
   push:
     branches:
-      - "2.1.x"
+      - "2.2.x"
     paths:
       - 'changelog-generator/**'
       - '.github/workflows/changelog-generator.yml'

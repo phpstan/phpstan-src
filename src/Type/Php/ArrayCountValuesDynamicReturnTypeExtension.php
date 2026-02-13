@@ -54,16 +54,8 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
-			$keyType = $itemType->toArrayKey();
-
-			// PHP casts numeric strings to integer keys, so a general string
-			// that might be numeric should produce int|string keys
-			if ($itemType->isString()->yes() && $itemType->isNumericString()->maybe()) {
-				$keyType = TypeCombinator::union($keyType, new IntegerType());
-			}
-
 			$outputTypes[] = new IntersectionType([
-				new ArrayType($keyType, IntegerRangeType::fromInterval(1, null)),
+				new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null)),
 				new NonEmptyArrayType(),
 			]);
 		}

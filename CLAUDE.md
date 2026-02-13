@@ -323,10 +323,6 @@ Many built-in PHP functions need `DynamicFunctionReturnTypeExtension` implementa
 - Extensions live in `src/Type/Php/` and are registered in `conf/services.neon`
 - Each reads the argument types from `Scope::getType()` and returns a more precise `Type`
 
-### toArrayKey() and numeric string coercion
-
-`Type::toArrayKey()` converts a value type to its array key representation. `StringType::toArrayKey()` returns `string`, but PHP casts numeric strings (like `'123'`) to integer keys. `ConstantStringType::toArrayKey()` correctly handles this (e.g. `'1'` → `int(1)`), and `AccessoryNumericStringType::toArrayKey()` returns `int|numeric-string`. However, a general `string` where `isNumericString()` returns `maybe` needs special handling in extensions that create arrays from values — the key type should be `int|string` (array-key), not just `string`. This applies to `array_count_values`, `array_flip`, and similar functions where input values become output keys.
-
 ### Function signature corrections (`src/Reflection/SignatureMap/`)
 
 PHPStan maintains its own signature map for built-in PHP functions in `functionMap.php` and delta files. Fixes involve:

@@ -93,7 +93,7 @@ final class Assertions
 	{
 		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withType($callable($tag->getType()));
 
-		return new self(array_map($assertTagsCallback, $this->asserts));
+		return self::create(array_map($assertTagsCallback, $this->asserts));
 	}
 
 	/**
@@ -106,20 +106,27 @@ final class Assertions
 
 	public function union(Assertions $other): self
 	{
-		return new self(array_merge($this->getAll(), $other->getAll()));
+		if ($this === self::$empty) {
+			return $other;
+		}
+		if ($other === self::$empty) {
+			return $this;
+		}
+
+		return self::create(array_merge($this->getAll(), $other->getAll()));
 	}
 
 	public function intersect(Assertions $other): self
 	{
-		$otherAsserts = $other->getAll();
-		if (count($otherAsserts) === 0) {
+		if ($this === self::$empty) {
+			return $other;
+		}
+		if ($other === self::$empty) {
 			return $this;
 		}
 
+		$otherAsserts = $other->getAll();
 		$thisAsserts = $this->getAll();
-		if (count($thisAsserts) === 0) {
-			return $other;
-		}
 
 		$merged = [];
 		foreach ($thisAsserts as $thisAssert) {
@@ -134,7 +141,7 @@ final class Assertions
 			}
 		}
 
-		return new self($merged);
+		return self::create($merged);
 	}
 
 	private static function getAssertKey(AssertTag $assert): string
@@ -145,6 +152,17 @@ final class Assertions
 			$assert->getIf(),
 			$assert->isNegated() ? '1' : '0',
 		);
+	}
+
+	/**
+	 * @param AssertTag[] $asserts
+	 */
+	private static function create(array $asserts): self
+	{
+		if (count($asserts) === 0) {
+			return self::createEmpty();
+		}
+		return new self($asserts);
 	}
 
 	public static function createEmpty(): self
@@ -164,11 +182,8 @@ final class Assertions
 	public static function createFromResolvedPhpDocBlock(ResolvedPhpDocBlock $phpDocBlock): self
 	{
 		$tags = $phpDocBlock->getAssertTags();
-		if (count($tags) === 0) {
-			return self::createEmpty();
-		}
 
-		return new self($tags);
+		return self::create($tags);
 	}
 
 }

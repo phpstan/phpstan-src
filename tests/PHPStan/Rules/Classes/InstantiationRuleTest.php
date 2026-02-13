@@ -484,7 +484,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10248.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.2')]
 	public function testBug11815(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11815.php'], []);

@@ -531,10 +531,11 @@ final class DependencyResolver
 
 		$fileName = $classReflection->getFileName();
 		if ($fileName !== null) {
-			if (isset($this->seenClasses[$fileName])) {
+			$classKey = $className . '-' . $fileName;
+			if (isset($this->seenClasses[$classKey])) {
 				return;
 			}
-			$this->seenClasses[$fileName] = true;
+			$this->seenClasses[$classKey] = true;
 		}
 
 		do {

@@ -109,10 +109,6 @@ final class Assertions
 		return new self(array_merge($this->getAll(), $other->getAll()));
 	}
 
-	/**
-	 * Combines assertions from union type members by unioning the asserted types
-	 * for assertions that target the same parameter with the same condition.
-	 */
 	public function intersect(Assertions $other): self
 	{
 		$otherAsserts = $other->getAll();
@@ -130,7 +126,6 @@ final class Assertions
 
 		foreach ($thisAsserts as $thisAssert) {
 			$key = self::getAssertKey($thisAssert);
-			$found = false;
 
 			foreach ($otherAsserts as $j => $otherAssert) {
 				if (isset($usedOther[$j])) {
@@ -143,16 +138,8 @@ final class Assertions
 
 				$merged[] = $thisAssert->withType(TypeCombinator::union($thisAssert->getType(), $otherAssert->getType()));
 				$usedOther[$j] = true;
-				$found = true;
 				break;
 			}
-
-			if ($found) {
-				continue;
-			}
-
-			// No matching assertion in other — this assertion cannot be guaranteed
-			// for the union type, so we drop it
 		}
 
 		return new self($merged);

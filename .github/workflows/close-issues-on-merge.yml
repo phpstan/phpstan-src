@@ -19,29 +19,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: |
-          # Query GraphQL for closing issues references
-          ISSUES=$(gh api graphql -f query='
-            query ($owner:String!, $repo:String!, $pr:Int!) {
-              repository(owner:$owner, name:$repo) {
-                pullRequest(number:$pr) {
-                  closingIssuesReferences(first:100) {
-                    nodes { number url repository { nameWithOwner } }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F pr=${{ github.event.pull_request.number }} --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[]')
+          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --repo "${{ github.repository }}" --json body --jq '.body')
 
-          if [ -z "$ISSUES" ]; then
-            echo "No linked issues found"
+          # Parse "Closes/Fixes https://github.com/phpstan/phpstan/issues/123" patterns
+          URLS=$(echo "$PR_BODY" | grep -oiP '(?:closes?|fix(?:es)?)\s+https://github\.com/phpstan/phpstan/issues/[0-9]+' | grep -oP 'https://github\.com/phpstan/phpstan/issues/[0-9]+' || true)
+
+          if [ -z "$URLS" ]; then
+            echo "No linked issues found in PR body"
             exit 0
           fi
 
-          echo "$ISSUES" | jq -c '.' | while read -r issue; do
-            REPO=$(echo "$issue" | jq -r '.repository.nameWithOwner')
-            NUMBER=$(echo "$issue" | jq -r '.number')
-            URL=$(echo "$issue" | jq -r '.url')
-
-            echo "Closing $URL"
-            gh issue close "$NUMBER" --repo "$REPO" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
+          echo "$URLS" | while read -r url; do
+            NUMBER=$(echo "$url" | grep -oP '[0-9]+$')
+            echo "Closing phpstan/phpstan#${NUMBER}"
+            gh issue close "$NUMBER" --repo "phpstan/phpstan" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
           done

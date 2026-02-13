@@ -148,11 +148,10 @@ final class Assertions
 	private static function getAssertKey(AssertTag $assert): string
 	{
 		return sprintf(
-			'%s-%s-%s-%s',
+			'%s-%s-%s',
 			$assert->getParameter()->describe(),
 			$assert->getIf(),
 			$assert->isNegated() ? '1' : '0',
-			$assert->isEquality() ? '1' : '0',
 		);
 	}
 

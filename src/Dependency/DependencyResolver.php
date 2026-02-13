@@ -523,15 +523,18 @@ final class DependencyResolver
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
-		if (isset($this->seenClasses[$className])) {
+		try {
+			$classReflection = $this->reflectionProvider->getClass($className);
+		} catch (ClassNotFoundException) {
 			return;
 		}
 
-		try {
-			$classReflection = $this->reflectionProvider->getClass($className);
-			$this->seenClasses[$className] = true;
-		} catch (ClassNotFoundException) {
-			return;
+		$fileName = $classReflection->getFileName();
+		if ($fileName !== null) {
+			if (isset($this->seenClasses[$fileName])) {
+				return;
+			}
+			$this->seenClasses[$fileName] = true;
 		}
 
 		do {

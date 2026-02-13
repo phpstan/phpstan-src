@@ -1,0 +1,47 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: Close issues from merged PRs
+
+on:
+  pull_request:
+    branches:
+      - "2.1.x"
+    types:
+      - closed
+
+jobs:
+  close-issues:
+    name: Close linked issues
+    if: github.repository_owner == 'phpstan' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Find and close linked issues"
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: |
+          # Query GraphQL for closing issues references
+          ISSUES=$(gh api graphql -f query='
+            query ($owner:String!, $repo:String!, $pr:Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number:$pr) {
+                  closingIssuesReferences(first:100) {
+                    nodes { number url repository { nameWithOwner } }
+                  }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F pr=${{ github.event.pull_request.number }} --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[]')
+
+          if [ -z "$ISSUES" ]; then
+            echo "No linked issues found"
+            exit 0
+          fi
+
+          echo "$ISSUES" | jq -c '.' | while read -r issue; do
+            REPO=$(echo "$issue" | jq -r '.repository.nameWithOwner')
+            NUMBER=$(echo "$issue" | jq -r '.number')
+            URL=$(echo "$issue" | jq -r '.url')
+
+            echo "Closing $URL"
+            gh issue close "$NUMBER" --repo "$REPO" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
+          done

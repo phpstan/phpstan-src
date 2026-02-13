@@ -48,5 +48,5 @@ function test(Foo|Bar $fooOrBar): void
 
 	$fooOrBar->narrowGetParam();
 
-	assertType('int|string|null', $fooOrBar->getParam());
+	assertType('int|string|null', $fooOrBar->getParam()); // could be 'int|string'
 }

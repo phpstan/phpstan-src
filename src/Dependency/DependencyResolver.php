@@ -36,6 +36,10 @@ use function count;
 #[AutowiredService]
 final class DependencyResolver
 {
+	/**
+	 * @var array<string, true>
+	 */
+	private array $seenClasses = [];
 
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -521,6 +525,11 @@ final class DependencyResolver
 	 */
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
+		if (isset($this->seenClasses[$className])) {
+			return;
+		}
+		$this->seenClasses[$className] = true;
+
 		try {
 			$classReflection = $this->reflectionProvider->getClass($className);
 		} catch (ClassNotFoundException) {
@@ -676,12 +685,10 @@ final class DependencyResolver
 	): void
 	{
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
-			$referencedClasses = array_merge(
-				$parameter->getNativeType()->getReferencedClasses(),
-				$parameter->getPhpDocType()->getReferencedClasses(),
-			);
-
-			foreach ($referencedClasses as $referencedClass) {
+			foreach ($parameter->getNativeType()->getReferencedClasses() as $referencedClass) {
+				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+			foreach ($parameter->getPhpDocType()->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 
@@ -698,11 +705,10 @@ final class DependencyResolver
 			}
 		}
 
-		$returnTypeReferencedClasses = array_merge(
-			$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
-			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses(),
-		);
-		foreach ($returnTypeReferencedClasses as $referencedClass) {
+		foreach ($parametersAcceptor->getNativeReturnType()->getReferencedClasses() as $referencedClass) {
+			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+		}
+		foreach ($parametersAcceptor->getPhpDocReturnType()->getReferencedClasses() as $referencedClass) {
 			$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 		}
 	}

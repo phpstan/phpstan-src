@@ -122,23 +122,15 @@ final class Assertions
 		}
 
 		$merged = [];
-		$usedOther = [];
-
 		foreach ($thisAsserts as $thisAssert) {
 			$key = self::getAssertKey($thisAssert);
 
-			foreach ($otherAsserts as $j => $otherAssert) {
-				if (isset($usedOther[$j])) {
-					continue;
-				}
-
+			foreach ($otherAsserts as $otherAssert) {
 				if (self::getAssertKey($otherAssert) !== $key) {
 					continue;
 				}
 
 				$merged[] = $thisAssert->withType(TypeCombinator::union($thisAssert->getType(), $otherAssert->getType()));
-				$usedOther[$j] = true;
-				break;
 			}
 		}
 

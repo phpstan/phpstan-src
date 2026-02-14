@@ -11,6 +11,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function count;
 use function in_array;
@@ -69,7 +70,7 @@ final class ParameterCastableToNumberRule implements Rule
 
 		$castFn = $this->phpVersion->supportsObjectsInArraySumProduct()
 			? static fn (Type $t) => $t->toNumber()
-			: static fn (Type $t) => !$t->isObject()->no() ? new ErrorType() : $t->toNumber();
+			: static fn (Type $t) => !$t instanceof MixedType && !$t->isObject()->no() ? new ErrorType() : $t->toNumber();
 
 		$error = $this->parameterCastableToStringCheck->checkParameter(
 			$origArgs[0],

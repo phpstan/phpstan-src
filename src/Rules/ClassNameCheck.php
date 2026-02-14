@@ -11,6 +11,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 #[AutowiredService]
 final class ClassNameCheck
 {
+
 	/** @var RestrictedClassNameUsageExtension[] $extensions */
 	private array $extensions;
 

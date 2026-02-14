@@ -530,7 +530,7 @@ final class DependencyResolver
 		}
 
 		if ($classReflection->getTemplateTypeMap()->isEmpty()) {
-			$cacheKey = $className .'-'. $classReflection->getFileName();
+			$cacheKey = $classReflection->getCacheKey();
 			if (isset($this->seenClasses[$cacheKey])) {
 				return;
 			}

@@ -11,6 +11,8 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 #[AutowiredService]
 final class ClassNameCheck
 {
+	/** @var RestrictedClassNameUsageExtension[] $extensions */
+	private array $extensions;
 
 	public function __construct(
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
@@ -19,6 +21,7 @@ final class ClassNameCheck
 		private Container $container,
 	)
 	{
+		$this->extensions = $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
 	}
 
 	/**
@@ -47,9 +50,7 @@ final class ClassNameCheck
 			return $errors;
 		}
 
-		/** @var RestrictedClassNameUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
-		if ($extensions === []) {
+		if ($this->extensions === []) {
 			return $errors;
 		}
 
@@ -59,7 +60,7 @@ final class ClassNameCheck
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($pair->getClassName());
-			foreach ($extensions as $extension) {
+			foreach ($this->extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedClassNameUsage($classReflection, $scope, $location);
 				if ($restrictedUsage === null) {
 					continue;

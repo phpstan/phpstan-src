@@ -3,7 +3,7 @@
 name: Close issues from merged PRs
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - "2.1.x"
     types:

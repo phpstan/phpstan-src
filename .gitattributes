@@ -2,3 +2,5 @@
 *.stub linguist-language=PHP
 
 tests/PHPStan/Command/ErrorFormatter/data/WindowsNewlines.php eol=crlf
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours

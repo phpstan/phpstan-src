@@ -30,6 +30,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
+use function array_key_exists;
+use function array_merge;
 use function count;
 
 #[AutowiredService]

@@ -15,7 +15,7 @@ final class PhpVersionBlacklistSourceLocator implements SourceLocator
 {
 
 	public function __construct(
-		private SourceLocator                                               $sourceLocator,
+		private SourceLocator $sourceLocator,
 		private PhpStormStubsSourceStubber|CachedPhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 	)
 	{

@@ -32,13 +32,14 @@ final class CachedPhpStormStubsSourceStubber implements SourceStubber
 	 */
 	private function getCacheKeys(): array
 	{
-		$stubsVersion = 'dev-master#5fd9e4ef2b4c2a00848ea62d78bf3aa81f43e038';
-		$cacheKey = 'phpstorm-stubs';
-		$variableCacheKey = sprintf('v1-%s-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString(), $stubsVersion);
+		$stubsVersion = ComposerHelper::getPhpStormStubsVersion();
+		$cacheKey = sprintf('phpstorm-stubs-%s', $stubsVersion);
+		$variableCacheKey = sprintf('v1-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString());
 
 		return [$cacheKey, $variableCacheKey];
 	}
 
+	#[\Override]
 	public function generateClassStub(string $className): ?StubData
 	{
 		$this->cached['classes'] ??= [];
@@ -49,6 +50,7 @@ final class CachedPhpStormStubsSourceStubber implements SourceStubber
 		return $this->cached['classes'][$className];
 	}
 
+	#[\Override]
 	public function generateFunctionStub(string $functionName): ?StubData
 	{
 		$this->cached['functions'] ??= [];
@@ -59,6 +61,7 @@ final class CachedPhpStormStubsSourceStubber implements SourceStubber
 		return $this->cached['functions'][$functionName];
 	}
 
+	#[\Override]
 	public function generateConstantStub(string $constantName): ?StubData
 	{
 		$this->cached['constants'] ??= [];

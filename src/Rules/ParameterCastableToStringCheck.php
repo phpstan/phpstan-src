@@ -6,6 +6,7 @@ use PhpParser\Node\Arg;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -34,22 +35,31 @@ final class ParameterCastableToStringCheck
 			return null;
 		}
 
-		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+		$arrayTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$parameter->value,
 			'',
-			static fn (Type $type): bool => $type->isArray()->yes() && !$castFn($type->getIterableValueType()) instanceof ErrorType,
+			static fn (Type $type): bool => $type->isArray()->yes(),
 		);
 
-		if (
-			! $typeResult->getType()->isArray()->yes()
-			|| !$castFn($typeResult->getType()->getIterableValueType()) instanceof ErrorType
-		) {
+		$arrayType = $arrayTypeResult->getType();
+		if (!$arrayType->isArray()->yes()) {
+			return null;
+		}
+
+		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			new TypeExpr($arrayType->getIterableValueType()),
+			'',
+			static fn (Type $type): bool => !$castFn($type) instanceof ErrorType,
+		);
+
+		if (!$castFn($typeResult->getType()) instanceof ErrorType) {
 			return null;
 		}
 
 		return RuleErrorBuilder::message(
-			sprintf($errorMessageTemplate, $parameterName, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
+			sprintf($errorMessageTemplate, $parameterName, $functionName, $arrayTypeResult->getType()->describe(VerbosityLevel::typeOnly())),
 		)->identifier('argument.type')->build();
 	}
 

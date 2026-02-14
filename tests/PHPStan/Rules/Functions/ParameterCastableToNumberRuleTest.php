@@ -18,12 +18,18 @@ use const PHP_VERSION_ID;
 class ParameterCastableToNumberRuleTest extends RuleTestCase
 {
 
+	private bool $checkUnion = true;
+
+	private bool $checkExplicitMixed = true;
+
+	private bool $checkImplicitMixed = true;
+
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
 		return new ParameterCastableToNumberRule(
 			$broker,
-			new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)),
+			new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, $this->checkUnion, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true)),
 			self::getContainer()->getByType(PhpVersion::class),
 		);
 	}
@@ -211,6 +217,39 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-13775-bis.php'], $this->hackPhp74ErrorMessages($errors));
+	}
+
+	public function testBug13775TerWithoutMixed(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->checkImplicitMixed = false;
+
+		$this->analyse([__DIR__ . '/data/bug-13775-ter.php'], $this->hackPhp74ErrorMessages([
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, int|string> given.',
+				9,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, int|string> given.',
+				10,
+			],
+		]));
+	}
+
+	public function testBug13775TerWithoutUnion(): void
+	{
+		$this->checkUnion = false;
+
+		$this->analyse([__DIR__ . '/data/bug-13775-ter.php'], $this->hackPhp74ErrorMessages([
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int, mixed> given.',
+				5,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, mixed> given.',
+				6,
+			],
+		]));
 	}
 
 	public function testBug12146(): void

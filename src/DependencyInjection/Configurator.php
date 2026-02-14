@@ -87,20 +87,28 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		$staticParameters = $this->staticParameters;
 		ksort($staticParameters['env']);
 		unset($staticParameters['env']['_']);
+		// make sure variables which can get defined by the shell
+		// after user-interactions with the UI will not invalidate the container cache
 		unset($staticParameters['env']['SHLVL']);
+		unset($staticParameters['env']['OLDPWD']);
+		unset($staticParameters['env']['LINES']);
+		unset($staticParameters['env']['COLUMNS']);
+		unset($staticParameters['env']['SHELL_VERBOSITY']);
+
+		$containerKey = [
+			$staticParameters,
+			array_keys($this->dynamicParameters),
+			$this->configs,
+			PHP_VERSION_ID - PHP_RELEASE_VERSION,
+			is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
+			NeonAdapter::CACHE_KEY,
+			$this->getAllConfigFilesHashes(),
+			var_export(TurboExtensionEnabler::isLoaded(), true),
+		];
 
 		$className = $loader->load(
 			[$this, 'generateContainer'],
-			[
-				$staticParameters,
-				array_keys($this->dynamicParameters),
-				$this->configs,
-				PHP_VERSION_ID - PHP_RELEASE_VERSION,
-				is_file($attributesPhp) ? hash_file('sha256', $attributesPhp) : 'attributes-missing',
-				NeonAdapter::CACHE_KEY,
-				$this->getAllConfigFilesHashes(),
-				var_export(TurboExtensionEnabler::isLoaded(), true),
-			],
+			$containerKey,
 		);
 
 		if ($this->journalContainer) {

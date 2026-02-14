@@ -13,6 +13,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
@@ -28,6 +29,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocat
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceStubber\CachedPhpStormStubsSourceStubber;
 use function array_merge;
 use function array_unique;
 use function count;
@@ -74,6 +76,7 @@ final class BetterReflectionSourceLocatorFactory
 		private bool $playgroundMode, // makes all PHPStan classes in the PHAR discoverable with PSR-4
 		#[AutowiredParameter]
 		private ?string $singleReflectionFile,
+		private Cache $cache,
 	)
 	{
 	}
@@ -160,13 +163,18 @@ final class BetterReflectionSourceLocatorFactory
 				);
 			}
 		}
+		$cachedPhpstormSourceStubber = new CachedPhpStormStubsSourceStubber(
+			$this->phpstormStubsSourceStubber,
+			$this->cache,
+			$this->phpVersion,
+		);
 
 		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
+		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $cachedPhpstormSourceStubber));
 
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $cachedPhpstormSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $cachedPhpstormSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

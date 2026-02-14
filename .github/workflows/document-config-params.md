@@ -22,6 +22,7 @@ tools:
 timeout-minutes: 30
 steps:
   - uses: actions/checkout@v4
+  - uses: actions/checkout@v4
     with:
       repository: phpstan/phpstan
       ref: 2.2.x

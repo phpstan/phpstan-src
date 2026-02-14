@@ -23,7 +23,7 @@
 #
 # Finds undocumented PHPStan config parameters and creates documentation PRs on phpstan/phpstan
 #
-# frontmatter-hash: 8fc29ae470188f0f52dc79af2c2bba18a872a57ddfa4479eb52b07a7b642c978
+# frontmatter-hash: 31bb738b106c65eb8c5258fe6d0d61365db8ea6b0f389fc75193988252680777
 
 name: "Document Config Parameters"
 "on":
@@ -87,6 +87,7 @@ jobs:
           destination: /opt/gh-aw/actions
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           path: __phpstan-website

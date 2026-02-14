@@ -529,11 +529,13 @@ final class DependencyResolver
 			return;
 		}
 
-		$cacheKey = $classReflection->getCacheKey();
-		if (isset($this->seenClasses[$cacheKey])) {
-			return;
+		if (!$classReflection->isGeneric()) {
+			$cacheKey = $classReflection->getCacheKey();
+			if (isset($this->seenClasses[$cacheKey])) {
+				return;
+			}
+			$this->seenClasses[$cacheKey] = true;
 		}
-		$this->seenClasses[$cacheKey] = true;
 
 		do {
 			$dependenciesReflections[] = $classReflection;

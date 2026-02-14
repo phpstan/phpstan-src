@@ -529,13 +529,11 @@ final class DependencyResolver
 			return;
 		}
 
-		if ($classReflection->getTemplateTypeMap()->isEmpty()) {
-			$cacheKey = $classReflection->getCacheKey();
-			if (isset($this->seenClasses[$cacheKey])) {
-				return;
-			}
-			$this->seenClasses[$cacheKey] = true;
+		$cacheKey = spl_object_id($classReflection);
+		if (isset($this->seenClasses[$cacheKey])) {
+			return;
 		}
+		$this->seenClasses[$cacheKey] = true;
 
 		do {
 			$dependenciesReflections[] = $classReflection;

@@ -17,7 +17,12 @@ final readonly class PrivateFoo
 		return ['num' => $num];
 	};
 
-	public function test(): void
+	public static function testStatic(): void
+	{
+		assertType('Closure(int): array{num: int}', self::func);
+	}
+
+	public function testNonStatic(): void
 	{
 		assertType('Closure(int): array{num: int}', self::func);
 	}

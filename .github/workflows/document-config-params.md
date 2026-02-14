@@ -155,8 +155,8 @@ After editing the documentation file, push the changes and create a PR on `phpst
 
 ```bash
 cd __phpstan-website
-git config user.name "github-actions[bot]"
-git config user.email "github-actions[bot]@users.noreply.github.com"
+git config user.name "phpstan-bot"
+git config user.email "ondrej+phpstanbot@mirtes.cz"
 git checkout -b docs/undocumented-config-params
 git add website/src/config-reference.md
 git commit -m "Document undocumented configuration parameters"

@@ -48,12 +48,12 @@ final class FileFinder
 			}
 		}
 
-		$files = array_values(array_unique(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file))));
+		$files = array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file));
 
 		sort($files);
 
 		return new FileFinderResult(
-			array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $files),
+			array_values(array_unique(array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $files))),
 			$onlyFiles,
 		);
 	}

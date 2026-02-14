@@ -512,6 +512,22 @@ final class DependencyResolver
 			return false;
 		}
 
+		if (
+			$items[0]->value instanceof Array_
+			|| $items[0]->value instanceof Node\Scalar\Int_
+			|| $items[0]->value instanceof Node\Scalar\Float_
+		) {
+			return false;
+		}
+
+		if (
+			$items[1]->value instanceof Array_
+			|| $items[1]->value instanceof Node\Scalar\Int_
+			|| $items[1]->value instanceof Node\Scalar\Float_
+		) {
+			return false;
+		}
+
 		$itemType = $scope->getType($items[0]->value);
 		return $itemType->isClassString()->yes();
 	}

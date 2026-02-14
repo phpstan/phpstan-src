@@ -11,6 +11,18 @@ final readonly class Foo
 	};
 }
 
+final readonly class PrivateFoo
+{
+	private const func = static function (int $num): array {
+		return ['num' => $num];
+	};
+
+	public function test(): void
+	{
+		assertType('Closure(int): array{num: int}', self::func);
+	}
+}
+
 const func = static function (int $num): array {
 	return ['num' => $num];
 };

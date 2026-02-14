@@ -2225,10 +2225,17 @@ class NodeScopeResolver
 				if ($scope->getClassReflection() === null) {
 					throw new ShouldNotHappenException();
 				}
+				$constType = $scope->getType($const->value);
+				$constNativeType = $scope->getNativeType($const->value);
 				$scope = $scope->assignExpression(
 					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
-					$scope->getType($const->value),
-					$scope->getNativeType($const->value),
+					$constType,
+					$constNativeType,
+				);
+				$scope = $scope->assignExpression(
+					new Expr\ClassConstFetch(new Name('self'), $const->name),
+					$constType,
+					$constNativeType,
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\EnumCase) {

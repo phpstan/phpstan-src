@@ -49,7 +49,23 @@ You are a documentation agent for PHPStan. Your job is to find configuration par
 
 ### Step 2: Identify user-facing parameters from the schema
 
-Extract all parameter names from `parametersSchema.neon`. **Skip these entirely:**
+Extract all parameter names from `parametersSchema.neon`. Note that some parameters are nested inside `structure()` blocks — these use dotted paths in the user's `phpstan.neon`. For example, the schema has:
+
+```neon
+exceptions: structure([
+    implicitThrows: bool(),
+    check: structure([
+        missingCheckedExceptionInThrows: bool(),
+        tooWideThrowType: bool(),
+        throwTypeCovariance: bool(),
+        tooWideImplicitThrowType: bool()
+    ])
+])
+```
+
+This means the user-facing parameters are `exceptions.implicitThrows`, `exceptions.check.missingCheckedExceptionInThrows`, `exceptions.check.tooWideThrowType`, etc. Similarly, `cache` has sub-keys like `cache.nodesByStringCountMax`. Make sure to extract ALL nested parameters, not just top-level ones.
+
+**Skip these entirely:**
 
 - The entire `featureToggles` section and all its sub-parameters
 - Everything after the `# playground mode` comment — these are internal/irrelevant:

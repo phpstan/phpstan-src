@@ -23,7 +23,7 @@
 #
 # Finds undocumented PHPStan config parameters and creates documentation PRs on phpstan/phpstan
 #
-# frontmatter-hash: 1a9f53816b136dca6a59bce24fbe857946c572cd0ca2df9f462956e9caf1a30d
+# frontmatter-hash: d760e657da671c4981c44c5653b1d742bd302e5bb6d2d59c20b32d62d08ad4df
 
 name: "Document Config Parameters"
 "on":
@@ -105,7 +105,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         name: Fetch config-reference.md from phpstan/phpstan
-        run: "mkdir -p website/src\ngh api repos/phpstan/phpstan/contents/website/src/config-reference.md -H \"Accept: application/vnd.github.raw+json\" > website/src/config-reference.md\ngit add website/src/config-reference.md\ngit commit -m \"Seed config-reference.md from phpstan/phpstan\""
+        run: "mkdir -p website/src\ngh api repos/phpstan/phpstan/contents/website/src/config-reference.md -H \"Accept: application/vnd.github.raw+json\" > website/src/config-reference.md\ngit config user.name \"github-actions[bot]\"\ngit config user.email \"github-actions[bot]@users.noreply.github.com\"\ngit add website/src/config-reference.md\ngit commit -m \"Seed config-reference.md from phpstan/phpstan\""
 
       - name: Configure Git credentials
         env:

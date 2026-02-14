@@ -34,6 +34,8 @@ steps:
     run: |
       mkdir -p website/src
       gh api repos/phpstan/phpstan/contents/website/src/config-reference.md -H "Accept: application/vnd.github.raw+json" > website/src/config-reference.md
+      git config user.name "github-actions[bot]"
+      git config user.email "github-actions[bot]@users.noreply.github.com"
       git add website/src/config-reference.md
       git commit -m "Seed config-reference.md from phpstan/phpstan"
 ---

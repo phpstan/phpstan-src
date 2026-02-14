@@ -69,7 +69,9 @@ Also skip these internal parameters that users should not configure directly:
 Check which parameter names from the schema do NOT appear as documented parameters in `config-reference.md`. A parameter counts as "documented" if it appears as a heading (`###`), in a config key listing, or is explained in a section body.
 
 {{#if github.event_name == 'push'}}
-Focus on parameters that were added or changed in the push. Run `git diff HEAD~1 -- conf/parametersSchema.neon` to see what changed. Only document newly added parameters.
+Focus only on parameters that were added or changed in this push. Run `git diff ${{ github.event.before }} -- conf/parametersSchema.neon` to see what changed across all commits in the push. Only document newly added parameters.
+{{#else}}
+Check ALL non-skipped parameters from the schema against the documentation. Do not look at git history or diffs — compare the entire `parametersSchema.neon` against `config-reference.md` and document every undocumented parameter you find.
 {{/if}}
 
 If there are no undocumented parameters, stop and report that all parameters are documented. Do not create a PR.

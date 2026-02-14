@@ -36,7 +36,7 @@ use function count;
 final class DependencyResolver
 {
 
-	/** @var array<string, list<ClassReflection|FunctionReflection> */
+	/** @var array<string, list<ClassReflection|FunctionReflection>> */
 	private array $classDependencies = [];
 
 	public function __construct(
@@ -524,16 +524,16 @@ final class DependencyResolver
 	private function addClassToDependencies(string $className, array &$dependenciesReflections): void
 	{
 		if (!array_key_exists($className, $this->classDependencies)) {
-			$this->classDependencies[$className] = $this->buildClassToDependencies($className);
+			$this->classDependencies[$className] = $this->buildClassDependencies($className);
 		}
 
 		$dependenciesReflections = array_merge($dependenciesReflections, $this->classDependencies[$className]);
 	}
 
 	/**
-	 * @return list<int, ClassReflection|FunctionReflection>
+	 * @return list<ClassReflection|FunctionReflection>
 	 */
-	private function buildClassToDependencies(string $className): array
+	private function buildClassDependencies(string $className): array
 	{
 		try {
 			$classReflection = $this->reflectionProvider->getClass($className);

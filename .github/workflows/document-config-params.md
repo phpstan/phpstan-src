@@ -64,6 +64,26 @@ Also skip these internal parameters that users should not configure directly:
 - `parametersNotInvalidatingCache` (internal)
 - `env` (internal environment variable mapping)
 
+Also skip these level-only parameters — they exist purely to be toggled by rule levels in `conf/config.level*.neon` and are not configured by users directly:
+- `checkThisOnly` (level 2)
+- `checkMaybeUndefinedVariables` (level 1)
+- `checkExtraArguments` (level 1)
+- `reportMagicMethods` (level 1)
+- `reportMagicProperties` (level 1)
+- `checkClassCaseSensitivity` (level 2)
+- `checkPhpDocMissingReturn` (level 2)
+- `checkPhpDocMethodSignatures` (level 3)
+- `checkAdvancedIsset` (level 4)
+- `checkFunctionArgumentTypes` (level 5)
+- `checkArgumentsPassedByReference` (level 5)
+- `checkMissingVarTagTypehint` (level 6)
+- `checkMissingTypehints` (level 6)
+- `checkUnionTypes` (level 7)
+- `reportMaybes` (level 7)
+- `checkNullables` (level 8)
+- `checkExplicitMixed` (level 9)
+- `checkImplicitMixed` (level 10)
+
 ### Step 3: Determine which parameters are undocumented
 
 Check which parameter names from the schema do NOT appear as documented parameters in `config-reference.md`. A parameter counts as "documented" if it appears as a heading (`###`), in a config key listing, or is explained in a section body.

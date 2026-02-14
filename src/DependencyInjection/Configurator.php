@@ -94,6 +94,8 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		unset($staticParameters['env']['LINES']);
 		unset($staticParameters['env']['COLUMNS']);
 		unset($staticParameters['env']['SHELL_VERBOSITY']);
+		// make sure invocations via blackfire use the same container
+		unset($staticParameters['env']['BLACKFIRE_AGENT_SOCKET']);
 
 		$containerKey = [
 			$staticParameters,

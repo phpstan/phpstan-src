@@ -19,25 +19,14 @@ tools:
   bash: ["*"]
   github:
     toolsets: [default, repos]
-safe-outputs:
-  github-token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-  create-pull-request:
-    target-repo: phpstan/phpstan
-    title-prefix: "[Docs] "
-    draft: true
-    fallback-as-issue: true
 timeout-minutes: 30
 steps:
-  - name: Fetch config-reference.md from phpstan/phpstan
-    env:
-      GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-    run: |
-      mkdir -p website/src
-      gh api repos/phpstan/phpstan/contents/website/src/config-reference.md -H "Accept: application/vnd.github.raw+json" > website/src/config-reference.md
-      git config user.name "github-actions[bot]"
-      git config user.email "github-actions[bot]@users.noreply.github.com"
-      git add website/src/config-reference.md
-      git commit -m "Seed config-reference.md from phpstan/phpstan"
+  - uses: actions/checkout@v4
+    with:
+      repository: phpstan/phpstan
+      ref: 2.2.x
+      path: __phpstan-website
+      token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 ---
 
 # Document Undocumented Config Parameters
@@ -47,14 +36,15 @@ You are a documentation agent for PHPStan. Your job is to find configuration par
 ## Source files
 
 - **Parameter schema**: `conf/parametersSchema.neon` in this workspace (phpstan-src repo)
-- **Config reference docs**: `website/src/config-reference.md` — already fetched from `phpstan/phpstan` into the workspace by a pre-step
+- **Config reference docs**: `__phpstan-website/website/src/config-reference.md` (checked out from `phpstan/phpstan`)
+- **Source code for research**: `src/`, `conf/`, and `tests/` directories in this workspace (phpstan-src repo)
 
 ## Task
 
 ### Step 1: Read both files
 
 1. Read `conf/parametersSchema.neon` from the workspace
-2. Read `website/src/config-reference.md` from the workspace (it was pre-fetched from the `phpstan/phpstan` repo)
+2. Read `__phpstan-website/website/src/config-reference.md` from the workspace
 
 ### Step 2: Identify user-facing parameters from the schema
 
@@ -109,7 +99,7 @@ If there are no undocumented parameters, stop and report that all parameters are
 
 ### Step 4: Research each undocumented parameter
 
-For each undocumented parameter, investigate what it does:
+For each undocumented parameter, investigate what it does by reading files from the workspace (phpstan-src):
 
 1. **Search the source code** in `src/` for where the parameter is used. Look for the parameter name in PHP files — it will typically appear in a service constructor or be read from the DI container.
 2. **Check level configs** in `conf/config.level*.neon` to see which level enables the parameter and what its default value is.
@@ -119,7 +109,7 @@ For each undocumented parameter, investigate what it does:
 
 ### Step 5: Write documentation
 
-Edit the existing `website/src/config-reference.md` file in the workspace to add the new documentation. Do NOT overwrite the file — use targeted edits to insert new parameter sections in the correct locations.
+Edit the existing `__phpstan-website/website/src/config-reference.md` file to add the new documentation. Do NOT overwrite the file — use targeted edits to insert new parameter sections in the correct locations.
 
 **Place each parameter in the correct existing section:**
 - Boolean flags that enable stricter checks → "Stricter analysis" section (as `###` sub-headings)
@@ -160,4 +150,17 @@ Description of what the parameter does.
 
 ### Step 6: Create a pull request
 
-After editing the documentation file, create a pull request. The PR description should list which parameters were newly documented with a one-line summary of each.
+After editing the documentation file, push the changes and create a PR on `phpstan/phpstan`:
+
+```bash
+cd __phpstan-website
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+git checkout -b docs/undocumented-config-params
+git add website/src/config-reference.md
+git commit -m "Document undocumented configuration parameters"
+git push origin docs/undocumented-config-params
+gh pr create --repo phpstan/phpstan --base 2.2.x --draft --title "[Docs] Document undocumented config parameters" --body "PR DESCRIPTION HERE"
+```
+
+Replace `PR DESCRIPTION HERE` with a description listing which parameters were newly documented with a one-line summary of each.

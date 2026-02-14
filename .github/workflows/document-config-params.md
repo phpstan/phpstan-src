@@ -27,6 +27,15 @@ safe-outputs:
     draft: true
     fallback-as-issue: true
 timeout-minutes: 30
+steps:
+  - name: Fetch config-reference.md from phpstan/phpstan
+    env:
+      GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+    run: |
+      mkdir -p website/src
+      gh api repos/phpstan/phpstan/contents/website/src/config-reference.md -H "Accept: application/vnd.github.raw+json" > website/src/config-reference.md
+      git add website/src/config-reference.md
+      git commit -m "Seed config-reference.md from phpstan/phpstan"
 ---
 
 # Document Undocumented Config Parameters
@@ -36,14 +45,14 @@ You are a documentation agent for PHPStan. Your job is to find configuration par
 ## Source files
 
 - **Parameter schema**: `conf/parametersSchema.neon` in this workspace (phpstan-src repo)
-- **Config reference docs**: `website/src/config-reference.md` in the `phpstan/phpstan` repository — fetch this file using the GitHub `get_file_contents` tool from the `phpstan/phpstan` repo
+- **Config reference docs**: `website/src/config-reference.md` — already fetched from `phpstan/phpstan` into the workspace by a pre-step
 
 ## Task
 
 ### Step 1: Read both files
 
 1. Read `conf/parametersSchema.neon` from the workspace
-2. Fetch `website/src/config-reference.md` from the `phpstan/phpstan` repo using the GitHub tools
+2. Read `website/src/config-reference.md` from the workspace (it was pre-fetched from the `phpstan/phpstan` repo)
 
 ### Step 2: Identify user-facing parameters from the schema
 
@@ -108,9 +117,7 @@ For each undocumented parameter, investigate what it does:
 
 ### Step 5: Write documentation
 
-Write the file `website/src/config-reference.md` to the workspace with the complete updated content. The file path must exactly match the target repo's structure.
-
-First, write the original content fetched from phpstan/phpstan to `website/src/config-reference.md` in the workspace. Then edit it to add the new documentation.
+Edit the existing `website/src/config-reference.md` file in the workspace to add the new documentation. Do NOT overwrite the file — use targeted edits to insert new parameter sections in the correct locations.
 
 **Place each parameter in the correct existing section:**
 - Boolean flags that enable stricter checks → "Stricter analysis" section (as `###` sub-headings)

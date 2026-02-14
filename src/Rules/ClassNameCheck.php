@@ -13,7 +13,7 @@ final class ClassNameCheck
 {
 
 	/** @var RestrictedClassNameUsageExtension[] $extensions */
-	private array $extensions;
+	private ?array $extensions = null;
 
 	public function __construct(
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
@@ -22,7 +22,6 @@ final class ClassNameCheck
 		private Container $container,
 	)
 	{
-		$this->extensions = $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
 	}
 
 	/**
@@ -51,7 +50,8 @@ final class ClassNameCheck
 			return $errors;
 		}
 
-		if ($this->extensions === []) {
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
+		if ($extensions === []) {
 			return $errors;
 		}
 
@@ -61,7 +61,7 @@ final class ClassNameCheck
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($pair->getClassName());
-			foreach ($this->extensions as $extension) {
+			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedClassNameUsage($classReflection, $scope, $location);
 				if ($restrictedUsage === null) {
 					continue;

@@ -4,6 +4,7 @@ namespace PHPStan\File;
 
 use Symfony\Component\Finder\Finder;
 use function array_filter;
+use function array_map;
 use function array_unique;
 use function array_values;
 use function file_exists;
@@ -34,24 +35,27 @@ final class FileFinder
 		$files = [];
 		foreach ($paths as $path) {
 			if (is_file($path)) {
-				$files[] = $this->fileHelper->normalizePath($path);
+				$files[] = $path;
 			} elseif (!file_exists($path)) {
 				throw new PathNotFoundException($path);
 			} else {
 				$finder = new Finder();
 				$finder->followLinks();
 				foreach ($finder->files()->name('*.{' . implode(',', $this->fileExtensions) . '}')->in($path) as $fileInfo) {
-					$files[] = $this->fileHelper->normalizePath($fileInfo->getPathname());
+					$files[] = $fileInfo->getPathname();
 					$onlyFiles = false;
 				}
 			}
 		}
 
-		$files = array_values(array_unique(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file))));
+		$files = array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file));
 
 		sort($files);
 
-		return new FileFinderResult($files, $onlyFiles);
+		return new FileFinderResult(
+			array_values(array_unique(array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $files))),
+			$onlyFiles,
+		);
 	}
 
 }

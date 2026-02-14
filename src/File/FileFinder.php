@@ -53,7 +53,7 @@ final class FileFinder
 		sort($files);
 
 		return new FileFinderResult(
-			array_map(function ($file) {
+			array_map(function (string $file): string {
 				$this->fileHelper->normalizePath($file);
 			}, $files),
 			$onlyFiles,

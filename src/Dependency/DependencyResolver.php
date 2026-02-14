@@ -529,8 +529,8 @@ final class DependencyResolver
 			return;
 		}
 
-		if (!$classReflection->isGeneric()) {
-			$cacheKey = $classReflection->getCacheKey();
+		if ($classReflection->getTemplateTypeMap()->isEmpty()) {
+			$cacheKey = $className .'-'. $classReflection->getFileName();
 			if (isset($this->seenClasses[$cacheKey])) {
 				return;
 			}

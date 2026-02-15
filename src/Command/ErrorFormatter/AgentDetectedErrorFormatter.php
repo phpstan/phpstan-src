@@ -16,8 +16,8 @@ final class AgentDetectedErrorFormatter implements ErrorFormatter
 {
 
 	public function __construct(
-		#[AutowiredParameter(ref: '@errorFormatter.json')]
-		private JsonErrorFormatter $jsonErrorFormatter,
+		#[AutowiredParameter(ref: '@errorFormatter.toon')]
+		private ToonErrorFormatter $toonErrorFormatter,
 	)
 	{
 	}
@@ -29,7 +29,7 @@ final class AgentDetectedErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
-		return $this->jsonErrorFormatter->formatErrors($analysisResult, $output);
+		return $this->toonErrorFormatter->formatErrors($analysisResult, $output);
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use HelgeSverre\Toon\Toon;
 use Override;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function putenv;
@@ -33,27 +34,27 @@ class AgentDetectedErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testIsAgentDetectedReturnsFalse(): void
 	{
-		$formatter = new AgentDetectedErrorFormatter(new JsonErrorFormatter(false));
+		$formatter = new AgentDetectedErrorFormatter(new ToonErrorFormatter());
 		$this->assertFalse($formatter->isAgentDetected());
 	}
 
 	public function testIsAgentDetectedReturnsTrueWithAiAgent(): void
 	{
 		putenv('AI_AGENT=test');
-		$formatter = new AgentDetectedErrorFormatter(new JsonErrorFormatter(false));
+		$formatter = new AgentDetectedErrorFormatter(new ToonErrorFormatter());
 		$this->assertTrue($formatter->isAgentDetected());
 	}
 
 	public function testIsAgentDetectedReturnsTrueWithClaudeCode(): void
 	{
 		putenv('CLAUDE_CODE=1');
-		$formatter = new AgentDetectedErrorFormatter(new JsonErrorFormatter(false));
+		$formatter = new AgentDetectedErrorFormatter(new ToonErrorFormatter());
 		$this->assertTrue($formatter->isAgentDetected());
 	}
 
-	public function testFormatErrorsProducesValidJson(): void
+	public function testFormatErrorsProducesToonOutput(): void
 	{
-		$formatter = new AgentDetectedErrorFormatter(new JsonErrorFormatter(false));
+		$formatter = new AgentDetectedErrorFormatter(new ToonErrorFormatter());
 
 		$exitCode = $formatter->formatErrors(
 			$this->getAnalysisResult(1, 0),
@@ -61,15 +62,33 @@ class AgentDetectedErrorFormatterTest extends ErrorFormatterTestCase
 		);
 
 		$this->assertSame(1, $exitCode);
-		$this->assertJsonStringEqualsJsonString(
-			'{"totals":{"errors":0,"file_errors":1},"files":{"/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \\"spaces\\" and unicode 😃.php":{"errors":1,"messages":[{"message":"Foo","line":4,"ignorable":true}]}},"errors":[]}',
-			$this->getOutputContent(),
-		);
+
+		$expectedData = [
+			'totals' => [
+				'errors' => 0,
+				'file_errors' => 1,
+			],
+			'files' => [
+				'/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with "spaces" and unicode 😃.php' => [
+					'errors' => 1,
+					'messages' => [
+						[
+							'message' => 'Foo',
+							'line' => 4,
+							'ignorable' => true,
+						],
+					],
+				],
+			],
+			'errors' => [],
+		];
+
+		$this->assertSame(Toon::encode($expectedData), $this->getOutputContent());
 	}
 
 	public function testFormatErrorsNoErrors(): void
 	{
-		$formatter = new AgentDetectedErrorFormatter(new JsonErrorFormatter(false));
+		$formatter = new AgentDetectedErrorFormatter(new ToonErrorFormatter());
 
 		$exitCode = $formatter->formatErrors(
 			$this->getAnalysisResult(0, 0),
@@ -77,10 +96,17 @@ class AgentDetectedErrorFormatterTest extends ErrorFormatterTestCase
 		);
 
 		$this->assertSame(0, $exitCode);
-		$this->assertJsonStringEqualsJsonString(
-			'{"totals":{"errors":0,"file_errors":0},"files":{},"errors":[]}',
-			$this->getOutputContent(),
-		);
+
+		$expectedData = [
+			'totals' => [
+				'errors' => 0,
+				'file_errors' => 0,
+			],
+			'files' => [],
+			'errors' => [],
+		];
+
+		$this->assertSame(Toon::encode($expectedData), $this->getOutputContent());
 	}
 
 }

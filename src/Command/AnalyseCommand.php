@@ -242,7 +242,7 @@ final class AnalyseCommand extends Command
 			/** @var AgentDetectedErrorFormatter $agentFormatter */
 			$agentFormatter = $container->getByType(AgentDetectedErrorFormatter::class);
 			if ($agentFormatter->isAgentDetected()) {
-				$errorFormat = 'json';
+				$errorFormat = 'toon';
 			}
 		}
 

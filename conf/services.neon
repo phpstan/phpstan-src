@@ -197,6 +197,9 @@ services:
 		arguments:
 			pretty: true
 
+	errorFormatter.toon:
+		class: PHPStan\Command\ErrorFormatter\ToonErrorFormatter
+
 	stubFileTypeMapper:
 		class: PHPStan\Type\FileTypeMapper
 		arguments:

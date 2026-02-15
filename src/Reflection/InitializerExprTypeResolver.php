@@ -1510,11 +1510,7 @@ final class InitializerExprTypeResolver
 				// Use the first constant array as a reference to list potential offsets.
 				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
 				$constantArray = $leftConstantArrays[0];
-				foreach ($constantArray->getKeyTypes() as $i => $offsetType) {
-					if ($constantArray->isOptionalKey($i)) {
-						continue;
-					}
-
+				foreach ($constantArray->getKeyTypes() as $offsetType) {
 					if (!$leftType->hasOffsetValueType($offsetType)->yes()) {
 						continue;
 					}
@@ -1528,11 +1524,7 @@ final class InitializerExprTypeResolver
 				// Use the first constant array as a reference to list potential offsets.
 				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
 				$constantArray = $rightConstantArrays[0];
-				foreach ($constantArray->getKeyTypes() as $i => $offsetType) {
-					if ($constantArray->isOptionalKey($i)) {
-						continue;
-					}
-
+				foreach ($constantArray->getKeyTypes() as $offsetType) {
 					if (!$rightType->hasOffsetValueType($offsetType)->yes()) {
 						continue;
 					}

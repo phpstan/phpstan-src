@@ -126,6 +126,7 @@ parametersSchema:
 				?message: string()
 				?messages: listOf(string())
 				?rawMessage: string()
+				?rawMessages: listOf(string())
 				?identifier: string()
 				?identifiers: listOf(string())
 				?path: string()

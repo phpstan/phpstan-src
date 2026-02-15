@@ -5,10 +5,12 @@ namespace PHPStan\Reflection;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_filter;
 use function array_map;
 use function array_merge;
 use function count;
+use function sprintf;
 
 /**
  * Collection of @phpstan-assert annotations on a function or method.
@@ -91,12 +93,76 @@ final class Assertions
 	{
 		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withType($callable($tag->getType()));
 
-		return new self(array_map($assertTagsCallback, $this->asserts));
+		return self::create(array_map($assertTagsCallback, $this->asserts));
 	}
 
+	/**
+	 * @deprecated use union() or intersect() instead
+	 */
 	public function intersectWith(Assertions $other): self
 	{
-		return new self(array_merge($this->getAll(), $other->getAll()));
+		return $this->union($other);
+	}
+
+	public function union(Assertions $other): self
+	{
+		if ($this === self::$empty) {
+			return $other;
+		}
+		if ($other === self::$empty) {
+			return $this;
+		}
+
+		return self::create(array_merge($this->getAll(), $other->getAll()));
+	}
+
+	public function intersect(Assertions $other): self
+	{
+		if ($this === self::$empty) {
+			return $other;
+		}
+		if ($other === self::$empty) {
+			return $this;
+		}
+
+		$otherAsserts = $other->getAll();
+		$thisAsserts = $this->getAll();
+
+		$merged = [];
+		foreach ($thisAsserts as $thisAssert) {
+			$key = self::getAssertKey($thisAssert);
+
+			foreach ($otherAsserts as $otherAssert) {
+				if (self::getAssertKey($otherAssert) !== $key) {
+					continue;
+				}
+
+				$merged[] = $thisAssert->withType(TypeCombinator::union($thisAssert->getType(), $otherAssert->getType()));
+			}
+		}
+
+		return self::create($merged);
+	}
+
+	private static function getAssertKey(AssertTag $assert): string
+	{
+		return sprintf(
+			'%s-%s-%s',
+			$assert->getParameter()->describe(),
+			$assert->getIf(),
+			$assert->isNegated() ? '1' : '0',
+		);
+	}
+
+	/**
+	 * @param AssertTag[] $asserts
+	 */
+	private static function create(array $asserts): self
+	{
+		if (count($asserts) === 0) {
+			return self::createEmpty();
+		}
+		return new self($asserts);
 	}
 
 	public static function createEmpty(): self
@@ -116,11 +182,8 @@ final class Assertions
 	public static function createFromResolvedPhpDocBlock(ResolvedPhpDocBlock $phpDocBlock): self
 	{
 		$tags = $phpDocBlock->getAssertTags();
-		if (count($tags) === 0) {
-			return self::createEmpty();
-		}
 
-		return new self($tags);
+		return self::create($tags);
 	}
 
 }

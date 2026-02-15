@@ -22,6 +22,9 @@ use PHPStan\Type\Type;
 final class RestrictedClassConstantUsageRule implements Rule
 {
 
+	/** @var RestrictedClassConstantUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
@@ -44,8 +47,7 @@ final class RestrictedClassConstantUsageRule implements Rule
 			return [];
 		}
 
-		/** @var RestrictedClassConstantUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedClassConstantUsageExtension::CLASS_CONSTANT_EXTENSION_TAG);
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassConstantUsageExtension::CLASS_CONSTANT_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];
 		}

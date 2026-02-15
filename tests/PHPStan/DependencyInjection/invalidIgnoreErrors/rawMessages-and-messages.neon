@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			messages: ['#One#']
+			rawMessages: ['Two']

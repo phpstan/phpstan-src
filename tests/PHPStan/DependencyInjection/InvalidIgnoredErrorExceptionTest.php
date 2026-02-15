@@ -28,6 +28,18 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 			'An ignoreErrors entry cannot contain both rawMessage and messages fields.',
 		];
 		yield [
+			__DIR__ . '/invalidIgnoreErrors/rawMessage-and-rawMessages.neon',
+			'An ignoreErrors entry cannot contain both rawMessage and rawMessages fields.',
+		];
+		yield [
+			__DIR__ . '/invalidIgnoreErrors/rawMessages-and-message.neon',
+			'An ignoreErrors entry cannot contain both rawMessages and message fields.',
+		];
+		yield [
+			__DIR__ . '/invalidIgnoreErrors/rawMessages-and-messages.neon',
+			'An ignoreErrors entry cannot contain both rawMessages and messages fields.',
+		];
+		yield [
 			__DIR__ . '/invalidIgnoreErrors/identifier-and-identifiers.neon',
 			'An ignoreErrors entry cannot contain both identifier and identifiers fields.',
 		];
@@ -37,7 +49,7 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 		];
 		yield [
 			__DIR__ . '/invalidIgnoreErrors/missing-main-key.neon',
-			'An ignoreErrors entry must contain at least one of the following fields: message, messages, rawMessage, identifier, identifiers, path, paths.',
+			'An ignoreErrors entry must contain at least one of the following fields: message, messages, rawMessage, rawMessages, identifier, identifiers, path, paths.',
 		];
 		yield [
 			__DIR__ . '/invalidIgnoreErrors/count-without-path.neon',

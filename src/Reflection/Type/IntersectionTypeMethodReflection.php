@@ -11,11 +11,13 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
+use function array_merge;
 use function count;
 use function implode;
 use function is_bool;
@@ -80,20 +82,26 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
+		$allVariants = array_merge(...array_map(
+			static fn (MethodReflection $method) => $method->getVariants(),
+			$this->methods,
+		));
+		$combined = ParametersAcceptorSelector::combineAcceptors($allVariants);
+
 		$returnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getReturnType(), $method->getVariants())), $this->methods));
 		$phpDocReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getPhpDocReturnType(), $method->getVariants())), $this->methods));
 		$nativeReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getNativeReturnType(), $method->getVariants())), $this->methods));
 
-		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
-			$acceptor->getTemplateTypeMap(),
-			$acceptor->getResolvedTemplateTypeMap(),
-			$acceptor->getParameters(),
-			$acceptor->isVariadic(),
+		return [new ExtendedFunctionVariant(
+			$combined->getTemplateTypeMap(),
+			$combined->getResolvedTemplateTypeMap(),
+			$combined->getParameters(),
+			$combined->isVariadic(),
 			$returnType,
 			$phpDocReturnType,
 			$nativeReturnType,
-			$acceptor->getCallSiteVarianceMap(),
-		), $this->methods[0]->getVariants());
+			$combined->getCallSiteVarianceMap(),
+		)];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

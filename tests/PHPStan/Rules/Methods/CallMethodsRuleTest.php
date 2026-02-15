@@ -3853,4 +3853,29 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13805.php'], []);
 	}
 
+	public function testUnionIntersectionMethodVariants(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/union-intersection-method-variants.php'], [
+			[
+				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsInt::process() expects int|string, true given.',
+				42,
+			],
+			[
+				'Method UnionIntersectionMethodVariants\TwoParams::transform() invoked with 0 parameters, 1-2 required.',
+				56,
+			],
+			[
+				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsInt::process() expects int|string, true given.',
+				72,
+			],
+			[
+				'Method UnionIntersectionMethodVariants\TwoParams::transform() invoked with 0 parameters, 1-2 required.',
+				84,
+			],
+		]);
+	}
+
 }

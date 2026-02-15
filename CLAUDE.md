@@ -264,6 +264,8 @@ When assigning to an array offset, NodeScopeResolver must distinguish:
 
 Misusing these leads to false positives like "might not be a list" or incorrect offset-exists checks. The fix is in `NodeScopeResolver` where property/variable assignments are processed.
 
+This distinction also applies in `MutatingScope::enterForeach()`. When a foreach loop iterates by reference (`foreach ($list as &$value)`), modifying `$value` changes an existing offset, not a new one. The `IntertwinedVariableByReferenceWithExpr` created for the no-key by-reference case must use `SetExistingOffsetValueTypeExpr` (not `SetOffsetValueTypeExpr`) so that `AccessoryArrayListType::setExistingOffsetValueType()` preserves the list type. Using `SetOffsetValueTypeExpr` causes `AccessoryArrayListType::setOffsetValueType()` to return `ErrorType` for non-null/non-zero offsets, destroying the list type in the intersection.
+
 ### ConstantArrayType and offset tracking
 
 Many bugs involve `ConstantArrayType` (array shapes with known keys). Common issues:

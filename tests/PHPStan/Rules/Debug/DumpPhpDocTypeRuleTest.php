@@ -100,6 +100,14 @@ class DumpPhpDocTypeRuleTest extends RuleTestCase
 				'Dumped type: T',
 				36,
 			],
+			[
+				'Dumped type: array{1: 1}',
+				41,
+			],
+			[
+				'Dumped type: array{2: 2}',
+				41,
+			],
 		]);
 	}
 

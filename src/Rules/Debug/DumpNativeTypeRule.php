@@ -35,7 +35,8 @@ final class DumpNativeTypeRule implements Rule
 			return [];
 		}
 
-		if (count($node->getArgs()) === 0) {
+		$args = $node->getArgs();
+		if (count($args) === 0) {
 			return [];
 		}
 
@@ -48,14 +49,17 @@ final class DumpNativeTypeRule implements Rule
 			return [];
 		}
 
-		return [
-			RuleErrorBuilder::message(
+		$errors = [];
+		foreach ($args as $arg) {
+			$errors[] = RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getNativeType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
+					$scope->getNativeType($arg->value)->describe(VerbosityLevel::precise()),
 				),
-			)->nonIgnorable()->identifier('phpstan.dumpNativeType')->build(),
-		];
+			)->nonIgnorable()->identifier('phpstan.dumpNativeType')->build();
+		}
+
+		return $errors;
 	}
 
 }

@@ -9,7 +9,7 @@ namespace PHPStan;
  *
  * @throws void
  */
-function dumpType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }
@@ -21,7 +21,7 @@ function dumpType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
  *
  * @throws void
  */
-function dumpNativeType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpNativeType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }
@@ -33,7 +33,7 @@ function dumpNativeType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.F
  *
  * @throws void
  */
-function dumpPhpDocType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpPhpDocType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }

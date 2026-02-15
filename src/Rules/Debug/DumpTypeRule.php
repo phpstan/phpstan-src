@@ -35,7 +35,8 @@ final class DumpTypeRule implements Rule
 			return [];
 		}
 
-		if (count($node->getArgs()) === 0) {
+		$args = $node->getArgs();
+		if (count($args) === 0) {
 			return [];
 		}
 
@@ -48,14 +49,17 @@ final class DumpTypeRule implements Rule
 			return [];
 		}
 
-		return [
-			RuleErrorBuilder::message(
+		$errors = [];
+		foreach ($args as $arg) {
+			$errors[] = RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
+					$scope->getType($arg->value)->describe(VerbosityLevel::precise()),
 				),
-			)->nonIgnorable()->identifier('phpstan.dumpType')->build(),
-		];
+			)->nonIgnorable()->identifier('phpstan.dumpType')->build();
+		}
+
+		return $errors;
 	}
 
 }

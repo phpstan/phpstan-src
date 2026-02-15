@@ -107,7 +107,13 @@ final class OverridingMethodRule implements Rule
 			return [];
 		}
 
-		[$prototype, $prototypeDeclaringClass, $checkVisibility] = $prototypeData;
+		[
+			$prototype,
+			$prototypeDeclaringClass,
+			$checkVisibility,
+			$inheritancePrototype,
+			$inheritancePrototypeDeclaringClass,
+		] = $prototypeData;
 
 		$messages = [];
 		if (
@@ -119,8 +125,8 @@ final class OverridingMethodRule implements Rule
 				'Method %s::%s() overrides method %s::%s() but is missing the #[\Override] attribute.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName(true),
-				$prototype->getName(),
+				$inheritancePrototypeDeclaringClass->getDisplayName(true),
+				$inheritancePrototype->getName(),
 			))
 				->identifier('method.missingOverride')
 				->fixNode($node->getOriginalNode(), static function (Node\Stmt\ClassMethod $method) {
@@ -132,24 +138,24 @@ final class OverridingMethodRule implements Rule
 				})
 				->build();
 		}
-		if ($prototype->isFinalByKeyword()->yes()) {
+		if ($inheritancePrototype->isFinalByKeyword()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName(true),
-				$prototype->getName(),
+				$inheritancePrototypeDeclaringClass->getDisplayName(true),
+				$inheritancePrototype->getName(),
 			))
 				->nonIgnorable()
 				->identifier('method.parentMethodFinal')
 				->build();
-		} elseif ($prototype->isFinal()->yes()) {
+		} elseif ($inheritancePrototype->isFinal()->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Method %s::%s() overrides @final method %s::%s().',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName(true),
-				$prototype->getName(),
+				$inheritancePrototypeDeclaringClass->getDisplayName(true),
+				$inheritancePrototype->getName(),
 			))->identifier('method.parentMethodFinalByPhpDoc')
 				->build();
 		}

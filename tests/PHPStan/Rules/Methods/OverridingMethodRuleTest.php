@@ -803,6 +803,17 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10165.php'], []);
 	}
 
+	public function testBug11067(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-11067.php'], [
+			[
+				'Method Bug11067\BooleanBuilder2::__construct() overrides final method Bug11067\BaseBuilder2::__construct().',
+				41,
+			],
+		]);
+	}
+
 	public function testBug9524(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

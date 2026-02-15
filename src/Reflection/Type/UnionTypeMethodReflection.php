@@ -222,4 +222,9 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->methods[0]->getResolvedPhpDoc();
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->isDummy());
+	}
+
 }

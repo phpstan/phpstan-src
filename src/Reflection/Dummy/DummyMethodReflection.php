@@ -161,4 +161,9 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 }

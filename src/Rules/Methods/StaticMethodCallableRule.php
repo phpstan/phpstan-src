@@ -10,6 +10,7 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use stdClass;
 use function sprintf;
 
 /**
@@ -47,7 +48,7 @@ final class StaticMethodCallableRule implements Rule
 		$methodNameName = $methodName->toString();
 
 		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName());
-		if ($methodReflection === null) {
+		if ($methodReflection === null || $methodReflection->isDummy()->yes()) {
 			return $errors;
 		}
 

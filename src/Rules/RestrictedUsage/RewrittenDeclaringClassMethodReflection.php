@@ -156,4 +156,9 @@ final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodRef
 		return $this->methodReflection->getResolvedPhpDoc();
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return $this->methodReflection->isDummy();
+	}
+
 }

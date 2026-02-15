@@ -213,4 +213,9 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->getResolvedPhpDoc();
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

@@ -485,4 +485,9 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->resolvedPhpDocBlock;
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

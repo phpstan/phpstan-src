@@ -172,4 +172,9 @@ final class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

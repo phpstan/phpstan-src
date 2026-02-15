@@ -80,4 +80,11 @@ interface ExtendedMethodReflection extends MethodReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock;
 
+	/**
+	 * Returns yes() for methods that represent possibly-defined method
+	 * on non-final classes, mixed, object, etc. — placeholders PHPStan creates
+	 * when it cannot prove a method doesn't exist.
+	 */
+	public function isDummy(): TrinaryLogic;
+
 }

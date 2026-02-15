@@ -303,4 +303,9 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 		return $this->resolvedPhpDoc;
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

@@ -232,4 +232,9 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getResolvedPhpDoc();
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return $this->reflection->isDummy();
+	}
+
 }

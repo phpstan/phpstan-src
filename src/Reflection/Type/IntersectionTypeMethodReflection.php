@@ -239,4 +239,9 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return $this->methods[0]->getResolvedPhpDoc();
 	}
 
+	public function isDummy(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->isDummy());
+	}
+
 }

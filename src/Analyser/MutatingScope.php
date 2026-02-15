@@ -3023,7 +3023,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 		if ($valueByRef && $iterateeType->isArray()->yes() && $iterateeType->isConstantArray()->no()) {
 			$scope = $scope->assignExpression(
-				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetOffsetValueTypeExpr(
+				new IntertwinedVariableByReferenceWithExpr($valueName, $iteratee, new SetExistingOffsetValueTypeExpr(
 					$iteratee,
 					new GetIterableKeyTypeExpr($iteratee),
 					new Variable($valueName),

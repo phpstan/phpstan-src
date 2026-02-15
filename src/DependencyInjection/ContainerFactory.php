@@ -37,6 +37,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_slice;
 use function array_unique;
 use function count;
 use function dirname;
@@ -337,20 +338,23 @@ final class ContainerFactory
 				continue;
 			}
 
-			$atLeastOneOf = ['message', 'messages', 'rawMessage', 'identifier', 'identifiers', 'path', 'paths'];
+			$atLeastOneOf = ['message', 'messages', 'rawMessage', 'rawMessages', 'identifier', 'identifiers', 'path', 'paths'];
 			if (array_intersect($atLeastOneOf, array_keys($ignoreError)) === []) {
 				throw new InvalidIgnoredErrorException('An ignoreErrors entry must contain at least one of the following fields: ' . implode(', ', $atLeastOneOf) . '.');
 			}
 
 			foreach ([
-				['message', 'messages'],
-				['rawMessage', 'message'],
-				['rawMessage', 'messages'],
+				['rawMessage', 'rawMessages', 'message', 'messages'],
 				['identifier', 'identifiers'],
 				['path', 'paths'],
-			] as [$field1, $field2]) {
-				if (array_key_exists($field1, $ignoreError) && array_key_exists($field2, $ignoreError)) {
-					throw new InvalidIgnoredErrorException(sprintf('An ignoreErrors entry cannot contain both %s and %s fields.', $field1, $field2));
+			] as $incompatibleFields) {
+				foreach ($incompatibleFields as $index => $field1) {
+					$fieldsToCheck = array_slice($incompatibleFields, $index + 1);
+					foreach ($fieldsToCheck as $field2) {
+						if (array_key_exists($field1, $ignoreError) && array_key_exists($field2, $ignoreError)) {
+							throw new InvalidIgnoredErrorException(sprintf('An ignoreErrors entry cannot contain both %s and %s fields.', $field1, $field2));
+						}
+					}
 				}
 			}
 

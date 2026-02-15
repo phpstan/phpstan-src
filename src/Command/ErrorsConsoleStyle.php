@@ -13,12 +13,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Terminal;
 use function array_unshift;
 use function explode;
-use function getenv;
 use function implode;
-use function is_string;
 use function sprintf;
 use function strlen;
-use function trim;
 use const DIRECTORY_SEPARATOR;
 
 final class ErrorsConsoleStyle extends SymfonyStyle
@@ -32,13 +29,11 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 
 	private ?bool $isCiDetected = null;
 
-	private ?bool $isAgentDetected = null;
-
 	public function __construct(InputInterface $input, OutputInterface $output)
 	{
 		parent::__construct($input, $output);
 		$showProgress = $input->hasOption(self::OPTION_NO_PROGRESS) && !(bool) $input->getOption(self::OPTION_NO_PROGRESS);
-		$this->showProgress = $showProgress && !$this->isAgentDetected();
+		$this->showProgress = $showProgress && !AgentDetector::isAgentDetected();
 	}
 
 	private function isCiDetected(): bool
@@ -49,26 +44,6 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		return $this->isCiDetected;
-	}
-
-	private function isAgentDetected(): bool
-	{
-		if ($this->isAgentDetected === null) {
-			$aiAgent = getenv('AI_AGENT');
-			$this->isAgentDetected = (is_string($aiAgent) && trim($aiAgent) !== '')
-				|| getenv('CURSOR_TRACE_ID') !== false
-				|| getenv('CURSOR_AGENT') !== false
-				|| getenv('GEMINI_CLI') !== false
-				|| getenv('CODEX_SANDBOX') !== false
-				|| getenv('AUGMENT_AGENT') !== false
-				|| getenv('OPENCODE_CLIENT') !== false
-				|| getenv('OPENCODE') !== false
-				|| getenv('CLAUDECODE') !== false
-				|| getenv('CLAUDE_CODE') !== false
-				|| getenv('REPL_ID') !== false;
-		}
-
-		return $this->isAgentDetected;
 	}
 
 	/**
@@ -121,7 +96,7 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		$ci = $this->isCiDetected();
-		$agent = $this->isAgentDetected();
+		$agent = AgentDetector::isAgentDetected();
 		$this->progressBar->setOverwrite(!$ci && !$agent);
 
 		if ($ci || $agent) {

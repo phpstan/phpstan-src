@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use AgentDetector\AgentDetector;
 use OndraM\CiDetector\CiDetector;
 use Override;
 use Symfony\Component\Console\Helper\Helper;
@@ -29,6 +30,8 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 
 	private ?bool $isCiDetected = null;
 
+	private ?bool $isAgentDetected = null;
+
 	public function __construct(InputInterface $input, OutputInterface $output)
 	{
 		parent::__construct($input, $output);
@@ -43,6 +46,11 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		return $this->isCiDetected;
+	}
+
+	private function isAgentDetected(): bool
+	{
+		return $this->isAgentDetected ??= AgentDetector::detect()->isAgent;
 	}
 
 	/**
@@ -95,9 +103,10 @@ final class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		$ci = $this->isCiDetected();
-		$this->progressBar->setOverwrite(!$ci);
+		$agent = $this->isAgentDetected();
+		$this->progressBar->setOverwrite(!$ci && !$agent);
 
-		if ($ci) {
+		if ($ci || $agent) {
 			$this->progressBar->minSecondsBetweenRedraws(15);
 			$this->progressBar->maxSecondsBetweenRedraws(30);
 		} elseif (DIRECTORY_SEPARATOR === '\\') {

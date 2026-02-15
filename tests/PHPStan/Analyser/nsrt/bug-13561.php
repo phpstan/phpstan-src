@@ -1,0 +1,37 @@
+<?php // lint >= 8.0
+
+namespace Bug13552;
+
+use function PHPStan\Testing\assertType;
+
+interface MyInterface {
+	public function doThing(): bool;
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getArray(): array;
+}
+
+function test_addition(MyInterface $i): void {
+	$x = $i->doThing() ? ['thing' => 'do'] : [];
+	assertType("array{}|array{thing: 'do'}", $x);
+
+	$x += $i->getArray();
+	assertType('array<string, string>', $x);
+
+	$x = $x ?: ['test' => 'string'];
+}
+
+function more_test(MyInterface $i): void {
+	$x = $i->doThing() ? ['thing' => 'do', 'always_here' => true] : ['always_here' => 42];
+	assertType("array{always_here: 42}|array{thing: 'do', always_here: true}", $x);
+
+	$a = $i->getArray() + $x;
+	assertType("non-empty-array<string, 42|string|true>&hasOffsetValue('always_here', 42|string|true)", $a);
+	assertType('true', isset($a['always_here']));
+
+	$b = $x + $i->getArray();
+	assertType("non-empty-array<string, 42|string|true>&hasOffsetValue('always_here', 42|true)", $b);
+	assertType('true', isset($b['always_here']));
+}

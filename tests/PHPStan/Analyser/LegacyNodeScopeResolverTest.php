@@ -2768,7 +2768,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'[1, 2, 3] + [4, 5, 6]',
 			],
 			[
-				'non-empty-array<int>',
+				'non-empty-array<int>&hasOffsetValue(0, int)&hasOffsetValue(1, int)&hasOffsetValue(2, int)',
 				'$arrayOfUnknownIntegers + [1, 2, 3]',
 			],
 			[

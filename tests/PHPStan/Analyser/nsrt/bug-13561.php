@@ -35,3 +35,16 @@ function more_test(MyInterface $i): void {
 	assertType("non-empty-array<string, 42|string|true>&hasOffsetValue('always_here', 42|true)", $b);
 	assertType('true', isset($b['always_here']));
 }
+
+/**
+ * @param array{thing?: 'do', always_here: 42|true} $x
+ */
+function more_test_2(MyInterface $i, array $x): void {
+	$a = $i->getArray() + $x;
+	assertType("non-empty-array<string, 42|string|true>&hasOffsetValue('always_here', 42|string|true)", $a);
+	assertType('true', isset($a['always_here']));
+
+	$b = $x + $i->getArray();
+	assertType("non-empty-array<string, 42|string|true>&hasOffsetValue('always_here', 42|true)", $b);
+	assertType('true', isset($b['always_here']));
+}

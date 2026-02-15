@@ -202,7 +202,19 @@ final class IntersectionTypePropertyReflection implements ExtendedPropertyReflec
 
 	public function getAttributes(): array
 	{
-		return $this->properties[0]->getAttributes();
+		$result = [];
+		$seen = [];
+		foreach ($this->properties as $property) {
+			foreach ($property->getAttributes() as $attribute) {
+				if (isset($seen[$attribute->getName()])) {
+					continue;
+				}
+				$seen[$attribute->getName()] = true;
+				$result[] = $attribute;
+			}
+		}
+
+		return $result;
 	}
 
 	public function isDummy(): TrinaryLogic

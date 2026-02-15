@@ -211,7 +211,20 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getSelfOutType(): ?Type
 	{
-		return null;
+		$types = [];
+		foreach ($this->methods as $method) {
+			$selfOutType = $method->getSelfOutType();
+			if ($selfOutType === null) {
+				return null;
+			}
+			$types[] = $selfOutType;
+		}
+
+		if (count($types) === 0) {
+			return null;
+		}
+
+		return TypeCombinator::intersect(...$types);
 	}
 
 	public function returnsByReference(): TrinaryLogic
@@ -226,7 +239,19 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAttributes(): array
 	{
-		return $this->methods[0]->getAttributes();
+		$result = [];
+		$seen = [];
+		foreach ($this->methods as $method) {
+			foreach ($method->getAttributes() as $attribute) {
+				if (isset($seen[$attribute->getName()])) {
+					continue;
+				}
+				$seen[$attribute->getName()] = true;
+				$result[] = $attribute;
+			}
+		}
+
+		return $result;
 	}
 
 	public function mustUseReturnValue(): TrinaryLogic
@@ -236,7 +261,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
-		return $this->methods[0]->getResolvedPhpDoc();
+		return null;
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
@@ -9,7 +10,9 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 use function array_map;
+use function array_values;
 use function count;
 use function implode;
 
@@ -202,7 +205,21 @@ final class UnionTypePropertyReflection implements ExtendedPropertyReflection
 
 	public function getAttributes(): array
 	{
-		return $this->properties[0]->getAttributes();
+		$result = null;
+		foreach ($this->properties as $property) {
+			$propertyAttributes = $property->getAttributes();
+			if ($result === null) {
+				$result = $propertyAttributes;
+				continue;
+			}
+			$propertyAttributeNames = [];
+			foreach ($propertyAttributes as $attribute) {
+				$propertyAttributeNames[$attribute->getName()] = true;
+			}
+			$result = array_filter($result, static fn (AttributeReflection $a) => isset($propertyAttributeNames[$a->getName()]));
+		}
+
+		return array_values($result ?? []);
 	}
 
 	public function isDummy(): TrinaryLogic

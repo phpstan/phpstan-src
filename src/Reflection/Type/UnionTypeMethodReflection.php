@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -13,8 +14,10 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_values;
 use function count;
 use function implode;
 use function is_bool;
@@ -194,7 +197,20 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getSelfOutType(): ?Type
 	{
-		return null;
+		$types = [];
+		foreach ($this->methods as $method) {
+			$selfOutType = $method->getSelfOutType();
+			if ($selfOutType === null) {
+				return null;
+			}
+			$types[] = $selfOutType;
+		}
+
+		if (count($types) === 0) {
+			return null;
+		}
+
+		return TypeCombinator::union(...$types);
 	}
 
 	public function returnsByReference(): TrinaryLogic
@@ -209,7 +225,21 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAttributes(): array
 	{
-		return $this->methods[0]->getAttributes();
+		$result = null;
+		foreach ($this->methods as $method) {
+			$methodAttributes = $method->getAttributes();
+			if ($result === null) {
+				$result = $methodAttributes;
+				continue;
+			}
+			$methodAttributeNames = [];
+			foreach ($methodAttributes as $attribute) {
+				$methodAttributeNames[$attribute->getName()] = true;
+			}
+			$result = array_filter($result, static fn (AttributeReflection $a) => isset($methodAttributeNames[$a->getName()]));
+		}
+
+		return array_values($result ?? []);
 	}
 
 	public function mustUseReturnValue(): TrinaryLogic
@@ -219,7 +249,7 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
-		return $this->methods[0]->getResolvedPhpDoc();
+		return null;
 	}
 
 }

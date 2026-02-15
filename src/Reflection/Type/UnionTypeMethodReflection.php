@@ -7,10 +7,12 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -24,6 +26,9 @@ use function is_bool;
 
 final class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
+
+	/** @var list<ExtendedParametersAcceptor>|null */
+	private ?array $cachedVariants = null;
 
 	/**
 	 * @param ExtendedMethodReflection[] $methods
@@ -82,9 +87,82 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
-		$variants = array_merge(...array_map(static fn (MethodReflection $method) => $method->getVariants(), $this->methods));
+		if ($this->cachedVariants !== null) {
+			return $this->cachedVariants;
+		}
 
-		return [ParametersAcceptorSelector::combineAcceptors($variants)];
+		$allVariants = array_merge(...array_map(static fn (MethodReflection $method) => $method->getVariants(), $this->methods));
+		$combined = ParametersAcceptorSelector::combineAcceptors($allVariants);
+
+		// Fast path: when all methods come from the same class (e.g. enum cases,
+		// or multiple subtypes of the same base), params are identical — skip
+		// the expensive per-parameter intersection.
+		$declaringClasses = [];
+		foreach ($this->methods as $method) {
+			$declaringClasses[$method->getDeclaringClass()->getName()] = true;
+		}
+
+		if (count($declaringClasses) <= 1) {
+			return $this->cachedVariants = [$combined];
+		}
+
+		// combineAcceptors unions parameter types, but for union types we need
+		// to intersect them: the argument must be valid for ALL possible methods
+		// since we don't know which runtime type the object is.
+		$intersectedParams = [];
+		foreach ($combined->getParameters() as $i => $param) {
+			$types = [];
+			$nativeTypes = [];
+			$phpDocTypes = [];
+			foreach ($this->methods as $method) {
+				$variantTypes = [];
+				$variantNativeTypes = [];
+				$variantPhpDocTypes = [];
+				foreach ($method->getVariants() as $variant) {
+					$variantParams = $variant->getParameters();
+					if (!isset($variantParams[$i])) {
+						continue;
+					}
+					$variantTypes[] = $variantParams[$i]->getType();
+					$variantNativeTypes[] = $variantParams[$i]->getNativeType();
+					$variantPhpDocTypes[] = $variantParams[$i]->getPhpDocType();
+				}
+				if ($variantTypes !== []) {
+					$types[] = count($variantTypes) === 1 ? $variantTypes[0] : TypeCombinator::union(...$variantTypes);
+				}
+				if ($variantNativeTypes !== []) {
+					$nativeTypes[] = count($variantNativeTypes) === 1 ? $variantNativeTypes[0] : TypeCombinator::union(...$variantNativeTypes);
+				}
+				if ($variantPhpDocTypes !== []) {
+					$phpDocTypes[] = count($variantPhpDocTypes) === 1 ? $variantPhpDocTypes[0] : TypeCombinator::union(...$variantPhpDocTypes);
+				}
+			}
+
+			$intersectedParams[] = new ExtendedDummyParameter(
+				$param->getName(),
+				count($types) > 1 ? TypeCombinator::intersect(...$types) : ($types[0] ?? $param->getType()),
+				$param->isOptional(),
+				$param->passedByReference(),
+				$param->isVariadic(),
+				$param->getDefaultValue(),
+				count($nativeTypes) > 1 ? TypeCombinator::intersect(...$nativeTypes) : ($nativeTypes[0] ?? $param->getNativeType()),
+				count($phpDocTypes) > 1 ? TypeCombinator::intersect(...$phpDocTypes) : ($phpDocTypes[0] ?? $param->getPhpDocType()),
+				$param->getOutType(),
+				$param->isImmediatelyInvokedCallable(),
+				$param->getClosureThisType(),
+				$param->getAttributes(),
+			);
+		}
+
+		return $this->cachedVariants = [new ExtendedFunctionVariant(
+			$combined->getTemplateTypeMap(),
+			$combined->getResolvedTemplateTypeMap(),
+			$intersectedParams,
+			$combined->isVariadic(),
+			$combined->getReturnType(),
+			$combined->getPhpDocReturnType(),
+			$combined->getNativeReturnType(),
+		)];
 	}
 
 	public function getOnlyVariant(): ExtendedParametersAcceptor

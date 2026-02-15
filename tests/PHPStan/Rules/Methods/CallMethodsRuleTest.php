@@ -3861,19 +3861,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/union-intersection-method-variants.php'], [
 			[
 				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsInt::process() expects int|string, true given.',
-				42,
+				38,
 			],
 			[
 				'Method UnionIntersectionMethodVariants\TwoParams::transform() invoked with 0 parameters, 1-2 required.',
-				56,
+				52,
 			],
 			[
-				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsInt::process() expects int|string, true given.',
-				72,
+				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsString::process() expects string, null given.',
+				68,
+			],
+			[
+				'Parameter #1 $x of method UnionIntersectionMethodVariants\AcceptsString::process() expects string, int given.',
+				69,
 			],
 			[
 				'Method UnionIntersectionMethodVariants\TwoParams::transform() invoked with 0 parameters, 1-2 required.',
-				84,
+				96,
 			],
 		]);
 	}
@@ -3883,11 +3887,11 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		// Line 17: $entity->setFoo(null) on Entity1|Entity2 should ideally error
-		// because Entity1::setFoo() does not accept null, but currently
-		// UnionTypeMethodReflection unions parameter types (string|null)
-		// instead of intersecting them (string). See phpstan/phpstan#9664.
 		$this->analyse([__DIR__ . '/data/bug-9664.php'], [
+			[
+				'Parameter #1 $foo of method Bug9664\Entity1::setFoo() expects string, null given.',
+				17,
+			],
 			[
 				'Parameter #1 $foo of method Bug9664\Entity1::setFoo() expects string, null given.',
 				22,

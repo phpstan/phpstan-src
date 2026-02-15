@@ -10,20 +10,16 @@ interface AcceptsString {
 	public function process(string $x): string;
 }
 
+interface AcceptsNullableString {
+	public function process(?string $x): string;
+}
+
 interface TwoParams {
 	public function transform(int $x, string $y): void;
 }
 
 interface OneParam {
 	public function transform(int $x): void;
-}
-
-interface ReturnsInt {
-	public function compute(int $x): int;
-}
-
-interface ReturnsString {
-	public function compute(int $x): string;
 }
 
 class IntersectionTests
@@ -60,16 +56,32 @@ class IntersectionTests
 class UnionTests
 {
 	/**
-	 * Union type: object is EITHER AcceptsInt or AcceptsString.
-	 * combineAcceptors unions params: int|string, so both calls accepted.
+	 * Union with overlapping types: string vs ?string.
+	 * Intersected param type: string & (string|null) = string.
+	 * This is the phpstan/phpstan#9664 scenario.
+	 *
+	 * @param AcceptsString|AcceptsNullableString $obj
+	 */
+	public function testUnionOverlappingParams($obj): void
+	{
+		$obj->process('hello');  // OK - string accepted by both
+		$obj->process(null);     // ERROR - null not accepted by AcceptsString
+		$obj->process(42);       // ERROR - int not accepted by either
+	}
+
+	/**
+	 * Union with completely disjoint types: int vs string.
+	 * Intersected param type: int & string = never.
+	 * NeverType::accepts() returns yes (bottom type semantics:
+	 * unreachable code, so no parameter errors are reported).
 	 *
 	 * @param AcceptsInt|AcceptsString $obj
 	 */
-	public function testUnionParamTypes($obj): void
+	public function testUnionDisjointParams($obj): void
 	{
-		$obj->process(42);       // OK - pragmatic (valid for AcceptsInt)
-		$obj->process('hello');  // OK - pragmatic (valid for AcceptsString)
-		$obj->process(true);     // ERROR - bool not in int|string
+		$obj->process(42);       // no error (never accepts everything)
+		$obj->process('hello');  // no error (never accepts everything)
+		$obj->process(true);     // no error (never accepts everything)
 	}
 
 	/**

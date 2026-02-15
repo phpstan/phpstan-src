@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use OndraM\CiDetector\CiDetector;
 use Override;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Command\ErrorFormatter\AgentDetectedErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
@@ -235,11 +236,20 @@ final class AnalyseCommand extends Command
 			$errorFormat = $inceptionResult->getContainer()->getParameter('errorFormat');
 		}
 
+		$container = $inceptionResult->getContainer();
+
+		if ($errorFormat === null) {
+			/** @var AgentDetectedErrorFormatter $agentFormatter */
+			$agentFormatter = $container->getByType(AgentDetectedErrorFormatter::class);
+			if ($agentFormatter->isAgentDetected()) {
+				$errorFormat = 'raw';
+			}
+		}
+
 		if ($errorFormat === null) {
 			$errorFormat = 'table';
 		}
 
-		$container = $inceptionResult->getContainer();
 		$errorFormatterServiceName = sprintf('errorFormatter.%s', $errorFormat);
 		if (!$container->hasService($errorFormatterServiceName)) {
 			$errorOutput->writeLineFormatted(sprintf(

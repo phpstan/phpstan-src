@@ -10,6 +10,7 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use stdClass;
 use function sprintf;
 
 /**
@@ -53,6 +54,10 @@ final class StaticMethodCallableRule implements Rule
 
 		$declaringClass = $methodReflection->getDeclaringClass();
 		if ($declaringClass->hasNativeMethod($methodNameName)) {
+			return $errors;
+		}
+
+		if ($declaringClass->getName() === stdClass::class && !$declaringClass->hasMethod($methodNameName)) {
 			return $errors;
 		}
 

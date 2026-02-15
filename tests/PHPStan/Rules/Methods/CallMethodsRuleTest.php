@@ -3878,4 +3878,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9664(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		// Line 17: $entity->setFoo(null) on Entity1|Entity2 should ideally error
+		// because Entity1::setFoo() does not accept null, but currently
+		// UnionTypeMethodReflection unions parameter types (string|null)
+		// instead of intersecting them (string). See phpstan/phpstan#9664.
+		$this->analyse([__DIR__ . '/data/bug-9664.php'], [
+			[
+				'Parameter #1 $foo of method Bug9664\Entity1::setFoo() expects string, null given.',
+				22,
+			],
+		]);
+	}
+
 }

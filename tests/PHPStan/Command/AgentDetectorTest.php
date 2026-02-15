@@ -9,7 +9,6 @@ use function putenv;
 class AgentDetectorTest extends TestCase
 {
 
-	/** @var list<string> */
 	private const ENV_VARS = [
 		'AI_AGENT',
 		'CURSOR_TRACE_ID',

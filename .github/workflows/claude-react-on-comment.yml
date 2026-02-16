@@ -61,11 +61,6 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
-      - name: "Configure git identity"
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
-
       - name: "React to feedback"
         uses: anthropics/claude-code-action@v1
         with:
@@ -73,3 +68,7 @@ jobs:
           github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           trigger_phrase: "@phpstan-bot"
           claude_args: "--model claude-opus-4-6"
+          bot_name: "phpstan-bot"
+          bot_id: "79867460"
+          additional_permissions: |
+            actions: read

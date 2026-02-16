@@ -792,14 +792,7 @@ class ConstantArrayType implements Type
 				return null;
 			}
 
-			$result = [];
-			foreach ($finiteScalarTypes as $scalarType) {
-				if (!$scalarType instanceof ConstantIntegerType) {
-					return null;
-				}
-				$result[] = $scalarType;
-			}
-			return $result;
+			return $finiteScalarTypes;
 		}
 
 		return null;

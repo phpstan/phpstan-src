@@ -6776,14 +6776,19 @@ class NodeScopeResolver
 	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
 	{
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
-			if (!$expr instanceof Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
-				continue;
-			}
+			if ($expr instanceof Variable) {
+				if (!is_string($expr->name)) {
+					continue;
+				}
 
-			if ($expr->name === $variableName) {
+				if ($expr->name === $variableName) {
+					continue;
+				}
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+				&& !$expr instanceof StaticPropertyFetch
+			) {
 				continue;
 			}
 
@@ -6810,14 +6815,19 @@ class NodeScopeResolver
 	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
 	{
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
-			if (!$expr instanceof Variable) {
-				continue;
-			}
-			if (!is_string($expr->name)) {
-				continue;
-			}
+			if ($expr instanceof Variable) {
+				if (!is_string($expr->name)) {
+					continue;
+				}
 
-			if ($expr->name === $variableName) {
+				if ($expr->name === $variableName) {
+					continue;
+				}
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+				&& !$expr instanceof StaticPropertyFetch
+			) {
 				continue;
 			}
 

@@ -51,21 +51,33 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 
 	protected function getResult(): Type
 	{
-		if (!$this->type->hasConstant($this->constantName)->yes()) {
+		$classReflections = $this->type->getObjectClassReflections();
+		if (count($classReflections) !== 1) {
+			if (!$this->type->hasConstant($this->constantName)->yes()) {
+				return new ErrorType();
+			}
+
+			return $this->type->getConstant($this->constantName)->getValueType();
+		}
+
+		$constantClassReflection = $classReflections[0];
+		if (!$constantClassReflection->hasConstant($this->constantName)) {
 			return new ErrorType();
 		}
 
-		$constantReflection = $this->type->getConstant($this->constantName);
+		if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($this->constantName)) {
+			return new Enum\EnumCaseObjectType($constantClassReflection->getName(), $this->constantName);
+		}
 
-		if (!$constantReflection->isFinal()) {
-			$classReflections = $this->type->getObjectClassReflections();
-			if (count($classReflections) === 1 && !$classReflections[0]->isFinal()) {
-				if ($constantReflection->hasNativeType() || $constantReflection->hasPhpDocType()) {
-					return $constantReflection->getValueType();
-				}
+		$constantReflection = $constantClassReflection->getConstant($this->constantName);
 
-				return new MixedType();
-			}
+		if (
+			!$constantClassReflection->isFinal()
+			&& !$constantReflection->isFinal()
+			&& !$constantReflection->hasPhpDocType()
+			&& !$constantReflection->hasNativeType()
+		) {
+			return new MixedType();
 		}
 
 		return $constantReflection->getValueType();

@@ -584,22 +584,6 @@ class UnionType implements CompoundType
 			$prototype = $type->getUnresolvedMethodPrototype($methodName, $scope);
 			if ($this instanceof TemplateType) {
 				$prototype = $prototype->withCalledOnType($this);
-			} else {
-				$declaringClassType = new ObjectType($prototype->getNakedMethod()->getDeclaringClass()->getName());
-				$typesForCalledOn = [];
-				foreach ($this->types as $innerType) {
-					if (!$innerType->hasMethod($methodName)->yes()) {
-						continue;
-					}
-					if (!$declaringClassType->isSuperTypeOf($innerType)->yes()) {
-						continue;
-					}
-
-					$typesForCalledOn[] = $innerType;
-				}
-				if (count($typesForCalledOn) > 1) {
-					$prototype = $prototype->withCalledOnType(TypeCombinator::union(...$typesForCalledOn));
-				}
 			}
 			$methodPrototypes[] = $prototype;
 		}

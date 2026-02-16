@@ -777,6 +777,7 @@ class ConstantArrayType implements Type
 		$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 		if (count($integerRanges) > 0) {
 			$finiteScalarTypes = [];
+			$seen = [];
 			foreach ($integerRanges as $integerRange) {
 				$finiteTypes = $integerRange->getFiniteTypes();
 				if ($finiteTypes === []) {
@@ -784,6 +785,10 @@ class ConstantArrayType implements Type
 				}
 
 				foreach ($finiteTypes as $finiteType) {
+					if (isset($seen[$finiteType->getValue()])) {
+						continue;
+					}
+					$seen[$finiteType->getValue()] = true;
 					$finiteScalarTypes[] = $finiteType;
 				}
 			}

@@ -48,6 +48,16 @@ class Foo
 	}
 
 	/**
+	 * @param array{foo: int}  $a
+	 * @param int<0, 3>|int<2, 4> $intRange
+	 */
+	public function doOverlappingRanges(array $a, $intRange): void
+	{
+		$a[$intRange] = 256;
+		assertType('array{foo: int, 0: 256}|array{foo: int, 1: 256}|array{foo: int, 2: 256}|array{foo: int, 3: 256}|array{foo: int, 4: 256}', $a);
+	}
+
+	/**
 	 * @param array{0: 'a', 1: 'b'}  $a
 	 * @param int<0,1> $intRange
 	 */

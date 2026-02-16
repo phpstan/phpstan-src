@@ -2,14 +2,19 @@
 
 namespace Bug7978;
 
-use function PHPStan\Testing\assertType;
-
 class Test {
 
 	const FIELD_SETS = [
 		'basic'   => ['username', 'password'],
 		'headers' => ['app_id', 'app_key'],
 	];
+
+	/**
+	 * @param array<string, string> $credentials
+	 */
+	public function acceptCredentials(array $credentials): void
+	{
+	}
 
 	public function doSomething(): void
 	{
@@ -18,7 +23,7 @@ class Test {
 			foreach ($fields as $field) {
 				$credentials[$field] = 'fake';
 			}
-			assertType("array{app_id?: 'fake', app_key?: 'fake', password?: 'fake', username?: 'fake'}", $credentials);
+			$this->acceptCredentials($credentials);
 		}
 	}
 }

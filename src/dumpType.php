@@ -5,11 +5,12 @@ namespace PHPStan;
 /**
  * @phpstan-pure
  * @param mixed $value
+ * @param mixed $values
  * @return mixed
  *
  * @throws void
  */
-function dumpType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }
@@ -17,11 +18,12 @@ function dumpType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Foun
 /**
  * @phpstan-pure
  * @param mixed $value
+ * @param mixed $values
  * @return mixed
  *
  * @throws void
  */
-function dumpNativeType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpNativeType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }
@@ -29,11 +31,12 @@ function dumpNativeType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunctio
 /**
  * @phpstan-pure
  * @param mixed $value
+ * @param mixed $values
  * @return mixed
  *
  * @throws void
  */
-function dumpPhpDocType(...$value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpPhpDocType($value, ...$values) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }

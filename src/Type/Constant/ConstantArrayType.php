@@ -722,7 +722,9 @@ class ConstantArrayType implements Type
 				if ($hasNewKey) {
 					$arrayTypes = [];
 					foreach ($scalarKeyTypes as $scalarKeyType) {
-						$arrayTypes[] = $this->setOffsetValueType($scalarKeyType, $valueType, $unionValues);
+						$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
+						$builder->setOffsetValueType($scalarKeyType, $valueType);
+						$arrayTypes[] = $builder->getArray();
 					}
 
 					return TypeCombinator::union(...$arrayTypes);
@@ -756,8 +758,7 @@ class ConstantArrayType implements Type
 		if (count($constantStrings) >= 2 && count($constantStrings) <= self::CHUNK_FINITE_TYPES_LIMIT) {
 			$result = [];
 			foreach ($constantStrings as $constantString) {
-				$arrayKeyType = $constantString->toArrayKey();
-				$scalarValues = $arrayKeyType->getConstantScalarValues();
+				$scalarValues = $constantString->getConstantScalarValues();
 				if (count($scalarValues) !== 1) {
 					return null;
 				}
@@ -793,11 +794,10 @@ class ConstantArrayType implements Type
 
 			$result = [];
 			foreach ($finiteScalarTypes as $scalarType) {
-				$arrayKeyType = $scalarType->toArrayKey();
-				if (!$arrayKeyType instanceof ConstantIntegerType) {
+				if (!$scalarType instanceof ConstantIntegerType) {
 					return null;
 				}
-				$result[] = $arrayKeyType;
+				$result[] = $scalarType;
 			}
 			return $result;
 		}

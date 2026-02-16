@@ -412,10 +412,6 @@ When adding or editing PHPDoc comments in this codebase, follow these guidelines
 - `symfony/console` - CLI interface
 - `hoa/compiler` - Used for regex type parsing
 
-### ConstantArrayType::setOffsetValueType union expansion for finite offsets
-
-When `ConstantArrayType::setOffsetValueType()` receives a union of constant string keys (e.g., `'a'|'b'`) or a finite `IntegerRangeType` (e.g., `int<1,5>`) and at least one key is new (not already in the array), it creates a union of constant arrays — one for each possible key — instead of degrading to a general `ArrayType`. This is controlled by `CHUNK_FINITE_TYPES_LIMIT` (5) to avoid combinatorial explosion in loops. Integer constant unions (e.g., `0|1` from loop fixpoint analysis) are excluded to prevent regression in loop analysis; only string constant unions and `IntegerRangeType` expansions are supported. The `resolveFiniteScalarKeyTypes()` helper method resolves the offset type to individual constant keys.
-
 ### Ternary expression type narrowing in TypeSpecifier
 
 `TypeSpecifier::specifyTypesInCondition()` handles ternary expressions (`$cond ? $a : $b`) for type narrowing. In a truthy context (e.g., inside `assert()`), the ternary is semantically equivalent to `($cond && $a) || (!$cond && $b)` — meaning if the condition is true, the "if" branch must be truthy, and if false, the "else" branch must be truthy. The fix converts ternary expressions to this `BooleanOr(BooleanAnd(...), BooleanAnd(...))` form so the existing OR/AND narrowing logic handles both branches correctly. This enables `assert($cond ? $x instanceof A : $x instanceof B)` to narrow `$x` to `A|B`. The `AssertFunctionTypeSpecifyingExtension` calls `specifyTypesInCondition` with `TypeSpecifierContext::createTruthy()` context for the assert argument.

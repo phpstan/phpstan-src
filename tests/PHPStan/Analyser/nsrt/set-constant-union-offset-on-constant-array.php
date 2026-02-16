@@ -38,6 +38,16 @@ class Foo
 	}
 
 	/**
+	 * @param array{foo: int}  $a
+	 * @param int<0, 5>|int<10, 15> $intRange
+	 */
+	public function doUnionOfRanges(array $a, $intRange): void
+	{
+		$a[$intRange] = 256;
+		assertType('non-empty-array<\'foo\'|int<0, 5>|int<10, 15>, int>', $a);
+	}
+
+	/**
 	 * @param array{0: 'a', 1: 'b'}  $a
 	 * @param int<0,1> $intRange
 	 */

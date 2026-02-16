@@ -4390,58 +4390,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	public function refineTypesFromConstantArrayForeach(self $unrolledScope): self
 	{
-		$expressionTypes = $this->expressionTypes;
-		foreach ($unrolledScope->expressionTypes as $exprString => $unrolledHolder) {
-			if (!isset($expressionTypes[$exprString])) {
-				continue;
-			}
+		$expressionTypes = self::refineExpressionTypesFromConstantArrayForeach(
+			$this->expressionTypes,
+			$unrolledScope->expressionTypes,
+		);
 
-			$currentHolder = $expressionTypes[$exprString];
-			$unrolledType = $unrolledHolder->getType();
-			$currentType = $currentHolder->getType();
-
-			// Only refine if the unrolled scope has a more precise type
-			if (
-				!$unrolledType->isConstantArray()->yes()
-				|| !$currentType->isConstantArray()->no()
-				|| !$currentType->isArray()->yes()
-				|| !$currentType->isSuperTypeOf($unrolledType)->yes()
-			) {
-				continue;
-			}
-
-			$expressionTypes[$exprString] = new ExpressionTypeHolder(
-				$currentHolder->getExpr(),
-				$unrolledType,
-				$currentHolder->getCertainty(),
-			);
-		}
-
-		$nativeTypes = $this->nativeExpressionTypes;
-		foreach ($unrolledScope->nativeExpressionTypes as $exprString => $unrolledHolder) {
-			if (!isset($nativeTypes[$exprString])) {
-				continue;
-			}
-
-			$currentHolder = $nativeTypes[$exprString];
-			$unrolledType = $unrolledHolder->getType();
-			$currentType = $currentHolder->getType();
-
-			if (
-				!$unrolledType->isConstantArray()->yes()
-				|| !$currentType->isConstantArray()->no()
-				|| !$currentType->isArray()->yes()
-				|| !$currentType->isSuperTypeOf($unrolledType)->yes()
-			) {
-				continue;
-			}
-
-			$nativeTypes[$exprString] = new ExpressionTypeHolder(
-				$currentHolder->getExpr(),
-				$unrolledType,
-				$currentHolder->getCertainty(),
-			);
-		}
+		$nativeTypes = self::refineExpressionTypesFromConstantArrayForeach(
+			$this->nativeExpressionTypes,
+			$unrolledScope->nativeExpressionTypes,
+		);
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -4461,6 +4418,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $currentTypes
+	 * @param array<string, ExpressionTypeHolder> $unrolledTypes
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private static function refineExpressionTypesFromConstantArrayForeach(
+		array $currentTypes,
+		array $unrolledTypes,
+	): array
+	{
+		foreach ($unrolledTypes as $exprString => $unrolledHolder) {
+			if (!isset($currentTypes[$exprString])) {
+				continue;
+			}
+
+			$currentHolder = $currentTypes[$exprString];
+			$unrolledType = $unrolledHolder->getType();
+			$currentType = $currentHolder->getType();
+
+			// Only refine if the unrolled scope has a more precise constant array type
+			// that replaces a non-constant array type
+			if (
+				$unrolledType->isConstantArray() !== TrinaryLogic::createYes()
+				|| $currentType->isConstantArray() !== TrinaryLogic::createNo()
+				|| $currentType->isArray() !== TrinaryLogic::createYes()
+				|| $currentType->isSuperTypeOf($unrolledType)->result !== TrinaryLogic::createYes()
+			) {
+				continue;
+			}
+
+			$currentTypes[$exprString] = new ExpressionTypeHolder(
+				$currentHolder->getExpr(),
+				$unrolledType,
+				$currentHolder->getCertainty(),
+			);
+		}
+
+		return $currentTypes;
 	}
 
 	public function generalizeWith(self $otherScope): self

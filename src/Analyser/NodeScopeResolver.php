@@ -7120,9 +7120,9 @@ class NodeScopeResolver
 		$constantArrays = $iterateeType->getConstantArrays();
 		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
 		if (
-			!$iterateeType->isConstantArray()->yes()
+			$iterateeType->isConstantArray() !== TrinaryLogic::createYes()
 			|| count($constantArrays) !== 1
-			|| !$iterateeType->isIterableAtLeastOnce()->yes()
+			|| $iterateeType->isIterableAtLeastOnce() !== TrinaryLogic::createYes()
 		) {
 			return $finalScope;
 		}

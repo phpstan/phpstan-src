@@ -1263,16 +1263,6 @@ final class TypeNodeResolver
 						continue;
 					}
 
-					if ($isStatic) {
-						$constantReflection = $classReflection->getConstant($classConstantName);
-						if (!$constantReflection->isFinal() && !$constantReflection->hasPhpDocType() && !$constantReflection->hasNativeType()) {
-							$constantTypes[] = new MixedType();
-							continue;
-						}
-						$constantTypes[] = $constantReflection->getValueType();
-						continue;
-					}
-
 					$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
 					if (!$this->getReflectionProvider()->hasClass($declaringClassName)) {
 						continue;

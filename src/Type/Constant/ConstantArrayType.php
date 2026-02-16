@@ -701,9 +701,7 @@ class ConstantArrayType implements Type
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($offsetType !== null) {
-			$offsetType = $offsetType->toArrayKey();
-
-			$scalarKeyTypes = $offsetType->getConstantStrings();
+			$scalarKeyTypes = $offsetType->toArrayKey()->getConstantStrings();
 			if (count($scalarKeyTypes) === 0) {
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 				if (count($integerRanges) > 0) {

@@ -35,7 +35,8 @@ final class DumpPhpDocTypeRule implements Rule
 			return [];
 		}
 
-		if (count($node->getArgs()) === 0) {
+		$args = $node->getArgs();
+		if (count($args) === 0) {
 			return [];
 		}
 
@@ -48,14 +49,17 @@ final class DumpPhpDocTypeRule implements Rule
 			return [];
 		}
 
-		return [
-			RuleErrorBuilder::message(
+		$errors = [];
+		foreach ($args as $arg) {
+			$errors[] = RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$this->printer->print($scope->getType($node->getArgs()[0]->value)->toPhpDocNode()),
+					$this->printer->print($scope->getType($arg->value)->toPhpDocNode()),
 				),
-			)->nonIgnorable()->identifier('phpstan.dumpPhpDocType')->build(),
-		];
+			)->nonIgnorable()->identifier('phpstan.dumpPhpDocType')->build();
+		}
+
+		return $errors;
 	}
 
 }

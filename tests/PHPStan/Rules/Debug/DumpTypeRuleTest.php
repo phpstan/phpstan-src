@@ -50,6 +50,20 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithMultipleVars(): void
+	{
+		$this->analyse([__DIR__ . '/data/dump-type-variadic.php'], [
+			[
+				'Dumped type: non-empty-array',
+				10,
+			],
+			[
+				'Dumped type: array',
+				10,
+			],
+		]);
+	}
+
 	public function testBug7803(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7803.php'], [

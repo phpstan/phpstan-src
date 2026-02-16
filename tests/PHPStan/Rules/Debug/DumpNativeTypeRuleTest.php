@@ -27,6 +27,14 @@ class DumpNativeTypeRuleTest extends RuleTestCase
 				'Dumped type: array',
 				12,
 			],
+			[
+				'Dumped type: non-empty-array',
+				14,
+			],
+			[
+				'Dumped type: array',
+				14,
+			],
 		]);
 	}
 

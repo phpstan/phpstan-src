@@ -10,4 +10,6 @@ function (array $a, array $b) {
 
 	dumpNativeType($a);
 	dumpNativeType($b);
+
+	dumpNativeType($a, $b);
 };

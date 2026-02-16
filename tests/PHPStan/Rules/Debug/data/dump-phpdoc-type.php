@@ -37,3 +37,5 @@ function id($value)
 
 	return $value;
 }
+
+dumpPhpDocType([1 => 1], [2 => 2]);

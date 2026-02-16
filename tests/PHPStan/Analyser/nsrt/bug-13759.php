@@ -14,13 +14,13 @@ class Test
 		}
 		$ints['c'] = 1;
 
-		assertType("array{a?: 1, b?: 1, c: 1}", $ints);
+		assertType("non-empty-array<'a'|'b'|'c', 1>&hasOffsetValue('c', 1)", $ints);
 
 		foreach (['a'] as $key) {
 			$ints[$key] = $this->intToSomething($ints[$key]);
 		}
 
-		assertType("array{a: float|string, b?: 1, c: 1}", $ints);
+		assertType("non-empty-array<'a'|'b'|'c', 1|float|string>&hasOffsetValue('a', float|string)&hasOffsetValue('c', 1)", $ints);
 	}
 
 	/**

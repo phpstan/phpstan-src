@@ -11,5 +11,5 @@ function (): void {
 	foreach($entries as $key => $value) {
 		$entries2[$key] = ['a' => 1, 'b' => 2];
 	}
-	assertType("array{A?: array{a: 1, b: 2}, B?: array{a: 1, b: 2}}", $entries2);
+	assertType("non-empty-array<'A'|'B', array{a: 1, b: 2}>", $entries2);
 };

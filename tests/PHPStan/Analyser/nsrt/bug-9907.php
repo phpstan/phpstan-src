@@ -15,6 +15,6 @@ class HelloWorld
 		$a['id'] = null;
 		$a[$key] = 'string';
 
-		assertType("array{id: null, bar: 'string'}|array{id: null, foo: 'string'}", $a);
+		assertType("non-empty-array<'bar'|'foo'|'id', 'string'|null>", $a);
 	}
 }

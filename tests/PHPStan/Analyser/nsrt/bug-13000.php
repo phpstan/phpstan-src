@@ -9,5 +9,5 @@ function (): void {
 	foreach (['a' => '1', 'b' => '2'] as $key => $val) {
 		$r[$key] = $val;
 	}
-	assertType("array{a?: '1'|'2', b?: '1'|'2'}", $r);
+	assertType("non-empty-array<'a'|'b', '1'|'2'>", $r);
 };

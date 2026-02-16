@@ -62,7 +62,6 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
-use function is_int;
 use function is_string;
 use function min;
 use function pow;
@@ -747,31 +746,11 @@ class ConstantArrayType implements Type
 	}
 
 	/**
-	 * @return list<ConstantIntegerType|ConstantStringType>|null
+	 * @return list<ConstantIntegerType>|null
 	 */
 	private function resolveFiniteScalarKeyTypes(Type $offsetType): ?array
 	{
 		$offsetType = $offsetType->toArrayKey();
-
-		// Handle unions of constant string types (e.g. 'a'|'b')
-		$constantStrings = $offsetType->getConstantStrings();
-		if (count($constantStrings) >= 2 && count($constantStrings) <= self::CHUNK_FINITE_TYPES_LIMIT) {
-			$result = [];
-			foreach ($constantStrings as $constantString) {
-				$scalarValues = $constantString->getConstantScalarValues();
-				if (count($scalarValues) !== 1) {
-					return null;
-				}
-				if (is_int($scalarValues[0])) {
-					$result[] = new ConstantIntegerType($scalarValues[0]);
-				} elseif (is_string($scalarValues[0])) {
-					$result[] = new ConstantStringType($scalarValues[0]);
-				} else {
-					return null;
-				}
-			}
-			return $result;
-		}
 
 		// Handle integer range types (e.g. int<1,5>)
 		$integerRanges = TypeUtils::getIntegerRanges($offsetType);

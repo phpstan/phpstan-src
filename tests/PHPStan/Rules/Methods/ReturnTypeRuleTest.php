@@ -1312,7 +1312,12 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug9907(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-9907.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9907.php'], [
+			[
+				"Method Bug9907Rule\Demo::diffAddresses() should return array{street?: array{change_to: string}, city?: array{change_to: string}, variation_count?: int<1, max>} but returns array<'city'|'street'|'variation_count', array{change_to: string}|int<1, max>>.",
+				32,
+			],
+		]);
 	}
 
 }

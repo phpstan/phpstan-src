@@ -14,7 +14,7 @@ class Foo
 	{
 		$k = rand(0, 1) ? 'a' : 'b';
 		$a[$k] = 256;
-		assertType('array{foo: int, a: 256}|array{foo: int, b: 256}', $a);
+		assertType("non-empty-array<'a'|'b'|'foo', int>", $a);
 	}
 
 	/**

@@ -48,15 +48,3 @@ jobs:
           github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           trigger_phrase: "@phpstan-bot"
           claude_args: "--model claude-opus-4-6 --max-turns 50"
-          prompt: |
-            You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
-            Read CLAUDE.md for codebase architecture guidance.
-
-            After making changes, verify by running:
-            - The specific failing tests if applicable
-            - `make tests` - full test suite
-            - `make phpstan` - PHPStan self-analysis
-            - `make cs-fix` - coding standards
-            - `make name-collision` - namespace collision check
-
-            Fix any failures that come up.

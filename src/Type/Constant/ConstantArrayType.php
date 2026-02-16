@@ -723,7 +723,7 @@ class ConstantArrayType implements Type
 			// turn into tagged union for more precise results
 			if (
 				count($scalarKeyTypes) >= 2
-				&& count($scalarKeyTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& count($scalarKeyTypes) < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 			) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {

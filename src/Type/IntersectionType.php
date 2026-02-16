@@ -714,6 +714,10 @@ class IntersectionType implements CompoundType
 			$knownOffsets[$type->getOffsetType()->getValue()] = true;
 		}
 
+		if ($this->isList()->yes() && $this->isIterableAtLeastOnce()->yes()) {
+			$knownOffsets[0] = true;
+		}
+
 		if ($knownOffsets !== []) {
 			return TypeCombinator::intersect($arraySize, IntegerRangeType::fromInterval(count($knownOffsets), null));
 		}
@@ -853,9 +857,26 @@ class IntersectionType implements CompoundType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($this->isList()->yes() && $this->isIterableAtLeastOnce()->yes()) {
+		if ($this->isList()->yes()) {
 			$arrayKeyOffsetType = $offsetType->toArrayKey();
-			if ((new ConstantIntegerType(0))->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+
+			$negative = IntegerRangeType::fromInterval(null, -1);
+			if ($negative->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+
+			$size = $this->getArraySize();
+			if ($size instanceof IntegerRangeType && $size->getMin() !== null) {
+				$knownOffsets = IntegerRangeType::fromInterval(0, $size->getMin() - 1);
+			} elseif ($size instanceof ConstantIntegerType) {
+				$knownOffsets = IntegerRangeType::fromInterval(0, $size->getValue() - 1);
+			} elseif ($this->isIterableAtLeastOnce()->yes()) {
+				$knownOffsets = new ConstantIntegerType(0);
+			} else {
+				$knownOffsets = null;
+			}
+
+			if ($knownOffsets !== null && $knownOffsets->isSuperTypeOf($arrayKeyOffsetType)->yes()) {
 				return TrinaryLogic::createYes();
 			}
 

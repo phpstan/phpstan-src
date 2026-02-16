@@ -56,6 +56,13 @@ class HelloWorld
 		} else {
 			assertType('non-empty-list<int>', $list);
 		}
+
+		if (count($list) < 5) {
+			assertType('non-empty-list<int>', $list);
+			assertType('int<1, 4>', count($list));
+		} else {
+			assertType('non-empty-list<int>&hasOffsetValue(1, int)&hasOffsetValue(2, int)&hasOffsetValue(3, int)&hasOffsetValue(4, int)', $list);
+		}
 	}
 
 	/** @param list<int> $list */
@@ -71,6 +78,25 @@ class HelloWorld
 		} else {
 			assertType('non-empty-list<int>', $list);
 			assertType('1', count($list));
+		}
+	}
+
+	/** @param non-empty-array<int> $nonEmptyArray */
+	public function doNonEmptyArray($nonEmptyArray): void
+	{
+		if (2 <= count($nonEmptyArray)) {
+			assertType('non-empty-array<int>', $nonEmptyArray);
+			assertType('int<2, max>', count($nonEmptyArray));
+		} else {
+			assertType('non-empty-array<int>', $nonEmptyArray);
+			assertType('1', count($nonEmptyArray));
+		}
+
+		if (count($nonEmptyArray) < 5) {
+			assertType('non-empty-array<int>', $nonEmptyArray);
+			assertType('int<1, 4>', count($nonEmptyArray));
+		} else {
+			assertType('non-empty-array<int>', $nonEmptyArray);
 		}
 	}
 
@@ -158,6 +184,13 @@ class HelloWorld
 	/** @param array<int> $array */
 	public function countArray($array): void
 	{
+		if (count($array) < 5) {
+			assertType('array<int>', $array);
+			assertType('int<0, 4>', count($array));
+		} else {
+			assertType('non-empty-array<int>', $array);
+		}
+
 		if (count($array) === 0) {
 			return;
 		}

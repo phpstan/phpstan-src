@@ -84,8 +84,8 @@ class HelloWorld
 	{
 		if (count($list) > 2) {
 			assertType('int<3, max>', count($list));
-			assertType('int<1, max>', count($list, COUNT_NORMAL));
-			assertType('int<1, max>', count($list, COUNT_RECURSIVE));
+			assertType('int<3, max>', count($list, COUNT_NORMAL));
+			assertType('int<3, max>', count($list, COUNT_RECURSIVE));
 		}
 	}
 
@@ -93,9 +93,9 @@ class HelloWorld
 	public function countListNormal($list): void
 	{
 		if (count($list, COUNT_NORMAL) > 2) {
-			assertType('int<1, max>', count($list));
+			assertType('int<3, max>', count($list));
 			assertType('int<3, max>', count($list, COUNT_NORMAL));
-			assertType('int<1, max>', count($list, COUNT_RECURSIVE));
+			assertType('int<3, max>', count($list, COUNT_RECURSIVE));
 		}
 	}
 
@@ -124,8 +124,8 @@ class HelloWorld
 	public function countListRecursive($list): void
 	{
 		if (count($list, COUNT_RECURSIVE) > 2) {
-			assertType('int<1, max>', count($list));
-			assertType('int<1, max>', count($list, COUNT_NORMAL));
+			assertType('int<3, max>', count($list));
+			assertType('int<3, max>', count($list, COUNT_NORMAL));
 			assertType('int<3, max>', count($list, COUNT_RECURSIVE));
 		}
 	}

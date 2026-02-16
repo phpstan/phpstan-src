@@ -40,6 +40,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -94,6 +95,8 @@ use const COUNT_NORMAL;
 #[AutowiredService(name: 'typeSpecifier', factory: '@typeSpecifierFactory::create')]
 final class TypeSpecifier
 {
+
+	private const MAX_ACCESSORIES_LIMIT = 8;
 
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
@@ -1217,7 +1220,27 @@ final class TypeSpecifier
 						$builderData[] = [$offsetType, $arrayType->getOffsetValueType($offsetType), !$hasOffset->yes()];
 					}
 				} else {
-					$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+					$intersection = [];
+					$intersection[] = $arrayType;
+					$intersection[] = new NonEmptyArrayType();
+
+					$zero = new ConstantIntegerType(0);
+					$i = 0;
+					foreach ($builderData as [$offsetType, $valueType]) {
+						// non-empty-list already implies the offset 0
+						if ($zero->isSuperTypeOf($offsetType)->yes()) {
+							continue;
+						}
+
+						if ($i > self::MAX_ACCESSORIES_LIMIT) {
+							break;
+						}
+
+						$intersection[] = new HasOffsetValueType($offsetType, $valueType);
+						$i++;
+					}
+
+					$resultTypes[] = TypeCombinator::intersect(...$intersection);
 					continue;
 				}
 

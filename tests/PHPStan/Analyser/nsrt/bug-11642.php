@@ -34,6 +34,7 @@ function doFoo() {
 	if (count($entries) !== count($payload->ids)) {
 		exit();
 	}
+	assertType('int<1, max>', count($entries));
 
 	assertType('non-empty-list<stdClass>', $entries);
 	if (count($entries) > 3) {

@@ -701,12 +701,29 @@ class ConstantArrayType implements Type
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($offsetType !== null) {
-			$scalarKeyTypes = $this->resolveFiniteScalarKeyTypes($offsetType);
+			$offsetType = $offsetType->toArrayKey();
+
+			$scalarKeyTypes = $offsetType->getConstantStrings();
+			if (count($scalarKeyTypes) === 0) {
+				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
+				if (count($integerRanges) > 0) {
+					foreach ($integerRanges as $integerRange) {
+						$finiteTypes = $integerRange->getFiniteTypes();
+						if (count($finiteTypes) === 0) {
+							break;
+						}
+
+						foreach ($finiteTypes as $finiteType) {
+							$scalarKeyTypes[] = $finiteType;
+						}
+					}
+				}
+			}
+
 			// turn into tagged union for more precise results
 			if (
-				$scalarKeyTypes !== null
-				&& count($scalarKeyTypes) >= 2
-				&& count($scalarKeyTypes) <= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
+				count($scalarKeyTypes) >= 2
+				&& count($scalarKeyTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 			) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {
@@ -748,34 +765,6 @@ class ConstantArrayType implements Type
 		$builder->setOffsetValueType($offsetType, $valueType);
 
 		return $builder->getArray();
-	}
-
-	/** @return array<ConstantIntegerType|ConstantStringType>|null */
-	private function resolveFiniteScalarKeyTypes(Type $offsetType): ?array
-	{
-		$result = [];
-
-		$offsetType = $offsetType->toArrayKey();
-		$constantStrings = $offsetType->getConstantStrings();
-		if (count($constantStrings) > 0) {
-			foreach ($constantStrings as $constantString) {
-				$result[] = $constantString;
-			}
-		} else {
-			$integerRanges = TypeUtils::getIntegerRanges($offsetType);
-			foreach ($integerRanges as $integerRange) {
-				$finiteTypes = $integerRange->getFiniteTypes();
-				if ($finiteTypes === []) {
-					return null;
-				}
-
-				foreach ($finiteTypes as $finiteType) {
-					$result[$finiteType->getValue()] = $finiteType;
-				}
-			}
-		}
-
-		return $result;
 	}
 
 	public function unsetOffset(Type $offsetType): Type

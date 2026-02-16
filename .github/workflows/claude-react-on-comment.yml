@@ -19,8 +19,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check-trigger:
+    name: "Check trigger phrase"
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      triggered: ${{ steps.check.outputs.triggered }}
+    steps:
+      - name: "Check for trigger phrase"
+        id: check
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body || '' }}
+        run: |
+          if echo "$COMMENT_BODY" | grep -qF "@phpstan-bot"; then
+            echo "triggered=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "triggered=false" >> "$GITHUB_OUTPUT"
+          fi
+
   react:
     name: "React on comment"
+    needs: check-trigger
+    if: needs.check-trigger.outputs.triggered == 'true'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
 

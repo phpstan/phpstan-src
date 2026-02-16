@@ -38,16 +38,18 @@ use function min;
  */
 final class TrinaryLogic
 {
+
 	private const YES = 3;
 	private const MAYBE = 1;
 	private const NO = 0;
-
 
 	/** @var self[] */
 	private static array $registry = [];
 
 	private static self $YES;
+
 	private static self $MAYBE;
+
 	private static self $NO;
 
 	private function __construct(private int $value)
@@ -119,8 +121,8 @@ final class TrinaryLogic
 	public function and(?self $operand = null, self ...$rest): self
 	{
 		$min = $this->value & ($operand !== null ? $operand->value : self::YES);
-		foreach ($rest as $operand) {
-			$min &= $operand->value;
+		foreach ($rest as $restOperand) {
+			$min &= $restOperand->value;
 		}
 		return self::$registry[$min] ??= new self($min);
 	}
@@ -155,8 +157,8 @@ final class TrinaryLogic
 	public function or(?self $operand = null, self ...$rest): self
 	{
 		$max = $this->value | ($operand !== null ? $operand->value : self::NO);
-		foreach ($rest as $operand) {
-			$max |= $operand->value;
+		foreach ($rest as $restOperand) {
+			$max |= $restOperand->value;
 		}
 		return self::$registry[$max] ??= new self($max);
 	}

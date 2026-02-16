@@ -1499,18 +1499,37 @@ final class InitializerExprTypeResolver
 				$keyType = TypeCombinator::union(...$keyTypes);
 			}
 
+			$leftIterableValueType = $leftType->getIterableValueType();
 			$arrayType = new ArrayType(
 				$keyType,
-				TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
+				TypeCombinator::union($leftIterableValueType, $rightType->getIterableValueType()),
 			);
 
 			$accessories = [];
-			foreach ($leftType->getConstantArrays() as $type) {
-				foreach ($type->getKeyTypes() as $i => $offsetType) {
-					if ($type->isOptionalKey($i)) {
+			if ($leftCount > 0) {
+				// Use the first constant array as a reference to list potential offsets.
+				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
+				$constantArray = $leftConstantArrays[0];
+				foreach ($constantArray->getKeyTypes() as $offsetType) {
+					if (!$leftType->hasOffsetValueType($offsetType)->yes()) {
 						continue;
 					}
-					$valueType = $type->getValueTypes()[$i];
+
+					$valueType = $leftType->getOffsetValueType($offsetType);
+					$accessories[] = new HasOffsetValueType($offsetType, $valueType);
+				}
+			}
+
+			if ($rightCount > 0) {
+				// Use the first constant array as a reference to list potential offsets.
+				// We only need to check the first array because we're looking for offsets that exist in ALL arrays.
+				$constantArray = $rightConstantArrays[0];
+				foreach ($constantArray->getKeyTypes() as $offsetType) {
+					if (!$rightType->hasOffsetValueType($offsetType)->yes()) {
+						continue;
+					}
+
+					$valueType = TypeCombinator::union($leftIterableValueType, $rightType->getOffsetValueType($offsetType));
 					$accessories[] = new HasOffsetValueType($offsetType, $valueType);
 				}
 			}

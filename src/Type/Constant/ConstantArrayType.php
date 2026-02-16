@@ -706,7 +706,7 @@ class ConstantArrayType implements Type
 			if (
 				$scalarKeyTypes !== null
 				&& count($scalarKeyTypes) >= 2
-				&& count($scalarKeyTypes) <= self::CHUNK_FINITE_TYPES_LIMIT
+				&& count($scalarKeyTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 			) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {

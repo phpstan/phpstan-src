@@ -44,7 +44,7 @@ class Foo
 	public function doUnionOfRanges(array $a, $intRange): void
 	{
 		$a[$intRange] = 256;
-		assertType('non-empty-array<\'foo\'|int<0, 5>|int<10, 15>, int>', $a);
+		assertType('array{foo: int, 0: 256}|array{foo: int, 10: 256}|array{foo: int, 11: 256}|array{foo: int, 12: 256}|array{foo: int, 13: 256}|array{foo: int, 14: 256}|array{foo: int, 15: 256}|array{foo: int, 1: 256}|array{foo: int, 2: 256}|array{foo: int, 3: 256}|array{foo: int, 4: 256}|array{foo: int, 5: 256}', $a);
 	}
 
 	/**

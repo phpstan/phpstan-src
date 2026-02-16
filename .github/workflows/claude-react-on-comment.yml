@@ -1,4 +1,4 @@
-name: "Claude PR Reactions"
+name: "Claude React on comment"
 
 on:
   issue_comment:
@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   react:
-    name: "React to PR feedback"
+    name: "React on comment"
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
 

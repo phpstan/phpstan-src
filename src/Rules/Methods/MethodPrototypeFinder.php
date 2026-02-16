@@ -108,6 +108,7 @@ final class MethodPrototypeFinder
 			foreach ($parentClass->getInterfaces() as $interface) {
 				if ($interface->hasNativeMethod($method->getName())) {
 					$prototype = $interface->getNativeMethod($method->getName());
+					break;
 				}
 			}
 		}

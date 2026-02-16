@@ -377,3 +377,12 @@ function register_tick_function(callable $callback, mixed ...$args): bool {}
  * @return resource|false
  */
 function proc_open($command, array $descriptor_spec, &$pipes, ?string $cwd = null, ?array $env_vars = null, ?array $options = null) {}
+
+/**
+ * @param mixed &$hosts
+ * @param mixed &$weights
+ *
+ * @param-out list<string> $hosts
+ * @param-out list<int>    $weights
+ */
+function getmxrr(string $hostname, &$hosts, &$weights = null): bool {}

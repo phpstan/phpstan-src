@@ -2679,6 +2679,24 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8936.php'], []);
 	}
 
+	public function testDumpFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/dump-functions.php'], [
+			[
+				'Function PHPStan\dumpType invoked with 0 parameters, at least 1 required.',
+				13,
+			],
+			[
+				'Function PHPStan\dumpNativeType invoked with 0 parameters, at least 1 required.',
+				14,
+			],
+			[
+				'Function PHPStan\dumpPhpDocType invoked with 0 parameters, at least 1 required.',
+				15,
+			],
+		]);
+	}
+
 	public function testBug14012(): void
 	{
 		$this->checkExplicitMixed = true;

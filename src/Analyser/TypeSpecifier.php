@@ -70,6 +70,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Php\VersionCompareFunctionTypeSpecifyingExtension;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
@@ -87,6 +88,7 @@ use function array_reverse;
 use function array_shift;
 use function count;
 use function in_array;
+use function is_int;
 use function is_string;
 use function strtolower;
 use function substr;
@@ -259,6 +261,34 @@ final class TypeSpecifier
 					new Node\Expr\BooleanNot($inverseOperator),
 					$context,
 				)->setRootExpr($expr);
+			}
+
+			// version_compare(PHP_VERSION, '8.0') < 0 or 0 < version_compare(PHP_VERSION, '8.0')
+			if (!$context->null()) {
+				$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
+
+				if (
+					$expr->left instanceof FuncCall
+					&& $expr->left->name instanceof Name
+					&& $expr->left->name->toLowerString() === 'version_compare'
+					&& count($expr->left->getArgs()) === 2
+				) {
+					$result = $this->specifyTypesForVersionCompareSmallerResult($expr->left, $scope, $scope->getType($expr->right), $orEqual, false, $context, $expr);
+					if ($result !== null) {
+						return $result;
+					}
+				} elseif (
+					$expr->right instanceof FuncCall
+					&& $expr->right->name instanceof Name
+					&& $expr->right->name->toLowerString() === 'version_compare'
+					&& count($expr->right->getArgs()) === 2
+				) {
+					// value < version_compare(...) → version_compare(...) > value
+					$result = $this->specifyTypesForVersionCompareSmallerResult($expr->right, $scope, $scope->getType($expr->left), $orEqual, true, $context, $expr);
+					if ($result !== null) {
+						return $result;
+					}
+				}
 			}
 
 			$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
@@ -2486,6 +2516,21 @@ final class TypeSpecifier
 			)->setRootExpr($expr);
 		}
 
+		// version_compare(PHP_VERSION, '8.0') === 1
+		if (
+			!$context->null()
+			&& $unwrappedLeftExpr instanceof FuncCall
+			&& $unwrappedLeftExpr->name instanceof Name
+			&& $unwrappedLeftExpr->name->toLowerString() === 'version_compare'
+			&& count($unwrappedLeftExpr->getArgs()) === 2
+			&& $rightType->isInteger()->yes()
+		) {
+			$result = $this->specifyTypesForVersionCompareResult($unwrappedLeftExpr, $scope, $rightType, $context, $expr);
+			if ($result !== null) {
+				return $result;
+			}
+		}
+
 		// get_class($a) === 'Foo'
 		if (
 			$context->true()
@@ -2774,6 +2819,221 @@ final class TypeSpecifier
 		}
 
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+	}
+
+	/**
+	 * Parses a version_compare FuncCall to extract the PHP version argument index and the version ID.
+	 *
+	 * @return array{int, int}|null [phpVersionArgIndex, versionId] or null if not applicable
+	 */
+	private function parseVersionCompareFuncCall(FuncCall $funcCall, Scope $scope): ?array
+	{
+		$args = $funcCall->getArgs();
+		if (count($args) !== 2) {
+			return null;
+		}
+
+		$phpVersionArgIndex = null;
+		if ($args[0]->value instanceof ConstFetch && $args[0]->value->name->toString() === 'PHP_VERSION') {
+			$phpVersionArgIndex = 0;
+		} elseif ($args[1]->value instanceof ConstFetch && $args[1]->value->name->toString() === 'PHP_VERSION') {
+			$phpVersionArgIndex = 1;
+		}
+
+		if ($phpVersionArgIndex === null) {
+			return null;
+		}
+
+		$otherArgIndex = $phpVersionArgIndex === 0 ? 1 : 0;
+		$versionStrings = $scope->getType($args[$otherArgIndex]->value)->getConstantStrings();
+		if (count($versionStrings) !== 1) {
+			return null;
+		}
+
+		$versionId = VersionCompareFunctionTypeSpecifyingExtension::parseVersionStringToId($versionStrings[0]->getValue());
+		if ($versionId === null) {
+			return null;
+		}
+
+		return [$phpVersionArgIndex, $versionId];
+	}
+
+	/**
+	 * Handles version_compare(PHP_VERSION, 'ver') === value in resolveNormalizedIdentical.
+	 */
+	private function specifyTypesForVersionCompareResult(
+		FuncCall $funcCall,
+		Scope $scope,
+		Type $comparisonValue,
+		TypeSpecifierContext $context,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		$parsed = $this->parseVersionCompareFuncCall($funcCall, $scope);
+		if ($parsed === null) {
+			return null;
+		}
+
+		[$phpVersionArgIndex, $versionId] = $parsed;
+		$phpVersionSwapped = $phpVersionArgIndex === 1;
+
+		$constantValues = $comparisonValue->getConstantScalarValues();
+		if (count($constantValues) !== 1 || !is_int($constantValues[0])) {
+			return null;
+		}
+
+		$value = $constantValues[0];
+		if (!in_array($value, [-1, 0, 1], true)) {
+			return null;
+		}
+
+		// For true/truthy context (===), the result set is the matched value
+		// For false/falsey context (!==), the result set is the complement
+		if ($context->true() || $context->truthy()) {
+			$resultSet = [$value];
+		} else {
+			$all = [-1, 0, 1];
+			$resultSet = [];
+			foreach ($all as $r) {
+				if ($r === $value) {
+					continue;
+				}
+
+				$resultSet[] = $r;
+			}
+		}
+
+		$phpVersionIdExpr = new ConstFetch(new Name('PHP_VERSION_ID'));
+		$versionIdType = new ConstantIntegerType($versionId);
+
+		return $this->specifyTypesFromVersionCompareResultSet($resultSet, $phpVersionIdExpr, $versionIdType, $phpVersionSwapped, $scope, $rootExpr);
+	}
+
+	/**
+	 * Handles version_compare(PHP_VERSION, 'ver') < value or value < version_compare(PHP_VERSION, 'ver')
+	 * in the Smaller/SmallerOrEqual section.
+	 */
+	private function specifyTypesForVersionCompareSmallerResult(
+		FuncCall $funcCall,
+		Scope $scope,
+		Type $comparisonValue,
+		bool $orEqual,
+		bool $exprSwapped,
+		TypeSpecifierContext $context,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		$parsed = $this->parseVersionCompareFuncCall($funcCall, $scope);
+		if ($parsed === null) {
+			return null;
+		}
+
+		[$phpVersionArgIndex, $versionId] = $parsed;
+		$phpVersionSwapped = $phpVersionArgIndex === 1;
+
+		$constantValues = $comparisonValue->getConstantScalarValues();
+		if (count($constantValues) !== 1 || !is_int($constantValues[0])) {
+			return null;
+		}
+
+		$value = $constantValues[0];
+
+		// Determine what comparison operation version_compare_result OP value implies
+		// First, compute the effective operator on version_compare_result
+		$op = $orEqual ? '<=' : '<';
+		if ($exprSwapped) {
+			// value < version_compare(...) → version_compare(...) > value
+			// value <= version_compare(...) → version_compare(...) >= value
+			$op = $orEqual ? '>=' : '>';
+		}
+
+		// For false context, flip the operator (like the standard Smaller handler does)
+		if ($context->false()) {
+			$op = match ($op) {
+				'<' => '>=',
+				'<=' => '>',
+				'>' => '<=',
+				'>=' => '<',
+			};
+		}
+
+		// Determine which version_compare results satisfy: result OP value
+		$resultSet = match ($op) {
+			'<' => $value > -1 ? ($value > 0 ? ($value > 1 ? [] : [-1, 0]) : [-1]) : [],
+			'<=' => $value >= -1 ? ($value >= 0 ? ($value >= 1 ? [-1, 0, 1] : [-1, 0]) : [-1]) : [],
+			'>' => $value < 1 ? ($value < 0 ? ($value < -1 ? [] : [0, 1]) : [1]) : [],
+			default => $value <= 1 ? ($value <= 0 ? ($value <= -1 ? [-1, 0, 1] : [0, 1]) : [1]) : [],
+		};
+
+		if ($resultSet === [] || count($resultSet) === 3) {
+			return null;
+		}
+
+		$phpVersionIdExpr = new ConstFetch(new Name('PHP_VERSION_ID'));
+		$versionIdType = new ConstantIntegerType($versionId);
+
+		// Always use truthy context since we've already computed the correct type for the branch
+		return $this->specifyTypesFromVersionCompareResultSet($resultSet, $phpVersionIdExpr, $versionIdType, $phpVersionSwapped, $scope, $rootExpr);
+	}
+
+	/**
+	 * Creates SpecifiedTypes for PHP_VERSION_ID based on a set of version_compare results.
+	 *
+	 * @param list<int> $resultSet Subset of [-1, 0, 1]
+	 */
+	private function specifyTypesFromVersionCompareResultSet(
+		array $resultSet,
+		Expr $phpVersionIdExpr,
+		ConstantIntegerType $versionIdType,
+		bool $phpVersionSwapped,
+		Scope $scope,
+		Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		// Map result set to PHP_VERSION_ID type, accounting for swapped argument order
+		if (count($resultSet) === 1) {
+			$r = $resultSet[0];
+			$effectiveR = $phpVersionSwapped ? -$r : $r;
+
+			$type = match ($effectiveR) {
+				1 => $versionIdType->getGreaterType($this->phpVersion),
+				-1 => $versionIdType->getSmallerType($this->phpVersion),
+				0 => $versionIdType,
+				default => null,
+			};
+
+			if ($type === null) {
+				return null;
+			}
+
+			return $this->create($phpVersionIdExpr, $type, TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($rootExpr);
+		}
+
+		// Two results: [-1, 0] or [0, 1] or [-1, 1]
+		if ($resultSet === [-1, 0]) {
+			$effectiveOp = $phpVersionSwapped ? '>' : '<=';
+		} elseif ($resultSet === [0, 1]) {
+			$effectiveOp = $phpVersionSwapped ? '<' : '>=';
+		} elseif ($resultSet === [-1, 1]) {
+			// != case: PHP_VERSION_ID < versionId OR PHP_VERSION_ID > versionId
+			$type = TypeCombinator::union(
+				$versionIdType->getSmallerType($this->phpVersion),
+				$versionIdType->getGreaterType($this->phpVersion),
+			);
+
+			return $this->create($phpVersionIdExpr, $type, TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($rootExpr);
+		} else {
+			return null;
+		}
+
+		$type = match ($effectiveOp) {
+			'<' => $versionIdType->getSmallerType($this->phpVersion),
+			'<=' => $versionIdType->getSmallerOrEqualType($this->phpVersion),
+			'>' => $versionIdType->getGreaterType($this->phpVersion),
+			default => $versionIdType->getGreaterOrEqualType($this->phpVersion),
+		};
+
+		return $this->create($phpVersionIdExpr, $type, TypeSpecifierContext::createTruthy(), $scope)->setRootExpr($rootExpr);
 	}
 
 }

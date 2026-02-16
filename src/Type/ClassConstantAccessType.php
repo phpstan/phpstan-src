@@ -35,8 +35,8 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
-			&& $this->type->equals($type->type)
-			&& $this->constantName === $type->constantName;
+			&& $this->constantName === $type->constantName
+			&& $this->type->equals($type->type);
 	}
 
 	public function describe(VerbosityLevel $level): string

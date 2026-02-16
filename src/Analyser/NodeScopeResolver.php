@@ -174,6 +174,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -6367,13 +6368,12 @@ class NodeScopeResolver
 				if ($declaringClass->hasNativeProperty($propertyName)) {
 					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
 					$propertyNativeType = $nativeProperty->getNativeType();
-					$assignedNativeType = $scope->getNativeType($assignedExpr);
-					// Widen property type to accept int for float properties (PHP allows int-to-float coercion)
-					$propertyNativeTypeForCheck = !$propertyNativeType->isFloat()->no()
+					// Widen property type to accept int for float properties (PHP allows int-to-float coercion without TypeError)
+					$propertyNativeTypeForAccepts = $propertyNativeType->isSuperTypeOf(new FloatType())->yes()
 						? TypeCombinator::union($propertyNativeType, new IntegerType())
 						: $propertyNativeType;
 					if (
-						!$propertyNativeTypeForCheck->isSuperTypeOf($assignedNativeType)->yes()
+						!$propertyNativeTypeForAccepts->isSuperTypeOf($assignedExprType)->yes()
 					) {
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}

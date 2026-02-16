@@ -47,6 +47,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -61,6 +62,7 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
+use function is_int;
 use function is_string;
 use function min;
 use function pow;
@@ -699,6 +701,35 @@ class ConstantArrayType implements Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
+		if ($offsetType !== null) {
+			$scalarKeyTypes = $this->resolveFiniteScalarKeyTypes($offsetType);
+			if ($scalarKeyTypes !== null) {
+				$hasNewKey = false;
+				foreach ($scalarKeyTypes as $scalarKeyType) {
+					$existingKeyFound = false;
+					foreach ($this->keyTypes as $existingKeyType) {
+						if ($existingKeyType->getValue() === $scalarKeyType->getValue()) {
+							$existingKeyFound = true;
+							break;
+						}
+					}
+					if (!$existingKeyFound) {
+						$hasNewKey = true;
+						break;
+					}
+				}
+
+				if ($hasNewKey) {
+					$arrayTypes = [];
+					foreach ($scalarKeyTypes as $scalarKeyType) {
+						$arrayTypes[] = $this->setOffsetValueType($scalarKeyType, $valueType, $unionValues);
+					}
+
+					return TypeCombinator::union(...$arrayTypes);
+				}
+			}
+		}
+
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);
 		$builder->setOffsetValueType($offsetType, $valueType);
 
@@ -711,6 +742,67 @@ class ConstantArrayType implements Type
 		$builder->setOffsetValueType($offsetType, $valueType);
 
 		return $builder->getArray();
+	}
+
+	/**
+	 * @return list<ConstantIntegerType|ConstantStringType>|null
+	 */
+	private function resolveFiniteScalarKeyTypes(Type $offsetType): ?array
+	{
+		$offsetType = $offsetType->toArrayKey();
+
+		// Handle unions of constant string types (e.g. 'a'|'b')
+		$constantStrings = $offsetType->getConstantStrings();
+		if (count($constantStrings) >= 2 && count($constantStrings) <= self::CHUNK_FINITE_TYPES_LIMIT) {
+			$result = [];
+			foreach ($constantStrings as $constantString) {
+				$arrayKeyType = $constantString->toArrayKey();
+				$scalarValues = $arrayKeyType->getConstantScalarValues();
+				if (count($scalarValues) !== 1) {
+					return null;
+				}
+				if (is_int($scalarValues[0])) {
+					$result[] = new ConstantIntegerType($scalarValues[0]);
+				} elseif (is_string($scalarValues[0])) {
+					$result[] = new ConstantStringType($scalarValues[0]);
+				} else {
+					return null;
+				}
+			}
+			return $result;
+		}
+
+		// Handle integer range types (e.g. int<1,5>)
+		$integerRanges = TypeUtils::getIntegerRanges($offsetType);
+		if (count($integerRanges) > 0) {
+			$finiteScalarTypes = [];
+			foreach ($integerRanges as $integerRange) {
+				$finiteTypes = $integerRange->getFiniteTypes();
+				if ($finiteTypes === []) {
+					return null;
+				}
+
+				foreach ($finiteTypes as $finiteType) {
+					$finiteScalarTypes[] = $finiteType;
+				}
+			}
+
+			if (count($finiteScalarTypes) < 2 || count($finiteScalarTypes) > self::CHUNK_FINITE_TYPES_LIMIT) {
+				return null;
+			}
+
+			$result = [];
+			foreach ($finiteScalarTypes as $scalarType) {
+				$arrayKeyType = $scalarType->toArrayKey();
+				if (!$arrayKeyType instanceof ConstantIntegerType) {
+					return null;
+				}
+				$result[] = $arrayKeyType;
+			}
+			return $result;
+		}
+
+		return null;
 	}
 
 	public function unsetOffset(Type $offsetType): Type

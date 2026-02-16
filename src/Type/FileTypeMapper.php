@@ -542,6 +542,7 @@ final class FileTypeMapper
 							&& !($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Include_)
 						)
 					) && !array_key_exists($nameScopeKey, $nameScopeMap)
+					&& ($lookForTrait === null || $traitFound)
 				) {
 					$parentNameScope = array_last($typeMapStack) ?? null;
 					$typeAliasesMap = array_last($typeAliasStack) ?? [];

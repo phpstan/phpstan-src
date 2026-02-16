@@ -85,17 +85,21 @@ final class MethodPrototypeFinder
 		}
 
 		$declaringClass = $method->getDeclaringClass();
-		if ($declaringClass->hasConstructor() && $method->getName() === $declaringClass->getConstructor()->getName()) {
-			$prototype = $method->getPrototype();
-			if ($prototype instanceof PhpMethodReflection || $prototype instanceof MethodPrototypeReflection || $prototype instanceof NativeMethodReflection) {
-				$abstract = $prototype->isAbstract();
-				if (is_bool($abstract)) {
-					if (!$abstract) {
+		if ($declaringClass->hasConstructor()) {
+			if ($method->getName() === $declaringClass->getConstructor()->getName()) {
+				$prototype = $method->getPrototype();
+				if ($prototype instanceof PhpMethodReflection || $prototype instanceof MethodPrototypeReflection || $prototype instanceof NativeMethodReflection) {
+					$abstract = $prototype->isAbstract();
+					if (is_bool($abstract)) {
+						if (!$abstract) {
+							return null;
+						}
+					} elseif (!$abstract->yes()) {
 						return null;
 					}
-				} elseif (!$abstract->yes()) {
-					return null;
 				}
+			} elseif (strtolower($methodName) === '__construct') {
+				return null;
 			}
 		}
 

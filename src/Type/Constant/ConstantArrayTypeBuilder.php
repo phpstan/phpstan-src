@@ -240,7 +240,7 @@ final class ConstantArrayTypeBuilder
 				return;
 			}
 
-			$scalarTypes = $offsetType->getConstantScalarTypes();
+			$scalarTypes = $offsetType->toArrayKey()->getConstantScalarTypes();
 			if (count($scalarTypes) === 0) {
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 				if (count($integerRanges) > 0) {
@@ -260,15 +260,11 @@ final class ConstantArrayTypeBuilder
 				$match = true;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {
-					$scalarOffsetType = $scalarType->toArrayKey();
-					if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
-						throw new ShouldNotHappenException();
-					}
 					$offsetMatch = false;
 
 					/** @var ConstantIntegerType|ConstantStringType $keyType */
 					foreach ($this->keyTypes as $i => $keyType) {
-						if ($keyType->getValue() !== $scalarOffsetType->getValue()) {
+						if ($keyType->getValue() !== $scalarType->getValue()) {
 							continue;
 						}
 

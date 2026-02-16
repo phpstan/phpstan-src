@@ -706,7 +706,7 @@ class ConstantArrayType implements Type
 			if (
 				$scalarKeyTypes !== null
 				&& count($scalarKeyTypes) >= 2
-				&& count($scalarKeyTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+				&& count($scalarKeyTypes) <= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
 			) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {

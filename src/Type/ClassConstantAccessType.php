@@ -57,16 +57,15 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 
 		$constantReflection = $this->type->getConstant($this->constantName);
 
-		if (
-			$this->type instanceof StaticType
-			&& !$this->type->getClassReflection()->isFinal()
-			&& !$constantReflection->isFinal()
-		) {
-			if ($constantReflection->hasNativeType() || $constantReflection->hasPhpDocType()) {
-				return $constantReflection->getValueType();
-			}
+		if (!$constantReflection->isFinal()) {
+			$classReflections = $this->type->getObjectClassReflections();
+			if (count($classReflections) === 1 && !$classReflections[0]->isFinal()) {
+				if ($constantReflection->hasNativeType() || $constantReflection->hasPhpDocType()) {
+					return $constantReflection->getValueType();
+				}
 
-			return new MixedType();
+				return new MixedType();
+			}
 		}
 
 		return $constantReflection->getValueType();

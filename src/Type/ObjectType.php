@@ -762,6 +762,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			]);
 		}
 
+		if ($this->isInstanceOf('BcMath\Number')->yes()) {
+			return new ObjectType('BcMath\Number');
+		}
+
 		return new ErrorType();
 	}
 

@@ -380,9 +380,9 @@ class Foo
 	{
 		for ($b = 1; $b < count([]); $b++) {
 			assertType('*NEVER*', $a + $b);
-			assertType('*ERROR*', $a - $b); // Inconsistency: getPlusType handles never types right at the beginning, getMinusType doesn't.
-			assertType('*ERROR*', $a * $b);
-			assertType('*ERROR*', $a / $b);
+			assertType('*NEVER*', $a - $b);
+			assertType('*NEVER*', $a * $b);
+			assertType('*NEVER*', $a / $b);
 			assertType('*NEVER*', $a % $b);
 			assertType('non-empty-string&numeric-string', $a . $b);
 			assertType('*ERROR*', $a ** $b);
@@ -412,5 +412,12 @@ class Foo
 		assertType('BcMath\Number', $a++);
 		assertType('BcMath\Number', --$a);
 		assertType('BcMath\Number', $a--);
+	}
+
+	public function bcUnaryOp(Number $a): void
+	{
+		assertType('BcMath\Number', +$a);
+		assertType('BcMath\Number', -$a);
+		assertType('*ERROR*', ~$a);
 	}
 }

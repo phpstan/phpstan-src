@@ -148,3 +148,30 @@ function testUntypedConstant(WithUntypedConstant $foo): void
 {
 	assertType('mixed', $foo->test());
 }
+
+final class FinalChild extends FooBar
+{
+	const FOO_BAR = 'baz';
+}
+
+function testFinalChild(FinalChild $foo): void
+{
+	assertType("'baz'", $foo->test());
+}
+
+class WithFinalTypedConstant
+{
+	/** @var non-empty-string */
+	final const string FOO_BAR = 'foo';
+
+	/** @return static::FOO_BAR */
+	public function test(): string
+	{
+		return static::FOO_BAR;
+	}
+}
+
+function testFinalTypedConstant(WithFinalTypedConstant $foo): void
+{
+	assertType('non-empty-string', $foo->test());
+}

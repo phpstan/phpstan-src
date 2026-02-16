@@ -22,8 +22,8 @@ class BarBaz extends FooBar
 
 function test(FooBar $foo, BarBaz $bar): void
 {
-	assertType('mixed', $foo->test());
-	assertType('mixed', $bar->test());
+	assertType("'foo'", $foo->test());
+	assertType("'bar'", $bar->test());
 }
 
 final class FinalFoo
@@ -146,7 +146,7 @@ class WithUntypedConstant
 
 function testUntypedConstant(WithUntypedConstant $foo): void
 {
-	assertType('mixed', $foo->test());
+	assertType("'foo'", $foo->test());
 }
 
 final class FinalChild extends FooBar

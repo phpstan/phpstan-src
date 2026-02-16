@@ -51,36 +51,11 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 
 	protected function getResult(): Type
 	{
-		$classReflections = $this->type->getObjectClassReflections();
-		if (count($classReflections) !== 1) {
-			if (!$this->type->hasConstant($this->constantName)->yes()) {
-				return new ErrorType();
-			}
-
+		if ($this->type->hasConstant($this->constantName)->yes()) {
 			return $this->type->getConstant($this->constantName)->getValueType();
 		}
 
-		$constantClassReflection = $classReflections[0];
-		if (!$constantClassReflection->hasConstant($this->constantName)) {
-			return new ErrorType();
-		}
-
-		if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($this->constantName)) {
-			return new Enum\EnumCaseObjectType($constantClassReflection->getName(), $this->constantName);
-		}
-
-		$constantReflection = $constantClassReflection->getConstant($this->constantName);
-
-		if (
-			!$constantClassReflection->isFinal()
-			&& !$constantReflection->isFinal()
-			&& !$constantReflection->hasPhpDocType()
-			&& !$constantReflection->hasNativeType()
-		) {
-			return new MixedType();
-		}
-
-		return $constantReflection->getValueType();
+		return new ErrorType();
 	}
 
 	/**

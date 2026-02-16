@@ -11,6 +11,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
+  actions: read
 
 concurrency:
   group: claude-pr-reactions-${{ github.event.pull_request.number || github.event.issue.number }}
@@ -24,95 +26,24 @@ jobs:
         github.event_name == 'issue_comment'
         && github.event.issue.pull_request
         && github.event.issue.user.login == 'phpstan-bot'
-        && github.event.comment.user.login != 'phpstan-bot'
-        && github.event.comment.user.login != 'github-actions[bot]'
       ) || (
         github.event_name == 'pull_request_review'
         && github.event.pull_request.user.login == 'phpstan-bot'
-        && github.event.review.user.login != 'phpstan-bot'
-        && github.event.review.user.login != 'github-actions[bot]'
-        && github.event.review.state != 'approved'
-        && github.event.review.state != 'dismissed'
       ) || (
         github.event_name == 'pull_request_review_comment'
         && github.event.pull_request.user.login == 'phpstan-bot'
-        && github.event.comment.user.login != 'phpstan-bot'
-        && github.event.comment.user.login != 'github-actions[bot]'
       )
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
 
     steps:
-      - name: "Add reaction to comment"
-        env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request_review" ]; then
-            exit 0
-          fi
-          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
-            -f content='eyes' --silent 2>/dev/null || \
-          gh api "repos/${{ github.repository }}/pulls/comments/${{ github.event.comment.id }}/reactions" \
-            -f content='eyes' --silent 2>/dev/null || true
-
-      - name: "Resolve PR details"
-        id: pr
-        env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" = "issue_comment" ]; then
-            PR_NUMBER="${{ github.event.issue.number }}"
-            FEEDBACK_AUTHOR="${{ github.event.comment.user.login }}"
-          elif [ "${{ github.event_name }}" = "pull_request_review" ]; then
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            FEEDBACK_AUTHOR="${{ github.event.review.user.login }}"
-          else
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            FEEDBACK_AUTHOR="${{ github.event.comment.user.login }}"
-          fi
-
-          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "feedback_author=$FEEDBACK_AUTHOR" >> "$GITHUB_OUTPUT"
-
-          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json headRefName,state)
-          HEAD_REF=$(echo "$PR_JSON" | jq -r '.headRefName')
-          STATE=$(echo "$PR_JSON" | jq -r '.state')
-
-          echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
-          echo "state=$STATE" >> "$GITHUB_OUTPUT"
-
-      - name: "Check PR is open and reaction count"
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: |
-          if [ "${{ steps.pr.outputs.state }}" != "OPEN" ]; then
-            echo "PR is not open, skipping"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          REACTION_COMMITS=$(gh api "repos/${{ github.repository }}/commits?sha=${{ steps.pr.outputs.head_ref }}&per_page=100" \
-            --jq '[.[] | select(.commit.message | test("\\[claude-reaction\\]"))] | length')
-
-          if [ "$REACTION_COMMITS" -ge 5 ]; then
-            echo "Already made $REACTION_COMMITS reaction commits, stopping to avoid runaway"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Reaction commit $((REACTION_COMMITS + 1))"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: "Checkout"
-        if: steps.check.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr.outputs.head_ref }}
           fetch-depth: 0
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: "Install PHP"
-        if: steps.check.outputs.skip != 'true'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
@@ -120,134 +51,26 @@ jobs:
           ini-file: development
           extensions: mbstring
 
-      - name: "Install dependencies"
-        if: steps.check.outputs.skip != 'true'
-        uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@v3"
 
-      - name: "Install Claude Code"
-        if: steps.check.outputs.skip != 'true'
-        run: npm install -g @anthropic-ai/claude-code
+      - name: "React to feedback"
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          trigger_phrase: "@phpstan-bot"
+          model: "claude-opus-4-6"
+          timeout_minutes: 55
+          allowed_tools: "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch"
+          custom_instructions: |
+            You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
+            Read CLAUDE.md for codebase architecture guidance.
 
-      - name: "Build prompt"
-        if: steps.check.outputs.skip != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          EVENT_NAME: ${{ github.event_name }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
-          COMMENT_PATH: ${{ github.event.comment.path }}
-          COMMENT_LINE: ${{ github.event.comment.line }}
-          COMMENT_DIFF_HUNK: ${{ github.event.comment.diff_hunk }}
-          REVIEW_BODY: ${{ github.event.review.body }}
-          REVIEW_STATE: ${{ github.event.review.state }}
-          FEEDBACK_AUTHOR: ${{ steps.pr.outputs.feedback_author }}
-        run: |
-          # Collect all PR comments for context
-          PR_COMMENTS=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments?per_page=50" \
-            --jq '.[] | "**\(.user.login)**: \(.body)"' 2>/dev/null | head -c 20000 || echo "")
+            After making changes, verify by running:
+            - The specific failing tests if applicable
+            - `make tests` - full test suite
+            - `make phpstan` - PHPStan self-analysis
+            - `make cs-fix` - coding standards
+            - `make name-collision` - namespace collision check
 
-          # Collect inline review comments for context
-          REVIEW_COMMENTS=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/comments?per_page=50" \
-            --jq '.[] | "**\(.user.login)** on `\(.path)` line \(.line // .original_line):\n\(.body)\nDiff context:\n```\n\(.diff_hunk)\n```"' 2>/dev/null | head -c 30000 || echo "")
-
-          export PR_COMMENTS REVIEW_COMMENTS
-
-          python3 << 'PYEOF'
-          import os
-
-          pr_number = os.environ["PR_NUMBER"]
-          event_name = os.environ["EVENT_NAME"]
-          feedback_author = os.environ["FEEDBACK_AUTHOR"]
-          pr_comments = os.environ.get("PR_COMMENTS", "")
-          review_comments = os.environ.get("REVIEW_COMMENTS", "")
-
-          if event_name == "issue_comment":
-              comment_body = os.environ.get("COMMENT_BODY", "")
-              trigger = f"A PR comment was left by {feedback_author}:\n\n{comment_body}"
-          elif event_name == "pull_request_review":
-              review_body = os.environ.get("REVIEW_BODY", "")
-              review_state = os.environ.get("REVIEW_STATE", "")
-              state_label = "requested changes" if review_state == "changes_requested" else "left a review comment"
-              if review_body:
-                  trigger = f"{feedback_author} {state_label}:\n\n{review_body}\n\nSee also the inline review comments below for the full context."
-              else:
-                  trigger = f"{feedback_author} {state_label} (see inline review comments below)."
-          else:
-              comment_body = os.environ.get("COMMENT_BODY", "")
-              comment_path = os.environ.get("COMMENT_PATH", "")
-              comment_line = os.environ.get("COMMENT_LINE", "")
-              comment_diff = os.environ.get("COMMENT_DIFF_HUNK", "")
-              trigger = f"An inline review comment was left by {feedback_author} on `{comment_path}` line {comment_line}:\n\n{comment_body}"
-              if comment_diff:
-                  trigger += f"\n\nDiff context:\n```\n{comment_diff}\n```"
-
-          prompt = f"""You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
-
-          PR #{pr_number} (created by phpstan-bot) received feedback that needs to be addressed.
-
-          ## Triggering event
-
-          {trigger}
-
-          ## PR comment history
-
-          {pr_comments}
-
-          ## Inline review comments
-
-          {review_comments}
-
-          ## Your Task
-
-          1. Read CLAUDE.md for codebase architecture guidance
-          2. Look at the recent commits on this branch (`git log origin/2.1.x..HEAD`) to understand what changes were made
-          3. Address the feedback from the reviewer by making appropriate code changes
-          4. After making fixes, verify by running:
-             - The specific failing tests if applicable
-             - `make tests` - full test suite
-             - `make phpstan` - PHPStan self-analysis
-             - `make cs-fix` - coding standards
-             - `make name-collision` - namespace collision check
-          5. Fix any failures that come up
-
-          Do not create a branch, push, or create a PR — this is handled automatically.
-          Do not reply to the comment — just make the code changes.
-          If the feedback is not actionable (e.g. just a thank you, approval, or general question that doesn't require code changes), create a file /tmp/no-action-needed.txt and exit.
-          """
-
-          with open("/tmp/claude-reaction-prompt.txt", "w") as f:
-              f.write(prompt)
-          PYEOF
-
-      - name: "Run Claude Code"
-        if: steps.check.outputs.skip != 'true'
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
-
-          claude -p \
-            --model claude-opus-4-6 \
-            --dangerously-skip-permissions \
-            "$(cat /tmp/claude-reaction-prompt.txt)"
-
-      - name: "Commit and push"
-        if: steps.check.outputs.skip != 'true'
-        env:
-          FEEDBACK_AUTHOR: ${{ steps.pr.outputs.feedback_author }}
-        run: |
-          if [ -f /tmp/no-action-needed.txt ]; then
-            echo "No action needed for this feedback"
-            exit 0
-          fi
-
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "No changes made by Claude"
-            exit 0
-          fi
-
-          git add -A
-          git commit -m "Address PR feedback from $FEEDBACK_AUTHOR [claude-reaction]"
-          git push
+            Fix any failures that come up.

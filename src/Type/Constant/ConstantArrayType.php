@@ -702,7 +702,7 @@ class ConstantArrayType implements Type
 	{
 		if ($offsetType !== null) {
 			$scalarKeyTypes = $this->resolveFiniteScalarKeyTypes($offsetType);
-			if ($scalarKeyTypes !== null) {
+			if ($scalarKeyTypes !== null && count($scalarKeyTypes) >= 2) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {
 					$existingKeyFound = false;
@@ -770,7 +770,7 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		if (count($result) >= 2 && count($result) <= self::CHUNK_FINITE_TYPES_LIMIT) {
+		if (count($result) <= self::CHUNK_FINITE_TYPES_LIMIT) {
 			return $result;
 		}
 

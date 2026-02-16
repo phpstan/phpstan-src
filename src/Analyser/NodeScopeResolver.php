@@ -1517,8 +1517,16 @@ class NodeScopeResolver
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
-			foreach ($breakExitPoints as $breakExitPoint) {
-				$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+			if ($alwaysIterates && count($breakExitPoints) > 0) {
+				$breakScope = null;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
+			} else {
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+				}
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();

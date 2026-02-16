@@ -29,6 +29,7 @@ final class MethodPrototypeFinder
 	 * Returns two prototypes with different purposes:
 	 * - Signature prototype: Used for validating method signature (parameters, return type, ...).
 	 * - Inheritance prototype: Used for validating inheritance rules (final keyword, override attribute, ...).
+	 * Also, return a bool to precise if the visibility of the prototype needs to be respected.
 	 *
 	 * @return array{ExtendedMethodReflection, ClassReflection, bool, ExtendedMethodReflection, ClassReflection}|null
 	 */

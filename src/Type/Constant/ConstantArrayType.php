@@ -702,7 +702,12 @@ class ConstantArrayType implements Type
 	{
 		if ($offsetType !== null) {
 			$scalarKeyTypes = $this->resolveFiniteScalarKeyTypes($offsetType);
-			if ($scalarKeyTypes !== null && count($scalarKeyTypes) >= 2) {
+			// turn into tagged union for more precise results
+			if (
+				$scalarKeyTypes !== null
+				&& count($scalarKeyTypes) >= 2
+				&& count($scalarKeyTypes) <= self::CHUNK_FINITE_TYPES_LIMIT
+			) {
 				$hasNewKey = false;
 				foreach ($scalarKeyTypes as $scalarKeyType) {
 					$existingKeyFound = false;
@@ -770,11 +775,7 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		if (count($result) <= self::CHUNK_FINITE_TYPES_LIMIT) {
-			return $result;
-		}
-
-		return null;
+		return $result;
 	}
 
 	public function unsetOffset(Type $offsetType): Type

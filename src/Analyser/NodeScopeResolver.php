@@ -174,7 +174,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -6369,7 +6368,7 @@ class NodeScopeResolver
 					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
 					$propertyNativeType = $nativeProperty->getNativeType();
 					// Widen property type to accept int for float properties (PHP allows int-to-float coercion without TypeError)
-					$propertyNativeTypeForAccepts = $propertyNativeType->isSuperTypeOf(new FloatType())->yes()
+					$propertyNativeTypeForAccepts = !$propertyNativeType->isFloat()->no()
 						? TypeCombinator::union($propertyNativeType, new IntegerType())
 						: $propertyNativeType;
 					if (

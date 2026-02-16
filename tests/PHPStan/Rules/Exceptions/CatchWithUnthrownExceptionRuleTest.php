@@ -645,7 +645,12 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testBug9146(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-9146.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9146.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				52,
+			],
+		]);
 	}
 
 }

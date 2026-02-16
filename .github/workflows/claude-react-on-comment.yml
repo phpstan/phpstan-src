@@ -41,6 +41,11 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
+      - name: "Configure git identity"
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
       - name: "React to feedback"
         uses: anthropics/claude-code-action@v1
         with:

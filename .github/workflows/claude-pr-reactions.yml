@@ -48,4 +48,3 @@ jobs:
           github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           trigger_phrase: "@phpstan-bot"
           claude_args: "--model claude-opus-4-6 --max-turns 50"
-          use_sticky_comment: true

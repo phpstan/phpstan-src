@@ -382,7 +382,7 @@ function proc_open($command, array $descriptor_spec, &$pipes, ?string $cwd = nul
  * @param mixed &$hosts
  * @param mixed &$weights
  *
- * @param-out array<string> $hosts
- * @param-out array<int>    $weights
+ * @param-out list<string> $hosts
+ * @param-out list<int>    $weights
  */
 function getmxrr(string $hostname, &$hosts, &$weights = null): bool {}

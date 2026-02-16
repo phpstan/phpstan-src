@@ -62,7 +62,6 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
-use function is_int;
 use function is_string;
 use function min;
 use function pow;
@@ -755,17 +754,7 @@ class ConstantArrayType implements Type
 		$constantStrings = $offsetType->getConstantStrings();
 		if (count($constantStrings) > 0) {
 			foreach ($constantStrings as $constantString) {
-				$scalarValues = $constantString->getConstantScalarValues();
-				if (count($scalarValues) !== 1) {
-					return null;
-				}
-				if (is_int($scalarValues[0])) {
-					$result[] = new ConstantIntegerType($scalarValues[0]);
-				} elseif (is_string($scalarValues[0])) {
-					$result[] = new ConstantStringType($scalarValues[0]);
-				} else {
-					return null;
-				}
+				$result[] = $constantString;
 			}
 		} else {
 			$integerRanges = TypeUtils::getIntegerRanges($offsetType);

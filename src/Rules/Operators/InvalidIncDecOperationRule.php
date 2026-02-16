@@ -132,6 +132,10 @@ final class InvalidIncDecOperationRule implements Rule
 			$deprecatedBool = true;
 		}
 
+		if ($this->phpVersion->supportsBcMathNumberOperatorOverloading()) {
+			$allowedTypes[] = new ObjectType('BcMath\Number');
+		}
+
 		$allowedTypes = new UnionType($allowedTypes);
 
 		$varType = $this->ruleLevelHelper->findTypeToCheck(

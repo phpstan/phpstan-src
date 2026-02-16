@@ -405,4 +405,12 @@ class Foo
 			assertType('bool', $a or $b);
 		}
 	}
+
+	public function bcIncDec(Number $a): void
+	{
+		assertType('BcMath\Number', ++$a);
+		assertType('BcMath\Number', $a++);
+		assertType('BcMath\Number', --$a);
+		assertType('BcMath\Number', $a--);
+	}
 }

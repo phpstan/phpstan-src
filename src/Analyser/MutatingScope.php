@@ -6390,7 +6390,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$node,
 			);
 			if ($callType === null) {
-				$callType = new ErrorType();
+				if (
+					!$node->class instanceof Name
+					&& count($staticMethodCalledOnType->getObjectClassNames()) === 0
+					&& !$staticMethodCalledOnType->hasMethod($node->name->toString())->no()
+				) {
+					$callType = new MixedType();
+				} else {
+					$callType = new ErrorType();
+				}
 			}
 
 			if ($node->class instanceof Expr) {

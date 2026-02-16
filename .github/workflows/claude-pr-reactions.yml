@@ -47,10 +47,8 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           trigger_phrase: "@phpstan-bot"
-          model: "claude-opus-4-6"
-          timeout_minutes: 55
-          allowed_tools: "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch"
-          custom_instructions: |
+          claude_args: "--model claude-opus-4-6 --max-turns 50"
+          prompt: |
             You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
             Read CLAUDE.md for codebase architecture guidance.
 

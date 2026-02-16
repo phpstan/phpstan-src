@@ -746,17 +746,14 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	/**
-	 * @return list<ConstantIntegerType|ConstantStringType>|null
-	 */
+	/** @return array<ConstantIntegerType|ConstantStringType>|null */
 	private function resolveFiniteScalarKeyTypes(Type $offsetType): ?array
 	{
-		$offsetType = $offsetType->toArrayKey();
+		$result = [];
 
-		// Handle unions of constant string types (e.g. 'a'|'b')
+		$offsetType = $offsetType->toArrayKey();
 		$constantStrings = $offsetType->getConstantStrings();
-		if (count($constantStrings) >= 2 && count($constantStrings) <= self::CHUNK_FINITE_TYPES_LIMIT) {
-			$result = [];
+		if (count($constantStrings) > 0) {
 			foreach ($constantStrings as $constantString) {
 				$scalarValues = $constantString->getConstantScalarValues();
 				if (count($scalarValues) !== 1) {
@@ -770,14 +767,8 @@ class ConstantArrayType implements Type
 					return null;
 				}
 			}
-			return $result;
-		}
-
-		// Handle integer range types (e.g. int<1,5>)
-		$integerRanges = TypeUtils::getIntegerRanges($offsetType);
-		if (count($integerRanges) > 0) {
-			$finiteScalarTypes = [];
-			$seen = [];
+		} else {
+			$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 			foreach ($integerRanges as $integerRange) {
 				$finiteTypes = $integerRange->getFiniteTypes();
 				if ($finiteTypes === []) {
@@ -785,19 +776,13 @@ class ConstantArrayType implements Type
 				}
 
 				foreach ($finiteTypes as $finiteType) {
-					if (isset($seen[$finiteType->getValue()])) {
-						continue;
-					}
-					$seen[$finiteType->getValue()] = true;
-					$finiteScalarTypes[] = $finiteType;
+					$result[$finiteType->getValue()] = $finiteType;
 				}
 			}
+		}
 
-			if (count($finiteScalarTypes) < 2 || count($finiteScalarTypes) > self::CHUNK_FINITE_TYPES_LIMIT) {
-				return null;
-			}
-
-			return $finiteScalarTypes;
+		if (count($result) >= 2 && count($result) <= self::CHUNK_FINITE_TYPES_LIMIT) {
+			return $result;
 		}
 
 		return null;

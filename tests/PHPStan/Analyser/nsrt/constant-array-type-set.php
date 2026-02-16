@@ -94,7 +94,7 @@ class Foo
 	{
 		$a = [false, false, false];
 		$a[$offset] = true;
-		assertType('non-empty-array<int<0, 4>, bool>', $a);
+		assertType("array{0: false, 1: false, 2: false, 4: true}|array{false, false, false, true}|array{false, false, true}|array{false, true, false}|array{true, false, false}", $a);
 	}
 
 	public function doBar6(bool $offset): void

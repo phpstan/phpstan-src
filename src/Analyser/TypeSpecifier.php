@@ -920,6 +920,52 @@ final class TypeSpecifier
 					return $exprType;
 				}
 
+				if (
+					$issetExpr instanceof ArrayDimFetch
+					&& $issetExpr->dim !== null
+				) {
+					$varType = $scope->getType($issetExpr->var);
+					if (!$varType instanceof MixedType) {
+						$dimType = $scope->getType($issetExpr->dim);
+
+						if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+							$types = $varType instanceof UnionType ? $varType->getTypes() : [$varType];
+							$typesToRemove = [];
+							foreach ($types as $innerType) {
+								$hasOffset = $innerType->hasOffsetValueType($dimType);
+								if (!$hasOffset->yes() || !$innerType->getOffsetValueType($dimType)->isNull()->no()) {
+									continue;
+								}
+
+								$typesToRemove[] = $innerType;
+							}
+
+							if ($typesToRemove !== []) {
+								$typeToRemove = TypeCombinator::union(...$typesToRemove);
+								$result = $this->create(
+									$issetExpr->var,
+									$typeToRemove,
+									TypeSpecifierContext::createFalse(),
+									$scope,
+								)->setRootExpr($expr);
+
+								if ($scope->hasExpressionType($issetExpr->var)->maybe()) {
+									$result = $result->unionWith(
+										$this->create(
+											new IssetExpr($issetExpr->var),
+											new NullType(),
+											TypeSpecifierContext::createTruthy(),
+											$scope,
+										)->setRootExpr($expr),
+									);
+								}
+
+								return $result;
+							}
+						}
+					}
+				}
+
 				return new SpecifiedTypes();
 			}
 

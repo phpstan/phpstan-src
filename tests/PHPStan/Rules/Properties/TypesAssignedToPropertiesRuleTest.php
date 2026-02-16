@@ -1003,4 +1003,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7170(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7170.php'], []);
+	}
+
 }

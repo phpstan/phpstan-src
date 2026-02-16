@@ -26,7 +26,7 @@ function makeValidNumbers(): array
 		assertType("non-empty-list<-2|-1|1|2|' 1'|' 2'>", $validNumbers);
 	}
 
-	assertType("non-empty-list<-2|-1|1|2|' 1'|' 2'>", $validNumbers);
+	assertType("array{1, 2, -1, ' 1', -2, ' 2'}", $validNumbers);
 
 	return $validNumbers;
 }

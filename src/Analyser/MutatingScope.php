@@ -4388,6 +4388,81 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	public function refineTypesFromConstantArrayForeach(self $unrolledScope): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		foreach ($unrolledScope->expressionTypes as $exprString => $unrolledHolder) {
+			if (!isset($expressionTypes[$exprString])) {
+				continue;
+			}
+
+			$currentHolder = $expressionTypes[$exprString];
+			$unrolledType = $unrolledHolder->getType();
+			$currentType = $currentHolder->getType();
+
+			// Only refine if the unrolled scope has a more precise type
+			if (
+				!$unrolledType->isConstantArray()->yes()
+				|| !$currentType->isConstantArray()->no()
+				|| !$currentType->isArray()->yes()
+				|| !$currentType->isSuperTypeOf($unrolledType)->yes()
+			) {
+				continue;
+			}
+
+			$expressionTypes[$exprString] = new ExpressionTypeHolder(
+				$currentHolder->getExpr(),
+				$unrolledType,
+				$currentHolder->getCertainty(),
+			);
+		}
+
+		$nativeTypes = $this->nativeExpressionTypes;
+		foreach ($unrolledScope->nativeExpressionTypes as $exprString => $unrolledHolder) {
+			if (!isset($nativeTypes[$exprString])) {
+				continue;
+			}
+
+			$currentHolder = $nativeTypes[$exprString];
+			$unrolledType = $unrolledHolder->getType();
+			$currentType = $currentHolder->getType();
+
+			if (
+				!$unrolledType->isConstantArray()->yes()
+				|| !$currentType->isConstantArray()->no()
+				|| !$currentType->isArray()->yes()
+				|| !$currentType->isSuperTypeOf($unrolledType)->yes()
+			) {
+				continue;
+			}
+
+			$nativeTypes[$exprString] = new ExpressionTypeHolder(
+				$currentHolder->getExpr(),
+				$unrolledType,
+				$currentHolder->getCertainty(),
+			);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function generalizeWith(self $otherScope): self
 	{
 		$variableTypeHolders = $this->generalizeVariableTypeHolders(

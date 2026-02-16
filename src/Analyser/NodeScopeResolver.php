@@ -1347,6 +1347,10 @@ class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
+			if ($context->isTopLevel()) {
+				$finalScope = $this->refineForEachScopeForConstantArray($finalScope, $scope, $originalStorage, $stmt, $context, $breakExitPoints, $arrayComparisonExpr);
+			}
+
 			$exprType = $scope->getType($stmt->expr);
 			$hasExpr = $scope->hasExpressionType($stmt->expr);
 			if (
@@ -7076,6 +7080,106 @@ class NodeScopeResolver
 		}
 
 		return $this->processVarAnnotation($scope, $vars, $stmt);
+	}
+
+	/**
+	 * @param InternalStatementExitPoint[] $breakExitPoints
+	 */
+	private function refineForEachScopeForConstantArray(
+		MutatingScope $finalScope,
+		MutatingScope $outerScope,
+		ExpressionResultStorage $originalStorage,
+		Foreach_ $stmt,
+		StatementContext $context,
+		array $breakExitPoints,
+		Expr $arrayComparisonExpr,
+	): MutatingScope
+	{
+		if (count($breakExitPoints) > 0) {
+			return $finalScope;
+		}
+
+		if ($stmt->byRef) {
+			return $finalScope;
+		}
+
+		if ($stmt->getDocComment() !== null) {
+			return $finalScope;
+		}
+
+		if (!$stmt->valueVar instanceof Variable || !is_string($stmt->valueVar->name)) {
+			return $finalScope;
+		}
+
+		if (!$stmt->keyVar instanceof Variable || !is_string($stmt->keyVar->name)) {
+			return $finalScope;
+		}
+
+		$iterateeType = $outerScope->getType($stmt->expr);
+		$nativeIterateeType = $outerScope->getNativeType($stmt->expr);
+		$constantArrays = $iterateeType->getConstantArrays();
+		$nativeConstantArrays = $nativeIterateeType->getConstantArrays();
+		if (
+			!$iterateeType->isConstantArray()->yes()
+			|| count($constantArrays) !== 1
+			|| !$iterateeType->isIterableAtLeastOnce()->yes()
+		) {
+			return $finalScope;
+		}
+
+		$constantArray = $constantArrays[0];
+		$nativeConstantArray = count($nativeConstantArrays) === 1 ? $nativeConstantArrays[0] : null;
+
+		$keyTypes = $constantArray->getKeyTypes();
+		if (count($keyTypes) === 0) {
+			return $finalScope;
+		}
+
+		// Process the loop body element-by-element with specific key/value types
+		$unrolledScope = $this->polluteScopeWithAlwaysIterableForeach ? $outerScope->filterByTruthyValue($arrayComparisonExpr) : $outerScope;
+		foreach ($keyTypes as $i => $keyType) {
+			$valueType = $constantArray->getValueTypes()[$i];
+			$nativeKeyType = $nativeConstantArray !== null ? $nativeConstantArray->getKeyTypes()[$i] : $keyType;
+			$nativeValueType = $nativeConstantArray !== null ? $nativeConstantArray->getValueTypes()[$i] : $valueType;
+
+			$elementScope = $unrolledScope->assignVariable(
+				$stmt->keyVar->name,
+				$keyType,
+				$nativeKeyType,
+				TrinaryLogic::createYes(),
+			);
+			$elementScope = $elementScope->assignVariable(
+				$stmt->valueVar->name,
+				$valueType,
+				$nativeValueType,
+				TrinaryLogic::createYes(),
+			);
+
+			$elementStorage = $originalStorage->duplicate();
+			$elementResult = $this->processStmtNodesInternal(
+				$stmt,
+				$stmt->stmts,
+				$elementScope,
+				$elementStorage,
+				new NoopNodeCallback(),
+				$context->enterDeep(),
+			)->filterOutLoopExitPoints();
+
+			if (count($elementResult->getExitPointsByType(Break_::class)) > 0) {
+				return $finalScope;
+			}
+
+			if ($elementResult->isAlwaysTerminating()) {
+				return $finalScope;
+			}
+
+			$unrolledScope = $elementResult->getScope();
+			foreach ($elementResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$unrolledScope = $continueExitPoint->getScope()->mergeWith($unrolledScope);
+			}
+		}
+
+		return $finalScope->refineTypesFromConstantArrayForeach($unrolledScope);
 	}
 
 	/**

@@ -3853,4 +3853,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13805.php'], []);
 	}
 
+	public function testBug9820(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-9820.php'], [
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				18,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				25,
+			],
+		]);
+	}
+
 }

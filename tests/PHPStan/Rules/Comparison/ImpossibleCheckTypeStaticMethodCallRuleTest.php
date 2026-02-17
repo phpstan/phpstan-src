@@ -161,6 +161,12 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10053(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-10053.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

@@ -49,6 +49,13 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 			return [];
 		}
 
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$isAlwaysPhpDoc = $this->impossibleCheckTypeHelper->treatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
+			if ($isAlwaysPhpDoc === null) {
+				return [];
+			}
+		}
+
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;

@@ -417,6 +417,20 @@ final class ImpossibleCheckTypeHelper
 		);
 	}
 
+	public function treatPhpDocTypesAsCertain(): self
+	{
+		if ($this->treatPhpDocTypesAsCertain) {
+			return $this;
+		}
+
+		return new self(
+			$this->reflectionProvider,
+			$this->typeSpecifier,
+			$this->universalObjectCratesClasses,
+			true,
+		);
+	}
+
 	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
 	{
 		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {

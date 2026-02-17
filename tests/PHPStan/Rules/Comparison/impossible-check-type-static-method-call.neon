@@ -7,3 +7,7 @@ services:
 		class: PHPStan\Type\PHPUnit\Assert\AssertStaticMethodTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension
+	-
+		class: PHPStan\Tests\Bug10053AllNotNullTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension

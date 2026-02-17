@@ -60,6 +60,7 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\PregReplaceCallbackArgVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Php\PhpVersions;
@@ -102,6 +103,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -177,6 +179,8 @@ use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
+use const PREG_OFFSET_CAPTURE;
+use const PREG_UNMATCHED_AS_NULL;
 
 class MutatingScope implements Scope, NodeCallbackInvoker
 {
@@ -5680,6 +5684,38 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {
 				$callableParameters[] = new DummyParameter('item', $this->getType($immediatelyInvokedArg->value), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+			}
+		} elseif ($node->getAttribute(PregReplaceCallbackArgVisitor::ATTRIBUTE_NAME) instanceof Node\Expr) {
+			$pregFlagsExpr = $node->getAttribute(PregReplaceCallbackArgVisitor::ATTRIBUTE_NAME);
+			$flagsType = $this->getType($pregFlagsExpr);
+			if ($flagsType instanceof ConstantIntegerType) {
+				$flags = $flagsType->getValue();
+				$offsetCapture = ($flags & PREG_OFFSET_CAPTURE) !== 0;
+				$unmatchedAsNull = ($flags & PREG_UNMATCHED_AS_NULL) !== 0;
+
+				$matchValueType = new StringType();
+				if ($unmatchedAsNull) {
+					$matchValueType = TypeCombinator::addNull($matchValueType);
+				}
+				if ($offsetCapture) {
+					$matchValueType = new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[$matchValueType, IntegerRangeType::fromInterval(-1, null)],
+						[2],
+						isList: TrinaryLogic::createYes(),
+					);
+				}
+
+				$callableParameters = [
+					new DummyParameter(
+						'matches',
+						new ArrayType(new UnionType([new IntegerType(), new StringType()]), $matchValueType),
+						false,
+						PassedByReference::createNo(),
+						false,
+						null,
+					),
+				];
 			}
 		} else {
 			$inFunctionCallsStackCount = count($this->inFunctionCallsStack);

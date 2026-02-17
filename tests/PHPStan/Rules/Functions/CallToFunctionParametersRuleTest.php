@@ -742,6 +742,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10396(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10396.php'], []);
+	}
+
 	public function testMbEregReplaceCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/mb_ereg_replace_callback.php'], [

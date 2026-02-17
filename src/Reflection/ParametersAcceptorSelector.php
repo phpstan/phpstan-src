@@ -17,6 +17,7 @@ use PHPStan\Parser\ClosureBindToVarVisitor;
 use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Parser\CurlSetOptArrayArgVisitor;
 use PHPStan\Parser\ImplodeArgVisitor;
+use PHPStan\Parser\PregReplaceCallbackArgVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
@@ -27,10 +28,12 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -59,6 +62,8 @@ use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 use const CURLOPT_SHARE;
 use const CURLOPT_SSL_VERIFYHOST;
+use const PREG_OFFSET_CAPTURE;
+use const PREG_UNMATCHED_AS_NULL;
 
 /**
  * @api
@@ -370,6 +375,82 @@ final class ParametersAcceptorSelector
 						),
 					];
 				}
+			}
+
+			foreach ([1, 0] as $pregArgIndex) {
+				if (!isset($args[$pregArgIndex])) {
+					continue;
+				}
+
+				$pregFlagsExpr = $args[$pregArgIndex]->getAttribute(PregReplaceCallbackArgVisitor::ATTRIBUTE_NAME);
+				if (!$pregFlagsExpr instanceof Node\Expr) {
+					continue;
+				}
+
+				$flagsType = $scope->getType($pregFlagsExpr);
+				if (!$flagsType instanceof ConstantIntegerType) {
+					break;
+				}
+
+				$flags = $flagsType->getValue();
+				$offsetCapture = ($flags & PREG_OFFSET_CAPTURE) !== 0;
+				$unmatchedAsNull = ($flags & PREG_UNMATCHED_AS_NULL) !== 0;
+
+				if (!$offsetCapture && !$unmatchedAsNull) {
+					break;
+				}
+
+				$matchValueType = new StringType();
+				if ($unmatchedAsNull) {
+					$matchValueType = TypeCombinator::addNull($matchValueType);
+				}
+				if ($offsetCapture) {
+					$matchValueType = new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[$matchValueType, IntegerRangeType::fromInterval(-1, null)],
+						[2],
+						isList: TrinaryLogic::createYes(),
+					);
+				}
+
+				$callbackParameter = new DummyParameter(
+					'matches',
+					new ArrayType(new UnionType([new IntegerType(), new StringType()]), $matchValueType),
+					optional: false,
+					passedByReference: PassedByReference::createNo(),
+					variadic: false,
+					defaultValue: null,
+				);
+				$callbackType = new CallableType([$callbackParameter], new StringType(), false);
+
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				if (isset($parameters[$pregArgIndex])) {
+					$pregReplaceCallbackIsArray = $pregArgIndex === 0;
+					$newParamType = $pregReplaceCallbackIsArray
+						? new ArrayType(new StringType(), $callbackType)
+						: $callbackType;
+					$parameters[$pregArgIndex] = new NativeParameterReflection(
+						$parameters[$pregArgIndex]->getName(),
+						$parameters[$pregArgIndex]->isOptional(),
+						$newParamType,
+						$parameters[$pregArgIndex]->passedByReference(),
+						$parameters[$pregArgIndex]->isVariadic(),
+						$parameters[$pregArgIndex]->getDefaultValue(),
+					);
+					$parametersAcceptors = [
+						new FunctionVariant(
+							$acceptor->getTemplateTypeMap(),
+							$acceptor->getResolvedTemplateTypeMap(),
+							$parameters,
+							$acceptor->isVariadic(),
+							$acceptor->getReturnType(),
+							$acceptor instanceof ExtendedParametersAcceptor ? $acceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+						),
+					];
+				}
+
+				break;
 			}
 
 			$closureBindToVar = $args[0]->getAttribute(ClosureBindToVarVisitor::ATTRIBUTE_NAME);

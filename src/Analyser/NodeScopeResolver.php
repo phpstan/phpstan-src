@@ -133,6 +133,7 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\PregReplaceCallbackArgVisitor;
 use PHPStan\Parser\ReversePipeTransformerVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -156,6 +157,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -229,6 +231,8 @@ use function strtolower;
 use function trim;
 use function usort;
 use const PHP_VERSION_ID;
+use const PREG_OFFSET_CAPTURE;
+use const PREG_UNMATCHED_AS_NULL;
 use const SORT_NUMERIC;
 
 #[AutowiredService]
@@ -5337,6 +5341,42 @@ class NodeScopeResolver
 				}
 
 				$callableParameters = $newParameters;
+			}
+		}
+
+		if ($callableParameters === null) {
+			$pregFlagsExpr = $closureExpr->getAttribute(PregReplaceCallbackArgVisitor::ATTRIBUTE_NAME);
+			if ($pregFlagsExpr instanceof Node\Expr) {
+				$flagsType = $scope->getType($pregFlagsExpr);
+				if ($flagsType instanceof ConstantIntegerType) {
+					$flags = $flagsType->getValue();
+					$offsetCapture = ($flags & PREG_OFFSET_CAPTURE) !== 0;
+					$unmatchedAsNull = ($flags & PREG_UNMATCHED_AS_NULL) !== 0;
+
+					$matchValueType = new StringType();
+					if ($unmatchedAsNull) {
+						$matchValueType = TypeCombinator::addNull($matchValueType);
+					}
+					if ($offsetCapture) {
+						$matchValueType = new ConstantArrayType(
+							[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+							[$matchValueType, IntegerRangeType::fromInterval(-1, null)],
+							[2],
+							isList: TrinaryLogic::createYes(),
+						);
+					}
+
+					$callableParameters = [
+						new NativeParameterReflection(
+							'matches',
+							false,
+							new ArrayType(new UnionType([new IntegerType(), new StringType()]), $matchValueType),
+							PassedByReference::createNo(),
+							false,
+							null,
+						),
+					];
+				}
 			}
 		}
 

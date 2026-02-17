@@ -89,6 +89,12 @@ final class FunctionCallParametersCheck
 		string $namedArgumentMessage,
 	): array
 	{
+		if ($funcCall instanceof Node\Expr\FuncCall || $funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall) {
+			$funcCallLine = $funcCall->name->getStartLine();
+		} else {
+			$funcCallLine = $funcCall->getStartLine();
+		}
+
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
@@ -225,7 +231,7 @@ final class FunctionCallParametersCheck
 		if ($hasNamedArguments && !$scope->getPhpVersion()->supportsNamedArguments()->yes() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')
 				->identifier('argument.namedNotSupported')
-				->line($funcCall->getStartLine())
+				->line($funcCallLine)
 				->nonIgnorable()
 				->build();
 		}
@@ -250,7 +256,7 @@ final class FunctionCallParametersCheck
 						$functionParametersMinCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getStartLine())
+						->line($funcCallLine)
 						->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -259,7 +265,7 @@ final class FunctionCallParametersCheck
 						$functionParametersMinCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getStartLine())
+						->line($funcCallLine)
 						->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -269,7 +275,7 @@ final class FunctionCallParametersCheck
 						$functionParametersMaxCount,
 					))
 						->identifier('arguments.count')
-						->line($funcCall->getStartLine())
+						->line($funcCallLine)
 						->build();
 				}
 			}
@@ -282,11 +288,11 @@ final class FunctionCallParametersCheck
 		) {
 			$errors[] = RuleErrorBuilder::message($voidReturnTypeUsed)
 				->identifier(sprintf('%s.void', $nodeType))
-				->line($funcCall->getStartLine())
+				->line($funcCallLine)
 				->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCall->getStartLine(), $isBuiltin, $arguments, $hasNamedArguments, $missingParameterMessage, $unknownParameterMessage);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCallLine, $isBuiltin, $arguments, $hasNamedArguments, $missingParameterMessage, $unknownParameterMessage);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -528,7 +534,7 @@ final class FunctionCallParametersCheck
 
 					$errors[] = RuleErrorBuilder::message(sprintf($unresolvableTemplateTypeMessage, $name))
 						->identifier('argument.templateType')
-						->line($funcCall->getStartLine())
+						->line($funcCallLine)
 						->tip('See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type')
 						->build();
 				}
@@ -540,7 +546,7 @@ final class FunctionCallParametersCheck
 			) {
 				$errors[] = RuleErrorBuilder::message($unresolvableReturnTypeMessage)
 					->identifier(sprintf('%s.unresolvableReturnType', $nodeType))
-					->line($funcCall->getStartLine())
+					->line($funcCallLine)
 					->build();
 			}
 		}

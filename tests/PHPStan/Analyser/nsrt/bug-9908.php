@@ -41,4 +41,17 @@ class HelloWorld
 
 		$this->sayHello($a);
 	}
+
+	/**
+	 * @param array{a: string, b: string}|array{a: string|null, c: string}|array{a?: string, d: string} $a
+	 */
+	public function moreTests($a): void
+	{
+		if (isset($a['a'])) {
+			assertType("array{a: string, b: string}|array{a: string, c: string}|array{a: string, d: string}", $a);
+		} else {
+			// Could be "array{a: null, c: string}|array{d: string}"
+			assertType("array{a: string|null, c: string}|array{a?: string, d: string}", $a);
+		}
+	}
 }

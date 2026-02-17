@@ -81,11 +81,11 @@ final class OversizedArrayBuilder
 				$nextAutoIndex++;
 			}
 
-			$generalizedKeyType = $itemKeyType->generalize(GeneralizePrecision::moreSpecific());
+			$generalizedKeyType = $itemKeyType->generalize(GeneralizePrecision::lessSpecific());
 			$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
 			$itemValueType = $getTypeCallback($item->value);
-			$generalizedValueType = $itemValueType->generalize(GeneralizePrecision::moreSpecific());
+			$generalizedValueType = $itemValueType->generalize(GeneralizePrecision::lessSpecific());
 			$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 		}
 

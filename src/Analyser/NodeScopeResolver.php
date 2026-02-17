@@ -4207,35 +4207,59 @@ class NodeScopeResolver
 							continue;
 						}
 
-						$condNodes = [];
-						$conditionCases = [];
-						$conditionExprs = [];
+						// First pass: validate all conditions are enum case references
+						$validatedConds = [];
+						$allCondsValid = true;
 						foreach ($arm->conds as $j => $cond) {
 							if (!$cond instanceof Expr\ClassConstFetch) {
-								continue 2;
+								$allCondsValid = false;
+								break;
 							}
 							if (!$cond->class instanceof Name) {
-								continue 2;
+								$allCondsValid = false;
+								break;
 							}
 							if (!$cond->name instanceof Node\Identifier) {
-								continue 2;
+								$allCondsValid = false;
+								break;
 							}
 							$fetchedClassName = $scope->resolveName($cond->class);
 							$loweredFetchedClassName = strtolower($fetchedClassName);
 							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-								continue 2;
+								$allCondsValid = false;
+								break;
 							}
+							$caseName = $cond->name->toString();
+							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+								$allCondsValid = false;
+								break;
+							}
+							$validatedConds[$j] = [
+								'cond' => $cond,
+								'loweredFetchedClassName' => $loweredFetchedClassName,
+								'caseName' => $caseName,
+								'enumCase' => $indexedEnumCases[$loweredFetchedClassName][$caseName],
+							];
+						}
+
+						if (!$allCondsValid) {
+							continue;
+						}
+
+						$condNodes = [];
+						$conditionCases = [];
+						$conditionExprs = [];
+						// Second pass: process validated conditions with side effects
+						foreach ($validatedConds as $j => $validatedCond) {
+							$cond = $validatedCond['cond'];
+							$loweredFetchedClassName = $validatedCond['loweredFetchedClassName'];
+							$caseName = $validatedCond['caseName'];
+							$enumCase = $validatedCond['enumCase'];
 
 							if (!array_key_exists($loweredFetchedClassName, $unusedIndexedEnumCases)) {
 								throw new ShouldNotHappenException();
 							}
 
-							$caseName = $cond->name->toString();
-							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								continue 2;
-							}
-
-							$enumCase = $indexedEnumCases[$loweredFetchedClassName][$caseName];
 							$conditionCases[] = $enumCase;
 							$armConditionScope = $matchScope;
 							if (!array_key_exists($caseName, $unusedIndexedEnumCases[$loweredFetchedClassName])) {

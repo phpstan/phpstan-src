@@ -2987,7 +2987,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $result;
 	}
 
-	public function enterMatch(Expr\Match_ $expr): self
+	public function enterMatch(Expr\Match_ $expr, ?Type $condType = null, ?Type $condNativeType = null): self
 	{
 		if ($expr->cond instanceof Variable) {
 			return $this;
@@ -3001,8 +3001,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this;
 		}
 
-		$type = $this->getType($cond);
-		$nativeType = $this->getNativeType($cond);
+		$type = $condType ?? $this->getType($cond);
+		$nativeType = $condNativeType ?? $this->getNativeType($cond);
 		$condExpr = new AlwaysRememberedExpr($cond, $type, $nativeType);
 		$expr->cond = $condExpr;
 

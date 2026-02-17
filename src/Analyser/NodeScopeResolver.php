@@ -1826,9 +1826,6 @@ class NodeScopeResolver
 						$scopeForBranches = $scopeForBranches->filterByFalseyValue($fullCondExpr);
 						$fullCondExpr = null;
 					}
-					if (!$branchFinalScopeResult->isAlwaysTerminating()) {
-						$finalScope = $branchScope->mergeWith($finalScope);
-					}
 				} else {
 					$prevScope = $branchScope;
 				}

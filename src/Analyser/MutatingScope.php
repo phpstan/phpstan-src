@@ -6390,14 +6390,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$node,
 			);
 			if ($callType === null) {
+				$callType = new ErrorType();
 				if (
 					!$node->class instanceof Name
 					&& count($staticMethodCalledOnType->getObjectClassNames()) === 0
-					&& !$staticMethodCalledOnType->hasMethod($node->name->toString())->no()
+					&& $staticMethodCalledOnType->hasMethod($node->name->toString()) !== TrinaryLogic::createNo()
 				) {
 					$callType = new MixedType();
-				} else {
-					$callType = new ErrorType();
 				}
 			}
 

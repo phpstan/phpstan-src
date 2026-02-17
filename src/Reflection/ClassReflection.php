@@ -1376,6 +1376,13 @@ final class ClassReflection
 
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
+				// Return only local type aliases to break the cycle.
+				// Imported aliases are not available yet, but local ones
+				// don't depend on other classes and can be returned safely.
+				$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
+				if ($localAliases !== []) {
+					return $localAliases;
+				}
 				throw new CircularTypeAliasDefinitionException();
 			}
 

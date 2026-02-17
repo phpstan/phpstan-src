@@ -6366,13 +6366,8 @@ class NodeScopeResolver
 				$declaringClass = $propertyReflection->getDeclaringClass();
 				if ($declaringClass->hasNativeProperty($propertyName)) {
 					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
-					$propertyNativeType = $nativeProperty->getNativeType();
-					// Widen property type to accept int for float properties (PHP allows int-to-float coercion without TypeError)
-					$propertyNativeTypeForAccepts = !$propertyNativeType->isFloat()->no()
-						? TypeCombinator::union($propertyNativeType, new IntegerType())
-						: $propertyNativeType;
 					if (
-						!$propertyNativeTypeForAccepts->isSuperTypeOf($assignedExprType)->yes()
+						!$nativeProperty->getNativeType()->toCoercedPropertyType()->isSuperTypeOf($assignedExprType)->yes()
 					) {
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}

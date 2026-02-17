@@ -636,6 +636,11 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

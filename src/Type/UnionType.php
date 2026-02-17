@@ -1066,6 +1066,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->toCoercedArgumentType($strictTypes));
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toCoercedPropertyType());
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		$types = TemplateTypeMap::createEmpty();

@@ -345,6 +345,13 @@ interface Type
 	 */
 	public function toCoercedArgumentType(bool $strictTypes): self;
 
+	/**
+	 * Widens this property type to include types that PHP will accept
+	 * via implicit coercion during property assignment (e.g. float
+	 * properties also accept int).
+	 */
+	public function toCoercedPropertyType(): self;
+
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic;

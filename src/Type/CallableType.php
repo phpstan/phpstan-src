@@ -441,6 +441,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		);
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;

@@ -228,6 +228,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -745,6 +745,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->toCoercedArgumentType($strictTypes);
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this->getStaticObjectType()->toCoercedPropertyType();
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		return $this->getStaticObjectType()->toBoolean();

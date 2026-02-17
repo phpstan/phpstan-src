@@ -534,6 +534,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return TypeCombinator::union($this, new CallableType());
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;

@@ -419,6 +419,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toCoercedArgumentType($strictTypes);
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this->resolve()->toCoercedPropertyType();
+	}
+
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return $this->resolve()->isSmallerThan($otherType, $phpVersion);

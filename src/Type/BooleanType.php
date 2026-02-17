@@ -119,6 +119,11 @@ class BooleanType implements Type
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

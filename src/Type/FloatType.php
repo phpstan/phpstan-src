@@ -151,6 +151,11 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return TypeCombinator::union($this, new IntegerType());
+	}
+
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

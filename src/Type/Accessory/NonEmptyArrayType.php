@@ -469,6 +469,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

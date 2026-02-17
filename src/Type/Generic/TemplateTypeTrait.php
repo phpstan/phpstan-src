@@ -263,6 +263,11 @@ trait TemplateTypeTrait
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if (

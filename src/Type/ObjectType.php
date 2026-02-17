@@ -905,6 +905,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		if (

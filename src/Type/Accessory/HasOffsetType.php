@@ -405,6 +405,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function getEnumCases(): array
 	{
 		return [];

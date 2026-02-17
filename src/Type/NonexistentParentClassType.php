@@ -193,6 +193,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

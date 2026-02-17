@@ -106,6 +106,11 @@ class IntegerType implements Type
 		return TypeCombinator::union($this, $this->toFloat());
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

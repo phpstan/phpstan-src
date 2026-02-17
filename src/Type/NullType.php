@@ -179,6 +179,11 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

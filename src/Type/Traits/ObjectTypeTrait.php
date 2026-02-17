@@ -324,4 +324,9 @@ trait ObjectTypeTrait
 		return $this;
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 }

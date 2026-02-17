@@ -102,6 +102,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return TypeCombinator::union($this, $this->toFloat());
 	}
 
+	public function toCoercedPropertyType(): Type
+	{
+		return $this;
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new IntegerType();

@@ -119,6 +119,16 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11317(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11317.php'], [
+			[
+				'Call to function array_map() on a separate line has no effect.',
+				12,
+			],
+		]);
+	}
+
 	public function testBug11101(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11101.php'], [

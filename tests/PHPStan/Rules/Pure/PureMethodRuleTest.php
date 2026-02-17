@@ -279,6 +279,12 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11100(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11100.php'], []);
+	}
+
 	public function testBug12382(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

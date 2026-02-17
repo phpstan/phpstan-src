@@ -1522,10 +1522,10 @@ class NodeScopeResolver
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
-			$this->callNodeCallback($nodeCallback, new BreaklessWhileLoopNode($stmt, $finalScopeResult->toPublic()->getExitPoints()), $bodyScopeMaybeRan, $storage);
+			$this->callNodeCallback($nodeCallback, new BreaklessWhileLoopNode($stmt, $finalScopeResult->toPublic()->getExitPoints(), $finalScopeResult->hasYield()), $bodyScopeMaybeRan, $storage);
 
 			if ($alwaysIterates) {
-				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0 && !$finalScopeResult->hasYield();
 			} elseif ($isIterableAtLeastOnce) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {
@@ -1604,10 +1604,10 @@ class NodeScopeResolver
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 			}
 
-			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints()), $bodyScope, $storage);
+			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints(), $bodyScopeResult->hasYield()), $bodyScope, $storage);
 
 			if ($alwaysIterates) {
-				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0 && !$bodyScopeResult->hasYield();
 			} else {
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 			}
@@ -1760,7 +1760,7 @@ class NodeScopeResolver
 			}
 
 			if ($alwaysIterates->yes()) {
-				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0 && !$finalScopeResult->hasYield();
 			} elseif ($isIterableAtLeastOnce->yes()) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {

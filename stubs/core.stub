@@ -53,6 +53,11 @@ function sodium_bin2base64(string $string, int $id): string {}
 function sodium_bin2hex(string $string): string {}
 
 /**
+ * @return non-empty-string
+ */
+function sodium_crypto_secretbox_keygen(): string {}
+
+/**
  * @return ($string is non-empty-string ? non-empty-string : string)
  */
 function base64_encode(string $string) : string {}

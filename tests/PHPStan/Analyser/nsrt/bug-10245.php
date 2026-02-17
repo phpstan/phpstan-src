@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1); // lint >= 8.0
 
-namespace Bug10245;
+namespace NsrtBug10245;
 
 use function PHPStan\Testing\assertType;
 

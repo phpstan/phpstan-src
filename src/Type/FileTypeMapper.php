@@ -541,7 +541,7 @@ final class FileTypeMapper
 							&& !$node instanceof Node\Stmt\InlineHTML
 							&& !($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Include_)
 						)
-					) && !array_key_exists($nameScopeKey, $nameScopeMap)
+					)
 				) {
 					$parentNameScope = array_last($typeMapStack) ?? null;
 					$typeAliasesMap = array_last($typeAliasStack) ?? [];

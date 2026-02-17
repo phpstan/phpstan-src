@@ -1642,6 +1642,12 @@ parameters:
 			path: src/Type/Php/ReflectionMethodConstructorThrowTypeExtension.php
 
 		-
+			rawMessage: 'Method PHPStan\Type\Php\ReflectionMethodInvokeMethodThrowTypeExtension::getThrowTypeFromMethodCall() never returns null so it can be removed from the return type.'
+			identifier: return.unusedType
+			count: 1
+			path: src/Type/Php/ReflectionMethodInvokeMethodThrowTypeExtension.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1

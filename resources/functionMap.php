@@ -8819,6 +8819,7 @@ return [
 'RedisArray::_hosts' => ['array'],
 'RedisArray::_rehash' => ['', 'callable='=>'callable'],
 'RedisArray::_target' => ['string', 'key'=>'string'],
+'RedisArray::keys' => ['array<string, array<int, string>>|false', 'pattern'=>'string'],
 'RedisCluster::__construct' => ['void', 'name'=>'string|null', 'seeds='=>'string[]|null', 'timeout='=>'int|float', 'read_timeout='=>'int|float', 'persistent='=>'bool', 'auth='=>'mixed', 'context='=>'array|null'],
 'RedisCluster::_prefix' => ['string', 'value'=>'mixed'],
 'RedisCluster::_serialize' => ['mixed', 'value'=>'mixed'],

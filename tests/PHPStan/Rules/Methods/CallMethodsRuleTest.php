@@ -3861,11 +3861,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9820.php'], [
 			[
 				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
-				18,
+				20,
 			],
 			[
 				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
-				25,
+				27,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				33,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				40,
 			],
 		]);
 	}

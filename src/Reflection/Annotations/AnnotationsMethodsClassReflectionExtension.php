@@ -46,7 +46,10 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 	): ?ExtendedMethodReflection
 	{
 		$methodTags = $classReflection->getMethodTags();
-		if (isset($methodTags[$methodName])) {
+		if (
+			isset($methodTags[$methodName])
+			&& (!$classReflection->isTrait() || !$classReflection->getNativeReflection()->hasMethod($methodName))
+		) {
 			$parameters = [];
 			foreach ($methodTags[$methodName]->getParameters() as $parameterName => $parameterTag) {
 				$parameters[] = new AnnotationsMethodParameterReflection(

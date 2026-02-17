@@ -4176,13 +4176,14 @@ class NodeScopeResolver
 		} elseif ($expr instanceof Expr\Match_) {
 			$deepContext = $context->enterDeep();
 			$condType = $scope->getType($expr->cond);
+			$condNativeType = $scope->getNativeType($expr->cond);
 			$condResult = $this->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
 			$scope = $condResult->getScope();
 			$hasYield = $condResult->hasYield();
 			$throwPoints = $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
 			$isAlwaysTerminating = $condResult->isAlwaysTerminating();
-			$matchScope = $scope->enterMatch($expr);
+			$matchScope = $scope->enterMatch($expr, $condType, $condNativeType);
 			$armNodes = [];
 			$hasDefaultCond = false;
 			$hasAlwaysTrueCond = false;

@@ -446,4 +446,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug11310(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11310.php'], [
+			[
+				'Match arm comparison between int<1, max> and 0 is always false.',
+				24,
+			],
+		]);
+	}
+
 }

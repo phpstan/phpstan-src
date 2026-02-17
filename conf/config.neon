@@ -125,6 +125,7 @@ parameters:
 		- ../stubs/Redis.stub
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClassConstant.stub
+		- ../stubs/ReflectionFunction.stub
 		- ../stubs/ReflectionFunctionAbstract.stub
 		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub

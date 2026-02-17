@@ -1,0 +1,16 @@
+<?php
+
+class ReflectionFunction
+{
+
+	/**
+	 * @throws \Throwable
+	 */
+	public function invoke(mixed ...$args): mixed {}
+
+	/**
+	 * @throws \Throwable
+	 */
+	public function invokeArgs(array $args): mixed {}
+
+}

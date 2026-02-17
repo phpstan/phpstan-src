@@ -13,4 +13,14 @@ class ReflectionMethod
 	 */
 	public $name;
 
+	/**
+	 * @throws \Throwable
+	 */
+	public function invoke(?object $object, mixed ...$args): mixed {}
+
+	/**
+	 * @throws \Throwable
+	 */
+	public function invokeArgs(?object $object, array $args): mixed {}
+
 }

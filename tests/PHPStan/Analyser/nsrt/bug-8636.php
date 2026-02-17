@@ -269,12 +269,13 @@ class Config
 
 	public function testAccess(): void
 	{
-		// The oversized array type should use lessSpecific generalization
-		// so string keys and values generalize to 'string' not 'literal-string&...'
-		assertType('non-empty-array<string, string>&oversized-array', self::HUGE);
+		// The oversized array type should use lessSpecific generalization for keys
+		// so string keys generalize to 'string' not 'literal-string&...'
+		// Value types use moreSpecific generalization to preserve detail
+		assertType('non-empty-array<string, literal-string&lowercase-string&non-falsy-string>&oversized-array', self::HUGE);
 
-		// Accessing a specific key should still return string
-		assertType('string', self::HUGE['item_0']);
+		// Accessing a specific key should return the moreSpecific generalized value type
+		assertType('literal-string&lowercase-string&non-falsy-string', self::HUGE['item_0']);
 	}
 }
 
@@ -544,9 +545,9 @@ class MixedConfig
 	public function testMixedAccess(): void
 	{
 		// With int keys and mixed values, accessing by key should return general value type
-		assertType('(int|string)', self::HUGE_MIXED[0]);
+		assertType('(int|(literal-string&lowercase-string&non-falsy-string))', self::HUGE_MIXED[0]);
 
 		// Whole array type
-		assertType('non-empty-list<int|string>&oversized-array', self::HUGE_MIXED);
+		assertType('non-empty-list<int|(literal-string&lowercase-string&non-falsy-string)>&oversized-array', self::HUGE_MIXED);
 	}
 }

@@ -85,7 +85,7 @@ final class OversizedArrayBuilder
 			$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
 			$itemValueType = $getTypeCallback($item->value);
-			$generalizedValueType = $itemValueType->generalize(GeneralizePrecision::lessSpecific());
+			$generalizedValueType = $itemValueType->generalize(GeneralizePrecision::moreSpecific());
 			$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 		}
 

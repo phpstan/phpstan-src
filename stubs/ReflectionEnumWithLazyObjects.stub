@@ -24,6 +24,9 @@ class ReflectionEnum extends ReflectionClass
 	 */
 	public function isBacked(): bool {}
 
+	/**
+	 * @return (T is BackedEnum ? ReflectionNamedType : null)
+	 */
 	public function getBackingType(): ?ReflectionNamedType {}
 
 }

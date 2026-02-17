@@ -16,7 +16,7 @@ enum Foo: int
 
 function testNarrowGetBackingTypeAfterIsBacked() {
 	$r = new ReflectionEnum(Foo::class);
-	assertType('ReflectionNamedType|null', $r->getBackingType());
+	assertType('ReflectionNamedType', $r->getBackingType());
 	if ($r->isBacked()) {
 		assertType('ReflectionNamedType', $r->getBackingType());
 	}

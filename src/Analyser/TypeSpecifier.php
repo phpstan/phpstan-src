@@ -45,6 +45,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -56,6 +57,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -80,6 +82,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -1486,6 +1489,105 @@ final class TypeSpecifier
 		return $this->getConditionalSpecifiedTypes($returnType, $leftType, $rightType, $scope, $argsMap);
 	}
 
+	private function specifyTypesFromConditionalReturnTypeForComparison(
+		TypeSpecifierContext $context,
+		Expr\CallLike $call,
+		Type $comparedType,
+		Scope $scope,
+	): ?SpecifiedTypes
+	{
+		if (!$call instanceof MethodCall || !$call->name instanceof Node\Identifier) {
+			return null;
+		}
+
+		$methodCalledOnType = $scope->getType($call->var);
+		$methodReflection = $scope->getMethodReflection($methodCalledOnType, $call->name->name);
+		if ($methodReflection === null) {
+			return null;
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$call->getArgs(),
+			$methodReflection->getVariants(),
+			$methodReflection->getNamedArgumentsVariants(),
+		);
+
+		if (!$parametersAcceptor instanceof ResolvedFunctionVariant) {
+			return null;
+		}
+
+		$returnType = $parametersAcceptor->getOriginalParametersAcceptor()->getReturnType();
+		if (!$returnType instanceof ConditionalType) {
+			return null;
+		}
+
+		$subject = $returnType->getSubject();
+		if (!$subject instanceof TemplateType || $subject->getScope()->getClassName() === null) {
+			return null;
+		}
+
+		$ifType = $returnType->getIf();
+		$elseType = $returnType->getElse();
+		$targetType = $returnType->getTarget();
+		$negated = $returnType->isNegated();
+
+		// Determine which branch of the conditional the compared-to type matches
+		$matchesIfBranch = $comparedType->isSuperTypeOf($ifType)->yes() && !$comparedType->isSuperTypeOf($elseType)->yes();
+		$matchesElseBranch = $comparedType->isSuperTypeOf($elseType)->yes() && !$comparedType->isSuperTypeOf($ifType)->yes();
+
+		if (!$matchesIfBranch && !$matchesElseBranch) {
+			return null;
+		}
+
+		// When context is true, the comparison === matches, so the actual value matches the compared type
+		// When context is false, the comparison === doesn't match, so the actual value is in the OTHER branch
+		$actualValueMatchesIfBranch = $matchesIfBranch ? $context->true() : $context->false();
+
+		// If the actual value matches the if-branch, the condition "subject is target" holds (or doesn't, if negated)
+		$conditionHolds = $actualValueMatchesIfBranch ? !$negated : $negated;
+
+		$classReflections = $methodCalledOnType->getObjectClassReflections();
+		if (count($classReflections) !== 1) {
+			return null;
+		}
+
+		$classReflection = $classReflections[0];
+		$templateName = $subject->getName();
+		$templateTypeMap = $classReflection->getTemplateTypeMap();
+
+		if ($templateTypeMap->getType($templateName) === null) {
+			return null;
+		}
+
+		$templateTypes = $templateTypeMap->getTypes();
+		$templateNames = array_keys($templateTypes);
+		$newTypeArgs = [];
+		foreach ($templateNames as $name) {
+			$resolvedType = $parametersAcceptor->getResolvedTemplateTypeMap()->getType($name);
+			$baseType = $resolvedType ?? $templateTypes[$name];
+
+			if ($name === $templateName) {
+				if ($conditionHolds) {
+					$newTypeArgs[] = TypeCombinator::intersect($baseType, $targetType);
+				} else {
+					$newTypeArgs[] = TypeCombinator::remove($baseType, $targetType);
+				}
+			} else {
+				$newTypeArgs[] = $baseType;
+			}
+		}
+
+		$narrowedCallerType = new GenericObjectType($classReflection->getName(), $newTypeArgs);
+
+		return $this->create(
+			$call->var,
+			$narrowedCallerType,
+			TypeSpecifierContext::createTrue(),
+			$scope,
+		);
+	}
+
 	/**
 	 * @param array<string, Expr> $argsMap
 	 */
@@ -2688,6 +2790,23 @@ final class TypeSpecifier
 			}
 		}
 
+		// Narrow caller's type from conditional return types when comparing a method call to a constant
+		$conditionalReturnTypeNarrowedTypes = null;
+		foreach ([[$unwrappedLeftExpr, $rightType], [$unwrappedRightExpr, $leftType]] as [$callExpr, $comparedToType]) {
+			if (!$callExpr instanceof MethodCall) {
+				continue;
+			}
+
+			$conditionalTypes = $this->specifyTypesFromConditionalReturnTypeForComparison($context, $callExpr, $comparedToType, $scope);
+			if ($conditionalTypes === null) {
+				continue;
+			}
+
+			$conditionalReturnTypeNarrowedTypes = $conditionalReturnTypeNarrowedTypes !== null
+				? $conditionalReturnTypeNarrowedTypes->unionWith($conditionalTypes)
+				: $conditionalTypes;
+		}
+
 		$types = null;
 		if (
 			count($leftType->getFiniteTypes()) === 1
@@ -2743,6 +2862,9 @@ final class TypeSpecifier
 		}
 
 		if ($types !== null) {
+			if ($conditionalReturnTypeNarrowedTypes !== null) {
+				$types = $types->unionWith($conditionalReturnTypeNarrowedTypes);
+			}
 			return $types;
 		}
 
@@ -2750,7 +2872,11 @@ final class TypeSpecifier
 		$rightExprString = $this->exprPrinter->printExpr($unwrappedRightExpr);
 		if ($leftExprString === $rightExprString) {
 			if (!$unwrappedLeftExpr instanceof Expr\Variable || !$unwrappedRightExpr instanceof Expr\Variable) {
-				return (new SpecifiedTypes([], []))->setRootExpr($expr);
+				$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
+				if ($conditionalReturnTypeNarrowedTypes !== null) {
+					$result = $result->unionWith($conditionalReturnTypeNarrowedTypes);
+				}
+				return $result;
 			}
 		}
 
@@ -2767,13 +2893,25 @@ final class TypeSpecifier
 					$this->create($unwrappedRightExpr, $leftType, $context, $scope)->setRootExpr($expr),
 				);
 			}
-			return $leftTypes->unionWith($rightTypes);
+			$result = $leftTypes->unionWith($rightTypes);
+			if ($conditionalReturnTypeNarrowedTypes !== null) {
+				$result = $result->unionWith($conditionalReturnTypeNarrowedTypes);
+			}
+			return $result;
 		} elseif ($context->false()) {
-			return $this->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)->normalize($scope)
+			$result = $this->create($leftExpr, $leftType, $context, $scope)->setRootExpr($expr)->normalize($scope)
 				->intersectWith($this->create($rightExpr, $rightType, $context, $scope)->setRootExpr($expr)->normalize($scope));
+			if ($conditionalReturnTypeNarrowedTypes !== null) {
+				$result = $result->unionWith($conditionalReturnTypeNarrowedTypes);
+			}
+			return $result;
 		}
 
-		return (new SpecifiedTypes([], []))->setRootExpr($expr);
+		$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
+		if ($conditionalReturnTypeNarrowedTypes !== null) {
+			$result = $result->unionWith($conditionalReturnTypeNarrowedTypes);
+		}
+		return $result;
 	}
 
 }

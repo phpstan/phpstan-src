@@ -234,4 +234,10 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/inc-non-numeric-string.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBcMathNumber(): void
+	{
+		$this->analyse([__DIR__ . '/data/inc-dec-bcmath-number.php'], []);
+	}
+
 }

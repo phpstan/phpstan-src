@@ -6711,7 +6711,18 @@ class NodeScopeResolver
 				}
 
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				$shouldUnionValues = $i === 0;
+				if (
+					!$shouldUnionValues
+					&& $offsetType !== null
+					&& count($offsetType->getConstantScalarTypes()) === 0
+					&& $offsetValueType->isArray()->yes()
+					&& $offsetValueType->getIterableValueType()->isIterableAtLeastOnce()->yes()
+					&& !$offsetValueType->getIterableValueType()->isSuperTypeOf($valueToWrite)->yes()
+				) {
+					$shouldUnionValues = true;
+				}
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $shouldUnionValues);
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {

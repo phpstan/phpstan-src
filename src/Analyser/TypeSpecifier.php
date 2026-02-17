@@ -45,6 +45,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -56,6 +57,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -80,6 +82,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -1486,6 +1489,138 @@ final class TypeSpecifier
 		return $this->getConditionalSpecifiedTypes($returnType, $leftType, $rightType, $scope, $argsMap);
 	}
 
+	private function specifyTypesFromConditionalReturnTypeForComparison(
+		TypeSpecifierContext $context,
+		Expr\CallLike $call,
+		Type $comparedType,
+		Scope $scope,
+	): ?SpecifiedTypes
+	{
+		if (!$call instanceof MethodCall || !$call->name instanceof Node\Identifier) {
+			return null;
+		}
+
+		$methodCalledOnType = $scope->getType($call->var);
+		$methodReflection = $scope->getMethodReflection($methodCalledOnType, $call->name->name);
+		if ($methodReflection === null) {
+			return null;
+		}
+
+		$variants = $methodReflection->getVariants();
+		if (count($variants) !== 1) {
+			return null;
+		}
+
+		$variant = $variants[0];
+
+		// Find the ConditionalType in the return type (before late-resolution)
+		$conditionalReturnType = $this->findConditionalReturnType($variant);
+		if ($conditionalReturnType === null) {
+			return null;
+		}
+
+		$subject = $conditionalReturnType->getSubject();
+		if (!$subject instanceof TemplateType) {
+			return null;
+		}
+
+		$target = $conditionalReturnType->getTarget();
+		$ifType = $conditionalReturnType->getIf();
+		$elseType = $conditionalReturnType->getElse();
+		$negated = $conditionalReturnType->isNegated();
+
+		// Determine which branch matches the compared value
+		if ($context->true()) {
+			$matchesIf = $comparedType->isSuperTypeOf($ifType)->yes();
+			$matchesElse = $comparedType->isSuperTypeOf($elseType)->yes();
+		} elseif ($context->false()) {
+			$matchesIf = $comparedType->isSuperTypeOf($elseType)->yes();
+			$matchesElse = $comparedType->isSuperTypeOf($ifType)->yes();
+		} else {
+			return null;
+		}
+
+		if ($matchesIf === $matchesElse) {
+			return null;
+		}
+
+		// Build the narrowed type for the caller by replacing the template type
+		// For example: ReflectionEnum<UnitEnum> → ReflectionEnum<BackedEnum>
+		$className = $subject->getScope()->getClassName();
+		if ($className === null) {
+			return null;
+		}
+
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return null;
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($className);
+		$templateTypeMap = $classReflection->getTemplateTypeMap();
+		$templateTypes = $templateTypeMap->getTypes();
+		$templateName = $subject->getName();
+
+		if (!array_key_exists($templateName, $templateTypes)) {
+			return null;
+		}
+
+		// Get current template arguments from the caller's type
+		$callerClassReflections = $methodCalledOnType->getObjectClassReflections();
+		if (count($callerClassReflections) !== 1) {
+			return null;
+		}
+
+		$callerClassReflection = $callerClassReflections[0];
+		$activeTemplateTypeMap = $callerClassReflection->getActiveTemplateTypeMap();
+		$currentTemplateType = $activeTemplateTypeMap->getType($templateName);
+		if ($currentTemplateType === null) {
+			return null;
+		}
+
+		// Construct the narrowed template type
+		if ($matchesIf) {
+			// The "if" branch matches → subject IS target
+			$narrowedTemplateType = $negated
+				? TypeCombinator::remove($currentTemplateType, $target)
+				: TypeCombinator::intersect($currentTemplateType, $target);
+		} else {
+			// The "else" branch matches → subject IS NOT target
+			$narrowedTemplateType = $negated
+				? TypeCombinator::intersect($currentTemplateType, $target)
+				: TypeCombinator::remove($currentTemplateType, $target);
+		}
+
+		// Build the new template type arguments
+		$newTemplateArgs = [];
+		foreach (array_keys($templateTypes) as $name) {
+			if ($name === $templateName) {
+				$newTemplateArgs[] = $narrowedTemplateType;
+			} else {
+				$existingType = $activeTemplateTypeMap->getType($name);
+				$newTemplateArgs[] = $existingType ?? new MixedType();
+			}
+		}
+
+		$narrowedCallerType = new GenericObjectType($className, $newTemplateArgs);
+
+		return $this->create($call->var, $narrowedCallerType, TypeSpecifierContext::createTrue(), $scope);
+	}
+
+	private function findConditionalReturnType(ParametersAcceptor $variant): ?ConditionalType
+	{
+		$returnType = $variant->getReturnType();
+
+		if ($returnType instanceof ConditionalType) {
+			return $returnType;
+		}
+
+		if ($variant instanceof ResolvedFunctionVariant) {
+			return $this->findConditionalReturnType($variant->getOriginalParametersAcceptor());
+		}
+
+		return null;
+	}
+
 	/**
 	 * @param array<string, Expr> $argsMap
 	 */
@@ -2740,6 +2875,20 @@ final class TypeSpecifier
 			} else {
 				$types = $leftTypes;
 			}
+		}
+
+		// Narrow parameters from conditional return types when comparing a method/function call to a constant
+		foreach ([[$unwrappedLeftExpr, $rightType], [$unwrappedRightExpr, $leftType]] as [$callExpr, $comparedType]) {
+			if (!$callExpr instanceof MethodCall && !$callExpr instanceof StaticCall && !$callExpr instanceof FuncCall) {
+				continue;
+			}
+
+			$conditionalTypes = $this->specifyTypesFromConditionalReturnTypeForComparison($context, $callExpr, $comparedType, $scope);
+			if ($conditionalTypes === null) {
+				continue;
+			}
+
+			$types = $types !== null ? $types->unionWith($conditionalTypes) : $conditionalTypes;
 		}
 
 		if ($types !== null) {

@@ -226,7 +226,7 @@ class GenericClassStringType extends ClassStringType
 					$classReflection = $reflectionProvider->getClass($typeToRemove->getValue());
 					if ($classReflection->isFinal()) {
 						$remainingType = TypeCombinator::remove($generic, $objectTypeToRemove);
-						if ($remainingType instanceof NeverType) {
+						if ($remainingType->isNever()->yes()) {
 							return new NeverType();
 						}
 

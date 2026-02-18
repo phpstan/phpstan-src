@@ -100,6 +100,11 @@ function sodium_crypto_kdf_keygen(): string {}
 /**
  * @return non-empty-string
  */
+function sodium_crypto_secretstream_xchacha20poly1305_keygen(): string {}
+
+/**
+ * @return non-empty-string
+ */
 function sodium_crypto_secretbox_keygen(): string {}
 
 /**

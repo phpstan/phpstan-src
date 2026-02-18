@@ -929,19 +929,20 @@ final class TypeSpecifier
 						$dimType = $scope->getType($issetExpr->dim);
 
 						if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-							$types = $varType instanceof UnionType ? $varType->getTypes() : [$varType];
+							$constantArrays = $varType->getConstantArrays();
 							$typesToRemove = [];
-							foreach ($types as $innerType) {
-								$hasOffset = $innerType->hasOffsetValueType($dimType);
-								if (!$hasOffset->yes() || !$innerType->getOffsetValueType($dimType)->isNull()->no()) {
+							foreach ($constantArrays as $constantArray) {
+								$hasOffset = $constantArray->hasOffsetValueType($dimType);
+								if (!$hasOffset->yes() || !$constantArray->getOffsetValueType($dimType)->isNull()->no()) {
 									continue;
 								}
 
-								$typesToRemove[] = $innerType;
+								$typesToRemove[] = $constantArray;
 							}
 
 							if ($typesToRemove !== []) {
 								$typeToRemove = TypeCombinator::union(...$typesToRemove);
+
 								$result = $this->create(
 									$issetExpr->var,
 									$typeToRemove,

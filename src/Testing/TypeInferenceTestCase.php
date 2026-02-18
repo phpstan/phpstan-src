@@ -474,7 +474,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m) === 1) {
 				return version_compare(PHP_VERSION, $m[2], $m[1]) === false;
 			} elseif (str_contains($firstLine, 'lint')) {
-				throw new LogicException(sprintf('// lint comment must immediately follow the php starting tag in %s', $file));
+				throw new LogicException(sprintf("'// lint' comment must immediately follow the php starting tag in %s on line 1", $file));
 			}
 		}
 

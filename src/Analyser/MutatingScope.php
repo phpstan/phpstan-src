@@ -3956,7 +3956,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			$expr = $expressionTypeHolder->getExpr();
 
-			return $expr instanceof Variable || $expr instanceof VirtualNode;
+			return $expr instanceof Variable
+				|| $expr instanceof FuncCall
+				|| $expr instanceof VirtualNode;
 		};
 
 		$mergedExpressionTypes = array_filter($mergedExpressionTypes, $filter);

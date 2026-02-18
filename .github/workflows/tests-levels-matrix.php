@@ -1,10 +1,19 @@
 <?php declare(strict_types = 1);
 
-shell_exec('php vendor/bin/phpunit --group levels --list-tests-xml test-list.xml');
+exec('php vendor/bin/phpunit --group levels --list-tests-xml test-list.xml', $output, $return);
+if ($return !== 0) {
+	throw new RuntimeException(implode("\n", $output));
+}
 
+libxml_use_internal_errors(true);
 $simpleXml = simplexml_load_file('test-list.xml');
 if ($simpleXml === false) {
-	throw new RuntimeException('Error loading test-list.xml');
+	$errors = [];
+	foreach (libxml_get_errors() as $error) {
+		$errors[] = $error->message;
+	}
+
+	throw new RuntimeException('Error loading test-list.xml: ' . implode(', ', $errors));
 }
 
 $testFilters = [];

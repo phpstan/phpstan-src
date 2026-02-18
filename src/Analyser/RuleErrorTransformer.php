@@ -14,6 +14,7 @@ use PHPStan\File\FileReader;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
@@ -55,7 +56,6 @@ final class RuleErrorTransformer
 		Node $node,
 	): Error
 	{
-		$line = $node->getStartLine();
 		$canBeIgnored = true;
 		$fileName = $scope->getFileDescription();
 		$filePath = $scope->getFile();
@@ -75,6 +75,8 @@ final class RuleErrorTransformer
 			&& $ruleError->getLine() !== -1
 		) {
 			$line = $ruleError->getLine();
+		} else {
+			$line = $this->getLineFromNode($node);
 		}
 		if (
 			$ruleError instanceof FileRuleError
@@ -164,6 +166,22 @@ final class RuleErrorTransformer
 			$metadata,
 			$fixedErrorDiff,
 		);
+	}
+
+	private function getLineFromNode(Node $node): int
+	{
+		if ($node instanceof PropertyAssignNode) {
+			return $this->getLineFromNode($node->getPropertyFetch());
+		}
+
+		if (
+			$node instanceof Node\Expr\PropertyFetch
+			|| $node instanceof Node\Expr\MethodCall
+		) {
+			return $node->name->getStartLine();
+		}
+
+		return $node->getStartLine();
 	}
 
 }

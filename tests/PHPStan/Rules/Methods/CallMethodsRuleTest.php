@@ -3844,6 +3844,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12875.php'], []);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14150.php'], [
+			[
+				'Call to an undefined method Bug14150Method\HelloWorld::y().',
+				21,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1')]
 	public function testBug13805(): void
 	{

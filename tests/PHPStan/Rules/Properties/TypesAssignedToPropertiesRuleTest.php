@@ -986,6 +986,22 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13654.php'], []);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-14150.php'], [
+			[
+				'Property Bug14150Properties\HelloWorld::$x (int) does not accept null.',
+				20,
+			],
+			[
+				'Property Bug14150Properties\HelloWorld::$x (int) does not accept null.',
+				27,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testCloneWith(): void
 	{

@@ -29,3 +29,17 @@ function test(Other $object): int
 
 	return $object->optional->more * 100;
 }
+
+function testNullable(null|Other $object): int
+{
+	$key = $object?->optional?->key;
+
+	if (!$key) {
+		return 0;
+	}
+
+	assertType('Bug6991\Other', $object);
+	assertType('Bug6991\HelloWorld', $object->optional);
+
+	return $object->optional->more * 100;
+}

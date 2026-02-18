@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug12574c;
 
@@ -27,6 +29,14 @@ function hello2(Galaxy $a): void
 	$worlds = $a->worlds;
 	$notEmpty = isset($worlds[0]);
 	if ($notEmpty && $worlds[0]->x === 1) {
+		echo 'hello';
+	}
+}
+
+function hello3(null|Galaxy $a): void
+{
+	$hasWorlds = !empty($a?->worlds);
+	if ($hasWorlds && $a->worlds[0]->x === 1) {
 		echo 'hello';
 	}
 }

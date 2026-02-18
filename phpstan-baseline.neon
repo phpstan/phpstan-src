@@ -412,12 +412,6 @@ parameters:
 			path: src/Reflection/ClassReflection.php
 
 		-
-			rawMessage: 'Method PHPStan\Reflection\ClassReflection::getCacheKey() should return string but returns string|null.'
-			identifier: return.type
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
 			rawMessage: Binary operation "&" between bool|float|int|string|null and bool|float|int|string|null results in an error.
 			identifier: binaryOp.invalid
 			count: 1

@@ -6108,6 +6108,23 @@ class NodeScopeResolver
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 				}
 
+				$nonNullType = TypeCombinator::removeNull($type);
+				if (
+					!$nonNullType->equals($type)
+					&& !$nonNullType->equals($truthyType)
+				) {
+					$notNullConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, new ConstFetch(new Name('null')));
+					$notNullSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notNullConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notNullSpecifiedTypes, $nonNullType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notNullSpecifiedTypes, $nonNullType);
+
+					$nullType = new NullType();
+					$nullConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, new ConstFetch(new Name('null')));
+					$nullSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $nullConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $nullSpecifiedTypes, $nullType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $nullSpecifiedTypes, $nullType);
+				}
+
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {

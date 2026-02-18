@@ -18,6 +18,18 @@ final class IgnoredError
 {
 
 	/**
+	 * @param array{message?: string, rawMessage?: string, identifier?: string, identifiers?: list<string>, path?: string, paths?: list<string>}|string $ignoredError
+	 */
+	public static function getIgnoredErrorLabel(array|string $ignoredError): string
+	{
+		if (is_array($ignoredError) && !isset($ignoredError['message']) && isset($ignoredError['rawMessage'])) {
+			return 'Ignored error';
+		}
+
+		return 'Ignored error pattern';
+	}
+
+	/**
 	 * @param mixed[]|string $ignoredError
 	 * @return string Representation of the ignored error
 	 */

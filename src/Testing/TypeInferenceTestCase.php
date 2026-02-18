@@ -45,6 +45,7 @@ use function is_dir;
 use function is_string;
 use function preg_match;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 use function stripos;
 use function strtolower;

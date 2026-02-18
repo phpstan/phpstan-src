@@ -68,7 +68,7 @@ final class EnumAncestorsRule implements Rule
 			sprintf('Enum %s @implements tag contains incompatible type %%s.', $escapedEnumName),
 			sprintf('Enum %s @implements tag contains unresolvable type.', $enumName),
 			sprintf('Enum %s has @implements tag, but does not implement any interface.', $escapedEnumName),
-			sprintf('The @implements tag of eunm %s describes %%s but the enum implements: %%s', $escapedEnumName),
+			sprintf('The @implements tag of enum %s describes %%s but the enum implements: %%s', $escapedEnumName),
 			'PHPDoc tag @implements contains generic type %s but %s %s is not generic.',
 			'Generic type %s in PHPDoc tag @implements does not specify all template types of %s %s: %s',
 			'Generic type %s in PHPDoc tag @implements specifies %d template types, but %s %s supports only %d: %s',

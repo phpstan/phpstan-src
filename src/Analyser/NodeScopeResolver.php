@@ -4768,7 +4768,8 @@ class NodeScopeResolver
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
 	{
 		if (
-			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
+			$this->implicitThrows
+			&& in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
 			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
 		) {
 			return InternalThrowPoint::createImplicit($scope, $methodCall);

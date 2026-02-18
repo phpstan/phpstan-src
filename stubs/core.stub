@@ -113,6 +113,11 @@ function sodium_crypto_secretbox_keygen(): string {}
 function sodium_crypto_stream_keygen(): string {}
 
 /**
+ * @return non-empty-string
+ */
+function sodium_crypto_stream_xchacha20_keygen(): string {}
+
+/**
  * @return ($string is non-empty-string ? non-empty-string : string)
  */
 function base64_encode(string $string) : string {}

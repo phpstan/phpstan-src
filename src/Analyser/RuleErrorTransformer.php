@@ -170,12 +170,16 @@ final class RuleErrorTransformer
 
 	public static function getStartLineFromNode(Node $node): int
 	{
-		$line = match (true) {
-			$node instanceof PropertyAssignNode => self::getStartLineFromNode($node->getPropertyFetch()),
-			$node instanceof Node\Expr\PropertyFetch,
-			$node instanceof Node\Expr\MethodCall => $node->name->getStartLine(),
-			default => -1,
-		};
+		if (
+			$node instanceof Node\Expr\PropertyFetch
+			|| $node instanceof Node\Expr\MethodCall
+		) {
+			$line = $node->name->getStartLine();
+		} elseif ($node instanceof PropertyAssignNode) {
+			$line = self::getStartLineFromNode($node->getPropertyFetch());
+		} else {
+			return $node->getStartLine();
+		}
 
 		return $line !== -1 ? $line : $node->getStartLine();
 	}

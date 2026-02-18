@@ -198,6 +198,8 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use ReflectionFunction;
+use ReflectionMethod;
 use ReflectionProperty;
 use Throwable;
 use Traversable;
@@ -4779,6 +4781,13 @@ class NodeScopeResolver
 
 				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
 			}
+		}
+
+		if (
+			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
+			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
+		) {
+			return InternalThrowPoint::createImplicit($scope, $methodCall);
 		}
 
 		$throwType = $methodReflection->getThrowType();

@@ -16,7 +16,26 @@ class HelloWorld
 			return;
 		} catch (\ReflectionException $e) {
 			assertVariableCertainty(TrinaryLogic::createYes(), $object);
-			assertVariableCertainty(TrinaryLogic::createMaybe(), $method);
+			assertVariableCertainty(TrinaryLogic::createNo(), $method);
 		}
+	}
+
+	public function sayHello2(): void
+	{
+		$method = rand(0, 1) ? 'nonExisting' : 'sayFoo';
+		try {
+			$object = new HelloWorld();
+			$method = new \ReflectionMethod($object, $method);
+			$method->invoke($object);
+			return;
+		} catch (\ReflectionException $e) {
+			assertVariableCertainty(TrinaryLogic::createYes(), $object);
+			assertVariableCertainty(TrinaryLogic::createYes(), $method);
+		}
+	}
+
+	public function sayFoo(): void
+	{
+
 	}
 }

@@ -172,9 +172,11 @@ final class RuleErrorTransformer
 	{
 		if (
 			$node instanceof Node\Expr\PropertyFetch
+			|| $node instanceof Node\Expr\StaticPropertyFetch
 			|| $node instanceof Node\Expr\NullsafePropertyFetch
 			|| $node instanceof Node\Expr\MethodCall
 			|| $node instanceof Node\Expr\NullsafeMethodCall
+			|| $node instanceof Node\Expr\StaticCall
 		) {
 			$line = $node->name->getStartLine();
 		} elseif ($node instanceof PropertyAssignNode) {

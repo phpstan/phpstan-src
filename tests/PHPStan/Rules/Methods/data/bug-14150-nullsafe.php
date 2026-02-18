@@ -9,7 +9,7 @@ class HelloWorld
 	/**
 	 * @return $this
 	 */
-	public function x(): static
+	public function x()
 	{
 		return $this;
 	}

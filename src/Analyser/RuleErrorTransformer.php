@@ -76,7 +76,7 @@ final class RuleErrorTransformer
 		) {
 			$line = $ruleError->getLine();
 		} else {
-			$line = $this->getLineFromNode($node);
+			$line = self::getLineFromNode($node);
 		}
 		if (
 			$ruleError instanceof FileRuleError
@@ -168,10 +168,10 @@ final class RuleErrorTransformer
 		);
 	}
 
-	private function getLineFromNode(Node $node): int
+	public static function getLineFromNode(Node $node): int
 	{
 		if ($node instanceof PropertyAssignNode) {
-			return $this->getLineFromNode($node->getPropertyFetch());
+			return self::getLineFromNode($node->getPropertyFetch());
 		}
 
 		if (

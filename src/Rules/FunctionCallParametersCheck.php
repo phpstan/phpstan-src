@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -89,11 +90,7 @@ final class FunctionCallParametersCheck
 		string $namedArgumentMessage,
 	): array
 	{
-		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
-			$funcCallLine = $funcCall->name->getStartLine();
-		} else {
-			$funcCallLine = $funcCall->getStartLine();
-		}
+		$funcCallLine = RuleErrorTransformer::getLineFromNode($funcCall);
 
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;

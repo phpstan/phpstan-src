@@ -181,7 +181,8 @@ final class IgnoredErrorHelperResult
 			}
 
 			$errors[] = (new Error(sprintf(
-				'Ignored error pattern %s is expected to occur %d %s, but occurred %d %s.',
+				'%s %s is expected to occur %d %s, but occurred %d %s.',
+				IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 				IgnoredError::stringifyPattern($unmatchedIgnoredError),
 				$unmatchedIgnoredError['count'],
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
@@ -205,7 +206,8 @@ final class IgnoredErrorHelperResult
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {
 						$errors[] = (new Error(sprintf(
-							'Ignored error pattern %s is expected to occur %d %s, but occurred only %d %s.',
+							'%s %s is expected to occur %d %s, but occurred only %d %s.',
+							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 							$unmatchedIgnoredError['count'],
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
@@ -224,7 +226,8 @@ final class IgnoredErrorHelperResult
 
 					$errors[] = (new Error(
 						sprintf(
-							'Ignored error pattern %s was not matched in reported errors.',
+							'%s %s was not matched in reported errors.',
+							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 						),
 						$unmatchedIgnoredError['realPath'],
@@ -232,7 +235,8 @@ final class IgnoredErrorHelperResult
 					))->withIdentifier('ignore.unmatched');
 				} elseif (!$onlyFiles) {
 					$stringErrors[] = sprintf(
-						'Ignored error pattern %s was not matched in reported errors.',
+						'%s %s was not matched in reported errors.',
+						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 						IgnoredError::stringifyPattern($unmatchedIgnoredError),
 					);
 				}

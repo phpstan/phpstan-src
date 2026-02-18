@@ -4767,14 +4767,6 @@ class NodeScopeResolver
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
 	{
-		if (
-			$this->implicitThrows
-			&& in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
-			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
-		) {
-			return InternalThrowPoint::createImplicit($scope, $methodCall);
-		}
-
 		$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
 		if ($normalizedMethodCall !== null) {
 			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
@@ -4789,6 +4781,13 @@ class NodeScopeResolver
 
 				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
 			}
+		}
+
+		if (
+			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
+			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
+		) {
+			return InternalThrowPoint::createImplicit($scope, $methodCall);
 		}
 
 		$throwType = $methodReflection->getThrowType();

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
@@ -432,8 +433,12 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$files = [];
 		foreach ($finder->files()->name('*.php')->in($directory) as $fileInfo) {
 			$path = $fileInfo->getPathname();
-			if (self::isFileLintSkipped($path)) {
-				continue;
+			try {
+				if (self::isFileLintSkipped($path)) {
+					continue;
+				}
+			} catch (LogicException $e) {
+				self::fail($e->getMessage());
 			}
 			$files[] = $path;
 		}
@@ -467,6 +472,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 			if (preg_match('~<?php\\s*\\/\\/\s*lint\s*([^\d\s]+)\s*([^\s]+)\s*~i', $firstLine, $m) === 1) {
 				return version_compare(PHP_VERSION, $m[2], $m[1]) === false;
+			} elseif (str_contains($firstLine, 'lint')) {
+				throw new LogicException(sprintf('// lint comment must immediately follow the php starting tag in %s', $file));
 			}
 		}
 

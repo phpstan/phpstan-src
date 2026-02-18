@@ -16,13 +16,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function in_array;
-use function openssl_get_cipher_methods;
 use function strtolower;
 use function substr;
 
 #[AutowiredService]
 final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
+
+	public function __construct(private OpenSslCipherMethodsProvider $cipherMethodsProvider)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, ParameterReflection $parameter): bool
 	{
@@ -44,7 +47,7 @@ final class OpenSslEncryptParameterOutTypeExtension implements FunctionParameter
 			$cipher = strtolower($cipherType->getValue());
 			$mode = substr($cipher, -3);
 
-			if (!in_array($cipher, openssl_get_cipher_methods(), true)) {
+			if (!$this->cipherMethodsProvider->isSupportedCipherMethod($cipher)) {
 				$tagTypes[] = new NullType();
 				continue;
 			}

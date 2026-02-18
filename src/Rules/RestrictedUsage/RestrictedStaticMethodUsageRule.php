@@ -22,6 +22,9 @@ use PHPStan\Type\Type;
 final class RestrictedStaticMethodUsageRule implements Rule
 {
 
+	/** @var RestrictedMethodUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
@@ -44,8 +47,7 @@ final class RestrictedStaticMethodUsageRule implements Rule
 			return [];
 		}
 
-		/** @var RestrictedMethodUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];
 		}

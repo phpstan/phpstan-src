@@ -19,6 +19,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class RestrictedFunctionCallableUsageRule implements Rule
 {
 
+	/** @var RestrictedFunctionUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
@@ -46,8 +49,7 @@ final class RestrictedFunctionCallableUsageRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->getName(), $scope);
 
-		/** @var RestrictedFunctionUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedFunctionUsageExtension::FUNCTION_EXTENSION_TAG);
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedFunctionUsageExtension::FUNCTION_EXTENSION_TAG);
 		$errors = [];
 
 		foreach ($extensions as $extension) {

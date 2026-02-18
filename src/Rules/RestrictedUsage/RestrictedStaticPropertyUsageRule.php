@@ -22,6 +22,9 @@ use PHPStan\Type\Type;
 final class RestrictedStaticPropertyUsageRule implements Rule
 {
 
+	/** @var RestrictedPropertyUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
@@ -44,8 +47,7 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 			return [];
 		}
 
-		/** @var RestrictedPropertyUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedPropertyUsageExtension::PROPERTY_EXTENSION_TAG);
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedPropertyUsageExtension::PROPERTY_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];
 		}

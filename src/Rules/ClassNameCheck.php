@@ -12,6 +12,9 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 final class ClassNameCheck
 {
 
+	/** @var RestrictedClassNameUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		private ClassForbiddenNameCheck $classForbiddenNameCheck,
@@ -47,8 +50,7 @@ final class ClassNameCheck
 			return $errors;
 		}
 
-		/** @var RestrictedClassNameUsageExtension[] $extensions */
-		$extensions = $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
 		if ($extensions === []) {
 			return $errors;
 		}

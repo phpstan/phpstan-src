@@ -65,6 +65,11 @@ function sodium_crypto_aead_aegis128l_keygen(): string {}
 /**
  * @return non-empty-string
  */
+function sodium_crypto_aead_aegis256_keygen(): string {}
+
+/**
+ * @return non-empty-string
+ */
 function sodium_crypto_secretbox_keygen(): string {}
 
 /**

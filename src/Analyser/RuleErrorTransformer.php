@@ -76,7 +76,7 @@ final class RuleErrorTransformer
 		) {
 			$line = $ruleError->getLine();
 		} else {
-			$line = self::getLineFromNode($node);
+			$line = self::getStartLineFromNode($node);
 		}
 		if (
 			$ruleError instanceof FileRuleError
@@ -168,20 +168,16 @@ final class RuleErrorTransformer
 		);
 	}
 
-	public static function getLineFromNode(Node $node): int
+	public static function getStartLineFromNode(Node $node): int
 	{
-		if ($node instanceof PropertyAssignNode) {
-			return self::getLineFromNode($node->getPropertyFetch());
-		}
+		$line = match (true) {
+			$node instanceof PropertyAssignNode => self::getStartLineFromNode($node->getPropertyFetch()),
+			$node instanceof Node\Expr\PropertyFetch,
+			$node instanceof Node\Expr\MethodCall => $node->name->getStartLine(),
+			default => -1,
+		};
 
-		if (
-			$node instanceof Node\Expr\PropertyFetch
-			|| $node instanceof Node\Expr\MethodCall
-		) {
-			return $node->name->getStartLine();
-		}
-
-		return $node->getStartLine();
+		return $line !== -1 ? $line : $node->getStartLine();
 	}
 
 }

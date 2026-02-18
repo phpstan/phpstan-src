@@ -90,7 +90,7 @@ final class FunctionCallParametersCheck
 		string $namedArgumentMessage,
 	): array
 	{
-		$funcCallLine = RuleErrorTransformer::getLineFromNode($funcCall);
+		$funcCallLine = RuleErrorTransformer::getStartLineFromNode($funcCall);
 
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;

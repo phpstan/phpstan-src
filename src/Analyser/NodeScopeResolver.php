@@ -6811,7 +6811,6 @@ class NodeScopeResolver
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof StaticPropertyFetch
 			) {
 				continue;
 			}
@@ -6850,7 +6849,6 @@ class NodeScopeResolver
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
-				&& !$expr instanceof StaticPropertyFetch
 			) {
 				continue;
 			}

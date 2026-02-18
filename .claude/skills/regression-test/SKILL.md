@@ -49,7 +49,9 @@ Use when the bug is about **wrong inferred type, missing type narrowing, or inco
 Example (`tests/PHPStan/Analyser/nsrt/bug-12875.php`):
 
 ```php
-<?php declare(strict_types = 1); // lint >= 8.0
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug12875;
 

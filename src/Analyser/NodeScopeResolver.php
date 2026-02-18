@@ -6366,8 +6366,23 @@ class NodeScopeResolver
 				$declaringClass = $propertyReflection->getDeclaringClass();
 				if ($declaringClass->hasNativeProperty($propertyName)) {
 					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
+					$propertyNativeType = $nativeProperty->getNativeType();
+
+					$assignedTypeIsCompatible = $propertyNativeType->isSuperTypeOf($assignedExprType)->yes();
+					if (!$assignedTypeIsCompatible && !$assignedExprType instanceof MixedType) {
+						foreach (TypeUtils::flattenTypes($assignedExprType->toCoercedArgumentType(true)) as $type) {
+							$accepts = $propertyNativeType->accepts($type, true);
+							if ($accepts->yes()) {
+								$assignedTypeIsCompatible = true;
+								continue;
+							}
+							$assignedTypeIsCompatible = false;
+							break;
+						}
+					}
+
 					if (
-						!$nativeProperty->getNativeType()->accepts($assignedExprType, true)->yes()
+						!$assignedTypeIsCompatible
 					) {
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}

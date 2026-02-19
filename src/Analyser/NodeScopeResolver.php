@@ -3344,6 +3344,7 @@ class NodeScopeResolver
 			$classType = null;
 			$methodReflection = null;
 			$methodName = null;
+			$dynamicCall = false;
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
@@ -3356,6 +3357,7 @@ class NodeScopeResolver
 			} elseif ($expr->class instanceof Expr) {
 				$classType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
 				$methodName = $expr->name->name;
+				$dynamicCall = true;
 			}
 
 			if ($classType !== null && $methodName !== null) {
@@ -3368,9 +3370,11 @@ class NodeScopeResolver
 						$methodReflection->getNamedArgumentsVariants(),
 					);
 
-					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-					if ($methodThrowPoint !== null) {
-						$throwPoints[] = $methodThrowPoint;
+					if (!$dynamicCall) {
+						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+						if ($methodThrowPoint !== null) {
+							$throwPoints[] = $methodThrowPoint;
+						}
 					}
 
 					$declaringClass = $methodReflection->getDeclaringClass();

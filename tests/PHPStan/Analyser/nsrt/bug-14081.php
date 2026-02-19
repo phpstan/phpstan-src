@@ -47,7 +47,7 @@ function maybeNonEmpty(): void
 function firstNotNull(array $array): mixed
 {
 	if (($key = array_key_first($array)) !== null) {
-		assertType('int<0, max>', $key); // could be int<1, max>
+		assertType('int<0, max>', $key);
 		assertType('list<string>', $array); // could be non-empty-list<string>
 		assertType('string', $array[$key]);
 		return $array[$key];
@@ -59,7 +59,7 @@ function firstNotNull(array $array): mixed
 function lastNotNull(array $array): mixed
 {
 	if (($key = array_key_last($array)) !== null) {
-		assertType('int<0, max>', $key); // could be int<1, max>
+		assertType('int<0, max>', $key);
 		assertType('list<string>', $array); // could be non-empty-list<string>
 		assertType('string', $array[$key]);
 		return $array[$key];

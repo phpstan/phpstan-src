@@ -751,12 +751,9 @@ final class TypeSpecifier
 
 					if ($isNonEmpty) {
 						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-						$iterableValueType = $expr->expr->name->toLowerString() === 'array_key_first'
-							? $arrayType->getIterableValueType()
-							: $arrayType->getIterableValueType();
 
 						$specifiedTypes = $specifiedTypes->unionWith(
-							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
+							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
 						);
 					}
 				}

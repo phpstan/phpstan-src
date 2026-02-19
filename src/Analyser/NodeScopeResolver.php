@@ -6121,9 +6121,9 @@ class NodeScopeResolver
 
 					$astNode = match ($falseyScalar) {
 						null => new ConstFetch(new Name('null')),
-						false =>    new ConstFetch(new Name('false')),
-						0 =>    new Node\Scalar\Int_($falseyScalar),
-						0.0 =>  new Node\Scalar\Float_($falseyScalar),
+						false => new ConstFetch(new Name('false')),
+						0 => new Node\Scalar\Int_($falseyScalar),
+						0.0 => new Node\Scalar\Float_($falseyScalar),
 						'', '0' => new Node\Scalar\String_($falseyScalar),
 						[] => new Node\Expr\Array_($falseyScalar),
 					};

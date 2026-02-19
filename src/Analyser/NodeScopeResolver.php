@@ -3353,7 +3353,7 @@ class NodeScopeResolver
 			} elseif ($expr->class instanceof Name) {
 				$classType = $scope->resolveTypeByName($expr->class);
 				$methodName = $expr->name->name;
-			} elseif ($expr->class instanceof Expr && $expr->name instanceof Identifier) {
+			} elseif ($expr->class instanceof Expr) {
 				$classType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
 				$methodName = $expr->name->name;
 			}

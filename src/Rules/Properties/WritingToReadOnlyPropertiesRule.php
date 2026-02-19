@@ -61,7 +61,10 @@ final class WritingToReadOnlyPropertiesRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'%s is not writable.',
 					$propertyDescription,
-				))->identifier('assign.propertyReadOnly')->build(),
+				))
+					->line($propertyFetch->name->getStartLine())
+					->identifier('assign.propertyReadOnly')
+					->build(),
 			];
 		}
 

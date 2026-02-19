@@ -69,6 +69,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 
 			if (!$scope->isInClass()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyAssignOutOfClass')
 					->build();
 				continue;
@@ -77,6 +78,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyAssignOutOfClass')
 					->build();
 				continue;
@@ -93,6 +95,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
 						->identifier('property.readOnlyAssignNotOnThis')
 						->build();
 				}
@@ -109,6 +112,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+				->line($propertyFetch->name->getStartLine())
 				->identifier('property.readOnlyAssignNotInConstructor')
 				->build();
 		}

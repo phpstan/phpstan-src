@@ -82,6 +82,7 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 
 			if (!$scope->isInClass()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyByPhpDocAssignOutOfClass')
 					->build();
 				continue;
@@ -90,6 +91,7 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
 				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyByPhpDocAssignOutOfClass')
 					->build();
 				continue;
@@ -106,6 +108,7 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
 						->identifier('property.readOnlyByPhpDocAssignNotOnThis')
 						->build();
 				}
@@ -126,6 +129,7 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+				->line($propertyFetch->name->getStartLine())
 				->identifier('property.readOnlyByPhpDocAssignNotInConstructor')
 				->build();
 		}

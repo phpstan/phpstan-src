@@ -55,6 +55,20 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-8517.php'], []);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14150-nullsafe.php'], [
+			[
+				'Using nullsafe property access on non-nullable type $this(Bug14150NullsafeProperty\HelloWorld). Use -> instead.',
+				20,
+			],
+			[
+				'Using nullsafe property access on non-nullable type $this(Bug14150NullsafeProperty\HelloWorld). Use -> instead.',
+				27,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testBug9105(): void
 	{

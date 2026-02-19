@@ -56,7 +56,10 @@ final class AccessPrivatePropertyThroughStaticRule implements Rule
 				'Unsafe access to private property %s::$%s through static::.',
 				$property->getDeclaringClass()->getDisplayName(),
 				$propertyName,
-			))->identifier('staticClassAccess.privateProperty')->build(),
+			))
+				->line($node->name->getStartLine())
+				->identifier('staticClassAccess.privateProperty')
+				->build(),
 		];
 	}
 

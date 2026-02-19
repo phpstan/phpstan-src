@@ -54,6 +54,16 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8697.php'], []);
 	}
 
+	public function testAssignOperator(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-phpstan-doc-assign-operator.php'], [
+			[
+				'Unknown PHPDoc tag: @phpstan-va',
+				9,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.4')]
 	public function testPropertyHooks(): void
 	{

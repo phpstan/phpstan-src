@@ -11,7 +11,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -78,7 +77,7 @@ final class ArrayCombineHelper
 			$itemType = $keysParamType->getIterableValueType();
 
 			if ($itemType->isInteger()->no()) {
-				if ($itemType->toString() instanceof ErrorType) {
+				if ($itemType->toString()->isError()->yes()) {
 					return [new NeverType(), TrinaryLogic::createNo()];
 				}
 
@@ -116,7 +115,7 @@ final class ArrayCombineHelper
 		$sanitizedTypes = [];
 
 		foreach ($types as $type) {
-			if (!$type->isInteger()->yes() && ! $type->toString() instanceof ErrorType) {
+			if (!$type->isInteger()->yes() && ! $type->toString()->isError()->yes()) {
 				$type = $type->toString();
 			}
 

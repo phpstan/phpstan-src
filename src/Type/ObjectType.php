@@ -57,6 +57,7 @@ use function array_values;
 use function count;
 use function implode;
 use function in_array;
+use function is_array;
 use function sprintf;
 use function strtolower;
 
@@ -226,7 +227,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getProperty($propertyName, $scope));
-		if ($property instanceof ErrorType) {
+		if (!$property instanceof ExtendedPropertyReflection) {
 			$property = new DummyPropertyReflection($propertyName);
 
 			return new CallbackUnresolvedPropertyPrototypeReflection(
@@ -332,7 +333,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getInstanceProperty($propertyName, $scope));
-		if ($property instanceof ErrorType) {
+		if (! $property instanceof ExtendedPropertyReflection) {
 			$property = new DummyPropertyReflection($propertyName);
 
 			return new CallbackUnresolvedPropertyPrototypeReflection(
@@ -414,7 +415,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$property = RecursionGuard::run($this, static fn () => $nakedClassReflection->getStaticProperty($propertyName));
-		if ($property instanceof ErrorType) {
+		if (!$property instanceof ExtendedPropertyReflection) {
 			$property = new DummyPropertyReflection($propertyName);
 
 			return new CallbackUnresolvedPropertyPrototypeReflection(
@@ -1548,7 +1549,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($parametersAcceptors === null) {
 			return TrinaryLogic::createNo();
 		}
-		if ($parametersAcceptors instanceof ErrorType) {
+		if (! is_array($parametersAcceptors)) {
 			return TrinaryLogic::createNo();
 		}
 

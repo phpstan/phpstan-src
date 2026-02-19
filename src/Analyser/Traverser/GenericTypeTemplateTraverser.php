@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser\Traverser;
 
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -25,7 +24,7 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 	{
 		if ($type instanceof TemplateType && !$type->isArgument()) {
 			$newType = $this->resolvedTemplateTypeMap->getType($type->getName());
-			if ($newType === null || $newType instanceof ErrorType) {
+			if ($newType === null || $newType->isError()->yes()) {
 				return $type->getDefault() ?? $type->getBound();
 			}
 

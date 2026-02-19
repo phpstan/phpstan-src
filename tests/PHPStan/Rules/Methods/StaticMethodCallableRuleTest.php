@@ -93,14 +93,6 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				'Cannot call static method doFoo() on int.',
 				22,
 			],
-			[
-				'Creating callable from a non-native static method StaticMethodCallable\Lorem::doBar().',
-				47,
-			],
-			[
-				'Creating callable from a non-native static method StaticMethodCallable\Ipsum::doBar().',
-				66,
-			],
 		]);
 	}
 

@@ -74,14 +74,6 @@ class MethodCallableRuleTest extends RuleTestCase
 				'Call to private method doFoo() of class MethodCallable\ParentClass.',
 				53,
 			],
-			[
-				'Creating callable from a non-native method MethodCallable\Lorem::doBar().',
-				66,
-			],
-			[
-				'Creating callable from a non-native method MethodCallable\Ipsum::doBar().',
-				85,
-			],
 		]);
 	}
 

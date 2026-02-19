@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use function in_array;
 use function strtolower;
 
 #[AutowiredService]

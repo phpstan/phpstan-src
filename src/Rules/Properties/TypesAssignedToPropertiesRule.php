@@ -99,6 +99,7 @@ final class TypesAssignedToPropertiesRule implements Rule
 					$propertyType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
 				))
+					->line($assignedExpr->getStartLine())
 					->identifier('assign.propertyType')
 					->acceptsReasonsTip($accepts->reasons)
 					->build(),

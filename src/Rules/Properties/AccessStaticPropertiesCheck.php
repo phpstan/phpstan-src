@@ -83,7 +83,10 @@ final class AccessStaticPropertiesCheck
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name,
-						))->identifier(sprintf('outOfClass.%s', $lowercasedClass))->build(),
+						))
+							->line($node->name->getStartLine())
+							->identifier(sprintf('outOfClass.%s', $lowercasedClass))
+							->build(),
 					];
 				}
 				$classType = $scope->resolveTypeByName($node->class);
@@ -94,7 +97,10 @@ final class AccessStaticPropertiesCheck
 							'Accessing %s::$%s outside of class scope.',
 							$class,
 							$name,
-						))->identifier('outOfClass.parent')->build(),
+						))
+							->line($node->name->getStartLine())
+							->identifier('outOfClass.parent')
+							->build(),
 					];
 				}
 				if ($scope->getClassReflection()->getParentClass() === null) {
@@ -105,7 +111,10 @@ final class AccessStaticPropertiesCheck
 							$scope->getFunctionName(),
 							$name,
 							$scope->getClassReflection()->getDisplayName(),
-						))->identifier('class.noParent')->build(),
+						))
+							->line($node->name->getStartLine())
+							->identifier('class.noParent')
+							->build(),
 					];
 				}
 
@@ -121,6 +130,7 @@ final class AccessStaticPropertiesCheck
 						$name,
 						$class,
 					))
+						->line($node->name->getStartLine())
 						->identifier('class.notFound');
 
 					if ($this->discoveringSymbolsTip) {
@@ -179,7 +189,10 @@ final class AccessStaticPropertiesCheck
 					'Cannot access static property $%s on %s.',
 					$name,
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-				))->identifier('staticProperty.nonObject')->build(),
+				))
+					->line($node->name->getStartLine())
+					->identifier('staticProperty.nonObject')
+					->build(),
 			]);
 		}
 
@@ -212,7 +225,10 @@ final class AccessStaticPropertiesCheck
 								'Access to private static property $%s of parent class %s.',
 								$name,
 								$parentClassReflection->getDisplayName(),
-							))->identifier('staticProperty.private')->build(),
+							))
+								->line($node->name->getStartLine())
+								->identifier('staticProperty.private')
+								->build(),
 						];
 					}
 
@@ -233,7 +249,10 @@ final class AccessStaticPropertiesCheck
 						'Static access to instance property %s::$%s.',
 						$classType->getInstanceProperty($name, $scope)->getDeclaringClass()->getDisplayName(),
 						$name,
-					))->identifier('property.staticAccess')->build(),
+					))
+						->line($node->name->getStartLine())
+						->identifier('property.staticAccess')
+						->build(),
 				]);
 			}
 
@@ -242,7 +261,10 @@ final class AccessStaticPropertiesCheck
 					'Access to an undefined static property %s::$%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					$name,
-				))->identifier('staticProperty.notFound')->build(),
+				))
+					->line($node->name->getStartLine())
+					->identifier('staticProperty.notFound')
+					->build(),
 			]);
 		}
 
@@ -266,7 +288,10 @@ final class AccessStaticPropertiesCheck
 					$property->isPrivate() ? 'private' : 'protected',
 					$name,
 					$property->getDeclaringClass()->getDisplayName(),
-				))->identifier(sprintf('staticProperty.%s', $property->isPrivate() ? 'private' : 'protected'))->build(),
+				))
+					->line($node->name->getStartLine())
+					->identifier(sprintf('staticProperty.%s', $property->isPrivate() ? 'private' : 'protected'))
+					->build(),
 			]);
 		}
 
@@ -276,7 +301,10 @@ final class AccessStaticPropertiesCheck
 				$property->isPrivateSet() ? 'private(set)' : 'protected(set)',
 				$name,
 				$property->getDeclaringClass()->getDisplayName(),
-			))->identifier(sprintf('assign.staticProperty%s', $property->isPrivateSet() ? 'PrivateSet' : 'ProtectedSet'))->build(),
+			))
+				->line($node->name->getStartLine())
+				->identifier(sprintf('assign.staticProperty%s', $property->isPrivateSet() ? 'PrivateSet' : 'ProtectedSet'))
+				->build(),
 		]);
 	}
 

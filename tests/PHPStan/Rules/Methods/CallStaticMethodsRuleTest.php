@@ -909,6 +909,19 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-14150-static.php'], [
+			[
+				'Call to an undefined static method Bug14150MethodStatic\HelloWorld::y().',
+				21,
+			],
+		]);
+	}
+
 	public function testBug13556(): void
 	{
 		$this->checkThisOnly = false;

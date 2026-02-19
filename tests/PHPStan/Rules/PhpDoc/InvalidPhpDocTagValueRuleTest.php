@@ -126,6 +126,16 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/ignore-line-within-phpdoc.php'], []);
 	}
 
+	public function testAssignOperator(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-phpdoc-assign-operator.php'], [
+			[
+				'PHPDoc tag @var has invalid value (\\\\Foo|\Bar $test): Unexpected token "\\\\\\\\Foo|\\\\Bar", expected type at offset 9 on line 1',
+				8,
+			],
+		]);
+	}
+
 	public function testBug6299(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6299.php'], [

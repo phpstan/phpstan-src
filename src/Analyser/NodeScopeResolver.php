@@ -6127,7 +6127,7 @@ class NodeScopeResolver
 						$astNode = new Node\Scalar\Int_($falseyScalar);
 					} elseif ($falseyScalar === 0.0) {
 						$astNode = new Node\Scalar\Float_($falseyScalar);
-					} elseif (\in_array($falseyScalar, ['', '0'], true)) {
+					} elseif (in_array($falseyScalar, ['', '0'], true)) {
 						$astNode = new Node\Scalar\String_($falseyScalar);
 					} elseif ($falseyScalar === []) {
 						$astNode = new Node\Expr\Array_($falseyScalar);

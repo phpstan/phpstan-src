@@ -47,7 +47,11 @@ final class InvalidPhpDocTagValueRule implements Rule
 			return [];
 		}
 		if ($node instanceof Node\Stmt\Expression) {
-			if (!$node->expr instanceof Node\Expr\Assign && !$node->expr instanceof Node\Expr\AssignRef) {
+			if (
+				!$node->expr instanceof Node\Expr\Assign
+				&& !$node->expr instanceof Node\Expr\AssignRef
+				&& !$node->expr instanceof Node\Expr\AssignOp
+			) {
 				return [];
 			}
 		}

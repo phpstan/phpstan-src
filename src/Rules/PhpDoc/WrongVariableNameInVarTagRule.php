@@ -288,7 +288,11 @@ final class WrongVariableNameInVarTagRule implements Rule
 	 */
 	private function processExpression(Scope $scope, Expr $expr, array $varTags): array
 	{
-		if ($expr instanceof Node\Expr\Assign || $expr instanceof Node\Expr\AssignRef) {
+		if (
+			$expr instanceof Node\Expr\Assign
+			|| $expr instanceof Node\Expr\AssignRef
+			|| $expr instanceof Node\Expr\AssignOp
+		) {
 			return $this->processAssign($scope, $expr->var, $expr->expr, $varTags);
 		}
 

@@ -548,6 +548,28 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], $expectedErrors);
 	}
 
+	public function testAssignOperator(): void
+	{
+		$this->analyse([__DIR__ . '/data/wrong-variable-name-var-assign-op.php'], [
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				11,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				14,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				20,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type void.',
+				23,
+			],
+		]);
+	}
+
 	public function testBug12457(): void
 	{
 		$this->checkTypeAgainstPhpDocType = true;

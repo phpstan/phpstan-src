@@ -725,7 +725,41 @@ final class TypeSpecifier
 
 			if ($context->null()) {
 				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->expr, $context)->setRootExpr($expr);
+			} else {
+				$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
+			}
 
+			// infer $arr[$key] after $key = array_key_first/last($arr)
+			if (
+				$expr->expr instanceof FuncCall
+				&& $expr->expr->name instanceof Name
+				&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
+				&& count($expr->expr->getArgs()) >= 1
+			) {
+				$arrayArg = $expr->expr->getArgs()[0]->value;
+				$arrayType = $scope->getType($arrayArg);
+
+				if ($arrayType->isArray()->yes()) {
+					if ($context->true()) {
+						$specifiedTypes = $specifiedTypes->unionWith(
+							$this->create($arrayArg, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
+						);
+						$isNonEmpty = true;
+					} else {
+						$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
+					}
+
+					if ($isNonEmpty) {
+						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
+
+						$specifiedTypes = $specifiedTypes->unionWith(
+							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
+						);
+					}
+				}
+			}
+
+			if ($context->null()) {
 				// infer $arr[$key] after $key = array_rand($arr)
 				if (
 					$expr->expr instanceof FuncCall
@@ -751,30 +785,6 @@ final class TypeSpecifier
 
 						return $specifiedTypes->unionWith(
 							$this->create($dimFetch, $arrayType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope),
-						);
-					}
-				}
-
-				// infer $arr[$key] after $key = array_key_first/last($arr)
-				if (
-					$expr->expr instanceof FuncCall
-					&& $expr->expr->name instanceof Name
-					&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
-					&& count($expr->expr->getArgs()) >= 1
-				) {
-					$arrayArg = $expr->expr->getArgs()[0]->value;
-					$arrayType = $scope->getType($arrayArg);
-					if (
-						$arrayType->isArray()->yes()
-						&& $arrayType->isIterableAtLeastOnce()->yes()
-					) {
-						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
-						$iterableValueType = $expr->expr->name->toLowerString() === 'array_key_first'
-							? $arrayType->getIterableValueType()
-							: $arrayType->getIterableValueType();
-
-						return $specifiedTypes->unionWith(
-							$this->create($dimFetch, $iterableValueType, TypeSpecifierContext::createTrue(), $scope),
 						);
 					}
 				}
@@ -805,8 +815,6 @@ final class TypeSpecifier
 
 				return $specifiedTypes;
 			}
-
-			$specifiedTypes = $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context)->setRootExpr($expr);
 
 			if ($context->true()) {
 				// infer $arr[$key] after $key = array_search($needle, $arr)

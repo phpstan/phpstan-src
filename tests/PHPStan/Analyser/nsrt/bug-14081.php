@@ -29,3 +29,9 @@ function last(array $array): mixed
 	}
 	return null;
 }
+
+/** @param list<string> $array */
+function firstNotNull(array $array): mixed
+{
+	if (($key = array_key_first($array)) !== null) {
+		assertType('int<0, max>', $key); // could be int<1, max>

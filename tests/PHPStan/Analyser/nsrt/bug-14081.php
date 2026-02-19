@@ -30,6 +30,19 @@ function last(array $array): mixed
 	return null;
 }
 
+function maybeNonEmpty(): void
+{
+	if (rand(0,1)) {
+		$array = ['one', 'two'];
+	} else {
+		$array = [];
+	}
+	assertType("array{}|array{'one', 'two'}", $array);
+	$key = array_key_last($array);
+	assertType('0|1|null', $key);
+	assertType("'one'|'two'", $array[$key]);
+}
+
 /** @param list<string> $array */
 function firstNotNull(array $array): mixed
 {

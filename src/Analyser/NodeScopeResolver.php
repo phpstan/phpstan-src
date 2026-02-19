@@ -3354,7 +3354,7 @@ class NodeScopeResolver
 				$classType = $scope->resolveTypeByName($expr->class);
 				$methodName = $expr->name->name;
 			} elseif ($expr->class instanceof Expr) {
-				$classType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+				$classType = $scope->resolveStaticCallWithLateStaticBinding($expr);
 				$methodName = $expr->name->name;
 			}
 
@@ -3368,11 +3368,9 @@ class NodeScopeResolver
 						$methodReflection->getNamedArgumentsVariants(),
 					);
 
-					if (!$expr->class instanceof Expr) {
-						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-						if ($methodThrowPoint !== null) {
-							$throwPoints[] = $methodThrowPoint;
-						}
+					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+					if ($methodThrowPoint !== null) {
+						$throwPoints[] = $methodThrowPoint;
 					}
 
 					$declaringClass = $methodReflection->getDeclaringClass();

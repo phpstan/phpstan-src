@@ -5,12 +5,10 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function sprintf;
 
 /**
  * @implements Rule<StaticMethodCallableNode>
@@ -46,23 +44,7 @@ final class StaticMethodCallableRule implements Rule
 
 		$methodNameName = $methodName->toString();
 
-		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName());
-		if ($methodReflection === null) {
-			return $errors;
-		}
-
-		$declaringClass = $methodReflection->getDeclaringClass();
-		if ($declaringClass->hasNativeMethod($methodNameName)) {
-			return $errors;
-		}
-
-		$messagesMethodName = SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()');
-
-		$errors[] = RuleErrorBuilder::message(sprintf('Creating callable from a non-native static method %s.', $messagesMethodName))
-			->identifier('callable.nonNativeMethod')
-			->build();
-
-		return $errors;
+		return $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName())[0];
 	}
 
 }

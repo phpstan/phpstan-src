@@ -40,6 +40,12 @@ class MethodCallableRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1')]
+	public function testBug13596(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13596.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/method-callable.php'], [
@@ -67,14 +73,6 @@ class MethodCallableRuleTest extends RuleTestCase
 			[
 				'Call to private method doFoo() of class MethodCallable\ParentClass.',
 				53,
-			],
-			[
-				'Creating callable from a non-native method MethodCallable\Lorem::doBar().',
-				66,
-			],
-			[
-				'Creating callable from a non-native method MethodCallable\Ipsum::doBar().',
-				85,
 			],
 		]);
 	}

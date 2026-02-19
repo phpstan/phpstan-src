@@ -38,3 +38,12 @@ function firstOnMapWithNullCheck(array $map): void
 		assertType('int', $map[$key]);
 	}
 }
+
+/** @param iterable<string, int> $data */
+function iterableWithNullCheck(iterable $data): void
+{
+	$key = array_key_first($data);
+	if ($key !== null) {
+		assertType('mixed', $data[$key]);
+	}
+}

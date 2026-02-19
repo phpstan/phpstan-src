@@ -26,3 +26,11 @@ class BarType {
 	 */
 	public function bar($foo): string { return $foo; }
 }
+
+function doFoo(FooType $foo, BarType $bar): void {
+	$foo->foo('bar');
+	$foo->foo('bla');
+
+	$bar->bar('foo');
+	$bar->bar('bla');
+}

@@ -173,6 +173,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -6106,6 +6107,35 @@ class NodeScopeResolver
 					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+				}
+
+				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
+					$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
+					$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
+					if (
+						$withoutFalseyType->equals($type)
+						|| $withoutFalseyType->equals($truthyType)
+					) {
+						continue;
+					}
+
+					$astNode = match ($falseyScalar) {
+						null => new ConstFetch(new Name('null')),
+						false =>    new ConstFetch(new Name('false')),
+						0 =>    new Node\Scalar\Int_($falseyScalar),
+						0.0 =>  new Node\Scalar\Float_($falseyScalar),
+						'', '0' => new Node\Scalar\String_($falseyScalar),
+						[] => new Node\Expr\Array_($falseyScalar),
+					};
+					$notConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
+					$notSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notSpecifiedTypes, $withoutFalseyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notSpecifiedTypes, $withoutFalseyType);
+
+					$conditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
+					$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $conditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $specifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $specifiedTypes, $falseyType);
 				}
 
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);

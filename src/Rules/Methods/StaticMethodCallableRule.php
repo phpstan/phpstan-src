@@ -46,7 +46,7 @@ final class StaticMethodCallableRule implements Rule
 
 		$methodNameName = $methodName->toString();
 
-		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName()->getStartLine());
+		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName());
 		if ($methodReflection === null) {
 			return $errors;
 		}

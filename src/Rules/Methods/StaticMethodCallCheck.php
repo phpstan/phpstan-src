@@ -62,7 +62,7 @@ final class StaticMethodCallCheck
 		Scope $scope,
 		string $methodName,
 		$class,
-		Identifier|Expr $astName
+		Identifier|Expr $astName,
 	): array
 	{
 		$errors = [];
@@ -318,9 +318,9 @@ final class StaticMethodCallCheck
 					))
 						->line($astName->getStartLine())
 						->identifier(sprintf(
-						'%s.callToAbstract',
-						$method->isStatic() ? 'staticMethod' : 'method',
-					))->build(),
+							'%s.callToAbstract',
+							$method->isStatic() ? 'staticMethod' : 'method',
+						))->build(),
 				],
 				$method,
 			];

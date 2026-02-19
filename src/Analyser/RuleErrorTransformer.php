@@ -14,7 +14,6 @@ use PHPStan\File\FileReader;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
-use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;

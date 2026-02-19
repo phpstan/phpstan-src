@@ -6119,17 +6119,17 @@ class NodeScopeResolver
 						continue;
 					}
 
-					if ($falseyScalar == null) {
+					if ($falseyScalar === null) {
 						$astNode = new ConstFetch(new Name('null'));
-					} elseif ($falseyScalar == false) {
+					} elseif ($falseyScalar === false) {
 						$astNode = new ConstFetch(new Name('false'));
-					} elseif ($falseyScalar == 0) {
+					} elseif ($falseyScalar === 0) {
 						$astNode = new Node\Scalar\Int_($falseyScalar);
-					} elseif ($falseyScalar == 0.0) {
+					} elseif ($falseyScalar === 0.0) {
 						$astNode = new Node\Scalar\Float_($falseyScalar);
-					} elseif ($falseyScalar == '' || $falseyScalar == '0') {
+					} elseif ($falseyScalar === '' || $falseyScalar === '0') {
 						$astNode = new Node\Scalar\String_($falseyScalar);
-					} elseif ($falseyScalar == []) {
+					} elseif ($falseyScalar === []) {
 						$astNode = new Node\Expr\Array_($falseyScalar);
 					}
 

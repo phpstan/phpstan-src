@@ -840,7 +840,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/array-dim-after-array-search.php'], [
 			[
-				'Offset int|string might not exist on array.',
+				'Offset int|string might not exist on non-empty-array.',
 				20,
 			],
 		]);

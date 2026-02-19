@@ -3844,6 +3844,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12875.php'], []);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-14150.php'], [
+			[
+				'Call to an undefined method Bug14150Method\HelloWorld::y().',
+				21,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1')]
 	public function testBug13805(): void
 	{
@@ -3851,6 +3864,57 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-13805.php'], []);
+	}
+
+	public function testBug9820(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-9820.php'], [
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				20,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				27,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				33,
+			],
+			[
+				'Method Bug9820\HelloWorld::x() invoked with 1 parameter, 0 required.',
+				40,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug6120(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6120.php'], []);
+	}
+
+	public function testBug11463(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../PhpDoc/data/bug-11463.php'], [
+			[
+				"Parameter #1 \$bar of method Bug11463\FooType::foo() expects 'bar', 'bla' given.",
+				32,
+			],
+			[
+				"Parameter #1 \$foo of method Bug11463\BarType::bar() expects 'foo', 'bla' given.",
+				35,
+			],
+		]);
 	}
 
 	public function testBug7978(): void

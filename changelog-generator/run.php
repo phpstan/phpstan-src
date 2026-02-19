@@ -6,6 +6,7 @@ namespace PHPStan\ChangelogGenerator;
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Github\Api\GraphQL;
+use Github\Api\PullRequest;
 use Github\Api\Repo;
 use Github\Api\Search;
 use Github\AuthMethod;
@@ -18,7 +19,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function array_key_exists;
 use function array_map;
+use function array_slice;
+use function array_unique;
+use function array_values;
 use function count;
 use function escapeshellarg;
 use function exec;
@@ -57,6 +62,9 @@ use function sprintf;
 
 			/** @var Repo $repoApi */
 			$repoApi = $gitHubClient->api('repo');
+
+			/** @var PullRequest $pullRequestApi */
+			$pullRequestApi = $gitHubClient->api('pull_request');
 
 			/** @var GraphQL $graphqlApi */
 			$graphqlApi = $gitHubClient->api('graphql');
@@ -156,21 +164,44 @@ use function sprintf;
 					$items = $searchApi->issues(sprintf('repo:phpstan/phpstan %s is:issue', $commit['hash']), 'created')['items'];
 				}
 				$parenthesis = 'https://github.com/phpstan/phpstan-src/commit/' . $commit['hash'];
-				$thanks = null;
+				$thanksNames = [];
 				$issuesToReference = [];
 				foreach ($items as $responseItem) {
 					if (isset($responseItem['pull_request'])) {
 						$parenthesis = sprintf('[#%d](%s)', $responseItem['number'], 'https://github.com/phpstan/phpstan-src/pull/' . $responseItem['number']);
 
-						if ($responseItem['user']['login'] !== 'ondrejmirtes') {
-							$thanks = $responseItem['user']['login'];
+						if ($responseItem['user']['login'] === 'phpstan-bot') {
+							$reviews = $pullRequestApi->reviews()->all('phpstan', 'phpstan-src', $responseItem['number']);
+							foreach ($reviews as $review) {
+								if (!array_key_exists('user', $review) || !array_key_exists('login', $review['user'])) {
+									continue;
+								}
+								$reviewerLogin = $review['user']['login'];
+								if ($reviewerLogin === 'ondrejmirtes' || $reviewerLogin === 'phpstan-bot') {
+									continue;
+								}
+								$thanksNames[] = $reviewerLogin;
+							}
+							$thanksNames = array_values(array_unique($thanksNames));
+						} elseif ($responseItem['user']['login'] !== 'ondrejmirtes') {
+							$thanksNames = [$responseItem['user']['login']];
 						}
 					} else {
 						$issuesToReference[] = sprintf('#%d', $responseItem['number']);
 					}
 				}
 
-				$output->writeln(sprintf('* %s (%s)%s%s', $commit['message'], $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanks !== null ? sprintf(', thanks @%s!', $thanks) : ''));
+				if (count($thanksNames) === 1) {
+					$thanksText = sprintf(', thanks @%s!', $thanksNames[0]);
+				} elseif (count($thanksNames) > 1) {
+					$last = $thanksNames[count($thanksNames) - 1];
+					$rest = implode(', ', array_map(static fn (string $name): string => '@' . $name, array_slice($thanksNames, 0, -1)));
+					$thanksText = sprintf(', thanks %s and @%s!', $rest, $last);
+				} else {
+					$thanksText = '';
+				}
+
+				$output->writeln(sprintf('* %s (%s)%s%s', $commit['message'], $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanksText));
 			}
 
 			return 0;

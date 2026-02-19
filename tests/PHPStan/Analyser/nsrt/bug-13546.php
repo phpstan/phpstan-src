@@ -66,7 +66,7 @@ function mixedLast($mixed): void
 function firstInCondition(array $array)
 {
 	if (($key = array_key_first($array)) !== null) {
-		assertType('list<string>', $array); // could be 'non-empty-list<string>'
+		assertType('non-empty-list<string>', $array);
 		return $array[$key];
 	}
 	assertType('list<string>', $array);

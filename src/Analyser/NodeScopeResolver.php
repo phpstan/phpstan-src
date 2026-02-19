@@ -6108,6 +6108,46 @@ class NodeScopeResolver
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 				}
 
+				if (
+					$assignedExpr instanceof FuncCall
+					&& $assignedExpr->name instanceof Name
+					&& in_array($assignedExpr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
+					&& count($assignedExpr->getArgs()) >= 1
+				) {
+					$arrayArg = $assignedExpr->getArgs()[0]->value;
+					$arrayType = $scope->getType($arrayArg);
+					$nonNullType = TypeCombinator::removeNull($type);
+					if (
+						$arrayArg instanceof Variable
+						&& is_string($arrayArg->name)
+						&& $arrayType->isArray()->yes()
+						&& !$arrayType->isIterableAtLeastOnce()->yes()
+						&& !$nonNullType instanceof NeverType
+						&& !$type->equals($nonNullType)
+					) {
+						$narrowedArrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+
+						$arrayExprString = '$' . $arrayArg->name;
+						$arrayHolder = new ConditionalExpressionHolder([
+							'$' . $var->name => ExpressionTypeHolder::createYes(new Variable($var->name), $nonNullType),
+						], ExpressionTypeHolder::createYes(
+							$arrayArg,
+							$narrowedArrayType,
+						));
+						$conditionalExpressions[$arrayExprString][$arrayHolder->getKey()] = $arrayHolder;
+
+						$dimFetch = new ArrayDimFetch($arrayArg, $var);
+						$dimFetchExprString = sprintf('$%s[$%s]', $arrayArg->name, $var->name);
+						$dimFetchHolder = new ConditionalExpressionHolder([
+							'$' . $var->name => ExpressionTypeHolder::createYes(new Variable($var->name), $nonNullType),
+						], ExpressionTypeHolder::createYes(
+							$dimFetch,
+							$narrowedArrayType->getIterableValueType(),
+						));
+						$conditionalExpressions[$dimFetchExprString][$dimFetchHolder->getKey()] = $dimFetchHolder;
+					}
+				}
+
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
 				foreach ($conditionalExpressions as $exprString => $holders) {

@@ -90,7 +90,11 @@ final class FunctionCallParametersCheck
 		string $namedArgumentMessage,
 	): array
 	{
-		$funcCallLine = RuleErrorTransformer::getStartLineFromNode($funcCall);
+		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
+			$funcCallLine = $funcCall->name->getStartLine();
+		} else {
+			$funcCallLine = $funcCall->getStartLine();
+		}
 
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;

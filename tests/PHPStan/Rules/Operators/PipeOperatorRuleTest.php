@@ -35,4 +35,14 @@ class PipeOperatorRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14150-pipe.php'], [
+			[
+				'Parameter #1 $s of callable on the right side of pipe operator is passed by reference.',
+				17,
+			],
+		]);
+	}
+
 }

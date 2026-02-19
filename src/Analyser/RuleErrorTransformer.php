@@ -56,6 +56,7 @@ final class RuleErrorTransformer
 		Node $node,
 	): Error
 	{
+		$line = $node->getStartLine();
 		$canBeIgnored = true;
 		$fileName = $scope->getFileDescription();
 		$filePath = $scope->getFile();
@@ -75,8 +76,6 @@ final class RuleErrorTransformer
 			&& $ruleError->getLine() !== -1
 		) {
 			$line = $ruleError->getLine();
-		} else {
-			$line = self::getStartLineFromNode($node);
 		}
 		if (
 			$ruleError instanceof FileRuleError
@@ -166,26 +165,6 @@ final class RuleErrorTransformer
 			$metadata,
 			$fixedErrorDiff,
 		);
-	}
-
-	public static function getStartLineFromNode(Node $node): int
-	{
-		if (
-			$node instanceof Node\Expr\PropertyFetch
-			|| $node instanceof Node\Expr\StaticPropertyFetch
-			|| $node instanceof Node\Expr\NullsafePropertyFetch
-			|| $node instanceof Node\Expr\MethodCall
-			|| $node instanceof Node\Expr\NullsafeMethodCall
-			|| $node instanceof Node\Expr\StaticCall
-		) {
-			$line = $node->name->getStartLine();
-		} elseif ($node instanceof PropertyAssignNode) {
-			$line = self::getStartLineFromNode($node->getPropertyFetch());
-		} else {
-			return $node->getStartLine();
-		}
-
-		return $line !== -1 ? $line : $node->getStartLine();
 	}
 
 }

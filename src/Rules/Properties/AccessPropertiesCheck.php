@@ -78,6 +78,7 @@ final class AccessPropertiesCheck
 					$originalNameType = $scope->getType($node->name);
 					$className = $scope->getType($node->var)->describe(VerbosityLevel::typeOnly());
 					$errors[] = RuleErrorBuilder::message(sprintf('Property name for %s must be a string, but %s was given.', $className, $originalNameType->describe(VerbosityLevel::precise())))
+						->line($node->name->getStartLine())
 						->identifier('property.nameNotString')
 						->build();
 				}
@@ -124,7 +125,10 @@ final class AccessPropertiesCheck
 					'Cannot access property $%s on %s.',
 					$name,
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-				))->identifier('property.nonObject')->build(),
+				))
+					->line($node->name->getStartLine())
+					->identifier('property.nonObject')
+					->build(),
 			];
 		}
 
@@ -183,7 +187,10 @@ final class AccessPropertiesCheck
 								'Access to private property $%s of parent class %s.',
 								$name,
 								$parentClassReflection->getDisplayName(),
-							))->identifier('property.private')->build(),
+							))
+								->line($node->name->getStartLine())
+								->identifier('property.private')
+								->build(),
 						];
 					}
 
@@ -208,7 +215,10 @@ final class AccessPropertiesCheck
 						'Non-static access to static property %s::$%s.',
 						$type->getStaticProperty($name, $scope)->getDeclaringClass()->getDisplayName(),
 						$name,
-					))->identifier('staticProperty.nonStaticAccess')->build(),
+					))
+						->line($node->name->getStartLine())
+						->identifier('staticProperty.nonStaticAccess')
+						->build(),
 				];
 			}
 
@@ -255,7 +265,10 @@ final class AccessPropertiesCheck
 					$propertyReflection->isPrivate() ? 'private' : 'protected',
 					$type->describe(VerbosityLevel::typeOnly()),
 					$name,
-				))->identifier(sprintf('property.%s', $propertyReflection->isPrivate() ? 'private' : 'protected'))->build(),
+				))
+					->line($node->name->getStartLine())
+					->identifier(sprintf('property.%s', $propertyReflection->isPrivate() ? 'private' : 'protected'))
+					->build(),
 			];
 		}
 
@@ -265,7 +278,10 @@ final class AccessPropertiesCheck
 				$propertyReflection->isPrivateSet() ? 'private(set)' : 'protected(set)',
 				$type->describe(VerbosityLevel::typeOnly()),
 				$name,
-			))->identifier(sprintf('assign.property%s', $propertyReflection->isPrivateSet() ? 'PrivateSet' : 'ProtectedSet'))->build(),
+			))
+				->line($node->name->getStartLine())
+				->identifier(sprintf('assign.property%s', $propertyReflection->isPrivateSet() ? 'PrivateSet' : 'ProtectedSet'))
+				->build(),
 		];
 	}
 

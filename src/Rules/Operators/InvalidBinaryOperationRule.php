@@ -121,7 +121,7 @@ final class InvalidBinaryOperationRule implements Rule
 				$scope->getType($left)->describe(VerbosityLevel::value()),
 				$scope->getType($right)->describe(VerbosityLevel::value()),
 			))
-				->line($left->getStartLine())
+				->line($right->getStartLine())
 				->identifier(sprintf('%s.invalid', $identifier))
 				->build(),
 		];

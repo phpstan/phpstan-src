@@ -31,6 +31,7 @@ final class NullsafeMethodCallRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(sprintf('Using nullsafe method call on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))
+				->line($node->name->getStartLine())
 				->identifier('nullsafe.neverNull')
 				->build(),
 		];

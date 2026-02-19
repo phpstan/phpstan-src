@@ -65,7 +65,7 @@ final class CallStaticMethodsRule implements Rule
 	 */
 	private function processSingleMethodCall(Scope $scope, StaticCall $node, string $methodName): array
 	{
-		[$errors, $method] = $this->methodCallCheck->check($scope, $methodName, $node->class);
+		[$errors, $method] = $this->methodCallCheck->check($scope, $methodName, $node->class, $node->name);
 		if ($method === null) {
 			return $errors;
 		}

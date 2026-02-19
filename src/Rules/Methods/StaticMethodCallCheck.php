@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use DOMDocument;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
@@ -61,6 +62,7 @@ final class StaticMethodCallCheck
 		Scope $scope,
 		string $methodName,
 		$class,
+		Identifier|Expr $astName
 	): array
 	{
 		$errors = [];
@@ -81,7 +83,9 @@ final class StaticMethodCallCheck
 								'Calling %s::%s() outside of class scope.',
 								$className,
 								$methodName,
-							))->identifier(sprintf('outOfClass.%s', $lowercasedClassName))->build(),
+							))
+								->line($astName->getStartLine())
+								->identifier(sprintf('outOfClass.%s', $lowercasedClassName))->build(),
 						],
 						null,
 					];
@@ -95,7 +99,10 @@ final class StaticMethodCallCheck
 								'Calling %s::%s() outside of class scope.',
 								$className,
 								$methodName,
-							))->identifier(sprintf('outOfClass.parent'))->build(),
+							))
+								->line($astName->getStartLine())
+								->identifier(sprintf('outOfClass.parent'))
+								->build(),
 						],
 						null,
 					];
@@ -110,7 +117,10 @@ final class StaticMethodCallCheck
 								$scope->getFunctionName(),
 								$methodName,
 								$scope->getClassReflection()->getDisplayName(),
-							))->identifier('class.noParent')->build(),
+							))
+								->line($astName->getStartLine())
+								->identifier('class.noParent')
+								->build(),
 						],
 						null,
 					];
@@ -132,6 +142,7 @@ final class StaticMethodCallCheck
 						$methodName,
 						$className,
 					))
+						->line($astName->getStartLine())
 						->identifier('class.notFound');
 
 					if ($this->discoveringSymbolsTip) {
@@ -206,7 +217,10 @@ final class StaticMethodCallCheck
 						'Cannot call static method %s() on %s.',
 						$methodName,
 						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					))->identifier('staticMethod.nonObject')->build(),
+					))
+						->line($astName->getStartLine())
+						->identifier('staticMethod.nonObject')
+						->build(),
 				]),
 				null,
 			];
@@ -232,7 +246,10 @@ final class StaticMethodCallCheck
 						'Call to an undefined static method %s::%s().',
 						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 						$methodName,
-					))->identifier('staticMethod.notFound')->build(),
+					))
+						->line($astName->getStartLine())
+						->identifier('staticMethod.notFound')
+						->build(),
 				]),
 				null,
 			];
@@ -265,7 +282,10 @@ final class StaticMethodCallCheck
 							'Static call to instance method %s::%s().',
 							$method->getDeclaringClass()->getDisplayName(),
 							$method->getName(),
-						))->identifier('method.staticCall')->build(),
+						))
+							->line($astName->getStartLine())
+							->identifier('method.staticCall')
+							->build(),
 					]),
 					$method,
 				];
@@ -281,6 +301,7 @@ final class StaticMethodCallCheck
 					$method->getName(),
 					$method->getDeclaringClass()->getDisplayName(),
 				))
+					->line($astName->getStartLine())
 					->identifier(sprintf('staticMethod.%s', $method->isPrivate() ? 'private' : 'protected'))
 					->build(),
 			]);
@@ -294,7 +315,9 @@ final class StaticMethodCallCheck
 						$method->isStatic() ? ' static' : '',
 						$method->getDeclaringClass()->getDisplayName(),
 						$method->getName(),
-					))->identifier(sprintf(
+					))
+						->line($astName->getStartLine())
+						->identifier(sprintf(
 						'%s.callToAbstract',
 						$method->isStatic() ? 'staticMethod' : 'method',
 					))->build(),
@@ -317,7 +340,10 @@ final class StaticMethodCallCheck
 				'Call to %s with incorrect case: %s',
 				$lowercasedMethodName,
 				$methodName,
-			))->identifier('staticMethod.nameCase')->build();
+			))
+				->line($astName->getStartLine())
+				->identifier('staticMethod.nameCase')
+				->build();
 		}
 
 		return [$errors, $method];

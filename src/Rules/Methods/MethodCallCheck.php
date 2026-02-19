@@ -72,7 +72,10 @@ final class MethodCallCheck
 						'Cannot call method %s() on %s.',
 						$methodName,
 						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					))->identifier('method.nonObject')->build(),
+					))
+						->line($astName->getStartLine())
+						->identifier('method.nonObject')
+						->build(),
 				],
 				null,
 			];
@@ -106,7 +109,10 @@ final class MethodCallCheck
 									'Call to private method %s() of parent class %s.',
 									$methodReflection->getName(),
 									$parentClassReflection->getDisplayName(),
-								))->identifier('method.private')->build(),
+								))
+									->line($astName->getStartLine())
+									->identifier('method.private')
+									->build(),
 							],
 							$methodReflection,
 						];
@@ -133,7 +139,10 @@ final class MethodCallCheck
 						'Call to an undefined method %s::%s().',
 						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 						$methodName,
-					))->identifier('method.notFound')->build(),
+					))
+						->line($astName->getStartLine())
+						->identifier('method.notFound')
+						->build(),
 				],
 				null,
 			];
@@ -150,6 +159,7 @@ final class MethodCallCheck
 				$methodReflection->getName(),
 				$declaringClass->getDisplayName(),
 			))
+				->line($astName->getStartLine())
 				->identifier(sprintf('method.%s', $methodReflection->isPrivate() ? 'private' : 'protected'))
 				->build();
 		}
@@ -161,7 +171,10 @@ final class MethodCallCheck
 		) {
 			$errors[] = RuleErrorBuilder::message(
 				sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $methodName),
-			)->identifier('method.nameCase')->build();
+			)
+				->line($astName->getStartLine())
+				->identifier('method.nameCase')
+				->build();
 		}
 
 		return [$errors, $methodReflection];

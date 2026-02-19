@@ -605,6 +605,16 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14150(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14150-binary.php'], [
+			[
+				'Binary operation "+" between 3 and \'e\' results in an error.',
+				12,
+			],
+		]);
+	}
+
 	public function testBenevolentUnion(): void
 	{
 		$this->analyse([__DIR__ . '/data/binary-op-benevolent-union.php'], [

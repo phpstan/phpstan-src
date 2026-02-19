@@ -66,3 +66,20 @@ function lastNotNull(array $array): mixed
 	}
 	return null;
 }
+
+/** @param list<string> $array */
+function noIf(array $array): void
+{
+	$key = array_key_first($array);
+	assertType('int<0, max>|null', $key);
+	assertType('list<string>', $array);
+	assertType('string', $array[$key]);
+
+	if ($array === []) {
+		return;
+	}
+	$key = array_key_first($array);
+	assertType('int<0, max>', $key);
+	assertType('non-empty-list<string>', $array);
+	assertType('string', $array[$key]);
+}

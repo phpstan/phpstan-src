@@ -1373,9 +1373,13 @@ final class ClassReflection
 
 			$typeAliasImportTags = $resolvedPhpDoc->getTypeAliasImportTags();
 			$typeAliasTags = $resolvedPhpDoc->getTypeAliasTags();
+			$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
+				if ($localAliases !== []) {
+					return $this->typeAliases = $localAliases;
+				}
 				throw new CircularTypeAliasDefinitionException();
 			}
 
@@ -1405,8 +1409,6 @@ final class ClassReflection
 			}, $typeAliasImportTags);
 
 			unset(self::$resolvingTypeAliasImports[$this->getName()]);
-
-			$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 
 			$this->typeAliases = array_filter(
 				array_merge($importedAliases, $localAliases),

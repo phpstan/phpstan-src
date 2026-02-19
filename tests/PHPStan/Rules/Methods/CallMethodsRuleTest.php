@@ -3900,4 +3900,21 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6120.php'], []);
 	}
 
+	public function testBug11463(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../PhpDoc/data/bug-11463.php'], [
+			[
+				"Parameter #1 \$bar of method Bug11463\FooType::foo() expects 'bar', 'bla' given.",
+				32,
+			],
+			[
+				"Parameter #1 \$foo of method Bug11463\BarType::bar() expects 'foo', 'bla' given.",
+				35,
+			],
+		]);
+	}
+
 }

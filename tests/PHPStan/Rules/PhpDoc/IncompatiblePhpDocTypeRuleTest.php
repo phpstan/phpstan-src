@@ -492,4 +492,9 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11463.php'], []);
 	}
 
+	public function testBug11463b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11463b.php'], []);
+	}
+
 }

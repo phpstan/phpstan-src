@@ -1373,13 +1373,10 @@ final class ClassReflection
 
 			$typeAliasImportTags = $resolvedPhpDoc->getTypeAliasImportTags();
 			$typeAliasTags = $resolvedPhpDoc->getTypeAliasTags();
+			$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 
 			// prevent circular imports
 			if (array_key_exists($this->getName(), self::$resolvingTypeAliasImports)) {
-				// Return only local type aliases to break the cycle.
-				// Imported aliases are not available yet, but local ones
-				// don't depend on other classes and can be returned safely.
-				$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 				if ($localAliases !== []) {
 					return $this->typeAliases = $localAliases;
 				}
@@ -1412,8 +1409,6 @@ final class ClassReflection
 			}, $typeAliasImportTags);
 
 			unset(self::$resolvingTypeAliasImports[$this->getName()]);
-
-			$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 
 			$this->typeAliases = array_filter(
 				array_merge($importedAliases, $localAliases),

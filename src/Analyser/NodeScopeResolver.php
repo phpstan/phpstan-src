@@ -3420,6 +3420,22 @@ class NodeScopeResolver
 				}
 			}
 
+			if ($expr->class instanceof Expr) {
+				$objectClasses = $scope->getType($expr->class)->getObjectClassNames();
+				if (count($objectClasses) !== 1) {
+					$objectClasses = $scope->getType(new New_($expr->class))->getObjectClassNames();
+				}
+				if (count($objectClasses) === 1) {
+					$objectExprResult = $this->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+					$additionalThrowPoints = $objectExprResult->getThrowPoints();
+				} else {
+					$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
+				}
+				foreach ($additionalThrowPoints as $throwPoint) {
+					$throwPoints[] = $throwPoint;
+				}
+			}
+
 			if ($methodReflection !== null) {
 				$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
 				if ($impurePoint !== null) {

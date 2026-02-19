@@ -6119,14 +6119,20 @@ class NodeScopeResolver
 						continue;
 					}
 
-					$astNode = match ($falseyScalar) {
-						null => new ConstFetch(new Name('null')),
-						false => new ConstFetch(new Name('false')),
-						0 => new Node\Scalar\Int_($falseyScalar),
-						0.0 => new Node\Scalar\Float_($falseyScalar),
-						'', '0' => new Node\Scalar\String_($falseyScalar),
-						[] => new Node\Expr\Array_($falseyScalar),
-					};
+					if ($falseyScalar == null) {
+						$astNode = new ConstFetch(new Name('null'));
+					} elseif ($falseyScalar == false) {
+						$astNode = new ConstFetch(new Name('false'));
+					} elseif ($falseyScalar == 0) {
+						$astNode = new Node\Scalar\Int_($falseyScalar);
+					} elseif ($falseyScalar == 0.0) {
+						$astNode = new Node\Scalar\Float_($falseyScalar);
+					} elseif ($falseyScalar == '' || $falseyScalar == '0') {
+						$astNode = new Node\Scalar\String_($falseyScalar);
+					} elseif ($falseyScalar == []) {
+						$astNode = new Node\Expr\Array_($falseyScalar);
+					}
+
 					$notConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
 					$notSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notSpecifiedTypes, $withoutFalseyType);

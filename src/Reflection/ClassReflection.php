@@ -1381,7 +1381,7 @@ final class ClassReflection
 				// don't depend on other classes and can be returned safely.
 				$localAliases = array_map(static fn (TypeAliasTag $typeAliasTag): TypeAlias => $typeAliasTag->getTypeAlias(), $typeAliasTags);
 				if ($localAliases !== []) {
-					return $localAliases;
+					return $this->typeAliases = $localAliases;
 				}
 				throw new CircularTypeAliasDefinitionException();
 			}

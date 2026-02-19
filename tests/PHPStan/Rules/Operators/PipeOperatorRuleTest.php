@@ -35,6 +35,7 @@ class PipeOperatorRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.5')]
 	public function testBug14150(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14150-pipe.php'], [

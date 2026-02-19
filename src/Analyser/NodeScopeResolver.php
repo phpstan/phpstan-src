@@ -3354,8 +3354,11 @@ class NodeScopeResolver
 				$classType = $scope->resolveTypeByName($expr->class);
 				$methodName = $expr->name->name;
 			} elseif ($expr->class instanceof Expr) {
-				$classType = $scope->resolveStaticCallWithLateStaticBinding($expr);
-				$methodName = $expr->name->name;
+				$objectClasses = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
+				if (count($objectClasses) === 1) {
+					$classType = $scope->resolveTypeByNameWithLateStaticBinding(new Name($objectClasses[0]), $expr->name);
+					$methodName = $expr->name->name;
+				}
 			}
 
 			if ($classType !== null && $methodName !== null) {

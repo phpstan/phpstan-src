@@ -2044,19 +2044,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return new ObjectType($originalClass);
 	}
 
-	public function resolveStaticCallWithLateStaticBinding(Expr\StaticCall $expr): ?TypeWithClassName
-	{
-		$objectClasses = TypeCombinator::removeNull($this->getType($expr->class))->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
-		if (count($objectClasses) !== 1) {
-			return null;
-		}
-		if (!$expr->name instanceof Identifier) {
-			return null;
-		}
-		return $this->resolveTypeByNameWithLateStaticBinding(new Name($objectClasses[0]), $expr->name);
-	}
-
-	private function resolveTypeByNameWithLateStaticBinding(Name $class, Node\Identifier $name): TypeWithClassName
+	public function resolveTypeByNameWithLateStaticBinding(Name $class, Node\Identifier $name): TypeWithClassName
 	{
 		$classType = $this->resolveTypeByName($class);
 

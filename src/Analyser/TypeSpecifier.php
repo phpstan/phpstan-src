@@ -749,9 +749,7 @@ final class TypeSpecifier
 						$isNonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
 					}
 
-					if (
-						$isNonEmpty
-					) {
+					if ($isNonEmpty) {
 						$dimFetch = new ArrayDimFetch($arrayArg, $expr->var);
 						$iterableValueType = $expr->expr->name->toLowerString() === 'array_key_first'
 							? $arrayType->getIterableValueType()

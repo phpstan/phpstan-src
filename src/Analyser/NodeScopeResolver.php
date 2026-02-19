@@ -3341,7 +3341,9 @@ class NodeScopeResolver
 			}
 
 			$parametersAcceptor = null;
+			$classType = null;
 			$methodReflection = null;
+			$methodName = null;
 			if ($expr->name instanceof Expr) {
 				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $result->hasYield();
@@ -3351,6 +3353,12 @@ class NodeScopeResolver
 			} elseif ($expr->class instanceof Name) {
 				$classType = $scope->resolveTypeByName($expr->class);
 				$methodName = $expr->name->name;
+			} elseif ($expr->class instanceof Expr && $expr->name instanceof Identifier) {
+				$classType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+				$methodName = $expr->name->name;
+			}
+
+			if ($classType !== null && $methodName !== null) {
 				if ($classType->hasMethod($methodName)->yes()) {
 					$methodReflection = $classType->getMethod($methodName, $scope);
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -3425,25 +3433,6 @@ class NodeScopeResolver
 				}
 				foreach ($additionalThrowPoints as $throwPoint) {
 					$throwPoints[] = $throwPoint;
-				}
-
-				if ($expr->name instanceof Identifier && $methodReflection === null) {
-					$staticMethodCalledOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
-					$methodName = $expr->name->name;
-					if ($staticMethodCalledOnType->hasMethod($methodName)->yes()) {
-						$methodReflection = $staticMethodCalledOnType->getMethod($methodName, $scope);
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-							$scope,
-							$expr->getArgs(),
-							$methodReflection->getVariants(),
-							$methodReflection->getNamedArgumentsVariants(),
-						);
-
-						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-						if ($methodThrowPoint !== null) {
-							$throwPoints[] = $methodThrowPoint;
-						}
-					}
 				}
 			}
 

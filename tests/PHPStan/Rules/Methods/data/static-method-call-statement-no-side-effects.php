@@ -10,7 +10,7 @@ class Foo
 	public function doFoo(\DateTimeImmutable $dt)
 	{
 		DateTimeImmutable::createFromFormat('Y-m-d', '2019-07-24');
-		$dt::createFromFormat('Y-m-d', '2019-07-24');
+		$dt::createFromFormat('Y-m-d', '2019-07-24'); // method might be impure in DateTimeImmutable subclass
 	}
 
 }

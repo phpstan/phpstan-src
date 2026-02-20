@@ -30,7 +30,7 @@ class Bar {
 class Baz {
 	function doBaz(Foo $foo, FinalFoo $finalFoo, Bar $bar):void {
 		$foo::doFoo(); // no error, subclass could override static method with impure impl
-		$finalFoo::doFoo(); // could error, because final class
-		$bar::finalFoo(); // could error, because final method
+		$finalFoo::doFoo(); // could be "Call to static method .. on a separate line has no effect", because final class
+		$bar::finalFoo(); // could be "Call to static method .. on a separate line has no effect", because final method
 	}
 }

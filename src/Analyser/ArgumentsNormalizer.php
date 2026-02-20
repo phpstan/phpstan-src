@@ -94,14 +94,15 @@ final class ArgumentsNormalizer
 		FuncCall $functionCall,
 	): ?FuncCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $args);
 
 		if ($reorderedArgs === null) {
 			return null;
 		}
 
 		// return identical object if not reordered, as TypeSpecifier relies on object identity
-		if ($reorderedArgs === $functionCall->getArgs()) {
+		if ($reorderedArgs === $args) {
 			return $functionCall;
 		}
 
@@ -117,14 +118,15 @@ final class ArgumentsNormalizer
 		MethodCall $methodCall,
 	): ?MethodCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall->getArgs());
+		$args = $methodCall->getArgs();
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $args);
 
 		if ($reorderedArgs === null) {
 			return null;
 		}
 
 		// return identical object if not reordered, as TypeSpecifier relies on object identity
-		if ($reorderedArgs === $methodCall->getArgs()) {
+		if ($reorderedArgs === $args) {
 			return $methodCall;
 		}
 
@@ -141,14 +143,15 @@ final class ArgumentsNormalizer
 		StaticCall $staticCall,
 	): ?StaticCall
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall->getArgs());
+		$args = $staticCall->getArgs();
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $args);
 
 		if ($reorderedArgs === null) {
 			return null;
 		}
 
 		// return identical object if not reordered, as TypeSpecifier relies on object identity
-		if ($reorderedArgs === $staticCall->getArgs()) {
+		if ($reorderedArgs === $args) {
 			return $staticCall;
 		}
 
@@ -165,14 +168,15 @@ final class ArgumentsNormalizer
 		New_ $new,
 	): ?New_
 	{
-		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new->getArgs());
+		$args = $new->getArgs();
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $args);
 
 		if ($reorderedArgs === null) {
 			return null;
 		}
 
 		// return identical object if not reordered, as TypeSpecifier relies on object identity
-		if ($reorderedArgs === $new->getArgs()) {
+		if ($reorderedArgs === $args) {
 			return $new;
 		}
 

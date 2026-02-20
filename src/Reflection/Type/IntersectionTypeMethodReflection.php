@@ -10,7 +10,6 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -80,10 +79,22 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
-		$returnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getReturnType(), $method->getVariants())), $this->methods));
-		$phpDocReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getPhpDocReturnType(), $method->getVariants())), $this->methods));
-		$nativeReturnType = TypeCombinator::intersect(...array_map(static fn (MethodReflection $method): Type => TypeCombinator::intersect(...array_map(static fn (ParametersAcceptor $acceptor): Type => $acceptor->getNativeReturnType(), $method->getVariants())), $this->methods));
+		$returnTypes = [];
+		$phpDocReturnTypes = [];
+		$nativeReturnTypes = [];
+		foreach ($this->methods as $method) {
+			$variants = $method->getVariants();
 
+			foreach ($variants as $acceptor) {
+				$returnTypes[] = $acceptor->getReturnType();
+				$phpDocReturnTypes[] = $acceptor->getPhpDocReturnType();
+				$nativeReturnTypes[] = $acceptor->getNativeReturnType();
+			}
+		}
+
+		$returnType = TypeCombinator::intersect(...$returnTypes);
+		$phpDocReturnType = TypeCombinator::intersect(...$phpDocReturnTypes);
+		$nativeReturnType = TypeCombinator::intersect(...$nativeReturnTypes);
 		return array_map(static fn (ExtendedParametersAcceptor $acceptor): ExtendedParametersAcceptor => new ExtendedFunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),

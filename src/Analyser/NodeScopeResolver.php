@@ -137,6 +137,7 @@ use PHPStan\Parser\ReversePipeTransformerVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
@@ -267,6 +268,7 @@ class NodeScopeResolver
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private readonly Parser $parser,
 		private readonly FileTypeMapper $fileTypeMapper,
+		private readonly StubPhpDocProvider $stubPhpDocProvider,
 		private readonly PhpVersion $phpVersion,
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private readonly FileHelper $fileHelper,
@@ -7446,12 +7448,20 @@ class NodeScopeResolver
 				return $param->var->name;
 			}, $node->getParams());
 			$currentResolvedPhpDoc = null;
-			if ($docComment !== null) {
+			if ($class !== null) {
+				$currentResolvedPhpDoc = $this->stubPhpDocProvider->findMethodPhpDoc(
+					$class,
+					$class,
+					$functionName,
+					$positionalParameterNames,
+				);
+			}
+			if ($currentResolvedPhpDoc === null && $docComment !== null) {
 				$currentResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 					$file,
 					$class,
 					$trait,
-					$node->name->name,
+					$functionName,
 					$docComment,
 				);
 			}

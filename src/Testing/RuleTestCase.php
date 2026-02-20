@@ -27,6 +27,7 @@ use PHPStan\Fixable\Patcher;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -102,6 +103,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
+			self::getContainer()->getByType(StubPhpDocProvider::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),

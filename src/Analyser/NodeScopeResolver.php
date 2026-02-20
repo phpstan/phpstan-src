@@ -6627,7 +6627,7 @@ class NodeScopeResolver
 			}
 
 			if ($var instanceof Variable && is_string($var->name)) {
-				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scope, $storage);
+				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scope, $storage);
 				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {

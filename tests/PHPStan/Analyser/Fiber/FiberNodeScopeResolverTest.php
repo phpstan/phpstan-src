@@ -11,6 +11,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -55,6 +56,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getByType(ParameterOutTypeExtensionProvider::class),
 			self::getParser(),
 			$container->getByType(FileTypeMapper::class),
+			$container->getByType(StubPhpDocProvider::class),
 			$container->getByType(PhpVersion::class),
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),

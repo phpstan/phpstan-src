@@ -1,0 +1,10 @@
+<?php
+
+class StubMethodBodyTypesClass
+{
+	/**
+	 * @param callable-string $callback
+	 * @return non-empty-string
+	 */
+	public function process($callback): string {}
+}

@@ -2,8 +2,6 @@
 
 namespace DynamicStaticCall;
 
-class SomeClass {}
-
 class Foo {
 	/** @phpstan-pure */
 	static public function doFoo():int

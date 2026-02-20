@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -155,9 +154,16 @@ final class IsSuperTypeOfResult
 			throw new ShouldNotHappenException();
 		}
 
-		$result = TrinaryLogic::extremeIdentity(...array_map(static fn (self $result) => $result->result, $operands));
+		$results = [];
+		$reasons = [];
+		foreach ($operands as $operand) {
+			$results[] = $operand->result;
+			foreach ($operand->reasons as $reason) {
+				$reasons[] = $reason;
+			}
+		}
 
-		return new self($result, self::mergeReasons($operands));
+		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)));
 	}
 
 	/** @see TrinaryLogic::maxMin() */
@@ -167,9 +173,16 @@ final class IsSuperTypeOfResult
 			throw new ShouldNotHappenException();
 		}
 
-		$result = TrinaryLogic::maxMin(...array_map(static fn (self $result) => $result->result, $operands));
+		$results = [];
+		$reasons = [];
+		foreach ($operands as $operand) {
+			$results[] = $operand->result;
+			foreach ($operand->reasons as $reason) {
+				$reasons[] = $reason;
+			}
+		}
 
-		return new self($result, self::mergeReasons($operands));
+		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)));
 	}
 
 	public function negate(): self
@@ -180,23 +193,6 @@ final class IsSuperTypeOfResult
 	public function describe(): string
 	{
 		return $this->result->describe();
-	}
-
-	/**
-	 * @param array<self> $operands
-	 *
-	 * @return list<string>
-	 */
-	private static function mergeReasons(array $operands): array
-	{
-		$reasons = [];
-		foreach ($operands as $operand) {
-			foreach ($operand->reasons as $reason) {
-				$reasons[] = $reason;
-			}
-		}
-
-		return array_values(array_unique($reasons));
 	}
 
 }

@@ -31,6 +31,12 @@ use function array_values;
 final class IsSuperTypeOfResult
 {
 
+	private static self $YES;
+
+	private static self $MAYBE;
+
+	private static self $NO;
+
 	/**
 	 * @api
 	 * @param list<string> $reasons Human-readable explanations of the type relationship
@@ -71,23 +77,29 @@ final class IsSuperTypeOfResult
 
 	public static function createYes(): self
 	{
-		return new self(TrinaryLogic::createYes(), []);
+		return self::$YES ??= new self(TrinaryLogic::createYes(), []);
 	}
 
 	/** @param list<string> $reasons */
 	public static function createNo(array $reasons = []): self
 	{
+		if ($reasons === []) {
+			return self::$NO ??= new self(TrinaryLogic::createNo(), $reasons);
+		}
 		return new self(TrinaryLogic::createNo(), $reasons);
 	}
 
 	public static function createMaybe(): self
 	{
-		return new self(TrinaryLogic::createMaybe(), []);
+		return self::$MAYBE ??= new self(TrinaryLogic::createMaybe(), []);
 	}
 
 	public static function createFromBoolean(bool $value): self
 	{
-		return new self(TrinaryLogic::createFromBoolean($value), []);
+		if ($value === true) {
+			return self::createYes();
+		}
+		return self::createNo();
 	}
 
 	public function toAcceptsResult(): AcceptsResult

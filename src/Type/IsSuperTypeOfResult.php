@@ -30,12 +30,12 @@ use function array_values;
  */
 final class IsSuperTypeOfResult
 {
+
 	private static self $YES;
 
 	private static self $MAYBE;
 
 	private static self $NO;
-
 
 	/**
 	 * @api
@@ -84,7 +84,7 @@ final class IsSuperTypeOfResult
 	public static function createNo(array $reasons = []): self
 	{
 		if ($reasons === []) {
-			return self::$NO ??=  new self(TrinaryLogic::createNo(), $reasons);
+			return self::$NO ??= new self(TrinaryLogic::createNo(), $reasons);
 		}
 		return new self(TrinaryLogic::createNo(), $reasons);
 	}

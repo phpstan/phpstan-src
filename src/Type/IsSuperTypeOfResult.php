@@ -96,7 +96,10 @@ final class IsSuperTypeOfResult
 
 	public static function createFromBoolean(bool $value): self
 	{
-		return new self(TrinaryLogic::createFromBoolean($value), []);
+		if ($value === true) {
+			return self::createYes();
+		}
+		return self::createNo();
 	}
 
 	public function toAcceptsResult(): AcceptsResult

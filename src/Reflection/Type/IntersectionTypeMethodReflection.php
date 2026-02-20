@@ -10,7 +10,6 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
@@ -83,7 +82,7 @@ final class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		$returnTypes = [];
 		$phpDocReturnTypes = [];
 		$nativeReturnTypes = [];
-		foreach($this->methods as $method) {
+		foreach ($this->methods as $method) {
 			$variants = $method->getVariants();
 
 			foreach ($variants as $acceptor) {

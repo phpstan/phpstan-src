@@ -121,6 +121,11 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10819.php'], $errors);
 	}
 
+	public function testDynamicStaticCall(): void
+	{
+		$this->analyse([__DIR__ . '/data/dynamic-static-call.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testPipeOperator(): void
 	{

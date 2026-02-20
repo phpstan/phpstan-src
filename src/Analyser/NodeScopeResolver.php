@@ -6314,7 +6314,7 @@ class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof Variable) {
-					$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scopeBeforeAssignEval, $storage);
+					$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scopeBeforeAssignEval, $storage);
 				} elseif ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$this->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {

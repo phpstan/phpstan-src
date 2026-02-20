@@ -427,6 +427,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug14100(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14100.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testFunctionThatExistsOn72AndLater(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/ldap-exop-passwd.php');

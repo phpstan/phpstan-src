@@ -1120,6 +1120,7 @@ final class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Ternary
 			&& !$context->null()
+			&& !$expr->cond instanceof Expr\Ternary
 		) {
 			$ifExpr = $expr->if ?? $expr->cond;
 			$conditionExpr = new BooleanOr(

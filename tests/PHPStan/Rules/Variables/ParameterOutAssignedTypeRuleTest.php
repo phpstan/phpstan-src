@@ -81,4 +81,14 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12754.php'], []);
 	}
 
+	public function testBug14124(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14124.php'], []);
+	}
+
+	public function testBug14124b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14124b.php'], []);
+	}
+
 }

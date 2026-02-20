@@ -2,6 +2,8 @@
 
 namespace Bug14124;
 
+use function PHPStan\Testing\assertType;
+
 /**
  * @param array<string, list<string>> $convert
  * @param-out array<string, list<string>> $convert
@@ -13,6 +15,7 @@ function example3a(array &$convert): void
 			$val = strtoupper($val);
 		}
 	}
+	assertType('array<string, list<string>>', $convert);
 }
 
 /**
@@ -26,4 +29,5 @@ function example3b(array &$convert): void
 			$convert[$outerKey][$key] = strtoupper($val);
 		}
 	}
+	assertType('array<string, list<string>>', $convert);
 }

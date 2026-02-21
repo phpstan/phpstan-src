@@ -1,6 +1,6 @@
 <?php
 
-namespace SomeNamespace;
+namespace ClassConstantReflectionTest;
 
 class ClassWithConstants
 {

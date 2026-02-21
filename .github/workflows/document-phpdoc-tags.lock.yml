@@ -21,17 +21,17 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Finds undocumented PHPStan config parameters and creates documentation PRs on phpstan/phpstan
+# Finds undocumented PHPDoc tags supported by PHPStan and creates documentation PRs on phpstan/phpstan
 #
-# frontmatter-hash: 31bb738b106c65eb8c5258fe6d0d61365db8ea6b0f389fc75193988252680777
+# frontmatter-hash: 4b00de08f40349ad6705433b25b1eda1b6286fca149203f6d4ddf87f4279b376
 
-name: "Document Config Parameters"
+name: "Document PHPDoc Tags"
 "on":
   push:
     branches:
     - 2.2.x
     paths:
-    - conf/parametersSchema.neon
+    - src/PhpDoc/PhpDocNodeResolver.php
   workflow_dispatch:
 
 permissions: {}
@@ -39,7 +39,7 @@ permissions: {}
 concurrency:
   group: "gh-aw-${{ github.workflow }}-${{ github.ref }}"
 
-run-name: "Document Config Parameters"
+run-name: "Document PHPDoc Tags"
 
 jobs:
   activation:
@@ -67,7 +67,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "document-config-params.lock.yml"
+          GH_AW_WORKFLOW_FILE: "document-phpdoc-tags.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -128,7 +128,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/document-config-params.md}}
+          {{#runtime-import .github/workflows/document-phpdoc-tags.md}}
           GH_AW_PROMPT_EOF
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -204,7 +204,7 @@ jobs:
       issues: read
       pull-requests: read
     env:
-      GH_AW_WORKFLOW_ID_SANITIZED: documentconfigparams
+      GH_AW_WORKFLOW_ID_SANITIZED: documentphpdoctags
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       model: ${{ steps.generate_aw_info.outputs.model }}
@@ -263,7 +263,7 @@ jobs:
               version: "",
               agent_version: "2.1.42",
               cli_version: "v0.45.4",
-              workflow_name: "Document Config Parameters",
+              workflow_name: "Document PHPDoc Tags",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,

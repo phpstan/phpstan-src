@@ -919,7 +919,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		// perf optimize for the most common path
 		if ($node instanceof Variable) {
-			return '$'.$node->name;
+			return '$' . $node->name;
 		}
 
 		$key = $this->exprPrinter->printExpr($node);

@@ -192,6 +192,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($constant->isDeprecated()->yes());
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testFinalConstant(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();

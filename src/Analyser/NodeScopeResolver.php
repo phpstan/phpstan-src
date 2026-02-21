@@ -1889,7 +1889,7 @@ class NodeScopeResolver
 
 				$originalCatchTypes = [];
 				$catchTypes = [];
-				foreach($catchNode->types as $catchNodeType) {
+				foreach ($catchNode->types as $catchNodeType) {
 					$catchType = new ObjectType($catchNodeType->toString());
 					$originalCatchTypes[] = $catchType;
 					$catchTypes[] = TypeCombinator::remove($catchType, $pastCatchTypes);

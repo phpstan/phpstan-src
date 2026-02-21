@@ -1887,8 +1887,13 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$this->callNodeCallback($nodeCallback, $catchNode, $scope, $storage);
 
-				$originalCatchTypes = array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types);
-				$catchTypes = array_map(static fn (Type $type): Type => TypeCombinator::remove($type, $pastCatchTypes), $originalCatchTypes);
+				$originalCatchTypes = [];
+				$catchTypes = [];
+				foreach($catchNode->types as $catchNodeType) {
+					$catchType = new ObjectType($catchNodeType->toString());
+					$originalCatchTypes[] = $catchType;
+					$catchTypes[] = TypeCombinator::remove($catchType, $pastCatchTypes);
+				}
 
 				$originalCatchType = TypeCombinator::union(...$originalCatchTypes);
 				$catchType = TypeCombinator::union(...$catchTypes);

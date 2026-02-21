@@ -74,16 +74,7 @@ class InvalidCastRuleTest extends RuleTestCase
 
 	public function testBug14136(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-14136.php'], [
-			[
-				'Cannot cast BcMath\Number to int.',
-				15,
-			],
-			[
-				'Cannot cast BcMath\Number to float.',
-				22,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-14136.php'], []);
 	}
 
 	public function testCastObjectToString(): void

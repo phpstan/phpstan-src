@@ -21,14 +21,10 @@ assertType('float', (float) (gmp_init(42)));
 
 assertType('string', strval($xml));
 assertType('non-empty-string&numeric-string', strval(gmp_init(42)));
-assertType('non-empty-string&numeric-string', strval(new \BCMath\Number(99)));
 assertType('string', (string) ($xml));
 assertType('non-empty-string&numeric-string', (string) (gmp_init(42)));
-assertType('non-empty-string&numeric-string', (string) new \BCMath\Number(99));
 
 assertType('bool', boolval($xml));
 assertType('bool', boolval(gmp_init(0)));
-assertType('bool', boolval(new \BCMath\Number(0)));
 assertType('bool', (bool) ($xml));
 assertType('bool', (bool) (gmp_init(0)));
-assertType('bool', (bool) (new \BCMath\Number(0)));

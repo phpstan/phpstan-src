@@ -118,6 +118,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/property-hook-attributes-nodiscard.php \
 		--exclude tests/PHPStan/Rules/Functions/data/arrow-function-typehints-nodiscard.php \
 		--exclude tests/PHPStan/Rules/Functions/data/closure-typehints-nodiscard.php \
+		--exclude tests/PHPStan/Reflection/data/ClassWithConstants.php \
 		--exclude tests/PHPStan/Rules/Functions/data/typehints-nodiscard.php \
 		--exclude tests/PHPStan/Rules/Methods/data/typehints-nodiscard.php \
 		--exclude tests/PHPStan/Rules/Cast/data/deprecated-cast.php \

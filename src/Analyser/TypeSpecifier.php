@@ -2017,18 +2017,18 @@ final class TypeSpecifier
 		$sureNotTypes = [];
 		if ($context->false()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$originalExprString = $this->exprPrinter->printExpr($originalExpr);
-
 			$sureNotTypes[$exprString] = [$expr, $type];
-			if ($exprString !== $originalExprString) {
+
+			if ($expr !== $originalExpr) {
+				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
 				$sureNotTypes[$originalExprString] = [$originalExpr, $type];
 			}
 		} elseif ($context->true()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$originalExprString = $this->exprPrinter->printExpr($originalExpr);
-
 			$sureTypes[$exprString] = [$expr, $type];
-			if ($exprString !== $originalExprString) {
+
+			if ($expr !== $originalExpr) {
+				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
 				$sureTypes[$originalExprString] = [$originalExpr, $type];
 			}
 		}

@@ -28,6 +28,8 @@ interface ClassConstantReflection extends ClassMemberReflection, ConstantReflect
 
 	public function isFinal(): bool;
 
+	public function isFinalByKeyword(): bool;
+
 	public function hasPhpDocType(): bool;
 
 	public function getPhpDocType(): ?Type;

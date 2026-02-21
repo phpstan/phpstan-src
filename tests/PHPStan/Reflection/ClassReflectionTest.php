@@ -34,6 +34,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use SomeNamespace\ClassWithConstants;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
@@ -189,6 +190,19 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
 		$constant = $reflection->getConstant('SECURED');
 		$this->assertTrue($constant->isDeprecated()->yes());
+	}
+
+	public function testFinalConstant(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$reflection = $reflectionProvider->getClass(ClassWithConstants::class);
+		$constant = $reflection->getConstant('FINAL_FROM_DOCBLOCK');
+		$this->assertTrue($constant->isFinal());
+		$this->assertFalse($constant->isFinalByKeyword());
+
+		$constant = $reflection->getConstant('NATIVE_FINAL');
+		$this->assertTrue($constant->isFinal());
+		$this->assertTrue($constant->isFinalByKeyword());
 	}
 
 	/**

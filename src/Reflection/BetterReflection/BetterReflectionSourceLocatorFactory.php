@@ -31,13 +31,13 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocat
 use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipPolyfillSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceStubber\CachedPhpStormStubsSourceStubber;
 use function array_merge;
 use function array_unique;
 use function count;
 use function extension_loaded;
 use function is_dir;
 use function is_file;
+use function sprintf;
 use const PHP_VERSION_ID;
 
 #[AutowiredService]
@@ -174,13 +174,13 @@ final class BetterReflectionSourceLocatorFactory
 				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
 				$this->cache,
 				$this->phpVersion,
-				sprintf('phpstorm-stubs-php8-%s', $phpstormStubsVersion)
-			)
+				sprintf('phpstorm-stubs-php8-%s', $phpstormStubsVersion),
+			),
 		);
 
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $cachedPhpstormSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $cachedPhpstormSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

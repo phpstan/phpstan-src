@@ -9,14 +9,13 @@ use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceStubber\CachedPhpStormStubsSourceStubber;
 
 final class PhpVersionBlacklistSourceLocator implements SourceLocator
 {
 
 	public function __construct(
 		private SourceLocator $sourceLocator,
-		private PhpStormStubsSourceStubber|CachedPhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 	)
 	{
 	}

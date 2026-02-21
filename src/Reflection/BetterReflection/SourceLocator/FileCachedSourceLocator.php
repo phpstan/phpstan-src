@@ -3,59 +3,33 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use Override;
-use PhpParser\Node\Arg;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt\Const_;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
+use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionConstant;
+use PHPStan\BetterReflection\Reflection\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
-use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
-use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
-use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ConstantTypeHelper;
-use ReflectionClass;
-use ReflectionFunction;
 use function array_key_exists;
-use function array_keys;
-use function class_exists;
-use function constant;
-use function count;
-use function defined;
-use function function_exists;
-use function interface_exists;
-use function is_file;
-use function is_string;
-use function opcache_invalidate;
-use function restore_error_handler;
-use function set_error_handler;
-use function spl_autoload_functions;
+use function sprintf;
 use function strtolower;
-use function trait_exists;
-use const PHP_VERSION_ID;
 
-/**
- * Use PHP's built in autoloader to locate a class, without actually loading.
- *
- * There are some prerequisites...
- *   - we expect the autoloader to load classes from a file (i.e. using require/include)
- *
- * Modified code from Roave/BetterReflection, Copyright (c) 2017 Roave, LLC.
- */
 final class FileCachedSourceLocator implements SourceLocator
 {
-	/** @var array<string, mixed> */
-	private array $cached;
 
+	/** @var array{classes: array<string, ?Reflection>, functions: array<string, ?Reflection>, constants: array<string, ?Reflection>}|null */
+	private ?array $cachedSymbols = null;
+
+	/**
+	 * @param non-empty-string $cacheKey
+	 */
 	public function __construct(
 		private SourceLocator $locator,
 		private Cache $cache,
@@ -63,45 +37,131 @@ final class FileCachedSourceLocator implements SourceLocator
 		private string $cacheKey,
 	)
 	{
-		$variableCacheKey = $this->getVariableCacheKey();
-		$this->cached = $this->cache->load($this->cacheKey, $variableCacheKey) ?? [];
 	}
 
-
-	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?\PHPStan\BetterReflection\Reflection\Reflection
+	#[Override]
+	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
-		$key = $identifier->getName();
+		$this->cachedSymbols ??= $this->loadCache($reflector);
 
-		$this->cached['identifier'] ??= [];
-		if (!array_key_exists($key, $this->cached['identifier'])) {
-			$this->cached['identifier'][$key] = $this->locator->locateIdentifier($reflector, $identifier);
-			$this->storeCache();
+		if ($identifier->isClass()) {
+			$className = strtolower($identifier->getName());
+
+			if (!array_key_exists($className, $this->cachedSymbols['classes'])) {
+				$this->cachedSymbols['classes'][$className] = $this->locator->locateIdentifier($reflector, $identifier);
+				$this->storeCache();
+			}
+			return $this->cachedSymbols['classes'][$className];
+		}
+		if ($identifier->isFunction()) {
+			$className = strtolower($identifier->getName());
+
+			if (!array_key_exists($className, $this->cachedSymbols['functions'])) {
+				$this->cachedSymbols['functions'][$className] = $this->locator->locateIdentifier($reflector, $identifier);
+				$this->storeCache();
+			}
+			return $this->cachedSymbols['functions'][$className];
+		}
+		if ($identifier->isConstant()) {
+			$constantName = ConstantNameHelper::normalize($identifier->getName());
+
+			if (!array_key_exists($constantName, $this->cachedSymbols['constants'])) {
+				$this->cachedSymbols['constants'][$constantName] = $this->locator->locateIdentifier($reflector, $identifier);
+				$this->storeCache();
+			}
+			return $this->cachedSymbols['constants'][$constantName];
 		}
 
-		return $this->cached['identifier'][$key];
+		return null;
 	}
 
+	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		$key = $identifierType->getName();
-
-		$this->cached['identifiersByType'] ??= [];
-		if (!array_key_exists($key, $this->cached['identifiersByType'])) {
-			$this->cached['identifiersByType'][$key] = $this->locator->locateIdentifiersByType($reflector, $identifierType);
-			$this->storeCache();
-		}
-
-		return $this->cached['identifiersByType'][$key];
+		return $this->locator->locateIdentifiersByType($reflector, $identifierType);
 	}
 
+	/** @return non-empty-string */
 	private function getVariableCacheKey(): string
 	{
-		return sprintf('v1-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString());
+		return sprintf('v2-%s-%s', ComposerHelper::getBetterReflectionVersion(), $this->phpVersion->getVersionString());
+	}
+
+	/** @return array{classes: array<string, ReflectionClass|null>, functions: array<string, ReflectionFunction|null>, constants: array<string, ReflectionConstant|null>} */
+	private function loadCache(Reflector $reflector): array
+	{
+		$variableCacheKey = $this->getVariableCacheKey();
+		$cached = $this->cache->load($this->cacheKey, $variableCacheKey);
+
+		$restored = [
+			'classes' => [],
+			'functions' => [],
+			'constants' => [],
+		];
+		if ($cached === null) {
+			return $restored;
+		}
+
+		foreach ($cached['classes'] ?? [] as $class => $cachedReflection) {
+			if ($cachedReflection === null) {
+				$restored['classes'][$class] = null;
+				continue;
+			}
+
+			if (array_key_exists('backingType', $cachedReflection)) {
+				$restored['classes'][$class] = ReflectionEnum::importFromCache($reflector, $cachedReflection);
+				continue;
+			}
+
+			$restored['classes'][$class] = ReflectionClass::importFromCache($reflector, $cachedReflection);
+		}
+		foreach ($cached['functions'] ?? [] as $class => $cachedReflection) {
+			if ($cachedReflection === null) {
+				$restored['functions'][$class] = null;
+				continue;
+			}
+			$restored['functions'][$class] = ReflectionFunction::importFromCache($reflector, $cachedReflection);
+		}
+		foreach ($cached['constants'] ?? [] as $constantName => $cachedReflection) {
+			if ($cachedReflection === null) {
+				$restored['constants'][$constantName] = null;
+				continue;
+			}
+
+			$restored['constants'][$constantName] = ReflectionConstant::importFromCache($reflector, $cachedReflection);
+		}
+		return $restored;
 	}
 
 	private function storeCache(): void
 	{
 		$variableCacheKey = $this->getVariableCacheKey();
-		$this->cache->save($this->cacheKey, $variableCacheKey, $this->cached);
+
+		$exported = [
+			'classes' => [],
+			'functions' => [],
+			'constants' => [],
+		];
+		foreach ($this->cachedSymbols ?? [] as $type => $data) {
+			foreach ($data as $name => $reflection) {
+				if ($reflection === null) {
+					$exported[$type][$name] = $reflection;
+					continue;
+				}
+
+				if (
+					!$reflection instanceof ReflectionClass
+					&& !$reflection instanceof ReflectionFunction
+					&& !$reflection instanceof ReflectionConstant
+				) {
+					throw new ShouldNotHappenException();
+				}
+
+				$exported[$type][$name] = $reflection->exportToCache();
+			}
+		}
+
+		$this->cache->save($this->cacheKey, $variableCacheKey, $exported);
 	}
+
 }

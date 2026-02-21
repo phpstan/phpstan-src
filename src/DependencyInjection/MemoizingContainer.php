@@ -2,8 +2,6 @@
 
 namespace PHPStan\DependencyInjection;
 
-use function array_key_exists;
-
 #[AutowiredService(as: Container::class)]
 final class MemoizingContainer implements Container
 {
@@ -28,26 +26,12 @@ final class MemoizingContainer implements Container
 
 	public function getService(string $serviceName)
 	{
-		if (array_key_exists($serviceName, $this->servicesByName)) {
-			return $this->servicesByName[$serviceName];
-		}
-
-		$service = $this->originalContainer->getService($serviceName);
-		$this->servicesByName[$serviceName] = $service;
-
-		return $service;
+		return $this->servicesByName[$serviceName] ??= $this->originalContainer->getService($serviceName);
 	}
 
 	public function getByType(string $className)
 	{
-		if (array_key_exists($className, $this->servicesByType)) {
-			return $this->servicesByType[$className];
-		}
-
-		$service = $this->originalContainer->getByType($className);
-		$this->servicesByType[$className] = $service;
-
-		return $service;
+		return $this->servicesByType[$className] ??= $this->originalContainer->getByType($className);
 	}
 
 	public function findServiceNamesByType(string $className): array

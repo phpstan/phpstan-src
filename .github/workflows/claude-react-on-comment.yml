@@ -31,7 +31,9 @@ jobs:
         env:
           COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body || '' }}
         run: |
-          if echo "$COMMENT_BODY" | grep -qF "@phpstan-bot"; then
+          if [ "${{ github.event.comment.user.login || github.event.review.user.login || '' }}" = "phpstan-bot" ]; then
+            echo "triggered=false" >> "$GITHUB_OUTPUT"
+          elif echo "$COMMENT_BODY" | grep -qF "@phpstan-bot"; then
             echo "triggered=true" >> "$GITHUB_OUTPUT"
           else
             echo "triggered=false" >> "$GITHUB_OUTPUT"

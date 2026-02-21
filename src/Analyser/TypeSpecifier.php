@@ -1119,14 +1119,20 @@ final class TypeSpecifier
 			return $this->specifyTypesInCondition($scope, $expr->expr, $context)->setRootExpr($expr);
 		} elseif (
 			$expr instanceof Expr\Ternary
-			&& !$context->null()
 			&& !$expr->cond instanceof Expr\Ternary
+			&& !$context->null()
 		) {
-			$ifExpr = $expr->if ?? $expr->cond;
-			$conditionExpr = new BooleanOr(
-				new BooleanAnd($expr->cond, $ifExpr),
-				new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
-			);
+			if ($expr->if !== null) {
+				$conditionExpr = new BooleanOr(
+					new BooleanAnd($expr->cond, $expr->if),
+					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+				);
+			} else {
+				$conditionExpr = new BooleanOr(
+					$expr->cond,
+					new BooleanAnd(new Expr\BooleanNot($expr->cond), $expr->else),
+				);
+			}
 
 			return $this->specifyTypesInCondition($scope, $conditionExpr, $context)->setRootExpr($expr);
 

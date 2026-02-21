@@ -454,6 +454,14 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match arm comparison between int<1, max> and 0 is always false.',
 				24,
 			],
+			[
+				'Match arm comparison between int<1, 6>|int<8, 14> and 0 is always false.',
+				49,
+			],
+			[
+				'Match arm comparison between 1|2|3|4|5|6 and 0 is always false.',
+				74,
+			],
 		]);
 	}
 

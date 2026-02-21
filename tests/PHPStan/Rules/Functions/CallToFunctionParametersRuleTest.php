@@ -2678,6 +2678,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9652.php'], []);
 	}
 
+	public function testBug14136(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14136.php'], [
+			[
+				'Parameter #1 $value of function intval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, BcMath\Number given.',
+				12,
+			],
+			[
+				'Parameter #1 $value of function floatval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, BcMath\Number given.',
+				19,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1')]
 	public function testBug8936(): void
 	{

@@ -918,7 +918,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	private function getNodeKey(Expr $node): string
 	{
 		// perf optimize for the most common path
-		if ($node instanceof Variable) {
+		if ($node instanceof Variable && !$node->name instanceof Expr) {
 			return '$' . $node->name;
 		}
 

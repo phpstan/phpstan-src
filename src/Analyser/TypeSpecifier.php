@@ -219,13 +219,13 @@ final class TypeSpecifier
 		} elseif ($expr instanceof Expr\Cast\Int_) {
 			return $this->specifyTypesInCondition(
 				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\LNumber(0)),
+				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\Int_(0)),
 				$context,
 			)->setRootExpr($expr);
 		} elseif ($expr instanceof Expr\Cast\Double) {
 			return $this->specifyTypesInCondition(
 				$scope,
-				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\DNumber(0.0)),
+				new Node\Expr\BinaryOp\NotEqual($expr->expr, new Node\Scalar\Float_(0.0)),
 				$context,
 			)->setRootExpr($expr);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {

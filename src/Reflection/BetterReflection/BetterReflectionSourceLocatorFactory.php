@@ -16,10 +16,12 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\FileCachedSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
@@ -163,14 +165,18 @@ final class BetterReflectionSourceLocatorFactory
 				);
 			}
 		}
-		$cachedPhpstormSourceStubber = new CachedPhpStormStubsSourceStubber(
-			$this->phpstormStubsSourceStubber,
-			$this->cache,
-			$this->phpVersion,
-		);
+
+		$phpstormStubsVersion = ComposerHelper::getPhpStormStubsVersion();
 
 		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $cachedPhpstormSourceStubber));
+		$locators[] = new SkipClassAliasSourceLocator(
+			new FileCachedSourceLocator(
+				new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber),
+				$this->cache,
+				$this->phpVersion,
+				sprintf('phpstorm-stubs-php8-%s', $phpstormStubsVersion)
+			)
+		);
 
 		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $cachedPhpstormSourceStubber);

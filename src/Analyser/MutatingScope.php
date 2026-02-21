@@ -917,8 +917,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function getNodeKey(Expr $node): string
 	{
-		$key = $this->exprPrinter->printExpr($node);
+		// perf optimize for the most common path
+		if ($node instanceof Variable) {
+			return '$'.$node->name;
+		}
 
+		$key = $this->exprPrinter->printExpr($node);
 		$attributes = $node->getAttributes();
 		if (
 			$node instanceof Node\FunctionLike

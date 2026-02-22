@@ -153,7 +153,7 @@ function (bool $a, bool $b) {
 
 	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 	if (returnsBool($b)) {
-		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo); // could be Yes
+		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 	}
 
 	if (returnsBool($a)) {

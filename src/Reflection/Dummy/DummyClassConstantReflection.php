@@ -32,6 +32,11 @@ final class DummyClassConstantReflection implements ClassConstantReflection
 		return false;
 	}
 
+	public function isFinalByKeyword(): bool
+	{
+		return false;
+	}
+
 	public function getFileName(): ?string
 	{
 		return null;

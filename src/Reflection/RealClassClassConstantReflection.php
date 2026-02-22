@@ -121,6 +121,11 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 		return $this->isFinal || $this->reflection->isFinal();
 	}
 
+	public function isFinalByKeyword(): bool
+	{
+		return $this->reflection->isFinal();
+	}
+
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->isDeprecated || $this->reflection->isDeprecated());

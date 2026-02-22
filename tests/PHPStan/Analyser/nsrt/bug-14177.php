@@ -151,7 +151,7 @@ class HelloWorld2
 	{
 		assertType('bool', array_is_list($b));
 		unset($b[2]);
-		assertType('false', array_is_list($b)); // Could be true
+		assertType('false', array_is_list($b));
 		$b[] = 'foo';
 		assertType('false', array_is_list($b));
 	}
@@ -166,5 +166,38 @@ class HelloWorld2
 		assertType('bool', array_is_list($b));
 		$b[] = 'foo';
 		assertType('bool', array_is_list($b)); // Could be false
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $a
+	 * @param list{0: string, 1?: string, 2?: string, 3?: string} $b
+	 * @param list{0: string, 1?: string, 2?: string, 3: string} $c
+	 * @param 1|2 $int
+	 */
+	public function testUnsetNonConstant(array $a, array $b, array $c, int $int): void
+	{
+		assertType('true', array_is_list($a));
+		assertType('true', array_is_list($b));
+		assertType('true', array_is_list($c));
+		unset($a[$int]);
+		unset($b[$int]);
+		unset($c[$int]);
+		assertType('false', array_is_list($a));
+		assertType('bool', array_is_list($b));
+		assertType('bool', array_is_list($c));
+	}
+
+	/**
+	 * @param list{0?: string, 1?: string, 2?: string, 3?: string} $a
+	 * @param list{0: string, 1?: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnsetInt(array $a, array $b, array $c, int $int): void
+	{
+		assertType('true', array_is_list($a));
+		assertType('true', array_is_list($b));
+		unset($a[$int]);
+		unset($b[$int]);
+		assertType('bool', array_is_list($a));
+		assertType('false', array_is_list($b));
 	}
 }

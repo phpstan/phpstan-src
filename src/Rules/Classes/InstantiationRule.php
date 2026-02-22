@@ -37,6 +37,7 @@ use function strtolower;
 #[RegisteredRule(level: 0)]
 final class InstantiationRule implements Rule
 {
+
 	/** @var RestrictedMethodUsageExtension[] $extensions */
 	private ?array $extensions = null;
 

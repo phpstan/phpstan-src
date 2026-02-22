@@ -741,7 +741,7 @@ class ConstantArrayType implements Type
 					$k++;
 				}
 
-				$newIsList = $this->isListAfterUnset(
+				$newIsList = self::isListAfterUnset(
 					$newKeyTypes,
 					$newOptionalKeys,
 					$this->isList,
@@ -758,6 +758,7 @@ class ConstantArrayType implements Type
 		if (count($constantScalars) > 0) {
 			$optionalKeys = $this->optionalKeys;
 
+			$arrayHasChanged = false;
 			foreach ($constantScalars as $constantScalar) {
 				$constantScalar = $constantScalar->toArrayKey();
 				if (!$constantScalar instanceof ConstantIntegerType && !$constantScalar instanceof ConstantStringType) {
@@ -769,6 +770,7 @@ class ConstantArrayType implements Type
 						continue;
 					}
 
+					$arrayHasChanged = true;
 					if (in_array($i, $optionalKeys, true)) {
 						continue 2;
 					}
@@ -777,7 +779,11 @@ class ConstantArrayType implements Type
 				}
 			}
 
-			$newIsList = $this->isListAfterUnset(
+			if (!$arrayHasChanged) {
+				return $this;
+			}
+
+			$newIsList = self::isListAfterUnset(
 				$this->keyTypes,
 				$optionalKeys,
 				$this->isList,
@@ -788,15 +794,21 @@ class ConstantArrayType implements Type
 		}
 
 		$optionalKeys = $this->optionalKeys;
+		$arrayHasChanged = false;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (!$offsetType->isSuperTypeOf($keyType)->yes()) {
 				continue;
 			}
+			$arrayHasChanged = true;
 			$optionalKeys[] = $i;
 		}
 		$optionalKeys = array_values(array_unique($optionalKeys));
 
-		$newIsList = $this->isListAfterUnset(
+		if (!$arrayHasChanged) {
+			return $this;
+		}
+
+		$newIsList = self::isListAfterUnset(
 			$this->keyTypes,
 			$optionalKeys,
 			$this->isList,
@@ -807,10 +819,10 @@ class ConstantArrayType implements Type
 	}
 
 	/**
-	 * If we're unsetting something that might not be on the array, it might still be a list (with PHPStan definition)
-	 * because the nextAutoIndexes will not change.
+	 * When we're unsetting something not on the array, it will be untouched,
+	 * So the nextAutoIndexes won't change, and the array might still be a list even with PHPStan definition.
 	 */
-	private function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey): TrinaryLogic
+	private static function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey): TrinaryLogic
 	{
 		if (!$unsetOptionalKey || $arrayIsList->no()) {
 			return TrinaryLogic::createNo();

@@ -742,7 +742,10 @@ class ConstantArrayType implements Type
 				}
 
 				$newIsList = TrinaryLogic::createNo();
-				if (!$this->isList->no()) {
+				// We're unsetting something that might not be on the array,
+				// so it might still be a list (with PHPStan definition)
+				// because the nextAutoIndexes will not change.
+				if (!$this->isList->no() && in_array($i, $this->optionalKeys, true)) {
 					$preserveIsList = true;
 					$isListOnlyIfKeysAreOptional = false;
 					foreach ($newKeyTypes as $k2 => $newKeyType2) {
@@ -765,7 +768,7 @@ class ConstantArrayType implements Type
 					}
 
 					if ($preserveIsList) {
-						$newIsList = $this->isList;
+						$newIsList = TrinaryLogic::createMaybe();
 					}
 				}
 

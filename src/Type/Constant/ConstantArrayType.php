@@ -741,36 +741,12 @@ class ConstantArrayType implements Type
 					$k++;
 				}
 
-				$newIsList = TrinaryLogic::createNo();
-				// We're unsetting something that might not be on the array,
-				// so it might still be a list (with PHPStan definition)
-				// because the nextAutoIndexes will not change.
-				if (!$this->isList->no() && in_array($i, $this->optionalKeys, true)) {
-					$preserveIsList = true;
-					$isListOnlyIfKeysAreOptional = false;
-					foreach ($newKeyTypes as $k2 => $newKeyType2) {
-						if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
-							// We found a non-optional key that implies that the array is never a list.
-							if (!in_array($k2, $newOptionalKeys, true)) {
-								$preserveIsList = false;
-								break;
-							}
-
-							// The array can still be a list if all the following keys are also optional.
-							$isListOnlyIfKeysAreOptional = true;
-							continue;
-						}
-
-						if ($isListOnlyIfKeysAreOptional && !in_array($k2, $newOptionalKeys, true)) {
-							$preserveIsList = false;
-							break;
-						}
-					}
-
-					if ($preserveIsList) {
-						$newIsList = TrinaryLogic::createMaybe();
-					}
-				}
+				$newIsList = $this->isListAfterUnset(
+					$newKeyTypes,
+					$newOptionalKeys,
+					$this->isList,
+					in_array($i, $this->optionalKeys, true),
+				);
 
 				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
 			}
@@ -801,21 +777,64 @@ class ConstantArrayType implements Type
 				}
 			}
 
-			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, TrinaryLogic::createNo());
+			$newIsList = $this->isListAfterUnset(
+				$this->keyTypes,
+				$optionalKeys,
+				$this->isList,
+				count($optionalKeys) === count($this->optionalKeys),
+			);
+
+			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 		}
 
 		$optionalKeys = $this->optionalKeys;
-		$isList = $this->isList;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (!$offsetType->isSuperTypeOf($keyType)->yes()) {
 				continue;
 			}
 			$optionalKeys[] = $i;
-			$isList = TrinaryLogic::createNo();
 		}
 		$optionalKeys = array_values(array_unique($optionalKeys));
 
-		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $isList);
+		$newIsList = $this->isListAfterUnset(
+			$this->keyTypes,
+			$optionalKeys,
+			$this->isList,
+			count($optionalKeys) === count($this->optionalKeys),
+		);
+
+		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
+	}
+
+	/**
+	 * If we're unsetting something that might not be on the array, it might still be a list (with PHPStan definition)
+	 * because the nextAutoIndexes will not change.
+	 */
+	private function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey): TrinaryLogic
+	{
+		if (!$unsetOptionalKey || $arrayIsList->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		$isListOnlyIfKeysAreOptional = false;
+		foreach ($newKeyTypes as $k2 => $newKeyType2) {
+			if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
+				// We found a non-optional key that implies that the array is never a list.
+				if (!in_array($k2, $newOptionalKeys, true)) {
+					return TrinaryLogic::createNo();
+				}
+
+				// The array can still be a list if all the following keys are also optional.
+				$isListOnlyIfKeysAreOptional = true;
+				continue;
+			}
+
+			if ($isListOnlyIfKeysAreOptional && !in_array($k2, $newOptionalKeys, true)) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type

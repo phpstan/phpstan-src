@@ -210,7 +210,7 @@ final class InstantiationRule implements Rule
 				->build();
 		}
 
-		/** @var RestrictedMethodUsageExtension[] $restrictedUsageExtensions */
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
 
 		foreach ($extensions as $extension) {

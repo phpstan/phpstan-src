@@ -3805,16 +3805,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$conditions = [];
-		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
-			foreach ($conditionalExpressions as $conditionalExpression) {
-				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
-						continue 2;
-					}
+		$prevSpecifiedCount = -1;
+		while (count($specifiedExpressions) !== $prevSpecifiedCount) {
+			$prevSpecifiedCount = count($specifiedExpressions);
+			foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
+				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
 				}
+				foreach ($conditionalExpressions as $conditionalExpression) {
+					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
+							continue 2;
+						}
+					}
 
-				$conditions[$conditionalExprString][] = $conditionalExpression;
-				$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$conditions[$conditionalExprString][] = $conditionalExpression;
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+				}
 			}
 		}
 

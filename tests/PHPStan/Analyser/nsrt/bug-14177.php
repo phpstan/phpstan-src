@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug14177;
+namespace Bug14177Nsrt;
 
 use function PHPStan\Testing\assertType;
 
@@ -91,9 +91,9 @@ class HelloWorld2
 	{
 		assertType('true', array_is_list($b));
 		unset($b[1]);
-		assertType('bool', array_is_list($b));
+		assertType('false', array_is_list($b)); // Could be true
 		$b[] = 'foo';
-		assertType('bool', array_is_list($b)); // Could be false
+		assertType('false', array_is_list($b));
 	}
 
 	/**
@@ -151,9 +151,9 @@ class HelloWorld2
 	{
 		assertType('bool', array_is_list($b));
 		unset($b[2]);
-		assertType('bool', array_is_list($b));
+		assertType('false', array_is_list($b)); // Could be true
 		$b[] = 'foo';
-		assertType('bool', array_is_list($b)); // Could be false
+		assertType('false', array_is_list($b));
 	}
 
 	/**

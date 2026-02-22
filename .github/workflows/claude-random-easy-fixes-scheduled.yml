@@ -2,8 +2,8 @@ name: "Claude Random Easy Fixes (Scheduled)"
 
 on:
   schedule:
-    # Run 10 times, once an hour at :15, from 10pm CEST (20:00 UTC) to 7am CEST (05:00 UTC)
-    - cron: '15 20-23,0-5 * * *'
+    # Run 4 times, once an hour at :15, from 9pm CET (20:00 UTC) to 12am CET (23:00 UTC)
+    - cron: '15 20-23 * * *'
 
 jobs:
   trigger:

@@ -23,7 +23,7 @@ final class ComposerHelper
 
 	private static ?string $betterReflectionVersion = null;
 
-	private static ?string $phpstomStubsVersion = null;
+	private static ?string $phpstormStubsVersion = null;
 
 	private static ?string $phpDocParserVersion = null;
 
@@ -128,17 +128,17 @@ final class ComposerHelper
 
 	public static function getPhpStormStubsVersion(): string
 	{
-		if (self::$phpstomStubsVersion !== null) {
-			return self::$phpstomStubsVersion;
+		if (self::$phpstormStubsVersion !== null) {
+			return self::$phpstormStubsVersion;
 		}
 
 		$installed = self::getInstalled();
 		$rootPackage = $installed['versions']['jetbrains/phpstorm-stubs'] ?? null;
 		if ($rootPackage === null) {
-			return self::$phpstomStubsVersion = self::UNKNOWN_VERSION;
+			return self::$phpstormStubsVersion = self::UNKNOWN_VERSION;
 		}
 
-		return self::$phpstomStubsVersion = self::processPackageVersion($rootPackage);
+		return self::$phpstormStubsVersion = self::processPackageVersion($rootPackage);
 	}
 
 	public static function getPhpDocParserVersion(): string

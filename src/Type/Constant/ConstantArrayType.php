@@ -742,8 +742,31 @@ class ConstantArrayType implements Type
 				}
 
 				$newIsList = TrinaryLogic::createNo();
-				if (!$this->isList->no() && in_array($i, $this->optionalKeys, true)) {
-					$newIsList = TrinaryLogic::createMaybe();
+				if (!$this->isList->no()) {
+					$preserveIsList = true;
+					$isListOnlyIfKeysAreOptional = false;
+					foreach ($newKeyTypes as $k2 => $newKeyType2) {
+						if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
+							// We found a non-optional key that implies that the array is never a list.
+							if (!in_array($k2, $newOptionalKeys, true)) {
+								$preserveIsList = false;
+								break;
+							}
+
+							// The array can still be a list if all the following keys are also optional.
+							$isListOnlyIfKeysAreOptional = true;
+							continue;
+						}
+
+						if ($isListOnlyIfKeysAreOptional && !in_array($k2, $newOptionalKeys, true)) {
+							$preserveIsList = false;
+							break;
+						}
+					}
+
+					if ($preserveIsList) {
+						$newIsList = $this->isList;
+					}
 				}
 
 				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);

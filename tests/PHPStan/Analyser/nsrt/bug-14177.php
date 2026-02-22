@@ -19,54 +19,6 @@ class HelloWorld
 		assertType('list{0: string, 1: string, 2?: string, 3?: string}', $b);
 	}
 
-	/**
-	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
-	 */
-	public function testUnset0(array $b): void
-	{
-		assertType('true', array_is_list($b));
-		unset($b[0]);
-		assertType('false', array_is_list($b));
-		$b[] = 'foo';
-		assertType('false', array_is_list($b));
-	}
-
-	/**
-	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
-	 */
-	public function testUnset1(array $b): void
-	{
-		assertType('true', array_is_list($b));
-		unset($b[1]);
-		assertType('bool', array_is_list($b));
-		$b[] = 'foo';
-		assertType('false', array_is_list($b));
-	}
-
-	/**
-	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
-	 */
-	public function testUnset2(array $b): void
-	{
-		assertType('true', array_is_list($b));
-		unset($b[2]);
-		assertType('bool', array_is_list($b));
-		$b[] = 'foo';
-		assertType('false', array_is_list($b));
-	}
-
-	/**
-	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
-	 */
-	public function testUnset3(array $b): void
-	{
-		assertType('true', array_is_list($b));
-		unset($b[3]);
-		assertType('true', array_is_list($b));
-		$b[] = 'foo';
-		assertType('false', array_is_list($b));
-	}
-
 	public function placeholderToEditor(string $html): void
 	{
 		$result = preg_replace_callback(
@@ -115,5 +67,104 @@ class HelloWorld
 			},
 			$html,
 		);
+	}
+}
+
+class HelloWorld2
+{
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset0OnList(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[0]);
+		assertType('false', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset1OnList(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[1]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('bool', array_is_list($b)); // Could be false
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset2OnList(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[2]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('bool', array_is_list($b)); // Could be false
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset3OnList(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[3]);
+		assertType('bool', array_is_list($b)); // Could be true
+		$b[] = 'foo';
+		assertType('bool', array_is_list($b)); // Could be false
+	}
+
+	/**
+	 * @param array{0: string, 1?: string, 2: string, 3?: string} $b
+	 */
+	public function testUnset0OnArray(array $b): void
+	{
+		assertType('bool', array_is_list($b));
+		unset($b[0]);
+		assertType('false', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param array{0: string, 1?: string, 2: string, 3?: string} $b
+	 */
+	public function testUnset1OnArray(array $b): void
+	{
+		assertType('bool', array_is_list($b));
+		unset($b[1]);
+		assertType('false', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param array{0: string, 1?: string, 2: string, 3?: string} $b
+	 */
+	public function testUnset2OnArray(array $b): void
+	{
+		assertType('bool', array_is_list($b));
+		unset($b[2]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('bool', array_is_list($b)); // Could be false
+	}
+
+	/**
+	 * @param array{0: string, 1?: string, 2: string, 3?: string} $b
+	 */
+	public function testUnset3OnArray(array $b): void
+	{
+		assertType('bool', array_is_list($b));
+		unset($b[3]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('bool', array_is_list($b)); // Could be false
 	}
 }

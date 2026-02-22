@@ -821,4 +821,22 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10595.php'], []);
 	}
 
+	public function testBug10349(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10349.php'], [
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				17,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				42,
+			],
+			[
+				'Binary operation "+=" between bool|float|int|string and int results in an error.',
+				59,
+			],
+		]);
+	}
+
 }

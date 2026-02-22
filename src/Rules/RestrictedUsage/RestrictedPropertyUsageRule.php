@@ -42,6 +42,7 @@ final class RestrictedPropertyUsageRule implements Rule
 			return [];
 		}
 
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedPropertyUsageExtension::PROPERTY_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];

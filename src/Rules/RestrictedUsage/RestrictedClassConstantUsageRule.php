@@ -47,6 +47,7 @@ final class RestrictedClassConstantUsageRule implements Rule
 			return [];
 		}
 
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassConstantUsageExtension::CLASS_CONSTANT_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];

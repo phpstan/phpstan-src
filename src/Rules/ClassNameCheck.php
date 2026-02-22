@@ -50,6 +50,7 @@ final class ClassNameCheck
 			return $errors;
 		}
 
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedClassNameUsageExtension::CLASS_NAME_EXTENSION_TAG);
 		if ($extensions === []) {
 			return $errors;

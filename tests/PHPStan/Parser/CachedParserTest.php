@@ -148,9 +148,7 @@ class CachedParserTest extends PHPStanTestCase
 
 		$this->assertInstanceOf(Node\Stmt\Property::class, $class->stmts[0]);
 		$property = $class->stmts[0];
-		$this->assertInstanceOf(Node\AttributeGroup::class, $property->attrGroups[0]);
 		$group = $property->attrGroups[0];
-		$this->assertInstanceOf(Node\Attribute::class, $group->attrs[0]);
 		$attribute = $group->attrs[0];
 
 		$expr = $attribute->args[0]->value;
@@ -161,9 +159,7 @@ class CachedParserTest extends PHPStanTestCase
 
 		$this->assertInstanceOf(Node\Stmt\Property::class, $class->stmts[1]);
 		$property = $class->stmts[1];
-		$this->assertInstanceOf(Node\AttributeGroup::class, $property->attrGroups[0]);
 		$group = $property->attrGroups[0];
-		$this->assertInstanceOf(Node\Attribute::class, $group->attrs[0]);
 		$attribute = $group->attrs[0];
 
 		$expr = $attribute->args[0]->value;

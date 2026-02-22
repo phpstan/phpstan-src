@@ -35,6 +35,7 @@ final class RestrictedUsageOfDeprecatedStringCastRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];

@@ -38,6 +38,9 @@ use function strtolower;
 final class InstantiationRule implements Rule
 {
 
+	/** @var RestrictedMethodUsageExtension[] $extensions */
+	private ?array $extensions = null;
+
 	public function __construct(
 		private Container $container,
 		private ReflectionProvider $reflectionProvider,
@@ -207,10 +210,10 @@ final class InstantiationRule implements Rule
 				->build();
 		}
 
-		/** @var RestrictedMethodUsageExtension[] $restrictedUsageExtensions */
-		$restrictedUsageExtensions = $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
+		/** @var RestrictedMethodUsageExtension[] $extensions */
+		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
 
-		foreach ($restrictedUsageExtensions as $extension) {
+		foreach ($extensions as $extension) {
 			$restrictedUsage = $extension->isRestrictedMethodUsage($constructorReflection, $scope);
 			if ($restrictedUsage === null) {
 				continue;

@@ -81,6 +81,7 @@ parametersSchema:
 	tips: structure([
 		discoveringSymbols: bool()
 		treatPhpDocTypesAsCertain: bool()
+		possiblyImpure: bool()
 	])
 	tipsOfTheDay: bool()
 	reportMaybes: bool()

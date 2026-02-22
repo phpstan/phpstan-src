@@ -26,6 +26,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 		);
 	}

@@ -119,6 +119,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

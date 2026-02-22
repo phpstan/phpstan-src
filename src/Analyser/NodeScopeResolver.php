@@ -92,6 +92,7 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -291,6 +292,8 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
+		private readonly bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -2937,6 +2940,20 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
+				&& $this->rememberPossiblyImpureFunctionValues
+				&& $functionReflection->hasSideEffects()->maybe()
+				&& !$functionReflection->isBuiltin()
+				&& $parametersAcceptor !== null
+			) {
+				$scope = $scope->assignExpression(
+					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName()), $parametersAcceptor->getReturnType()),
+					new MixedType(),
+					new MixedType(),
+				);
+			}
+
+			if (
+				$functionReflection !== null
 				&& in_array($functionReflection->getName(), ['json_encode', 'json_decode'], true)
 			) {
 				$scope = $scope->invalidateExpression(new FuncCall(new Name('json_last_error'), []))
@@ -3233,6 +3250,12 @@ class NodeScopeResolver
 				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
+				} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin() && $parametersAcceptor !== null) {
+					$scope = $scope->assignExpression(
+						new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()), $parametersAcceptor->getReturnType()),
+						new MixedType(),
+						new MixedType(),
+					);
 				}
 				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();
@@ -3443,6 +3466,20 @@ class NodeScopeResolver
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
 				$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
+			} elseif (
+				$methodReflection !== null
+				&& $this->rememberPossiblyImpureFunctionValues
+				&& $methodReflection->hasSideEffects()->maybe()
+				&& !$methodReflection->getDeclaringClass()->isBuiltin()
+				&& $parametersAcceptor !== null
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
+			) {
+				$scope = $scope->assignExpression(
+					new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()), $parametersAcceptor->getReturnType()),
+					new MixedType(),
+					new MixedType(),
+				);
 			}
 
 			if (

@@ -24,6 +24,7 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 				),
 				$this->shouldTreatPhpDocTypesAsCertain(),
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			true,
 		);

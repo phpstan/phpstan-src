@@ -30,6 +30,7 @@ final class MatchExpressionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -95,11 +96,13 @@ final class MatchExpressionRule implements Rule
 
 				$armLine = $armCondition->getLine();
 				if (!$armConditionResult->getValue()) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'Match arm comparison between %s and %s is always false.',
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
-					))->line($armLine)->identifier('match.alwaysFalse')->build();
+					))->line($armLine)->identifier('match.alwaysFalse');
+					$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
+					$errors[] = $errorBuilder->build();
 					continue;
 				}
 
@@ -112,11 +115,14 @@ final class MatchExpressionRule implements Rule
 					$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 					$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 				);
-				$errors[] = RuleErrorBuilder::message($message)
+				$errorBuilder = RuleErrorBuilder::message($message)
 					->line($armLine)
-					->identifier('match.alwaysTrue')
-					->tip('Remove remaining cases below this one and this error will disappear too.')
-					->build();
+					->identifier('match.alwaysTrue');
+				if (!$errorBuilder->hasTips()) {
+					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+				}
+				$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

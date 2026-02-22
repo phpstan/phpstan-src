@@ -43,6 +43,7 @@ final class RestrictedMethodUsageRule implements Rule
 			return [];
 		}
 
+		/** @var RestrictedMethodUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedMethodUsageExtension::METHOD_EXTENSION_TAG);
 		if ($extensions === []) {
 			return [];

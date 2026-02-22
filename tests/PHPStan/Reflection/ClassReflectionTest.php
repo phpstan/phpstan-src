@@ -7,6 +7,7 @@ use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
+use ClassConstantReflectionTest\ClassWithConstants;
 use GenericInheritance\C;
 use HasTraitUse\Bar;
 use HasTraitUse\Baz;
@@ -189,6 +190,20 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflection = $reflectionProvider->getClass(SecuredRouter::class);
 		$constant = $reflection->getConstant('SECURED');
 		$this->assertTrue($constant->isDeprecated()->yes());
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testFinalConstant(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$reflection = $reflectionProvider->getClass(ClassWithConstants::class);
+		$constant = $reflection->getConstant('FINAL_FROM_DOCBLOCK');
+		$this->assertTrue($constant->isFinal());
+		$this->assertFalse($constant->isFinalByKeyword());
+
+		$constant = $reflection->getConstant('NATIVE_FINAL');
+		$this->assertTrue($constant->isFinal());
+		$this->assertTrue($constant->isFinalByKeyword());
 	}
 
 	/**

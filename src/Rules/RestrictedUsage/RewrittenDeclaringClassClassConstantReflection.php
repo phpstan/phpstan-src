@@ -29,6 +29,11 @@ final class RewrittenDeclaringClassClassConstantReflection implements ClassConst
 		return $this->constantReflection->isFinal();
 	}
 
+	public function isFinalByKeyword(): bool
+	{
+		return $this->constantReflection->isFinalByKeyword();
+	}
+
 	public function hasPhpDocType(): bool
 	{
 		return $this->constantReflection->hasPhpDocType();

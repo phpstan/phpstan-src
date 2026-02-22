@@ -49,7 +49,7 @@ final class RestrictedFunctionCallableUsageRule implements Rule
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->getName(), $scope);
 
-		/** @var RestrictedMethodUsageExtension[] $extensions */
+		/** @var RestrictedFunctionUsageExtension[] $extensions */
 		$extensions = $this->extensions ??= $this->container->getServicesByTag(RestrictedFunctionUsageExtension::FUNCTION_EXTENSION_TAG);
 		$errors = [];
 

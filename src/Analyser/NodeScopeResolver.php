@@ -4402,6 +4402,8 @@ class NodeScopeResolver
 				}
 			}
 
+			$scopeForMatchNodeCallback = $scope;
+
 			$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
 			if (!$isExhaustive) {
 				$remainingType = $matchScope->getType($expr->cond);
@@ -4429,7 +4431,7 @@ class NodeScopeResolver
 
 			ksort($armNodes, SORT_NUMERIC);
 
-			$this->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scope, $storage);
+			$this->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scopeForMatchNodeCallback, $storage);
 
 			if ($expr->cond instanceof AlwaysRememberedExpr) {
 				$expr->cond = $expr->cond->getExpr();

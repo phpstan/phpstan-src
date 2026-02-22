@@ -743,16 +743,7 @@ class ConstantArrayType implements Type
 
 				$newIsList = TrinaryLogic::createNo();
 				if (!$this->isList->no() && in_array($i, $this->optionalKeys, true)) {
-					$preserveIsList = true;
-					foreach ($newKeyTypes as $k2 => $newKeyType2) {
-						if (!$newKeyType2 instanceof ConstantIntegerType || $newKeyType2->getValue() !== $k2) {
-							$preserveIsList = false;
-							break;
-						}
-					}
-					if ($preserveIsList) {
-						$newIsList = $this->isList;
-					}
+					$newIsList = TrinaryLogic::createMaybe();
 				}
 
 				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);

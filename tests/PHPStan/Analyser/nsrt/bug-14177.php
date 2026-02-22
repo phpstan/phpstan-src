@@ -18,4 +18,102 @@ class HelloWorld
 		}
 		assertType('list{0: string, 1: string, 2?: string, 3?: string}', $b);
 	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset0(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[0]);
+		assertType('false', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset1(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[1]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset2(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[2]);
+		assertType('bool', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	/**
+	 * @param list{0: string, 1: string, 2?: string, 3?: string} $b
+	 */
+	public function testUnset3(array $b): void
+	{
+		assertType('true', array_is_list($b));
+		unset($b[3]);
+		assertType('true', array_is_list($b));
+		$b[] = 'foo';
+		assertType('false', array_is_list($b));
+	}
+
+	public function placeholderToEditor(string $html): void
+	{
+		$result = preg_replace_callback(
+			'~\[image\\sid="(\\d+)"(?:\\shref="([^"]*)")?(?:\\sclass="([^"]*)")?\]~',
+			function (array $matches): string {
+				$id = (int) $matches[1];
+
+				assertType('list{0: non-falsy-string, 1: numeric-string, 2?: string, 3?: string}', $matches);
+
+				$replacement = sprintf(
+					'<img src="%s"%s/>',
+					$id,
+					array_key_exists(3, $matches) ? sprintf(' class="%s"', $matches[3]) : '',
+				);
+
+				assertType('list{0: non-falsy-string, 1: numeric-string, 2?: string, 3?: string}', $matches);
+
+				return array_key_exists(2, $matches) && $matches[2] !== ''
+					? sprintf('<a href="%s">%s</a>', $matches[2], $replacement)
+					: $replacement;
+			},
+			$html,
+		);
+	}
+
+	public function placeholderToEditor2(string $html): void
+	{
+		$result = preg_replace_callback(
+			'~\[image\\sid="(\\d+)?"(?:\\shref="([^"]*)")?(?:\\sclass="([^"]*)")?\]~',
+			function (array $matches): string {
+				$id = (int) $matches[0];
+
+				assertType('list{0: non-falsy-string, 1?: \'\'|numeric-string, 2?: string, 3?: string}', $matches);
+
+				$replacement = sprintf(
+					'<img src="%s"%s/>',
+					$id,
+					array_key_exists(2, $matches) ? sprintf(' class="%s"', $matches[2]) : '',
+				);
+
+				assertType('list{0: non-falsy-string, 1?: \'\'|numeric-string, 2?: string, 3?: string}', $matches);
+
+				return array_key_exists(1, $matches) && $matches[1] !== ''
+					? sprintf('<a href="%s">%s</a>', $matches[1], $replacement)
+					: $replacement;
+			},
+			$html,
+		);
+	}
 }

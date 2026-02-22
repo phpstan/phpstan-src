@@ -6808,8 +6808,39 @@ class NodeScopeResolver
 		}
 
 		$additionalExpressions = [];
-		$offsetValueType = $valueToWrite;
 		$lastDimKey = array_key_last($dimFetchStack);
+
+		// Compute improved intermediate types bottom-up using scope types.
+		// The top-down derivation from the root type loses constant array
+		// precision (e.g. array{-1: 0, 0: 0} becomes array<-1|0, int>).
+		// By applying the write to the scope's tracked constant array type,
+		// we preserve the constant array structure through loop generalization.
+		$improvedTypes = [];
+		$childPostWriteType = $originalValueToWrite;
+		for ($key = ($lastDimKey ?? 0) - 1; $key >= 0; $key--) {
+			$dimFetch = $dimFetchStack[$key];
+			if ($dimFetch->dim === null) {
+				break;
+			}
+
+			$nextDimFetch = $dimFetchStack[$key + 1];
+			if ($nextDimFetch->dim === null || !$scope->hasExpressionType($dimFetch)->yes()) {
+				break;
+			}
+
+			$scopeType = $scope->getType($dimFetch);
+			$childOffset = $scope->getType($nextDimFetch->dim);
+
+			if (!$scopeType->hasOffsetValueType($childOffset)->yes()) {
+				break;
+			}
+
+			$improvedType = $scopeType->setExistingOffsetValueType($childOffset, $childPostWriteType);
+			$improvedTypes[$key] = $improvedType;
+			$childPostWriteType = $improvedType;
+		}
+
+		$offsetValueType = $valueToWrite;
 		foreach ($dimFetchStack as $key => $dimFetch) {
 			if ($dimFetch->dim === null) {
 				continue;
@@ -6817,6 +6848,8 @@ class NodeScopeResolver
 
 			if ($key === $lastDimKey) {
 				$offsetValueType = $originalValueToWrite;
+			} elseif (isset($improvedTypes[$key])) {
+				$offsetValueType = $improvedTypes[$key];
 			} else {
 				$offsetType = $scope->getType($dimFetch->dim);
 				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);

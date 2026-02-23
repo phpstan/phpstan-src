@@ -141,7 +141,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				85,
 			],
 			[
-				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
+				'Match arm comparison between MatchEnums\Foo::THREE|MatchEnums\Foo::TWO and MatchEnums\DifferentEnum::ONE is always false.',
 				95,
 			],
 			[
@@ -149,13 +149,8 @@ class MatchExpressionRuleTest extends RuleTestCase
 				104,
 			],
 			[
-				'Match arm comparison between *NEVER* and MatchEnums\DifferentEnum::ONE is always false.',
+				'Match arm comparison between MatchEnums\Foo::THREE|MatchEnums\Foo::TWO and MatchEnums\DifferentEnum::ONE is always false.',
 				113,
-			],
-			[
-				'Match arm comparison between MatchEnums\Foo::ONE and MatchEnums\Foo::ONE is always true.',
-				113,
-				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}

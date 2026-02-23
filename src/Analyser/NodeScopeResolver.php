@@ -4217,25 +4217,28 @@ class NodeScopeResolver
 
 						// Pre-validate all conditions before processing to avoid
 						// partial consumption of enum cases when a later condition
-						// causes the arm to be skipped
+						// causes the arm to be skipped.
+						// Use break instead of continue to stop fast-path processing
+						// entirely - subsequent arms must also go through the slow
+						// path to preserve correct evaluation order.
 						foreach ($arm->conds as $cond) {
 							if (!$cond instanceof Expr\ClassConstFetch) {
-								continue 2;
+								break 2;
 							}
 							if (!$cond->class instanceof Name) {
-								continue 2;
+								break 2;
 							}
 							if (!$cond->name instanceof Node\Identifier) {
-								continue 2;
+								break 2;
 							}
 							$fetchedClassName = $scope->resolveName($cond->class);
 							$loweredFetchedClassName = strtolower($fetchedClassName);
 							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-								continue 2;
+								break 2;
 							}
 							$caseName = $cond->name->toString();
 							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								continue 2;
+								break 2;
 							}
 						}
 

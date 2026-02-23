@@ -6,6 +6,7 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
+	private static int $counter = 0;
 
 	/** @phpstan-pure */
 	public function pure(): int
@@ -24,6 +25,12 @@ class Foo
 		return rand(0, 1);
 	}
 
+	/** @phpstan-pure */
+	public static function getCounter(): int
+	{
+		return self::$counter;
+	}
+
 	public function test(): void
 	{
 		if ($this->pure() === 1) {
@@ -36,6 +43,24 @@ class Foo
 
 		if ($this->impure() === 1) {
 			assertType('int', $this->impure());
+		}
+	}
+
+	public function testStatic(): void
+	{
+		if (self::getCounter() === 1) {
+			$this->pure();
+			assertType('1', self::getCounter());
+		}
+
+		if (self::getCounter() === 1) {
+			$this->maybePure();
+			assertType('int', self::getCounter());
+		}
+
+		if (self::getCounter() === 1) {
+			$this->impure();
+			assertType('int', self::getCounter());
 		}
 	}
 

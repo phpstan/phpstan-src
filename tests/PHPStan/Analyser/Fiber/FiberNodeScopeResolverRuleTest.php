@@ -139,6 +139,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
+			self::getContainer()->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

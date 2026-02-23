@@ -2941,9 +2941,9 @@ class NodeScopeResolver
 			if (
 				$functionReflection !== null
 				&& $this->rememberPossiblyImpureFunctionValues
+				&& $parametersAcceptor !== null
 				&& $functionReflection->hasSideEffects()->maybe()
 				&& !$functionReflection->isBuiltin()
-				&& $parametersAcceptor !== null
 			) {
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName())),
@@ -3469,11 +3469,11 @@ class NodeScopeResolver
 			} elseif (
 				$methodReflection !== null
 				&& $this->rememberPossiblyImpureFunctionValues
-				&& $methodReflection->hasSideEffects()->maybe()
-				&& !$methodReflection->getDeclaringClass()->isBuiltin()
 				&& $parametersAcceptor !== null
 				&& $scope->isInClass()
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
+				&& $methodReflection->hasSideEffects()->maybe()
+				&& !$methodReflection->getDeclaringClass()->isBuiltin()
 			) {
 				$scope = $scope->assignExpression(
 					new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),

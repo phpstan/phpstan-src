@@ -145,7 +145,6 @@ use PHPStan\Type\VoidType;
 use Throwable;
 use ValueError;
 use function abs;
-use function assert;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
@@ -157,6 +156,7 @@ use function array_pop;
 use function array_slice;
 use function array_unique;
 use function array_values;
+use function assert;
 use function count;
 use function explode;
 use function get_class;
@@ -1040,6 +1040,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$parts = [];
 		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
+			if ($expressionTypeHolder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
 			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
 		}
 		$parts[] = '---';

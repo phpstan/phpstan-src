@@ -25,12 +25,12 @@ class TestFuncWithANativeReturnType
 		};
 
 		assertType('non-empty-string', $f());
-		assertNativeType('string', $f());
+		assertNativeType('non-empty-string', $f());
 
 		assertType('non-empty-string', (function (): string {
 			return funcWithANativeReturnType();
 		})());
-		assertNativeType('string', (function (): string {
+		assertNativeType('non-empty-string', (function (): string {
 			return funcWithANativeReturnType();
 		})());
 

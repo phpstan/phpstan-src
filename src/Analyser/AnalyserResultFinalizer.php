@@ -205,7 +205,7 @@ final class AnalyserResultFinalizer
 
 					foreach ($identifiers as $identifier) {
 						$errors[] = (new Error(
-							sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
+							sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line),
 							$file,
 							$line,
 							false,

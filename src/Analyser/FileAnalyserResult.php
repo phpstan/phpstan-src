@@ -6,7 +6,8 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 
 /**
- * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<string>|null>>
+ * @phpstan-type Identifier = array{name: string, comment: string|null}
+ * @phpstan-type LinesToIgnore = array<string, array<int, non-empty-list<Identifier>|null>>
  * @phpstan-import-type CollectorData from CollectedData
  */
 final class FileAnalyserResult

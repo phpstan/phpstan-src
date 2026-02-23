@@ -7,14 +7,12 @@ use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Token;
-use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\IgnoreParseException;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
-use function array_key_last;
 use function array_map;
 use function count;
 use function implode;
@@ -32,9 +30,6 @@ use const T_COMMENT;
 use const T_DOC_COMMENT;
 use const T_WHITESPACE;
 
-/**
- * @phpstan-import-type Identifier from FileAnalyserResult
- */
 final class RichParser implements Parser
 {
 
@@ -125,7 +120,7 @@ final class RichParser implements Parser
 
 	/**
 	 * @param Token[] $tokens
-	 * @return array{lines: array<int, non-empty-list<Identifier>|null>, errors: array<int, non-empty-list<string>>}
+	 * @return array{lines: array<int, non-empty-list<string>|null>, errors: array<int, non-empty-list<string>>}
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
@@ -282,29 +277,33 @@ final class RichParser implements Parser
 	}
 
 	/**
-	 * @return non-empty-list<Identifier>
+	 * @return non-empty-list<string>
 	 * @throws IgnoreParseException
 	 */
 	private function parseIdentifiers(string $text, int $ignorePos): array
 	{
 		$text = substr($text, $ignorePos + strlen('@phpstan-ignore'));
-		$tokens = $this->ignoreLexer->tokenize($text);
+		$originalTokens = $this->ignoreLexer->tokenize($text);
+		$tokens = [];
+
+		foreach ($originalTokens as $originalToken) {
+			if ($originalToken[IgnoreLexer::TYPE_OFFSET] === IgnoreLexer::TOKEN_WHITESPACE) {
+				continue;
+			}
+			$tokens[] = $originalToken;
+		}
 
 		$c = count($tokens);
 
 		$identifiers = [];
-		$comment = null;
 		$openParenthesisCount = 0;
 		$expected = [IgnoreLexer::TOKEN_IDENTIFIER];
-		$lastTokenTypeLabel = '@phpstan-ignore';
 
 		for ($i = 0; $i < $c; $i++) {
-			if (isset($tokenType) && $tokenType !== IgnoreLexer::TOKEN_WHITESPACE) {
-				$lastTokenTypeLabel = $this->ignoreLexer->getLabel($tokenType);
-			}
+			$lastTokenTypeLabel = isset($tokenType) ? $this->ignoreLexer->getLabel($tokenType) : '@phpstan-ignore';
 			[IgnoreLexer::VALUE_OFFSET => $content, IgnoreLexer::TYPE_OFFSET => $tokenType, IgnoreLexer::LINE_OFFSET => $tokenLine] = $tokens[$i];
 
-			if ($expected !== null && !in_array($tokenType, [...$expected, IgnoreLexer::TOKEN_WHITESPACE], true)) {
+			if ($expected !== null && !in_array($tokenType, $expected, true)) {
 				$tokenTypeLabel = $this->ignoreLexer->getLabel($tokenType);
 				$otherTokenContent = $tokenType === IgnoreLexer::TOKEN_OTHER ? sprintf(" '%s'", $content) : '';
 				$expectedLabels = implode(' or ', array_map(fn ($token) => $this->ignoreLexer->getLabel($token), $expected));
@@ -313,9 +312,6 @@ final class RichParser implements Parser
 			}
 
 			if ($tokenType === IgnoreLexer::TOKEN_OPEN_PARENTHESIS) {
-				if ($openParenthesisCount > 0) {
-					$comment .= $content;
-				}
 				$openParenthesisCount++;
 				$expected = null;
 				continue;
@@ -324,25 +320,17 @@ final class RichParser implements Parser
 			if ($tokenType === IgnoreLexer::TOKEN_CLOSE_PARENTHESIS) {
 				$openParenthesisCount--;
 				if ($openParenthesisCount === 0) {
-					$key = array_key_last($identifiers);
-					if ($key !== null) {
-						$identifiers[$key]['comment'] = $comment;
-						$comment = null;
-					}
 					$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END];
-				} else {
-					$comment .= $content;
 				}
 				continue;
 			}
 
 			if ($openParenthesisCount > 0) {
-				$comment .= $content;
 				continue; // waiting for comment end
 			}
 
 			if ($tokenType === IgnoreLexer::TOKEN_IDENTIFIER) {
-				$identifiers[] = ['name' => $content, 'comment' => null];
+				$identifiers[] = $content;
 				$expected = [IgnoreLexer::TOKEN_COMMA, IgnoreLexer::TOKEN_END, IgnoreLexer::TOKEN_OPEN_PARENTHESIS];
 				continue;
 			}
@@ -361,7 +349,6 @@ final class RichParser implements Parser
 			throw new IgnoreParseException('Missing identifier', 1);
 		}
 
-		/** @phpstan-ignore return.type (return type is correct, not sure why it's being changed from array shape to key-value shape) */
 		return $identifiers;
 	}
 

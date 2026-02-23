@@ -28,18 +28,19 @@ final class AnalyserResultFinalizer
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
-		#[AutowiredParameter]
-		private bool $reportIgnoresWithoutComments,
 	)
 	{
 	}
 
 	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles, bool $debug): FinalizerResult
 	{
-		$hasCollectedData = count($analyserResult->getCollectedData()) > 0;
+		if (count($analyserResult->getCollectedData()) === 0) {
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
+		}
+
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
-		if (! $hasCollectedData || $hasInternalErrors) {
-			return $this->addUnmatchedIgnoredErrors($this->addIgnoresWithoutCommentErrors($this->mergeFilteredPhpErrors($analyserResult)), [], []);
+		if ($hasInternalErrors) {
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
 		$nodeType = CollectedDataNode::class;
@@ -133,7 +134,7 @@ final class AnalyserResultFinalizer
 			$allUnmatchedLineIgnores[$file] = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
 		}
 
-		return $this->addUnmatchedIgnoredErrors($this->addIgnoresWithoutCommentErrors(new AnalyserResult(
+		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
 			unorderedErrors: array_merge($errors, $analyserResult->getFilteredPhpErrors()),
 			filteredPhpErrors: [],
 			allPhpErrors: $analyserResult->getAllPhpErrors(),
@@ -147,7 +148,7 @@ final class AnalyserResultFinalizer
 			exportedNodes: $analyserResult->getExportedNodes(),
 			reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
-		)), $collectorErrors, $locallyIgnoredCollectorErrors);
+		), $collectorErrors, $locallyIgnoredCollectorErrors);
 	}
 
 	private function mergeFilteredPhpErrors(AnalyserResult $analyserResult): AnalyserResult
@@ -204,7 +205,7 @@ final class AnalyserResultFinalizer
 
 					foreach ($identifiers as $identifier) {
 						$errors[] = (new Error(
-							sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line),
+							sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
 							$file,
 							$line,
 							false,
@@ -233,61 +234,6 @@ final class AnalyserResultFinalizer
 			),
 			$collectorErrors,
 			$locallyIgnoredCollectorErrors,
-		);
-	}
-
-	private function addIgnoresWithoutCommentErrors(AnalyserResult $analyserResult): AnalyserResult
-	{
-		if (!$this->reportIgnoresWithoutComments) {
-			return $analyserResult;
-		}
-
-		$errors = $analyserResult->getUnorderedErrors();
-		foreach ($analyserResult->getLinesToIgnore() as $file => $data) {
-			foreach ($data as $ignoredFile => $lines) {
-				if ($ignoredFile !== $file) {
-					continue;
-				}
-
-				foreach ($lines as $line => $identifiers) {
-					if ($identifiers === null) {
-						continue;
-					}
-
-					foreach ($identifiers as $identifier) {
-						['name' => $name, 'comment' => $comment] = $identifier;
-						if ($comment !== null) {
-							continue;
-						}
-
-						$errors[] = (new Error(
-							sprintf('Ignore with identifier %s has no comment.', $name),
-							$file,
-							$line,
-							false,
-							$file,
-							null,
-							'Explain why this ignore is necessary in parentheses after the identifier.',
-						))->withIdentifier('ignore.noComment');
-					}
-				}
-			}
-		}
-
-		return new AnalyserResult(
-			$errors,
-			$analyserResult->getFilteredPhpErrors(),
-			$analyserResult->getAllPhpErrors(),
-			$analyserResult->getLocallyIgnoredErrors(),
-			$analyserResult->getLinesToIgnore(),
-			$analyserResult->getUnmatchedLineIgnores(),
-			$analyserResult->getInternalErrors(),
-			$analyserResult->getCollectedData(),
-			$analyserResult->getDependencies(),
-			$analyserResult->getUsedTraitDependencies(),
-			$analyserResult->getExportedNodes(),
-			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getPeakMemoryUsageBytes(),
 		);
 	}
 

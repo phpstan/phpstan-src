@@ -639,28 +639,6 @@ class AnalyserTest extends PHPStanTestCase
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
-	public function testIgnoresWithoutCommentsReported(): void
-	{
-		$expects = [
-			[9, 'variable.undefined'],
-			[12, 'variable.undefined'],
-			[12, 'wrong.id'],
-			[13, 'wrong.id'],
-			[14, 'variable.undefined'],
-		];
-		$result = $this->runAnalyser([], false, [
-			__DIR__ . '/data/ignore-no-comments.php',
-		], true, true);
-		$this->assertCount(5, $result);
-		foreach ($expects as $i => $expect) {
-			$this->assertArrayHasKey($i, $result);
-			$this->assertInstanceOf(Error::class, $result[$i]);
-			$this->assertStringContainsString(sprintf('Ignore with identifier %s has no comment.', $expect[1]), $result[$i]->getMessage());
-			$this->assertSame($expect[0], $result[$i]->getLine());
-		}
-	}
-
-	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
 		$result = $this->runAnalyser([], $reportUnmatchedIgnoredErrors, [
@@ -769,7 +747,6 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
-		bool $reportIgnoresWithoutComments = false,
 	): array
 	{
 		$analyser = $this->createAnalyser();
@@ -802,7 +779,6 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
-			$reportIgnoresWithoutComments,
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 

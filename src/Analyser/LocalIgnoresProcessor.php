@@ -49,7 +49,7 @@ final class LocalIgnoresProcessor
 				}
 
 				foreach ($identifiers as $i => $ignoredIdentifier) {
-					if ($ignoredIdentifier['name'] !== $tmpFileError->getIdentifier()) {
+					if ($ignoredIdentifier !== $tmpFileError->getIdentifier()) {
 						continue;
 					}
 
@@ -68,7 +68,7 @@ final class LocalIgnoresProcessor
 						$unmatchedIgnoredIdentifiers = $unmatchedLineIgnores[$tmpFileError->getFile()][$line];
 						if (is_array($unmatchedIgnoredIdentifiers)) {
 							foreach ($unmatchedIgnoredIdentifiers as $j => $unmatchedIgnoredIdentifier) {
-								if ($ignoredIdentifier['name'] !== $unmatchedIgnoredIdentifier['name']) {
+								if ($ignoredIdentifier !== $unmatchedIgnoredIdentifier) {
 									continue;
 								}
 

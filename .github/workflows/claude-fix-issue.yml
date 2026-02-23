@@ -87,7 +87,7 @@ jobs:
           prompt = f"""You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 
           Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
-          Issue #{n}: {title}
+          Issue phpstan/phpstan#{n}: {title}
           URL: {url}
 
           Issue body:

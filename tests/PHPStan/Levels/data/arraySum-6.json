@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Method Levels\\ArraySum\\Foo::test() has parameter $implicitlyMixed with no type specified.",
+        "line": 13,
+        "ignorable": true
+    }
+]

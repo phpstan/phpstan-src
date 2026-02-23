@@ -40,3 +40,8 @@ function dumpPhpDocType($value, ...$values) // phpcs:ignore Squiz.Functions.Glob
 {
 	return null;
 }
+
+function test(): string
+{
+	return 1; // @phpstan-ignore return.type
+}

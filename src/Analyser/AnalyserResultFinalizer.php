@@ -28,18 +28,17 @@ final class AnalyserResultFinalizer
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
+		#[AutowiredParameter]
+		private bool $reportIgnoresWithoutComments,
 	)
 	{
 	}
 
 	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles, bool $debug): FinalizerResult
 	{
-		if (count($analyserResult->getCollectedData()) === 0) {
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
-		}
-
+		$hasCollectedData = count($analyserResult->getCollectedData()) > 0;
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
-		if ($hasInternalErrors) {
+		if (! $hasCollectedData || $hasInternalErrors) {
 			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
@@ -205,7 +204,7 @@ final class AnalyserResultFinalizer
 
 					foreach ($identifiers as $identifier) {
 						$errors[] = (new Error(
-							sprintf('No error with identifier %s is reported on line %d.', $identifier, $line),
+							sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line),
 							$file,
 							$line,
 							false,

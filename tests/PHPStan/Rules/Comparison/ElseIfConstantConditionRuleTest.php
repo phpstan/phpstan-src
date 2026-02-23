@@ -147,7 +147,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 			[
 				'Elseif condition is always false.',
 				13,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				"• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.\n• If Bug6947\HelloWorld::getValue() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.",
 			],
 		]);
 	}

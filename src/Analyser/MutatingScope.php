@@ -145,6 +145,7 @@ use PHPStan\Type\VoidType;
 use Throwable;
 use ValueError;
 use function abs;
+use function assert;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;

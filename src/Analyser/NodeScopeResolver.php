@@ -4215,10 +4215,10 @@ class NodeScopeResolver
 							continue;
 						}
 
-						$condNodes = [];
-						$conditionCases = [];
-						$conditionExprs = [];
-						foreach ($arm->conds as $j => $cond) {
+						// Pre-validate all conditions before processing to avoid
+						// partial consumption of enum cases when a later condition
+						// causes the arm to be skipped
+						foreach ($arm->conds as $cond) {
 							if (!$cond instanceof Expr\ClassConstFetch) {
 								continue 2;
 							}
@@ -4233,6 +4233,30 @@ class NodeScopeResolver
 							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
 								continue 2;
 							}
+							$caseName = $cond->name->toString();
+							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+								continue 2;
+							}
+						}
+
+						$condNodes = [];
+						$conditionCases = [];
+						$conditionExprs = [];
+						foreach ($arm->conds as $j => $cond) {
+							if (!$cond instanceof Expr\ClassConstFetch) {
+								throw new ShouldNotHappenException();
+							}
+							if (!$cond->class instanceof Name) {
+								throw new ShouldNotHappenException();
+							}
+							if (!$cond->name instanceof Node\Identifier) {
+								throw new ShouldNotHappenException();
+							}
+							$fetchedClassName = $scope->resolveName($cond->class);
+							$loweredFetchedClassName = strtolower($fetchedClassName);
+							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
+								throw new ShouldNotHappenException();
+							}
 
 							if (!array_key_exists($loweredFetchedClassName, $unusedIndexedEnumCases)) {
 								throw new ShouldNotHappenException();
@@ -4240,7 +4264,7 @@ class NodeScopeResolver
 
 							$caseName = $cond->name->toString();
 							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								continue 2;
+								throw new ShouldNotHappenException();
 							}
 
 							$enumCase = $indexedEnumCases[$loweredFetchedClassName][$caseName];

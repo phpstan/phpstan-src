@@ -16,6 +16,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
@@ -58,6 +59,11 @@ class HasMethodType implements AccessoryType, CompoundType
 	public function getObjectClassReflections(): array
 	{
 		return [];
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
 	}
 
 	private function getCanonicalMethodName(): string

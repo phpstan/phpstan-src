@@ -40,6 +40,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
@@ -920,6 +921,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
 	}
 
 	public function isEnum(): TrinaryLogic

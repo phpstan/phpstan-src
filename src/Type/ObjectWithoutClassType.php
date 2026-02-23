@@ -50,6 +50,11 @@ class ObjectWithoutClassType implements SubtractableType
 		return [];
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new ClassStringType();
+	}
+
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {

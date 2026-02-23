@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -28,6 +29,11 @@ trait MaybeObjectTypeTrait
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new ClassStringType();
 	}
 
 	public function isEnum(): TrinaryLogic

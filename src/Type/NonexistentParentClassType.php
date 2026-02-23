@@ -53,6 +53,11 @@ class NonexistentParentClassType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new ClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

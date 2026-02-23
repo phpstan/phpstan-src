@@ -823,7 +823,7 @@ class ConstantArrayType implements Type
 	 * So the nextAutoIndexes won't change, and the array might still be a list even with PHPStan definition.
 	 *
 	 * @param list<ConstantIntegerType|ConstantStringType> $newKeyTypes
-	 * @param int[] 									   $newOptionalKeys
+	 * @param int[] $newOptionalKeys
 	 */
 	private static function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey): TrinaryLogic
 	{

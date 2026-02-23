@@ -91,7 +91,7 @@ class HelloWorld2
 	{
 		assertType('true', array_is_list($b));
 		unset($b[1]);
-		assertType('false', array_is_list($b)); // Could be true
+		assertType('false', array_is_list($b));
 		$b[] = 'foo';
 		assertType('false', array_is_list($b));
 	}
@@ -105,7 +105,7 @@ class HelloWorld2
 		unset($b[2]);
 		assertType('bool', array_is_list($b));
 		$b[] = 'foo';
-		assertType('bool', array_is_list($b)); // Could be false
+		assertType('bool', array_is_list($b));
 	}
 
 	/**
@@ -115,9 +115,9 @@ class HelloWorld2
 	{
 		assertType('true', array_is_list($b));
 		unset($b[3]);
-		assertType('bool', array_is_list($b)); // Could be true
+		assertType('bool', array_is_list($b));
 		$b[] = 'foo';
-		assertType('bool', array_is_list($b)); // Could be false
+		assertType('bool', array_is_list($b));
 	}
 
 	/**
@@ -165,7 +165,7 @@ class HelloWorld2
 		unset($b[3]);
 		assertType('bool', array_is_list($b));
 		$b[] = 'foo';
-		assertType('bool', array_is_list($b)); // Could be false
+		assertType('bool', array_is_list($b));
 	}
 
 	/**

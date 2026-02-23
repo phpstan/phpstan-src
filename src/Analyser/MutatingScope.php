@@ -815,7 +815,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			// narrowing affected the type (the cached value was narrowed).
 			assert($found instanceof Expr);
 			$scopeType = $this->getType($found);
-			$declaredReturnType = $holderExpr->getDeclaredReturnType();
+			$declaredReturnType = $holder->getType();
 			if ($declaredReturnType->isSuperTypeOf($scopeType)->yes() && $scopeType->isSuperTypeOf($declaredReturnType)->yes()) {
 				continue;
 			}

@@ -2946,8 +2946,8 @@ class NodeScopeResolver
 				&& $parametersAcceptor !== null
 			) {
 				$scope = $scope->assignExpression(
-					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName()), $parametersAcceptor->getReturnType()),
-					new MixedType(),
+					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName())),
+					$parametersAcceptor->getReturnType(),
 					new MixedType(),
 				);
 			}
@@ -3252,8 +3252,8 @@ class NodeScopeResolver
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
 				} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin() && $parametersAcceptor !== null) {
 					$scope = $scope->assignExpression(
-						new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()), $parametersAcceptor->getReturnType()),
-						new MixedType(),
+						new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
+						$parametersAcceptor->getReturnType(),
 						new MixedType(),
 					);
 				}
@@ -3476,8 +3476,8 @@ class NodeScopeResolver
 				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 			) {
 				$scope = $scope->assignExpression(
-					new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName()), $parametersAcceptor->getReturnType()),
-					new MixedType(),
+					new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
+					$parametersAcceptor->getReturnType(),
 					new MixedType(),
 				);
 			}

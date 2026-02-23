@@ -117,10 +117,8 @@ final class MatchExpressionRule implements Rule
 				);
 				$errorBuilder = RuleErrorBuilder::message($message)
 					->line($armLine)
-					->identifier('match.alwaysTrue');
-				if (!$errorBuilder->hasTips()) {
-					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
-				}
+					->identifier('match.alwaysTrue')
+					->tip('Remove remaining cases below this one and this error will disappear too.');
 				$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
 				$errors[] = $errorBuilder->build();
 			}

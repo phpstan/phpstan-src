@@ -30,9 +30,6 @@ final class PossiblyImpureTipHelper
 		if (!$this->possiblyImpureTip) {
 			return $ruleErrorBuilder;
 		}
-		if ($ruleErrorBuilder->hasTips()) {
-			return $ruleErrorBuilder;
-		}
 		if (!$scope instanceof MutatingScope) {
 			return $ruleErrorBuilder;
 		}

@@ -241,11 +241,6 @@ final class RuleErrorBuilder
 		return $this;
 	}
 
-	public function hasTips(): bool
-	{
-		return count($this->tips) > 0;
-	}
-
 	/**
 	 * Sets an error identifier.
 	 *

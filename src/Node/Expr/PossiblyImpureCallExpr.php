@@ -5,7 +5,6 @@ namespace PHPStan\Node\Expr;
 use Override;
 use PhpParser\Node\Expr;
 use PHPStan\Node\VirtualNode;
-use PHPStan\Type\Type;
 
 final class PossiblyImpureCallExpr extends Expr implements VirtualNode
 {
@@ -14,7 +13,6 @@ final class PossiblyImpureCallExpr extends Expr implements VirtualNode
 		public Expr $callExpr,
 		public Expr $impactedExpr,
 		private string $callDescription,
-		private Type $declaredReturnType,
 	)
 	{
 		parent::__construct([]);
@@ -23,11 +21,6 @@ final class PossiblyImpureCallExpr extends Expr implements VirtualNode
 	public function getCallDescription(): string
 	{
 		return $this->callDescription;
-	}
-
-	public function getDeclaredReturnType(): Type
-	{
-		return $this->declaredReturnType;
 	}
 
 	#[Override]

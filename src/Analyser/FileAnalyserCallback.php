@@ -21,7 +21,6 @@ use function sprintf;
 
 /**
  * @phpstan-import-type CollectorData from CollectedData
- * @phpstan-import-type Identifier from FileAnalyserResult
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
  */
 final class FileAnalyserCallback
@@ -232,7 +231,7 @@ final class FileAnalyserCallback
 
 	/**
 	 * @param Node[] $nodes
-	 * @return array<int, non-empty-list<Identifier>|null>
+	 * @return array<int, non-empty-list<string>|null>
 	 */
 	private function getLinesToIgnoreFromTokens(array $nodes): array
 	{
@@ -240,7 +239,7 @@ final class FileAnalyserCallback
 			return [];
 		}
 
-		/** @var array<int, non-empty-list<Identifier>|null> */
+		/** @var array<int, non-empty-list<string>|null> */
 		return $nodes[0]->getAttribute('linesToIgnore', []);
 	}
 

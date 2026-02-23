@@ -313,7 +313,7 @@ final class FixerWorkerCommand extends Command
 					if ($error->getIdentifier() === null) {
 						continue;
 					}
-					if (!in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched', 'ignore.unmatchedLine', 'ignore.unmatchedIdentifier', 'ignore.noComment'], true)) {
+					if (!in_array($error->getIdentifier(), ['ignore.count', 'ignore.unmatched', 'ignore.unmatchedLine', 'ignore.unmatchedIdentifier'], true)) {
 						continue;
 					}
 					$ignoreFileErrors[] = $error;

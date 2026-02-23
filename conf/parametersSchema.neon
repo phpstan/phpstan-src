@@ -143,7 +143,6 @@ parametersSchema:
 		nameScopeMapMemoryCacheCountMax: int()
 	])
 	reportUnmatchedIgnoredErrors: bool()
-	reportIgnoresWithoutComments: bool()
 	typeAliases: arrayOf(string())
 	universalObjectCratesClasses: listOf(string())
 	stubFiles: listOf(string())

@@ -118,7 +118,6 @@ parameters:
 		resolvedPhpDocBlockCacheCountMax: 2048
 		nameScopeMapMemoryCacheCountMax: 2048
 	reportUnmatchedIgnoredErrors: true
-	reportIgnoresWithoutComments: false
 	typeAliases: []
 	universalObjectCratesClasses:
 		- stdClass
@@ -227,7 +226,6 @@ parameters:
 		- [parameters, errorFormat]
 		- [parameters, ignoreErrors]
 		- [parameters, reportUnmatchedIgnoredErrors]
-		- [parameters, reportIgnoresWithoutComments]
 		- [parameters, tipsOfTheDay]
 		- [parameters, parallel]
 		- [parameters, internalErrorsCountLimit]

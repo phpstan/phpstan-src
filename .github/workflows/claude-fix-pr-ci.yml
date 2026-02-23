@@ -6,11 +6,6 @@ on:
       - opened
       - synchronize
 
-permissions:
-  contents: write
-  pull-requests: read
-  actions: read
-
 concurrency:
   group: claude-ci-fix-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -208,7 +203,6 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
-            --dangerously-skip-permissions \
             "$(cat /tmp/claude-ci-prompt.txt)"
 
       - name: "Commit and push fixes"

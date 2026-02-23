@@ -140,6 +140,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				new IgnoreErrorExtensionProvider(self::getContainer()),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
+				false,
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,

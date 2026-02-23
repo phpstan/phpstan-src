@@ -60,6 +60,8 @@ final class FileAnalyser
 		private IgnoreErrorExtensionProvider $ignoreErrorExtensionProvider,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
+		#[AutowiredParameter]
+		private bool $reportIgnoresWithoutComments,
 	)
 	{
 	}
@@ -128,6 +130,32 @@ final class FileAnalyser
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
 				$temporaryFileErrors = $nodeCallback->getTemporaryFileErrors();
 				$processedFiles = $nodeCallback->getProcessedFiles();
+
+				if ($this->reportIgnoresWithoutComments) {
+					foreach ($linesToIgnore as $ignoredFile => $lines) {
+						foreach ($lines as $line => $identifiers) {
+							if ($identifiers === null) {
+								continue;
+							}
+
+							foreach ($identifiers as $identifier) {
+								if ($identifier['comment'] !== null) {
+									continue;
+								}
+
+								$fileErrors[] = (new Error(
+									sprintf('Ignore with identifier %s has no comment.', $identifier['name']),
+									$ignoredFile,
+									$line,
+									false,
+									$ignoredFile,
+									null,
+									'Explain why this ignore is necessary in parentheses after the identifier.',
+								))->withIdentifier('ignore.noComment');
+							}
+						}
+					}
+				}
 
 				$localIgnoresProcessorResult = $this->localIgnoresProcessor->process(
 					$temporaryFileErrors,

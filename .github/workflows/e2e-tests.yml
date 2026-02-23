@@ -296,6 +296,12 @@ jobs:
           - script: |
               cd e2e/nested-trait-use
               ../../bin/phpstan analyze
+          - script: |
+              cd e2e/report-ignores-without-comments
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              echo "$OUTPUT"
+              ../bashunit -a contains 'test.php:4:Ignore with identifier variable.undefined has no comment' "$OUTPUT"
+              ../bashunit -a not_contains 'test.php:7' "$OUTPUT"
 
     steps:
       - name: "Checkout"

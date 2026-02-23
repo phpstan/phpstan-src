@@ -2,10 +2,14 @@
 
 namespace PHPStan\Parser;
 
+use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use const PHP_EOL;
 
+/**
+ * @phpstan-import-type Identifier from FileAnalyserResult
+ */
 class RichParserTest extends PHPStanTestCase
 {
 
@@ -50,7 +54,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore test',
 			[
-				2 => ['test'],
+				2 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -58,7 +62,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref',
 			[
-				2 => ['return.ref'],
+				2 => [['name' => 'return.ref', 'comment' => null]],
 			],
 		];
 
@@ -66,7 +70,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non',
 			[
-				2 => ['return.ref', 'return.non'],
+				2 => [['name' => 'return.ref', 'comment' => null], ['name' => 'return.non', 'comment' => null]],
 			],
 		];
 
@@ -74,7 +78,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non (foo)',
 			[
-				2 => ['return.ref', 'return.non'],
+				2 => [['name' => 'return.ref', 'comment' => null], ['name' => 'return.non', 'comment' => 'foo']],
 			],
 		];
 
@@ -82,7 +86,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore return.ref, return.non (foo, because...)',
 			[
-				2 => ['return.ref', 'return.non'],
+				2 => [['name' => 'return.ref', 'comment' => null], ['name' => 'return.non', 'comment' => 'foo, because...']],
 			],
 		];
 
@@ -90,7 +94,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'/* @phpstan-ignore test */test();',
 			[
-				2 => ['test'],
+				2 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -98,7 +102,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'/** @phpstan-ignore test */test();',
 			[
-				2 => ['test'],
+				2 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -106,7 +110,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'  /** @phpstan-ignore test */test();',
 			[
-				2 => ['test'],
+				2 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -114,7 +118,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test();  /** @phpstan-ignore test */test();',
 			[
-				2 => ['test'],
+				2 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -123,7 +127,7 @@ class RichParserTest extends PHPStanTestCase
 			'// @phpstan-ignore test' . PHP_EOL .
 			'test();',
 			[
-				3 => ['test'],
+				3 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -132,7 +136,7 @@ class RichParserTest extends PHPStanTestCase
 			'// @phpstan-ignore test' . PHP_EOL .
 			'test(); // @phpstan-ignore test',
 			[
-				3 => ['test', 'test'],
+				3 => [['name' => 'test', 'comment' => null], ['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -141,7 +145,7 @@ class RichParserTest extends PHPStanTestCase
 			'   // @phpstan-ignore test' . PHP_EOL .
 			'test();',
 			[
-				3 => ['test'],
+				3 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -153,7 +157,7 @@ class RichParserTest extends PHPStanTestCase
 			' */' . PHP_EOL .
 			'test();',
 			[
-				6 => ['test'],
+				6 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -163,7 +167,7 @@ class RichParserTest extends PHPStanTestCase
 			'/** @phpstan-ignore test */' . PHP_EOL .
 			'test();',
 			[
-				4 => ['test'],
+				4 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -174,7 +178,7 @@ class RichParserTest extends PHPStanTestCase
 			' * @phpstan-ignore test' . PHP_EOL .
 			' */ test();',
 			[
-				5 => ['test'],
+				5 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -185,7 +189,7 @@ class RichParserTest extends PHPStanTestCase
 			' * @phpstan-ignore test' . PHP_EOL .
 			' */',
 			[
-				3 => ['test'],
+				3 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -194,7 +198,7 @@ class RichParserTest extends PHPStanTestCase
 			PHP_EOL .
 			'/** @phpstan-ignore test */' . PHP_EOL,
 			[
-				4 => ['test'],
+				4 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -204,7 +208,7 @@ class RichParserTest extends PHPStanTestCase
 			'/** @phpstan-ignore test */' . PHP_EOL .
 			'doFoo();' . PHP_EOL,
 			[
-				4 => ['test'],
+				4 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -213,7 +217,7 @@ class RichParserTest extends PHPStanTestCase
 			PHP_EOL .
 			'/** @phpstan-ignore test */',
 			[
-				3 => ['test'],
+				3 => [['name' => 'test', 'comment' => null]],
 			],
 		];
 
@@ -221,7 +225,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (comment), identifier2 (comment2)' . PHP_EOL,
 			[
-				2 => ['identifier', 'identifier2'],
+				2 => [['name' => 'identifier', 'comment' => 'comment'], ['name' => 'identifier2', 'comment' => 'comment2']],
 			],
 		];
 
@@ -229,7 +233,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			"test(); // @phpstan-ignore  identifier (comment1),\tidentifier2 ,  identifier3 (comment3) " . PHP_EOL,
 			[
-				2 => ['identifier', 'identifier2', 'identifier3'],
+				2 => [['name' => 'identifier', 'comment' => 'comment1'], ['name' => 'identifier2', 'comment' => null], ['name' => 'identifier3', 'comment' => 'comment3']],
 			],
 		];
 
@@ -237,7 +241,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (comment with inner (parenthesis))' . PHP_EOL,
 			[
-				2 => ['identifier'],
+				2 => [['name' => 'identifier', 'comment' => 'comment with inner (parenthesis)']],
 			],
 		];
 
@@ -245,7 +249,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier ((((multi!))))' . PHP_EOL,
 			[
-				2 => ['identifier'],
+				2 => [['name' => 'identifier', 'comment' => '(((multi!)))']],
 			],
 		];
 
@@ -253,7 +257,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (var_export() is used intentionally)' . PHP_EOL,
 			[
-				2 => ['identifier'],
+				2 => [['name' => 'identifier', 'comment' => 'var_export() is used intentionally']],
 			],
 		];
 
@@ -261,7 +265,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (FileSystem::write() does not support LOCK_EX)' . PHP_EOL,
 			[
-				2 => ['identifier'],
+				2 => [['name' => 'identifier', 'comment' => 'FileSystem::write() does not support LOCK_EX']],
 			],
 		];
 
@@ -269,7 +273,7 @@ class RichParserTest extends PHPStanTestCase
 			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (type ensured in self::createClient())' . PHP_EOL,
 			[
-				2 => ['identifier'],
+				2 => [['name' => 'identifier', 'comment' => 'type ensured in self::createClient()']],
 			],
 		];
 
@@ -287,7 +291,7 @@ class RichParserTest extends PHPStanTestCase
 			'  }' . PHP_EOL .
 			'}',
 			[
-				10 => ['variable.undefined'],
+				10 => [['name' => 'variable.undefined', 'comment' => null]],
 			],
 		];
 
@@ -308,13 +312,13 @@ class RichParserTest extends PHPStanTestCase
 			'  }' . PHP_EOL .
 			'}',
 			[
-				13 => ['variable.undefined'],
+				13 => [['name' => 'variable.undefined', 'comment' => null]],
 			],
 		];
 	}
 
 	/**
-	 * @param array<int, list<string>|null> $expectedLines
+	 * @param array<int, list<Identifier>|null> $expectedLines
 	 */
 	#[DataProvider('dataLinesToIgnore')]
 	public function testLinesToIgnore(string $code, array $expectedLines): void

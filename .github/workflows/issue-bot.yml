@@ -299,7 +299,6 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
-            --dangerously-skip-permissions \
             "Read the file ./tmp/step-summary.md which contains the Issue Bot step summary from CI in Markdown format. Interpret this Markdown to figure out which GitHub issues need regression tests added. For each affected issue (where behavior changed), run /regression-test with the issue number.
 
           Also read the diff of this branch to see what has already been done. The primary fixed issue will already have a test committed. The Issue Bot step summary might mention other fixed issues, so please add regression tests for those.

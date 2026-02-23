@@ -14,11 +14,6 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-
 jobs:
   fix:
     name: "Fix #${{ inputs.issue-number }}"
@@ -170,7 +165,6 @@ jobs:
 
           claude -p \
             --model claude-opus-4-6 \
-            --dangerously-skip-permissions \
             "$(cat /tmp/claude-prompt.txt)"
 
       - name: "Read Claude's summary"

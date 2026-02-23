@@ -11,6 +11,7 @@ use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -50,6 +51,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 	public function getObjectClassReflections(): array
 	{
 		return [];
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
 	}
 
 	public function getConstantStrings(): array

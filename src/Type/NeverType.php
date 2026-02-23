@@ -114,6 +114,11 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new NeverType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

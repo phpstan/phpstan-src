@@ -307,6 +307,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->objectType->isObject();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return $this->objectType->getClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return $this->objectType->isEnum();

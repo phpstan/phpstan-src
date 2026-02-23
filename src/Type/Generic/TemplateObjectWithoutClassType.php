@@ -36,4 +36,9 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		$this->default = $default;
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
+	}
+
 }

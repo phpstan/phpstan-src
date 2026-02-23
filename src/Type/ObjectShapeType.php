@@ -22,6 +22,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -88,6 +89,11 @@ class ObjectShapeType implements Type
 	public function getObjectClassReflections(): array
 	{
 		return [];
+	}
+
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
 	}
 
 	public function hasProperty(string $propertyName): TrinaryLogic

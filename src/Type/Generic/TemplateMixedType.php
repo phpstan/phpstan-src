@@ -63,4 +63,9 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		);
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new GenericClassStringType($this);
+	}
+
 }

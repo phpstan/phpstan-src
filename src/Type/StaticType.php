@@ -198,6 +198,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isObject();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return $this->getStaticObjectType()->getClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isEnum();

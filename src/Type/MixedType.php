@@ -392,6 +392,11 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getClassStringType(): Type
+	{
+		return new ClassStringType();
+	}
+
 	public function isEnum(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

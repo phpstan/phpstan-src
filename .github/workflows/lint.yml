@@ -53,6 +53,12 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
+      - shell: php {0}
+        run: |
+          <?php
+          unlink('vendor/php-parallel-lint/php-parallel-lint/src');
+          copy('Settings.php', 'vendor/php-parallel-lint/php-parallel-lint/src/Settings.php');
+
       - name: "Lint"
         run: "make lint"
 

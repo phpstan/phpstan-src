@@ -136,20 +136,25 @@ jobs:
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: "Build prompt"
+      - name: "Run Claude Code"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          {
-            cat << 'PROMPT_PART1'
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude -p \
+            --model claude-opus-4-6 \
+            "$(cat << 'PROMPT_EOF'
           You are working on phpstan/phpstan-src. CI has failed on PR #${{ github.event.pull_request.number }} which was created by an automated process.
 
           This is CI fix attempt ${{ steps.check-attempts.outputs.attempt_number }} of maximum 2.
 
           ## CI Failure Logs
 
-          PROMPT_PART1
-            cat /tmp/ci-failure-context.txt
-            cat << 'PROMPT_PART2'
+          Read the CI failure logs from the file /tmp/ci-failure-context.txt.
 
           ## Your Task
 
@@ -181,21 +186,8 @@ jobs:
           - Do NOT create a branch, push, or create a PR — this is handled automatically after you finish
           - Focus only on fixing the CI failures, do not refactor or add unrelated changes
           - If you cannot determine how to fix the failure, create a file /tmp/ci-fix-failed.txt with an explanation
-          PROMPT_PART2
-          } > /tmp/claude-ci-prompt.txt
-
-      - name: "Run Claude Code"
-        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
-
-          claude -p \
-            --model claude-opus-4-6 \
-            "$(cat /tmp/claude-ci-prompt.txt)"
+          PROMPT_EOF
+          )"
 
       - name: "Commit and push fixes"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'

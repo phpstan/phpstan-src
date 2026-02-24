@@ -61,20 +61,24 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "$ISSUE_JSON" | jq -r '.body' > /tmp/issue-body.txt
 
-      - name: "Build prompt"
+      - name: "Run Claude Code"
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          {
-            cat << 'PROMPT_PART1'
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude -p \
+            --model claude-opus-4-6 \
+            "$(cat << 'PROMPT_EOF'
           You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 
           Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
           Issue phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}
           URL: ${{ steps.issue.outputs.url }}
 
-          Issue body:
-          PROMPT_PART1
-            cat /tmp/issue-body.txt
-            cat << 'PROMPT_PART2'
+          Issue body is in the file /tmp/issue-body.txt — read it before proceeding.
 
           ## Step 1: Write a regression test
 
@@ -137,20 +141,8 @@ jobs:
              Fixes phpstan/phpstan#${{ inputs.issue-number }}
 
           These files are critical - they will be used for the commit message and PR description.
-          PROMPT_PART2
-          } > /tmp/claude-prompt.txt
-
-      - name: "Run Claude Code"
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
-
-          claude -p \
-            --model claude-opus-4-6 \
-            "$(cat /tmp/claude-prompt.txt)"
+          PROMPT_EOF
+          )"
 
       - name: "Read Claude's summary"
         id: claude-summary

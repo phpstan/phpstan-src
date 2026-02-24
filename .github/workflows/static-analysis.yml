@@ -185,6 +185,6 @@ jobs:
 
       - name: "Generate baseline"
         run: |
-          > phpstan-baseline.neon && \
+          true > phpstan-baseline.neon && \
           make phpstan-generate-baseline-php && \
           make phpstan-result-cache

@@ -68,7 +68,7 @@ jobs:
         id: shards
         working-directory: "issue-bot"
         run: |
-          echo "shards=$(jq -c '{include: [range(length) | {shard: .}]}' matrix.json)" >> $GITHUB_OUTPUT
+          echo "shards=$(jq -c '{include: [range(length) | {shard: .}]}' matrix.json)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -210,7 +210,7 @@ jobs:
           ./console.php evaluate > tmp/step-summary.md
           exit_code="$?"
 
-          cat tmp/step-summary.md >> $GITHUB_STEP_SUMMARY
+          cat tmp/step-summary.md >> "$GITHUB_STEP_SUMMARY"
 
           if [[ "$exit_code" == "2" ]]; then
             echo "::notice file=.github/workflows/issue-bot.yml,line=3 ::Issue bot detected open issues which are affected by this pull request - see https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -235,7 +235,7 @@ jobs:
           PHPSTAN_SRC_COMMIT_AFTER: ${{ github.event.after }}
         run: |
           set +e
-          ./console.php evaluate --post-comments >> $GITHUB_STEP_SUMMARY
+          ./console.php evaluate --post-comments >> "$GITHUB_STEP_SUMMARY"
           exit_code="$?"
 
           # its fine when issue-bot found affected issues

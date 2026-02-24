@@ -51,4 +51,4 @@ jobs:
           composer global require --dev ondrejmirtes/backward-compatibility-check:^7.3.0.1
 
       - name: "Check"
-        run: "$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"
+        run: '"$(composer global config bin-dir --absolute)"/roave-backward-compatibility-check'

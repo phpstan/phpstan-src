@@ -236,12 +236,15 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'phpstan-bot'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: "Check for feedback loop"
         id: check
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           COMMIT_MSG=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.pull_request.head.sha }}" --jq '.commit.message' 2>/dev/null || true)
           if [[ "$COMMIT_MSG" == "Add regression test for #"* ]]; then
@@ -257,7 +260,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: "Download step summary"
         if: steps.check.outputs.skip != 'true'
@@ -292,7 +294,7 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "phpstan-bot"
           git config user.email "ondrej+phpstanbot@mirtes.cz"
@@ -318,7 +320,7 @@ jobs:
       - name: "Update PR description"
         if: steps.check.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BEFORE_SHA="${{ steps.before.outputs.sha }}"
           CURRENT_SHA="$(git rev-parse HEAD)"

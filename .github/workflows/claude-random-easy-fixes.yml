@@ -18,6 +18,10 @@ jobs:
     outputs:
       matrix: ${{ steps.pick-issues.outputs.matrix }}
 
+    permissions:
+      contents: read
+      issues: read
+
     steps:
       - name: "Pick random Easy fix issues"
         id: pick-issues

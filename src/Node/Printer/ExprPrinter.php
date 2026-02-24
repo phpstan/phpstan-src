@@ -20,6 +20,11 @@ final class ExprPrinter
 
 	public function printExpr(Expr $expr): string
 	{
+		// perf optimize for the most common path
+		if ($expr instanceof Expr\Variable && !$expr->name instanceof Expr) {
+			return '$' . $expr->name;
+		}
+
 		/** @var string|null $exprString */
 		$exprString = $expr->getAttribute(self::ATTRIBUTE_CACHE_KEY);
 		if ($exprString === null) {

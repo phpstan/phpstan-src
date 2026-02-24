@@ -112,7 +112,7 @@ jobs:
 
       - name: "Save checksum"
         id: "checksum"
-        run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -231,7 +231,7 @@ jobs:
 
       - name: "Save old checksum"
         id: "old_checksum"
-        run: echo "md5=$(md5sum phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "md5=$(md5sum phpstan.phar | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: "Assert checksum"
         run: |
@@ -330,7 +330,7 @@ jobs:
       - name: "Get previous pushed dist commit"
         id: previous-commit
         working-directory: phpstan-dist
-        run: echo "sha=$(sed -n '2p' .phar-checksum)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(sed -n '2p' .phar-checksum)" >> "$GITHUB_OUTPUT"
 
       - name: "Checkout phpstan-src"
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -342,24 +342,24 @@ jobs:
         id: git-log
         working-directory: phpstan-src
         run: |
-          echo "log<<MESSAGE" >> $GITHUB_OUTPUT
-          echo "$(git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='https://github.com/phpstan/phpstan-src/commit/%H %s')" >> $GITHUB_OUTPUT
-          echo 'MESSAGE' >> $GITHUB_OUTPUT
+          echo "log<<MESSAGE" >> "$GITHUB_OUTPUT"
+          git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='https://github.com/phpstan/phpstan-src/commit/%H %s' >> "$GITHUB_OUTPUT"
+          echo 'MESSAGE' >> "$GITHUB_OUTPUT"
 
       - name: "Get short phpstan-src SHA"
         id: short-src-sha
         working-directory: phpstan-src
-        run: echo "sha=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: "Check PHAR checksum"
         id: checksum-difference
         working-directory: phpstan-dist
         run: |
-          checksum=${{needs.compiler-tests.outputs.checksum}}
+          checksum="${{needs.compiler-tests.outputs.checksum}}"
           if [[ $(head -n 1 .phar-checksum) != "$checksum" ]]; then
-            echo "result=different" >> $GITHUB_OUTPUT
+            echo "result=different" >> "$GITHUB_OUTPUT"
           else
-            echo "result=same" >> $GITHUB_OUTPUT
+            echo "result=same" >> "$GITHUB_OUTPUT"
           fi
 
       - name: "Download phpstan.phar"

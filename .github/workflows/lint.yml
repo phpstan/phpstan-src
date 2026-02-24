@@ -56,7 +56,7 @@ jobs:
       - shell: php {0}
         run: |
           <?php
-          unlink('vendor/php-parallel-lint/php-parallel-lint/src');
+          unlink('phpstan-src/vendor/php-parallel-lint/php-parallel-lint/src/Settings.php');
           copy('Settings.php', 'vendor/php-parallel-lint/php-parallel-lint/src/Settings.php');
 
       - name: "Lint"

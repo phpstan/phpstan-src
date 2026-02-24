@@ -28,19 +28,24 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.2"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Install ApiGen dependencies"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         with:
           working-directory: "apigen"
 
@@ -48,7 +53,7 @@ jobs:
         run: "apigen/vendor/bin/apigen -c apigen/apigen.neon --output docs -- src vendor/nikic/php-parser vendor/ondrejmirtes/better-reflection vendor/phpstan/phpdoc-parser"
 
       - name: "Upload docs"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: docs
           path: docs
@@ -60,19 +65,24 @@ jobs:
     if: github.repository_owner == 'phpstan'
     runs-on: "ubuntu-latest"
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Install Node"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "16"
 
       - name: "Download docs"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: docs
           path: docs
 
       - name: "Sync with S3"
-        uses: jakejarvis/s3-sync-action@v0.5.1
+        uses: jakejarvis/s3-sync-action@be0c4ab89158cac4278689ebedd8407dd5f35a83 # v0.5.1
         with:
           args: --exclude '.git*/*' --follow-symlinks
         env:
@@ -84,7 +94,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
 
       - name: "Invalidate CloudFront"
-        uses: chetan/invalidate-cloudfront-action@v2
+        uses: chetan/invalidate-cloudfront-action@12d242edc7752fca9140c2034be28792ad22c5a8 # v2.4.1
         env:
           DISTRIBUTION: "E37G1C2KWNAPBD"
           PATHS: '/${{ github.ref_name }}/*'
@@ -92,14 +102,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
 
-      - uses: peter-evans/repository-dispatch@v3
+      - uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
         with:
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           repository: "phpstan/phpstan"
           event-type: check_website_links
 
       - name: "Check for broken links"
-        uses: ScholliYT/Broken-Links-Crawler-Action@v3
+        uses: ScholliYT/Broken-Links-Crawler-Action@21eab52f98097989d343116dbbd46dc4541b849b # v3.3.2
         with:
           website_url: 'https://apiref.phpstan.org/${{ github.ref_name }}/index.html'
           resolve_before_filtering: 'true'

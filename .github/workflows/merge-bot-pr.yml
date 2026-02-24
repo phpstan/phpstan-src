@@ -11,17 +11,22 @@ jobs:
     name: Automerge PRs
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: 'Wait for status checks'
         if: github.event.pull_request.user.login == 'phpstan-bot'
         id: waitforstatuschecks
-        uses: "WyriHaximus/github-action-wait-for-status@v1"
+        uses: "WyriHaximus/github-action-wait-for-status@b809158b20d3e32350fe2d868a124f7f2e0e4253" # v1
         with:
           ignoreActions: "automerge,Automerge PRs"
           checkInterval: 13
         env:
           GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
       - name: Merge Pull Request
-        uses: juliangruber/merge-pull-request-action@v1
+        uses: juliangruber/merge-pull-request-action@d4773803fdc1d1fd46801ab0c56c135df9075de8 # v1.1.1
         if: steps.waitforstatuschecks.outputs.status == 'success'
         with:
           github-token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"

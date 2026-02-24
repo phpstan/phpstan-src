@@ -9,12 +9,20 @@ on:
     types:
       - closed
 
+permissions:
+  contents: read
+
 jobs:
   close-issues:
     name: Close linked issues
     if: github.repository_owner == 'phpstan' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Find and close linked issues"
         env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}

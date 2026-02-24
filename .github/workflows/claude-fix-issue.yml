@@ -42,9 +42,6 @@ jobs:
 
       - uses: "ramsey/composer-install@v3"
 
-      - name: "Install Claude Code"
-        run: npm install -g @anthropic-ai/claude-code
-
       - name: "Fetch issue details"
         id: issue
         env:
@@ -62,87 +59,80 @@ jobs:
           echo "$ISSUE_JSON" | jq -r '.body' > /tmp/issue-body.txt
 
       - name: "Run Claude Code"
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--model claude-opus-4-6"
+          prompt: |
+            You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 
-          claude -p \
-            --model claude-opus-4-6 \
-            "$(cat << 'PROMPT_EOF'
-          You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
+            Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
+            Issue phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}
+            URL: ${{ steps.issue.outputs.url }}
 
-          Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
-          Issue phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}
-          URL: ${{ steps.issue.outputs.url }}
+            Issue body is in the file /tmp/issue-body.txt — read it before proceeding.
 
-          Issue body is in the file /tmp/issue-body.txt — read it before proceeding.
+            ## Step 1: Write a regression test
 
-          ## Step 1: Write a regression test
+            Read .claude/skills/regression-test/SKILL.md for detailed guidance on writing regression tests for PHPStan bugs.
 
-          Read .claude/skills/regression-test/SKILL.md for detailed guidance on writing regression tests for PHPStan bugs.
+            The issue body is already provided above — start from Step 2 of the skill (deciding test type). For Step 1 (gathering context), you only need to fetch the playground samples from any playground links found in the issue body.
 
-          The issue body is already provided above — start from Step 2 of the skill (deciding test type). For Step 1 (gathering context), you only need to fetch the playground samples from any playground links found in the issue body.
+            Skip Steps 5-6 of the skill (reverting fix and committing) — those are not needed here.
 
-          Skip Steps 5-6 of the skill (reverting fix and committing) — those are not needed here.
+            The regression test should fail without the fix — verify this by running it before implementing the fix.
 
-          The regression test should fail without the fix — verify this by running it before implementing the fix.
+            ## Step 2: Fix the bug
 
-          ## Step 2: Fix the bug
+            Implement the fix in the source code under src/. Common areas to look:
+            - src/Analyser/NodeScopeResolver.php - AST traversal and scope management
+            - src/Analyser/MutatingScope.php - Type tracking
+            - src/Analyser/TypeSpecifier.php - Type narrowing from conditions
+            - src/Type/ - Type system implementations
+            - src/Rules/ - Rule implementations
+            - src/Reflection/ - Reflection layer
 
-          Implement the fix in the source code under src/. Common areas to look:
-          - src/Analyser/NodeScopeResolver.php - AST traversal and scope management
-          - src/Analyser/MutatingScope.php - Type tracking
-          - src/Analyser/TypeSpecifier.php - Type narrowing from conditions
-          - src/Type/ - Type system implementations
-          - src/Rules/ - Rule implementations
-          - src/Reflection/ - Reflection layer
+            Read CLAUDE.md for important guidelines about the codebase architecture and common patterns.
 
-          Read CLAUDE.md for important guidelines about the codebase architecture and common patterns.
+            ## Step 3: Verify the fix
 
-          ## Step 3: Verify the fix
+            1. Run the regression test to confirm it passes now
+            2. Run the full test suite: make tests
+            3. Run PHPStan self-analysis: make phpstan
+            4. Fix any failures that come up
+            5. Run make cs-fix to fix any coding standard violations
+            6. Run make name-collision and fix violations - add different tests in unique namespaces. If the function and class declarations are exactly the same, you can reuse them across files instead of duplicating them.
 
-          1. Run the regression test to confirm it passes now
-          2. Run the full test suite: make tests
-          3. Run PHPStan self-analysis: make phpstan
-          4. Fix any failures that come up
-          5. Run make cs-fix to fix any coding standard violations
-          6. Run make name-collision and fix violations - add different tests in unique namespaces. If the function and class declarations are exactly the same, you can reuse them across files instead of duplicating them.
+            Do not create a branch, push, or create a PR - this will be handled automatically.
 
-          Do not create a branch, push, or create a PR - this will be handled automatically.
+            ## Step 4: Write a summary
 
-          ## Step 4: Write a summary
+            After completing the fix, write two files:
 
-          After completing the fix, write two files:
+            1. /tmp/commit-message.txt - A concise commit message (first line: short summary under 72 chars, then a blank line, then a few bullet points describing key changes). Example:
+               Fix array_key_exists narrowing for template types
 
-          1. /tmp/commit-message.txt - A concise commit message (first line: short summary under 72 chars, then a blank line, then a few bullet points describing key changes). Example:
-             Fix array_key_exists narrowing for template types
+               - Added handling for TemplateType in TypeSpecifier when processing array_key_exists
+               - New regression test in tests/PHPStan/Analyser/nsrt/bug-12345.php
+               - The root cause was that TypeSpecifier did not unwrap template bounds before narrowing
 
-             - Added handling for TemplateType in TypeSpecifier when processing array_key_exists
-             - New regression test in tests/PHPStan/Analyser/nsrt/bug-12345.php
-             - The root cause was that TypeSpecifier did not unwrap template bounds before narrowing
+            2. /tmp/pr-description.md - A pull request description in this format:
+               ## Summary
+               Brief description of what the issue was about and what the fix does.
 
-          2. /tmp/pr-description.md - A pull request description in this format:
-             ## Summary
-             Brief description of what the issue was about and what the fix does.
+               ## Changes
+               - Bullet points of specific code changes made
+               - Reference file paths where changes were made
 
-             ## Changes
-             - Bullet points of specific code changes made
-             - Reference file paths where changes were made
+               ## Root cause
+               Explain why the bug happened and how the fix addresses it.
 
-             ## Root cause
-             Explain why the bug happened and how the fix addresses it.
+               ## Test
+               Describe the regression test that was added.
 
-             ## Test
-             Describe the regression test that was added.
+               Fixes phpstan/phpstan#${{ inputs.issue-number }}
 
-             Fixes phpstan/phpstan#${{ inputs.issue-number }}
-
-          These files are critical - they will be used for the commit message and PR description.
-          PROMPT_EOF
-          )"
+            These files are critical - they will be used for the commit message and PR description.
 
       - name: "Read Claude's summary"
         id: claude-summary

@@ -132,68 +132,62 @@ jobs:
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
         uses: "ramsey/composer-install@v3"
 
-      - name: "Install Claude Code"
-        if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
-        run: npm install -g @anthropic-ai/claude-code
-
       - name: "Run Claude Code"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "phpstan-bot"
-          git config user.email "ondrej+phpstanbot@mirtes.cz"
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--model claude-opus-4-6"
+          additional_permissions: |
+            actions: read
+          prompt: |
+            You are working on phpstan/phpstan-src. CI has failed on PR #${{ github.event.pull_request.number }} which was created by an automated process.
 
-          claude -p \
-            --model claude-opus-4-6 \
-            "$(cat << 'PROMPT_EOF'
-          You are working on phpstan/phpstan-src. CI has failed on PR #${{ github.event.pull_request.number }} which was created by an automated process.
+            This is CI fix attempt ${{ steps.check-attempts.outputs.attempt_number }} of maximum 2.
 
-          This is CI fix attempt ${{ steps.check-attempts.outputs.attempt_number }} of maximum 2.
+            ## CI Failure Logs
 
-          ## CI Failure Logs
+            Read the CI failure logs from the file /tmp/ci-failure-context.txt.
 
-          Read the CI failure logs from the file /tmp/ci-failure-context.txt.
+            ## Your Task
 
-          ## Your Task
+            1. Read the failure logs above carefully to understand what went wrong
+            2. Read CLAUDE.md for codebase architecture guidance
+            3. Look at the recent commits on this branch (`git log origin/2.1.x..HEAD`) to understand what changes were made
+            4. Fix the issue(s) causing CI failures
 
-          1. Read the failure logs above carefully to understand what went wrong
-          2. Read CLAUDE.md for codebase architecture guidance
-          3. Look at the recent commits on this branch (`git log origin/2.1.x..HEAD`) to understand what changes were made
-          4. Fix the issue(s) causing CI failures
+            ## Common CI failure categories
 
-          ## Common CI failure categories
+            - **Test failures**: A test assertion is wrong or the code change broke existing behavior. Fix the code or update the test expectations.
+            - **PHPStan self-analysis errors**: The code change introduced type errors that PHPStan catches on itself. Fix the type issues.
+            - **Coding standard violations**: Run `make cs-fix` to auto-fix, or fix manually.
+            - **Name collision**: Two test files define the same class/function in the same namespace. Fix by using unique namespaces.
+            - **Lint errors**: PHP syntax errors in test data files, usually needing `// lint >= 8.x` comments for version-specific syntax.
+            - **Backward compatibility**: A public API change broke BC. May need to preserve old signatures or add `@api` tags.
 
-          - **Test failures**: A test assertion is wrong or the code change broke existing behavior. Fix the code or update the test expectations.
-          - **PHPStan self-analysis errors**: The code change introduced type errors that PHPStan catches on itself. Fix the type issues.
-          - **Coding standard violations**: Run `make cs-fix` to auto-fix, or fix manually.
-          - **Name collision**: Two test files define the same class/function in the same namespace. Fix by using unique namespaces.
-          - **Lint errors**: PHP syntax errors in test data files, usually needing `// lint >= 8.x` comments for version-specific syntax.
-          - **Backward compatibility**: A public API change broke BC. May need to preserve old signatures or add `@api` tags.
+            ## Verification
 
-          ## Verification
+            After making fixes, run these commands to verify:
+            1. Run the specific failing test if identifiable: `vendor/bin/phpunit <test-file> --filter <test-name>`
+            2. `make tests` - full test suite
+            3. `make phpstan` - PHPStan self-analysis
+            4. `make cs-fix` - coding standards
+            5. `make name-collision` - namespace collision check
 
-          After making fixes, run these commands to verify:
-          1. Run the specific failing test if identifiable: `vendor/bin/phpunit <test-file> --filter <test-name>`
-          2. `make tests` - full test suite
-          3. `make phpstan` - PHPStan self-analysis
-          4. `make cs-fix` - coding standards
-          5. `make name-collision` - namespace collision check
+            ## Important
 
-          ## Important
-
-          - Do NOT create a branch, push, or create a PR — this is handled automatically after you finish
-          - Focus only on fixing the CI failures, do not refactor or add unrelated changes
-          - If you cannot determine how to fix the failure, create a file /tmp/ci-fix-failed.txt with an explanation
-          PROMPT_EOF
-          )"
+            - Do NOT create a branch, push, or create a PR — this is handled automatically after you finish
+            - Focus only on fixing the CI failures, do not refactor or add unrelated changes
+            - If you cannot determine how to fix the failure, create a file /tmp/ci-fix-failed.txt with an explanation
 
       - name: "Commit and push fixes"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
         env:
           ATTEMPT: ${{ steps.check-attempts.outputs.attempt_number }}
         run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
           if [ -f /tmp/ci-fix-failed.txt ]; then
             echo "Claude could not fix the CI failure:"
             cat /tmp/ci-fix-failed.txt

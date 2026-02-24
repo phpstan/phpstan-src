@@ -31,11 +31,16 @@ jobs:
           - "8.5"
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -44,7 +49,7 @@ jobs:
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1'
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - uses: ./.github/actions/downgrade-code
         with:
@@ -63,18 +68,23 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Checkout build-cs"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: "phpstan/build-cs"
           path: "build-cs"
           ref: "2.x"
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.5"
@@ -82,10 +92,10 @@ jobs:
       - name: "Validate Composer"
         run: "composer validate"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Install build-cs dependencies"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         with:
           working-directory: "build-cs"
 
@@ -102,16 +112,21 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.5"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Composer Dependency Analyser"
         run: "make composer-dependency-analyser"
@@ -123,16 +138,21 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.5"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Name Collision Detector"
         run: "make name-collision"

@@ -26,26 +26,31 @@ jobs:
       compiler_changed: ${{ steps.changes.outputs.compiler }}
 
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.2"
           extensions: mbstring, intl
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       # only sebastian/diff ^4 supports PHP 7.4 so we need that in the PHAR
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^9.6 sebastian/diff:^4.0 doctrine/instantiator:^1.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install compiler dependencies"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         with:
           working-directory: "compiler"
 
@@ -65,7 +70,7 @@ jobs:
         run: "composer dump"
 
       - name: "Install Box dependencies"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         with:
           working-directory: "compiler/box"
 
@@ -73,7 +78,7 @@ jobs:
         working-directory: "compiler/build"
         run: "php ../box/vendor/bin/box compile --no-parallel --sort-compiled-files"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: phar-file
           path: tmp/phpstan.phar
@@ -88,7 +93,7 @@ jobs:
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         env:
           COMPOSER_ROOT_VERSION: "2.1.x-dev"
 
@@ -109,7 +114,7 @@ jobs:
         id: "checksum"
         run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: phar-file-checksum
           path: tmp/phpstan.phar
@@ -117,7 +122,7 @@ jobs:
       - name: "Delete checksum PHAR"
         run: "rm tmp/phpstan.phar"
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: changes
         with:
           filters: |
@@ -156,14 +161,19 @@ jobs:
     if: github.event_name == 'pull_request' && needs.compiler-tests.outputs.compiler_changed == 'true'
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Get base commit SHA
         id: base
         run: echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
 
@@ -177,7 +187,7 @@ jobs:
 
       - name: Find phar-file-checksum from base commit
         id: find-artifact
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           BASE_SHA: ${{ steps.base.outputs.base_sha }}
           ARTIFACT_NAME: phar-file-checksum
@@ -189,14 +199,14 @@ jobs:
 
       # saved to phar-file-checksum/phpstan.phar
       - name: Download old artifact by ID
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           artifact-ids: ${{ steps.find-artifact.outputs.artifact_id }}
           run-id: ${{ steps.find-artifact.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Upload old artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: phar-file-checksum-base
           path: phar-file-checksum/phpstan.phar
@@ -209,8 +219,13 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       # saved to phpstan.phar
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: "Download base phpstan.phar"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: phar-file-checksum-base
 
@@ -229,32 +244,37 @@ jobs:
     needs: download-base-sha-phar
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       # saved to phar-file-checksum/phpstan.phar
       - name: "Download phpstan.phar"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: phar-file-checksum
           path: phar-file-checksum
 
       # saved to phar-file-checksum-base/phpstan.phar
       - name: "Download base phpstan.phar"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: phar-file-checksum-base
           path: phar-file-checksum-base
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
         with:
           coverage: "none"
           php-version: "8.2"
 
-      - uses: "ramsey/composer-install@v3"
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
 
       - name: "Install Box dependencies"
-        uses: "ramsey/composer-install@v3"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
         with:
           working-directory: "compiler/box"
 
@@ -283,10 +303,15 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       -
         name: Import GPG key
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec # v6.3.0
         with:
           gpg_private_key: ${{ secrets.GPG_PHPSTANBOT_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PHPSTANBOT_KEY_PASSPHRASE }}
@@ -295,7 +320,7 @@ jobs:
           git_commit_gpgsign: true
 
       - name: "Checkout phpstan-dist"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
@@ -308,7 +333,7 @@ jobs:
         run: echo "sha=$(sed -n '2p' .phar-checksum)" >> $GITHUB_OUTPUT
 
       - name: "Checkout phpstan-src"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
           path: phpstan-src
@@ -338,7 +363,7 @@ jobs:
           fi
 
       - name: "Download phpstan.phar"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: phar-file
 
@@ -364,7 +389,7 @@ jobs:
         run: "gpg --verify phpstan.phar.asc"
 
       - name: "Install lucky_commit"
-        uses: baptiste0928/cargo-install@v3
+        uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 # v3.4.0
         with:
           crate: lucky_commit
           args: --no-default-features
@@ -384,7 +409,7 @@ jobs:
 
       - name: "Commit PHAR - tag"
         if: "startsWith(github.ref, 'refs/tags/')"
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
         with:
           commit_user_name: "phpstan-bot"
           commit_user_email: "ondrej+phpstanbot@mirtes.cz"

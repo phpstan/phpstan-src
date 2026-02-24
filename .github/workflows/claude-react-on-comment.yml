@@ -16,36 +16,11 @@ permissions:
   contents: read
 
 jobs:
-  check-trigger:
-    name: "Check trigger phrase"
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    outputs:
-      triggered: ${{ steps.check.outputs.triggered }}
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
-        with:
-          egress-policy: audit
-
-      - name: "Check for trigger phrase"
-        id: check
-        env:
-          COMMENT_BODY: ${{ github.event.comment.body || github.event.review.body || '' }}
-          COMMENT_USER: ${{ github.event.comment.user.login || github.event.review.user.login || '' }}
-        run: |
-          if [ "$COMMENT_USER" = "phpstan-bot" ]; then
-            echo "triggered=false" >> "$GITHUB_OUTPUT"
-          elif echo "$COMMENT_BODY" | grep -qF "@phpstan-bot"; then
-            echo "triggered=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "triggered=false" >> "$GITHUB_OUTPUT"
-          fi
-
   react:
     name: "React on comment"
-    needs: check-trigger
-    if: needs.check-trigger.outputs.triggered == 'true'
+    if: >-
+      (github.event.comment.user.login || github.event.review.user.login || '') != 'phpstan-bot' &&
+      contains(github.event.comment.body || github.event.review.body || '', '@phpstan-bot')
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
     permissions:
@@ -61,7 +36,7 @@ jobs:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 

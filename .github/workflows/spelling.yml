@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+permissions:
+  contents: read
+
 jobs:
   typos:
     name: "Check for typos"

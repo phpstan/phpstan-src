@@ -15,6 +15,9 @@ concurrency:
 permissions:
   contents: read
 
+permissions:
+  contents: read
+
 jobs:
   check-trigger:
     name: "Check trigger phrase"

@@ -8,8 +8,11 @@ on:
 jobs:
   trigger:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Trigger Claude Random Easy Fixes
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run claude-random-easy-fixes.yml -f issue_count=5 --repo ${{ github.repository }}

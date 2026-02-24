@@ -39,7 +39,7 @@ jobs:
           path: "phpstorm-stubs"
           repository: "jetbrains/phpstorm-stubs"
       - name: "Update stubs"
-        run: "composer require jetbrains/phpstorm-stubs:dev-master#$(git -C phpstorm-stubs rev-parse HEAD)"
+        run: "composer require \"jetbrains/phpstorm-stubs:dev-master#$(git -C phpstorm-stubs rev-parse HEAD)\""
       - name: "Remove stubs repo"
         run: "rm -r phpstorm-stubs"
       - name: "Update function metadata"

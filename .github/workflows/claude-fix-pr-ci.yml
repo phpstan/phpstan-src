@@ -138,26 +138,18 @@ jobs:
 
       - name: "Build prompt"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          ATTEMPT: ${{ steps.check-attempts.outputs.attempt_number }}
         run: |
-          python3 << 'PYEOF'
-          import os
+          {
+            cat << 'PROMPT_PART1'
+          You are working on phpstan/phpstan-src. CI has failed on PR #${{ github.event.pull_request.number }} which was created by an automated process.
 
-          pr_number = os.environ["PR_NUMBER"]
-          attempt = os.environ["ATTEMPT"]
-
-          with open("/tmp/ci-failure-context.txt", "r") as f:
-              failure_logs = f.read()
-
-          prompt = f"""You are working on phpstan/phpstan-src. CI has failed on PR #{pr_number} which was created by an automated process.
-
-          This is CI fix attempt {attempt} of maximum 2.
+          This is CI fix attempt ${{ steps.check-attempts.outputs.attempt_number }} of maximum 2.
 
           ## CI Failure Logs
 
-          {failure_logs}
+          PROMPT_PART1
+            cat /tmp/ci-failure-context.txt
+            cat << 'PROMPT_PART2'
 
           ## Your Task
 
@@ -189,11 +181,8 @@ jobs:
           - Do NOT create a branch, push, or create a PR — this is handled automatically after you finish
           - Focus only on fixing the CI failures, do not refactor or add unrelated changes
           - If you cannot determine how to fix the failure, create a file /tmp/ci-fix-failed.txt with an explanation
-          """
-
-          with open("/tmp/claude-ci-prompt.txt", "w") as f:
-              f.write(prompt)
-          PYEOF
+          PROMPT_PART2
+          } > /tmp/claude-ci-prompt.txt
 
       - name: "Run Claude Code"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'

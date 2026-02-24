@@ -57,39 +57,24 @@ jobs:
 
           TITLE=$(echo "$ISSUE_JSON" | jq -r '.title')
           URL=$(echo "$ISSUE_JSON" | jq -r '.url')
-          BODY=$(echo "$ISSUE_JSON" | jq -r '.body')
-
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          {
-            echo "body<<BODY_EOF"
-            echo "$BODY"
-            echo "BODY_EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "$ISSUE_JSON" | jq -r '.body' > /tmp/issue-body.txt
 
       - name: "Build prompt"
-        env:
-          ISSUE_NUMBER: ${{ inputs.issue-number }}
-          ISSUE_TITLE: ${{ steps.issue.outputs.title }}
-          ISSUE_URL: ${{ steps.issue.outputs.url }}
-          ISSUE_BODY: ${{ steps.issue.outputs.body }}
         run: |
-          python3 << 'PYEOF'
-          import os
-
-          n = os.environ["ISSUE_NUMBER"]
-          title = os.environ["ISSUE_TITLE"]
-          url = os.environ["ISSUE_URL"]
-          body = os.environ["ISSUE_BODY"]
-
-          prompt = f"""You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
+          {
+            cat << 'PROMPT_PART1'
+          You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
 
           Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
-          Issue phpstan/phpstan#{n}: {title}
-          URL: {url}
+          Issue phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}
+          URL: ${{ steps.issue.outputs.url }}
 
           Issue body:
-          {body}
+          PROMPT_PART1
+            cat /tmp/issue-body.txt
+            cat << 'PROMPT_PART2'
 
           ## Step 1: Write a regression test
 
@@ -149,14 +134,11 @@ jobs:
              ## Test
              Describe the regression test that was added.
 
-             Fixes phpstan/phpstan#{n}
+             Fixes phpstan/phpstan#${{ inputs.issue-number }}
 
           These files are critical - they will be used for the commit message and PR description.
-          """
-
-          with open("/tmp/claude-prompt.txt", "w") as f:
-              f.write(prompt)
-          PYEOF
+          PROMPT_PART2
+          } > /tmp/claude-prompt.txt
 
       - name: "Run Claude Code"
         env:

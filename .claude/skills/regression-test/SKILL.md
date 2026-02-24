@@ -2,7 +2,7 @@
 name: regression-test
 description: Add a regression test for an already-fixed PHPStan bug given a GitHub issue number
 argument-hint: "[issue-number]"
-allowed-tools: Read, Grep, Glob, Write, Edit, Bash(curl *), Bash(gh *), Bash(git *), Bash(make tests), Bash(vendor/bin/phpunit *), Bash(php *)
+#allowed-tools: Read, Grep, Glob, Write, Edit, Bash(curl *), Bash(gh *), Bash(git *), Bash(make tests), Bash(vendor/bin/phpunit *), Bash(php *)
 ---
 
 # Adding a regression test for a fixed PHPStan bug

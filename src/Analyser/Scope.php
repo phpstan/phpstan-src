@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
+use PhpParser\Token;
 use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -64,6 +65,11 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * not the trait file itself. Use getFileDescription() for the trait file path.
 	 */
 	public function getFile(): string;
+
+	/**
+	 * @return Token[]
+	 */
+	public function getTokens(): array;
 
 	/**
 	 * For traits, returns the trait file path with the using class context,

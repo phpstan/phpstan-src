@@ -336,3 +336,5 @@ Remove `Type::isSuperTypeOfWithReason()`, `Type:isSuperTypeOf()` return type cha
 * `ClassPropertyNode::getNativeType()` return type changed from AST node to `Type|null`
 * Class `PHPStan\Node\ClassMethod` (accessible from `ClassMethodsNode`) is no longer an AST node
   * Call `PHPStan\Node\ClassMethod::getNode()` to access the original AST node
+* Interface `PHPStan\Analyser\Scope` introduces a new `getTokens()` method which returns the tokens for the current file.
+* Interface `PHPStan\Parser\Parser` introduces a new `getTokens()` method which returns the tokens for the parsed file.

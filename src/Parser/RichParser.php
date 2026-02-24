@@ -124,6 +124,14 @@ final class RichParser implements Parser
 	}
 
 	/**
+	 * {@inheritdoc}
+	 */
+	public function getTokens(): array
+	{
+		return $this->parser->getTokens();
+	}
+
+	/**
 	 * @param Token[] $tokens
 	 * @return array{lines: array<int, non-empty-list<Identifier>|null>, errors: array<int, non-empty-list<string>>}
 	 */

@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PhpParser\Node;
+use PhpParser\Token;
 
 /** @api */
 interface Parser
@@ -20,5 +21,12 @@ interface Parser
 	 * @throws ParserErrorsException
 	 */
 	public function parseString(string $sourceCode): array;
+
+	/**
+	 * Return tokens for the last parse.
+	 *
+	 * @return Token[]
+	 */
+	public function getTokens(): array;
 
 }

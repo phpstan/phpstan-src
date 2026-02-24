@@ -2,29 +2,44 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Token;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
 
 final class ScopeContext
 {
 
+	/**
+	 * @param string $file
+	 * @param \PHPStan\Reflection\ClassReflection|null $classReflection
+	 * @param \PHPStan\Reflection\ClassReflection|null $traitReflection
+	 * @param Token[] $tokens
+	 */
 	private function __construct(
 		private string $file,
 		private ?ClassReflection $classReflection,
 		private ?ClassReflection $traitReflection,
+		private array $tokens,
 	)
 	{
 	}
 
-	/** @api */
-	public static function create(string $file): self
+	/**
+	 * @param string $file
+	 * @param Token[] $tokens
+	 *
+	 * @return self
+	 *
+	 * @api
+	 */
+	public static function create(string $file, array $tokens = []): self
 	{
-		return new self($file, classReflection: null, traitReflection: null);
+		return new self($file, classReflection: null, traitReflection: null, tokens: $tokens);
 	}
 
 	public function beginFile(): self
 	{
-		return new self($this->file, classReflection: null, traitReflection: null);
+		return new self($this->file, classReflection: null, traitReflection: null, tokens: $this->tokens);
 	}
 
 	public function enterClass(ClassReflection $classReflection): self
@@ -35,7 +50,7 @@ final class ScopeContext
 		if ($classReflection->isTrait()) {
 			throw new ShouldNotHappenException();
 		}
-		return new self($this->file, $classReflection, traitReflection: null);
+		return new self($this->file, $classReflection, traitReflection: null, tokens: $this->tokens);
 	}
 
 	public function enterTrait(ClassReflection $traitReflection): self
@@ -47,7 +62,7 @@ final class ScopeContext
 			throw new ShouldNotHappenException();
 		}
 
-		return new self($this->file, $this->classReflection, $traitReflection);
+		return new self($this->file, $this->classReflection, $traitReflection, $this->tokens);
 	}
 
 	public function equals(self $otherContext): bool
@@ -88,6 +103,14 @@ final class ScopeContext
 	public function getTraitReflection(): ?ClassReflection
 	{
 		return $this->traitReflection;
+	}
+
+	/**
+	 * @return Token[]
+	 */
+	public function getTokens(): array
+	{
+		return $this->tokens;
 	}
 
 }

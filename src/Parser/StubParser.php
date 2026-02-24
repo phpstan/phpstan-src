@@ -53,4 +53,12 @@ final class StubParser implements Parser
 		return $nodeTraverser->traverse($nodes);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getTokens(): array
+	{
+		return $this->parser->getTokens();
+	}
+
 }

@@ -39,13 +39,17 @@ jobs:
     if: needs.check-trigger.outputs.triggered == 'true'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      id-token: write
 
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -61,7 +65,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           trigger_phrase: "@phpstan-bot"
           claude_args: "--model claude-opus-4-6"
           bot_name: "phpstan-bot"

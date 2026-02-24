@@ -26,7 +26,7 @@ jobs:
           ignoreActions: "Wait for CI checks,Fix CI failure,Automerge PRs"
           checkInterval: 13
         env:
-          GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
   fix-ci:
     name: "Fix CI failure"
@@ -34,12 +34,16 @@ jobs:
     if: needs.wait-for-checks.outputs.status == 'failure'
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
 
     steps:
       - name: "Check fix attempt count"
         id: check-attempts
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           COMMITS=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/commits?per_page=100" \
@@ -58,7 +62,7 @@ jobs:
         if: steps.check-attempts.outputs.skip != 'true'
         id: failures
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           FAILED_RUNS=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=$HEAD_SHA&status=failure&per_page=20" \
@@ -114,7 +118,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
 
       - name: "Install PHP"
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
@@ -196,7 +199,7 @@ jobs:
         if: steps.check-attempts.outputs.skip != 'true' && steps.failures.outputs.skip != 'true'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "phpstan-bot"
           git config user.email "ondrej+phpstanbot@mirtes.cz"

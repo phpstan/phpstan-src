@@ -18,11 +18,15 @@ jobs:
     outputs:
       matrix: ${{ steps.pick-issues.outputs.matrix }}
 
+    permissions:
+      contents: read
+      issues: read
+
     steps:
       - name: "Pick random Easy fix issues"
         id: pick-issues
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_COUNT: ${{ inputs.issue_count || '1' }}
         run: |
           # Look up milestone number for "Easy fixes"

@@ -3,7 +3,6 @@
 namespace PHPStan\Parser;
 
 use PhpParser\Node;
-use PhpParser\Token;
 use PHPStan\File\FileReader;
 use function array_slice;
 
@@ -12,11 +11,6 @@ final class CachedParser implements Parser
 
 	/** @var array<string, Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
-
-	/** @var array<string, Token[]>*/
-	private array $cachedTokensByString = [];
-
-	private ?string $lastParsedSourceCode = null;
 
 	private int $cachedNodesByStringCount = 0;
 
@@ -42,11 +36,6 @@ final class CachedParser implements Parser
 				1,
 				preserve_keys: true,
 			);
-			$this->cachedTokensByString = array_slice(
-				$this->cachedTokensByString,
-				1,
-				preserve_keys: true,
-			);
 
 			--$this->cachedNodesByStringCount;
 		}
@@ -54,12 +43,10 @@ final class CachedParser implements Parser
 		$sourceCode = FileReader::read($file);
 		if (!isset($this->cachedNodesByString[$sourceCode]) || isset($this->parsedByString[$sourceCode])) {
 			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseFile($file);
-			$this->cachedTokensByString[$sourceCode] = $this->originalParser->getTokens();
 			$this->cachedNodesByStringCount++;
 			unset($this->parsedByString[$sourceCode]);
 		}
 
-		$this->lastParsedSourceCode = $sourceCode;
 		return $this->cachedNodesByString[$sourceCode];
 	}
 
@@ -74,32 +61,17 @@ final class CachedParser implements Parser
 				1,
 				preserve_keys: true,
 			);
-			$this->cachedTokensByString = array_slice(
-				$this->cachedTokensByString,
-				1,
-				preserve_keys: true,
-			);
 
 			--$this->cachedNodesByStringCount;
 		}
 
 		if (!isset($this->cachedNodesByString[$sourceCode])) {
 			$this->cachedNodesByString[$sourceCode] = $this->originalParser->parseString($sourceCode);
-			$this->cachedTokensByString[$sourceCode] = $this->originalParser->getTokens();
 			$this->cachedNodesByStringCount++;
 			$this->parsedByString[$sourceCode] = true;
 		}
 
-		$this->lastParsedSourceCode = $sourceCode;
 		return $this->cachedNodesByString[$sourceCode];
-	}
-
-	public function getTokens(): array
-	{
-		if (isset($this->lastParsedSourceCode, $this->cachedTokensByString[$this->lastParsedSourceCode])) {
-			return $this->cachedTokensByString[$this->lastParsedSourceCode];
-		}
-		return [];
 	}
 
 	public function getCachedNodesByStringCount(): int

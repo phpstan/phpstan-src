@@ -18,8 +18,6 @@ final class PathRoutingParser implements Parser
 
 	private ?string $singleReflectionFile;
 
-	private ?Parser $usedParser = null;
-
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -46,11 +44,9 @@ final class PathRoutingParser implements Parser
 	{
 		$normalizedPath = $this->fileHelper->normalizePath($file, '/');
 		if (str_contains($normalizedPath, 'vendor/jetbrains/phpstorm-stubs')) {
-			$this->usedParser = $this->php8Parser;
 			return $this->php8Parser->parseFile($file);
 		}
 		if (str_contains($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs')) {
-			$this->usedParser = $this->php8Parser;
 			return $this->php8Parser->parseFile($file);
 		}
 
@@ -68,36 +64,21 @@ final class PathRoutingParser implements Parser
 				if ($realFilePath !== false) {
 					$normalizedRealFilePath = $this->fileHelper->normalizePath($realFilePath);
 					if (isset($this->analysedFiles[$normalizedRealFilePath])) {
-						$this->usedParser = $this->currentPhpVersionRichParser;
 						return $this->currentPhpVersionRichParser->parseFile($file);
 					}
 				}
 				break;
 			}
 
-			$this->usedParser = $this->currentPhpVersionSimpleParser;
 			return $this->currentPhpVersionSimpleParser->parseFile($file);
 		}
 
-		$this->usedParser = $this->currentPhpVersionRichParser;
 		return $this->currentPhpVersionRichParser->parseFile($file);
 	}
 
 	public function parseString(string $sourceCode): array
 	{
-		$this->usedParser = $this->currentPhpVersionSimpleParser;
 		return $this->currentPhpVersionSimpleParser->parseString($sourceCode);
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getTokens(): array
-	{
-		if ($this->usedParser !== null) {
-			return $this->usedParser->getTokens();
-		}
-		return [];
 	}
 
 }

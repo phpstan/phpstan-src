@@ -301,12 +301,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/** @api */
-	public function getTokens(): array
-	{
-		return $this->context->getTokens();
-	}
-
-	/** @api */
 	public function getFileDescription(): string
 	{
 		if ($this->context->getTraitReflection() === null) {

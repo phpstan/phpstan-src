@@ -93,6 +93,9 @@ final class RichParser implements Parser
 		$nodeTraverser->addVisitor($traitCollectingVisitor);
 
 		foreach ($this->container->getServicesByTag(self::VISITOR_SERVICE_TAG) as $visitor) {
+			if ($visitor instanceof TokenAwareVisitor) {
+				$visitor->setTokens($tokens);
+			}
 			$nodeTraverser->addVisitor($visitor);
 		}
 
@@ -121,14 +124,6 @@ final class RichParser implements Parser
 		}
 
 		return $nodes;
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getTokens(): array
-	{
-		return $this->parser->getTokens();
 	}
 
 	/**

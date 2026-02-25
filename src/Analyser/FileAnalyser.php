@@ -99,7 +99,6 @@ final class FileAnalyser
 			try {
 				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
-				$parserTokens = $this->parser->getTokens();
 				$processedFiles[] = $file;
 
 				$nodeCallback = new FileAnalyserCallback(
@@ -115,7 +114,7 @@ final class FileAnalyser
 					$this->ruleErrorTransformer,
 					$processedFiles,
 				);
-				$scope = $this->scopeFactory->create(ScopeContext::create($file, $parserTokens), $nodeCallback);
+				$scope = $this->scopeFactory->create(ScopeContext::create($file), $nodeCallback);
 				$nodeCallback(new FileNode($parserNodes), $scope);
 				$this->nodeScopeResolver->processNodes(
 					$parserNodes,

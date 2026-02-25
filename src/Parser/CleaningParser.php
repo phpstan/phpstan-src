@@ -28,11 +28,6 @@ final class CleaningParser implements Parser
 		return $this->clean($this->wrappedParser->parseString($sourceCode));
 	}
 
-	public function getTokens(): array
-	{
-		return $this->wrappedParser->getTokens();
-	}
-
 	/**
 	 * @param Stmt[] $ast
 	 * @return Stmt[]

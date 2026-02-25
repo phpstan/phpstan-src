@@ -8,10 +8,10 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Parser\DeprecatedInterpolatedStringVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function assert;
 use function is_string;
 
 /**
@@ -38,17 +38,12 @@ final class InterpolatedStringRule implements Rule
 			return [];
 		}
 
-		$sourceTokens = $scope->getTokens();
+		if ($node->getAttribute(DeprecatedInterpolatedStringVisitor::ATTRIBUTE_NAME) !== true) {
+			return [];
+		}
+
 		foreach ($node->parts as $part) {
 			if (!$part instanceof Variable && !($part instanceof ArrayDimFetch && $part->var instanceof Variable)) {
-				continue;
-			}
-			$startTokenPos = $part->getStartTokenPos();
-			if (!isset($sourceTokens[$startTokenPos])) {
-				continue;
-			}
-			$startToken = (string) $sourceTokens[$startTokenPos];
-			if ($startToken !== '${') {
 				continue;
 			}
 

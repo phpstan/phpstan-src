@@ -206,7 +206,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 		return new IsSuperTypeOfResult(
 			$otherType->isCallable()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[]
+			[],
 		);
 	}
 

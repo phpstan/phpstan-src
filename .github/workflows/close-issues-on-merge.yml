@@ -27,18 +27,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: |
-          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --repo "${{ github.repository }}" --json body --jq '.body')
+          URLS=(
+            $(gh pr view ${{ github.event.pull_request.number }} --repo "$GITHUB_REPOSITORY" --json closingIssuesReferences --jq '.closingIssuesReferences[].url')
+          )
 
-          # Parse "Closes/Fixes https://github.com/phpstan/phpstan/issues/123" patterns
-          URLS=$(echo "$PR_BODY" | grep -oiP '(?:closes?|fix(?:es)?)\s+https://github\.com/phpstan/phpstan/issues/[0-9]+' | grep -oP 'https://github\.com/phpstan/phpstan/issues/[0-9]+' || true)
-
-          if [ -z "$URLS" ]; then
-            echo "No linked issues found in PR body"
+          if (( ${#URLS[@]} == 0 )); then
+            echo "No issues are linked to this PR"
             exit 0
           fi
 
-          echo "$URLS" | while read -r url; do
-            NUMBER=$(echo "$url" | grep -oP '[0-9]+$')
+          for url in "${URLS[@]}"; do
+            NUMBER=${url##*/}
             echo "Closing phpstan/phpstan#${NUMBER}"
-            gh issue close "$NUMBER" --repo "phpstan/phpstan" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
+            gh issue close "$url" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
           done

@@ -243,8 +243,16 @@ final class TrinaryLogic
 		if ($operands === []) {
 			throw new ShouldNotHappenException();
 		}
-		$operandValues = array_column($operands, 'value');
-		return self::create(max($operandValues) > self::MAYBE ? self::YES : min($operandValues));
+
+		$max = self::NO;
+		$min = self::YES;
+		foreach ($operands as $operand) {
+			$max |= $operand->value;
+			$min &= $operand->value;
+		}
+		$maxMin = $max === self::YES ? self::YES : $min;
+
+		return self::$registry[$maxMin] ??= new self($maxMin);
 	}
 
 	/**
@@ -257,17 +265,17 @@ final class TrinaryLogic
 		callable $callback,
 	): self
 	{
-		$results = [];
+		$min = self::YES;
 		foreach ($objects as $object) {
 			$result = $callback($object);
 			if ($result->value === self::YES) {
 				return $result;
 			}
 
-			$results[] = $result;
+			$min &= $result->value;
 		}
 
-		return self::maxMin(...$results);
+		return self::$registry[$min] ??= new self($min);
 	}
 
 	public function negate(): self

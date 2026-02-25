@@ -265,17 +265,17 @@ final class TrinaryLogic
 		callable $callback,
 	): self
 	{
-		$results = [];
+		$min = self::YES;
 		foreach ($objects as $object) {
 			$result = $callback($object);
 			if ($result->value === self::YES) {
 				return $result;
 			}
 
-			$results[] = $result;
+			$min &= $result->value;
 		}
 
-		return self::maxMin(...$results);
+		return self::$registry[$min] ??= new self($min);
 	}
 
 	public function negate(): self

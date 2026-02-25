@@ -100,12 +100,12 @@ class HasMethodType implements AccessoryType, CompoundType
 		}
 
 		if ($otherType instanceof self) {
-			$limit = IsSuperTypeOfResult::createYes();
+			$limit = TrinaryLogic::createYes();
 		} else {
-			$limit = IsSuperTypeOfResult::createMaybe();
+			$limit = TrinaryLogic::createMaybe();
 		}
 
-		return $limit->and(new IsSuperTypeOfResult($otherType->hasMethod($this->methodName), []));
+		return new IsSuperTypeOfResult($limit->and($otherType->hasMethod($this->methodName)), []);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

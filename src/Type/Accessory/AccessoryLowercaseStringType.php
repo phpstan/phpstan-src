@@ -103,8 +103,10 @@ class AccessoryLowercaseStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return (new IsSuperTypeOfResult($otherType->isLowercaseString(), []))
-			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
+		return new IsSuperTypeOfResult(
+			$otherType->isLowercaseString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			[],
+		);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

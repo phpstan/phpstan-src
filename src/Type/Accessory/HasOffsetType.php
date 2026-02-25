@@ -101,10 +101,10 @@ class HasOffsetType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		$result = new IsSuperTypeOfResult($otherType->isOffsetAccessible()->and($otherType->hasOffsetValueType($this->offsetType)), []);
-
-		return $result
-			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
+		return new IsSuperTypeOfResult(
+			$otherType->isOffsetAccessible()->and($otherType->hasOffsetValueType($this->offsetType))->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			[],
+		);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

@@ -92,15 +92,15 @@ class HasPropertyType implements AccessoryType, CompoundType
 		}
 
 		if ($otherType instanceof self) {
-			$limit = IsSuperTypeOfResult::createYes();
+			$limit = TrinaryLogic::createYes();
 		} else {
-			$limit = IsSuperTypeOfResult::createMaybe();
+			$limit = TrinaryLogic::createMaybe();
 		}
 
-		return $limit->and(new IsSuperTypeOfResult(
-			$otherType->hasInstanceProperty($this->propertyName)->or($otherType->hasStaticProperty($this->propertyName)),
+		return new IsSuperTypeOfResult(
+			$limit->and($otherType->hasInstanceProperty($this->propertyName)->or($otherType->hasStaticProperty($this->propertyName))),
 			[],
-		));
+		);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

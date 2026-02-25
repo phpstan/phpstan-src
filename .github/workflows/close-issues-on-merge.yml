@@ -26,9 +26,12 @@ jobs:
       - name: "Find and close linked issues"
         env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          URLS=(
-            $(gh pr view ${{ github.event.pull_request.number }} --repo "$GITHUB_REPOSITORY" --json closingIssuesReferences --jq '.closingIssuesReferences[].url')
+          mapfile -t URLS < <(
+            gh pr view "$PR_NUMBER" --json closingIssuesReferences --jq '.closingIssuesReferences[].url'
           )
 
           if (( ${#URLS[@]} == 0 )); then
@@ -36,8 +39,8 @@ jobs:
             exit 0
           fi
 
-          for url in "${URLS[@]}"; do
-            NUMBER=${url##*/}
-            echo "Closing phpstan/phpstan#${NUMBER}"
-            gh issue close "$url" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
+          for issue_url in "${URLS[@]}"; do
+            issue_number=${issue_url##*/}
+            echo "Closing phpstan/phpstan#${issue_number}"
+            gh issue close "$issue_url" --comment "Closed via merging $PR_URL"
           done

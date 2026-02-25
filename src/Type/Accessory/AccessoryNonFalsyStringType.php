@@ -110,8 +110,10 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return (new IsSuperTypeOfResult($otherType->isNonFalsyString(), []))
-			->and($otherType instanceof self ? IsSuperTypeOfResult::createYes() : IsSuperTypeOfResult::createMaybe());
+		return new IsSuperTypeOfResult(
+			$otherType->isNonFalsyString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			[],
+		);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult

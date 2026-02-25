@@ -240,6 +240,10 @@ final class TrinaryLogic
 	 */
 	public static function maxMin(self ...$operands): self
 	{
+		if ($operands === []) {
+			throw new ShouldNotHappenException();
+		}
+
 		$max = self::NO;
 		$min = self::YES;
 		foreach ($operands as $operand) {

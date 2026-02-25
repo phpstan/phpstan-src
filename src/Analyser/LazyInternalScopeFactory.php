@@ -25,9 +25,9 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
 	/** @var int|array{min: int, max: int}|null */
-	private readonly int|array|null $phpVersion;
+	private int|array|null $phpVersion;
 
-	private ?Parser $currentSimpleVersionParser = null;
+	private Parser $currentSimpleVersionParser;
 
 	private ?ReflectionProvider $reflectionProvider = null;
 
@@ -63,6 +63,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
+		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
 	}
 
 	public function create(
@@ -88,8 +89,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		if ($this->fiber) {
 			$className = FiberScope::class;
 		}
-
-		$this->currentSimpleVersionParser ??= $this->container->getService('currentPhpVersionSimpleParser');
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
 		$this->initializerExprTypeResolver ??= $this->container->getByType(InitializerExprTypeResolver::class);

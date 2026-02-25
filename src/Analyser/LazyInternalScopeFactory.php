@@ -25,33 +25,33 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
 	/** @var int|array{min: int, max: int}|null */
-	private int|array|null $phpVersion;
+	private readonly int|array|null $phpVersion;
 
-	private readonly Parser $currentSimpleVersionParser;
+	private ?Parser $currentSimpleVersionParser = null;
 
-	private readonly ReflectionProvider $reflectionProvider;
+	private ?ReflectionProvider $reflectionProvider = null;
 
-	private readonly InitializerExprTypeResolver $initializerExprTypeResolver;
+	private ?InitializerExprTypeResolver $initializerExprTypeResolver = null;
 
-	private readonly DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry;
+	private ?DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry = null;
 
-	private readonly ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry;
+	private ?ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry = null;
 
-	private readonly ExprPrinter $exprPrinter;
+	private ?ExprPrinter $exprPrinter = null;
 
-	private readonly TypeSpecifier $typeSpecifier;
+	private ?TypeSpecifier $typeSpecifier = null;
 
-	private readonly PropertyReflectionFinder $propertyReflectionFinder;
+	private ?PropertyReflectionFinder $propertyReflectionFinder = null;
 
-	private readonly NodeScopeResolver $nodeScopeResolver;
+	private ?NodeScopeResolver $nodeScopeResolver = null;
 
-	private readonly RicherScopeGetTypeHelper $richerScopeGetTypeHelper;
+	private ?RicherScopeGetTypeHelper $richerScopeGetTypeHelper = null;
 
-	private readonly ConstantResolver $constantResolver;
+	private ?ConstantResolver $constantResolver = null;
 
-	private readonly PhpVersion $phpVersionType;
+	private ?PhpVersion $phpVersionType = null;
 
-	private readonly AttributeReflectionFactory $attributeReflectionFactory;
+	private ?AttributeReflectionFactory $attributeReflectionFactory = null;
 
 	/**
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
@@ -63,22 +63,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	)
 	{
 		$this->phpVersion = $this->container->getParameter('phpVersion');
-		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');
-
-		$this->reflectionProvider = $this->container->getByType(ReflectionProvider::class);
-		$this->initializerExprTypeResolver = $this->container->getByType(InitializerExprTypeResolver::class);
-		$this->dynamicReturnTypeExtensionRegistry = $this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry();
-		$this->expressionTypeResolverExtensionRegistry = $this->container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class)->getRegistry();
-		$this->exprPrinter = $this->container->getByType(ExprPrinter::class);
-		$this->typeSpecifier = $this->container->getByType(TypeSpecifier::class);
-		$this->propertyReflectionFinder = $this->container->getByType(PropertyReflectionFinder::class);
-
-		$this->nodeScopeResolver = $this->container->getByType(NodeScopeResolver::class);
-		$this->richerScopeGetTypeHelper = $this->container->getByType(RicherScopeGetTypeHelper::class);
-		$this->constantResolver = $this->container->getByType(ConstantResolver::class);
-
-		$this->phpVersionType = $this->container->getByType(PhpVersion::class);
-		$this->attributeReflectionFactory = $this->container->getByType(AttributeReflectionFactory::class);
 	}
 
 	public function create(
@@ -104,6 +88,23 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		if ($this->fiber) {
 			$className = FiberScope::class;
 		}
+
+		$this->currentSimpleVersionParser ??= $this->container->getService('currentPhpVersionSimpleParser');
+
+		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
+		$this->initializerExprTypeResolver ??= $this->container->getByType(InitializerExprTypeResolver::class);
+		$this->dynamicReturnTypeExtensionRegistry ??= $this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry();
+		$this->expressionTypeResolverExtensionRegistry ??= $this->container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class)->getRegistry();
+		$this->exprPrinter ??= $this->container->getByType(ExprPrinter::class);
+		$this->typeSpecifier ??= $this->container->getByType(TypeSpecifier::class);
+		$this->propertyReflectionFinder ??= $this->container->getByType(PropertyReflectionFinder::class);
+
+		$this->nodeScopeResolver ??= $this->container->getByType(NodeScopeResolver::class);
+		$this->richerScopeGetTypeHelper ??= $this->container->getByType(RicherScopeGetTypeHelper::class);
+		$this->constantResolver ??= $this->container->getByType(ConstantResolver::class);
+
+		$this->phpVersionType ??= $this->container->getByType(PhpVersion::class);
+		$this->attributeReflectionFactory ??= $this->container->getByType(AttributeReflectionFactory::class);
 
 		return new $className(
 			$this,

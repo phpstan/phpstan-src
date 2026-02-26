@@ -1,0 +1,194 @@
+name: "Claude Fix Issue"
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue-number:
+        description: "Issue number from phpstan/phpstan repository"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      issue-number:
+        description: "Issue number from phpstan/phpstan repository"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    name: "Fix #${{ inputs.issue-number }}"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: 2.1.x
+          repository: phpstan/phpstan-src
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        with:
+          coverage: "none"
+          php-version: "8.4"
+          ini-file: development
+          extensions: mbstring
+
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+
+      - name: "Install Claude Code"
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: "Fetch issue details"
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ inputs.issue-number }}
+        run: |
+          ISSUE_JSON=$(gh issue view "$ISSUE_NUMBER" \
+            --repo phpstan/phpstan \
+            --json title,body,url)
+
+          TITLE=$(echo "$ISSUE_JSON" | jq -r '.title')
+          URL=$(echo "$ISSUE_JSON" | jq -r '.url')
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "$ISSUE_JSON" | jq -r '.body' > /tmp/issue-body.txt
+
+      - name: "Run Claude Code"
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude --model claude-opus-4-6 \
+          --dangerously-skip-permissions \
+          -p "$(cat << 'PROMPT_EOF'
+            You are working on phpstan/phpstan-src, the source code of PHPStan - a PHP static analysis tool.
+
+            Your task is to fix the following GitHub issue from the phpstan/phpstan repository:
+            Issue phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}
+            URL: ${{ steps.issue.outputs.url }}
+
+            Issue body is in the file /tmp/issue-body.txt — read it before proceeding.
+
+            ## Step 1: Write a regression test
+
+            Read .claude/skills/regression-test/SKILL.md for detailed guidance on writing regression tests for PHPStan bugs.
+
+            The issue body is already provided above — start from Step 2 of the skill (deciding test type). For Step 1 (gathering context), you only need to fetch the playground samples from any playground links found in the issue body.
+
+            Skip Steps 5-6 of the skill (reverting fix and committing) — those are not needed here.
+
+            The regression test should fail without the fix — verify this by running it before implementing the fix.
+
+            ## Step 2: Fix the bug
+
+            Implement the fix in the source code under src/. Common areas to look:
+            - src/Analyser/NodeScopeResolver.php - AST traversal and scope management
+            - src/Analyser/MutatingScope.php - Type tracking
+            - src/Analyser/TypeSpecifier.php - Type narrowing from conditions
+            - src/Type/ - Type system implementations
+            - src/Rules/ - Rule implementations
+            - src/Reflection/ - Reflection layer
+
+            Read CLAUDE.md for important guidelines about the codebase architecture and common patterns.
+
+            ## Step 3: Verify the fix
+
+            1. Run the regression test to confirm it passes now
+            2. Run the full test suite: make tests
+            3. Run PHPStan self-analysis: make phpstan
+            4. Fix any failures that come up
+            5. Run make cs-fix to fix any coding standard violations
+            6. Run make name-collision and fix violations - add different tests in unique namespaces. If the function and class declarations are exactly the same, you can reuse them across files instead of duplicating them.
+
+            Do not create a branch, push, or create a PR - this will be handled automatically.
+
+            ## Step 4: Write a summary
+
+            After completing the fix, write two files:
+
+            1. /tmp/commit-message.txt - A concise commit message (first line: short summary under 72 chars, then a blank line, then a few bullet points describing key changes). Example:
+               Fix array_key_exists narrowing for template types
+
+               - Added handling for TemplateType in TypeSpecifier when processing array_key_exists
+               - New regression test in tests/PHPStan/Analyser/nsrt/bug-12345.php
+               - The root cause was that TypeSpecifier did not unwrap template bounds before narrowing
+
+            2. /tmp/pr-description.md - A pull request description in this format:
+               ## Summary
+               Brief description of what the issue was about and what the fix does.
+
+               ## Changes
+               - Bullet points of specific code changes made
+               - Reference file paths where changes were made
+
+               ## Root cause
+               Explain why the bug happened and how the fix addresses it.
+
+               ## Test
+               Describe the regression test that was added.
+
+               Fixes phpstan/phpstan#${{ inputs.issue-number }}
+
+            These files are critical - they will be used for the commit message and PR description.
+          PROMPT_EOF
+          )"
+
+      - name: "Read Claude's summary"
+        id: claude-summary
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue-number }}
+        run: |
+          if [ -f /tmp/commit-message.txt ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "commit_message<<${delimiter}"
+              cat /tmp/commit-message.txt
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "commit_message=Fix #$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -f /tmp/pr-description.md ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "pr_body<<${delimiter}"
+              cat /tmp/pr-description.md
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_body=Fixes phpstan/phpstan#$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Create Pull Request"
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch-token: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+          token: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+          push-to-fork: phpstan-bot/phpstan-src
+          branch-suffix: random
+          delete-branch: true
+          title: "Fix #${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}"
+          body: ${{ steps.claude-summary.outputs.pr_body }}
+          committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          commit-message: ${{ steps.claude-summary.outputs.commit_message }}

@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Parameter #1 $array of function array_sum expects an array of values castable to number, array<string> given.",
+        "line": 23,
+        "ignorable": true
+    }
+]

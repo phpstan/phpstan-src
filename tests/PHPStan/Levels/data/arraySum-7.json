@@ -1,0 +1,22 @@
+[
+    {
+        "message": "Parameter #1 $array of function array_sum expects an array of values castable to number, array<int|string> given.",
+        "line": 21,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $array of function array_sum expects array, array<int>|Levels\\ArraySum\\Foo given.",
+        "line": 22,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $array of function array_sum expects array, array<string>|Levels\\ArraySum\\Foo given.",
+        "line": 23,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $array of function array_sum expects array, array<int|string>|Levels\\ArraySum\\Foo given.",
+        "line": 24,
+        "ignorable": true
+    }
+]

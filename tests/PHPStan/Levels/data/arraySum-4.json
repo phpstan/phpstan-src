@@ -1,0 +1,42 @@
+[
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 19,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 20,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 21,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 22,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 23,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 24,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 25,
+        "ignorable": true
+    },
+    {
+        "message": "Call to function array_sum() on a separate line has no effect.",
+        "line": 26,
+        "ignorable": true
+    }
+]

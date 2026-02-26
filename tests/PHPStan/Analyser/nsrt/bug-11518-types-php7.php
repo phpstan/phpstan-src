@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php // lint < 8.0
 
 namespace Bug11518Types;
 
@@ -12,7 +12,7 @@ function blah(array $a): array
 {
 	if (!array_key_exists('thing', $a)) {
 		$a['thing'] = 'bla';
-		assertType('non-empty-array&hasOffsetValue(\'thing\', \'bla\')', $a);
+		assertType('non-empty-array<mixed>&hasOffsetValue(\'thing\', \'bla\')', $a);
 	} else {
 		assertType('non-empty-array&hasOffset(\'thing\')', $a);
 	}

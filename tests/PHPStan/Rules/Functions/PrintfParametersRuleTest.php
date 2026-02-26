@@ -103,7 +103,7 @@ class PrintfParametersRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Call to sprintf contains 1 placeholder, 2 values given.',
+				'Call to sprintf contains an invalid placeholder.',
 				5,
 			],
 		];
@@ -118,6 +118,20 @@ class PrintfParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2342.php'], [
 			[
 				'Call to sprintf contains 1 placeholder, 0 values given.',
+				5,
+			],
+		]);
+	}
+
+	public function testBug1889(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1889.php'], [
+			[
+				'Call to printf contains an invalid placeholder.',
+				3,
+			],
+			[
+				'Call to printf contains an invalid placeholder.',
 				5,
 			],
 		]);

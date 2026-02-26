@@ -93,6 +93,11 @@ final class PrintfParameterTypeRule implements Rule
 		$formatString = $formatArgTypeStrings[0];
 		$format = $formatString->getValue();
 		$placeholderMap = $this->printfHelper->getPrintfPlaceholders($format);
+		if ($placeholderMap === null) {
+			// Already reported by PrintfParametersRule.
+			return [];
+		}
+
 		$errors = [];
 		$typeAllowedByCallToFunctionParametersRule = new UnionType([
 			new StringAlwaysAcceptingObjectWithToStringType(),

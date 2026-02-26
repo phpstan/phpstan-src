@@ -47,17 +47,17 @@ class Foo
 				}
 			}
 
-			assertType("non-empty-array&hasOffsetValue('authors', mixed)", $this->config);
+			assertType("non-empty-array<mixed>&hasOffsetValue('authors', mixed)", $this->config);
 			assertType("mixed", $this->config['authors']);
 
 			if (empty($this->config['authors'])) {
 				unset($this->config['authors']);
 				assertType("array<mixed~'authors', mixed>", $this->config);
 			} else {
-				assertType("non-empty-array&hasOffsetValue('authors', mixed~(0|0.0|''|'0'|array{}|false|null))", $this->config);
+				assertType("non-empty-array<mixed>&hasOffsetValue('authors', mixed~(0|0.0|''|'0'|array{}|false|null))", $this->config);
 			}
 
-			assertType("array", $this->config);
+			assertType("array<mixed>", $this->config);
 		}
 	}
 

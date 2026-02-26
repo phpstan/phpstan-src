@@ -31,14 +31,14 @@ class Superglobals
 	public function canBePartlyOverwritten(): void
 	{
 		$GLOBALS['foo'] = 'foo';
-		assertType("non-empty-array&hasOffsetValue('foo', 'foo')", $GLOBALS);
+		assertType("non-empty-array<mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
 		assertNativeType("non-empty-array<mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
 	}
 
 	public function canBeNarrowed(): void
 	{
 		if (isset($GLOBALS['foo'])) {
-			assertType("non-empty-array&hasOffsetValue('foo', mixed~null)", $GLOBALS);
+			assertType("non-empty-array<mixed>&hasOffsetValue('foo', mixed~null)", $GLOBALS);
 			assertNativeType("non-empty-array<mixed>&hasOffset('foo')", $GLOBALS); // https://github.com/phpstan/phpstan/issues/8395
 		} else {
 			assertType('array<mixed>', $GLOBALS);

@@ -51,9 +51,7 @@ final class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		$resultType = $this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, true);
-
-		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
-		if ($classType->getConstantStrings() === [] && $resultType->isSuperTypeOf($objectOrClassType)->yes()) {
+		if ($resultType === null) {
 			return new SpecifiedTypes([], []);
 		}
 

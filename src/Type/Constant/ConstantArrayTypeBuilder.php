@@ -325,8 +325,16 @@ final class ConstantArrayTypeBuilder
 		$this->disableArrayDegradation = true;
 	}
 
-	public function getArray(): Type
+	public function getArray(bool $forceList = false): Type
 	{
+		if ($forceList) {
+			if ($this->isList->no()) {
+				return new NeverType();
+			}
+
+			$this->isList = TrinaryLogic::createYes();
+		}
+
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			return new ConstantArrayType([], []);
@@ -374,17 +382,6 @@ final class ConstantArrayTypeBuilder
 		}
 
 		return new IntersectionType([$array, ...$types]);
-	}
-
-	public function getList(): Type
-	{
-		if ($this->isList->no()) {
-			return new NeverType();
-		}
-
-		$this->isList = TrinaryLogic::createYes();
-
-		return $this->getArray();
 	}
 
 	public function isList(): bool

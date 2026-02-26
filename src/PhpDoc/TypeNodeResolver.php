@@ -1065,7 +1065,7 @@ final class TypeNodeResolver
 			ArrayShapeNode::KIND_NON_EMPTY_LIST,
 		], true);
 
-		$arrayType = $isList ? $builder->getList() : $builder->getArray();
+		$arrayType = $builder->getArray($isList);
 
 		$accessories = [];
 		if ($isList) {

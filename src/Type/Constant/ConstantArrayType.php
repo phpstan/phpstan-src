@@ -61,6 +61,7 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
+use function is_int;
 use function is_string;
 use function min;
 use function pow;
@@ -1812,23 +1813,21 @@ class ConstantArrayType implements Type
 			}
 
 			$keyValue = $keyType->getValue();
-			$changed = false;
 			foreach ($optionalKeys as $j => $key) {
 				if (
 					$i === $key
 					|| (
 						$isList
-						&& \is_int($keyValue)
-						&& \is_int($this->keyTypes[$key]->getValue())
+						&& is_int($keyValue)
+						&& is_int($this->keyTypes[$key]->getValue())
 						&& $this->keyTypes[$key]->getValue() < $keyValue
 					)
 				) {
 					unset($optionalKeys[$j]);
-					$changed = true;
 				}
 			}
 
-			if ($changed) {
+			if (count($this->optionalKeys) !== count($optionalKeys)) {
 				return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
 			}
 

@@ -19,5 +19,4 @@ $arr2 = [
 	'c1' => 3.3,
 ];
 if ($arr2['a1'] > 1) {}
-// !!! There is error "Cannot cast mixed to string." on next line if "checkImplicitMixed: true"
 echo (string)$arr2['c1'];

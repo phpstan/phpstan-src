@@ -1857,7 +1857,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $offsetAccessibleType;
 		}
 
-		if (!$offsetAccessibleType->isArray()->yes() && (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
+		if (
+			!$offsetAccessibleType->isArray()->yes()
+			&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
+		) {
 			return $this->getType(
 				new MethodCall(
 					$arrayDimFetch->var,
@@ -3368,11 +3371,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$dimType = $scope->getType($expr->dim)->toArrayKey();
 			if ($dimType->isInteger()->yes() || $dimType->isString()->yes()) {
 				$exprVarType = $scope->getType($expr->var);
-				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
-					if ($dimType->isInteger()->yes()) {
-						$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::intOffsetAccessibleType());
-					} else {
-						$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::generalOffsetAccessibleType());
+				$isArray = $exprVarType->isArray();
+				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
+					$varType = $exprVarType;
+					if (!$isArray->yes()) {
+						if ($dimType->isInteger()->yes()) {
+							$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::intOffsetAccessibleType());
+						} else {
+							$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::generalOffsetAccessibleType());
+						}
 					}
 
 					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {

@@ -2711,4 +2711,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-14012.php'], []);
 	}
 
+	public function testBug11534(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-11534.php'], [
+			[
+				'Parameter #2 $param2 of function Bug11534\hello expects int, mixed given.',
+				14
+			]
+		]);
+	}
+
 }

@@ -16,6 +16,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_unique;
 use function array_values;
+use function in_array;
 
 #[AutowiredService]
 final class IsAFunctionTypeSpecifyingHelper
@@ -26,7 +27,7 @@ final class IsAFunctionTypeSpecifyingHelper
 		Type $classType,
 		bool $allowString,
 		bool $allowSameClass,
-	): Type
+	): ?Type
 	{
 		$objectOrClassTypeClassNames = $objectOrClassType->getObjectClassNames();
 		if ($allowString) {
@@ -36,15 +37,39 @@ final class IsAFunctionTypeSpecifyingHelper
 			$objectOrClassTypeClassNames = array_values(array_unique($objectOrClassTypeClassNames));
 		}
 
-		return TypeTraverser::map(
+		$isUncertain = $classType->getConstantStrings() === [];
+
+		$resultType = TypeTraverser::map(
 			$classType,
-			static function (Type $type, callable $traverse) use ($objectOrClassTypeClassNames, $allowString, $allowSameClass): Type {
+			static function (Type $type, callable $traverse) use ($objectOrClassType, $objectOrClassTypeClassNames, $allowString, $allowSameClass, &$isUncertain): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 				if ($type instanceof ConstantStringType) {
-					if (!$allowSameClass && $objectOrClassTypeClassNames === [$type->getValue()]) {
-						return new NeverType();
+					if (!$allowSameClass) {
+						if ($objectOrClassTypeClassNames === [$type->getValue()]) {
+							$isSameClass = true;
+							foreach ($objectOrClassType->getObjectClassReflections() as $classReflection) {
+								if (!$classReflection->isFinal()) {
+									$isSameClass = false;
+									break;
+								}
+							}
+
+							if ($isSameClass) {
+								return new NeverType();
+							}
+						}
+
+						if (
+							// For object, as soon as the exact same type is provided
+							// in the list we cannot be sure of the result
+							in_array($type->getValue(), $objectOrClassTypeClassNames, true)
+							// This also occurs for generic class string
+							|| ($allowString && $objectOrClassTypeClassNames === [] && $objectOrClassType->isSuperTypeOf($type)->yes())
+						) {
+							$isUncertain = true;
+						}
 					}
 					if ($allowString) {
 						return new UnionType([
@@ -75,6 +100,13 @@ final class IsAFunctionTypeSpecifyingHelper
 				return new ObjectWithoutClassType();
 			},
 		);
+
+		// prevent false-positives
+		if ($isUncertain && $resultType->isSuperTypeOf($objectOrClassType)->yes()) {
+			return null;
+		}
+
+		return $resultType;
 	}
 
 }

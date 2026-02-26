@@ -148,4 +148,25 @@ final class AnalysisResult
 		return $this->changedProjectExtensionFilesOutsideOfAnalysedPaths;
 	}
 
+	/**
+	 * @api
+	 * @param list<Error> $fileSpecificErrors
+	 */
+	public function withFileSpecificErrors(array $fileSpecificErrors): self
+	{
+		return new self(
+			$fileSpecificErrors,
+			$this->notFileSpecificErrors,
+			$this->internalErrors,
+			$this->warnings,
+			$this->collectedData,
+			$this->defaultLevelUsed,
+			$this->projectConfigFile,
+			$this->savedResultCache,
+			$this->peakMemoryUsageBytes,
+			$this->isResultCacheUsed,
+			$this->changedProjectExtensionFilesOutsideOfAnalysedPaths,
+		);
+	}
+
 }

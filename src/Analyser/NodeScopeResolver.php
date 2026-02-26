@@ -3665,6 +3665,8 @@ class NodeScopeResolver
 				$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$rightResult = $this->processExprNode($stmt, $expr->right, $scope, $storage, $nodeCallback, $context);
 
+				$this->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $scope), $scope, $storage, $context);
+
 				return new ExpressionResult(
 					$scope,
 					$leftResult->hasYield() || $rightResult->hasYield(),

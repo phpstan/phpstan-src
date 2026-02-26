@@ -31,7 +31,7 @@ class Aaa
 			}
 		}
 
-		assertType('array', $objects);
+		assertType('array<int, Bug9307\Item>', $objects);
 
 		$this->acceptObjects($objects);
 	}

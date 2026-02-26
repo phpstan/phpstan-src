@@ -1853,6 +1853,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			throw new ShouldNotHappenException();
 		}
 
+		if ($offsetAccessibleType instanceof NeverType) {
+			return $offsetAccessibleType;
+		}
+
 		if (!$offsetAccessibleType->isArray()->yes() && (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
 			return $this->getType(
 				new MethodCall(

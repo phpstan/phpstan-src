@@ -1805,16 +1805,31 @@ class ConstantArrayType implements Type
 	{
 		$offsetType = $offsetType->toArrayKey();
 		$optionalKeys = $this->optionalKeys;
+		$isList = $this->isList->yes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (!$keyType->equals($offsetType)) {
 				continue;
 			}
 
+			$keyValue = $keyType->getValue();
+			$changed = false;
 			foreach ($optionalKeys as $j => $key) {
-				if ($i === $key) {
+				if (
+					$i === $key
+					|| (
+						$isList
+						&& \is_int($keyValue)
+						&& \is_int($this->keyTypes[$key]->getValue())
+						&& $this->keyTypes[$key]->getValue() < $keyValue
+					)
+				) {
 					unset($optionalKeys[$j]);
-					return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
+					$changed = true;
 				}
+			}
+
+			if ($changed) {
+				return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys), $this->isList);
 			}
 
 			break;

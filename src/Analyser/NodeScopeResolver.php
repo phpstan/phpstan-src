@@ -238,6 +238,8 @@ use const SORT_NUMERIC;
 class NodeScopeResolver
 {
 
+	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 16;
+
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
@@ -3659,6 +3661,21 @@ class NodeScopeResolver
 			);
 			return $result;
 		} elseif ($expr instanceof BooleanOr || $expr instanceof BinaryOp\LogicalOr) {
+			if ($this->getBooleanExpressionDepth($expr->left) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+				$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$rightResult = $this->processExprNode($stmt, $expr->right, $scope, $storage, $nodeCallback, $context);
+
+				return new ExpressionResult(
+					$scope,
+					$leftResult->hasYield() || $rightResult->hasYield(),
+					$leftResult->isAlwaysTerminating(),
+					array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
+					array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
+					static fn (): MutatingScope => $scope,
+					static fn (): MutatingScope => $scope,
+				);
+			}
+
 			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($stmt, $expr->right, $leftResult->getFalseyScope(), $storage, $nodeCallback, $context);
 			$rightExprType = $rightResult->getScope()->getType($expr->right);
@@ -7846,6 +7863,20 @@ class NodeScopeResolver
 		}
 
 		return $bodyScope;
+	}
+
+	private function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int
+	{
+		while (
+			$expr instanceof BinaryOp\BooleanOr
+			|| $expr instanceof BinaryOp\LogicalOr
+			|| $expr instanceof BinaryOp\BooleanAnd
+			|| $expr instanceof BinaryOp\LogicalAnd
+		) {
+			return $this->getBooleanExpressionDepth($expr->left, $depth + 1);
+		}
+
+		return $depth;
 	}
 
 }

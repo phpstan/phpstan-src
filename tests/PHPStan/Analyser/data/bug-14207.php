@@ -31,6 +31,8 @@ class HelloWorld
 				: "{$tag_name->namespace} {$tag_name->node_name}";
 		}
 
+		assertType('non-falsy-string|uppercase-string', $tag_name);
+
 		$x = (
 			'ADDRESS' === $tag_name ||
 			'APPLET' === $tag_name ||
@@ -130,7 +132,7 @@ class HelloWorld
 			'svg TITLE' === $tag_name
 		);
 
-		assertType('non-falsy-string|uppercase-string', $tag_name);
+		assertType('bool', $x);
 
 		return $x;
 	}

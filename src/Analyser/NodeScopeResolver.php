@@ -238,7 +238,7 @@ use const SORT_NUMERIC;
 class NodeScopeResolver
 {
 
-	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 16;
+	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;

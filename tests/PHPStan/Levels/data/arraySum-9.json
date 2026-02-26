@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Parameter #1 $array of function array_sum expects array, mixed given.",
+        "line": 25,
+        "ignorable": true
+    }
+]

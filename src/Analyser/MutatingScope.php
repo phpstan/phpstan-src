@@ -1467,8 +1467,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$node->var,
 				$this->getTypeFromArrayDimFetch(
 					$node,
-					$this->getType($node->dim),
-					$this->getType($node->var),
 				),
 			);
 		}
@@ -1845,14 +1843,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function getTypeFromArrayDimFetch(
 		Expr\ArrayDimFetch $arrayDimFetch,
-		Type $offsetType,
-		Type $offsetAccessibleType,
 	): Type
 	{
 		if ($arrayDimFetch->dim === null) {
 			throw new ShouldNotHappenException();
 		}
 
+		$offsetAccessibleType = $this->getType($arrayDimFetch->var);
 		if ($offsetAccessibleType instanceof NeverType) {
 			return $offsetAccessibleType;
 		}
@@ -1872,6 +1869,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			);
 		}
 
+		$offsetType = $this->getType($arrayDimFetch->dim);
 		return $offsetAccessibleType->getOffsetValueType($offsetType);
 	}
 

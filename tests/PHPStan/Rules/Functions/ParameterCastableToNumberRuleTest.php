@@ -249,6 +249,14 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int, mixed> given.',
 				6,
 			],
+			[
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<string> given.',
+				14,
+			],
+			[
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<string> given.',
+				15,
+			],
 		]));
 	}
 

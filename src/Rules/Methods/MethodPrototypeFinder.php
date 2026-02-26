@@ -25,14 +25,20 @@ final class MethodPrototypeFinder
 	}
 
 	/**
-	 * @return array{ExtendedMethodReflection, ClassReflection, bool}|null
+	 * Finds the prototype method that a class method should be validated against.
+	 * Returns two prototypes with different purposes:
+	 * - Signature prototype: Used for validating method signature (parameters, return type, ...).
+	 * - Inheritance prototype: Used for validating inheritance rules (final keyword, override attribute, ...).
+	 * Also, return a bool to precise if the visibility of the prototype needs to be respected.
+	 *
+	 * @return array{ExtendedMethodReflection, ClassReflection, bool, ExtendedMethodReflection, ClassReflection}|null
 	 */
 	public function findPrototype(ClassReflection $classReflection, string $methodName): ?array
 	{
 		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
 			if ($immediateInterface->hasNativeMethod($methodName)) {
 				$method = $immediateInterface->getNativeMethod($methodName);
-				return [$method, $method->getDeclaringClass(), true];
+				return [$method, $method->getDeclaringClass(), true, $method, $method->getDeclaringClass()];
 			}
 		}
 
@@ -47,15 +53,19 @@ final class MethodPrototypeFinder
 				$isAbstract = $methodReflection->isAbstract();
 				if ($isAbstract) {
 					$declaringTrait = $trait->getNativeMethod($methodName)->getDeclaringClass();
+					$prototype = $this->phpClassReflectionExtension->createUserlandMethodReflection(
+						$trait,
+						$classReflection,
+						$methodReflection,
+						$declaringTrait->getName(),
+					);
+
 					return [
-						$this->phpClassReflectionExtension->createUserlandMethodReflection(
-							$trait,
-							$classReflection,
-							$methodReflection,
-							$declaringTrait->getName(),
-						),
+						$prototype,
 						$declaringTrait,
 						false,
+						$prototype,
+						$declaringTrait,
 					];
 				}
 			}
@@ -94,7 +104,23 @@ final class MethodPrototypeFinder
 			}
 		}
 
-		return [$method, $method->getDeclaringClass(), true];
+		$prototype = $method;
+		if (strtolower($method->getName()) === '__construct') {
+			foreach ($parentClass->getInterfaces() as $interface) {
+				if ($interface->hasNativeMethod($method->getName())) {
+					$prototype = $interface->getNativeMethod($method->getName());
+					break;
+				}
+			}
+		}
+
+		return [
+			$prototype,
+			$prototype->getDeclaringClass(),
+			true,
+			$method,
+			$declaringClass,
+		];
 	}
 
 }

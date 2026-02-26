@@ -106,13 +106,18 @@ final class IgnoredErrorHelper
 				continue;
 			}
 
+			$reportUnmatched = (bool) ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors);
+			if (!$reportUnmatched) {
+				$reportUnmatched = $ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
+			}
+
 			$uniquedExpandedIgnoreErrors[$key] = [
 				'message' => $ignoreError['message'] ?? null,
 				'rawMessage' => $ignoreError['rawMessage'] ?? null,
 				'path' => $ignoreError['path'],
 				'identifier' => $ignoreError['identifier'] ?? null,
 				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
-				'reportUnmatched' => ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors) || ($ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors),
+				'reportUnmatched' => $reportUnmatched,
 			];
 		}
 

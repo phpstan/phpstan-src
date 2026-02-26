@@ -2,15 +2,18 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traverser\LateResolvableTraverser;
+use function array_filter;
+use function array_map;
 use function array_merge;
+use function iterator_to_array;
 
 /**
  * @api
@@ -130,24 +133,32 @@ final class TypeUtils
 	 */
 	public static function flattenTypes(Type $type): array
 	{
-		if ($type instanceof ConstantArrayType) {
-			return $type->getAllArrays();
-		}
-
 		if ($type instanceof UnionType) {
 			$types = [];
 			foreach ($type->getTypes() as $innerType) {
-				if ($innerType instanceof ConstantArrayType) {
-					foreach ($innerType->getAllArrays() as $array) {
-						$types[] = $array;
-					}
-					continue;
+				$flattenTypes = self::flattenTypes($innerType);
+				foreach ($flattenTypes as $flattenType) {
+					$types[] = $flattenType;
 				}
-
-				$types[] = $innerType;
 			}
 
 			return $types;
+		}
+
+		$constantArrays = $type->getConstantArrays();
+		if ($constantArrays !== []) {
+			$newTypes = [];
+			foreach ($constantArrays as $constantArray) {
+				$newTypes[] = $constantArray->getAllArrays();
+			}
+
+			return array_filter(
+				array_map(
+					static fn (array $types): Type => TypeCombinator::intersect(...$types),
+					iterator_to_array(CombinationsHelper::combinations($newTypes)),
+				),
+				static fn (Type $type): bool => !$type instanceof NeverType,
+			);
 		}
 
 		return [$type];

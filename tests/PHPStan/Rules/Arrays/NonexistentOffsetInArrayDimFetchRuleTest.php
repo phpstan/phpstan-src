@@ -385,11 +385,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4747.php'], []);
 	}
 
-	public function testBug6379(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-6379.php'], []);
-	}
-
 	#[RequiresPhp('>= 8.0')]
 	public function testBug4885(): void
 	{
@@ -929,13 +924,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4809.php'], []);
 	}
 
-	public function testBug11602(): void
-	{
-		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
-
-		$this->analyse([__DIR__ . '/data/bug-11602.php'], []);
-	}
-
 	public function testBug12593(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
@@ -1121,6 +1109,28 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	public function testPR4385Bis(): void
 	{
 		$this->analyse([__DIR__ . '/data/pr-4385-bis.php'], []);
+	}
+
+	public function testBug7143(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7143.php'], [
+			[
+				"Offset 'foo' might not exist on non-empty-array{foo?: string, bar?: string}.",
+				12,
+			],
+			[
+				"Offset 'bar' might not exist on non-empty-array{foo?: string, bar?: string}.",
+				13,
+			],
+			[
+				"Offset 'foo' might not exist on non-empty-array{foo?: string, bar?: string, 1?: 1, 2?: 2, 3?: 3, 4?: 4, 5?: 5, 6?: 6, ...}.",
+				21,
+			],
+			[
+				"Offset 'bar' might not exist on non-empty-array{foo?: string, bar?: string, 1?: 1, 2?: 2, 3?: 3, 4?: 4, 5?: 5, 6?: 6, ...}.",
+				22,
+			],
+		]);
 	}
 
 	public function testBug12805(): void

@@ -86,6 +86,15 @@ final class PrintfParametersRule implements Rule
 				$tempPlaceHoldersCount = $this->printfHelper->getScanfPlaceholdersCount($format);
 			}
 
+			if ($tempPlaceHoldersCount === null) {
+				return [
+					RuleErrorBuilder::message(sprintf(
+						'Call to %s contains an invalid placeholder.',
+						$name,
+					))->identifier(sprintf('argument.%s', $name))->build(),
+				];
+			}
+
 			if ($maxPlaceHoldersCount === null) {
 				$maxPlaceHoldersCount = $tempPlaceHoldersCount;
 			} elseif ($tempPlaceHoldersCount > $maxPlaceHoldersCount) {

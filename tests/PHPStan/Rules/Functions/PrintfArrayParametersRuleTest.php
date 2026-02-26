@@ -71,4 +71,18 @@ class PrintfArrayParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug1889(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1889.php'], [
+			[
+				'Call to vsprintf contains an invalid placeholder.',
+				7,
+			],
+			[
+				'Call to vsprintf contains an invalid placeholder.',
+				9,
+			],
+		]);
+	}
+
 }

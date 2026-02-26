@@ -11,6 +11,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -373,6 +374,17 @@ final class ConstantArrayTypeBuilder
 		}
 
 		return new IntersectionType([$array, ...$types]);
+	}
+
+	public function getList(): Type
+	{
+		if ($this->isList->no()) {
+			return new NeverType();
+		}
+
+		$this->isList = TrinaryLogic::createYes();
+
+		return $this->getArray();
 	}
 
 	public function isList(): bool

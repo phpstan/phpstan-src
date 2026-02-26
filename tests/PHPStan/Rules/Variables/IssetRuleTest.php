@@ -499,6 +499,13 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testIssetConstantArray(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-constant-array.php'], []);
+	}
+
 	public function testBug10640(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

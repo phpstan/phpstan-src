@@ -1060,13 +1060,15 @@ final class TypeNodeResolver
 			$builder->setOffsetValueType($offsetType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional);
 		}
 
-		$arrayType = $builder->getArray();
-
-		$accessories = [];
-		if (in_array($typeNode->kind, [
+		$isList = in_array($typeNode->kind, [
 			ArrayShapeNode::KIND_LIST,
 			ArrayShapeNode::KIND_NON_EMPTY_LIST,
-		], true)) {
+		], true);
+
+		$arrayType = $isList ? $builder->getList() : $builder->getArray();
+
+		$accessories = [];
+		if ($isList) {
 			$accessories[] = new AccessoryArrayListType();
 		}
 

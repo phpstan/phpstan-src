@@ -291,11 +291,11 @@ class IntersectionType implements CompoundType
 	{
 		$results = [];
 		foreach ($this->types as $innerType) {
-			$isAcceptedBy = $acceptingType->isAcceptedBy($innerType, $strictTypes);
-
+			$isAcceptedBy = $acceptingType->accepts($innerType, $strictTypes);
 			if ($isAcceptedBy->yes()) {
 				return AcceptsResult::createYes();
 			}
+			$results[] = $isAcceptedBy;
 		}
 		$result = AcceptsResult::maxMin(...$results);
 

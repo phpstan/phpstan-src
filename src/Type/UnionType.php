@@ -329,7 +329,7 @@ class UnionType implements CompoundType
 				} elseif ($type instanceof IntersectionType) {
 					$intersectionDescription = $type->describe($level);
 					if (str_contains($intersectionDescription, '&')) {
-						$typeNames[] = sprintf('(%s)', $type->describe($level));
+						$typeNames[] = sprintf('(%s)', $intersectionDescription);
 					} else {
 						$typeNames[] = $intersectionDescription;
 					}

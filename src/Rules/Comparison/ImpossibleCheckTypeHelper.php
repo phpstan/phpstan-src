@@ -299,6 +299,7 @@ final class ImpossibleCheckTypeHelper
 				}
 			}
 		}
+		$isInTrait = $scope->isInTrait();
 		foreach ($sureTypes as $sureType) {
 			if (self::isSpecified($typeSpecifierScope, $node, $sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
@@ -322,6 +323,11 @@ final class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getType($assignedInCallVar->expr);
 			}
 
+			if ($isInTrait && self::isThis($sureType[0]) && $resultType->getObjectClassNames() !== []) {
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
+			}
+
 			$results[] = $resultType->isSuperTypeOf($argumentType)->result;
 		}
 
@@ -339,6 +345,11 @@ final class ImpossibleCheckTypeHelper
 
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
+
+			if ($isInTrait && self::isThis($sureNotType[0]) && $resultType->getObjectClassNames() !== []) {
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
+			}
 
 			$results[] = $resultType->isSuperTypeOf($argumentType)->negate()->result;
 		}
@@ -374,6 +385,11 @@ final class ImpossibleCheckTypeHelper
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
 		) && $scope->hasExpressionType($expr)->yes();
+	}
+
+	private static function isThis(Expr $expr): bool
+	{
+		return $expr instanceof Expr\Variable && $expr->name === 'this';
 	}
 
 	/**

@@ -2400,6 +2400,54 @@ final class TypeSpecifier
 
 		$rightType = $scope->getType($rightExpr);
 
+		// ($cond ? $trueExpr : $falseExpr) === $value
+		if (
+			$context->true()
+			&& $unwrappedLeftExpr instanceof Expr\Ternary
+			&& $unwrappedLeftExpr->if !== null
+		) {
+			$ternaryIf = $unwrappedLeftExpr->if;
+			$ternaryElse = $unwrappedLeftExpr->else;
+			$ternaryCond = $unwrappedLeftExpr->cond;
+			$falseBranchType = $scope->getType($ternaryElse);
+			// Evaluate true branch in scope where ternary condition is truthy,
+			// so that e.g. $request::class is evaluated with $request narrowed to non-null
+			$truthyScope = $scope->filterByTruthyValue($ternaryCond);
+			$trueBranchType = $truthyScope->getType($ternaryIf);
+
+			if ($rightType->isSuperTypeOf($falseBranchType)->no()) {
+				// Only the true branch can produce a value === $rightType
+				// Therefore $cond is truthy AND $trueExpr === $value
+				$condTruthyTypes = $this->specifyTypesInCondition(
+					$scope,
+					$ternaryCond,
+					TypeSpecifierContext::createTruthy(),
+				);
+				$trueNarrowingTypes = $this->resolveIdentical(
+					new Expr\BinaryOp\Identical($ternaryIf, $rightExpr),
+					$scope,
+					$context,
+				);
+				return $condTruthyTypes->unionWith($trueNarrowingTypes)->setRootExpr($expr);
+			}
+
+			if ($rightType->isSuperTypeOf($trueBranchType)->no()) {
+				// Only the false branch can produce a value === $rightType
+				// Therefore $cond is falsy AND $falseExpr === $value
+				$condFalsyTypes = $this->specifyTypesInCondition(
+					$scope,
+					$ternaryCond,
+					TypeSpecifierContext::createFalsey(),
+				);
+				$falseNarrowingTypes = $this->resolveIdentical(
+					new Expr\BinaryOp\Identical($ternaryElse, $rightExpr),
+					$scope,
+					$context,
+				);
+				return $condFalsyTypes->unionWith($falseNarrowingTypes)->setRootExpr($expr);
+			}
+		}
+
 		// (count($a) === $expr)
 		if (
 			!$context->null()

@@ -506,4 +506,11 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10640.php'], []);
 	}
 
+	public function testBug9503(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9503.php'], []);
+	}
+
 }

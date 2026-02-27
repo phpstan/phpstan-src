@@ -62,6 +62,39 @@ class HelloWorld
 			assertType('1|2|3|10', $data);
 			assertType('bool', $update);
 		}
+
+		if ($data === 1) {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		} else {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		}
+
+		if ($data === 2) {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		} else {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		}
+
+		if ($data === 3) {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		} else {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		}
+
+		if ($data === 1 || $data === 2) {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		} else {
+			assertType('bool', $update);
+			assertType('bool', $foo);
+		}
+
 	}
 
 	public function testWithDifferentVariableNames(?object $data): void

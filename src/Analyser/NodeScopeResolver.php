@@ -3640,7 +3640,8 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof BinaryOp\LogicalAnd) {
 			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$rightResult = $this->processExprNode($stmt, $expr->right, $leftResult->getTruthyScope(), $storage, $nodeCallback, $context);
+			$leftTruthyScope = $leftResult->getTruthyScope();
+			$rightResult = $this->processExprNode($stmt, $expr->right, $leftTruthyScope, $storage, $nodeCallback, $context);
 			$rightExprType = $rightResult->getScope()->getType($expr->right);
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 				$leftMergedWithRightScope = $leftResult->getFalseyScope();
@@ -3648,7 +3649,7 @@ class NodeScopeResolver
 				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 			}
 
-			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftResult->getTruthyScope()), $scope, $storage, $context);
+			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
 
 			$result = new ExpressionResult(
 				$leftMergedWithRightScope,
@@ -3656,7 +3657,7 @@ class NodeScopeResolver
 				$leftResult->isAlwaysTerminating(),
 				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
 				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
 				static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
 			);
 			return $result;

@@ -2685,7 +2685,19 @@ class NodeScopeResolver
 						$scope = $scope->exitExpressionAssign($expr->expr);
 					}
 
-					return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+					$truthyScopeCallback = null;
+					$falseyScopeCallback = null;
+					if (
+						$expr->expr instanceof BooleanAnd
+						|| $expr->expr instanceof BinaryOp\LogicalAnd
+						|| $expr->expr instanceof BooleanOr
+						|| $expr->expr instanceof BinaryOp\LogicalOr
+					) {
+						$truthyScopeCallback = static fn (): MutatingScope => $result->getTruthyScope();
+						$falseyScopeCallback = static fn (): MutatingScope => $result->getFalseyScope();
+					}
+
+					return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $truthyScopeCallback, $falseyScopeCallback);
 				},
 				true,
 			);
@@ -6177,6 +6189,25 @@ class NodeScopeResolver
 					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+				}
+
+				$truthyScopeForCertainty = $result->getTruthyScope();
+				foreach ($truthyScopeForCertainty->getDefinedVariables() as $definedVarName) {
+					if ($definedVarName === $var->name) {
+						continue;
+					}
+					if ($scope->hasVariableType($definedVarName)->yes()) {
+						continue;
+					}
+					$conditionalExpressions['$' . $definedVarName] ??= [];
+					$holder = new ConditionalExpressionHolder(
+						['$' . $var->name => ExpressionTypeHolder::createYes(new Variable($var->name), $truthyType)],
+						ExpressionTypeHolder::createYes(
+							new Variable($definedVarName),
+							$truthyScopeForCertainty->getVariableType($definedVarName),
+						),
+					);
+					$conditionalExpressions['$' . $definedVarName][$holder->getKey()] = $holder;
 				}
 
 				$this->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);

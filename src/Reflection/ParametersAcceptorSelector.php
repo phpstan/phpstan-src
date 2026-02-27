@@ -516,7 +516,36 @@ final class ParametersAcceptorSelector
 			}
 			if ($originalArg->unpack) {
 				$unpack = true;
-				$types[$index] = $type->getIterableValueType();
+				$constantArrays = $type->getConstantArrays();
+				$expanded = false;
+				if (count($constantArrays) > 0) {
+					$allStringKeys = true;
+					foreach ($constantArrays as $constantArray) {
+						foreach ($constantArray->getKeyTypes() as $keyType) {
+							if (!$keyType->isString()->yes()) {
+								$allStringKeys = false;
+								break 2;
+							}
+						}
+					}
+					if ($allStringKeys) {
+						foreach ($constantArrays as $constantArray) {
+							foreach ($constantArray->getKeyTypes() as $j => $keyType) {
+								$keyName = $keyType->getValue();
+								if (!isset($types[$keyName])) {
+									$types[$keyName] = $constantArray->getValueTypes()[$j];
+								} else {
+									$types[$keyName] = TypeCombinator::union($types[$keyName], $constantArray->getValueTypes()[$j]);
+								}
+							}
+						}
+						$hasName = true;
+						$expanded = true;
+					}
+				}
+				if (!$expanded) {
+					$types[$index] = $type->getIterableValueType();
+				}
 			} else {
 				$types[$index] = $type;
 			}

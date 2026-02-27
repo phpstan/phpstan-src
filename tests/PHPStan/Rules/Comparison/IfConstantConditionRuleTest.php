@@ -200,5 +200,4 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7699.php'], []);
 	}
 
-
 }

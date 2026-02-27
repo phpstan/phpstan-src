@@ -513,5 +513,4 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9503.php'], []);
 	}
 
-
 }

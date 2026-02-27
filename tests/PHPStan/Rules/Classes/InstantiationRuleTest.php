@@ -20,6 +20,8 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class InstantiationRuleTest extends RuleTestCase
 {
 
+	private bool $checkExplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -27,7 +29,7 @@ class InstantiationRuleTest extends RuleTestCase
 		return new InstantiationRule(
 			$container,
 			$reflectionProvider,
-			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, false, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, true),
 				new ClassForbiddenNameCheck($container),
@@ -568,6 +570,13 @@ class InstantiationRuleTest extends RuleTestCase
 	public function testBug14097(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14097.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13440(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13440.php'], []);
 	}
 
 	public function testNewStaticWithConsistentConstructor(): void

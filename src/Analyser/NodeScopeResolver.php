@@ -208,6 +208,7 @@ use TypeError;
 use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
+use function array_flip;
 use function array_key_exists;
 use function array_key_last;
 use function array_keys;
@@ -3049,7 +3050,25 @@ class NodeScopeResolver
 
 			if (
 				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['natcasesort', 'natsort', 'arsort', 'asort', 'ksort', 'krsort', 'uasort', 'uksort'], true)
+				&& in_array($functionReflection->getName(), ['ksort', 'krsort'], true)
+				&& count($normalizedExpr->getArgs()) >= 1
+			) {
+				$arrayArg = $normalizedExpr->getArgs()[0]->value;
+				$reverse = $functionReflection->getName() === 'krsort';
+
+				$scope = $this->processVirtualAssign(
+					$scope,
+					$storage,
+					$stmt,
+					$arrayArg,
+					new NativeTypeExpr($this->getArrayKsortFunctionType($scope->getType($arrayArg), $reverse), $this->getArrayKsortFunctionType($scope->getNativeType($arrayArg), $reverse)),
+					$nodeCallback,
+				)->getScope();
+			}
+
+			if (
+				$functionReflection !== null
+				&& in_array($functionReflection->getName(), ['natcasesort', 'natsort', 'arsort', 'asort', 'uasort', 'uksort'], true)
 				&& count($normalizedExpr->getArgs()) >= 1
 			) {
 				$arrayArg = $normalizedExpr->getArgs()[0]->value;
@@ -4719,6 +4738,81 @@ class NodeScopeResolver
 						$constantArray->getNextAutoIndexes(),
 						$constantArray->getOptionalKeys(),
 						$constantArray->isList()->and(TrinaryLogic::createMaybe()),
+					);
+				}
+
+				return TypeCombinator::union(...$types);
+			}
+
+			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
+			if ($isIterableAtLeastOnce->yes()) {
+				$newArrayType = new IntersectionType([$newArrayType, new NonEmptyArrayType()]);
+			}
+
+			return $newArrayType;
+		});
+	}
+
+	private function getArrayKsortFunctionType(Type $type, bool $reverse): Type
+	{
+		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
+		if ($isIterableAtLeastOnce->no()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce, $reverse): Type {
+			if ($type instanceof UnionType) {
+				return $traverse($type);
+			}
+
+			$constantArrays = $type->getConstantArrays();
+			if (count($constantArrays) > 0) {
+				$types = [];
+				foreach ($constantArrays as $constantArray) {
+					$keyTypes = $constantArray->getKeyTypes();
+					$valueTypes = $constantArray->getValueTypes();
+					$optionalKeys = $constantArray->getOptionalKeys();
+
+					$indices = array_keys($keyTypes);
+					usort($indices, static function (int $a, int $b) use ($keyTypes, $reverse): int {
+						$keyA = $keyTypes[$a]->getValue();
+						$keyB = $keyTypes[$b]->getValue();
+						$result = $keyA <=> $keyB;
+						return $reverse ? -$result : $result;
+					});
+
+					$sortedKeyTypes = [];
+					$sortedValueTypes = [];
+					$newOptionalKeys = [];
+					$optionalKeysSet = array_flip($optionalKeys);
+					foreach ($indices as $newIndex => $oldIndex) {
+						$sortedKeyTypes[] = $keyTypes[$oldIndex];
+						$sortedValueTypes[] = $valueTypes[$oldIndex];
+						if (!isset($optionalKeysSet[$oldIndex])) {
+							continue;
+						}
+
+						$newOptionalKeys[] = $newIndex;
+					}
+
+					$isList = TrinaryLogic::createNo();
+					$isSequential = true;
+					foreach ($sortedKeyTypes as $i => $keyType) {
+						if (!$keyType instanceof ConstantIntegerType || $keyType->getValue() !== $i) {
+							$isSequential = false;
+							break;
+						}
+					}
+					if ($isSequential) {
+						$isList = $constantArray->isList();
+					}
+
+					$types[] = new ConstantArrayType(
+						$sortedKeyTypes,
+						$sortedValueTypes,
+						$constantArray->getNextAutoIndexes(),
+						$newOptionalKeys,
+						$isList,
 					);
 				}
 

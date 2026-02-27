@@ -715,6 +715,14 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
+	/**
+	 * Removes or marks as optional the key(s) matching the given offset type from this constant array.
+	 *
+	 * By default, the method assumes an actual `unset()` call was made, which actively modifies the
+	 * array and weakens its list certainty to "maybe". However, in some contexts, such as the else
+	 * branch of an array_key_exists() check, the key is statically known to be absent without any
+	 * modification, so list certainty should be preserved as-is.
+	 */
 	public function unsetOffset(Type $offsetType, bool $preserveListCertainty = false): Type
 	{
 		$offsetType = $offsetType->toArrayKey();

@@ -58,6 +58,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ClassConstantAccessType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalType;
@@ -1188,9 +1189,13 @@ final class TypeNodeResolver
 				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
 			}
 
+			$isStaticKeyword = false;
 			if ($nameScope->getClassName() !== null) {
 				switch (strtolower($constExpr->className)) {
 					case 'static':
+						$isStaticKeyword = true;
+						$className = $nameScope->getClassName();
+						break;
 					case 'self':
 						$className = $nameScope->getClassName();
 						break;
@@ -1261,6 +1266,10 @@ final class TypeNodeResolver
 
 			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
 				return new EnumCaseObjectType($classReflection->getName(), $constantName);
+			}
+
+			if ($isStaticKeyword && !$classReflection->isFinal()) {
+				return new ClassConstantAccessType(new StaticType($classReflection), $constantName);
 			}
 
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);

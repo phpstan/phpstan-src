@@ -7,7 +7,12 @@ use PHPStan\PhpDoc\Tag\ReturnTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
+use function file_put_contents;
+use function microtime;
 use function realpath;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
 
 class FileTypeMapperTest extends PHPStanTestCase
 {
@@ -194,6 +199,78 @@ class FileTypeMapperTest extends PHPStanTestCase
 		/** @var ReturnTag $returnTag */
 		$returnTag = $resolved->getReturnTag();
 		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
+	}
+
+	public function testLargeStubFileLazyPhpDocParsing(): void
+	{
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		// Generate a large stub file with many PHPDoc comments, simulating
+		// WordPress-style stubs where a single file declares many functions.
+		$tmpFile = tempnam(sys_get_temp_dir(), 'phpstan_stub_perf_');
+		if ($tmpFile === false) {
+			throw new ShouldNotHappenException();
+		}
+		$tmpFile .= '.php';
+
+		try {
+			$code = "<?php declare(strict_types = 1);\n\nnamespace StubPhpDocPerformance;\n\n";
+
+			// 10000 functions with complex PHPDocs but no template/type-alias tags
+			for ($i = 1; $i <= 10000; $i++) {
+				$code .= "/**\n";
+				$code .= " * @param array<string, array<int, string>> \$param1\n";
+				$code .= " * @param callable(int, string): array<string, mixed> \$param2\n";
+				$code .= " * @param list<array{id: int, name: string, data: array<string, mixed>}> \$param3\n";
+				$code .= " * @return array<int, array{key: string, value: mixed, metadata: array<string, string>}>\n";
+				$code .= " */\n";
+				$code .= "function stub_{$i}(array \$param1, callable \$param2, array \$param3): array {}\n\n";
+			}
+
+			// A class with @template - this PHPDoc must still be parsed
+			$code .= "/**\n * @template T\n */\n";
+			$code .= "class GenericContainer\n{\n";
+			$code .= "    /** @var T */\n    private \$value;\n\n";
+			$code .= "    /** @param T \$value */\n";
+			$code .= "    public function __construct(\$value) { \$this->value = \$value; }\n\n";
+			$code .= "    /** @return T */\n";
+			$code .= "    public function getValue() { return \$this->value; }\n";
+			$code .= "}\n";
+
+			file_put_contents($tmpFile, $code);
+
+			$start = microtime(true);
+
+			// Resolve the template class - should work despite 10000 other PHPDocs in file
+			$resolved = $fileTypeMapper->getResolvedPhpDoc(
+				$tmpFile,
+				'StubPhpDocPerformance\\GenericContainer',
+				null,
+				'getValue',
+				'/** @return T */',
+			);
+
+			$elapsed = microtime(true) - $start;
+
+			$returnTag = $resolved->getReturnTag();
+			$this->assertNotNull($returnTag);
+			$this->assertSame(
+				'T (class StubPhpDocPerformance\GenericContainer, parameter)',
+				$returnTag->getType()->describe(VerbosityLevel::precise()),
+			);
+
+			// With lazy PHPDoc parsing, only PHPDocs with @template or type-alias
+			// tags are parsed during name scope map creation. Without the optimization,
+			// all 10000+ PHPDocs must be parsed, taking >2 seconds on typical hardware.
+			$this->assertLessThan(
+				3.0,
+				$elapsed,
+				'FileTypeMapper should skip PHPDoc parsing for entries without template/type-alias tags',
+			);
+		} finally {
+			@unlink($tmpFile);
+		}
 	}
 
 	public function testFilesWithIdenticalPhpDocsUsingDifferentAliases(): void

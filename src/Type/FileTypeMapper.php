@@ -485,7 +485,7 @@ final class FileTypeMapper
 					|| ($node instanceof Node\PropertyHook && $node->getAttribute('propertyName') !== null)
 				) {
 					$docComment = GetLastDocComment::forNode($node);
-					if ($docComment !== null) {
+					if ($docComment !== null && $this->shouldParseDocComment($docComment)) {
 						$phpDocNode = $this->phpDocStringResolver->resolve($docComment);
 					}
 				}
@@ -749,6 +749,16 @@ final class FileTypeMapper
 		}
 
 		return $resolved;
+	}
+
+	private function shouldParseDocComment(string $docComment): bool
+	{
+		return str_contains($docComment, '@template')
+			|| str_contains($docComment, '-template')
+			|| str_contains($docComment, '@phpstan-type')
+			|| str_contains($docComment, '@psalm-type')
+			|| str_contains($docComment, '@phan-type')
+			|| str_contains($docComment, 'import-type');
 	}
 
 	/**

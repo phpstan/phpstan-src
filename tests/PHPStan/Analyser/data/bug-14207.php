@@ -31,7 +31,7 @@ class HelloWorld
 				: "{$tag_name->namespace} {$tag_name->node_name}";
 		}
 
-		assertType('non-falsy-string|uppercase-string', $tag_name);
+		assertType('non-falsy-string|uppercase-string', $tag_name); // should be string
 
 		$x = (
 			'ADDRESS' === $tag_name ||
@@ -144,7 +144,9 @@ class HelloWorld
 		);
 
 		assertType('bool', $x);
-		assertType('non-falsy-string|uppercase-string', $tag_name);
+		if ($x) {
+			assertType("'a1'|'a2'|'a3'|'a4'|'a5'|'a6'|'a7'|'a8'|'a9'|'ADDRESS'|'APPLET'|'AREA'|'ARTICLE'|'ASIDE'|'BASE'|'BASEFONT'|'BGSOUND'|'BLOCKQUOTE'|'BODY'|'BR'|'BUTTON'|'CAPTION'|'CENTER'|'COL'|'COLGROUP'|'DD'|'DETAILS'|'DIR'|'DIV'|'DL'|'DT'|'EMBED'|'FIELDSET'|'FIGCAPTION'|'FIGURE'|'FOOTER'|'FORM'|'FRAME'|'FRAMESET'|'H1'|'H2'|'H3'|'H4'|'H5'|'H6'|'HEAD'|'HEADER'|'HGROUP'|'HR'|'HTML'|'IFRAME'|'IMG'|'INPUT'|'KEYGEN'|'LI'|'LINK'|'LISTING'|'MAIN'|'MARQUEE'|'math ANNOTATION-XML'|'math MI'|'math MN'|'math MO'|'math MS'|'math MTEXT'|'MENU'|'META'|'NAV'|'NOEMBED'|'NOFRAMES'|'NOSCRIPT'|'OBJECT'|'OL'|'P'|'PARAM'|'PLAINTEXT'|'PRE'|'SCRIPT'|'SEARCH'|'SECTION'|'SELECT'|'SOURCE'|'STYLE'|'SUMMARY'|'svg DESC'|'svg FOREIGNOBJECT'|'svg TITLE'|'TABLE'|'TBODY'|'TD'|'TEMPLATE'|'TEXTAREA'|'TFOOT'|'TH'|'THEAD'|'TITLE'|'TR'|'TRACK'|'UL'|'WBR'|'XMP'", $tag_name);
+		}
 
 		return $x;
 	}

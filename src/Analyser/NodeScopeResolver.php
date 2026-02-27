@@ -1525,7 +1525,7 @@ class NodeScopeResolver
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
-			$this->callNodeCallback($nodeCallback, new BreaklessWhileLoopNode($stmt, $finalScopeResult->toPublic()->getExitPoints()), $bodyScopeMaybeRan, $storage);
+			$this->callNodeCallback($nodeCallback, new BreaklessWhileLoopNode($stmt, $finalScopeResult->toPublic()->getExitPoints(), $finalScopeResult->hasYield()), $bodyScopeMaybeRan, $storage);
 
 			if ($alwaysIterates) {
 				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
@@ -1607,7 +1607,7 @@ class NodeScopeResolver
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 			}
 
-			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints()), $bodyScope, $storage);
+			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints(), $bodyScopeResult->hasYield()), $bodyScope, $storage);
 
 			if ($alwaysIterates) {
 				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;

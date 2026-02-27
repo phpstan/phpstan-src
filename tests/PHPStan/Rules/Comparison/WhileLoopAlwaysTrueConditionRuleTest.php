@@ -54,4 +54,18 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/while-loop-true-php81.php'], []);
 	}
 
+	public function testBug6189(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6189.php'], [
+			[
+				'While loop condition is always true.',
+				33,
+			],
+			[
+				'While loop condition is always true.',
+				44,
+			],
+		]);
+	}
+
 }

@@ -16,6 +16,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -201,6 +202,7 @@ final class OverridingMethodRule implements Rule
 
 		$realPrototype = $method->getPrototype();
 
+		$tentativeReturnTypeErrorReported = false;
 		if (
 			$realPrototype instanceof MethodPrototypeReflection
 			&& $this->phpVersion->hasTentativeReturnTypes()
@@ -209,6 +211,7 @@ final class OverridingMethodRule implements Rule
 			&& count($prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
 		) {
 			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($realPrototype->getTentativeReturnType(), $method->getNativeReturnType(), true)) {
+				$tentativeReturnTypeErrorReported = true;
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),
@@ -225,6 +228,39 @@ final class OverridingMethodRule implements Rule
 			}
 		}
 
+		if (
+			!$tentativeReturnTypeErrorReported
+			&& $this->phpVersion->hasTentativeReturnTypes()
+			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
+		) {
+			$parentNativeMethod = $prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName());
+			if (
+				$parentNativeMethod->hasTentativeReturnType()
+				&& count($parentNativeMethod->getAttributes('ReturnTypeWillChange')) === 0
+			) {
+				$parentTentativeReturnType = TypehintHelper::decideTypeFromReflection(
+					$parentNativeMethod->getTentativeReturnType(),
+					selfClass: $prototypeDeclaringClass,
+				);
+				if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($parentTentativeReturnType, $method->getNativeReturnType(), true)) {
+					$tentativeReturnTypeErrorReported = true;
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
+						$methodReturnType->describe(VerbosityLevel::typeOnly()),
+						$method->getDeclaringClass()->getDisplayName(),
+						$method->getName(),
+						$parentTentativeReturnType->describe(VerbosityLevel::typeOnly()),
+						$prototypeDeclaringClass->getDisplayName(true),
+						$prototype->getName(),
+					))
+						->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')
+						->nonIgnorable()
+						->identifier('method.tentativeReturnType')
+						->build();
+				}
+			}
+		}
+
 		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, false));
 
 		if (!$prototypeVariant instanceof ExtendedFunctionVariant) {
@@ -234,8 +270,9 @@ final class OverridingMethodRule implements Rule
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 		$reportReturnType = true;
 		if ($this->phpVersion->hasTentativeReturnTypes()) {
-			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection
-				|| $realPrototype->getTentativeReturnType() === null
+			$hasTentativeReturnType = ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->getTentativeReturnType() !== null)
+				|| $prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->hasTentativeReturnType();
+			$reportReturnType = !$hasTentativeReturnType
 				|| (is_bool($prototype->isBuiltin()) ? !$prototype->isBuiltin() : $prototype->isBuiltin()->no());
 		} else {
 			if ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->isInternal()) {

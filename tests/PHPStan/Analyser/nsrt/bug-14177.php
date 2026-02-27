@@ -12,7 +12,7 @@ class HelloWorld
 	public function testList(array $b): void
 	{
 		if (array_key_exists(3, $b)) {
-			assertType('list{0: string, 1: string, 2?: string, 3: string}', $b);
+			assertType('array{string, string, string, string}', $b);
 		} else {
 			assertType('array{0: string, 1: string, 2?: string}', $b);
 		}

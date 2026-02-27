@@ -499,6 +499,22 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testIssetConstantArray(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/isset-constant-array.php'], [
+			[
+				'Offset 2 on array{0: string, 1: string, 2: string, 3: string, 4?: string} in isset() always exists and is not nullable.',
+				13,
+			],
+			[
+				'Offset 3 on array{string, string, string, string, string} in isset() always exists and is not nullable.',
+				17,
+			],
+		]);
+	}
+
 	public function testBug10640(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

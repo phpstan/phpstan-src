@@ -3,13 +3,16 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_merge;
 
 final class SpecifiedTypes
 {
+	private const MAX_SURE_NOT_TYPES = 8;
 
 	private bool $overwrite = false;
 
@@ -176,6 +179,10 @@ final class SpecifiedTypes
 
 		foreach ($this->sureNotTypes as $exprString => [$exprNode, $type]) {
 			if (!isset($other->sureNotTypes[$exprString])) {
+				continue;
+			}
+
+			if ($type instanceof UnionType && count($type->getTypes()) >= self::MAX_SURE_NOT_TYPES) {
 				continue;
 			}
 

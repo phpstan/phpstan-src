@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /**
@@ -285,6 +287,23 @@ trait TemplateTypeTrait
 			return (new TemplateTypeMap([
 				$this->name => $receivedType,
 			]))->union($map);
+		}
+
+		if ($receivedType instanceof BenevolentUnionType) {
+			$matchingTypes = [];
+			foreach ($receivedType->getTypes() as $innerType) {
+				if (!$resolvedBound->isSuperTypeOf($innerType)->yes()) {
+					continue;
+				}
+
+				$matchingTypes[] = $innerType;
+			}
+			if (count($matchingTypes) > 0) {
+				$filteredType = TypeCombinator::union(...$matchingTypes);
+				return (new TemplateTypeMap([
+					$this->name => $filteredType,
+				]))->union($map);
+			}
 		}
 
 		return $map;

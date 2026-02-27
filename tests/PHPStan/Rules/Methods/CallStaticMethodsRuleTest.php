@@ -931,6 +931,15 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13556.php'], []);
 	}
 
+	public function testBug9732(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9732.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testPipeOperator(): void
 	{

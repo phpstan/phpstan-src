@@ -13,7 +13,7 @@ use function count;
 final class SpecifiedTypes
 {
 
-	private const MAX_SURE_NOT_TYPES = 8;
+	private const MAX_ADDED_TYPES = 8;
 
 	private bool $overwrite = false;
 
@@ -172,6 +172,10 @@ final class SpecifiedTypes
 				continue;
 			}
 
+			if ($type instanceof UnionType && count($type->getTypes()) >= self::MAX_ADDED_TYPES) {
+				continue;
+			}
+
 			$sureTypeUnion[$exprString] = [
 				$exprNode,
 				TypeCombinator::intersect($type, $other->sureTypes[$exprString][1]),
@@ -183,7 +187,7 @@ final class SpecifiedTypes
 				continue;
 			}
 
-			if ($type instanceof UnionType && count($type->getTypes()) >= self::MAX_SURE_NOT_TYPES) {
+			if ($type instanceof UnionType && count($type->getTypes()) >= self::MAX_ADDED_TYPES) {
 				continue;
 			}
 

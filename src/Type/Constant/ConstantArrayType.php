@@ -1598,7 +1598,7 @@ class ConstantArrayType implements Type
 			return false;
 		}
 
-		if (count($this->optionalKeys) === 2) {
+		if (count($this->optionalKeys) > 1) {
 			return true;
 		}
 

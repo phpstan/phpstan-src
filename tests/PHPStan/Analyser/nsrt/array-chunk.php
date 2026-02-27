@@ -70,7 +70,7 @@ class Foo
 	 */
 	function testLimits(array $arr, int $oneToFour, int $tooBig) {
 		/** @var array{a: 0, b?: 1, c: 2, d: 3} $arr */
-		assertType('array{0: array{0: 0, 1?: 1|2, 2?: 2|3, 3?: 3}, 1?: list{0?: 2|3, 1?: 3}}|array{array{0}, list{0?: 1|2, 1?: 2}, list{0?: 2|3, 1?: 3}, array{0?: 3}}', array_chunk($arr, $oneToFour));
+		assertType('array{0: list{0: 0, 1?: 1|2, 2?: 2|3, 3?: 3}, 1?: list{0?: 2|3, 1?: 3}}|array{array{0}, list{0?: 1|2, 1?: 2}, list{0?: 2|3, 1?: 3}, array{0?: 3}}', array_chunk($arr, $oneToFour));
 		assertType('non-empty-list<non-empty-list<0|1|2|3>>', array_chunk($arr, $tooBig));
 	}
 

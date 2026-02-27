@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -79,6 +80,10 @@ class NeverType implements CompoundType
 	{
 		if ($type instanceof self) {
 			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($type instanceof TemplateType) {
+			return IsSuperTypeOfResult::createMaybe();
 		}
 
 		return IsSuperTypeOfResult::createNo();

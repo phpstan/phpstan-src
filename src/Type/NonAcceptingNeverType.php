@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Generic\TemplateType;
+
 /** @api */
 class NonAcceptingNeverType extends NeverType
 {
@@ -18,6 +20,10 @@ class NonAcceptingNeverType extends NeverType
 			return IsSuperTypeOfResult::createYes();
 		}
 		if ($type instanceof parent) {
+			return IsSuperTypeOfResult::createMaybe();
+		}
+
+		if ($type instanceof TemplateType) {
 			return IsSuperTypeOfResult::createMaybe();
 		}
 

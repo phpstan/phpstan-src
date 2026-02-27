@@ -3401,11 +3401,18 @@ class NodeScopeResolver
 				$this->storeBeforeScope($storage, $arg->value, $scopeToPass);
 			} else {
 				$exprType = $scope->getType($arg->value);
+				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
+				if ($enterExpressionAssignForByRef) {
+					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
+				}
 				$exprResult = $this->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context->enterDeep());
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $exprResult->isAlwaysTerminating();
 				$scope = $exprResult->getScope();
+				if ($enterExpressionAssignForByRef) {
+					$scope = $scope->exitExpressionAssign($arg->value);
+				}
 				$hasYield = $hasYield || $exprResult->hasYield();
 
 				if ($exprType->isCallable()->yes()) {

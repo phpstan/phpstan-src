@@ -223,4 +223,10 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/boolean-not-report-always-true-last-condition.php'], $expectedErrors);
 	}
 
+	public function testBug5984(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5984.php'], []);
+	}
+
 }

@@ -748,8 +748,12 @@ class ConstantArrayType implements Type
 					$newOptionalKeys,
 					$this->isList,
 					in_array($i, $this->optionalKeys, true),
-					$preserveListCertainty,
 				);
+				if (!$preserveListCertainty) {
+					$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+				} elseif ($this->isList->yes() && $newIsList->no()) {
+					return new NeverType();
+				}
 
 				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
 			}
@@ -791,8 +795,12 @@ class ConstantArrayType implements Type
 				$optionalKeys,
 				$this->isList,
 				count($optionalKeys) === count($this->optionalKeys),
-				$preserveListCertainty,
 			);
+			if (!$preserveListCertainty) {
+				$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+			} elseif ($this->isList->yes() && $newIsList->no()) {
+				return new NeverType();
+			}
 
 			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 		}
@@ -817,8 +825,12 @@ class ConstantArrayType implements Type
 			$optionalKeys,
 			$this->isList,
 			count($optionalKeys) === count($this->optionalKeys),
-			$preserveListCertainty,
 		);
+		if (!$preserveListCertainty) {
+			$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+		} elseif ($this->isList->yes() && $newIsList->no()) {
+			return new NeverType();
+		}
 
 		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 	}
@@ -830,7 +842,7 @@ class ConstantArrayType implements Type
 	 * @param list<ConstantIntegerType|ConstantStringType> $newKeyTypes
 	 * @param int[] $newOptionalKeys
 	 */
-	private static function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey, bool $preserveListCertainty): TrinaryLogic
+	private static function isListAfterUnset(array $newKeyTypes, array $newOptionalKeys, TrinaryLogic $arrayIsList, bool $unsetOptionalKey): TrinaryLogic
 	{
 		if (!$unsetOptionalKey || $arrayIsList->no()) {
 			return TrinaryLogic::createNo();
@@ -854,7 +866,7 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		return $preserveListCertainty ? $arrayIsList : TrinaryLogic::createMaybe();
+		return $arrayIsList;
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type

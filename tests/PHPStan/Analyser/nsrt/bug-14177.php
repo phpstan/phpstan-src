@@ -200,4 +200,25 @@ class HelloWorld2
 		assertType('bool', array_is_list($a));
 		assertType('false', array_is_list($b));
 	}
+
+	/**
+	 * @param list{0?: string, 1?: string, 2?: string} $l
+	 */
+	public function testFoo($l): void
+	{
+		if (array_key_exists(2, $l, true)) {
+			assertType('true', array_is_list($l));
+			assertType('list{0?: string, 1?: string, 2: string}', $l);
+			if (array_key_exists(1, $l, true)) {
+				assertType('true', array_is_list($l));
+				assertType('list{0?: string, 1: string, 2: string}', $l);
+			} else {
+				assertType('true', array_is_list($l));
+				assertType('*NEVER*', $l);
+			}
+		} else {
+			assertType('true', array_is_list($l));
+			assertType('list{0?: string, 1?: string}', $l);
+		}
+	}
 }

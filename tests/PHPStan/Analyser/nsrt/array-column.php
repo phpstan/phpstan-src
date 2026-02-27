@@ -158,8 +158,8 @@ class ArrayColumnTest
 	/** @param array{0?: array{column: 'foo1', key: 'bar1'}, 1?: array{column: 'foo2', key: 'bar2'}} $array */
 	public function testConstantArray13(array $array): void
 	{
-		assertType("array{0?: 'foo1'|'foo2', 1?: 'foo2'}", array_column($array, 'column'));
-		assertType("array{0?: 'foo1'|'foo2', 1?: 'foo2'}", array_column($array, 'column', null));
+		assertType("list{0?: 'foo1'|'foo2', 1?: 'foo2'}", array_column($array, 'column'));
+		assertType("list{0?: 'foo1'|'foo2', 1?: 'foo2'}", array_column($array, 'column', null));
 		assertType("array{bar1?: 'foo1', bar2?: 'foo2'}", array_column($array, 'column', 'key'));
 	}
 

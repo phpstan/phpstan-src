@@ -32,7 +32,7 @@ function foobar2(mixed $data): void
 		throw new \RuntimeException();
 	}
 
-	assertType("non-empty-array<mixed, mixed>&hasOffsetValue('value', string)", $data);
+	assertType("non-empty-array&hasOffsetValue('value', string)", $data);
 
 	foo($data);
 }

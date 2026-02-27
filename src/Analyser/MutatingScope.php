@@ -987,19 +987,23 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($node->left)->isSmallerThan($this->getType($node->right), $this->phpVersion)->toBooleanType();
+			return $this->resolveComplementaryComparison($node, new Expr\BinaryOp\GreaterOrEqual($node->left, $node->right))
+				?? $this->getType($node->left)->isSmallerThan($this->getType($node->right), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
-			return $this->getType($node->left)->isSmallerThanOrEqual($this->getType($node->right), $this->phpVersion)->toBooleanType();
+			return $this->resolveComplementaryComparison($node, new Expr\BinaryOp\Greater($node->left, $node->right))
+				?? $this->getType($node->left)->isSmallerThanOrEqual($this->getType($node->right), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($node->right)->isSmallerThan($this->getType($node->left), $this->phpVersion)->toBooleanType();
+			return $this->resolveComplementaryComparison($node, new Expr\BinaryOp\SmallerOrEqual($node->left, $node->right))
+				?? $this->getType($node->right)->isSmallerThan($this->getType($node->left), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
-			return $this->getType($node->right)->isSmallerThanOrEqual($this->getType($node->left), $this->phpVersion)->toBooleanType();
+			return $this->resolveComplementaryComparison($node, new Expr\BinaryOp\Smaller($node->left, $node->right))
+				?? $this->getType($node->right)->isSmallerThanOrEqual($this->getType($node->left), $this->phpVersion)->toBooleanType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\Equal) {
@@ -1607,6 +1611,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $type;
+	}
+
+	private function resolveComplementaryComparison(Expr\BinaryOp $node, Expr\BinaryOp $complement): ?Type
+	{
+		$complementKey = $this->getNodeKey($complement);
+		if (!array_key_exists($complementKey, $this->expressionTypes)) {
+			return null;
+		}
+
+		$complementType = $this->expressionTypes[$complementKey]->getType();
+		if ($complementType->isTrue()->yes()) {
+			return new ConstantBooleanType(false);
+		}
+		if ($complementType->isFalse()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		return null;
 	}
 
 	private function transformVoidToNull(Type $type, Node $node): Type

@@ -19,6 +19,7 @@ use PHPStan\Generics\FunctionsAssertType\C;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -4215,6 +4216,44 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				StringType::class,
 				'string',
+			],
+			[
+				[
+					new ConstantArrayType(
+						[new ConstantStringType('a')],
+						[new ConstantStringType('foo')],
+					),
+					new AccessoryArrayListType(),
+				],
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				[
+					new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[new ConstantStringType('foo'), new ConstantStringType('bar')],
+						[2],
+						isList: TrinaryLogic::createMaybe(),
+					),
+					new AccessoryArrayListType(),
+				],
+				ConstantArrayType::class,
+				'array{\'foo\', \'bar\'}',
+			],
+			[
+				[
+					new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[new ConstantStringType('foo'), new ConstantStringType('bar')],
+						[2],
+						[0, 1],
+						TrinaryLogic::createMaybe(),
+					),
+					new AccessoryArrayListType(),
+				],
+				ConstantArrayType::class,
+				'list{0?: \'foo\', 1?: \'bar\'}',
 			],
 		];
 

@@ -31,7 +31,7 @@ class HelloWorld
 				: "{$tag_name->namespace} {$tag_name->node_name}";
 		}
 
-		assertType('non-falsy-string|uppercase-string', $tag_name); // should be string
+		assertType('non-falsy-string|uppercase-string', $tag_name);
 
 		$x = (
 			'ADDRESS' === $tag_name ||

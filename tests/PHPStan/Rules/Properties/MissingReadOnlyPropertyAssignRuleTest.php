@@ -342,4 +342,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.4')]
+	public function testBug12253(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12253.php'], []);
+	}
+
 }

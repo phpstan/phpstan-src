@@ -196,6 +196,36 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
 	}
 
+	public function testBug12639TraitPropertyPhpDocResolution(): void
+	{
+		self::createReflectionProvider();
+
+		/** @var FileTypeMapper $fileTypeMapper */
+		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
+
+		$classRealpath = realpath(__DIR__ . '/data/bug-12639-class.php');
+		if ($classRealpath === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		$resolved = $fileTypeMapper->getResolvedPhpDoc(
+			$classRealpath,
+			'Bug12639Separate\OtherPlace\StandardAccount',
+			'Bug12639Separate\Policy\BaseAccount',
+			null,
+			'/**
+ * @var ObjectRefT<Account>
+ */',
+		);
+
+		$varTags = $resolved->getVarTags();
+		$this->assertArrayHasKey(0, $varTags);
+		$this->assertSame(
+			'Bug12639Separate\Types\ObjectRefT<Bug12639Separate\Accounts\Account>',
+			$varTags[0]->getType()->describe(VerbosityLevel::precise()),
+		);
+	}
+
 	public function testFilesWithIdenticalPhpDocsUsingDifferentAliases(): void
 	{
 		/** @var FileTypeMapper $fileTypeMapper */

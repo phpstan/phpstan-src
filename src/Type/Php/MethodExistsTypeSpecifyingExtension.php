@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
@@ -20,6 +22,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\UnionType;
 use function count;
+use function ltrim;
 
 #[AutowiredService]
 final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -64,7 +67,7 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$objectType = $scope->getType($args[0]->value);
 		if ($objectType->isString()->yes()) {
 			if ($objectType->isClassString()->yes()) {
-				return $this->typeSpecifier->create(
+				$result = $this->typeSpecifier->create(
 					$args[0]->value,
 					new IntersectionType([
 						$objectType,
@@ -73,6 +76,31 @@ final class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyin
 					$context,
 					$scope,
 				);
+
+				if (!$args[0]->value instanceof ClassConstFetch) {
+					foreach ($objectType->getConstantStrings() as $constantString) {
+						$className = ltrim($constantString->getValue(), '\\');
+						if ($className === '') {
+							continue;
+						}
+						$classConstFetch = new Expr\ClassConstFetch(
+							new FullyQualified($className),
+							'class',
+						);
+						$classConstFetchType = $scope->getType($classConstFetch);
+						$result = $result->unionWith($this->typeSpecifier->create(
+							$classConstFetch,
+							new IntersectionType([
+								$classConstFetchType,
+								new HasMethodType($methodNameType->getValue()),
+							]),
+							$context,
+							$scope,
+						));
+					}
+				}
+
+				return $result;
 			}
 
 			return new SpecifiedTypes([], []);

@@ -600,6 +600,13 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug9592(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-9592.php'], []);
+	}
+
 	public function testBug1267(): void
 	{
 		$this->checkThisOnly = false;

@@ -492,21 +492,38 @@ final class TypeSpecifier
 				}
 			}
 
+			$leftExpr = $expr->left;
+			if ($leftExpr instanceof Expr\Cast) {
+				$castedType = $scope->getType($leftExpr);
+				$innerType = $scope->getType($leftExpr->expr);
+				if ($castedType->equals($innerType)) {
+					$leftExpr = $leftExpr->expr;
+				}
+			}
+			$rightExpr = $expr->right;
+			if ($rightExpr instanceof Expr\Cast) {
+				$castedType = $scope->getType($rightExpr);
+				$innerType = $scope->getType($rightExpr->expr);
+				if ($castedType->equals($innerType)) {
+					$rightExpr = $rightExpr->expr;
+				}
+			}
+
 			if ($context->true()) {
-				if (!$expr->left instanceof Node\Scalar) {
+				if (!$leftExpr instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(
-							$expr->left,
+							$leftExpr,
 							$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
 				}
-				if (!$expr->right instanceof Node\Scalar) {
+				if (!$rightExpr instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(
-							$expr->right,
+							$rightExpr,
 							$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
@@ -514,20 +531,20 @@ final class TypeSpecifier
 					);
 				}
 			} elseif ($context->false()) {
-				if (!$expr->left instanceof Node\Scalar) {
+				if (!$leftExpr instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(
-							$expr->left,
+							$leftExpr,
 							$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,
 						)->setRootExpr($expr),
 					);
 				}
-				if (!$expr->right instanceof Node\Scalar) {
+				if (!$rightExpr instanceof Node\Scalar) {
 					$result = $result->unionWith(
 						$this->create(
-							$expr->right,
+							$rightExpr,
 							$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
 							TypeSpecifierContext::createTruthy(),
 							$scope,

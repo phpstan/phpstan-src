@@ -1607,7 +1607,8 @@ class NodeScopeResolver
 				$alwaysIterates = $condBooleanType->isTrue()->yes();
 			}
 
-			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->toPublic()->getExitPoints()), $bodyScope, $storage);
+			$publicResult = $bodyScopeResult->toPublic();
+			$this->callNodeCallback($nodeCallback, new DoWhileLoopConditionNode($stmt->cond, $publicResult->getExitPoints(), $publicResult->getThrowPoints()), $bodyScope, $storage);
 
 			if ($alwaysIterates) {
 				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;

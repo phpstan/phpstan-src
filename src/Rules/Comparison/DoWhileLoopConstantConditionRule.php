@@ -54,6 +54,11 @@ final class DoWhileLoopConstantConditionRule implements Rule
 						return [];
 					}
 				}
+				foreach ($node->getThrowPoints() as $throwPoint) {
+					if ($throwPoint->isExplicit()) {
+						return [];
+					}
+				}
 			} else {
 				foreach ($node->getExitPoints() as $exitPoint) {
 					$statement = $exitPoint->getStatement();

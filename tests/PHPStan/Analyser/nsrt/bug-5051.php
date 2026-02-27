@@ -21,21 +21,46 @@ class HelloWorld
 
 		if ($update) {
 			assertType('object', $data);
+			assertType("'baz'", $foo);
+		} else {
+			assertType('null', $data);
+			assertType("'bar'", $foo);
 		}
+		assertType('object|null', $data);
+		assertType("'bar'|'baz'", $foo);
 	}
 
-	public function testWithBooleans(?object $data): void
+	/**
+	 * @param 1|2|3|10 $data
+	 */
+	public function testWithBooleans($data): void
 	{
-		if ($data === null) {
+		$foo = 1;
+		if ($data === 1 || $data === 2) {
 			$update = false;
 			$foo = false;
+		} elseif ($data === 3) {
+			$update = false;
+			$foo = true;
 		} else {
 			$update = true;
 			$foo = true;
 		}
 
 		if ($update) {
-			assertType('object', $data);
+			assertType('10', $data);
+			assertType('bool', $foo);
+		} else {
+			assertType('1|2|3', $data);
+			assertType('bool', $foo);
+		}
+
+		if ($foo) {
+			assertType('1|2|3|10', $data);
+			assertType('bool', $update);
+		} else {
+			assertType('1|2|3|10', $data);
+			assertType('bool', $update);
 		}
 	}
 

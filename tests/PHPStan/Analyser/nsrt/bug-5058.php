@@ -16,6 +16,7 @@ class test{
 			$errors['string'] = 'fail';
 		}
 
+		assertType('mixed', $string);
 		if(empty($errors) === false){
 			throw new Exception('Epic fail');
 		}

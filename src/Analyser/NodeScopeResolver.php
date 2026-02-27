@@ -1915,7 +1915,6 @@ class NodeScopeResolver
 				}
 
 				// explicit only
-				$onlyExplicitIsThrow = true;
 				if (count($matchingThrowPoints) === 0) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
@@ -1927,32 +1926,23 @@ class NodeScopeResolver
 							if (!$throwPoint->isExplicit()) {
 								continue;
 							}
-							$throwNode = $throwPoint->getNode();
-							if (
-								!$throwNode instanceof Expr\Throw_
-								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
-							) {
-								$onlyExplicitIsThrow = false;
-							}
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 						}
 					}
 				}
 
-				// implicit only
-				if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow) {
-					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
-						if ($throwPoint->isExplicit()) {
+				// implicit
+				foreach ($throwPoints as $throwPointIndex => $throwPoint) {
+					if ($throwPoint->isExplicit()) {
+						continue;
+					}
+
+					foreach ($catchTypes as $catchTypeItem) {
+						if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
 							continue;
 						}
 
-						foreach ($catchTypes as $catchTypeItem) {
-							if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->no()) {
-								continue;
-							}
-
-							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
-						}
+						$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 					}
 				}
 

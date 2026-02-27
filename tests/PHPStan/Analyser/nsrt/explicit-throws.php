@@ -26,7 +26,7 @@ class Foo
 			$a = 1;
 			$this->throwInvalidArgument();
 		} catch (\InvalidArgumentException $e) {
-			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 		}
 	}
 
@@ -38,7 +38,7 @@ class Foo
 			$this->throwInvalidArgument();
 			throw new \InvalidArgumentException();
 		} catch (\InvalidArgumentException $e) {
-			assertVariableCertainty(TrinaryLogic::createYes(), $a);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $a);
 		}
 	}
 

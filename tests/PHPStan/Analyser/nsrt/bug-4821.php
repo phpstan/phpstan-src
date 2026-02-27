@@ -16,7 +16,7 @@ class HelloWorld
 			return;
 		} catch (\ReflectionException $e) {
 			assertVariableCertainty(TrinaryLogic::createYes(), $object);
-			assertVariableCertainty(TrinaryLogic::createNo(), $method);
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $method);
 		}
 	}
 

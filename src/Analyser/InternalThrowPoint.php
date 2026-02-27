@@ -70,14 +70,6 @@ final class InternalThrowPoint
 		return $this->type;
 	}
 
-	/**
-	 * @return Node\Expr|Node\Stmt
-	 */
-	public function getNode()
-	{
-		return $this->node;
-	}
-
 	public function isExplicit(): bool
 	{
 		return $this->explicit;

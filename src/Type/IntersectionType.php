@@ -57,6 +57,7 @@ use function ksort;
 use function sprintf;
 use function strcasecmp;
 use function strlen;
+use function str_starts_with;
 use function substr;
 use function usort;
 

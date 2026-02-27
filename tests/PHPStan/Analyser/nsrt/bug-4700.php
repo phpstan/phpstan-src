@@ -19,7 +19,7 @@ function(array $array, int $count): void {
 	if (isset($array['e'])) $a[] = $array['e'];
 	if (count($a) >= $count) {
 		assertType('int<1, 5>', count($a));
-		assertType('array{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
+		assertType('list{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
 	} else {
 		assertType('0', count($a));
 		assertType('array{}', $a);
@@ -44,6 +44,6 @@ function(array $array, int $count): void {
 		assertType('list{0: mixed~null, 1: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a);
 	} else {
 		assertType('int<0, 5>', count($a)); // Could be int<0, 1>
-		assertType('array{}|array{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a); // Could be array{}|array{0: mixed~null}
+		assertType('array{}|list{0: mixed~null, 1?: mixed~null, 2?: mixed~null, 3?: mixed~null, 4?: mixed~null}', $a); // Could be array{}|array{0: mixed~null}
 	}
 };

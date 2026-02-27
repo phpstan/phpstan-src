@@ -448,7 +448,8 @@ class IntersectionType implements CompoundType
 					continue;
 				} elseif ($type instanceof ConstantArrayType) {
 					$description = $type->describe($level);
-					$descriptionWithoutKind = substr($description, strlen('array'));
+					$kind = str_starts_with($description, 'list') ? 'list' : 'array';
+					$descriptionWithoutKind = substr($description, strlen($kind));
 					$begin = $isList ? 'list' : 'array';
 					if ($isNonEmptyArray && !$type->isIterableAtLeastOnce()->yes()) {
 						$begin = 'non-empty-' . $begin;

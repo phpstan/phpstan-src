@@ -14,7 +14,7 @@ class HelloWorld
 		if (array_key_exists(3, $b)) {
 			assertType('list{0: string, 1: string, 2?: string, 3: string}', $b);
 		} else {
-			assertType('list{0: string, 1: string, 2?: string}', $b);
+			assertType('array{0: string, 1: string, 2?: string}', $b);
 		}
 		assertType('list{0: string, 1: string, 2?: string, 3?: string}', $b);
 	}

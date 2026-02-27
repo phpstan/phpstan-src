@@ -17,15 +17,15 @@ class Foo
 		if (rand(0, 1)) {
 			$a[] = 3;
 		}
-		assertType('array{0: 1, 1?: 2|3, 2?: 3}', $a);
+		assertType('list{0: 1, 1?: 2|3, 2?: 3}', $a);
 		if (rand(0, 1)) {
 			$a[] = 4;
 		}
-		assertType('array{0: 1, 1?: 2|3|4, 2?: 3|4, 3?: 4}', $a);
+		assertType('list{0: 1, 1?: 2|3|4, 2?: 3|4, 3?: 4}', $a);
 		if (rand(0, 1)) {
 			$a[] = 5;
 		}
-		assertType('array{0: 1, 1?: 2|3|4|5, 2?: 3|4|5, 3?: 4|5, 4?: 5}', $a);
+		assertType('list{0: 1, 1?: 2|3|4|5, 2?: 3|4|5, 3?: 4|5, 4?: 5}', $a);
 	}
 
 	public function doBar()

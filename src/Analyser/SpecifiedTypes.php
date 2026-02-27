@@ -3,15 +3,16 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_merge;
+use function count;
 
 final class SpecifiedTypes
 {
+
 	private const MAX_SURE_NOT_TYPES = 8;
 
 	private bool $overwrite = false;

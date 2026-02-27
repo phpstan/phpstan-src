@@ -1010,6 +1010,8 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Namespace_) {
 			if ($stmt->name !== null) {
 				$scope = $scope->enterNamespace($stmt->name->toString());
+			} else {
+				$scope = $scope->enterNamespace('');
 			}
 
 			$scope = $this->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context)->getScope();

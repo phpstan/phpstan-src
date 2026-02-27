@@ -4141,8 +4141,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			$conditionalExpression = new ConditionalExpressionHolder($variableTypeGuards, $holder);
-			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
+				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
+				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+			}
 		}
 
 		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
@@ -4150,8 +4152,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
-			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+			foreach ($typeGuards as $guardExprString => $guardHolder) {
+				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
+				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+			}
 		}
 
 		return $conditionalExpressions;

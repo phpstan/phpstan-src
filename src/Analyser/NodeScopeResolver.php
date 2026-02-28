@@ -3877,6 +3877,7 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			} else {

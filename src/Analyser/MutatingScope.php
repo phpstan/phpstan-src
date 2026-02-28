@@ -3833,7 +3833,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$newTypeHolder = $conditionalExpression->getTypeHolder();
+					if (array_key_exists($conditionalExprString, $specifiedExpressions) && $specifiedExpressions[$conditionalExprString]->getCertainty()->yes() && $newTypeHolder->getCertainty()->yes()) {
+						$specifiedExpressions[$conditionalExprString] = ExpressionTypeHolder::createYes(
+							$newTypeHolder->getExpr(),
+							TypeCombinator::intersect($specifiedExpressions[$conditionalExprString]->getType(), $newTypeHolder->getType()),
+						);
+					} else {
+						$specifiedExpressions[$conditionalExprString] = $newTypeHolder;
+					}
 				}
 			}
 		}

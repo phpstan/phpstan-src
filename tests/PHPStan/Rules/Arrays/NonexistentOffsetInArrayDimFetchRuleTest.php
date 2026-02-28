@@ -1168,11 +1168,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13770.php'], [
 			[
 				'Offset int<1, max> might not exist on non-empty-list<int>.',
-				40,
+				53,
 			],
 			[
 				'Offset int might not exist on list<int>.',
-				53,
+				66,
 			],
 		]);
 	}

@@ -19,6 +19,19 @@ class HelloWorld
 
 	/**
 	 * @param list<int> $array
+	 * @param positive-int $index
+	 */
+	public function positiveIntLessThanCountInversed(array $array, int $index): int
+	{
+		if (count($array) > $index) {
+			return $array[$index]; // should not report
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
 	 * @param int<0, max> $index
 	 */
 	public function nonNegativeIntLessThanCount(array $array, int $index): int

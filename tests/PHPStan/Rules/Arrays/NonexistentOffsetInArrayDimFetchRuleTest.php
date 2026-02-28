@@ -1175,7 +1175,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				66,
 			],
 			[
-				'Offset int might not exist on list<int>.',
+				'Offset int might not exist on array.',
 				75,
 			],
 		]);

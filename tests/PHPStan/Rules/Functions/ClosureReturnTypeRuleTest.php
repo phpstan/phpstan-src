@@ -13,9 +13,11 @@ use PHPStan\Testing\RuleTestCase;
 class ClosureReturnTypeRuleTest extends RuleTestCase
 {
 
+	private bool $checkNullables = true;
+
 	protected function getRule(): Rule
 	{
-		return new ClosureReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true)));
+		return new ClosureReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper(self::createReflectionProvider(), $this->checkNullables, false, true, false, false, false, true)));
 	}
 
 	public function testClosureReturnTypeRule(): void
@@ -126,6 +128,13 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 	public function testBug7220(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7220.php'], []);
+	}
+
+	public function testBug12008(): void
+	{
+		$this->checkNullables = false;
+
+		$this->analyse([__DIR__ . '/data/bug-12008.php'], []);
 	}
 
 	public function testBugFunctionMethodConstants(): void

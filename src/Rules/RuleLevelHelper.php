@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CallableType;
@@ -16,6 +17,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\SimultaneousTypeTraverser;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -87,15 +89,18 @@ final class RuleLevelHelper
 	private function transformAcceptedType(Type $acceptingType, Type $acceptedType): array
 	{
 		$checkForUnion = $this->checkUnionTypes;
-		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
+		$acceptedType = SimultaneousTypeTraverser::map($acceptedType, $acceptingType, function (Type $acceptedType, Type $acceptingType, callable $traverse) use (&$checkForUnion): Type {
 			if ($acceptedType instanceof CallableType) {
 				if ($acceptedType->isCommonCallable()) {
+					return $acceptedType;
+				}
+				if (!$acceptingType instanceof ParametersAcceptor) {
 					return $acceptedType;
 				}
 
 				return new CallableType(
 					$acceptedType->getParameters(),
-					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$traverse($this->transformCommonType($acceptedType->getReturnType()), $acceptingType->getReturnType()),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -109,9 +114,13 @@ final class RuleLevelHelper
 					return $acceptedType;
 				}
 
+				if (!$acceptingType instanceof ParametersAcceptor) {
+					return $acceptedType;
+				}
+
 				return new ClosureType(
 					$acceptedType->getParameters(),
-					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$traverse($this->transformCommonType($acceptedType->getReturnType()), $acceptingType->getReturnType()),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -128,21 +137,22 @@ final class RuleLevelHelper
 
 			if (
 				!$this->checkNullables
-				&& !$acceptingType instanceof NullType
-				&& !$acceptedType instanceof NullType
 				&& !$acceptedType instanceof BenevolentUnionType
+				&& !$acceptedType instanceof NullType
+				&& TypeCombinator::containsNull($acceptedType)
+				&& !TypeCombinator::containsNull($acceptingType)
 			) {
-				return $traverse(TypeCombinator::removeNull($acceptedType));
+				return $traverse(TypeCombinator::removeNull($acceptedType), $acceptingType);
 			}
 
 			if ($this->checkBenevolentUnionTypes) {
 				if ($acceptedType instanceof BenevolentUnionType) {
 					$checkForUnion = true;
-					return $traverse(TypeUtils::toStrictUnion($acceptedType));
+					return $traverse(TypeUtils::toStrictUnion($acceptedType), $acceptingType);
 				}
 			}
 
-			return $traverse($this->transformCommonType($acceptedType));
+			return $traverse($this->transformCommonType($acceptedType), $acceptingType);
 		});
 
 		return [$acceptedType, $checkForUnion];

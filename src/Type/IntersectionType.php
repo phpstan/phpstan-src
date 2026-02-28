@@ -1351,13 +1351,17 @@ class IntersectionType implements CompoundType
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
 	{
-		if ($this->isArray()->yes() && $right->isArray()->yes()) {
+		if ($this->isArray()->yes() && !$right->isArray()->no()) {
+			$rightArray = $right->isArray()->maybe()
+				? TypeCombinator::intersect($right, new ArrayType(new MixedType(), new MixedType()))
+				: $right;
+
 			$changed = false;
 			$newTypes = [];
 
 			foreach ($this->types as $innerType) {
-				$newKeyType = $cb($innerType->getIterableKeyType(), $right->getIterableKeyType());
-				$newValueType = $cb($innerType->getIterableValueType(), $right->getIterableValueType());
+				$newKeyType = $cb($innerType->getIterableKeyType(), $rightArray->getIterableKeyType());
+				$newValueType = $cb($innerType->getIterableValueType(), $rightArray->getIterableValueType());
 				if ($newKeyType === $innerType->getIterableKeyType() && $newValueType === $innerType->getIterableValueType()) {
 					$newTypes[] = $innerType;
 					continue;

@@ -771,11 +771,21 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type
 	{
-		if ($this->subtractedType === null) {
+		if (!$right instanceof SubtractableType) {
 			return $this;
 		}
 
-		return new self($this->classReflection);
+		$rightSubtractable = $right->getSubtractedType();
+		if ($this->subtractedType === null || $rightSubtractable === null) {
+			return $this;
+		}
+
+		$newSubtractedType = $cb($this->subtractedType, $rightSubtractable);
+		if ($newSubtractedType !== $this->subtractedType) {
+			return new self($this->classReflection, $newSubtractedType);
+		}
+
+		return $this;
 	}
 
 	public function subtract(Type $type): Type

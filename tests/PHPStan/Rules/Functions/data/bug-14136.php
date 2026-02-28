@@ -26,3 +26,11 @@ var_dump(boolval($xml));
 var_dump(boolval(gmp_init(42)));
 var_dump((bool) ($xml));
 var_dump((bool) (gmp_init(42)));
+
+// Union
+intval(rand(0,1) ? gmp_init(42) : 'abc');
+intval(rand(0,1) ? gmp_init(42) : []);
+intval(rand(0,1) ? gmp_init(42) : '123');
+(int) (rand(0,1) ? gmp_init(42) : 'abc');
+(int) (rand(0,1) ? gmp_init(42) : []);
+(int) (rand(0,1) ? gmp_init(42) : '123');

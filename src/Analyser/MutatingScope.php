@@ -5706,8 +5706,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$immediatelyInvokedArgs = $node->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
 		if ($arrayMapArgs !== null) {
 			$callableParameters = [];
+			$addNull = false;
+			if (count($arrayMapArgs) > 1) {
+				$expectedSize = null;
+				foreach ($arrayMapArgs as $funcCallArg) {
+					$argType = $this->getType($funcCallArg->value);
+					$arraySizes = $argType->getArraySize()->getConstantScalarValues();
+					if (count($arraySizes) !== 1) {
+						break;
+					}
+					$expectedSize ??= $arraySizes[0];
+					if ($expectedSize !== $arraySizes[0]) {
+						$addNull = true;
+						break;
+					}
+				}
+			}
 			foreach ($arrayMapArgs as $funcCallArg) {
-				$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				$type = $this->getType($funcCallArg->value)->getIterableValueType();
+				if ($addNull) {
+					$type = TypeCombinator::addNull($type);
+				}
+				$callableParameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 			}
 		} elseif ($immediatelyInvokedArgs !== null) {
 			foreach ($immediatelyInvokedArgs as $immediatelyInvokedArg) {

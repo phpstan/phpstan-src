@@ -86,6 +86,25 @@ final class ParametersAcceptorSelector
 		) {
 			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
+				$addNull = false;
+				if (count($arrayMapArgs) > 1) {
+					$allSizesKnown = true;
+					$expectedSize = null;
+					foreach ($arrayMapArgs as $arg) {
+						$argType = $scope->getType($arg->value);
+						$arraySizes = $argType->getArraySize()->getConstantScalarValues();
+						if (count($arraySizes) !== 1) {
+							$allSizesKnown = false;
+							break;
+						}
+						$expectedSize ??= $arraySizes[0];
+						if ($expectedSize !== $arraySizes[0]) {
+							$addNull = true;
+							break;
+						}
+					}
+				}
+
 				$callbackParameters = [];
 				foreach ($arrayMapArgs as $arg) {
 					$argType = $scope->getType($arg->value);
@@ -95,12 +114,20 @@ final class ParametersAcceptorSelector
 							foreach ($constantArrays as $constantArray) {
 								$valueTypes = $constantArray->getValueTypes();
 								foreach ($valueTypes as $valueType) {
-									$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($valueType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+									$iterableValueType = $scope->getIterableValueType($valueType);
+									if ($addNull) {
+										$iterableValueType = TypeCombinator::addNull($iterableValueType);
+									}
+									$callbackParameters[] = new DummyParameter('item', $iterableValueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 								}
 							}
 						}
 					} else {
-						$callbackParameters[] = new DummyParameter('item', $scope->getIterableValueType($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+						$iterableValueType = $scope->getIterableValueType($argType);
+						if ($addNull) {
+							$iterableValueType = TypeCombinator::addNull($iterableValueType);
+						}
+						$callbackParameters[] = new DummyParameter('item', $iterableValueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 					}
 				}
 

@@ -93,7 +93,7 @@ final class RuleLevelHelper
 					return $acceptedType;
 				}
 
-				return $this->transformCommonType(new CallableType(
+				return new CallableType(
 					$acceptedType->getParameters(),
 					$traverse($acceptedType->getReturnType()),
 					$acceptedType->isVariadic(),
@@ -101,7 +101,7 @@ final class RuleLevelHelper
 					$acceptedType->getResolvedTemplateTypeMap(),
 					$acceptedType->getTemplateTags(),
 					$acceptedType->isPure(),
-				));
+				);
 			}
 
 			if ($acceptedType instanceof ClosureType) {
@@ -109,7 +109,7 @@ final class RuleLevelHelper
 					return $acceptedType;
 				}
 
-				return $this->transformCommonType(new ClosureType(
+				return new ClosureType(
 					$acceptedType->getParameters(),
 					$traverse($acceptedType->getReturnType()),
 					$acceptedType->isVariadic(),
@@ -123,7 +123,7 @@ final class RuleLevelHelper
 					$acceptedType->getUsedVariables(),
 					$acceptedType->acceptsNamedArguments(),
 					$acceptedType->mustUseReturnValue(),
-				));
+				);
 			}
 
 			if (
@@ -142,10 +142,10 @@ final class RuleLevelHelper
 				}
 			}
 
-			return $traverse($this->transformCommonType($acceptedType));
+			return $traverse($acceptedType);
 		});
 
-		return [$acceptedType, $checkForUnion];
+		return [$this->transformCommonType($acceptedType), $checkForUnion];
 	}
 
 	/** @api */

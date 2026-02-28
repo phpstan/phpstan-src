@@ -68,4 +68,13 @@ class HelloWorld
 
 		return 0;
 	}
+
+	public function anyIntOnRecursiveCount(array $array, int $index): int
+	{
+		if ($index < count($array, COUNT_RECURSIVE)) {
+			return $array[$index]; // SHOULD still report - could be negative
+		}
+
+		return 0;
+	}
 }

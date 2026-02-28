@@ -88,6 +88,7 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\Type\UnionTypePropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -4897,12 +4898,32 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function canReadProperty(ExtendedPropertyReflection $propertyReflection): bool
 	{
+		if ($propertyReflection instanceof UnionTypePropertyReflection) {
+			foreach ($propertyReflection->getProperties() as $innerProperty) {
+				if (!$this->canReadProperty($innerProperty)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		return $this->canAccessClassMember($propertyReflection);
 	}
 
 	/** @api */
 	public function canWriteProperty(ExtendedPropertyReflection $propertyReflection): bool
 	{
+		if ($propertyReflection instanceof UnionTypePropertyReflection) {
+			foreach ($propertyReflection->getProperties() as $innerProperty) {
+				if (!$this->canWriteProperty($innerProperty)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		if (!$propertyReflection->isPrivateSet() && !$propertyReflection->isProtectedSet()) {
 			return $this->canAccessClassMember($propertyReflection);
 		}

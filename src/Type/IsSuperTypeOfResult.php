@@ -196,14 +196,26 @@ final class IsSuperTypeOfResult
 	): self
 	{
 		$results = [];
+		$reasons = [];
+		$hasNo = false;
 		foreach ($objects as $object) {
 			$isSuperTypeOf = $callback($object);
 			if ($isSuperTypeOf->result->yes()) {
 				return $isSuperTypeOf;
+			} elseif ($isSuperTypeOf->result->no()) {
+				$hasNo = true;
 			}
 			$results[] = $isSuperTypeOf;
+
+			foreach ($isSuperTypeOf->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
-		return self::maxMin(...$results);
+
+		return new self(
+			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
+			array_values(array_unique($reasons)),
+		);
 	}
 
 	public function negate(): self

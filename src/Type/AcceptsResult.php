@@ -163,14 +163,26 @@ final class AcceptsResult
 	): self
 	{
 		$results = [];
+		$reasons = [];
+		$hasNo = false;
 		foreach ($objects as $object) {
 			$isAcceptedBy = $callback($object);
 			if ($isAcceptedBy->result->yes()) {
 				return $isAcceptedBy;
+			} elseif ($isAcceptedBy->result->no()) {
+				$hasNo = true;
 			}
 			$results[] = $isAcceptedBy;
+
+			foreach ($isAcceptedBy->reasons as $reason) {
+				$reasons[] = $reason;
+			}
 		}
-		return self::maxMin(...$results);
+
+		return new self(
+			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
+			array_values(array_unique($reasons)),
+		);
 	}
 
 }

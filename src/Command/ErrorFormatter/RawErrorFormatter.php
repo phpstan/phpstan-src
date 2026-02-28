@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Internal\AgentDetector;
 use function sprintf;
 
 #[AutowiredService(name: 'errorFormatter.raw')]
@@ -21,7 +22,7 @@ final class RawErrorFormatter implements ErrorFormatter
 			$output->writeLineFormatted('');
 		}
 
-		$outputIdentifiers = $output->isVerbose();
+		$outputIdentifiers = $output->isVerbose() || AgentDetector::isRunningInAgent();
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$identifier = '';
 			if ($outputIdentifiers && $fileSpecificError->getIdentifier() !== null) {

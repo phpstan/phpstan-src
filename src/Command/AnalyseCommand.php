@@ -23,6 +23,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Fixable\FileChangedException;
 use PHPStan\Fixable\MergeConflictException;
 use PHPStan\Fixable\Patcher;
+use PHPStan\Internal\AgentDetector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
@@ -578,6 +579,24 @@ final class AnalyseCommand extends Command
 				$exitCode = 0;
 			}
 		} else {
+			if (AgentDetector::isRunningInAgent() && count($analysisResult->getFileSpecificErrors()) > 0) {
+				$errorOutput->writeLineFormatted('Instructions for interpreting errors');
+				$errorOutput->writeLineFormatted('---------');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('Each error has an associated identifier, like `argument.type`');
+				$errorOutput->writeLineFormatted('or `return.missing`.');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('Each error identifier has documentation at URL https://phpstan.org/error-identifiers/<identifier>.');
+				$errorOutput->writeLineFormatted('This page contains code example, explanation why is this an error');
+				$errorOutput->writeLineFormatted('and instruction how to fix it.');
+				$errorOutput->writeLineFormatted('Before fixing the error, fetch the documentation page for its identifier.');
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('The error usually indicates a real bug or incorrect type in the code. Fix the underlying cause, do not just make the error go away.');
+				$errorOutput->writeLineFormatted('Do not add `@phpstan-ignore` comments, `@phpstan-ignore-next-line` comments, or baseline entries to suppress the error.');
+				$errorOutput->writeLineFormatted('Do not use assert() or inline @var PHPDoc tag to override PHPStan\'s inferred type.');
+				$errorOutput->writeLineFormatted('Do not add type casts just to silence errors.');
+				$errorOutput->writeLineFormatted('Do not widen parameter or return types just to make the error go away.');
+			}
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 		}
 

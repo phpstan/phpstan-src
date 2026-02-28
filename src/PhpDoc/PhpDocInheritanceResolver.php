@@ -142,7 +142,45 @@ final class PhpDocInheritanceResolver
 			return $this->resolveMethodPhpDocFromParentClass($traitMethod, $resolvedPhpDocBlock, $declaringClass, $trait, $currentResolvedPhpDoc, $currentPositionalParameterNames);
 		}
 
-		return $currentResolvedPhpDoc;
+		$result = $currentResolvedPhpDoc;
+
+		// Inherit @throws from non-abstract trait methods
+		if ($result === null || $result->getThrowsTag() === null) {
+			foreach ($declaringClass->getTraits() as $trait) {
+				if (!$trait->hasNativeMethod($methodName)) {
+					continue;
+				}
+
+				$traitMethod = $trait->getNativeMethod($methodName);
+				if ($traitMethod->getDocComment() === null) {
+					continue;
+				}
+				if ($declaringClass->getFileName() === null) {
+					continue;
+				}
+
+				$traitResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+					$declaringClass->getFileName(),
+					$declaringClass->getName(),
+					$trait->getName(),
+					$methodName,
+					$traitMethod->getDocComment(),
+				);
+
+				$throwsTag = $traitResolvedPhpDoc->getThrowsTag();
+				if ($throwsTag === null) {
+					continue;
+				}
+
+				if ($result === null) {
+					$result = ResolvedPhpDocBlock::createEmpty();
+				}
+				$result = $result->withThrowsTag($throwsTag);
+				break;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

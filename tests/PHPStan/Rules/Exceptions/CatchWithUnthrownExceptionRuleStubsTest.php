@@ -36,6 +36,11 @@ class CatchWithUnthrownExceptionRuleStubsTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10315(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10315.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

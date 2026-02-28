@@ -621,6 +621,14 @@ final class ResolvedPhpDocBlock
 		return $this->throwsTag;
 	}
 
+	public function withThrowsTag(ThrowsTag $throwsTag): self
+	{
+		$result = clone $this;
+		$result->throwsTag = $throwsTag;
+
+		return $result;
+	}
+
 	/**
 	 * @return array<MixinTag>
 	 */

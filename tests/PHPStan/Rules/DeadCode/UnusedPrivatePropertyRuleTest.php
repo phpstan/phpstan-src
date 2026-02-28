@@ -130,16 +130,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				191,
 				$tip,
 			],
-			[
-				'Property UnusedPrivateProperty\WriteToCollection::$collection1 is never read, only written.',
-				221,
-				$tip,
-			],
-			[
-				'Property UnusedPrivateProperty\WriteToCollection::$collection2 is never read, only written.',
-				224,
-				$tip,
-			],
 		]);
 		$this->analyse([__DIR__ . '/data/TestExtension.php'], [
 			[
@@ -408,6 +398,15 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->alwaysReadTags = [];
 
 		$this->analyse([__DIR__ . '/data/bug-9213.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug6777(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$this->analyse([__DIR__ . '/data/bug-6777.php'], []);
 	}
 
 }

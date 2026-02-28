@@ -185,6 +185,27 @@ final class IsSuperTypeOfResult
 		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)));
 	}
 
+	/**
+	 * @template T
+	 * @param T[] $objects
+	 * @param callable(T): self $callback
+	 */
+	public static function lazyMaxMin(
+		array $objects,
+		callable $callback,
+	): self
+	{
+		$results = [];
+		foreach ($objects as $object) {
+			$isSuperTypeOf = $callback($object);
+			if ($isSuperTypeOf->result->yes()) {
+				return $isSuperTypeOf;
+			}
+			$results[] = $isSuperTypeOf;
+		}
+		return self::maxMin(...$results);
+	}
+
 	public function negate(): self
 	{
 		return new self($this->result->negate(), $this->reasons);

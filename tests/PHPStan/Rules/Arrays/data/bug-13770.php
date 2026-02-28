@@ -69,9 +69,60 @@ class HelloWorld
 		return 0;
 	}
 
+	/**
+	 * @param list<int> $array
+	 * @param int<0, max> $index
+	 */
+	public function positiveIntOnNormalCountMode(array $array, int $index): int
+	{
+		if ($index < count($array, COUNT_NORMAL)) {
+			return $array[$index]; // should not error
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 */
+	public function anyIntOnUnknownCountMode(array $array, int $index, $countMode): int
+	{
+		if ($index < count($array, $countMode)) {
+			return $array[$index]; // SHOULD still report - could be negative
+		}
+
+		return 0;
+	}
+
 	public function anyIntOnRecursiveCount(array $array, int $index): int
 	{
 		if ($index < count($array, COUNT_RECURSIVE)) {
+			return $array[$index]; // SHOULD still report - could be negative
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 3|6|10 $index
+	 */
+	public function constantPositiveIntLessThanCount(array $array, int $index): int
+	{
+		if ($index < count($array)) {
+			return $array[$index]; // should not report
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param -1|3|6|10 $index
+	 */
+	public function constantMaybeNegativeIntLessThanCount(array $array, int $index): int
+	{
+		if ($index < count($array)) {
 			return $array[$index]; // SHOULD still report - could be negative
 		}
 

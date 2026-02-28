@@ -266,7 +266,11 @@ class IntersectionType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		$result = IsSuperTypeOfResult::maxMin(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
+		$result = IsSuperTypeOfResult::lazyMaxMin(
+			$this->types,
+			static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType),
+		);
+
 		if (
 			!$result->no()
 			&& $this->isOversizedArray()->yes()
@@ -280,7 +284,11 @@ class IntersectionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		$result = AcceptsResult::maxMin(...array_map(static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes), $this->types));
+		$result = AcceptsResult::lazyMaxMin(
+			$this->types,
+			static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes),
+		);
+
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
 				return AcceptsResult::createYes();

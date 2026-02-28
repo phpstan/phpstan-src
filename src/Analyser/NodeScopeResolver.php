@@ -3879,6 +3879,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			} else {
 				$this->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 			}

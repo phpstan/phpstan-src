@@ -72,6 +72,11 @@ class InvalidCastRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14136(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14136.php'], []);
+	}
+
 	public function testCastObjectToString(): void
 	{
 		$this->analyse([__DIR__ . '/data/cast-object-to-string.php'], [

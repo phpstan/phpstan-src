@@ -195,7 +195,6 @@ final class IsSuperTypeOfResult
 		callable $callback,
 	): self
 	{
-		$results = [];
 		$reasons = [];
 		$hasNo = false;
 		foreach ($objects as $object) {
@@ -205,7 +204,6 @@ final class IsSuperTypeOfResult
 			} elseif ($isSuperTypeOf->result->no()) {
 				$hasNo = true;
 			}
-			$results[] = $isSuperTypeOf;
 
 			foreach ($isSuperTypeOf->reasons as $reason) {
 				$reasons[] = $reason;

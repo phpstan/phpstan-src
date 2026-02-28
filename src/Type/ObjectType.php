@@ -773,7 +773,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toInteger(): Type
 	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+		if (
+			$this->isInstanceOf('SimpleXMLElement')->yes()
+			|| $this->isInstanceOf('GMP')->yes()
+		) {
 			return new IntegerType();
 		}
 
@@ -786,7 +789,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toFloat(): Type
 	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+		if (
+			$this->isInstanceOf('SimpleXMLElement')->yes()
+			|| $this->isInstanceOf('GMP')->yes()
+		) {
 			return new FloatType();
 		}
 		return new ErrorType();
@@ -794,7 +800,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toString(): Type
 	{
-		if ($this->isInstanceOf('BcMath\Number')->yes()) {
+		if (
+			$this->isInstanceOf('BcMath\Number')->yes()
+			|| $this->isInstanceOf('GMP')->yes()
+		) {
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNumericStringType(),
@@ -911,6 +920,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if (
 			$this->isInstanceOf('SimpleXMLElement')->yes()
 			|| $this->isInstanceOf('BcMath\Number')->yes()
+			|| $this->isInstanceOf('GMP')->yes()
 		) {
 			return new BooleanType();
 		}

@@ -2481,39 +2481,39 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/' . $fileName], [
 			[
-				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $varName),
+				sprintf('Parameter #1 %s of function strval expects bool|float|GMP|int|resource|string|null, array given.', $varName),
 				23,
 			],
 			[
-				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $varName),
+				sprintf('Parameter #1 %s of function strval expects bool|float|GMP|int|resource|string|null, stdClass given.', $varName),
 				77,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, stdClass given.', $varName),
 				80,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $varName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, stdClass given.', $varName),
 				83,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
 				89,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, %s@anonymous/tests/PHPStan/Rules/Functions/data/' . $fileName . ':13 given.', $varName, $stringableName),
 				92,
 			],
 			[
-				sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function strval expects bool|float|GMP|int|resource|string|null, mixed given.', $varName),
 				95,
 			],
 			[
-				sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function intval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, mixed given.', $varName),
 				98,
 			],
 			[
-				sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, mixed given.', $varName),
+				sprintf('Parameter #1 %s of function floatval expects array|bool|float|GMP|int|resource|SimpleXMLElement|string|null, mixed given.', $varName),
 				101,
 			],
 		]);
@@ -2676,6 +2676,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-9652.php'], []);
+	}
+
+	public function testBug14136(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14136.php'], []);
 	}
 
 	#[RequiresPhp('>= 8.1')]

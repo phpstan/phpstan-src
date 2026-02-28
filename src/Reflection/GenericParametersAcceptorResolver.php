@@ -59,6 +59,9 @@ final class GenericParametersAcceptorResolver
 		foreach ($parameters as $param) {
 			if (isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
+				if ($argType instanceof ErrorType && $param->getDefaultValue() !== null) {
+					$argType = $param->getDefaultValue();
+				}
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} else {

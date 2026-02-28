@@ -188,7 +188,7 @@ jobs:
           push-to-fork: phpstan-bot/phpstan-src
           branch-suffix: random
           delete-branch: true
-          title: "Fix #${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}"
+          title: "Fix phpstan/phpstan#${{ inputs.issue-number }}: ${{ steps.issue.outputs.title }}"
           body: ${{ steps.claude-summary.outputs.pr_body }}
           committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
           commit-message: ${{ steps.claude-summary.outputs.commit_message }}

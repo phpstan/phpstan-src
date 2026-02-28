@@ -89,9 +89,12 @@ final class TableErrorFormatter implements ErrorFormatter
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
-				if ($error->getIdentifier() !== null && $error->canBeIgnored()) {
+				if ($error->getIdentifier() !== null) {
 					$message .= "\n";
 					$message .= '🪪  ' . $error->getIdentifier();
+					if (!$error->canBeIgnored()) {
+						$message .= ' <fg=red>(non-ignorable)</>';
+					}
 				}
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();

@@ -5940,6 +5940,7 @@ class NodeScopeResolver
 						) {
 							$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
 							$scope = $scope->invalidateExpression($arg->value, true);
+							$scope = $this->widenUniversalObjectCrateProperties($scope, $arg->value);
 						}
 					} elseif (!(new ResourceType())->isSuperTypeOf($argType)->no()) {
 						$this->callNodeCallback($nodeCallback, new InvalidateExprNode($arg->value), $scope, $storage);
@@ -5951,6 +5952,22 @@ class NodeScopeResolver
 
 		// not storing this, it's scope after processing all args
 		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	private function widenUniversalObjectCrateProperties(MutatingScope $scope, Expr $expr): MutatingScope
+	{
+		$argType = $scope->getType($expr);
+		$stdClassType = new ObjectType('stdClass');
+
+		if (!in_array('stdClass', $argType->getObjectClassNames(), true)) {
+			return $scope;
+		}
+
+		if ($stdClassType->isSuperTypeOf($argType)->yes() && !$argType->equals($stdClassType)) {
+			return $scope->assignExpression($expr, $stdClassType, $stdClassType);
+		}
+
+		return $scope;
 	}
 
 	/**

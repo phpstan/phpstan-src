@@ -667,6 +667,21 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3')]
+	public function testPr5105(): void
+	{
+		$this->analyse([__DIR__ . '/data/pr-5105.php'], [
+			[
+				'Dead catch - RuntimeException is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - Error is never thrown in the try block.',
+				28,
+			],
+		]);
+	}
+
 	public function testBug9146NonStrict(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9146-non-strict.php'], [

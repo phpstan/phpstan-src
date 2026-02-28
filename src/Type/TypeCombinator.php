@@ -90,11 +90,13 @@ final class TypeCombinator
 		$fromFiniteTypes = $fromType->getFiniteTypes();
 		if (count($fromFiniteTypes) > 0) {
 			$finiteTypesToRemove = $typeToRemove->getFiniteTypes();
-			if (count($finiteTypesToRemove) === 1) {
+			if (count($finiteTypesToRemove) > 0) {
 				$result = [];
 				foreach ($fromFiniteTypes as $finiteType) {
-					if ($finiteType->equals($finiteTypesToRemove[0])) {
-						continue;
+					foreach ($finiteTypesToRemove as $finiteTypeToRemove) {
+						if ($finiteType->equals($finiteTypeToRemove)) {
+							continue 2;
+						}
 					}
 
 					$result[] = $finiteType;

@@ -54,7 +54,7 @@ class ArrayType implements Type
 			$keyType = new MixedType();
 		}
 		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {
-			$keyType = new BenevolentUnionType([new IntegerType(), new StringType()]);
+			$keyType = new UnionType([new StringType(), new IntegerType()]);
 		}
 
 		$this->keyType = $keyType;

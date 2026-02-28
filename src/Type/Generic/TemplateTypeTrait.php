@@ -6,7 +6,6 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
@@ -289,7 +288,7 @@ trait TemplateTypeTrait
 			]))->union($map);
 		}
 
-		if ($receivedType instanceof BenevolentUnionType) {
+		if ($receivedType instanceof UnionType) {
 			$matchingTypes = [];
 			foreach ($receivedType->getTypes() as $innerType) {
 				if (!$resolvedBound->isSuperTypeOf($innerType)->yes()) {

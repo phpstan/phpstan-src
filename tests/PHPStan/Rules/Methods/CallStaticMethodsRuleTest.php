@@ -937,7 +937,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 
-		$this->analyse([__DIR__ . '/data/bug-9732.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-9732.php'], [
+			[
+				'Parameter #1 $array of static method Bug9732\HelloWorld::stringifyKeys() expects array<string, mixed>, array<mixed> given.',
+				21,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.5')]

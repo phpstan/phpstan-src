@@ -6,7 +6,27 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
-	public static function coalesce_int_range(): void
+	public static function coalesce_nonsensical(): void
+	{
+		$x0 = $x1 = $x2 = null;
+
+		if (rand(0, 1)) {
+			$x0 = rand(0, 1);
+			$x1 = rand(2, 3);
+			$x2 = rand(4, 5);
+		}
+
+		// either all 3 variables are null, or all have a int-range value
+		$x = (
+			$x0 ??
+			$x1 ??
+			$x2
+		);
+
+		assertType('int<0, 1>|null', $x);
+	}
+
+	public static function coalesce_int_ranges(): void
 	{
 		$x0 = $x1 = $x2 = null;
 

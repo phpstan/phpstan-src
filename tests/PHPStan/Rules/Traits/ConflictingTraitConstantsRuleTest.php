@@ -79,6 +79,11 @@ class ConflictingTraitConstantsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11088(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11088.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.3')]
 	public function testBug13119(): void
 	{

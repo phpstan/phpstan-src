@@ -352,4 +352,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/pr-4372-null-coalesce.php'], []);
 	}
 
+	public function testBug14213(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], [
+			[
+				'Variable $x1 on left side of ?? always exists and is always null.',
+				22,
+			],
+		]);
+	}
+
 }

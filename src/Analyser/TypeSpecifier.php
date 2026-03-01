@@ -266,36 +266,56 @@ final class TypeSpecifier
 			$leftType = $scope->getType($expr->left);
 			$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
 
+			$countFuncCall = null;
+			$subtraction = 0;
+
 			if (
-				!$context->null()
-				&& $expr->right instanceof FuncCall
+				$expr->right instanceof FuncCall
 				&& $expr->right->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 				&& count($expr->right->getArgs()) >= 1
+			) {
+				$countFuncCall = $expr->right;
+			} elseif (
+				$expr->right instanceof Node\Expr\BinaryOp\Minus
+				&& $expr->right->left instanceof FuncCall
+				&& $expr->right->left->name instanceof Name
+				&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
+				&& count($expr->right->left->getArgs()) >= 1
+				&& $expr->right->right instanceof Node\Scalar\Int_
+				&& $expr->right->right->value >= 1
+			) {
+				$countFuncCall = $expr->right->left;
+				$subtraction = $expr->right->right->value;
+			}
+
+			if (
+				!$context->null()
+				&& $countFuncCall !== null
 				&& $leftType->isInteger()->yes()
 			) {
-				$argType = $scope->getType($expr->right->getArgs()[0]->value);
+				$argType = $scope->getType($countFuncCall->getArgs()[0]->value);
 
 				if ($leftType instanceof ConstantIntegerType) {
 					if ($orEqual) {
-						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+						$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue() + $subtraction);
 					} else {
-						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+						$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue() + $subtraction);
 					}
 				} elseif ($leftType instanceof IntegerRangeType) {
-					$sizeType = $leftType->shift($offset);
+					$sizeType = $leftType->shift($offset + $subtraction);
 				} else {
 					$sizeType = $leftType;
 				}
 
-				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
+				$specifiedTypes = $this->specifyTypesForCountFuncCall($countFuncCall, $argType, $sizeType, $context, $scope, $expr);
 				if ($specifiedTypes !== null) {
 					$result = $result->unionWith($specifiedTypes);
 				}
 
 				if (
-					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-					|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+					$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset - $subtraction)->isSuperTypeOf($leftType)->yes())
+					|| ($context->false() && (new ConstantIntegerType(1 - $offset - $subtraction))->isSuperTypeOf($leftType)->yes())
 				) {
 					if ($context->truthy() && $argType->isArray()->maybe()) {
 						$countables = [];
@@ -318,7 +338,7 @@ final class TypeSpecifier
 						if (count($countables) > 0) {
 							$countableType = TypeCombinator::union(...$countables);
 
-							return $this->create($expr->right->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
+							return $this->create($countFuncCall->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
 						}
 					}
 
@@ -329,21 +349,21 @@ final class TypeSpecifier
 						}
 
 						$result = $result->unionWith(
-							$this->create($expr->right->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
+							$this->create($countFuncCall->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
 						);
 					}
 				}
 
-				// infer $list[$index] after $index < count($list)
+				// infer $list[$index] after $index < count($list) or $index < count($list) - K
 				if (
 					$context->true()
-					&& !$orEqual
+					&& (!$orEqual || $subtraction >= 1)
 					// constant offsets are handled via HasOffsetType/HasOffsetValueType
 					&& !$leftType instanceof ConstantIntegerType
 					&& $argType->isList()->yes()
 					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
 				) {
-					$arrayArg = $expr->right->getArgs()[0]->value;
+					$arrayArg = $countFuncCall->getArgs()[0]->value;
 					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);
 					$result = $result->unionWith(
 						$this->create($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),

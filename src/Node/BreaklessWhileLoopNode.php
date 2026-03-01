@@ -16,7 +16,7 @@ final class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 */
-	public function __construct(private While_ $originalNode, private array $exitPoints, private bool $hasYield = false)
+	public function __construct(private While_ $originalNode, private array $exitPoints, private bool $hasYield)
 	{
 		parent::__construct($originalNode->getAttributes());
 	}

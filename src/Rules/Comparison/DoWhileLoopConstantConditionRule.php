@@ -42,6 +42,9 @@ final class DoWhileLoopConstantConditionRule implements Rule
 		$exprType = $this->helper->getBooleanType($scope, $node->getCond());
 		if ($exprType instanceof ConstantBooleanType) {
 			if ($exprType->getValue()) {
+				if ($node->hasYield()) {
+					return [];
+				}
 				foreach ($node->getExitPoints() as $exitPoint) {
 					$statement = $exitPoint->getStatement();
 					if (!$statement instanceof Continue_) {

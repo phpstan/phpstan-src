@@ -68,6 +68,10 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 		$originalNode = $node->getOriginalNode();
 		$exprType = $this->helper->getBooleanType($scope, $originalNode->cond);
 		if ($exprType->isTrue()->yes()) {
+			if ($node->hasYield()) {
+				return [];
+			}
+
 			$ref = $scope->getFunction() ?? $scope->getAnonymousFunctionReflection();
 
 			if ($ref !== null && $ref->getReturnType() instanceof NeverType) {

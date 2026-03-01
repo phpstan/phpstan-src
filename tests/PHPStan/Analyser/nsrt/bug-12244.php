@@ -42,3 +42,36 @@ enum X: string {
 		}
 	}
 }
+
+enum Y: string {
+	case A = 'a';
+	case B = 'b';
+	case C = 'c';
+
+	/** @param-out ($this is self::A ? int : null) $i */
+	public function get(?int &$i): void {
+		($this === self::A) ? $i=null : $i=123;
+	}
+
+	public function doSomething(): void {
+		$i = 0;
+		if ($this !== self::A) {
+			$this->get($i);
+			assertType('null', $i); // null
+		} else {
+			$this->get($i);
+			assertType('int', $i); // int
+		}
+	}
+
+	public static function doSomethingFor(Y $x): void {
+		$i = 0;
+		if ($x !== self::A) {
+			$x->get($i);
+			assertType('null', $i); // null
+		} else {
+			$x->get($i);
+			assertType('int', $i); // int
+		}
+	}
+}

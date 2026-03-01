@@ -45,4 +45,24 @@ class HelloWorld
 
 		assertType('10|int<0, 5>|null', $x);
 	}
+
+	public static function coalesce_int_range_with_last_nullable(): void
+	{
+		$x0 = $x1 = null;
+		$x2 = 20;
+
+		if (rand(0, 1)) {
+			$x0 = rand(0, 1);
+			$x1 = rand(2, 3);
+			$x2 = rand(4, 5);
+		}
+
+		$x = (
+			$x0 ??
+			$x1 ??
+			$x2 // cannot be null
+		);
+
+		assertType('20|int<0, 5>', $x);
+	}
 }

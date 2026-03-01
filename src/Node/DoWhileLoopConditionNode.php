@@ -13,7 +13,7 @@ final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 */
-	public function __construct(private Expr $cond, private array $exitPoints)
+	public function __construct(private Expr $cond, private array $exitPoints, private bool $hasYield)
 	{
 		parent::__construct($cond->getAttributes());
 	}
@@ -29,6 +29,11 @@ final class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 	public function getExitPoints(): array
 	{
 		return $this->exitPoints;
+	}
+
+	public function hasYield(): bool
+	{
+		return $this->hasYield;
 	}
 
 	#[Override]

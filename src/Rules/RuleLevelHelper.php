@@ -95,7 +95,7 @@ final class RuleLevelHelper
 
 				return new CallableType(
 					$acceptedType->getParameters(),
-					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$traverse($acceptedType->getReturnType()),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -111,7 +111,7 @@ final class RuleLevelHelper
 
 				return new ClosureType(
 					$acceptedType->getParameters(),
-					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$traverse($acceptedType->getReturnType()),
 					$acceptedType->isVariadic(),
 					$acceptedType->getTemplateTypeMap(),
 					$acceptedType->getResolvedTemplateTypeMap(),
@@ -142,10 +142,10 @@ final class RuleLevelHelper
 				}
 			}
 
-			return $traverse($this->transformCommonType($acceptedType));
+			return $traverse($acceptedType);
 		});
 
-		return [$acceptedType, $checkForUnion];
+		return [$this->transformCommonType($acceptedType), $checkForUnion];
 	}
 
 	/** @api */

@@ -945,6 +945,24 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12558(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/data/bug-12558.php'], [
+			[
+				'Parameter #1 $object of static method Bug12558\Foo::assertStatic() expects Bug12558\Foo, Bug12558\Foo|null given.',
+				45,
+			],
+			[
+				'Parameter #1 $object of static method Bug12558\Foo::assertStatic() expects Bug12558\Foo, bool|Bug12558\Foo given.',
+				46,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5')]
 	public function testPipeOperator(): void
 	{

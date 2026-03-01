@@ -369,6 +369,13 @@ class StaticType implements TypeWithClassName, SubtractableType
 					$type = new self($type->getClassReflection(), $type->getSubtractedType());
 				}
 
+				if ($this->getSubtractedType() !== null) {
+					$type = $type->subtract($this->getSubtractedType());
+					if (!$type instanceof StaticType) {
+						return $traverse($type);
+					}
+				}
+
 				if (!$isFinal || $type instanceof ThisType) {
 					return $traverse($type);
 				}

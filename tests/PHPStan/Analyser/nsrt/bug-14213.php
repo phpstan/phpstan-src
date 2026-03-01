@@ -46,7 +46,7 @@ class HelloWorld
 		assertType('10|int<0, 5>|null', $x);
 	}
 
-	public static function coalesce_int_range_with_last_nullable(): void
+	public static function coalesce_int_range_with_last_non_nullable(): void
 	{
 		$x0 = $x1 = null;
 		$x2 = 20;

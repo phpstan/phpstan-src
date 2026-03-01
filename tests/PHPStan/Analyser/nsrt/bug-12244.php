@@ -20,6 +20,12 @@ enum X: string {
 		if ($this !== self::A) {
 			assertType('$this(Bug12244\X~Bug12244\X::A)', $this);
 			assertType('null', $this->get());
+		} else {
+			assertType('int', $this->get());
+		}
+
+		if ($this !== self::B && $this !== self::C) {
+			assertType('int', $this->get());
 		}
 	}
 
@@ -27,6 +33,12 @@ enum X: string {
 		if ($x !== self::A) {
 			assertType('Bug12244\X~Bug12244\X::A', $x);
 			assertType('null', $x->get());
+		} else {
+			assertType('int', $x->get());
+		}
+
+		if ($x !== self::B && $x !== self::C) {
+			assertType('int', $x->get());
 		}
 	}
 }

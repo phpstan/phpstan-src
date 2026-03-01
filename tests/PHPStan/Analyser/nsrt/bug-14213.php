@@ -12,7 +12,11 @@ class HelloWorld
 
 		if (rand(0, 1)) {
 			$x0 = rand(0, 1);
+		}
+		if (rand(0, 1)) {
 			$x1 = rand(2, 3);
+		}
+		if (rand(0, 1)) {
 			$x2 = rand(4, 5);
 		}
 
@@ -31,8 +35,14 @@ class HelloWorld
 
 		if (rand(0, 1)) {
 			$maybeDefined = 10;
+		}
+		if (rand(0, 1)) {
 			$x0 = rand(0, 1);
+		}
+		if (rand(0, 1)) {
 			$x1 = rand(2, 3);
+		}
+		if (rand(0, 1)) {
 			$x2 = rand(4, 5);
 		}
 
@@ -53,7 +63,11 @@ class HelloWorld
 
 		if (rand(0, 1)) {
 			$x0 = rand(0, 1);
+		}
+		if (rand(0, 1)) {
 			$x1 = rand(2, 3);
+		}
+		if (rand(0, 1)) {
 			$x2 = rand(4, 5);
 		}
 

@@ -333,6 +333,22 @@ final class TypeSpecifier
 						);
 					}
 				}
+
+				// infer $list[$index] after $index < count($list)
+				if (
+					$context->true()
+					&& !$orEqual
+					// constant offsets are handled via HasOffsetType/HasOffsetValueType
+					&& !$leftType instanceof ConstantIntegerType
+					&& $argType->isList()->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+				) {
+					$arrayArg = $expr->right->getArgs()[0]->value;
+					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);
+					$result = $result->unionWith(
+						$this->create($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+					);
+				}
 			}
 
 			if (

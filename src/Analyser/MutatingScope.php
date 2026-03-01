@@ -6536,7 +6536,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left));
 		}
 
-		$rightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
+		$unfilteredRightType = $this->getType($node->right);
+		if (!$unfilteredRightType->isNull()->no()) {
+			$narrowedRightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
+			$rightType = $narrowedRightType->isNull()->no() ? $narrowedRightType : $unfilteredRightType;
+		} else {
+			$rightType = $unfilteredRightType;
+		}
 
 		if ($result === null) {
 			return TypeCombinator::union(

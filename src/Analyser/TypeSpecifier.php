@@ -87,6 +87,7 @@ use function array_reverse;
 use function array_shift;
 use function count;
 use function in_array;
+use function is_array;
 use function is_string;
 use function strtolower;
 use function substr;
@@ -1972,6 +1973,12 @@ final class TypeSpecifier
 			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
 				return new SpecifiedTypes([], []);
 			}
+
+			foreach ($expr->getArgs() as $arg) {
+				if ($this->containsImpureCall($arg->value, $scope)) {
+					return new SpecifiedTypes([], []);
+				}
+			}
 		}
 
 		if (
@@ -1991,6 +1998,24 @@ final class TypeSpecifier
 				}
 
 				return new SpecifiedTypes([], []);
+			}
+
+			if ($this->containsImpureCall($expr->var, $scope)) {
+				if (isset($containsNull) && !$containsNull) {
+					return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
+				}
+
+				return new SpecifiedTypes([], []);
+			}
+
+			foreach ($expr->getArgs() as $arg) {
+				if ($this->containsImpureCall($arg->value, $scope)) {
+					if (isset($containsNull) && !$containsNull) {
+						return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
+					}
+
+					return new SpecifiedTypes([], []);
+				}
 			}
 		}
 
@@ -2016,6 +2041,16 @@ final class TypeSpecifier
 				}
 
 				return new SpecifiedTypes([], []);
+			}
+
+			foreach ($expr->getArgs() as $arg) {
+				if ($this->containsImpureCall($arg->value, $scope)) {
+					if (isset($containsNull) && !$containsNull) {
+						return $this->createNullsafeTypes($originalExpr, $scope, $context, $type);
+					}
+
+					return new SpecifiedTypes([], []);
+				}
 			}
 		}
 
@@ -2045,6 +2080,74 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function containsImpureCall(Expr $expr, Scope $scope): bool
+	{
+		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
+			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+				return true;
+			}
+			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+			$hasSideEffects = $functionReflection->hasSideEffects();
+			if ($hasSideEffects->yes()) {
+				return true;
+			}
+			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
+				return true;
+			}
+		}
+
+		if ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
+			$calledOnType = $scope->getType($expr->var);
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
+				return true;
+			}
+		}
+
+		if ($expr instanceof StaticCall && $expr->name instanceof Node\Identifier) {
+			if ($expr->class instanceof Name) {
+				$calledOnType = $scope->resolveTypeByName($expr->class);
+			} else {
+				$calledOnType = $scope->getType($expr->class);
+			}
+			$methodReflection = $scope->getMethodReflection($calledOnType, $expr->name->toString());
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
+				return true;
+			}
+		}
+
+		foreach ($expr->getSubNodeNames() as $name) {
+			$subNode = $expr->{$name};
+			if ($subNode instanceof Expr) {
+				if ($this->containsImpureCall($subNode, $scope)) {
+					return true;
+				}
+			}
+			if (!is_array($subNode)) {
+				continue;
+			}
+
+			foreach ($subNode as $item) {
+				if ($item instanceof Node\Arg && $this->containsImpureCall($item->value, $scope)) {
+					return true;
+				}
+				if ($item instanceof Expr && $this->containsImpureCall($item, $scope)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

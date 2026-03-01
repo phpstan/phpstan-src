@@ -43,6 +43,6 @@ class HelloWorld
 			$x2
 		);
 
-		assertType('int<0, 5>|10|null', $x);
+		assertType('10|int<0, 5>|null', $x);
 	}
 }

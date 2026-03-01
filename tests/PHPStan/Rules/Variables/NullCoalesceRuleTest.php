@@ -357,7 +357,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-14213.php'], [
 			[
 				'Variable $x1 on left side of ?? always exists and is always null.',
-				21,
+				22,
 			],
 		]);
 	}

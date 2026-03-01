@@ -1637,8 +1637,20 @@ class NodeScopeResolver
 			} else {
 				$this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			}
-			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+
+			$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
+			if ($alwaysIterates && count($breakExitPoints) > 0) {
+				$breakScope = null;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null
+						? $breakExitPoint->getScope()
+						: $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
+			} else {
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+				}
 			}
 
 			return new InternalStatementResult(
@@ -1749,8 +1761,19 @@ class NodeScopeResolver
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
 			}
 
-			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
+			if ($alwaysIterates->yes() && count($breakExitPoints) > 0) {
+				$breakScope = null;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null
+						? $breakExitPoint->getScope()
+						: $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
+			} else {
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+				}
 			}
 
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {

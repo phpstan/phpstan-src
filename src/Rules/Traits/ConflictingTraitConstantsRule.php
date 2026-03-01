@@ -80,10 +80,7 @@ final class ConflictingTraitConstantsRule implements Rule
 				$classConstantValueType = $this->initializerExprTypeResolver->getType($const->value, InitializerExprContext::fromClassReflection($classReflection));
 				$traitConstantValueType = $this->initializerExprTypeResolver->getType(
 					$immediateTraitConstant->getValueExpression(),
-					InitializerExprContext::fromClass(
-						$immediateTraitConstant->getDeclaringClass()->getName(),
-						$immediateTraitConstant->getDeclaringClass()->getFileName() !== false ? $immediateTraitConstant->getDeclaringClass()->getFileName() : null,
-					),
+					InitializerExprContext::fromClassReflection($classReflection),
 				);
 				if ($classConstantValueType->equals($traitConstantValueType)) {
 					continue;

@@ -3692,7 +3692,7 @@ class NodeScopeResolver
 
 			$rightScope = $scope->filterByFalseyValue($expr);
 			$rightResult = $this->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeep());
-			$rightExprType = $scope->getType($expr->right);
+			$rightExprType = $expr->right instanceof Coalesce ? null : $scope->getType($expr->right);
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
 			} else {

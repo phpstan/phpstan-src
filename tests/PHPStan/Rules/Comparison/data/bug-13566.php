@@ -105,3 +105,45 @@ class ReturnsMaybeVoid
 
 	}
 }
+
+
+
+class ReturnsWithInstanceMethod
+{
+	/** @return ($exit is true ? never-return : void) */
+	public function notFound(bool $exit = true): void
+	{
+		header('HTTP/1.1 404 Not Found', true, 404);
+
+		if ($exit) {
+			echo '404 Not Found';
+			exit;
+		}
+	}
+
+
+	public function test(): void
+	{
+		// send 404 header
+		$this->notFound(false);
+
+	}
+}
+
+/** @return ($exit is true ? never-return : void) */
+function notFound(bool $exit = true): void
+{
+	header('HTTP/1.1 404 Not Found', true, 404);
+
+	if ($exit) {
+		echo '404 Not Found';
+		exit;
+	}
+}
+
+function test(): void
+{
+	// send 404 header
+	notFound(false);
+
+}

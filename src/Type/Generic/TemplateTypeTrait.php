@@ -18,6 +18,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /**
@@ -285,6 +286,23 @@ trait TemplateTypeTrait
 			return (new TemplateTypeMap([
 				$this->name => $receivedType,
 			]))->union($map);
+		}
+
+		if ($receivedType instanceof UnionType) {
+			$matchingTypes = [];
+			foreach ($receivedType->getTypes() as $innerType) {
+				if (!$resolvedBound->isSuperTypeOf($innerType)->yes()) {
+					continue;
+				}
+
+				$matchingTypes[] = $innerType;
+			}
+			if (count($matchingTypes) > 0) {
+				$filteredType = TypeCombinator::union(...$matchingTypes);
+				return (new TemplateTypeMap([
+					$this->name => $filteredType,
+				]))->union($map);
+			}
 		}
 
 		return $map;

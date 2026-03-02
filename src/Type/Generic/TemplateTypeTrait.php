@@ -282,13 +282,14 @@ trait TemplateTypeTrait
 			TemplateTypeVarianceMap::createEmpty(),
 			TemplateTypeVariance::createStatic(),
 		));
-		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
+		$boundMatches = $resolvedBound->isSuperTypeOf($receivedType);
+		if ($boundMatches->yes()) {
 			return (new TemplateTypeMap([
 				$this->name => $receivedType,
 			]))->union($map);
 		}
 
-		if ($receivedType instanceof UnionType) {
+		if ($boundMatches->maybe() && $receivedType instanceof UnionType) {
 			$matchingTypes = [];
 			foreach ($receivedType->getTypes() as $innerType) {
 				if (!$resolvedBound->isSuperTypeOf($innerType)->yes()) {

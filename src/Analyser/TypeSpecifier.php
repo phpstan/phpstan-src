@@ -1584,6 +1584,13 @@ final class TypeSpecifier
 		$ifType = $conditionalType->getIf();
 		$elseType = $conditionalType->getElse();
 
+		if (
+			$argsMap[$parameterName] instanceof Node\Scalar
+			&& $targetType->isConstantScalarValue()->yes()
+		) {
+			return null;
+		}
+
 		if ($leftType->isSuperTypeOf($ifType)->yes() && $rightType->isSuperTypeOf($elseType)->yes()) {
 			$context = $conditionalType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue();
 		} elseif ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {

@@ -269,17 +269,6 @@ final class ImpossibleCheckTypeHelper
 				return null;
 			}
 
-			// For void methods (null context), if the rootExpr is one of the call's arguments,
-			// the conditional return type describes behavioral control flow (e.g. void vs never
-			// based on a boolean flag), not a type check. Skip the impossible check.
-			if ($context->null() && $node instanceof Expr\CallLike) {
-				foreach ($node->getArgs() as $arg) {
-					if ($arg->value === $rootExpr) {
-						return null;
-					}
-				}
-			}
-
 			$rootExprType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr));
 			if ($rootExprType instanceof ConstantBooleanType) {
 				return $rootExprType->getValue();

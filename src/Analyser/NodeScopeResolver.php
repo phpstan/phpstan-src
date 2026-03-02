@@ -1522,16 +1522,12 @@ class NodeScopeResolver
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
-			if ($alwaysIterates && count($breakExitPoints) > 0) {
-				$breakScope = null;
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates ? null : $finalScope;
 				foreach ($breakExitPoints as $breakExitPoint) {
 					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 				}
 				$finalScope = $breakScope;
-			} else {
-				foreach ($breakExitPoints as $breakExitPoint) {
-					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
-				}
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
@@ -1639,18 +1635,12 @@ class NodeScopeResolver
 			}
 
 			$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
-			if ($alwaysIterates && count($breakExitPoints) > 0) {
-				$breakScope = null;
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates ? null : $finalScope;
 				foreach ($breakExitPoints as $breakExitPoint) {
-					$breakScope = $breakScope === null
-						? $breakExitPoint->getScope()
-						: $breakScope->mergeWith($breakExitPoint->getScope());
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 				}
 				$finalScope = $breakScope;
-			} else {
-				foreach ($breakExitPoints as $breakExitPoint) {
-					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
-				}
 			}
 
 			return new InternalStatementResult(
@@ -1762,18 +1752,12 @@ class NodeScopeResolver
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
-			if ($alwaysIterates->yes() && count($breakExitPoints) > 0) {
-				$breakScope = null;
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates->yes() ? null : $finalScope;
 				foreach ($breakExitPoints as $breakExitPoint) {
-					$breakScope = $breakScope === null
-						? $breakExitPoint->getScope()
-						: $breakScope->mergeWith($breakExitPoint->getScope());
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
 				}
 				$finalScope = $breakScope;
-			} else {
-				foreach ($breakExitPoints as $breakExitPoint) {
-					$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
-				}
 			}
 
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {

@@ -35,6 +35,25 @@ class ReturnViaInt
 		}
 	}
 
+	public function test(): void
+	{
+		// send 404 header
+		self::notFound(0);
+	}
+}
+
+class ReturnViaIntNonNative
+{
+	/** @return ($exit is 1 ? never : void) */
+	public static function notFound(int $exit = 1)
+	{
+		header('HTTP/1.1 404 Not Found', true, 404);
+
+		if ($exit == 1) {
+			echo '404 Not Found';
+			exit;
+		}
+	}
 
 	public function test(): void
 	{
@@ -57,7 +76,6 @@ class ReturnsMaybeNever
 		return 1;
 	}
 
-
 	public function test(): void
 	{
 		// send 404 header
@@ -79,7 +97,6 @@ class ReturnsMaybeVoid
 		}
 		return 1;
 	}
-
 
 	public function test(): void
 	{

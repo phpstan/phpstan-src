@@ -1585,7 +1585,11 @@ final class TypeSpecifier
 		$elseType = $conditionalType->getElse();
 
 		if (
-			$argsMap[$parameterName] instanceof Node\Scalar
+			(
+				$argumentExpr instanceof Node\Scalar
+				|| ($argumentExpr instanceof ConstFetch && in_array(strtolower($argumentExpr->name->toString()), ['true', 'false', 'null'], true))
+			)
+			&& !$targetType instanceof UnionType
 			&& $targetType->isConstantScalarValue()->yes()
 		) {
 			return null;

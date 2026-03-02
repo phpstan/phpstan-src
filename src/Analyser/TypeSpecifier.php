@@ -1589,7 +1589,6 @@ final class TypeSpecifier
 				$argumentExpr instanceof Node\Scalar
 				|| ($argumentExpr instanceof ConstFetch && in_array(strtolower($argumentExpr->name->toString()), ['true', 'false', 'null'], true))
 			)
-			&& $targetType->isConstantScalarValue()->yes()
 		) {
 			return null;
 		}

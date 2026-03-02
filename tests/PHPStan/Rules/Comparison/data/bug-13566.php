@@ -1,4 +1,6 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug13566;
 
@@ -165,5 +167,32 @@ function test(): void
 {
 	// send 404 header
 	notFound(false);
+}
 
+
+class ReturnViaUnion
+{
+	/**
+	 * @return ($exit is int ? void : never)
+	 */
+	public static function notFound(int|string $exit = 'hello world'): void
+	{
+		header('HTTP/1.1 404 Not Found', true, 404);
+
+		if (!is_int($exit)) {
+			echo '404 Not Found';
+			exit;
+		}
+	}
+
+	public function test(): void
+	{
+		// send 404 header
+		self::notFound(0);
+	}
+}
+
+
+$x = 123;
+if (is_numeric($x)) {
 }

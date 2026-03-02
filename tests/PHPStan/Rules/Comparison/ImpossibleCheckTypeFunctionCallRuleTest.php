@@ -75,14 +75,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					87,
 				],
 				[
-					'Call to function is_numeric() with \'123\' will always evaluate to true.',
-					102,
-				],
-				[
-					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					105,
-				],
-				[
 					'Call to function is_numeric() with 123|float will always evaluate to true.',
 					118,
 				],
@@ -232,17 +224,9 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function is_numeric() with \'123\' will always evaluate to true.',
-					718,
-				],
-				[
 					'Call to function assert() with false will always evaluate to false.',
 					719,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-				[
-					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					719,
 				],
 				[
 					'Call to function assert() with true will always evaluate to true.',
@@ -1182,7 +1166,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	public function testBug13566(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-13566.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13566.php'], [
+			[
+				'Call to function is_numeric() with 123 will always evaluate to true.',
+				197,
+			],
+		]);
 	}
 
 }

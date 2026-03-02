@@ -49,11 +49,6 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 			return [];
 		}
 
-		$returnType = $scope->getKeepVoidType($node);
-		if ($returnType->isVoid()->yes()) {
-			return [];
-		}
-
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;

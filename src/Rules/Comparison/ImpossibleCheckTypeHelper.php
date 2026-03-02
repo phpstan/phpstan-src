@@ -268,6 +268,17 @@ final class ImpossibleCheckTypeHelper
 				return null;
 			}
 
+			if ($node instanceof Expr\CallLike) {
+				foreach ($node->getArgs() as $arg) {
+					if (
+						$arg->value === $rootExpr
+						&& $scope->getType($arg->value)->isConstantScalarValue()->yes()
+					) {
+						return null;
+					}
+				}
+			}
+
 			$rootExprType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr));
 			if ($rootExprType instanceof ConstantBooleanType) {
 				return $rootExprType->getValue();

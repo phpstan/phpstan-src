@@ -208,6 +208,7 @@ use TypeError;
 use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
+use function array_flip;
 use function array_key_exists;
 use function array_key_last;
 use function array_keys;
@@ -4386,6 +4387,7 @@ class NodeScopeResolver
 				$filteringExprs = [];
 				$armCondScope = $matchScope;
 				$condNodes = [];
+				$armCondResultScope = $matchScope;
 				foreach ($arm->conds as $j => $armCond) {
 					if (isset($armCondsToSkip[$i][$j])) {
 						continue;
@@ -4407,6 +4409,30 @@ class NodeScopeResolver
 
 				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
 				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				$condResultScope = $armCondResultScope;
+				$matchScopeKnownVars = array_flip(array_merge($matchScope->getDefinedVariables(), $matchScope->getMaybeDefinedVariables()));
+				foreach ($condResultScope->getDefinedVariables() as $varName) {
+					if (isset($matchScopeKnownVars[$varName])) {
+						continue;
+					}
+					$bodyScope = $bodyScope->assignVariable(
+						$varName,
+						$condResultScope->getVariableType($varName),
+						$condResultScope->getNativeType(new Variable($varName)),
+						$condResultScope->hasVariableType($varName),
+					);
+				}
+				foreach ($condResultScope->getMaybeDefinedVariables() as $varName) {
+					if (isset($matchScopeKnownVars[$varName])) {
+						continue;
+					}
+					$bodyScope = $bodyScope->assignVariable(
+						$varName,
+						$condResultScope->getVariableType($varName),
+						$condResultScope->getNativeType(new Variable($varName)),
+						$condResultScope->hasVariableType($varName),
+					);
+				}
 				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 

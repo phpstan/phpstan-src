@@ -1277,14 +1277,30 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11984.php'], []);
 	}
 
-	public function testBug11545(): void
+	#[DataProvider('dataBug11545')]
+	public function testBug11545(bool $polluteScopeWithLoopInitialAssignments): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
-		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 
-		$this->analyse([__DIR__ . '/data/bug-11545.php'], []);
+		$errors = [];
+		if (!$polluteScopeWithLoopInitialAssignments) {
+			$errors[] = [
+				'Variable $result might not be defined.',
+				24,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11545.php'], $errors);
+	}
+
+	/** @return iterable<array{bool}> */
+	public static function dataBug11545(): iterable
+	{
+		yield [false];
+		yield [true];
 	}
 
 	public function testBug10245(): void

@@ -252,7 +252,8 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		$typeSpecifierScope = $this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain();
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($typeSpecifierScope, $node, $this->determineContext($typeSpecifierScope, $node));
+		$context = $this->determineContext($typeSpecifierScope, $node);
+		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($typeSpecifierScope, $node, $context);
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
@@ -266,6 +267,17 @@ final class ImpossibleCheckTypeHelper
 		if ($rootExpr !== null) {
 			if (self::isSpecified($typeSpecifierScope, $node, $rootExpr)) {
 				return null;
+			}
+
+			// For void methods (null context), if the rootExpr is one of the call's arguments,
+			// the conditional return type describes behavioral control flow (e.g. void vs never
+			// based on a boolean flag), not a type check. Skip the impossible check.
+			if ($context->null() && $node instanceof Expr\CallLike) {
+				foreach ($node->getArgs() as $arg) {
+					if ($arg->value === $rootExpr) {
+						return null;
+					}
+				}
 			}
 
 			$rootExprType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr));

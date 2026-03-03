@@ -4094,6 +4094,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
+			if (
+				array_key_exists($exprString, $newVariableTypes)
+				&& $newVariableTypes[$exprString]->equalTypes($holder)
+				&& !$newVariableTypes[$exprString]->getCertainty()->equals($holder->getCertainty())
+			) {
+				continue;
+			}
+
 			unset($newVariableTypes[$exprString]);
 		}
 

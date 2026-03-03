@@ -1543,7 +1543,7 @@ final class TypeSpecifier
 			return null;
 		}
 
-		$argsMap = [];
+		$argumentExpr = null;
 		$parameters = $parametersAcceptor->getParameters();
 		foreach ($call->getArgs() as $i => $arg) {
 			if ($arg->unpack) {
@@ -1558,28 +1558,28 @@ final class TypeSpecifier
 				continue;
 			}
 
-			$argsMap['$' . $paramName] = $arg->value;
+			if ($returnType->getParameterName() !== '$' . $paramName) {
+				continue;
+			}
+
+			$argumentExpr = $arg->value;
 		}
 
-		return $this->getConditionalSpecifiedTypes($returnType, $leftType, $rightType, $scope, $argsMap);
+		if ($argumentExpr === null) {
+			return null;
+		}
+
+		return $this->getConditionalSpecifiedTypes($returnType, $leftType, $rightType, $scope, $argumentExpr);
 	}
 
-	/**
-	 * @param array<string, Expr> $argsMap
-	 */
 	private function getConditionalSpecifiedTypes(
 		ConditionalTypeForParameter $conditionalType,
 		Type $leftType,
 		Type $rightType,
 		Scope $scope,
-		array $argsMap,
+		Expr $argumentExpr,
 	): ?SpecifiedTypes
 	{
-		$parameterName = $conditionalType->getParameterName();
-		if (!array_key_exists($parameterName, $argsMap)) {
-			return null;
-		}
-
 		$targetType = $conditionalType->getTarget();
 		$ifType = $conditionalType->getIf();
 		$elseType = $conditionalType->getElse();
@@ -1593,7 +1593,7 @@ final class TypeSpecifier
 		}
 
 		$specifiedTypes = $this->create(
-			$argsMap[$parameterName],
+			$argumentExpr,
 			$targetType,
 			$context,
 			$scope,
@@ -1604,7 +1604,7 @@ final class TypeSpecifier
 				$context = $context->negate();
 			}
 
-			$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $argsMap[$parameterName], $context));
+			$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $argumentExpr, $context));
 		}
 
 		return $specifiedTypes;

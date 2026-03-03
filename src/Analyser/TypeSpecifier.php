@@ -1588,8 +1588,7 @@ final class TypeSpecifier
 			(
 				$argumentExpr instanceof Node\Scalar
 				|| ($argumentExpr instanceof ConstFetch && in_array(strtolower($argumentExpr->name->toString()), ['true', 'false', 'null'], true))
-				&& ($ifType instanceof NeverType || $elseType instanceof NeverType)
-			)
+			) && ($ifType instanceof NeverType || $elseType instanceof NeverType)
 		) {
 			return null;
 		}

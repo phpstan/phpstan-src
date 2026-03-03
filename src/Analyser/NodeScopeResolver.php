@@ -208,7 +208,6 @@ use TypeError;
 use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
-use function array_flip;
 use function array_key_exists;
 use function array_key_last;
 use function array_keys;

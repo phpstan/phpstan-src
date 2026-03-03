@@ -4388,6 +4388,7 @@ class NodeScopeResolver
 				$armCondScope = $matchScope;
 				$condNodes = [];
 				$armCondResultScope = $matchScope;
+				$bodyScope = null;
 				foreach ($arm->conds as $j => $armCond) {
 					if (isset($armCondsToSkip[$i][$j])) {
 						continue;
@@ -4403,36 +4404,17 @@ class NodeScopeResolver
 					if ($armCondType->isTrue()->yes()) {
 						$hasAlwaysTrueCond = true;
 					}
-					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);
+					$armCondScope = $armCondResultScope->filterByFalseyValue($armCondExpr);
+					if ($bodyScope === null) {
+						$bodyScope = $armCondResultScope->filterByTruthyValue($armCondExpr);
+					} else {
+						$bodyScope = $bodyScope->mergeWith($armCondResultScope->filterByTruthyValue($armCondExpr));
+					}
 					$filteringExprs[] = $armCond;
 				}
 
 				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
-				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);
-				$condResultScope = $armCondResultScope;
-				$matchScopeKnownVars = array_flip(array_merge($matchScope->getDefinedVariables(), $matchScope->getMaybeDefinedVariables()));
-				foreach ($condResultScope->getDefinedVariables() as $varName) {
-					if (isset($matchScopeKnownVars[$varName])) {
-						continue;
-					}
-					$bodyScope = $bodyScope->assignVariable(
-						$varName,
-						$condResultScope->getVariableType($varName),
-						$condResultScope->getNativeType(new Variable($varName)),
-						$condResultScope->hasVariableType($varName),
-					);
-				}
-				foreach ($condResultScope->getMaybeDefinedVariables() as $varName) {
-					if (isset($matchScopeKnownVars[$varName])) {
-						continue;
-					}
-					$bodyScope = $bodyScope->assignVariable(
-						$varName,
-						$condResultScope->getVariableType($varName),
-						$condResultScope->getNativeType(new Variable($varName)),
-						$condResultScope->hasVariableType($varName),
-					);
-				}
+				$bodyScope ??= $matchScope->filterByTruthyValue($filteringExpr);
 				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
@@ -4449,7 +4431,7 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+				$matchScope = $armCondScope->filterByFalseyValue($filteringExpr);
 			}
 
 			if (!$hasDefaultCond && !$hasAlwaysTrueCond && $condType->isBoolean()->yes() && $condType->isConstantScalarValue()->yes()) {

@@ -1257,4 +1257,80 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12944.php'], []);
 	}
 
+	public function testBug9023(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-9023.php'], []);
+	}
+
+	public function testBug11984(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-11984.php'], []);
+	}
+
+	#[DataProvider('dataBug11545')]
+	public function testBug11545(bool $polluteScopeWithLoopInitialAssignments): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$errors = [];
+		if (!$polluteScopeWithLoopInitialAssignments) {
+			$errors[] = [
+				'Variable $result might not be defined.',
+				24,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-11545.php'], $errors);
+	}
+
+	/** @return iterable<array{bool}> */
+	public static function dataBug11545(): iterable
+	{
+		yield [false];
+		yield [true];
+	}
+
+	public function testBug10245(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10245.php'], []);
+	}
+
+	public function testBug5919(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-5919.php'], []);
+	}
+
+	public function testBug5477(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-5477.php'], []);
+	}
+
 }

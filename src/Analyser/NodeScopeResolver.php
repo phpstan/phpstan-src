@@ -1522,8 +1522,12 @@ class NodeScopeResolver
 			}
 
 			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
-			foreach ($breakExitPoints as $breakExitPoint) {
-				$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates ? null : $finalScope;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
 			}
 
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
@@ -1629,8 +1633,14 @@ class NodeScopeResolver
 			} else {
 				$this->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $nodeCallback, ExpressionContext::createDeep());
 			}
-			foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+
+			$breakExitPoints = $bodyScopeResult->getExitPointsByType(Break_::class);
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates ? null : $finalScope;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
 			}
 
 			return new InternalStatementResult(
@@ -1741,8 +1751,13 @@ class NodeScopeResolver
 				$finalScope = $finalScope->filterByFalseyValue($lastCondExpr);
 			}
 
-			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+			$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
+			if (count($breakExitPoints) > 0) {
+				$breakScope = $alwaysIterates->yes() ? null : $finalScope;
+				foreach ($breakExitPoints as $breakExitPoint) {
+					$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				}
+				$finalScope = $breakScope;
 			}
 
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {

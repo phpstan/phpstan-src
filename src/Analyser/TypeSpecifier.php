@@ -1584,6 +1584,15 @@ final class TypeSpecifier
 		$ifType = $conditionalType->getIf();
 		$elseType = $conditionalType->getElse();
 
+		if (
+			(
+				$argumentExpr instanceof Node\Scalar
+				|| ($argumentExpr instanceof ConstFetch && in_array(strtolower($argumentExpr->name->toString()), ['true', 'false', 'null'], true))
+			) && ($ifType instanceof NeverType || $elseType instanceof NeverType)
+		) {
+			return null;
+		}
+
 		if ($leftType->isSuperTypeOf($ifType)->yes() && $rightType->isSuperTypeOf($elseType)->yes()) {
 			$context = $conditionalType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue();
 		} elseif ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {

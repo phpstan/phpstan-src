@@ -44,6 +44,7 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 		$inputType = $scope->getType($args[0]->value);
 
 		$arrayTypes = $inputType->getArrays();
+		$isInputNonEmpty = $inputType->isIterableAtLeastOnce()->yes();
 
 		$outputTypes = [];
 		$allowedValues = new UnionType([new IntegerType(), new StringType()]);
@@ -54,10 +55,16 @@ final class ArrayCountValuesDynamicReturnTypeExtension implements DynamicFunctio
 				continue;
 			}
 
-			$outputTypes[] = new IntersectionType([
-				new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null)),
-				new NonEmptyArrayType(),
-			]);
+			$resultArrayType = new ArrayType($itemType->toArrayKey(), IntegerRangeType::fromInterval(1, null));
+
+			if ($isInputNonEmpty) {
+				$outputTypes[] = new IntersectionType([
+					$resultArrayType,
+					new NonEmptyArrayType(),
+				]);
+			} else {
+				$outputTypes[] = $resultArrayType;
+			}
 		}
 
 		if (count($outputTypes) === 0) {

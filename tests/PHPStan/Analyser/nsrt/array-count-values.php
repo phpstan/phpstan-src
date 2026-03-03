@@ -25,7 +25,7 @@ function returnsStringOrObjectArray(): array
 }
 
 // Objects are ignored by array_count_values, with a warning emitted.
-assertType('non-empty-array<string, int<1, max>>', array_count_values(returnsStringOrObjectArray()));
+assertType('array<string, int<1, max>>', array_count_values(returnsStringOrObjectArray()));
 
 class StringableObject
 {

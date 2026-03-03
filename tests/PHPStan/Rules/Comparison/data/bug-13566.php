@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace Bug13566;
 
+use LogicException;
+
 class ReturnViaBool
 {
 	/** @return ($exit is true ? never : void) */
@@ -195,4 +197,16 @@ class ReturnViaUnion
 
 $x = 123;
 if (is_numeric($x)) {
+}
+
+function doFoo($mixed) {
+	assertIsInt($mixed);
+	assertIsInt($mixed);
+}
+
+/** @phpstan-assert int $i */
+function assertIsInt($i):void {
+	if (!is_int($i)) {
+		throw new \LogicException();
+	}
 }

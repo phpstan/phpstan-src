@@ -1179,4 +1179,19 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14177.php'], []);
 	}
 
+	public function testBug13566(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13566.php'], [
+			[
+				'Call to function is_numeric() with 123 will always evaluate to true.',
+				199,
+			],
+			[
+				'Call to function assertIsInt() with int will always evaluate to true.',
+				204,
+			],
+		]);
+	}
+
 }

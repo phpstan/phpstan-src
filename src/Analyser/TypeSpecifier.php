@@ -590,9 +590,16 @@ final class TypeSpecifier
 					));
 					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
+						if ($context->null() && $expr->var instanceof MethodCall) {
+							return $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $expr->var, $context));
+						}
 						return $specifiedTypes;
 					}
 				}
+			}
+
+			if ($context->null() && $expr->var instanceof MethodCall) {
+				return $this->specifyTypesInCondition($scope, $expr->var, $context);
 			}
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
@@ -1665,7 +1672,16 @@ final class TypeSpecifier
 		}
 
 		if ($call instanceof MethodCall) {
-			$argsMap['this'] = [$call->var];
+			$callVar = $call->var;
+			while ($callVar instanceof MethodCall) {
+				$callerType = $scope->getType($callVar->var);
+				$returnType = $scope->getType($callVar);
+				if (!$callerType->equals($returnType)) {
+					break;
+				}
+				$callVar = $callVar->var;
+			}
+			$argsMap['this'] = [$callVar];
 		}
 
 		/** @var SpecifiedTypes|null $types */

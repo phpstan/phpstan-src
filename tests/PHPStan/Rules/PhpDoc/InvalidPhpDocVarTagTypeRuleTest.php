@@ -170,6 +170,11 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6348.php'], []);
 	}
 
+	public function testBug14206(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14206.php'], []);
+	}
+
 	public function testBug9055(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9055.php'], [

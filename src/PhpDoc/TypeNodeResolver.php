@@ -86,6 +86,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -935,17 +936,23 @@ final class TypeNodeResolver
 
 			try {
 				if (count($genericTypes) === 1) { // Foo<ValueType>
-					return TypeCombinator::intersect(
-						$mainType,
-						new IterableType(new MixedType(true), $genericTypes[0]),
-					);
+					$iterableType = new IterableType(new MixedType(true), $genericTypes[0]);
+					$result = TypeCombinator::intersect($mainType, $iterableType);
+					if (!$result instanceof NeverType) {
+						return $result;
+					}
+
+					return new IntersectionType([$mainType, $iterableType]);
 				}
 
 				if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
-					return TypeCombinator::intersect(
-						$mainType,
-						new IterableType($genericTypes[0], $genericTypes[1]),
-					);
+					$iterableType = new IterableType($genericTypes[0], $genericTypes[1]);
+					$result = TypeCombinator::intersect($mainType, $iterableType);
+					if (!$result instanceof NeverType) {
+						return $result;
+					}
+
+					return new IntersectionType([$mainType, $iterableType]);
 				}
 			} finally {
 				if ($mainTypeClassName !== null) {

@@ -860,17 +860,15 @@ final class FunctionDefinitionCheck
 			$resolvedPartsCount = count($resolvedParts);
 
 			if ($originalPartsCount <= $resolvedPartsCount) {
-				$suffixParts = array_slice($resolvedParts, $resolvedPartsCount - $originalPartsCount);
-				for ($i = 0; $i < $originalPartsCount; $i++) {
-					if (strtolower($originalParts[$i]) !== strtolower($suffixParts[$i])) {
-						return []; // use alias, not just a case difference
-					}
-				}
-
 				$prefixParts = array_slice($resolvedParts, 0, $resolvedPartsCount - $originalPartsCount);
 				$originalCaseClassName = implode('\\', array_merge($prefixParts, $originalParts));
 			} else {
 				$originalCaseClassName = $originalName->toString();
+			}
+
+			if (strtolower($originalCaseClassName) !== strtolower($resolvedName)) {
+				// use alias, not just a case difference
+				return [];
 			}
 
 			if ($originalCaseClassName === $resolvedName) {

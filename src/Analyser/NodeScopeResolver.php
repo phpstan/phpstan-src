@@ -291,6 +291,8 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter]
+		private readonly bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -3230,9 +3232,15 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			if ($methodReflection !== null) {
-				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
+				$shouldInvalidateExpr = $this->rememberPossiblyImpureFunctionValues
+					? $methodReflection->hasSideEffects()->yes()
+					: !$methodReflection->hasSideEffects()->no();
+				if ($shouldInvalidateExpr || $methodReflection->getName() === '__construct') {
 					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
+					if ($shouldInvalidateExpr) {
+						$scope = $scope->invalidateStaticMembers($normalizedExpr->var);
+					}
 				}
 				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
 					$selfOutType = $methodReflection->getSelfOutType();

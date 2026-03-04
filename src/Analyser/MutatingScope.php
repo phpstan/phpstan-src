@@ -3656,6 +3656,66 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	public function invalidateStaticMembers(Expr $var): self
+	{
+		$classReflections = $this->getType($var)->getObjectClassReflections();
+		$classNamesToInvalidate = [];
+		foreach ($classReflections as $classReflection) {
+			$classNamesToInvalidate[] = strtolower($classReflection->getName());
+			foreach ($classReflection->getParents() as $parentClass) {
+				$classNamesToInvalidate[] = strtolower($parentClass->getName());
+			}
+		}
+
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$invalidated = false;
+		$nodeFinder = new NodeFinder();
+		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$expr = $exprTypeHolder->getExpr();
+			$found = $nodeFinder->findFirst([$expr], static function (Node $node) use ($classNamesToInvalidate): bool {
+				if (!$node instanceof Expr\StaticCall && !$node instanceof Expr\StaticPropertyFetch) {
+					return false;
+				}
+				if (!$node->class instanceof Name || !$node->class->isFullyQualified()) {
+					return false;
+				}
+
+				return in_array($node->class->toLowerString(), $classNamesToInvalidate, true);
+			});
+			if ($found === null) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$invalidated = true;
+		}
+
+		if (!$invalidated) {
+			return $this;
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	private function setExpressionCertainty(Expr $expr, TrinaryLogic $certainty): self
 	{
 		if ($this->hasExpressionType($expr)->no()) {

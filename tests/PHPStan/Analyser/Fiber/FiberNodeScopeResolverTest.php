@@ -72,6 +72,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
+			$container->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

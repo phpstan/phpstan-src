@@ -94,6 +94,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
+			$container->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

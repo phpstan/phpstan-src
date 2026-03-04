@@ -1059,10 +1059,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testPossiblyImpureTip(): void
 	{
-		$impureTipFunction = 'If PossiblyImpureTip\maybeImpureFunction() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
-		$impureTipMethod = 'If PossiblyImpureTip\MethodCallTest::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
-		$impureTipStatic = 'If PossiblyImpureTip\StaticCallTest::maybeImpureStatic() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
-		$impureTipIntermediate = 'If PossiblyImpureTip\ObjectInvalidationTest::maybeImpureIntermediate() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
+		$learnMore = ' Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>';
+		$impureTipFunction = 'If PossiblyImpureTip\maybeImpureFunction() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
+		$impureTipMethod = 'If PossiblyImpureTip\MethodCallTest::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
+		$impureTipStatic = 'If PossiblyImpureTip\StaticCallTest::maybeImpureStatic() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
+		$impureTipIntermediate = 'If PossiblyImpureTip\ObjectInvalidationTest::maybeImpureIntermediate() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
 		$this->analyse([__DIR__ . '/data/possibly-impure-tip.php'], [
 			// Function calls: maybe-impure (tip expected)
 			[
@@ -1129,13 +1130,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				294,
-				'If PossiblyImpureTip\IntermediateCallPriority::next() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.',
+				'If PossiblyImpureTip\IntermediateCallPriority::next() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
 			],
 			// No intermediate call: tip points to fetch() itself
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				303,
-				'If PossiblyImpureTip\IntermediateCallPriority::fetch() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.',
+				'If PossiblyImpureTip\IntermediateCallPriority::fetch() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
 			],
 
 			// No tip when return type alone explains the error

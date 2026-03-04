@@ -235,7 +235,7 @@ final class RuleErrorBuilder
 	public function possiblyImpureTip(array $callDescriptions): self
 	{
 		foreach ($callDescriptions as $callDescription) {
-			$this->addTip(sprintf('If %s is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.', $callDescription));
+			$this->addTip(sprintf('If %s is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration. Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>', $callDescription));
 		}
 
 		return $this;

@@ -4105,13 +4105,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
-			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
-				continue;
-			}
+
 			if (
 				array_key_exists($exprString, $theirExpressionTypes)
 				&& !$theirExpressionTypes[$exprString]->getCertainty()->yes()
 			) {
+				continue;
+			}
+
+			if ($mergedExpressionTypes[$exprString]->equalTypes($holder)) {
 				continue;
 			}
 

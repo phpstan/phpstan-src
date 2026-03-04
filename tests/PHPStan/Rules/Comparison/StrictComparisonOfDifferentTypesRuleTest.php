@@ -1125,14 +1125,27 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			// Object invalidation: @phpstan-impure intermediate - no error ($this invalidated)
 			// Object invalidation: void intermediate - no error ($this invalidated)
 
+			// Intermediate maybe-impure call takes priority over direct call
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				294,
+				'If PossiblyImpureTip\IntermediateCallPriority::next() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.',
+			],
+			// No intermediate call: tip points to fetch() itself
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				303,
+				'If PossiblyImpureTip\IntermediateCallPriority::fetch() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.',
+			],
+
 			// No tip when return type alone explains the error
 			[
 				'Strict comparison using === between string and null will always evaluate to false.',
-				287,
+				324,
 			],
 			[
 				'Strict comparison using !== between string and null will always evaluate to true.',
-				291,
+				328,
 			],
 		]);
 	}

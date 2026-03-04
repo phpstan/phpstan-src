@@ -270,6 +270,43 @@ class ObjectInvalidationTest
 
 }
 
+// --- Intermediate maybe-impure call takes priority over direct call ---
+
+class IntermediateCallPriority
+{
+
+	public function fetch(): int
+	{
+		return rand(1, 100);
+	}
+
+	public function next(): bool
+	{
+		return true;
+	}
+
+	public function testIntermediateCallTipPriority(): void
+	{
+		// fetch() narrowed to 1, next() is intermediate maybe-impure call
+		// tip should point to next(), not fetch()
+		if ($this->fetch() === 1) {
+			$this->next();
+			if ($this->fetch() === 2) { // always false, tip for next()
+			}
+		}
+	}
+
+	public function testNoIntermediateCall(): void
+	{
+		// No intermediate call: tip should point to fetch() itself
+		if ($this->fetch() === 1) {
+			if ($this->fetch() === 2) { // always false, tip for fetch()
+			}
+		}
+	}
+
+}
+
 // --- No tip when return type alone explains the error ---
 
 class NoTipWhenReturnTypeExplains

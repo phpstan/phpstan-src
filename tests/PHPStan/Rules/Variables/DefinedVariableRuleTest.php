@@ -1323,6 +1323,26 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5919.php'], []);
 	}
 
+	public function testBug8430(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-8430.php'], []);
+	}
+
+	public function testBug8430b(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-8430b.php'], []);
+	}
+
 	public function testBug5477(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;
@@ -1331,6 +1351,53 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 
 		$this->analyse([__DIR__ . '/data/bug-5477.php'], []);
+	}
+
+	public function testBug10657(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10657.php'], []);
+	}
+
+	public function testBug6830(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-6830.php'], []);
+	}
+
+	public function testBug14117(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14117.php'], [
+			[
+				'Variable $value might not be defined.',
+				33,
+			],
+			[
+				'Variable $value might not be defined.',
+				49,
+			],
+			[
+				'Undefined variable: $value',
+				65,
+			],
+			[
+				'Undefined variable: $value',
+				81,
+			],
+		]);
 	}
 
 }

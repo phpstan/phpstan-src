@@ -3952,6 +3952,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
+		$conditionalExpressions = $this->preserveSafeConditionalExpressions($conditionalExpressions, $this->conditionalExpressions, $theirExpressionTypes);
+		$conditionalExpressions = $this->preserveSafeConditionalExpressions($conditionalExpressions, $otherScope->conditionalExpressions, $ourExpressionTypes);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
 			$ourExpressionTypes,
@@ -4049,6 +4051,75 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * Preserve conditional expressions from one scope that were dropped by
+	 * intersectConditionalExpressions because they don't exist in the other scope.
+	 *
+	 * This handles the case where a variable was invalidated (e.g. by unset()) in one
+	 * branch, causing its conditional expressions to be removed. When the guard condition
+	 * of a conditional expression is disjoint from the other scope's types for the guard
+	 * variable, the conditional expression is still valid and should be preserved.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
+	 * @param array<string, ConditionalExpressionHolder[]> $scopeConditionalExpressions
+	 * @param array<string, ExpressionTypeHolder> $otherExpressionTypes
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function preserveSafeConditionalExpressions(
+		array $currentConditionalExpressions,
+		array $scopeConditionalExpressions,
+		array $otherExpressionTypes,
+	): array
+	{
+		foreach ($scopeConditionalExpressions as $exprString => $holders) {
+			if (array_key_exists($exprString, $currentConditionalExpressions)) {
+				continue;
+			}
+
+			if (array_key_exists($exprString, $otherExpressionTypes)) {
+				continue;
+			}
+
+			if (count($holders) === 0) {
+				continue;
+			}
+
+			$firstHolder = $holders[array_key_first($holders)];
+			$subjectExpr = $firstHolder->getTypeHolder()->getExpr();
+			if (!$subjectExpr instanceof Variable || !is_string($subjectExpr->name)) {
+				continue;
+			}
+
+			$safeHolders = [];
+			foreach ($holders as $key => $holder) {
+				$safe = true;
+				foreach ($holder->getConditionExpressionTypeHolders() as $guardExprString => $guardHolder) {
+					if (!array_key_exists($guardExprString, $otherExpressionTypes)) {
+						$safe = false;
+						break;
+					}
+					if (!$otherExpressionTypes[$guardExprString]->getType()->isSuperTypeOf($guardHolder->getType())->no()) {
+						$safe = false;
+						break;
+					}
+				}
+				if (!$safe) {
+					continue;
+				}
+
+				$safeHolders[$key] = $holder;
+			}
+
+			if (count($safeHolders) <= 0) {
+				continue;
+			}
+
+			$currentConditionalExpressions[$exprString] = $safeHolders;
+		}
+
+		return $currentConditionalExpressions;
 	}
 
 	/**

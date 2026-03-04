@@ -20,6 +20,7 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new NumberComparisonOperatorsConstantConditionRule(
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			true,
 		);

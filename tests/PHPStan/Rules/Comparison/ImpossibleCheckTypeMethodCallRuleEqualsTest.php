@@ -20,6 +20,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				[],
 				true,
 			),
+			new PossiblyImpureTipHelper(true),
 			true,
 			false,
 			true,

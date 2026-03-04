@@ -20,6 +20,7 @@ final class ConstantLooseComparisonRule implements Rule
 {
 
 	public function __construct(
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -48,18 +49,20 @@ final class ConstantLooseComparisonRule implements Rule
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs->isTrue()->yes() || $instanceofTypeWithoutPhpDocs->isFalse()->yes()) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
-			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 		};
 
 		if ($nodeType->isFalse()->yes()) {

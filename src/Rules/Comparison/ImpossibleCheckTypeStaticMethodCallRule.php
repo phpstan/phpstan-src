@@ -23,6 +23,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -51,18 +52,20 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
 			if ($isAlways !== null) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
-			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 		};
 
 		if (!$isAlways) {

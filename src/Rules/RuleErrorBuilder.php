@@ -228,6 +228,20 @@ final class RuleErrorBuilder
 	}
 
 	/**
+	 * @param list<string> $callDescriptions
+	 * @phpstan-this-out self<T&TipRuleError>
+	 * @return self<T&TipRuleError>
+	 */
+	public function possiblyImpureTip(array $callDescriptions): self
+	{
+		foreach ($callDescriptions as $callDescription) {
+			$this->addTip(sprintf('If %s is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.', $callDescription));
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Sets an error identifier.
 	 *
 	 * List of all current error identifiers in PHPStan: https://phpstan.org/error-identifiers

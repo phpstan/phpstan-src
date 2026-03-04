@@ -31,6 +31,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain,
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,

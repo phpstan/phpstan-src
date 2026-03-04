@@ -27,6 +27,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 
 	public function __construct(
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -67,22 +68,25 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $nodeTypeResult): RuleErrorBuilder {
 			$reasons = $nodeTypeResult->reasons;
 			if (count($reasons) > 0) {
-				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
+				$ruleErrorBuilder = $ruleErrorBuilder->acceptsReasonsTip($reasons);
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
-			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 		};
 
 		$verbosity = VerbosityLevel::value();

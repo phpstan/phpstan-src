@@ -24,6 +24,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		return new StrictComparisonOfDifferentTypesRule(
 			self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,
@@ -1052,6 +1053,86 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				'Strict comparison using !== between string and null will always evaluate to true.',
 				10,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testPossiblyImpureTip(): void
+	{
+		$impureTipFunction = 'If PossiblyImpureTip\maybeImpureFunction() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
+		$impureTipMethod = 'If PossiblyImpureTip\MethodCallTest::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
+		$impureTipStatic = 'If PossiblyImpureTip\StaticCallTest::maybeImpureStatic() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
+		$impureTipIntermediate = 'If PossiblyImpureTip\ObjectInvalidationTest::maybeImpureIntermediate() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.';
+		$this->analyse([__DIR__ . '/data/possibly-impure-tip.php'], [
+			// Function calls: maybe-impure (tip expected)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				34,
+				$impureTipFunction,
+			],
+			// Function calls: @phpstan-pure (no tip)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				40,
+			],
+			// Function calls: @phpstan-impure - no error at all (value not remembered)
+			// Function calls: void - cannot appear in === comparison
+
+			// Method calls: maybe-impure (tip expected)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				85,
+				$impureTipMethod,
+			],
+			// Method calls: @phpstan-pure (no tip)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				94,
+			],
+			// Method calls: @phpstan-impure - no error at all (value not remembered)
+			// Method calls: void - return type explains the error (no tip)
+			[
+				'Strict comparison using === between null and null will always evaluate to true.',
+				114,
+			],
+
+			// Static method calls: maybe-impure (tip expected)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				156,
+				$impureTipStatic,
+			],
+			// Static method calls: @phpstan-pure (no tip)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				165,
+			],
+			// Static method calls: @phpstan-impure - no error at all (value not remembered)
+			// Static method calls: void - hasSideEffects()->yes() invalidates
+
+			// Object invalidation: maybe-impure intermediate (tip expected)
+			// getValue() is @phpstan-pure, intermediate is maybe-impure
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				233,
+				$impureTipIntermediate,
+			],
+			// Object invalidation: @phpstan-pure intermediate (no tip)
+			[
+				'Strict comparison using === between 1 and 2 will always evaluate to false.',
+				244,
+			],
+			// Object invalidation: @phpstan-impure intermediate - no error ($this invalidated)
+			// Object invalidation: void intermediate - no error ($this invalidated)
+
+			// No tip when return type alone explains the error
+			[
+				'Strict comparison using === between string and null will always evaluate to false.',
+				287,
+			],
+			[
+				'Strict comparison using !== between string and null will always evaluate to true.',
+				291,
 			],
 		]);
 	}

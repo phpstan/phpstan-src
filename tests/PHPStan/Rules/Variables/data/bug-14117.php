@@ -46,6 +46,22 @@ function baz(): void {
 	}
 
 	if ($key === 3) {
-		echo $value; // this one SHOULD report "might not be defined" because $key === 3 doesn't guarantee either earlier block ran
+		echo $value; // SHOULD report "is not defined"
+	}
+}
+
+function boo(): void {
+	$key = rand(0, 2);
+
+	if ($key === 1) {
+		$value = 'test';
+	}
+
+	if ($key === 1) {
+		unset($value);
+	}
+
+	if ($key === 1) {
+		echo $value;
 	}
 }

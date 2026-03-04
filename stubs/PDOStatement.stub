@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @implements Traversable<array<int|string, mixed>>
- * @implements IteratorAggregate<array<int|string, mixed>>
+ * @implements Traversable<mixed>
+ * @implements IteratorAggregate<mixed>
  * @link https://php.net/manual/en/class.pdostatement.php
  */
 class PDOStatement implements Traversable, IteratorAggregate
@@ -21,7 +21,7 @@ class PDOStatement implements Traversable, IteratorAggregate
     public function getColumnMeta(int $column) {}
 
     /**
-     * @return Iterator<mixed, array<int|string, mixed>>
+     * @return Iterator<mixed, mixed>
      */
     public function getIterator() {}
 }

@@ -65,3 +65,19 @@ function boo(): void {
 		echo $value;
 	}
 }
+
+function loo(): void {
+	$key = rand(0, 2);
+
+	if ($key === 1) {
+		$value = 'test';
+	}
+
+	if ($key === 1 || $key === 2) {
+		unset($value);
+	}
+
+	if ($key === 1) {
+		echo $value;
+	}
+}

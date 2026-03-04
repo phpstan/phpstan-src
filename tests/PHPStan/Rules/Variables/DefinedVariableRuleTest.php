@@ -1391,8 +1391,12 @@ class DefinedVariableRuleTest extends RuleTestCase
 			],
 			[
 				'Undefined variable: $value',
-				65
-			]
+				65,
+			],
+			[
+				'Undefined variable: $value',
+				81,
+			],
 		]);
 	}
 

@@ -4039,13 +4039,63 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$otherHolders = $otherConditionalExpressions[$exprString];
+			$allKeysMatch = true;
 			foreach (array_keys($holders) as $key) {
 				if (!array_key_exists($key, $otherHolders)) {
-					continue 2;
+					$allKeysMatch = false;
+					break;
 				}
 			}
 
-			$newConditionalExpressions[$exprString] = $holders;
+			if ($allKeysMatch) {
+				$newConditionalExpressions[$exprString] = $holders;
+				continue;
+			}
+
+			// When exact keys don't match (e.g. result types differ across loop iterations),
+			// try to merge holders that have the same conditions but different result types.
+			$mergedHolders = [];
+			foreach ($holders as $holder) {
+				$conditionHolders = $holder->getConditionExpressionTypeHolders();
+				$conditionKeys = array_keys($conditionHolders);
+
+				foreach ($otherHolders as $otherHolder) {
+					$otherConditionHolders = $otherHolder->getConditionExpressionTypeHolders();
+					if (array_keys($otherConditionHolders) !== $conditionKeys) {
+						continue;
+					}
+
+					$conditionsMatch = true;
+					foreach ($conditionHolders as $condKey => $condHolder) {
+						if (!$condHolder->equals($otherConditionHolders[$condKey])) {
+							$conditionsMatch = false;
+							break;
+						}
+					}
+
+					if (!$conditionsMatch) {
+						continue;
+					}
+
+					$ourTypeHolder = $holder->getTypeHolder();
+					$otherTypeHolder = $otherHolder->getTypeHolder();
+					$mergedType = TypeCombinator::union($ourTypeHolder->getType(), $otherTypeHolder->getType());
+					$mergedCertainty = TrinaryLogic::maxMin($ourTypeHolder->getCertainty(), $otherTypeHolder->getCertainty());
+
+					$mergedConditionalExpression = new ConditionalExpressionHolder(
+						$conditionHolders,
+						new ExpressionTypeHolder($ourTypeHolder->getExpr(), $mergedType, $mergedCertainty),
+					);
+					$mergedHolders[$mergedConditionalExpression->getKey()] = $mergedConditionalExpression;
+					break;
+				}
+			}
+
+			if ($mergedHolders === []) {
+				continue;
+			}
+
+			$newConditionalExpressions[$exprString] = $mergedHolders;
 		}
 
 		return $newConditionalExpressions;

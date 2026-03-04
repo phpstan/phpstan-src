@@ -16,3 +16,31 @@ function test(array $bools): void
 		}
 	}
 }
+
+function test2(bool $do): void
+{
+	if ($do) {
+		$x = 9999;
+	}
+
+	foreach ([1, 2, 3] as $whatever) {
+		if ($do) {
+			if ($x) {
+				$x = 123;
+			}
+		}
+	}
+}
+
+function test3(bool $do): void
+{
+	if ($do) {
+		$x = 'hello';
+	}
+
+	foreach ([1, 2, 3] as $whatever) {
+		if ($do) {
+			echo $x;
+		}
+	}
+}

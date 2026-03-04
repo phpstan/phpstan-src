@@ -46,6 +46,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
+use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -153,7 +154,9 @@ use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_slice;
+use function array_unique;
 use function array_values;
+use function assert;
 use function count;
 use function explode;
 use function get_class;
@@ -778,6 +781,100 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $variables;
 	}
 
+	/**
+	 * @return list<string>
+	 */
+	public function findPossiblyImpureCallDescriptions(Expr $expr): array
+	{
+		$nodeFinder = new NodeFinder();
+		$descriptions = [];
+		$foundCallExprMatch = false;
+		foreach ($this->expressionTypes as $holder) {
+			$holderExpr = $holder->getExpr();
+			if (!$holderExpr instanceof PossiblyImpureCallExpr) {
+				continue;
+			}
+
+			$callExprKey = $this->getNodeKey($holderExpr->callExpr);
+
+			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($callExprKey): bool {
+				if (!$node instanceof Expr) {
+					return false;
+				}
+
+				return $this->getNodeKey($node) === $callExprKey;
+			});
+
+			if ($found === null) {
+				continue;
+			}
+
+			$foundCallExprMatch = true;
+
+			// Only show the tip when the scope's type for the call expression
+			// differs from the declared return type, meaning control flow
+			// narrowing affected the type (the cached value was narrowed).
+			assert($found instanceof Expr);
+			$scopeType = $this->getType($found);
+			$declaredReturnType = $holder->getType();
+			if ($declaredReturnType->isSuperTypeOf($scopeType)->yes() && $scopeType->isSuperTypeOf($declaredReturnType)->yes()) {
+				continue;
+			}
+
+			$descriptions[] = $holderExpr->getCallDescription();
+		}
+
+		if (count($descriptions) > 0) {
+			return array_values(array_unique($descriptions));
+		}
+
+		// If the first pass found a callExpr in the error expression but
+		// filtered it out (return type wasn't narrowed), the error is
+		// explained by the return type alone - skip the fallback.
+		if ($foundCallExprMatch) {
+			return [];
+		}
+
+		// Fallback: match by impactedExpr for cases where a maybe-impure method
+		// on an object didn't invalidate it, but a different method's return
+		// value was narrowed on that object.
+		// Skip when the expression itself is a direct method/static call -
+		// those are passed by ImpossibleCheckType rules where the error is
+		// about the call's arguments, not about object state.
+		if ($expr instanceof Expr\MethodCall || $expr instanceof Expr\StaticCall) {
+			return [];
+		}
+		foreach ($this->expressionTypes as $holder) {
+			$holderExpr = $holder->getExpr();
+			if (!$holderExpr instanceof PossiblyImpureCallExpr) {
+				continue;
+			}
+
+			$impactedExprKey = $this->getNodeKey($holderExpr->impactedExpr);
+
+			// Skip if impactedExpr is the same as callExpr (function calls)
+			if ($impactedExprKey === $this->getNodeKey($holderExpr->callExpr)) {
+				continue;
+			}
+
+			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($impactedExprKey): bool {
+				if (!$node instanceof Expr) {
+					return false;
+				}
+
+				return $this->getNodeKey($node) === $impactedExprKey;
+			});
+
+			if ($found === null) {
+				continue;
+			}
+
+			$descriptions[] = $holderExpr->getCallDescription();
+		}
+
+		return array_values(array_unique($descriptions));
+	}
+
 	private function isGlobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
@@ -943,6 +1040,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	{
 		$parts = [];
 		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
+			if ($expressionTypeHolder->getExpr() instanceof VirtualNode) {
+				continue;
+			}
 			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
 		}
 		$parts[] = '---';

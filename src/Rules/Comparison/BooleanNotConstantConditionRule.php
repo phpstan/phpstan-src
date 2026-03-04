@@ -21,6 +21,7 @@ final class BooleanNotConstantConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -45,18 +46,20 @@ final class BooleanNotConstantConditionRule implements Rule
 		if ($exprType instanceof ConstantBooleanType) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->expr, $ruleErrorBuilder);
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->expr);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->expr, $ruleErrorBuilder);
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->expr, $ruleErrorBuilder);
 				}
 
-				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+				return $this->possiblyImpureTipHelper->addTip($scope, $node->expr, $ruleErrorBuilder);
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

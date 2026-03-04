@@ -23,6 +23,7 @@ final class BooleanAndConstantConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -51,18 +52,20 @@ final class BooleanAndConstantConditionRule implements Rule
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $originalNode->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
 				}
 
-				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+				return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -89,7 +92,7 @@ final class BooleanAndConstantConditionRule implements Rule
 		if ($rightType instanceof ConstantBooleanType && !$scope->isInFirstLevelStatement()) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
@@ -97,13 +100,15 @@ final class BooleanAndConstantConditionRule implements Rule
 					$originalNode->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
 				}
 
-				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+				return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -127,18 +132,20 @@ final class BooleanAndConstantConditionRule implements Rule
 			if ($nodeType instanceof ConstantBooleanType) {
 				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 					if (!$this->treatPhpDocTypesAsCertain) {
-						return $ruleErrorBuilder;
+						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
 					}
 
 					$booleanNativeType = $scope->getNativeType($originalNode);
 					if ($booleanNativeType instanceof ConstantBooleanType) {
-						return $ruleErrorBuilder;
+						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
 					}
 					if (!$this->treatPhpDocTypesAsCertainTip) {
-						return $ruleErrorBuilder;
+						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
 					}
 
-					return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+					$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
 				};
 
 				$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

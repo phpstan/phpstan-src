@@ -26,6 +26,7 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 				[],
 				$this->treatPhpDocTypesAsCertain,
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,

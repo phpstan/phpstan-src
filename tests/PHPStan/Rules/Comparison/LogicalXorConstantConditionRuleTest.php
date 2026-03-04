@@ -23,6 +23,7 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 				),
 				$this->shouldTreatPhpDocTypesAsCertain(),
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			false,
 			true,

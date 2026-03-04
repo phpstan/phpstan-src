@@ -20,6 +20,7 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 				[],
 				true,
 			),
+			new PossiblyImpureTipHelper(true),
 			true,
 			false,
 			true,

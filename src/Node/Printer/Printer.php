@@ -17,6 +17,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
+use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -86,6 +87,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_AlwaysRememberedExpr(AlwaysRememberedExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanRemembered(%s)', $this->p($expr->getExpr()));
+	}
+
+	protected function pPHPStan_Node_PossiblyImpureCallExpr(PossiblyImpureCallExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanPossiblyImpure(%s, %s)', $this->p($expr->callExpr), $this->p($expr->impactedExpr));
 	}
 
 	protected function pPHPStan_Node_PropertyInitializationExpr(PropertyInitializationExpr $expr): string // phpcs:ignore

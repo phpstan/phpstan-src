@@ -26,6 +26,7 @@ class IfConstantConditionRuleTest extends RuleTestCase
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			true,
 		);

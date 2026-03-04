@@ -20,6 +20,7 @@ final class TernaryOperatorConstantConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -42,18 +43,20 @@ final class TernaryOperatorConstantConditionRule implements Rule
 		if ($exprType instanceof ConstantBooleanType) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->cond);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $ruleErrorBuilder;
+					return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 				}
 
-				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+				return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 			};
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(

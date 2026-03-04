@@ -22,6 +22,7 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ConstantLooseComparisonRule(
+			new PossiblyImpureTipHelper(true),
 			$this->treatPhpDocTypesAsCertain,
 			$this->reportAlwaysTrueInLastCondition,
 			true,

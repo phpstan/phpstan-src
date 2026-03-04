@@ -787,8 +787,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public function findPossiblyImpureCallDescriptions(Expr $expr): array
 	{
 		$nodeFinder = new NodeFinder();
-		$descriptions = [];
+		$callExprDescriptions = [];
 		$foundCallExprMatch = false;
+		$matchedCallExprKeys = [];
 		foreach ($this->expressionTypes as $holder) {
 			$holderExpr = $holder->getExpr();
 			if (!$holderExpr instanceof PossiblyImpureCallExpr) {
@@ -810,6 +811,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$foundCallExprMatch = true;
+			$matchedCallExprKeys[$callExprKey] = true;
 
 			// Only show the tip when the scope's type for the call expression
 			// differs from the declared return type, meaning control flow
@@ -821,58 +823,70 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 
-			$descriptions[] = $holderExpr->getCallDescription();
-		}
-
-		if (count($descriptions) > 0) {
-			return array_values(array_unique($descriptions));
+			$callExprDescriptions[] = $holderExpr->getCallDescription();
 		}
 
 		// If the first pass found a callExpr in the error expression but
 		// filtered it out (return type wasn't narrowed), the error is
 		// explained by the return type alone - skip the fallback.
-		if ($foundCallExprMatch) {
+		if ($foundCallExprMatch && count($callExprDescriptions) === 0) {
 			return [];
 		}
 
-		// Fallback: match by impactedExpr for cases where a maybe-impure method
+		// Second pass: match by impactedExpr for cases where a maybe-impure method
 		// on an object didn't invalidate it, but a different method's return
 		// value was narrowed on that object.
 		// Skip when the expression itself is a direct method/static call -
 		// those are passed by ImpossibleCheckType rules where the error is
 		// about the call's arguments, not about object state.
-		if ($expr instanceof Expr\MethodCall || $expr instanceof Expr\StaticCall) {
-			return [];
-		}
-		foreach ($this->expressionTypes as $holder) {
-			$holderExpr = $holder->getExpr();
-			if (!$holderExpr instanceof PossiblyImpureCallExpr) {
-				continue;
-			}
-
-			$impactedExprKey = $this->getNodeKey($holderExpr->impactedExpr);
-
-			// Skip if impactedExpr is the same as callExpr (function calls)
-			if ($impactedExprKey === $this->getNodeKey($holderExpr->callExpr)) {
-				continue;
-			}
-
-			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($impactedExprKey): bool {
-				if (!$node instanceof Expr) {
-					return false;
+		if (!($expr instanceof Expr\MethodCall || $expr instanceof Expr\StaticCall)) {
+			$impactedExprDescriptions = [];
+			foreach ($this->expressionTypes as $holder) {
+				$holderExpr = $holder->getExpr();
+				if (!$holderExpr instanceof PossiblyImpureCallExpr) {
+					continue;
 				}
 
-				return $this->getNodeKey($node) === $impactedExprKey;
-			});
+				$impactedExprKey = $this->getNodeKey($holderExpr->impactedExpr);
 
-			if ($found === null) {
-				continue;
+				// Skip if impactedExpr is the same as callExpr (function calls)
+				if ($impactedExprKey === $this->getNodeKey($holderExpr->callExpr)) {
+					continue;
+				}
+
+				// Skip if this entry's callExpr was already matched in the first pass
+				$callExprKey = $this->getNodeKey($holderExpr->callExpr);
+				if (isset($matchedCallExprKeys[$callExprKey])) {
+					continue;
+				}
+
+				$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($impactedExprKey): bool {
+					if (!$node instanceof Expr) {
+						return false;
+					}
+
+					return $this->getNodeKey($node) === $impactedExprKey;
+				});
+
+				if ($found === null) {
+					continue;
+				}
+
+				$impactedExprDescriptions[] = $holderExpr->getCallDescription();
 			}
 
-			$descriptions[] = $holderExpr->getCallDescription();
+			// Prefer impactedExpr matches (intermediate calls that could have
+			// invalidated the object) over callExpr matches
+			if (count($impactedExprDescriptions) > 0) {
+				return array_values(array_unique($impactedExprDescriptions));
+			}
 		}
 
-		return array_values(array_unique($descriptions));
+		if (count($callExprDescriptions) > 0) {
+			return array_values(array_unique($callExprDescriptions));
+		}
+
+		return [];
 	}
 
 	private function isGlobalVariable(string $variableName): bool

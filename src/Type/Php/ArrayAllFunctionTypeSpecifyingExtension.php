@@ -39,19 +39,49 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 
 		$array = $args[0]->value;
 		$callable = $args[1]->value;
+
+
 		if ($callable instanceof Expr\ArrowFunction && $callable->expr instanceof Expr\FuncCall) {
-			$specifiedTypesInCallable = $this->typeSpecifier->specifyTypesInCondition($scope, $callable->expr, $context)->getSureTypes();
-			$callableParm = $callable->params[0];
-			if (!$callableParm instanceof Expr\Variable || !key_exists("$" . $callableParm->name, $specifiedTypesInCallable)) {
-				return new SpecifiedTypes();
+
+			$callableParms = $callable->params;
+			$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callable->expr, $context)->getSureTypes();
+
+			if(count($callableParms) >= 1 && $callableParms[0] instanceof Expr\Variable) {
+
+				$callableParmValueName = $callableParms[0]->name;
+				$specifiedTypeOfValue = array_find(
+					$specifiedTypesInFuncCall,
+					fn($specifiedType) => $specifiedType[0] instanceof Expr\Variable && $specifiedType[0]->name === $callableParmValueName
+				);
+
+				if(isset($specifiedTypeOfValue)) {
+					$valueType = $specifiedTypeOfValue[1];
+				}
+
 			}
-			$ItemType = $specifiedTypesInCallable["$" . $callableParm->name][1];
-			return $this->typeSpecifier->create(
-				$array,
-				new ArrayType(new MixedType(), $ItemType),
-				$context,
-				$scope
-			);
+
+			if(count($callableParms) >= 2 && $callableParms[1] instanceof Expr\Variable) {
+
+				$callableParmKeyName = $callableParms[1]->name;
+				$specifiedTypeOfKey = array_find(
+					$specifiedTypesInFuncCall,
+					fn($specifiedType) => $specifiedType[0] instanceof Expr\Variable && $specifiedType[0]->name === $callableParmKeyName
+				);
+
+				if(isset($specifiedTypeOfKey)) {
+					$keyType = $specifiedTypeOfKey[1];
+				}
+
+			}
+
+			if(isset($keyType) || isset($valueType)) {
+				return $this->typeSpecifier->create(
+					$array,
+					new ArrayType($keyType ?? new MixedType(), $valueType ?? new MixedType()),
+					$context,
+					$scope
+				);
+			}
 		}
 
 		return new SpecifiedTypes();

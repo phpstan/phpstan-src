@@ -17,6 +17,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -1339,6 +1340,27 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$array' => 'array<int>'
+				],
+				[]
+			],
+			[
+				new FuncCall(
+					new Name("array_all"),
+					[
+						new Arg(new Variable("array")),
+						new Arg(
+							new Expr\ArrowFunction(
+								[
+									'expr' => new FuncCall(new Name("is_string"), [new Arg(new Variable("key"))]),
+									'params' => [new Variable("value"), new Variable("key")],
+								],
+								[]
+							)
+						)
+					]
+				),
+				[
+					'$array' => 'array<string, mixed>'
 				],
 				[]
 			],

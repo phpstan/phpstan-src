@@ -15,6 +15,7 @@ use function array_map;
 use function count;
 use function explode;
 use function getenv;
+use function implode;
 use function in_array;
 use function is_string;
 use function ltrim;
@@ -26,6 +27,8 @@ use function str_replace;
 #[AutowiredService(name: 'errorFormatter.table')]
 final class TableErrorFormatter implements ErrorFormatter
 {
+
+	private const MAX_ERRORS_TO_SHOW = 1000;
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
@@ -84,6 +87,13 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
+		$errorsBudget = getenv('PHPSTAN_ERRORS_LIMIT');
+		if ($errorsBudget === false) {
+			$errorsBudget = self::MAX_ERRORS_TO_SHOW;
+		}
+		$errorsBudget = (int) $errorsBudget;
+
+		$printedErrors = 0;
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
@@ -150,6 +160,11 @@ final class TableErrorFormatter implements ErrorFormatter
 			}
 
 			$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
+			$printedErrors += count($rows);
+
+			if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+				break;
+			}
 		}
 
 		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {
@@ -170,6 +185,15 @@ final class TableErrorFormatter implements ErrorFormatter
 			$style->error($finalMessage);
 		} else {
 			$style->warning($finalMessage);
+		}
+
+		if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+			$note = [];
+			$note[] = sprintf('Result is limited to the first %d errors', $errorsBudget);
+			$note[] = '- Consider lowering the PHPStan level';
+			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
+			$note[] = '- Pass PHPSTAN_ERRORS_LIMIT=0 environment variable to show all errors';
+			$style->note(implode("\n", $note));
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;

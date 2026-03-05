@@ -29,7 +29,7 @@ use function str_replace;
 final class TableErrorFormatter implements ErrorFormatter
 {
 
-	private const DEFAULT_MAX_ERRORS_TO_SHOW = 1000;
+	private const DEFAULT_ERRORS_LIMIT = 1000;
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
@@ -90,7 +90,7 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		$errorsBudget = getenv('PHPSTAN_ERRORS_LIMIT');
 		if ($errorsBudget === false) {
-			$errorsBudget = self::DEFAULT_MAX_ERRORS_TO_SHOW;
+			$errorsBudget = self::DEFAULT_ERRORS_LIMIT;
 		}
 		$errorsBudget = (int) $errorsBudget;
 

@@ -12,6 +12,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
+use function array_slice;
 use function count;
 use function explode;
 use function getenv;
@@ -159,12 +160,15 @@ final class TableErrorFormatter implements ErrorFormatter
 				];
 			}
 
-			$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
 			$printedErrors += count($rows);
-
 			if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+				$rows = array_slice($rows, 0, $errorsBudget - ($printedErrors - count($rows)));
+
+				$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
 				break;
 			}
+
+			$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
 		}
 
 		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {

@@ -1236,6 +1236,26 @@ class DefinedVariableRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0')]
+	public function testBug13981(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-13981.php'], [
+			[
+				'Undefined variable: $baseDir',
+				34,
+			],
+			[
+				'Variable $baseDir might not be defined.',
+				46,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
 	public function testBug7705(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

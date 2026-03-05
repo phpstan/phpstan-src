@@ -76,6 +76,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			false,
 			null,
 			null,
+			0,
 		);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],

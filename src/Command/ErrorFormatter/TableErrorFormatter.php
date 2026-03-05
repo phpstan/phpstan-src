@@ -29,7 +29,7 @@ use function str_replace;
 final class TableErrorFormatter implements ErrorFormatter
 {
 
-	private const DEFAULT_ERRORS_LIMIT = 1000;
+	private const ERRORS_LIMIT = 1000;
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
@@ -42,6 +42,8 @@ final class TableErrorFormatter implements ErrorFormatter
 		private ?string $editorUrl,
 		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
+		#[AutowiredParameter]
+		private int $level,
 	)
 	{
 	}
@@ -88,11 +90,11 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
-		$errorsBudget = getenv('PHPSTAN_ERRORS_LIMIT');
-		if ($errorsBudget === false) {
-			$errorsBudget = self::DEFAULT_ERRORS_LIMIT;
+		if (getenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS') === '1') {
+			$errorsBudget = self::ERRORS_LIMIT;
+		} else {
+			$errorsBudget = 0;
 		}
-		$errorsBudget = (int) $errorsBudget;
 
 		$printedErrors = 0;
 		foreach ($fileErrors as $file => $errors) {
@@ -180,24 +182,29 @@ final class TableErrorFormatter implements ErrorFormatter
 			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', OutputFormatter::escape($warning)], $analysisResult->getWarnings()));
 		}
 
-		$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());
-		if ($warningsCount > 0) {
-			$finalMessage .= sprintf($warningsCount === 1 ? ' and %d warning' : ' and %d warnings', $warningsCount);
-		}
-
-		if ($analysisResult->getTotalErrorsCount() > 0) {
-			$style->error($finalMessage);
-		} else {
-			$style->warning($finalMessage);
-		}
-
 		if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+			$style->error(sprintf('Found %s+ errors', self::ERRORS_LIMIT));
+
 			$note = [];
 			$note[] = sprintf('Result is limited to the first %d errors', $errorsBudget);
-			$note[] = '- Consider lowering the PHPStan level';
+			if ($this->level > 0) {
+				$note[] = '- Consider lowering the PHPStan level';
+			}
 			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
-			$note[] = '- Pass PHPSTAN_ERRORS_LIMIT=0 environment variable to show all errors';
+			$note[] = '- Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors';
+			$note[] = '- Learn more: https://phpstan.com';
 			$style->note(implode("\n", $note));
+		} else {
+			$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());
+			if ($warningsCount > 0) {
+				$finalMessage .= sprintf($warningsCount === 1 ? ' and %d warning' : ' and %d warnings', $warningsCount);
+			}
+
+			if ($analysisResult->getTotalErrorsCount() > 0) {
+				$style->error($finalMessage);
+			} else {
+				$style->warning($finalMessage);
+			}
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;

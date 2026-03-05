@@ -441,6 +441,7 @@ TABLE,
 			false,
 			null,
 			null,
+			0
 		);
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
@@ -462,6 +463,7 @@ TABLE,
 			false,
 			$editorUrl,
 			$editorUrlTitle,
+			0
 		);
 	}
 

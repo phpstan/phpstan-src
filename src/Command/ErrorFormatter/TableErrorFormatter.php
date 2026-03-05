@@ -43,7 +43,7 @@ final class TableErrorFormatter implements ErrorFormatter
 		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
 		#[AutowiredParameter]
-		private int $level,
+		private ?int $level,
 	)
 	{
 	}

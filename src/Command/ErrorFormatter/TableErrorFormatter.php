@@ -191,9 +191,9 @@ final class TableErrorFormatter implements ErrorFormatter
 			if ($this->level > 0) {
 				$note[] = '- Consider lowering the PHPStan level';
 			}
-			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
 			$note[] = '- Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors';
-			$note[] = '- Learn more: https://phpstan.com';
+			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
+			$note[] = '  Learn more: https://phpstan.com';
 			$style->note(implode("\n", $note));
 		} else {
 			$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());

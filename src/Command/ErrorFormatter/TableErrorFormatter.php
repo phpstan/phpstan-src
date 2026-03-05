@@ -91,7 +91,7 @@ final class TableErrorFormatter implements ErrorFormatter
 		}
 
 		$forceShowAll = getenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
-		if (\in_array($forceShowAll, [false, '0'], true)) {
+		if (in_array($forceShowAll, [false, '0'], true)) {
 			$errorsBudget = self::ERRORS_LIMIT;
 		} else {
 			$errorsBudget = 0;

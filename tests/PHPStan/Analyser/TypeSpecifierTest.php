@@ -17,7 +17,6 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\VariadicPlaceholder;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -27,7 +26,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
@@ -1324,136 +1322,136 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new FuncCall(
-					new Name("array_all"),
+					new Name('array_all'),
 					[
-						new Arg(new Variable("array")),
+						new Arg(new Variable('array')),
 						new Arg(
 							new Expr\ArrowFunction(
 								[
-									'expr' => new FuncCall(new Name("is_int"), [new Arg(new Variable("value"))]),
-									'params' => [new Variable("value")],
+									'expr' => new FuncCall(new Name('is_int'), [new Arg(new Variable('value'))]),
+									'params' => [new Variable('value')],
 								],
-								[]
-							)
-						)
-					]
+								[],
+							),
+						),
+					],
 				),
 				[
-					'$array' => 'array<int>'
+					'$array' => 'array<int>',
 				],
-				[]
+				[],
 			],
 			[
 				new FuncCall(
-					new Name("array_all"),
+					new Name('array_all'),
 					[
-						new Arg(new Variable("array")),
+						new Arg(new Variable('array')),
 						new Arg(
 							new Expr\ArrowFunction(
 								[
-									'expr' => new FuncCall(new Name("is_string"), [new Arg(new Variable("key"))]),
-									'params' => [new Variable("value"), new Variable("key")],
+									'expr' => new FuncCall(new Name('is_string'), [new Arg(new Variable('key'))]),
+									'params' => [new Variable('value'), new Variable('key')],
 								],
-								[]
-							)
-						)
-					]
+								[],
+							),
+						),
+					],
 				),
 				[
-					'$array' => 'array<string, mixed>'
+					'$array' => 'array<string, mixed>',
 				],
-				[]
+				[],
 			],
 			[
 				new FuncCall(
-					new Name("array_all"),
+					new Name('array_all'),
 					[
-						new Arg(new Variable("array")),
-						new Arg(
-							new Expr\ArrowFunction(
-								[
-									'expr' => new Expr\BinaryOp\BooleanAnd(
-										new FuncCall(new Name("is_int"), [new Arg(new Variable("value"))]),
-										new FuncCall(new Name("is_string"), [new Arg(new Variable("key"))]),
-									),
-									'params' => [new Variable("value"), new Variable("key")],
-								],
-								[]
-							)
-						)
-					]
-				),
-				[
-					'$array' => 'array<string, int>'
-				],
-				[]
-			],
-			[
-				new FuncCall(
-					new Name("array_all"),
-					[
-						new Arg(new Variable("array")),
+						new Arg(new Variable('array')),
 						new Arg(
 							new Expr\ArrowFunction(
 								[
 									'expr' => new Expr\BinaryOp\BooleanAnd(
-										new FuncCall(new Name("is_string"), [new Arg(new Variable("value"))]),
-										new FuncCall(new Name("is_numeric"), [new Arg(new Variable("value"))]),
+										new FuncCall(new Name('is_int'), [new Arg(new Variable('value'))]),
+										new FuncCall(new Name('is_string'), [new Arg(new Variable('key'))]),
 									),
-									'params' => [new Variable("value"), new Variable("key")],
+									'params' => [new Variable('value'), new Variable('key')],
 								],
-								[]
-							)
-						)
-					]
+								[],
+							),
+						),
+					],
 				),
 				[
-					'$array' => 'array<numeric-string>'
+					'$array' => 'array<string, int>',
 				],
-				[]
+				[],
 			],
 			[
 				new FuncCall(
-					new Name("array_all"),
+					new Name('array_all'),
 					[
-						new Arg(new Variable("array")),
+						new Arg(new Variable('array')),
+						new Arg(
+							new Expr\ArrowFunction(
+								[
+									'expr' => new Expr\BinaryOp\BooleanAnd(
+										new FuncCall(new Name('is_string'), [new Arg(new Variable('value'))]),
+										new FuncCall(new Name('is_numeric'), [new Arg(new Variable('value'))]),
+									),
+									'params' => [new Variable('value'), new Variable('key')],
+								],
+								[],
+							),
+						),
+					],
+				),
+				[
+					'$array' => 'array<numeric-string>',
+				],
+				[],
+			],
+			[
+				new FuncCall(
+					new Name('array_all'),
+					[
+						new Arg(new Variable('array')),
 						new Arg(
 							new Expr\ArrowFunction(
 								[
 									'expr' => new Expr\BinaryOp\BooleanOr(
-										new FuncCall(new Name("is_float"), [new Arg(new Variable("value"))]),
-										new FuncCall(new Name("is_bool"), [new Arg(new Variable("value"))]),
+										new FuncCall(new Name('is_float'), [new Arg(new Variable('value'))]),
+										new FuncCall(new Name('is_bool'), [new Arg(new Variable('value'))]),
 									),
-									'params' => [new Variable("value"), new Variable("key")],
+									'params' => [new Variable('value'), new Variable('key')],
 								],
-								[]
-							)
-						)
-					]
+								[],
+							),
+						),
+					],
 				),
 				[
-					'$array' => 'array<bool|float>'
+					'$array' => 'array<bool|float>',
 				],
-				[]
+				[],
 			],
 			[
 				new FuncCall(
-					new Name("array_all"),
+					new Name('array_all'),
 					[
-						new Arg(new Variable("array")),
+						new Arg(new Variable('array')),
 						new Arg(
 							new Expr\ArrowFunction(
 								[
-									'expr' => new FuncCall(new Name("is_int"), [new Arg(new Expr\ConstFetch(new Name("1")))]),
-									'params' => [new Variable("value")],
+									'expr' => new FuncCall(new Name('is_int'), [new Arg(new Expr\ConstFetch(new Name('1')))]),
+									'params' => [new Variable('value')],
 								],
-								[]
-							)
-						)
-					]
+								[],
+							),
+						),
+					],
 				),
 				[],
-				[]
+				[],
 			],
 		];
 	}

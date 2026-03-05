@@ -90,7 +90,8 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
-		if (getenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS') === '1') {
+		$forceShowAll = getenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
+		if ($forceShowAll === false || $forceShowAll === '0') {
 			$errorsBudget = self::ERRORS_LIMIT;
 		} else {
 			$errorsBudget = 0;

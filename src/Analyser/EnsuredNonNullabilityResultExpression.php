@@ -14,6 +14,8 @@ final class EnsuredNonNullabilityResultExpression
 		private Type $originalType,
 		private Type $originalNativeType,
 		private TrinaryLogic $certainty,
+		private bool $existedInOriginalScope = true,
+		private bool $sideEffectSave = false,
 	)
 	{
 	}
@@ -36,6 +38,16 @@ final class EnsuredNonNullabilityResultExpression
 	public function getCertainty(): TrinaryLogic
 	{
 		return $this->certainty;
+	}
+
+	public function existedInOriginalScope(): bool
+	{
+		return $this->existedInOriginalScope;
+	}
+
+	public function isSideEffectSave(): bool
+	{
+		return $this->sideEffectSave;
 	}
 
 }

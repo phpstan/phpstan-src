@@ -2473,7 +2473,8 @@ class NodeScopeResolver
 		// keep certainty
 		$certainty = TrinaryLogic::createYes();
 		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
-		if (!$hasExpressionType->no()) {
+		$existedInOriginalScope = !$hasExpressionType->no();
+		if ($existedInOriginalScope) {
 			$certainty = $hasExpressionType;
 		}
 
@@ -2484,7 +2485,7 @@ class NodeScopeResolver
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty, $existedInOriginalScope, true),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -2493,7 +2494,7 @@ class NodeScopeResolver
 		$nativeType = $scope->getNativeType($exprToSpecify);
 
 		$specifiedExpressions = [
-			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
+			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty, $existedInOriginalScope),
 		];
 
 		// When narrowing an ArrayDimFetch, specifyExpressionType also recursively
@@ -2503,7 +2504,8 @@ class NodeScopeResolver
 			$parentExpr = $exprToSpecify->var;
 			$parentCertainty = TrinaryLogic::createYes();
 			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
-			if (!$hasParentExpressionType->no()) {
+			$parentExistedInOriginalScope = !$hasParentExpressionType->no();
+			if ($parentExistedInOriginalScope) {
 				$parentCertainty = $hasParentExpressionType;
 			}
 			array_unshift($specifiedExpressions, new EnsuredNonNullabilityResultExpression(
@@ -2511,6 +2513,8 @@ class NodeScopeResolver
 				$scope->getType($parentExpr),
 				$scope->getNativeType($parentExpr),
 				$parentCertainty,
+				$parentExistedInOriginalScope,
+				true,
 			));
 		}
 
@@ -2554,6 +2558,17 @@ class NodeScopeResolver
 				$specifiedExpressionResult->getOriginalNativeType(),
 				$specifiedExpressionResult->getCertainty(),
 			);
+		}
+
+		// specifyExpressionType recursively narrows parent array types as a side effect,
+		// which can introduce expression type holders that didn't exist in the original scope.
+		// Clean up side-effect saves that shouldn't have expression types.
+		foreach ($specifiedExpressions as $specifiedExpressionResult) {
+			if (!$specifiedExpressionResult->isSideEffectSave() || $specifiedExpressionResult->existedInOriginalScope()) {
+				continue;
+			}
+
+			$scope = $scope->unsetExpressionType($specifiedExpressionResult->getExpression());
 		}
 
 		return $scope;

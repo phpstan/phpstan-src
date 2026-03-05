@@ -3547,6 +3547,34 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $scope;
 	}
 
+	public function unsetExpressionType(Expr $expr): self
+	{
+		$exprString = $this->getNodeKey($expr);
+		$expressionTypes = $this->expressionTypes;
+		$nativeTypes = $this->nativeExpressionTypes;
+		unset($expressionTypes[$exprString]);
+		unset($nativeTypes[$exprString]);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self
 	{
 		$scope = $this;

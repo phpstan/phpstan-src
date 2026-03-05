@@ -26,6 +26,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
@@ -1319,6 +1320,46 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'(int) $float' => 'int',
 				],
 				[],
+			],
+			[
+				new FuncCall(
+					new Name("array_all"),
+					[
+						new Arg(new Variable("array")),
+						new Arg(
+							new Expr\ArrowFunction(
+								[
+									'expr' => new FuncCall(new Name("is_int"), [new Arg(new Variable("value"))]),
+									'params' => [new Variable("value")],
+								],
+								[]
+							)
+						)
+					]
+				),
+				[
+					'$array' => 'array<int>'
+				],
+				[]
+			],
+			[
+				new FuncCall(
+					new Name("array_all"),
+					[
+						new Arg(new Variable("array")),
+						new Arg(
+							new Expr\ArrowFunction(
+								[
+									'expr' => new FuncCall(new Name("is_int"), [new Arg(new Expr\ConstFetch(new Name("1")))]),
+									'params' => [new Variable("value")],
+								],
+								[]
+							)
+						)
+					]
+				),
+				[],
+				[]
 			],
 		];
 	}

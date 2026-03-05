@@ -351,6 +351,33 @@ final class TypeSpecifier
 				}
 			}
 
+			// infer $list[$index] after $index < count($list) - N
+			if (
+				$context->true()
+				&& !$orEqual
+				&& $expr->right instanceof Expr\BinaryOp\Minus
+				&& $expr->right->left instanceof FuncCall
+				&& $expr->right->left->name instanceof Name
+				&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
+				&& count($expr->right->left->getArgs()) >= 1
+				&& $leftType->isInteger()->yes()
+				&& !$leftType instanceof ConstantIntegerType
+				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+			) {
+				$countArgType = $scope->getType($expr->right->left->getArgs()[0]->value);
+				$subtractedType = $scope->getType($expr->right->right);
+				if (
+					$countArgType->isList()->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($subtractedType)->yes()
+				) {
+					$arrayArg = $expr->right->left->getArgs()[0]->value;
+					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);
+					$result = $result->unionWith(
+						$this->create($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+					);
+				}
+			}
+
 			if (
 				!$context->null()
 				&& $expr->right instanceof FuncCall

@@ -866,6 +866,11 @@ final class FunctionDefinitionCheck
 				$originalCaseClassName = $originalName->toString();
 			}
 
+			if (strtolower($originalCaseClassName) !== strtolower($resolvedName)) {
+				// use alias, not just a case difference
+				return [];
+			}
+
 			if ($originalCaseClassName === $resolvedName) {
 				return [];
 			}

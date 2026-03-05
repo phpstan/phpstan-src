@@ -10,7 +10,7 @@ use function sprintf;
 final class DirectoryCreatorException extends Exception
 {
 
-	public function __construct(public readonly string $directory)
+	public function __construct(string $directory)
 	{
 		$error = error_get_last();
 

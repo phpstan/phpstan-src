@@ -360,8 +360,9 @@ final class TypeSpecifier
 				&& $expr->right->left->name instanceof Name
 				&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
 				&& count($expr->right->left->getArgs()) >= 1
-				&& $leftType->isInteger()->yes()
+				// constant offsets are handled via HasOffsetType/HasOffsetValueType
 				&& !$leftType instanceof ConstantIntegerType
+				&& $leftType->isInteger()->yes()
 				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
 			) {
 				$countArgType = $scope->getType($expr->right->left->getArgs()[0]->value);

@@ -369,6 +369,7 @@ final class TypeSpecifier
 				$subtractedType = $scope->getType($expr->right->right);
 				if (
 					$countArgType->isList()->yes()
+					&& $this->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
 					&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
 				) {
 					$arrayArg = $expr->right->left->getArgs()[0]->value;
@@ -1239,6 +1240,16 @@ final class TypeSpecifier
 		return (new SpecifiedTypes([], []))->setRootExpr($expr);
 	}
 
+	private function isNormalCountCall(FuncCall $countFuncCall, Type $typeToCount, Scope $scope): TrinaryLogic
+	{
+		if (count($countFuncCall->getArgs()) === 1) {
+			return TrinaryLogic::createYes();
+		}
+
+		$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
+		return (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($typeToCount->getIterableValueType()->isArray()->negate());
+	}
+
 	private function specifyTypesForCountFuncCall(
 		FuncCall $countFuncCall,
 		Type $type,
@@ -1248,18 +1259,11 @@ final class TypeSpecifier
 		Expr $rootExpr,
 	): ?SpecifiedTypes
 	{
-		if (count($countFuncCall->getArgs()) === 1) {
-			$isNormalCount = TrinaryLogic::createYes();
-		} else {
-			$mode = $scope->getType($countFuncCall->getArgs()[1]->value);
-			$isNormalCount = (new ConstantIntegerType(COUNT_NORMAL))->isSuperTypeOf($mode)->result->or($type->getIterableValueType()->isArray()->negate());
-		}
-
 		$isConstantArray = $type->isConstantArray();
 		$isList = $type->isList();
 		$oneOrMore = IntegerRangeType::fromInterval(1, null);
 		if (
-			!$isNormalCount->yes()
+			!$this->isNormalCountCall($countFuncCall, $type, $scope)->yes()
 			|| (!$isConstantArray->yes() && !$isList->yes())
 			|| !$oneOrMore->isSuperTypeOf($sizeType)->yes()
 			|| $sizeType->isSuperTypeOf($type->getArraySize())->yes()

@@ -1161,6 +1161,18 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13526.php'], []);
 	}
 
+	public function testBug14215(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14215.php'], [
+			[
+				'Offset int might not exist on list<int>.',
+				39,
+			],
+		]);
+	}
+
 	public function testBug13770(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
@@ -1185,6 +1197,39 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset -1|3|6|10 might not exist on list<int>.',
 				126,
+			],
+			[
+				'Offset int<0, max> might not exist on list<int>.',
+				139,
+			],
+			[
+				'Offset int<0, max> might not exist on array.',
+				177,
+			],
+			[
+				'Offset -5|int<0, max> might not exist on list<int>.',
+				190,
+			],
+			[
+				'Offset int<0, max> might not exist on list<mixed>.',
+				203,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14234(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14234.php'], [
+			[
+				'Offset int<2, max> might not exist on non-empty-array<int<0, max>, string>.',
+				49,
+			],
+			[
+				'Offset int<0, max> might not exist on array.',
+				60,
 			],
 		]);
 	}

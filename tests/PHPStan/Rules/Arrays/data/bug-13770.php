@@ -179,4 +179,17 @@ class HelloWorld
 
 		return 0;
 	}
+
+	/**
+	 * @param list<int> $array
+	 * @param -5|0|positive-int $index
+	 */
+	public function errorsBecauseMaybeTooSmall(array $array, int $index): int
+	{
+		if ($index <= count($array) - 5) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
 }

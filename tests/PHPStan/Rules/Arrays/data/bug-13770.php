@@ -128,4 +128,81 @@ class HelloWorld
 
 		return 0;
 	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 0|positive-int $index
+	 */
+	public function ZeroOrMoreIntLessThanOrEqualCount(array $array, int $index): int
+	{
+		if ($index <= count($array)) {
+			return $array[$index]; // SHOULD still report - off by one
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 0|positive-int $index
+	 */
+	public function ZeroOrMoreIntLessThanOrEqualCountMinusOne(array $array, int $index): int
+	{
+		if ($index <= count($array) - 1) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 0|positive-int $index
+	 */
+	public function ZeroOrMoreIntLessThanOrEqualCountMinusFive(array $array, int $index): int
+	{
+		if ($index <= count($array) - 5) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param 0|positive-int $index
+	 */
+	public function errorsBecauseNotList(array $array, int $index): int
+	{
+		if ($index <= count($array) - 5) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param -5|0|positive-int $index
+	 */
+	public function errorsBecauseMaybeTooSmall(array $array, int $index): int
+	{
+		if ($index <= count($array) - 5) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<mixed> $array
+	 * @param 0|positive-int $index
+	 */
+	public function errorsOnRecursiveCount(array $array, int $index): int
+	{
+		if ($index <= count($array, COUNT_RECURSIVE) - 5) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
 }

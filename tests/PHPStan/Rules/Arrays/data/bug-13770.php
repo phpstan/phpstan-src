@@ -146,7 +146,7 @@ class HelloWorld
 	 * @param list<int> $array
 	 * @param 0|positive-int $index
 	 */
-	public function ZeroOrMoreMinusOneIntLessThanOrEqualCount(array $array, int $index): int
+	public function ZeroOrMoreIntLessThanOrEqualCountMinusOne(array $array, int $index): int
 	{
 		if ($index <= count($array) - 1) {
 			return $array[$index];

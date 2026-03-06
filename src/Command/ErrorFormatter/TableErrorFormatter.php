@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -44,7 +45,7 @@ final class TableErrorFormatter implements ErrorFormatter
 		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
 		#[AutowiredParameter]
-		private ?int $level,
+		private string $usedLevel,
 	)
 	{
 	}
@@ -189,7 +190,7 @@ final class TableErrorFormatter implements ErrorFormatter
 
 			$note = [];
 			$note[] = sprintf('Result is limited to the first %d errors', $errorsBudget);
-			if ($this->level > 0) {
+			if ($this->usedLevel !== CommandHelper::DEFAULT_LEVEL) {
 				$note[] = '- Consider lowering the PHPStan level';
 			}
 			$note[] = sprintf('- Pass %s=1 environment variable to show all errors', self::FORCE_SHOW_ALL_ERRORS);

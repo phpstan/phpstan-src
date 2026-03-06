@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use Override;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\CommandHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
@@ -441,7 +442,7 @@ TABLE,
 			false,
 			null,
 			null,
-			0,
+			CommandHelper::DEFAULT_LEVEL,
 		);
 		$error = new Error('Test', 'Foo.php', 12, filePath: self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0, false, []), $this->getOutput(true));
@@ -463,7 +464,7 @@ TABLE,
 			false,
 			$editorUrl,
 			$editorUrlTitle,
-			0,
+			CommandHelper::DEFAULT_LEVEL,
 		);
 	}
 

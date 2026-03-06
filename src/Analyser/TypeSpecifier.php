@@ -352,9 +352,9 @@ final class TypeSpecifier
 			}
 
 			// infer $list[$index] after $index < count($list) - N
+			// infer $list[$index] after $index <= count($list) - N
 			if (
 				$context->true()
-				&& !$orEqual
 				&& $expr->right instanceof Expr\BinaryOp\Minus
 				&& $expr->right->left instanceof FuncCall
 				&& $expr->right->left->name instanceof Name
@@ -369,7 +369,7 @@ final class TypeSpecifier
 				$subtractedType = $scope->getType($expr->right->right);
 				if (
 					$countArgType->isList()->yes()
-					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($subtractedType)->yes()
+					&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
 				) {
 					$arrayArg = $expr->right->left->getArgs()[0]->value;
 					$dimFetch = new ArrayDimFetch($arrayArg, $expr->left);

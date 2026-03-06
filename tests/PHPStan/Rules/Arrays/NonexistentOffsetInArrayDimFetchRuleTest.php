@@ -1186,6 +1186,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset -1|3|6|10 might not exist on list<int>.',
 				126,
 			],
+			[
+				'Offset int<0, max> might not exist on list<int>.',
+				139,
+			],
 		]);
 	}
 

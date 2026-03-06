@@ -128,4 +128,30 @@ class HelloWorld
 
 		return 0;
 	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 0|positive-int $index
+	 */
+	public function ZeroOrMoreIntLessThanOrEqualCount(array $array, int $index): int
+	{
+		if ($index <= count($array)) {
+			return $array[$index]; // SHOULD still report - off by one
+		}
+
+		return 0;
+	}
+
+	/**
+	 * @param list<int> $array
+	 * @param 0|positive-int $index
+	 */
+	public function ZeroOrMoreMinusOneIntLessThanOrEqualCount(array $array, int $index): int
+	{
+		if ($index <= count($array) - 1) {
+			return $array[$index];
+		}
+
+		return 0;
+	}
 }

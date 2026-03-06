@@ -174,6 +174,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -6415,7 +6416,11 @@ class NodeScopeResolver
 			}
 
 			$setVarType = $scope->getType($originalVar->var);
-			if (!$setVarType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()) {
+			if (
+				!$setVarType instanceof ErrorType
+				&& !$setVarType->isArray()->yes()
+				&& !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()
+			) {
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					$stmt,
 					new MethodCall($originalVar->var, 'offsetSet'),

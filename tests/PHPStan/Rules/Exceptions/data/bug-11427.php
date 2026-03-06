@@ -83,3 +83,63 @@ function testArrayOrArrayAccess($c): void {
 		// offsetUnset can throw when $c is C
 	}
 }
+
+class D implements \ArrayAccess {
+	/**
+	 * @throws void
+	 */
+	#[\ReturnTypeWillChange]
+	public function offsetExists($offset) {
+		throw new \Exception("exists");
+	}
+
+	/**
+	 * @throws void
+	 */
+	#[\ReturnTypeWillChange]
+	public function offsetGet($offset) {
+		throw new \Exception("get");
+	}
+
+	/**
+	 * @throws void
+	 */
+	#[\ReturnTypeWillChange]
+	public function offsetSet($offset, $value) {
+		throw new \Exception("set");
+	}
+
+	/**
+	 * @throws void
+	 */
+	#[\ReturnTypeWillChange]
+	public function offsetUnset($offset) {
+		throw new \Exception("unset");
+	}
+}
+
+function test2(D $c): void {
+	try {
+		$x = isset($c[1]);
+	} catch (\Exception $e) {
+		// offsetExists cannot throw
+	}
+
+	try {
+		$x = $c[1];
+	} catch (\Exception $e) {
+		// offsetGet cannot throw
+	}
+
+	try {
+		$c[1] = 1;
+	} catch (\Exception $e) {
+		// offsetSet cannot throw
+	}
+
+	try {
+		unset($c[1]);
+	} catch (\Exception $e) {
+		// offsetUnset cannot throw
+	}
+}

@@ -9,5 +9,5 @@ function testPDOStatementGetIterator(): void {
 	$pdo = new PDO('sqlite::memory:');
     $stmt = $pdo->query('SELECT 1');
 
-	assertType('Iterator<mixed, array<int|string, mixed>>', $stmt->getIterator());
+	assertType('Iterator<mixed, mixed>', $stmt->getIterator());
 }

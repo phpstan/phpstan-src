@@ -143,3 +143,64 @@ function test2(D $c): void {
 		// offsetUnset cannot throw
 	}
 }
+
+/**
+ * @param array<C> $arrayOfC
+ */
+function test3(array $arrayOfC): void
+{
+	try {
+		$x = isset($arrayOfC[0][1]);
+	} catch (\Exception $e) {
+		// offsetExists can throw
+	}
+
+	try {
+		$x = $arrayOfC[0][1];
+	} catch (\Exception $e) {
+		// offsetGet can throw
+	}
+
+	try {
+		$arrayOfC[0][1] = 1;
+	} catch (\Exception $e) {
+		// offsetSet can throw
+	}
+
+	try {
+		unset($arrayOfC[0][1]);
+	} catch (\Exception $e) {
+		// offsetUnset can throw
+	}
+}
+
+/**
+ * @param array<C> $arrayOfC
+ */
+function test4(array $arrayOfC): void {
+	try {
+		$x = isset($arrayOfC[0]);
+	} catch (\Exception $e) {
+		// offsetExists cannot throw
+	}
+
+	try {
+		$x = $arrayOfC[0];
+	} catch (\Exception $e) {
+		// offsetGet cannot throw
+	}
+
+	/** @var C<int, int> $newC */
+	$newC = new C();
+	try {
+		$arrayOfC[0] = $newC;
+	} catch (\Exception $e) {
+		// offsetSet cannot throw
+	}
+
+	try {
+		unset($arrayOfC[0]);
+	} catch (\Exception $e) {
+		// offsetUnset cannot throw
+	}
+}

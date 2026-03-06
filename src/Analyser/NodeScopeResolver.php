@@ -6414,10 +6414,11 @@ class NodeScopeResolver
 				$scope = $scope->assignExpression($expr, $type, $nativeType);
 			}
 
-			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+			$setVarType = $scope->getType($originalVar->var);
+			if (!$setVarType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()) {
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					$stmt,
-					new MethodCall($var, 'offsetSet'),
+					new MethodCall($originalVar->var, 'offsetSet'),
 					$scope,
 					$storage,
 					new NoopNodeCallback(),

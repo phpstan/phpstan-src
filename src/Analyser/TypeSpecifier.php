@@ -351,8 +351,8 @@ final class TypeSpecifier
 				}
 			}
 
-			// infer $list[$index] after $index < count($list) - N
-			// infer $list[$index] after $index <= count($list) - N
+			// infer $list[$index] after $zeroOrMore < count($list) - N
+			// infer $list[$index] after $zeroOrMore <= count($list) - N
 			if (
 				$context->true()
 				&& $expr->right instanceof Expr\BinaryOp\Minus

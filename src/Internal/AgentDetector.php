@@ -52,7 +52,7 @@ final class AgentDetector
 			return true;
 		}
 
-		if (file_exists('/opt/.devin')) {
+		if (@file_exists('/opt/.devin')) {
 			return true;
 		}
 

@@ -1189,6 +1189,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug14234(): void
 	{
 		$this->reportPossiblyNonexistentGeneralArrayOffset = true;

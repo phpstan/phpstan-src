@@ -31,7 +31,7 @@ final class TableErrorFormatter implements ErrorFormatter
 {
 
 	private const ERRORS_LIMIT = 1000;
-	private const string FORCE_SHOW_ALL_ERRORS = 'PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS';
+	private const FORCE_SHOW_ALL_ERRORS = 'PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS';
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,

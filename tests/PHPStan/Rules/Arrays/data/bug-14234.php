@@ -52,7 +52,7 @@ function getShortenedPath4(string $identifier): string
 	return implode("/", $parts);
 }
 
-function errorOnRegularError(array $parts): string
+function errorOnRegularArray(array $parts): string
 {
 	assertType('array', $parts);
 

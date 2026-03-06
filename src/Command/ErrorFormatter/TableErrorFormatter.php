@@ -30,6 +30,7 @@ final class TableErrorFormatter implements ErrorFormatter
 {
 
 	private const ERRORS_LIMIT = 1000;
+	private const string FORCE_SHOW_ALL_ERRORS = 'PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS';
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
@@ -90,11 +91,11 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
-		$forceShowAll = getenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
+		$forceShowAll = getenv(self::FORCE_SHOW_ALL_ERRORS);
 		if (in_array($forceShowAll, [false, '0'], true)) {
 			$errorsBudget = self::ERRORS_LIMIT;
 		} else {
-			$errorsBudget = 0;
+			$errorsBudget = null;
 		}
 
 		$printedErrors = 0;
@@ -164,7 +165,7 @@ final class TableErrorFormatter implements ErrorFormatter
 			}
 
 			$printedErrors += count($rows);
-			if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+			if ($errorsBudget !== null && $printedErrors > $errorsBudget) {
 				$rows = array_slice($rows, 0, $errorsBudget - ($printedErrors - count($rows)));
 
 				$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
@@ -183,7 +184,7 @@ final class TableErrorFormatter implements ErrorFormatter
 			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', OutputFormatter::escape($warning)], $analysisResult->getWarnings()));
 		}
 
-		if ($errorsBudget > 0 && $printedErrors > $errorsBudget) {
+		if ($errorsBudget !== null && $printedErrors > $errorsBudget) {
 			$style->error(sprintf('Found %s+ errors', self::ERRORS_LIMIT));
 
 			$note = [];
@@ -191,7 +192,7 @@ final class TableErrorFormatter implements ErrorFormatter
 			if ($this->level > 0) {
 				$note[] = '- Consider lowering the PHPStan level';
 			}
-			$note[] = '- Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors';
+			$note[] = sprintf('- Pass %s=1 environment variable to show all errors', self::FORCE_SHOW_ALL_ERRORS);
 			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
 			$note[] = '  Learn more: https://phpstan.com';
 			$style->note(implode("\n", $note));

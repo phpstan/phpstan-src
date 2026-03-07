@@ -57,7 +57,6 @@ use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -238,7 +237,6 @@ class NodeScopeResolver
 		private readonly PhpDocInheritanceResolver $phpDocInheritanceResolver,
 		private readonly FileHelper $fileHelper,
 		private readonly TypeSpecifier $typeSpecifier,
-		private readonly DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private readonly ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
 		private readonly ParameterClosureThisExtensionProvider $parameterClosureThisExtensionProvider,
 		private readonly ParameterClosureTypeExtensionProvider $parameterClosureTypeExtensionProvider,
@@ -258,8 +256,6 @@ class NodeScopeResolver
 		private readonly bool $implicitThrows,
 		#[AutowiredParameter]
 		private readonly bool $treatPhpDocTypesAsCertain,
-		#[AutowiredParameter]
-		private readonly bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 		$earlyTerminatingMethodNames = [];

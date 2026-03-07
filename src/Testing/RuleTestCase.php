@@ -17,7 +17,6 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -107,7 +106,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
-			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
 			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
@@ -120,7 +118,6 @@ abstract class RuleTestCase extends PHPStanTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			self::getContainer()->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

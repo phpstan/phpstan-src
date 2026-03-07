@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser\Fiber;
 
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -60,7 +59,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
 			$typeSpecifier,
-			$container->getByType(DynamicThrowTypeExtensionProvider::class),
 			$container->getByType(ReadWritePropertiesExtensionProvider::class),
 			$container->getByType(ParameterClosureThisExtensionProvider::class),
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
@@ -73,7 +71,6 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
-			$container->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

@@ -12,7 +12,6 @@ use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Nette\NetteContainer;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -823,7 +822,6 @@ class AnalyserTest extends PHPStanTestCase
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,
-			$container->getByType(DynamicThrowTypeExtensionProvider::class),
 			$container->getByType(ReadWritePropertiesExtensionProvider::class),
 			$container->getByType(ParameterClosureThisExtensionProvider::class),
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
@@ -836,7 +834,6 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			true,
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			true,
 		);
 		$lexer = new Lexer();
 		$fileAnalyser = new FileAnalyser(

@@ -329,7 +329,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  [ERROR] Found 1+ errors
 
  ! [NOTE] Result is limited to the first 1 errors
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
 
@@ -353,7 +354,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
  ! [NOTE] Result is limited to the first 3 errors
  !        - Consider lowering the PHPStan level
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
 
@@ -376,10 +378,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  [ERROR] Found 3+ errors
 
  ! [NOTE] Result is limited to the first 3 errors
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
-
 ',
 			];
 
@@ -454,7 +456,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		int $generateErrorsCount = 4,
 	): void
 	{
-		putenv('COLUMNS=120');
+		putenv('COLUMNS=80');
 		if ($showAllErrors) {
 			if ($errorsBudget !== null) {
 				$this->fail('showAllErrors cannot be true when errorsBudget is set');

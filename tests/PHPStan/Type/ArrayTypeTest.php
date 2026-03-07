@@ -345,7 +345,7 @@ class ArrayTypeTest extends PHPStanTestCase
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(0),
 				new ConstantArrayType([], []),
-				'array<int<0, max>|string, mixed>',
+				'array<(int<0, max>|string), mixed>',
 			],
 			[
 				new ArrayType(new StringType(), new MixedType()),
@@ -362,7 +362,7 @@ class ArrayTypeTest extends PHPStanTestCase
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(0),
 				new ArrayType(new MixedType(), new MixedType()),
-				'array<(int<0, max>|string), mixed>',
+				'array<int<0, max>|string, mixed>',
 			],
 		];
 	}

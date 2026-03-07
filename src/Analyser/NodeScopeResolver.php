@@ -3613,22 +3613,6 @@ class NodeScopeResolver
 				[],
 				[],
 			);
-		} elseif ($expr instanceof Exit_) {
-			$hasYield = false;
-			$throwPoints = [];
-			$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
-			$identifier = $kind === Exit_::KIND_DIE ? 'die' : 'exit';
-			$impurePoints = [
-				new ImpurePoint($scope, $expr, $identifier, $identifier, true),
-			];
-			$isAlwaysTerminating = true;
-			if ($expr->expr !== null) {
-				$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$scope = $result->getScope();
-			}
 		} elseif ($expr instanceof Node\Scalar\InterpolatedString) {
 			$hasYield = false;
 			$throwPoints = [];

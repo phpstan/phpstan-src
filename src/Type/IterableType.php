@@ -138,9 +138,9 @@ class IterableType implements CompoundType
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
 			return $otherType->isSuperTypeOf(new UnionType([
 				new ArrayType($this->keyType, $this->itemType),
-				new IntersectionType([
-					new ObjectType(Traversable::class),
-					$this,
+				new GenericObjectType(Traversable::class, [
+					$this->keyType,
+					$this->itemType,
 				]),
 			]));
 		}

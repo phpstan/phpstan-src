@@ -13,6 +13,9 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<Scalar>
@@ -20,6 +23,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 #[AutowiredService]
 final class ScalarHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -37,6 +46,14 @@ final class ScalarHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param Scalar $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope));
 	}
 
 }

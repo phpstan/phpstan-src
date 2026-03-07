@@ -31,6 +31,8 @@ use PHPStan\Node\MatchExpressionNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use UnhandledMatchError;
 use function array_key_exists;
@@ -58,6 +60,128 @@ final class MatchHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Match_;
+	}
+
+	/**
+	 * @param Match_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$cond = $expr->cond;
+		$condType = $scope->getType($cond);
+		$types = [];
+
+		$matchScope = $scope;
+		$arms = $expr->arms;
+		if ($condType->isEnum()->yes()) {
+			// enum match analysis would work even without this if branch
+			// but would be much slower
+			// this avoids using ObjectType::$subtractedType which is slow for huge enums
+			// because of repeated union type normalization
+			$enumCases = $condType->getEnumCases();
+			if (count($enumCases) > 0) {
+				$indexedEnumCases = [];
+				foreach ($enumCases as $enumCase) {
+					$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
+				}
+				$unusedIndexedEnumCases = $indexedEnumCases;
+
+				foreach ($arms as $i => $arm) {
+					if ($arm->conds === null) {
+						continue;
+					}
+
+					$conditionCases = [];
+					foreach ($arm->conds as $armCond) {
+						if (!$armCond instanceof Expr\ClassConstFetch) {
+							continue 2;
+						}
+						if (!$armCond->class instanceof Name) {
+							continue 2;
+						}
+						if (!$armCond->name instanceof Identifier) {
+							continue 2;
+						}
+						$fetchedClassName = $scope->resolveName($armCond->class);
+						$loweredFetchedClassName = strtolower($fetchedClassName);
+						if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
+							continue 2;
+						}
+
+						$caseName = $armCond->name->toString();
+						if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
+							continue 2;
+						}
+
+						$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
+						unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
+					}
+
+					$conditionCasesCount = count($conditionCases);
+					if ($conditionCasesCount === 0) {
+						throw new ShouldNotHappenException();
+					} elseif ($conditionCasesCount === 1) {
+						$conditionCaseType = $conditionCases[0];
+					} else {
+						$conditionCaseType = new UnionType($conditionCases);
+					}
+
+					$types[] = $matchScope->addTypeToExpression(
+						$cond,
+						$conditionCaseType,
+					)->getType($arm->body);
+					unset($arms[$i]);
+				}
+
+				$remainingCases = [];
+				foreach ($unusedIndexedEnumCases as $cases) {
+					foreach ($cases as $case) {
+						$remainingCases[] = $case;
+					}
+				}
+
+				$remainingCasesCount = count($remainingCases);
+				if ($remainingCasesCount === 0) {
+					$remainingType = new NeverType();
+				} elseif ($remainingCasesCount === 1) {
+					$remainingType = $remainingCases[0];
+				} else {
+					$remainingType = new UnionType($remainingCases);
+				}
+
+				$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
+			}
+		}
+
+		foreach ($arms as $arm) {
+			if ($arm->conds === null) {
+				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
+					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
+				}
+				$types[] = $matchScope->getType($arm->body);
+				continue;
+			}
+
+			if (count($arm->conds) === 0) {
+				throw new ShouldNotHappenException();
+			}
+
+			$filteringExpr = $this->getFilteringExprForMatchArm($expr, $arm->conds);
+
+			$filteringExprType = $matchScope->getType($filteringExpr);
+
+			if (!$filteringExprType->isFalse()->yes()) {
+				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				if ($expr->hasAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME)) {
+					$arm->body->setAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME, $expr->getAttribute(MutatingScope::KEEP_VOID_ATTRIBUTE_NAME));
+				}
+				$types[] = $truthyScope->getType($arm->body);
+			}
+
+			$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+		}
+
+		return TypeCombinator::union(...$types);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

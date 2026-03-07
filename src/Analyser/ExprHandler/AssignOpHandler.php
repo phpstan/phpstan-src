@@ -17,8 +17,13 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
+use function get_class;
+use function sprintf;
 
 /**
  * @implements ExprHandler<AssignOp>
@@ -26,6 +31,12 @@ use PHPStan\Type\ObjectType;
 #[AutowiredService]
 final class AssignOpHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -87,6 +98,68 @@ final class AssignOpHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param AssignOp $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$getType = static fn (Expr $expr): Type => $scope->getType($expr);
+
+		if ($expr instanceof Expr\AssignOp\Coalesce) {
+			return $scope->getType(new BinaryOp\Coalesce($expr->var, $expr->expr, $expr->getAttributes()));
+		}
+
+		if ($expr instanceof Expr\AssignOp\Concat) {
+			return $this->initializerExprTypeResolver->getConcatType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\BitwiseAnd) {
+			return $this->initializerExprTypeResolver->getBitwiseAndType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\BitwiseOr) {
+			return $this->initializerExprTypeResolver->getBitwiseOrType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\BitwiseXor) {
+			return $this->initializerExprTypeResolver->getBitwiseXorType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Div) {
+			return $this->initializerExprTypeResolver->getDivType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Mod) {
+			return $this->initializerExprTypeResolver->getModType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Plus) {
+			return $this->initializerExprTypeResolver->getPlusType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Minus) {
+			return $this->initializerExprTypeResolver->getMinusType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Mul) {
+			return $this->initializerExprTypeResolver->getMulType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\Pow) {
+			return $this->initializerExprTypeResolver->getPowType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\ShiftLeft) {
+			return $this->initializerExprTypeResolver->getShiftLeftType($expr->var, $expr->expr, $getType);
+		}
+
+		if ($expr instanceof Expr\AssignOp\ShiftRight) {
+			return $this->initializerExprTypeResolver->getShiftRightType($expr->var, $expr->expr, $getType);
+		}
+
+		throw new ShouldNotHappenException(sprintf('Unhandled %s', get_class($expr)));
 	}
 
 }

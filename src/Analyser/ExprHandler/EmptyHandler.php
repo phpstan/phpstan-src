@@ -13,6 +13,9 @@ use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<Empty_>
@@ -30,6 +33,34 @@ final class EmptyHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Empty_;
+	}
+
+	/**
+	 * @param Empty_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$result = $scope->issetCheck($expr->expr, static function (Type $type): ?bool {
+			$isNull = $type->isNull();
+			$isFalsey = $type->toBoolean()->isFalse();
+			if ($isNull->maybe()) {
+				return null;
+			}
+			if ($isFalsey->maybe()) {
+				return null;
+			}
+
+			if ($isNull->yes()) {
+				return $isFalsey->no();
+			}
+
+			return !$isFalsey->yes();
+		});
+		if ($result === null) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType(!$result);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

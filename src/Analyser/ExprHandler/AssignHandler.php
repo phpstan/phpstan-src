@@ -18,6 +18,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 use function is_string;
@@ -32,6 +33,14 @@ final class AssignHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Assign || $expr instanceof AssignRef;
+	}
+
+	/**
+	 * @param Assign|AssignRef $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $scope->getType($expr->expr);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -11,7 +11,12 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Traverser\CloneTypeTraverser;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 
 /**
  * @implements ExprHandler<Clone_>
@@ -39,6 +44,15 @@ final class CloneHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param Clone_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$cloneType = TypeCombinator::intersect($scope->getType($expr->expr), new ObjectWithoutClassType());
+		return TypeTraverser::map($cloneType, new CloneTypeTraverser());
 	}
 
 }

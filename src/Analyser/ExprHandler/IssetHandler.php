@@ -17,7 +17,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use function array_merge;
 use function array_reverse;
 
@@ -37,6 +40,39 @@ final class IssetHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Isset_;
+	}
+
+	/**
+	 * @param Isset_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$issetResult = true;
+		foreach ($expr->vars as $var) {
+			$result = $scope->issetCheck($var, static function (Type $type): ?bool {
+				$isNull = $type->isNull();
+				if ($isNull->maybe()) {
+					return null;
+				}
+
+				return !$isNull->yes();
+			});
+			if ($result !== null) {
+				if (!$result) {
+					return new ConstantBooleanType($result);
+				}
+
+				continue;
+			}
+
+			$issetResult = $result;
+		}
+
+		if ($issetResult === null) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType($issetResult);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

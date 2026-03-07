@@ -12,6 +12,9 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<BooleanNot>
@@ -39,6 +42,19 @@ final class BooleanNotHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param BooleanNot $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$exprBooleanType = $scope->getType($expr->expr)->toBoolean();
+		if ($exprBooleanType instanceof ConstantBooleanType) {
+			return new ConstantBooleanType(!$exprBooleanType->getValue());
+		}
+
+		return new BooleanType();
 	}
 
 }

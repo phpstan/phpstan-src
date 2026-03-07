@@ -20,3 +20,7 @@ function get_whitelist(): array {
 if (in_array('a', get_whitelist(), true)) {
 	echo 'ok';
 }
+
+if (in_array('c', get_whitelist(), true)) {
+	echo 'ok';
+}

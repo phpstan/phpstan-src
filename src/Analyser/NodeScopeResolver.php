@@ -2528,36 +2528,10 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$handlerResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
-
-			if ($expr instanceof MethodCall) {
-				$handlerResult = $this->processMethodCallInitializedProperties($expr, $scope, $handlerResult);
-			}
-
-			return $handlerResult;
+			return $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}
 
-		if ($expr instanceof Expr\Closure) {
-			$processClosureResult = $this->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
-			$scope = $processClosureResult->applyByRefUseScope($processClosureResult->getScope());
-
-			return new ExpressionResult(
-				$scope,
-				false,
-				false,
-				[],
-				[],
-			);
-		} elseif ($expr instanceof Expr\ArrowFunction) {
-			$result = $this->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null);
-			return new ExpressionResult(
-				$result->getScope(),
-				$result->hasYield(),
-				false,
-				[],
-				[],
-			);
-		} elseif ($expr instanceof List_) {
+		if ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
 			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
 		} elseif ($expr instanceof AlwaysRememberedExpr) {
@@ -5025,42 +4999,6 @@ class NodeScopeResolver
 				$this->processNodesForTraitUse($subNode, $traitReflection, $scope, $storage, $adaptations, $nodeCallback);
 			}
 		}
-	}
-
-	private function processMethodCallInitializedProperties(MethodCall $expr, MutatingScope $originalScope, ExpressionResult $handlerResult): ExpressionResult
-	{
-		$scope = $handlerResult->getScope();
-		$calledOnType = $originalScope->getType($expr->var);
-		if ($expr->name instanceof Expr) {
-			return $handlerResult;
-		}
-		$methodName = $expr->name->name;
-		$methodReflection = $originalScope->getMethodReflection($calledOnType, $methodName);
-		if ($methodReflection === null) {
-			return $handlerResult;
-		}
-		if (
-			$scope->isInClass()
-			&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
-			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
-			&& TypeUtils::findThisType($calledOnType) !== null
-		) {
-			$calledMethodScope = $this->processCalledMethod($methodReflection);
-			if ($calledMethodScope !== null) {
-				$scope = $scope->mergeInitializedProperties($calledMethodScope);
-				return new ExpressionResult(
-					$scope,
-					hasYield: $handlerResult->hasYield(),
-					isAlwaysTerminating: $handlerResult->isAlwaysTerminating(),
-					throwPoints: $handlerResult->getThrowPoints(),
-					impurePoints: $handlerResult->getImpurePoints(),
-					truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-					falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-				);
-			}
-		}
-
-		return $handlerResult;
 	}
 
 	public function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope

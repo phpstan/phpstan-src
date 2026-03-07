@@ -31,6 +31,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeUtils;
 use ReflectionFunction;
 use ReflectionMethod;
 use Throwable;
@@ -180,7 +181,7 @@ final class MethodCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 
-		return new ExpressionResult(
+		$result = new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
@@ -189,6 +190,44 @@ final class MethodCallHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+
+		return $this->processInitializedProperties($nodeScopeResolver, $expr, $originalScope, $result);
+	}
+
+	private function processInitializedProperties(NodeScopeResolver $nodeScopeResolver, MethodCall $expr, MutatingScope $originalScope, ExpressionResult $handlerResult): ExpressionResult
+	{
+		$scope = $handlerResult->getScope();
+		$calledOnType = $originalScope->getType($expr->var);
+		if ($expr->name instanceof Expr) {
+			return $handlerResult;
+		}
+		$methodName = $expr->name->name;
+		$methodReflection = $originalScope->getMethodReflection($calledOnType, $methodName);
+		if ($methodReflection === null) {
+			return $handlerResult;
+		}
+		if (
+			$scope->isInClass()
+			&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
+			&& TypeUtils::findThisType($calledOnType) !== null
+		) {
+			$calledMethodScope = $nodeScopeResolver->processCalledMethod($methodReflection);
+			if ($calledMethodScope !== null) {
+				$scope = $scope->mergeInitializedProperties($calledMethodScope);
+				return new ExpressionResult(
+					$scope,
+					hasYield: $handlerResult->hasYield(),
+					isAlwaysTerminating: $handlerResult->isAlwaysTerminating(),
+					throwPoints: $handlerResult->getThrowPoints(),
+					impurePoints: $handlerResult->getImpurePoints(),
+					truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+					falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+				);
+			}
+		}
+
+		return $handlerResult;
 	}
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?InternalThrowPoint

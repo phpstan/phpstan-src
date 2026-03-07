@@ -521,13 +521,14 @@ class ArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		$keyType = TypeTraverser::map($this->getIterableKeyType(), static function (Type $type, callable $traverse): Type {
+		$existingArrayKeyType = $this->getIterableKeyType();
+		$keyType = TypeTraverser::map($existingArrayKeyType, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof UnionType) {
 				return $traverse($type);
 			}
 
 			if ($type->isInteger()->yes()) {
-				return new IntegerType();
+				return IntegerRangeType::createAllGreaterThanOrEqualTo(0);
 			}
 
 			return $type;
@@ -538,8 +539,17 @@ class ArrayType implements Type
 			TypeCombinator::union($this->getIterableValueType(), $replacementArrayType->getIterableValueType()),
 		);
 
+		$accessories = [];
 		if ($replacementArrayTypeIsIterableAtLeastOnce->yes()) {
-			$arrayType = new IntersectionType([$arrayType, new NonEmptyArrayType()]);
+			$accessories[] = new NonEmptyArrayType();
+		}
+		if ($existingArrayKeyType->isInteger()->yes()) {
+			$accessories[] = new AccessoryArrayListType();
+		}
+		if (count($accessories) > 0) {
+			$accessories[] = $arrayType;
+
+			return new IntersectionType($accessories);
 		}
 
 		return $arrayType;

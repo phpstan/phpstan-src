@@ -27,7 +27,7 @@ class Foo
 		while ($items) {
 			assertType('non-empty-array<int>', $items);
 			$batch = array_splice($items, 0, 2);
-			assertType('array<int>', $items);
+			assertType('array<(int<0, max>|string), int>', $items);
 			assertType('array<int>', $batch);
 		}
 	}
@@ -49,7 +49,7 @@ class Foo
 	{
 		$removed = array_splice($ints, 0, 2, $strings);
 		assertType('array<int>', $removed);
-		assertType('array<int|string>', $ints);
+		assertType('array<(int<0, max>|string), int|string>', $ints);
 		assertType('array<string>', $strings);
 	}
 

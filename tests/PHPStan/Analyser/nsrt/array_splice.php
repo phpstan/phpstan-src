@@ -21,52 +21,52 @@ function insertViaArraySplice(array $arr): void
 {
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, 1);
-	assertType('non-empty-array<int, int>', $brr);
+	assertType('non-empty-list<int>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, [1]);
-	assertType('non-empty-array<int, int>', $brr);
+	assertType('non-empty-list<int>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, '');
-	assertType('non-empty-array<int, \'\'|int>', $brr);
+	assertType('non-empty-list<\'\'|int>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, ['']);
-	assertType('non-empty-array<int, \'\'|int>', $brr);
+	assertType('non-empty-list<\'\'|int>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, null);
-	assertType('array<int, int>', $brr);
+	assertType('list<int>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, [null]);
-	assertType('non-empty-array<int, int|null>', $brr);
+	assertType('non-empty-list<int|null>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, new Foo());
-	assertType('non-empty-array<int, bool|int|string>', $brr);
+	assertType('non-empty-list<bool|int|string>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, [new \stdClass()]);
-	assertType('non-empty-array<int, int|stdClass>', $brr);
+	assertType('non-empty-list<int|stdClass>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, false);
-	assertType('non-empty-array<int, int|false>', $brr);
+	assertType('non-empty-list<int|false>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
 	$extract = array_splice($brr, 0, 0, [false]);
-	assertType('non-empty-array<int, int|false>', $brr);
+	assertType('non-empty-list<int|false>', $brr);
 	assertType('array{}', $extract);
 
 	$brr = $arr;
@@ -323,25 +323,25 @@ function offsets(array $arr): void
 {
 	if (array_key_exists(1, $arr)) {
 		$extract = array_splice($arr, 0, 1, 'hello');
-		assertType('non-empty-array', $arr);
+		assertType('non-empty-array<(int<0, max>|string), mixed>', $arr);
 		assertType('array', $extract);
 	}
 
 	if (array_key_exists(1, $arr)) {
 		$extract = array_splice($arr, 0, 0, 'hello');
-		assertType('non-empty-array&hasOffset(1)', $arr);
+		assertType('non-empty-array<(int<0, max>|string), mixed>&hasOffset(1)', $arr);
 		assertType('array{}', $extract);
 	}
 
 	if (array_key_exists(1, $arr) && $arr[1] === 'foo') {
 		$extract = array_splice($arr, 0, 1, 'hello');
-		assertType('non-empty-array', $arr);
+		assertType('non-empty-array<(int<0, max>|string), mixed>', $arr);
 		assertType('array', $extract);
 	}
 
 	if (array_key_exists(1, $arr) && $arr[1] === 'foo') {
 		$extract = array_splice($arr, 0, 0, 'hello');
-		assertType('non-empty-array&hasOffsetValue(1, \'foo\')', $arr);
+		assertType('non-empty-array<(int<0, max>|string), mixed>&hasOffsetValue(1, \'foo\')', $arr);
 		assertType('array{}', $extract);
 	}
 }
@@ -383,4 +383,13 @@ function lists(array $arr): void
 	$extract = array_splice($arr, 0, 1);
 	assertType('list<string>', $arr);
 	assertType('list<string>', $extract);
+}
+
+function mort(array $arr): void
+{
+	/** @var array<string, string> $arr */
+	$arr;
+	$extract = array_splice($arr, 0, 1, [17 => 'foo', 18 => 'bar']);
+	assertType('non-empty-array<0|1|string, string>', $arr);
+	assertType('array<string, string>', $extract);
 }

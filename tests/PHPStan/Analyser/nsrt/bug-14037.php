@@ -9,5 +9,5 @@ use function PHPStan\Testing\assertType;
  */
 function splice(array $a): void {
 	array_splice($a, 0, 0);
-	assertType("array<'a'|int, mixed>", $a);
+	assertType("array<'a'|int<0, max, mixed>", $a);
 }

@@ -423,20 +423,25 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			yield [
 				'errorsBudget' => null,
 				'usedLevel' => '8',
-				'showAllErrors' => true,
-				'expected' => ' ------ -------------------------------
-  Line   Foo.php (in context of trait)
- ------ -------------------------------
-  12     Test
-  13     Test
-  14     Test
-  15     Test
- ------ -------------------------------
+				'showAllErrors' => false,
+				'expected' => '
 
-
- [ERROR] Found 4 errors
+ [ERROR] Found 1000+ errors
 
 ',
+				'generateErrorsCount' => TableErrorFormatter::ERRORS_LIMIT + 5,
+			];
+
+			yield [
+				'errorsBudget' => null,
+				'usedLevel' => '8',
+				'showAllErrors' => true,
+				'expected' => '
+
+ [ERROR] Found 1005 errors
+
+',
+				'generateErrorsCount' => TableErrorFormatter::ERRORS_LIMIT + 5,
 			];
 	}
 
@@ -446,6 +451,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		string $usedLevel,
 		bool $showAllErrors,
 		string $expected,
+		int $generateErrorsCount = 4,
 	): void
 	{
 		putenv('COLUMNS=200');
@@ -464,10 +470,11 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			$errorsBudget,
 		);
 		$errors = [];
-		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 12, filePath: 'Foo.php', traitFilePath: 'Bar.php');
-		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 13, filePath: 'Foo.php', traitFilePath: 'Bar.php');
-		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 14, filePath: 'Foo.php', traitFilePath: 'Bar.php');
-		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 15, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+		$line = 12;
+		for ($i = 0; $i < $generateErrorsCount; $i++) {
+			$errors[] = new Error('Test', 'Foo.php (in context of trait)', $line, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+			$line++;
+		}
 		$formatter->formatErrors(new AnalysisResult($errors, [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
 
 		$this->assertStringContainsString($expected, $this->getOutputContent());

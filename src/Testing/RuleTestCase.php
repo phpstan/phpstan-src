@@ -95,6 +95,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		}
 
 		return new $className(
+			self::getContainer(),
 			$reflectionProvider,
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),

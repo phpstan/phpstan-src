@@ -1,0 +1,149 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\ExprHandler\Helper;
+
+use Closure;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ArrayDimFetch;
+use PhpParser\Node\Expr\List_;
+use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticPropertyFetch;
+use PHPStan\Analyser\EnsuredNonNullabilityResult;
+use PHPStan\Analyser\EnsuredNonNullabilityResultExpression;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\TypeCombinator;
+use function array_unshift;
+
+#[AutowiredService]
+final class NonNullabilityHelper
+{
+
+	public function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	{
+		$exprType = $scope->getType($exprToSpecify);
+		$isNull = $exprType->isNull();
+		if ($isNull->yes()) {
+			return new EnsuredNonNullabilityResult($scope, []);
+		}
+
+		// keep certainty
+		$certainty = TrinaryLogic::createYes();
+		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
+		if (!$hasExpressionType->no()) {
+			$certainty = $hasExpressionType;
+		}
+
+		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
+		if ($exprType->equals($exprTypeWithoutNull)) {
+			$originalExprType = $originalScope->getType($exprToSpecify);
+			if (!$originalExprType->equals($exprTypeWithoutNull)) {
+				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
+
+				return new EnsuredNonNullabilityResult($scope, [
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
+				]);
+			}
+			return new EnsuredNonNullabilityResult($scope, []);
+		}
+
+		$nativeType = $scope->getNativeType($exprToSpecify);
+
+		$specifiedExpressions = [
+			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
+		];
+
+		// When narrowing an ArrayDimFetch, specifyExpressionType also recursively
+		// narrows the parent array's offset type via intersection with HasOffsetValueType.
+		// To properly revert this, we must also save and restore the parent expression's type.
+		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
+			$parentExpr = $exprToSpecify->var;
+			$parentCertainty = TrinaryLogic::createYes();
+			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
+			if (!$hasParentExpressionType->no()) {
+				$parentCertainty = $hasParentExpressionType;
+			}
+			array_unshift($specifiedExpressions, new EnsuredNonNullabilityResultExpression(
+				$parentExpr,
+				$scope->getType($parentExpr),
+				$scope->getNativeType($parentExpr),
+				$parentCertainty,
+			));
+		}
+
+		$scope = $scope->specifyExpressionType(
+			$exprToSpecify,
+			$exprTypeWithoutNull,
+			TypeCombinator::removeNull($nativeType),
+			TrinaryLogic::createYes(),
+		);
+
+		return new EnsuredNonNullabilityResult(
+			$scope,
+			$specifiedExpressions,
+		);
+	}
+
+	public function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
+	{
+		$specifiedExpressions = [];
+		$originalScope = $scope;
+		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope) {
+			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr);
+			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
+				$specifiedExpressions[] = $specifiedExpression;
+			}
+			return $result->getScope();
+		});
+
+		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
+	}
+
+	/**
+	 * @param EnsuredNonNullabilityResultExpression[] $specifiedExpressions
+	 */
+	public function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
+	{
+		foreach ($specifiedExpressions as $specifiedExpressionResult) {
+			$scope = $scope->specifyExpressionType(
+				$specifiedExpressionResult->getExpression(),
+				$specifiedExpressionResult->getOriginalType(),
+				$specifiedExpressionResult->getOriginalNativeType(),
+				$specifiedExpressionResult->getCertainty(),
+			);
+		}
+
+		return $scope;
+	}
+
+	/**
+	 * @param Closure(MutatingScope, Expr): MutatingScope $callback
+	 */
+	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
+	{
+		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
+			$scope = $callback($scope, $expr);
+		}
+
+		if ($expr instanceof ArrayDimFetch) {
+			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
+		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
+			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
+		} elseif ($expr instanceof StaticPropertyFetch && $expr->class instanceof Expr) {
+			$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback);
+		} elseif ($expr instanceof List_) {
+			foreach ($expr->items as $item) {
+				if ($item === null) {
+					continue;
+				}
+
+				$scope = $this->lookForExpressionCallback($scope, $item->value, $callback);
+			}
+		}
+
+		return $scope;
+	}
+
+}

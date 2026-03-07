@@ -1,0 +1,46 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\ExprHandler;
+
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Throw_;
+use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ExpressionContext;
+use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\InternalThrowPoint;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\DependencyInjection\AutowiredService;
+
+/**
+ * @implements ExprHandler<Throw_>
+ */
+#[AutowiredService]
+final class ThrowHandler implements ExprHandler
+{
+
+	public function supports(Expr $expr): bool
+	{
+		return $expr instanceof Throw_;
+	}
+
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	{
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$throwPoints = $result->getThrowPoints();
+		$throwPoints[] = InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false);
+
+		return new ExpressionResult(
+			$scope,
+			hasYield: false,
+			isAlwaysTerminating: $result->isAlwaysTerminating(),
+			throwPoints: $throwPoints,
+			impurePoints: $result->getImpurePoints(),
+			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+		);
+	}
+
+}

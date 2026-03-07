@@ -1776,7 +1776,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\IterableType is error-prone and deprecated. Use Type::isIterable() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
+			count: 2
 			path: src/Type/UnionType.php
 
 		-

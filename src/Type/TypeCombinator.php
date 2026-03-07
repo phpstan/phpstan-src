@@ -1499,7 +1499,7 @@ final class TypeCombinator
 			return $types[0];
 		}
 
-		return new IntersectionType(array_values($types));
+		return new IntersectionType($types);
 	}
 
 	public static function removeFalsey(Type $type): Type

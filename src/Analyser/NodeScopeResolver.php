@@ -25,7 +25,6 @@ use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Expr\ErrorSuppress;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Instanceof_;
@@ -3614,13 +3613,6 @@ class NodeScopeResolver
 				[],
 				[],
 			);
-		} elseif ($expr instanceof ErrorSuppress) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context);
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
 		} elseif ($expr instanceof Exit_) {
 			$hasYield = false;
 			$throwPoints = [];

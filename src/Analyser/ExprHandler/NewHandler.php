@@ -44,7 +44,6 @@ final class NewHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
@@ -58,7 +57,7 @@ final class NewHandler implements ExprHandler
 		return $expr instanceof New_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$parametersAcceptor = null;
 		$constructorReflection = null;
@@ -72,14 +71,14 @@ final class NewHandler implements ExprHandler
 			if ($expr->class instanceof Expr) {
 				$objectClasses = $scope->getType($expr)->getObjectClassNames();
 				if (count($objectClasses) === 1) {
-					$objectExprResult = $this->nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+					$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
 					$className = $objectClasses[0];
 					$additionalThrowPoints = $objectExprResult->getThrowPoints();
 				} else {
 					$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
 				}
 
-				$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $result->hasYield();
 				$throwPoints = $result->getThrowPoints();
@@ -150,7 +149,7 @@ final class NewHandler implements ExprHandler
 
 				if ($constructorReflection->getDeclaringClass()->getName() === $classReflection->getName()) {
 					$constructorResult = null;
-					$this->nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
+					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
 						$nodeCallback($node, $scope);
 						if (!$node instanceof MethodReturnStatementsNode) {
 							return;
@@ -175,7 +174,7 @@ final class NewHandler implements ExprHandler
 						$impurePoints = $constructorResult->getImpurePoints();
 					}
 				} else {
-					$this->nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+					$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
 					$declaringClass = $constructorReflection->getDeclaringClass();
 					$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($declaringClass->getName()), $expr->getArgs(), $scope);
 					if ($constructorThrowPoint !== null) {
@@ -194,11 +193,11 @@ final class NewHandler implements ExprHandler
 					}
 				}
 			} else {
-				$this->nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
+				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
 			}
 		}
 
-		$result = $this->nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$result = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $result->getScope();
 		$hasYield = $hasYield || $result->hasYield();
 		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());

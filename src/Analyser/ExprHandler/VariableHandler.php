@@ -23,25 +23,19 @@ use function in_array;
 final class VariableHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Variable;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		if ($expr->name instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();

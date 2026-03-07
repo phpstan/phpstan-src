@@ -2528,7 +2528,7 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$handlerResult = $exprHandler->processExpr($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			$handlerResult = $exprHandler->processExpr($this, $stmt, $expr, $scope, $storage, $nodeCallback, $context);
 
 			if ($expr instanceof MethodCall) {
 				$handlerResult = $this->processMethodCallInitializedProperties($expr, $scope, $handlerResult);

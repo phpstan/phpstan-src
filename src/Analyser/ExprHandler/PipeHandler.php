@@ -27,18 +27,12 @@ use function array_merge;
 final class PipeHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Pipe;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$rightAttributes = array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true]);
 		unset($rightAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
@@ -62,7 +56,7 @@ final class PipeHandler implements ExprHandler
 			], $rightAttributes);
 		}
 
-		$exprResult = $this->nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $exprResult->getScope();
 
 		return new ExpressionResult(

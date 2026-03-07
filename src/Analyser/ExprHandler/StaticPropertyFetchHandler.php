@@ -22,18 +22,12 @@ use function array_merge;
 final class StaticPropertyFetchHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof StaticPropertyFetch;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$hasYield = false;
 		$throwPoints = [];
@@ -48,7 +42,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		];
 		$isAlwaysTerminating = false;
 		if ($expr->class instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
@@ -56,7 +50,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$scope = $result->getScope();
 		}
 		if ($expr->name instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());

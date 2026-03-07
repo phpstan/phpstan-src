@@ -25,25 +25,19 @@ use function array_merge;
 final class ArrayDimFetchHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof ArrayDimFetch;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		if ($expr->dim !== null) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
@@ -51,7 +45,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$scope = $result->getScope();
 		}
 
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$hasYield = $hasYield || $result->hasYield();
 		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -60,7 +54,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 		$varType = $scope->getType($expr->var);
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-			$throwPoints = array_merge($throwPoints, $this->nodeScopeResolver->processExprNode(
+			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 				$stmt,
 				new MethodCall($expr->var, 'offsetGet'),
 				$scope,

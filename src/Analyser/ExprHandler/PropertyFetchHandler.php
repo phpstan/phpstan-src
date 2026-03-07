@@ -24,7 +24,6 @@ final class PropertyFetchHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private PhpVersion $phpVersion,
 	)
 	{
@@ -35,17 +34,17 @@ final class PropertyFetchHandler implements ExprHandler
 		return $expr instanceof PropertyFetch;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$scopeBeforeVar = $scope;
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();
 		$isAlwaysTerminating = $result->isAlwaysTerminating();
 		$scope = $result->getScope();
 		if ($expr->name instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -62,7 +61,7 @@ final class PropertyFetchHandler implements ExprHandler
 				$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
 				if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
 					$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
-					$throwPoints = array_merge($throwPoints, $this->nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
+					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
 				}
 			}
 		}

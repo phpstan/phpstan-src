@@ -74,7 +74,6 @@ final class FuncCallHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
@@ -90,7 +89,7 @@ final class FuncCallHandler implements ExprHandler
 		return $expr instanceof FuncCall;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$parametersAcceptor = null;
 		$functionReflection = null;
@@ -108,7 +107,7 @@ final class FuncCallHandler implements ExprHandler
 				);
 			}
 
-			$nameResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $nameResult->getScope();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -127,7 +126,7 @@ final class FuncCallHandler implements ExprHandler
 				$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 				$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
 
-				$scope = $this->nodeScopeResolver->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
+				$scope = $nodeScopeResolver->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
 			}
 		} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
@@ -173,7 +172,7 @@ final class FuncCallHandler implements ExprHandler
 					$propertyAttributes = $normalizedExpr->getAttributes();
 					$propertyAttributes['inCloneWith'] = true;
 					if (count($clonePropertyKeyTypeScalars) === 1) {
-						$this->nodeScopeResolver->processVirtualAssign(
+						$nodeScopeResolver->processVirtualAssign(
 							$scope,
 							$storage,
 							$stmt,
@@ -184,7 +183,7 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					$this->nodeScopeResolver->processVirtualAssign(
+					$nodeScopeResolver->processVirtualAssign(
 						$scope,
 						$storage,
 						$stmt,
@@ -196,7 +195,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		$result = $this->nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$result = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$scope = $result->getScope();
 		$hasYield = $result->hasYield();
 		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -210,7 +209,7 @@ final class FuncCallHandler implements ExprHandler
 				&& $nameType->isCallable()->yes()
 				&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
 			) {
-				$invokeResult = $this->nodeScopeResolver->processExprNode(
+				$invokeResult = $nodeScopeResolver->processExprNode(
 					$stmt,
 					new MethodCall($normalizedExpr->name, '__invoke', $normalizedExpr->getArgs(), $normalizedExpr->getAttributes()),
 					$scope,
@@ -284,7 +283,7 @@ final class FuncCallHandler implements ExprHandler
 			$arrayArgNativeType = $scope->getNativeType($arrayArg);
 			$isArrayPop = $functionReflection->getName() === 'array_pop';
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,
@@ -304,7 +303,7 @@ final class FuncCallHandler implements ExprHandler
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,
@@ -330,7 +329,7 @@ final class FuncCallHandler implements ExprHandler
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,
@@ -353,7 +352,7 @@ final class FuncCallHandler implements ExprHandler
 			$lengthType = isset($normalizedExpr->getArgs()[2]) ? $scope->getType($normalizedExpr->getArgs()[2]->value) : new NullType();
 			$replacementType = isset($normalizedExpr->getArgs()[3]) ? $scope->getType($normalizedExpr->getArgs()[3]->value) : new ConstantArrayType([], []);
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,
@@ -373,7 +372,7 @@ final class FuncCallHandler implements ExprHandler
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,
@@ -390,7 +389,7 @@ final class FuncCallHandler implements ExprHandler
 		) {
 			$arrayArg = $normalizedExpr->getArgs()[0]->value;
 
-			$scope = $this->nodeScopeResolver->processVirtualAssign(
+			$scope = $nodeScopeResolver->processVirtualAssign(
 				$scope,
 				$storage,
 				$stmt,

@@ -22,20 +22,14 @@ use function sprintf;
 final class CastStringHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Cast\String_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$impurePoints = $result->getImpurePoints();
 
 		$exprType = $scope->getType($expr->expr);

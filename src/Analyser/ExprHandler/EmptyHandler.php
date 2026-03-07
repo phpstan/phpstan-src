@@ -22,7 +22,6 @@ final class EmptyHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private NonNullabilityHelper $nonNullabilityHelper,
 	)
 	{
@@ -33,14 +32,14 @@ final class EmptyHandler implements ExprHandler
 		return $expr instanceof Empty_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr);
-		$scope = $this->nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $result->getScope();
 		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-		$scope = $this->nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
+		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
 
 		return new ExpressionResult(
 			$scope,

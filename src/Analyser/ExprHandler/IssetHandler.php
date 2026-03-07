@@ -29,7 +29,6 @@ final class IssetHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private NonNullabilityHelper $nonNullabilityHelper,
 	)
 	{
@@ -40,7 +39,7 @@ final class IssetHandler implements ExprHandler
 		return $expr instanceof Isset_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$hasYield = false;
 		$throwPoints = [];
@@ -49,8 +48,8 @@ final class IssetHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		foreach ($expr->vars as $var) {
 			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
-			$scope = $this->nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
+			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
@@ -67,7 +66,7 @@ final class IssetHandler implements ExprHandler
 				continue;
 			}
 
-			$throwPoints = array_merge($throwPoints, $this->nodeScopeResolver->processExprNode(
+			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 				$stmt,
 				new MethodCall($var->var, 'offsetExists'),
 				$scope,
@@ -77,7 +76,7 @@ final class IssetHandler implements ExprHandler
 			)->getThrowPoints());
 		}
 		foreach (array_reverse($expr->vars) as $var) {
-			$scope = $this->nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
+			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 		}
 		foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
 			$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());

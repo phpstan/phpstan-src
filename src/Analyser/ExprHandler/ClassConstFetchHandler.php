@@ -21,18 +21,12 @@ use function array_merge;
 final class ClassConstFetchHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof ClassConstFetch;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$hasYield = false;
 		$throwPoints = [];
@@ -40,25 +34,25 @@ final class ClassConstFetchHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 
 		if ($expr->class instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 		} else {
-			$this->nodeScopeResolver->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
 		}
 
 		if ($expr->name instanceof Expr) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 		} else {
-			$this->nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		}
 
 		return new ExpressionResult(

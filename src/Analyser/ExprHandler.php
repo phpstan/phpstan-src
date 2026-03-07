@@ -22,6 +22,7 @@ interface ExprHandler
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processExpr(
+		NodeScopeResolver $nodeScopeResolver,
 		Stmt $stmt,
 		Expr $expr,
 		MutatingScope $scope,

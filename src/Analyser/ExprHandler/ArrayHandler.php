@@ -23,18 +23,12 @@ use function array_merge;
 final class ArrayHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Array_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$itemNodes = [];
 		$hasYield = false;
@@ -43,9 +37,9 @@ final class ArrayHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
-			$this->nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
 			if ($arrayItem->key !== null) {
-				$keyResult = $this->nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $keyResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
@@ -53,14 +47,14 @@ final class ArrayHandler implements ExprHandler
 				$scope = $keyResult->getScope();
 			}
 
-			$valueResult = $this->nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 			$scope = $valueResult->getScope();
 		}
-		$this->nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 
 		return new ExpressionResult(
 			$scope,

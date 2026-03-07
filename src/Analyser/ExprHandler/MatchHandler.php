@@ -49,7 +49,6 @@ final class MatchHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -61,12 +60,12 @@ final class MatchHandler implements ExprHandler
 		return $expr instanceof Match_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$deepContext = $context->enterDeep();
 		$condType = $scope->getType($expr->cond);
 		$condNativeType = $scope->getNativeType($expr->cond);
-		$condResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
 		$scope = $condResult->getScope();
 		$hasYield = $condResult->hasYield();
 		$throwPoints = $condResult->getThrowPoints();
@@ -176,7 +175,7 @@ final class MatchHandler implements ExprHandler
 							}
 						}
 
-						$this->nodeScopeResolver->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext);
+						$nodeScopeResolver->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext);
 
 						$condNodes[] = new MatchExpressionArmCondition(
 							$cond,
@@ -206,7 +205,7 @@ final class MatchHandler implements ExprHandler
 					$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
 					$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
-					$armResult = $this->nodeScopeResolver->processExprNode(
+					$armResult = $nodeScopeResolver->processExprNode(
 						$stmt,
 						$arm->body,
 						$matchArmBodyScope,
@@ -247,7 +246,7 @@ final class MatchHandler implements ExprHandler
 				$hasDefaultCond = true;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-				$armResult = $this->nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 				$matchScope = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
@@ -270,7 +269,7 @@ final class MatchHandler implements ExprHandler
 					continue;
 				}
 				$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getStartLine());
-				$armCondResult = $this->nodeScopeResolver->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext);
+				$armCondResult = $nodeScopeResolver->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext);
 				$hasYield = $hasYield || $armCondResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armCondResult->getImpurePoints());
@@ -294,7 +293,7 @@ final class MatchHandler implements ExprHandler
 			$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 			$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
 
-			$armResult = $this->nodeScopeResolver->processExprNode(
+			$armResult = $nodeScopeResolver->processExprNode(
 				$stmt,
 				$arm->body,
 				$bodyScope,
@@ -346,7 +345,7 @@ final class MatchHandler implements ExprHandler
 
 		ksort($armNodes, SORT_NUMERIC);
 
-		$this->nodeScopeResolver->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scopeForMatchNodeCallback, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scopeForMatchNodeCallback, $storage);
 
 		if ($expr->cond instanceof AlwaysRememberedExpr) {
 			$expr->cond = $expr->cond->getExpr();

@@ -22,34 +22,28 @@ use function array_merge;
 final class TernaryHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Ternary;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$ternaryCondResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$ternaryCondResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$throwPoints = $ternaryCondResult->getThrowPoints();
 		$impurePoints = $ternaryCondResult->getImpurePoints();
 		$ifTrueScope = $ternaryCondResult->getTruthyScope();
 		$ifFalseScope = $ternaryCondResult->getFalseyScope();
 		$ifTrueType = null;
 		if ($expr->if !== null) {
-			$ifResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
+			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
 			$ifTrueScope = $ifResult->getScope();
 			$ifTrueType = $ifTrueScope->getType($expr->if);
 		}
 
-		$elseResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+		$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
 		$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
 		$ifFalseScope = $elseResult->getScope();

@@ -27,12 +27,6 @@ use function array_merge;
 final class BinaryOpHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof BinaryOp
@@ -44,15 +38,15 @@ final class BinaryOpHandler implements ExprHandler
 			&& !$expr instanceof BinaryOp\Pipe;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$scope = $result->getScope();
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();
 		$isAlwaysTerminating = $result->isAlwaysTerminating();
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->right, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->right, $scope, $storage, $nodeCallback, $context->enterDeep());
 		if (
 			($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
 			!$scope->getType($expr->right)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()

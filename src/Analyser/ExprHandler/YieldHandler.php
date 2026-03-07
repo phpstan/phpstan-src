@@ -23,18 +23,12 @@ use function array_merge;
 final class YieldHandler implements ExprHandler
 {
 
-	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
-	)
-	{
-	}
-
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Yield_;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$throwPoints = [
 			InternalThrowPoint::createImplicit($scope, $expr),
@@ -50,14 +44,14 @@ final class YieldHandler implements ExprHandler
 		];
 		$isAlwaysTerminating = false;
 		if ($expr->key !== null) {
-			$keyResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$keyResult = $nodeScopeResolver->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $keyResult->getScope();
 			$throwPoints = $keyResult->getThrowPoints();
 			$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 			$isAlwaysTerminating = $keyResult->isAlwaysTerminating();
 		}
 		if ($expr->value !== null) {
-			$valueResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->value, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $valueResult->getScope();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());

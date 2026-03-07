@@ -47,7 +47,6 @@ final class MethodCallHandler implements ExprHandler
 {
 
 	public function __construct(
-		private NodeScopeResolver $nodeScopeResolver,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
@@ -62,7 +61,7 @@ final class MethodCallHandler implements ExprHandler
 		return $expr instanceof MethodCall;
 	}
 
-	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$originalScope = $scope;
 		if (
@@ -77,7 +76,7 @@ final class MethodCallHandler implements ExprHandler
 			);
 		}
 
-		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep());
+		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep());
 		$hasYield = $result->hasYield();
 		$throwPoints = $result->getThrowPoints();
 		$impurePoints = $result->getImpurePoints();
@@ -90,7 +89,7 @@ final class MethodCallHandler implements ExprHandler
 		$methodReflection = null;
 		$calledOnType = $scope->getType($expr->var);
 		if ($expr->name instanceof Expr) {
-			$methodNameResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
 			$scope = $methodNameResult->getScope();
 		} else {
@@ -133,7 +132,7 @@ final class MethodCallHandler implements ExprHandler
 			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
 		}
 
-		$result = $this->nodeScopeResolver->processArgs(
+		$result = $nodeScopeResolver->processArgs(
 			$stmt,
 			$methodReflection,
 			$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
@@ -148,7 +147,7 @@ final class MethodCallHandler implements ExprHandler
 
 		if ($methodReflection !== null) {
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
-				$this->nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
 			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin() && $parametersAcceptor !== null) {
 				$scope = $scope->assignExpression(

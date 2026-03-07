@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -20,6 +21,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 	 * @param int|array{min: int, max: int}|null $configPhpVersion
 	 */
 	public function __construct(
+		private Container $container,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
@@ -44,6 +46,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 	public function create(?callable $nodeCallback): DirectInternalScopeFactory
 	{
 		return new DirectInternalScopeFactory(
+			$this->container,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider,

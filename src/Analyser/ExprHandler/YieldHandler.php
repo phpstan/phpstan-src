@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use Generator;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Stmt;
@@ -14,6 +15,9 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -26,6 +30,25 @@ final class YieldHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Yield_;
+	}
+
+	/**
+	 * @param Yield_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$functionReflection = $scope->getFunction();
+		if ($functionReflection === null) {
+			return new MixedType();
+		}
+
+		$returnType = $functionReflection->getReturnType();
+		$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
+		if ($generatorSendType instanceof ErrorType) {
+			return new MixedType();
+		}
+
+		return $generatorSendType;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

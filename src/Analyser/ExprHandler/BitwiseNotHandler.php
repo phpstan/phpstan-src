@@ -12,6 +12,8 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<BitwiseNot>
@@ -19,6 +21,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 #[AutowiredService]
 final class BitwiseNotHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -39,6 +47,14 @@ final class BitwiseNotHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param BitwiseNot $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $this->initializerExprTypeResolver->getBitwiseNotType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));
 	}
 
 }

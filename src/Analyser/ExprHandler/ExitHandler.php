@@ -13,6 +13,8 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\NonAcceptingNeverType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -54,6 +56,14 @@ final class ExitHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param Exit_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return new NonAcceptingNeverType();
 	}
 
 }

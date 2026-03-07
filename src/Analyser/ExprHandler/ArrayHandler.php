@@ -14,6 +14,8 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -23,9 +25,23 @@ use function array_merge;
 final class ArrayHandler implements ExprHandler
 {
 
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Array_;
+	}
+
+	/**
+	 * @param Array_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

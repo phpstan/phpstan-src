@@ -20,7 +20,6 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\PropertyHook;
@@ -29,12 +28,11 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\Traverser\CloneTypeTraverser;
 use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
-use PHPStan\Analyser\Traverser\InstanceOfClassTypeTraverser;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Analyser\Traverser\VoidToNullTraverser;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -129,7 +127,6 @@ use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -168,6 +165,7 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
+use function method_exists;
 use function sprintf;
 use function str_decrement;
 use function str_increment;
@@ -186,7 +184,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
-	private const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
+	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
 	/** @var Type[] */
@@ -221,6 +219,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function __construct(
+		private Container $container,
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -1083,8 +1082,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
-			return new NonAcceptingNeverType();
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($node)) {
+				continue;
+			}
+
+			if (!method_exists($exprHandler, 'resolveType')) {
+				continue;
+			}
+
+			return $exprHandler->resolveType($this, $node);
 		}
 
 		if (
@@ -1098,80 +1106,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		if ($node instanceof AlwaysRememberedExpr) {
 			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\Smaller) {
-			return $this->getType($node->left)->isSmallerThan($this->getType($node->right), $this->phpVersion)->toBooleanType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
-			return $this->getType($node->left)->isSmallerThanOrEqual($this->getType($node->right), $this->phpVersion)->toBooleanType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\Greater) {
-			return $this->getType($node->right)->isSmallerThan($this->getType($node->left), $this->phpVersion)->toBooleanType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
-			return $this->getType($node->right)->isSmallerThanOrEqual($this->getType($node->left), $this->phpVersion)->toBooleanType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\Equal) {
-			if (
-				$node->left instanceof Variable
-				&& is_string($node->left->name)
-				&& $node->right instanceof Variable
-				&& is_string($node->right->name)
-				&& $node->left->name === $node->right->name
-			) {
-				return new ConstantBooleanType(true);
-			}
-
-			$leftType = $this->getType($node->left);
-			$rightType = $this->getType($node->right);
-
-			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
-		}
-
-		if ($node instanceof Expr\BinaryOp\NotEqual) {
-			return $this->getType(new Expr\BooleanNot(new BinaryOp\Equal($node->left, $node->right)));
-		}
-
-		if ($node instanceof Expr\Empty_) {
-			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
-				$isNull = $type->isNull();
-				$isFalsey = $type->toBoolean()->isFalse();
-				if ($isNull->maybe()) {
-					return null;
-				}
-				if ($isFalsey->maybe()) {
-					return null;
-				}
-
-				if ($isNull->yes()) {
-					return $isFalsey->no();
-				}
-
-				return !$isFalsey->yes();
-			});
-			if ($result === null) {
-				return new BooleanType();
-			}
-
-			return new ConstantBooleanType(!$result);
-		}
-
-		if ($node instanceof Node\Expr\BooleanNot) {
-			$exprBooleanType = $this->getType($node->expr)->toBoolean();
-			if ($exprBooleanType instanceof ConstantBooleanType) {
-				return new ConstantBooleanType(!$exprBooleanType->getValue());
-			}
-
-			return new BooleanType();
-		}
-
-		if ($node instanceof Node\Expr\BitwiseNot) {
-			return $this->initializerExprTypeResolver->getBitwiseNotType($node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
 		if (
@@ -1234,177 +1168,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return new BooleanType();
 		}
 
-		if ($node instanceof Node\Expr\BinaryOp\LogicalXor) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			$rightBooleanType = $this->getType($node->right)->toBoolean();
-
-			if (
-				$leftBooleanType instanceof ConstantBooleanType
-				&& $rightBooleanType instanceof ConstantBooleanType
-			) {
-				return new ConstantBooleanType(
-					$leftBooleanType->getValue() xor $rightBooleanType->getValue(),
-				);
-			}
-
-			return new BooleanType();
-		}
-
-		if ($node instanceof Expr\BinaryOp\Identical) {
-			return $this->richerScopeGetTypeHelper->getIdenticalResult($this, $node)->type;
-		}
-
-		if ($node instanceof Expr\BinaryOp\NotIdentical) {
-			return $this->richerScopeGetTypeHelper->getNotIdenticalResult($this, $node)->type;
-		}
-
-		if ($node instanceof Expr\Instanceof_) {
-			return $this->getInstanceOfType($node);
-		}
-
-		if ($node instanceof Node\Expr\UnaryPlus) {
-			return $this->getType($node->expr)->toNumber();
-		}
-
-		if ($node instanceof Expr\ErrorSuppress
-			|| $node instanceof Expr\Assign
-		) {
-			return $this->getType($node->expr);
-		}
-
-		if ($node instanceof Node\Expr\UnaryMinus) {
-			return $this->initializerExprTypeResolver->getUnaryMinusType($node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\BinaryOp\Concat) {
-			return $this->initializerExprTypeResolver->getConcatType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Concat) {
-			return $this->initializerExprTypeResolver->getConcatType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\BitwiseAnd) {
-			return $this->initializerExprTypeResolver->getBitwiseAndType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\BitwiseAnd) {
-			return $this->initializerExprTypeResolver->getBitwiseAndType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\BitwiseOr) {
-			return $this->initializerExprTypeResolver->getBitwiseOrType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\BitwiseOr) {
-			return $this->initializerExprTypeResolver->getBitwiseOrType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\BitwiseXor) {
-			return $this->initializerExprTypeResolver->getBitwiseXorType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\BitwiseXor) {
-			return $this->initializerExprTypeResolver->getBitwiseXorType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\BinaryOp\Spaceship) {
-			return $this->initializerExprTypeResolver->getSpaceshipType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Div) {
-			return $this->initializerExprTypeResolver->getDivType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Div) {
-			return $this->initializerExprTypeResolver->getDivType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Mod) {
-			return $this->initializerExprTypeResolver->getModType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Mod) {
-			return $this->initializerExprTypeResolver->getModType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Plus) {
-			return $this->initializerExprTypeResolver->getPlusType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Plus) {
-			return $this->initializerExprTypeResolver->getPlusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Minus) {
-			return $this->initializerExprTypeResolver->getMinusType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Minus) {
-			return $this->initializerExprTypeResolver->getMinusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Mul) {
-			return $this->initializerExprTypeResolver->getMulType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Mul) {
-			return $this->initializerExprTypeResolver->getMulType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\Pow) {
-			return $this->initializerExprTypeResolver->getPowType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\Pow) {
-			return $this->initializerExprTypeResolver->getPowType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\ShiftLeft) {
-			return $this->initializerExprTypeResolver->getShiftLeftType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\ShiftLeft) {
-			return $this->initializerExprTypeResolver->getShiftLeftType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof BinaryOp\ShiftRight) {
-			return $this->initializerExprTypeResolver->getShiftRightType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\AssignOp\ShiftRight) {
-			return $this->initializerExprTypeResolver->getShiftRightType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
-		}
-
-		if ($node instanceof Expr\Clone_) {
-			$cloneType = TypeCombinator::intersect($this->getType($node->expr), new ObjectWithoutClassType());
-			return TypeTraverser::map($cloneType, new CloneTypeTraverser());
-		}
-
-		if ($node instanceof Node\Scalar\Int_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof String_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof Node\Scalar\InterpolatedString) {
-			$resultType = null;
-			foreach ($node->parts as $part) {
-				if ($part instanceof InterpolatedStringPart) {
-					$partType = new ConstantStringType($part->value);
-				} else {
-					$partType = $this->getType($part)->toString();
-				}
-				if ($resultType === null) {
-					$resultType = $partType;
-					continue;
-				}
-
-				$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
-			}
-
-			return $resultType ?? new ConstantStringType('');
-		} elseif ($node instanceof Node\Scalar\Float_) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
 			return $this->getFirstClassCallableType($node);
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
 			return $this->getClosureType($node);
@@ -1421,74 +1185,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$exprType = $this->getType($node->class);
 			return $exprType->getObjectTypeOrClassStringObjectType();
 
-		} elseif ($node instanceof Array_) {
-			return $this->initializerExprTypeResolver->getArrayType($node, fn (Expr $expr): Type => $this->getType($expr));
 		} elseif ($node instanceof Unset_) {
 			return new NullType();
-		} elseif ($node instanceof Expr\Cast) {
-			return $this->initializerExprTypeResolver->getCastType($node, fn (Expr $expr): Type => $this->getType($expr));
-		} elseif ($node instanceof Node\Scalar\MagicConst) {
-			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
-		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
-			return $this->getType($node->var);
 		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
 			return $this->getPreIncDecType($node);
-		} elseif ($node instanceof Expr\Yield_) {
-			$functionReflection = $this->getFunction();
-			if ($functionReflection === null) {
-				return new MixedType();
-			}
-
-			$returnType = $functionReflection->getReturnType();
-			$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
-			if ($generatorSendType instanceof ErrorType) {
-				return new MixedType();
-			}
-
-			return $generatorSendType;
-		} elseif ($node instanceof Expr\YieldFrom) {
-			$yieldFromType = $this->getType($node->expr);
-			$generatorReturnType = $yieldFromType->getTemplateType(Generator::class, 'TReturn');
-			if ($generatorReturnType instanceof ErrorType) {
-				return new MixedType();
-			}
-
-			return $generatorReturnType;
-		} elseif ($node instanceof Expr\Match_) {
-			return $this->getMatchType($node);
-		}
-
-		if ($node instanceof Expr\Isset_) {
-			$issetResult = true;
-			foreach ($node->vars as $var) {
-				$result = $this->issetCheck($var, static function (Type $type): ?bool {
-					$isNull = $type->isNull();
-					if ($isNull->maybe()) {
-						return null;
-					}
-
-					return !$isNull->yes();
-				});
-				if ($result !== null) {
-					if (!$result) {
-						return new ConstantBooleanType($result);
-					}
-
-					continue;
-				}
-
-				$issetResult = $result;
-			}
-
-			if ($issetResult === null) {
-				return new BooleanType();
-			}
-
-			return new ConstantBooleanType($issetResult);
-		}
-
-		if ($node instanceof Expr\AssignOp\Coalesce) {
-			return $this->getType(new BinaryOp\Coalesce($node->var, $node->expr, $node->getAttributes()));
 		}
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
@@ -5737,54 +5437,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$nodeCallback($node, $this);
 	}
 
-	private function getInstanceOfType(Expr\Instanceof_ $node): Type
-	{
-		$expressionType = $this->getType($node->expr);
-		if (
-			$this->isInTrait()
-			&& TypeUtils::findThisType($expressionType) !== null
-		) {
-			return new BooleanType();
-		}
-		if ($expressionType instanceof NeverType) {
-			return new ConstantBooleanType(false);
-		}
-
-		$uncertainty = false;
-
-		if ($node->class instanceof Node\Name) {
-			$unresolvedClassName = $node->class->toString();
-			if (
-				strtolower($unresolvedClassName) === 'static'
-				&& $this->isInClass()
-			) {
-				$classType = new StaticType($this->getClassReflection());
-			} else {
-				$className = $this->resolveName($node->class);
-				$classType = new ObjectType($className);
-			}
-		} else {
-			$classType = $this->getType($node->class);
-			$traverser = new InstanceOfClassTypeTraverser();
-			$classType = TypeTraverser::map($classType, $traverser);
-			$uncertainty = $traverser->getUncertainty();
-		}
-
-		if ($classType->isSuperTypeOf(new MixedType())->yes()) {
-			return new BooleanType();
-		}
-
-		$isSuperType = $classType->isSuperTypeOf($expressionType);
-
-		if ($isSuperType->no()) {
-			return new ConstantBooleanType(false);
-		} elseif ($isSuperType->yes() && !$uncertainty) {
-			return new ConstantBooleanType(true);
-		}
-
-		return new BooleanType();
-	}
-
 	private function getClosureType(Expr\Closure|Expr\ArrowFunction $node): ClosureType
 	{
 		$parameters = [];
@@ -6170,140 +5822,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			acceptsNamedArguments: TrinaryLogic::createYes(),
 			mustUseReturnValue: $mustUseReturnValue,
 		);
-	}
-
-	private function getMatchType(Match_ $node): Type
-	{
-		$cond = $node->cond;
-		$condType = $this->getType($cond);
-		$types = [];
-
-		$matchScope = $this;
-		$arms = $node->arms;
-		if ($condType->isEnum()->yes()) {
-			// enum match analysis would work even without this if branch
-			// but would be much slower
-			// this avoids using ObjectType::$subtractedType which is slow for huge enums
-			// because of repeated union type normalization
-			$enumCases = $condType->getEnumCases();
-			if (count($enumCases) > 0) {
-				$indexedEnumCases = [];
-				foreach ($enumCases as $enumCase) {
-					$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
-				}
-				$unusedIndexedEnumCases = $indexedEnumCases;
-
-				foreach ($arms as $i => $arm) {
-					if ($arm->conds === null) {
-						continue;
-					}
-
-					$conditionCases = [];
-					foreach ($arm->conds as $armCond) {
-						if (!$armCond instanceof Expr\ClassConstFetch) {
-							continue 2;
-						}
-						if (!$armCond->class instanceof Name) {
-							continue 2;
-						}
-						if (!$armCond->name instanceof Node\Identifier) {
-							continue 2;
-						}
-						$fetchedClassName = $this->resolveName($armCond->class);
-						$loweredFetchedClassName = strtolower($fetchedClassName);
-						if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-							continue 2;
-						}
-
-						$caseName = $armCond->name->toString();
-						if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-							continue 2;
-						}
-
-						$conditionCases[] = $indexedEnumCases[$loweredFetchedClassName][$caseName];
-						unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
-					}
-
-					$conditionCasesCount = count($conditionCases);
-					if ($conditionCasesCount === 0) {
-						throw new ShouldNotHappenException();
-					} elseif ($conditionCasesCount === 1) {
-						$conditionCaseType = $conditionCases[0];
-					} else {
-						$conditionCaseType = new UnionType($conditionCases);
-					}
-
-					$types[] = $matchScope->addTypeToExpression(
-						$cond,
-						$conditionCaseType,
-					)->getType($arm->body);
-					unset($arms[$i]);
-				}
-
-				$remainingCases = [];
-				foreach ($unusedIndexedEnumCases as $cases) {
-					foreach ($cases as $case) {
-						$remainingCases[] = $case;
-					}
-				}
-
-				$remainingCasesCount = count($remainingCases);
-				if ($remainingCasesCount === 0) {
-					$remainingType = new NeverType();
-				} elseif ($remainingCasesCount === 1) {
-					$remainingType = $remainingCases[0];
-				} else {
-					$remainingType = new UnionType($remainingCases);
-				}
-
-				$matchScope = $matchScope->addTypeToExpression($cond, $remainingType);
-			}
-		}
-
-		foreach ($arms as $arm) {
-			if ($arm->conds === null) {
-				if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
-					$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
-				}
-				$types[] = $matchScope->getType($arm->body);
-				continue;
-			}
-
-			if (count($arm->conds) === 0) {
-				throw new ShouldNotHappenException();
-			}
-
-			if (count($arm->conds) === 1) {
-				$filteringExpr = new BinaryOp\Identical($cond, $arm->conds[0]);
-			} else {
-				$items = [];
-				foreach ($arm->conds as $filteringExpr) {
-					$items[] = new Node\ArrayItem($filteringExpr);
-				}
-				$filteringExpr = new FuncCall(
-					new Name\FullyQualified('in_array'),
-					[
-						new Arg($cond),
-						new Arg(new Array_($items)),
-						new Arg(new ConstFetch(new Name\FullyQualified('true'))),
-					],
-				);
-			}
-
-			$filteringExprType = $matchScope->getType($filteringExpr);
-
-			if (!$filteringExprType->isFalse()->yes()) {
-				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-				if ($node->hasAttribute(self::KEEP_VOID_ATTRIBUTE_NAME)) {
-					$arm->body->setAttribute(self::KEEP_VOID_ATTRIBUTE_NAME, $node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME));
-				}
-				$types[] = $truthyScope->getType($arm->body);
-			}
-
-			$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
-		}
-
-		return TypeCombinator::union(...$types);
 	}
 
 	private function getFunctionCallType(FuncCall $node): Type

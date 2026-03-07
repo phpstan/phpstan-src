@@ -155,6 +155,7 @@ abstract class PHPStanTestCase extends TestCase
 
 		return new ScopeFactory(
 			new DirectInternalScopeFactoryFactory(
+				$container,
 				$reflectionProvider,
 				$initializerExprTypeResolver,
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),

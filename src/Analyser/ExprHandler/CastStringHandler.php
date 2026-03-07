@@ -13,6 +13,8 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Type;
 use function sprintf;
 
 /**
@@ -21,6 +23,12 @@ use function sprintf;
 #[AutowiredService]
 final class CastStringHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -57,6 +65,14 @@ final class CastStringHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param Cast\String_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $this->initializerExprTypeResolver->getCastType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\InterpolatedStringPart;
 use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
@@ -12,6 +13,9 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -20,6 +24,12 @@ use function array_merge;
 #[AutowiredService]
 final class InterpolatedStringHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -53,6 +63,29 @@ final class InterpolatedStringHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param InterpolatedString $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$resultType = null;
+		foreach ($expr->parts as $part) {
+			if ($part instanceof InterpolatedStringPart) {
+				$partType = new ConstantStringType($part->value);
+			} else {
+				$partType = $scope->getType($part)->toString();
+			}
+			if ($resultType === null) {
+				$resultType = $partType;
+				continue;
+			}
+
+			$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
+		}
+
+		return $resultType ?? new ConstantStringType('');
 	}
 
 }

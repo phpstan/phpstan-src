@@ -454,7 +454,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		int $generateErrorsCount = 4,
 	): void
 	{
-		putenv('COLUMNS=200');
+		putenv('COLUMNS=120');
 		if ($showAllErrors) {
 			if ($errorsBudget !== null) {
 				$this->fail('showAllErrors cannot be true when errorsBudget is set');

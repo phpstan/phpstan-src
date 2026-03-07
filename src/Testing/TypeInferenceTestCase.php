@@ -70,6 +70,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 
 		return new $className(
+			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),

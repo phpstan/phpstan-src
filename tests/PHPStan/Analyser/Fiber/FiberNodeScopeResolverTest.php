@@ -48,6 +48,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 		$typeSpecifier = $container->getService('typeSpecifier');
 
 		return new FiberNodeScopeResolver(
+			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),

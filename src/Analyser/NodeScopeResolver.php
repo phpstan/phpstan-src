@@ -64,6 +64,7 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
@@ -260,6 +261,7 @@ class NodeScopeResolver
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 */
 	public function __construct(
+		private readonly Container $container,
 		private readonly ReflectionProvider $reflectionProvider,
 		private readonly InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredParameter(ref: '@nodeScopeResolverReflector')]
@@ -2653,6 +2655,15 @@ class NodeScopeResolver
 		}
 
 		$this->callNodeCallbackWithExpression($nodeCallback, $expr, $scope, $storage, $context);
+
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($expr)) {
+				continue;
+			}
+
+			return $exprHandler->processExpr($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+		}
 
 		if ($expr instanceof Variable) {
 			$hasYield = false;

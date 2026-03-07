@@ -811,6 +811,7 @@ class AnalyserTest extends PHPStanTestCase
 		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
 
 		$nodeScopeResolver = new NodeScopeResolver(
+			$container,
 			$reflectionProvider,
 			$container->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),

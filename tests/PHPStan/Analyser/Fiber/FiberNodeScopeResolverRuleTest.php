@@ -115,6 +115,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 		$typeSpecifier = $this->getTypeSpecifier();
 
 		return new FiberNodeScopeResolver(
+			self::getContainer(),
 			$reflectionProvider,
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),

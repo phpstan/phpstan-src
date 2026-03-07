@@ -106,6 +106,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		$this->attributeReflectionFactory ??= $this->container->getByType(AttributeReflectionFactory::class);
 
 		return new $className(
+			$this->container,
 			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,

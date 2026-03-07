@@ -35,6 +35,7 @@ use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\Traverser\InstanceOfClassTypeTraverser;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\Analyser\Traverser\VoidToNullTraverser;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
@@ -168,6 +169,7 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
+use function method_exists;
 use function sprintf;
 use function str_decrement;
 use function str_increment;
@@ -221,6 +223,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	 * @param list<array{MethodReflection|FunctionReflection|null, ParameterReflection|null}> $inFunctionCallsStack
 	 */
 	public function __construct(
+		private Container $container,
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -1083,8 +1086,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
-			return new NonAcceptingNeverType();
+		/** @var ExprHandler<Expr> $exprHandler */
+		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
+			if (!$exprHandler->supports($node)) {
+				continue;
+			}
+
+			if (!method_exists($exprHandler, 'resolveType')) {
+				continue;
+			}
+
+			return $exprHandler->resolveType($this, $node);
 		}
 
 		if (

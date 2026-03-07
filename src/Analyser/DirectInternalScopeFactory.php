@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Fiber\FiberScope;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -24,6 +25,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 */
 	public function __construct(
+		private Container $container,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
@@ -69,6 +71,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		}
 
 		return new $className(
+			$this->container,
 			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
@@ -107,6 +110,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	public function toFiberFactory(): InternalScopeFactory
 	{
 		return new self(
+			$this->container,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider,
@@ -129,6 +133,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 	public function toMutatingFactory(): InternalScopeFactory
 	{
 		return new self(
+			$this->container,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider,

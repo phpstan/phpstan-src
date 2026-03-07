@@ -46,8 +46,19 @@ final class TableErrorFormatter implements ErrorFormatter
 		private ?string $editorUrlTitle,
 		#[AutowiredParameter]
 		private string $usedLevel,
+		private ?int $errorsBudget = null,
 	)
 	{
+		if ($this->errorsBudget !== null) {
+			return;
+		}
+
+		$forceShowAll = getenv(self::FORCE_SHOW_ALL_ERRORS);
+		if (!in_array($forceShowAll, [false, '0'], true)) {
+			return;
+		}
+
+		$this->errorsBudget = self::ERRORS_LIMIT;
 	}
 
 	/** @api */
@@ -92,13 +103,7 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
-		$forceShowAll = getenv(self::FORCE_SHOW_ALL_ERRORS);
-		if (in_array($forceShowAll, [false, '0'], true)) {
-			$errorsBudget = self::ERRORS_LIMIT;
-		} else {
-			$errorsBudget = null;
-		}
-
+		$errorsBudget = $this->errorsBudget;
 		$printedErrors = 0;
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
@@ -186,7 +191,7 @@ final class TableErrorFormatter implements ErrorFormatter
 		}
 
 		if ($errorsBudget !== null && $printedErrors > $errorsBudget) {
-			$style->error(sprintf('Found %s+ errors', self::ERRORS_LIMIT));
+			$style->error(sprintf('Found %s+ errors', $errorsBudget));
 
 			$note = [];
 			$note[] = sprintf('Result is limited to the first %d errors', $errorsBudget);

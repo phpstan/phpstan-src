@@ -35,6 +35,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		putenv('COLUMNS');
 		putenv('TERM_PROGRAM');
 		putenv('TERMINAL_EMULATOR' . ($this->terminalEmulator !== false ? '=' . $this->terminalEmulator : ''));
+		putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
 	}
 
 	public static function dataFormatterOutputProvider(): iterable
@@ -294,6 +295,173 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
 	}
 
+	public static function dataErrorLimit(): iterable
+	{
+		yield [
+			'errorsBudget' => null,
+			'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+  15     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 4 errors
+
+',
+		];
+		yield [
+			'errorsBudget' => 1,
+			'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 1+ errors
+
+ ! [NOTE] Result is limited to the first 1 errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
+ !        - Consider using PHPStan Pro for more comfortable error browsing
+ !          Learn more: https://phpstan.com
+
+',
+		];
+
+		yield [
+			'errorsBudget' => 3,
+			'usedLevel' => '8',
+			'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 3+ errors
+
+ ! [NOTE] Result is limited to the first 3 errors
+ !        - Consider lowering the PHPStan level
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
+ !        - Consider using PHPStan Pro for more comfortable error browsing
+ !          Learn more: https://phpstan.com
+
+',
+		];
+
+			yield [
+				'errorsBudget' => 3,
+				'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 3+ errors
+
+ ! [NOTE] Result is limited to the first 3 errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
+ !        environment variable to show all errors
+ !        - Consider using PHPStan Pro for more comfortable error browsing
+ !          Learn more: https://phpstan.com
+
+',
+			];
+
+			yield [
+				'errorsBudget' => 4,
+				'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+  15     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 4 errors
+
+',
+			];
+			yield [
+				'errorsBudget' => 5,
+				'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+  15     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 4 errors
+
+',
+			];
+
+			yield [
+				'usedLevel' => '8',
+				'showAllErrors' => true,
+				'expected' => ' ------ -------------------------------
+  Line   Foo.php (in context of trait)
+ ------ -------------------------------
+  12     Test
+  13     Test
+  14     Test
+  15     Test
+ ------ -------------------------------
+
+
+ [ERROR] Found 4 errors
+
+',
+			];
+	}
+
+	#[DataProvider('dataErrorLimit')]
+	public function testErrorLimit(
+		string $expected,
+		?int $errorsBudget = null,
+		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
+		bool $showAllErrors = false,
+	): void
+	{
+		if ($showAllErrors) {
+			if ($errorsBudget !== null) {
+				$this->fail('showAllErrors cannot be true when errorsBudget is set');
+			}
+			putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1');
+			$errorsBudget = null;
+		}
+
+		$formatter = $this->createErrorFormatter(
+			null,
+			usedLevel: $usedLevel,
+			errorsBudget: $errorsBudget,
+		);
+		$errors = [];
+		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 12, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 13, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 14, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 15, filePath: 'Foo.php', traitFilePath: 'Bar.php');
+		$formatter->formatErrors(new AnalysisResult($errors, [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
+
+		$this->assertStringContainsString($expected, $this->getOutputContent());
+	}
+
 	public function testEditorUrlWithTrait(): void
 	{
 		$formatter = $this->createErrorFormatter('editor://%file%/%line%');
@@ -450,7 +618,12 @@ TABLE,
 		$this->assertStringContainsString('at rel/Foo.php:12', $this->getOutputContent(true));
 	}
 
-	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter
+	private function createErrorFormatter(
+		?string $editorUrl,
+		?string $editorUrlTitle = null,
+		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
+		?int $errorsBudget = null,
+	): TableErrorFormatter
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 
@@ -464,7 +637,8 @@ TABLE,
 			false,
 			$editorUrl,
 			$editorUrlTitle,
-			CommandHelper::DEFAULT_LEVEL,
+			$usedLevel,
+			$errorsBudget,
 		);
 	}
 

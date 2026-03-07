@@ -2665,22 +2665,7 @@ class NodeScopeResolver
 			return $exprHandler->processExpr($stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		}
 
-		if ($expr instanceof Variable) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			if ($expr->name instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-			} elseif (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
-				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
-			}
-		} elseif ($expr instanceof Assign || $expr instanceof AssignRef) {
+		if ($expr instanceof Assign || $expr instanceof AssignRef) {
 			$result = $this->processAssignVar(
 				$scope,
 				$storage,

@@ -230,7 +230,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
-		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private ConstantResolver $constantResolver,
 		protected ScopeContext $context,
 		private PhpVersion $phpVersion,

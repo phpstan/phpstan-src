@@ -45,8 +45,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private ?NodeScopeResolver $nodeScopeResolver = null;
 
-	private ?RicherScopeGetTypeHelper $richerScopeGetTypeHelper = null;
-
 	private ?ConstantResolver $constantResolver = null;
 
 	private ?PhpVersion $phpVersionType = null;
@@ -99,7 +97,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 		$this->propertyReflectionFinder ??= $this->container->getByType(PropertyReflectionFinder::class);
 
 		$this->nodeScopeResolver ??= $this->container->getByType(NodeScopeResolver::class);
-		$this->richerScopeGetTypeHelper ??= $this->container->getByType(RicherScopeGetTypeHelper::class);
 		$this->constantResolver ??= $this->container->getByType(ConstantResolver::class);
 
 		$this->phpVersionType ??= $this->container->getByType(PhpVersion::class);
@@ -117,7 +114,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->propertyReflectionFinder,
 			$this->currentSimpleVersionParser,
 			$this->nodeScopeResolver,
-			$this->richerScopeGetTypeHelper,
 			$this->constantResolver,
 			$context,
 			$this->phpVersionType,

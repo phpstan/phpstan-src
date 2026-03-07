@@ -11,7 +11,6 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -82,7 +81,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(PhpDocInheritanceResolver::class),
 			$container->getByType(FileHelper::class),
 			$typeSpecifier,
-			$container->getByType(DynamicThrowTypeExtensionProvider::class),
 			$container->getByType(ReadWritePropertiesExtensionProvider::class),
 			$container->getByType(ParameterClosureThisExtensionProvider::class),
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
@@ -95,7 +93,6 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			static::getEarlyTerminatingFunctionCalls(),
 			$container->getParameter('exceptions')['implicitThrows'],
 			$container->getParameter('treatPhpDocTypesAsCertain'),
-			$container->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

@@ -5,7 +5,6 @@ namespace PHPStan\Analyser\Fiber;
 use PhpParser\Node;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
@@ -127,7 +126,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,
-			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 			self::getContainer()->getByType(ParameterClosureThisExtensionProvider::class),
 			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
@@ -140,7 +138,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			[],
 			self::getContainer()->getParameter('exceptions')['implicitThrows'],
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			self::getContainer()->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 	}
 

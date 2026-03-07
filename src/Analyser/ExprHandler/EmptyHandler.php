@@ -1,0 +1,56 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\ExprHandler;
+
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Empty_;
+use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ExpressionContext;
+use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\DependencyInjection\AutowiredService;
+
+/**
+ * @implements ExprHandler<Empty_>
+ */
+#[AutowiredService]
+final class EmptyHandler implements ExprHandler
+{
+
+	public function __construct(
+		private NodeScopeResolver $nodeScopeResolver,
+		private NonNullabilityHelper $nonNullabilityHelper,
+	)
+	{
+	}
+
+	public function supports(Expr $expr): bool
+	{
+		return $expr instanceof Empty_;
+	}
+
+	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	{
+		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr);
+		$scope = $this->nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
+		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$scope = $result->getScope();
+		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
+		$scope = $this->nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
+
+		return new ExpressionResult(
+			$scope,
+			hasYield: $result->hasYield(),
+			isAlwaysTerminating: $result->isAlwaysTerminating(),
+			throwPoints: $result->getThrowPoints(),
+			impurePoints: $result->getImpurePoints(),
+			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+		);
+	}
+
+}

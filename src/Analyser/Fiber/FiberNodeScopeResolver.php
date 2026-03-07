@@ -22,7 +22,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	protected function callNodeCallback(
+	public function callNodeCallback(
 		callable $nodeCallback,
 		Node $node,
 		MutatingScope $scope,
@@ -48,7 +48,7 @@ final class FiberNodeScopeResolver extends NodeScopeResolver
 		$this->runFiberForNodeCallback($storage, $fiber, $request);
 	}
 
-	protected function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
+	public function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
 	{
 		$storage->storeBeforeScope($expr, $beforeScope);
 		$this->processPendingFibersForRequestedExpr($storage, $expr, $beforeScope);

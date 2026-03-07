@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -13,13 +13,13 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
-use function array_merge;
+use function sprintf;
 
 /**
- * @implements ExprHandler<Exit_>
+ * @implements ExprHandler<Cast\String_>
  */
 #[AutowiredService]
-final class ExitHandler implements ExprHandler
+final class CastStringHandler implements ExprHandler
 {
 
 	public function __construct(
@@ -30,32 +30,35 @@ final class ExitHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof Exit_;
+		return $expr instanceof Cast\String_;
 	}
 
 	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
-		$identifier = $kind === Exit_::KIND_DIE ? 'die' : 'exit';
-		$impurePoints = [
-			new ImpurePoint($scope, $expr, $identifier, $identifier, true),
-		];
+		$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$impurePoints = $result->getImpurePoints();
 
-		$hasYield = false;
-		$throwPoints = [];
-		if ($expr->expr !== null) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$scope = $result->getScope();
+		$exprType = $scope->getType($expr->expr);
+		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
+		if ($toStringMethod !== null) {
+			if (!$toStringMethod->hasSideEffects()->no()) {
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'methodCall',
+					sprintf('call to method %s::%s()', $toStringMethod->getDeclaringClass()->getDisplayName(), $toStringMethod->getName()),
+					$toStringMethod->isPure()->no(),
+				);
+			}
 		}
+
+		$scope = $result->getScope();
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $hasYield,
-			isAlwaysTerminating: true,
-			throwPoints: $throwPoints,
+			hasYield: $result->hasYield(),
+			isAlwaysTerminating: $result->isAlwaysTerminating(),
+			throwPoints: $result->getThrowPoints(),
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),

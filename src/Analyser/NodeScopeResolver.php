@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use ArrayAccess;
 use Closure;
-use DivisionByZeroError;
 use Override;
 use PhpParser\Comment\Doc;
 use PhpParser\Modifiers;
@@ -18,16 +17,10 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
-use PhpParser\Node\Expr\BinaryOp\Coalesce;
-use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
-use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
@@ -70,8 +63,6 @@ use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
-use PHPStan\Node\BooleanAndNode;
-use PHPStan\Node\BooleanOrNode;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\ClassConstantsNode;
@@ -89,10 +80,8 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
-use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -111,16 +100,9 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Node\InvalidateExprNode;
-use PHPStan\Node\LiteralArrayItem;
-use PHPStan\Node\LiteralArrayNode;
-use PHPStan\Node\MatchExpressionArm;
-use PHPStan\Node\MatchExpressionArmBody;
-use PHPStan\Node\MatchExpressionArmCondition;
-use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Node\NoopExpressionNode;
-use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Node\PropertyHookStatementNode;
@@ -134,20 +116,17 @@ use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Parser\Parser;
-use PHPStan\Parser\ReversePipeTransformerVisitor;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
-use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -171,19 +150,13 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Generic\TemplateTypeVarianceMap;
-use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -194,20 +167,15 @@ use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
-use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
-use ReflectionFunction;
-use ReflectionMethod;
-use ReflectionProperty;
 use Throwable;
 use Traversable;
 use TypeError;
-use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
@@ -219,7 +187,6 @@ use function array_merge;
 use function array_pop;
 use function array_reverse;
 use function array_slice;
-use function array_unshift;
 use function array_values;
 use function base64_decode;
 use function count;
@@ -227,14 +194,11 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
-use function ksort;
 use function sprintf;
-use function str_starts_with;
 use function strtolower;
 use function trim;
 use function usort;
 use const PHP_VERSION_ID;
-use const SORT_NUMERIC;
 
 #[AutowiredService]
 class NodeScopeResolver
@@ -351,7 +315,7 @@ class NodeScopeResolver
 		$this->processPendingFibers($expressionResultStorage);
 	}
 
-	protected function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
+	public function storeBeforeScope(ExpressionResultStorage $storage, Expr $expr, Scope $beforeScope): void
 	{
 	}
 
@@ -543,7 +507,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processStmtNode(
+	public function processStmtNode(
 		Node\Stmt $stmt,
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
@@ -2438,12 +2402,12 @@ class NodeScopeResolver
 		);
 	}
 
-	private function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
+	public function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
 	{
 		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr));
 	}
 
-	private function lookForUnsetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
+	public function lookForUnsetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
 	{
 		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->unsetAllowedUndefinedExpression($expr));
 	}
@@ -2471,103 +2435,6 @@ class NodeScopeResolver
 
 				$scope = $this->lookForExpressionCallback($scope, $item->value, $callback);
 			}
-		}
-
-		return $scope;
-	}
-
-	private function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
-	{
-		$exprType = $scope->getType($exprToSpecify);
-		$isNull = $exprType->isNull();
-		if ($isNull->yes()) {
-			return new EnsuredNonNullabilityResult($scope, []);
-		}
-
-		// keep certainty
-		$certainty = TrinaryLogic::createYes();
-		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
-		if (!$hasExpressionType->no()) {
-			$certainty = $hasExpressionType;
-		}
-
-		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
-		if ($exprType->equals($exprTypeWithoutNull)) {
-			$originalExprType = $originalScope->getType($exprToSpecify);
-			if (!$originalExprType->equals($exprTypeWithoutNull)) {
-				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
-
-				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
-				]);
-			}
-			return new EnsuredNonNullabilityResult($scope, []);
-		}
-
-		$nativeType = $scope->getNativeType($exprToSpecify);
-
-		$specifiedExpressions = [
-			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
-		];
-
-		// When narrowing an ArrayDimFetch, specifyExpressionType also recursively
-		// narrows the parent array's offset type via intersection with HasOffsetValueType.
-		// To properly revert this, we must also save and restore the parent expression's type.
-		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
-			$parentExpr = $exprToSpecify->var;
-			$parentCertainty = TrinaryLogic::createYes();
-			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
-			if (!$hasParentExpressionType->no()) {
-				$parentCertainty = $hasParentExpressionType;
-			}
-			array_unshift($specifiedExpressions, new EnsuredNonNullabilityResultExpression(
-				$parentExpr,
-				$scope->getType($parentExpr),
-				$scope->getNativeType($parentExpr),
-				$parentCertainty,
-			));
-		}
-
-		$scope = $scope->specifyExpressionType(
-			$exprToSpecify,
-			$exprTypeWithoutNull,
-			TypeCombinator::removeNull($nativeType),
-			TrinaryLogic::createYes(),
-		);
-
-		return new EnsuredNonNullabilityResult(
-			$scope,
-			$specifiedExpressions,
-		);
-	}
-
-	private function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
-	{
-		$specifiedExpressions = [];
-		$originalScope = $scope;
-		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope) {
-			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr);
-			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
-				$specifiedExpressions[] = $specifiedExpression;
-			}
-			return $result->getScope();
-		});
-
-		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
-	}
-
-	/**
-	 * @param EnsuredNonNullabilityResultExpression[] $specifiedExpressions
-	 */
-	private function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
-	{
-		foreach ($specifiedExpressions as $specifiedExpressionResult) {
-			$scope = $scope->specifyExpressionType(
-				$specifiedExpressionResult->getExpression(),
-				$specifiedExpressionResult->getOriginalType(),
-				$specifiedExpressionResult->getOriginalNativeType(),
-				$specifiedExpressionResult->getCertainty(),
-			);
 		}
 
 		return $scope;
@@ -2661,939 +2528,16 @@ class NodeScopeResolver
 				continue;
 			}
 
-			return $exprHandler->processExpr($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+			$handlerResult = $exprHandler->processExpr($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+
+			if ($expr instanceof MethodCall) {
+				$handlerResult = $this->processMethodCallInitializedProperties($expr, $scope, $handlerResult);
+			}
+
+			return $handlerResult;
 		}
 
-		if ($expr instanceof Assign || $expr instanceof AssignRef) {
-			$result = $this->processAssignVar(
-				$scope,
-				$storage,
-				$stmt,
-				$expr->var,
-				$expr->expr,
-				$nodeCallback,
-				$context,
-				function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage): ExpressionResult {
-					$impurePoints = [];
-					if ($expr instanceof AssignRef) {
-						$referencedExpr = $expr->expr;
-						while ($referencedExpr instanceof ArrayDimFetch) {
-							$referencedExpr = $referencedExpr->var;
-						}
-
-						if ($referencedExpr instanceof PropertyFetch || $referencedExpr instanceof StaticPropertyFetch) {
-							$impurePoints[] = new ImpurePoint(
-								$scope,
-								$expr,
-								'propertyAssignByRef',
-								'property assignment by reference',
-								false,
-							);
-						}
-
-						$scope = $scope->enterExpressionAssign($expr->expr);
-					}
-
-					if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-						$context = $context->enterRightSideAssign(
-							$expr->var->name,
-							$expr->expr,
-						);
-					}
-
-					$this->storeBeforeScope($storage, $expr, $scope);
-					$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-					$hasYield = $result->hasYield();
-					$throwPoints = $result->getThrowPoints();
-					$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-					$isAlwaysTerminating = $result->isAlwaysTerminating();
-					$scope = $result->getScope();
-
-					if ($expr instanceof AssignRef) {
-						$scope = $scope->exitExpressionAssign($expr->expr);
-					}
-
-					return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
-				},
-				true,
-			);
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$vars = $this->getAssignedVariables($expr->var);
-			if (count($vars) > 0) {
-				$varChangedScope = false;
-				$scope = $this->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
-				if (!$varChangedScope) {
-					$scope = $this->processStmtVarAnnotation($scope, $storage, $stmt, null, $nodeCallback);
-				}
-			}
-
-			return new ExpressionResult(
-				$scope,
-				$hasYield,
-				$isAlwaysTerminating,
-				$throwPoints,
-				$impurePoints,
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-			);
-		} elseif ($expr instanceof Expr\AssignOp) {
-			$result = $this->processAssignVar(
-				$scope,
-				$storage,
-				$stmt,
-				$expr->var,
-				$expr,
-				$nodeCallback,
-				$context,
-				function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage): ExpressionResult {
-					$originalScope = $scope;
-					if ($expr instanceof Expr\AssignOp\Coalesce) {
-						$scope = $scope->filterByFalseyValue(
-							new BinaryOp\NotIdentical($expr->var, new ConstFetch(new Name('null'))),
-						);
-					}
-
-					$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-					if ($expr instanceof Expr\AssignOp\Coalesce) {
-						$this->storeBeforeScope($storage, $expr, $originalScope);
-						return new ExpressionResult(
-							$result->getScope()->mergeWith($originalScope),
-							$result->hasYield(),
-							$result->isAlwaysTerminating(),
-							$result->getThrowPoints(),
-							$result->getImpurePoints(),
-						);
-					}
-
-					return $result;
-				},
-				$expr instanceof Expr\AssignOp\Coalesce,
-			);
-			if (!$expr instanceof Expr\AssignOp\Coalesce) {
-				$this->storeBeforeScope($storage, $expr, $scope);
-			}
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			if (
-				($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
-				!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
-			) {
-				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
-			}
-
-			return new ExpressionResult(
-				$scope,
-				$hasYield,
-				$isAlwaysTerminating,
-				$throwPoints,
-				$impurePoints,
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-			);
-		} elseif ($expr instanceof FuncCall) {
-			$parametersAcceptor = null;
-			$functionReflection = null;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			if ($expr->name instanceof Expr) {
-				$nameType = $scope->getType($expr->name);
-				if (!$nameType->isCallable()->no()) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$nameType->getCallableParametersAcceptors($scope),
-						null,
-					);
-				}
-
-				$nameResult = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $nameResult->getScope();
-				$throwPoints = $nameResult->getThrowPoints();
-				$impurePoints = $nameResult->getImpurePoints();
-				$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
-				if ( // phpcs:ignore
-					$nameType->isObject()->yes()
-					&& $nameType->isCallable()->yes()
-					&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
-				) {
-					// processed later
-				} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
-					$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
-					if (!$this->implicitThrows) {
-						$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
-					}
-					$throwPoints = array_merge($throwPoints, $callableThrowPoints);
-					$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $parametersAcceptor->getImpurePoints()));
-
-					$scope = $this->processImmediatelyCalledCallable($scope, $parametersAcceptor->getInvalidateExpressions(), $parametersAcceptor->getUsedVariables());
-				}
-			} elseif ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
-				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$functionReflection->getVariants(),
-					$functionReflection->getNamedArgumentsVariants(),
-				);
-				$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
-				if ($impurePoint !== null) {
-					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
-				}
-			} else {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'functionCall',
-					'call to unknown function',
-					false,
-				);
-			}
-
-			$normalizedExpr = $expr;
-			if ($parametersAcceptor !== null) {
-				$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
-				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $isAlwaysTerminating || $returnType instanceof NeverType && $returnType->isExplicit();
-			}
-
-			if (
-				$normalizedExpr->name instanceof Name
-				&& $functionReflection !== null
-				&& $functionReflection->getName() === 'clone'
-				&& count($normalizedExpr->getArgs()) === 2
-			) {
-				$clonePropertiesArgType = $scope->getType($normalizedExpr->getArgs()[1]->value);
-				$cloneExpr = new TypeExpr($scope->getType(new Expr\Clone_($normalizedExpr->getArgs()[0]->value)));
-				$clonePropertiesArgTypeConstantArrays = $clonePropertiesArgType->getConstantArrays();
-				foreach ($clonePropertiesArgTypeConstantArrays as $clonePropertiesArgTypeConstantArray) {
-					foreach ($clonePropertiesArgTypeConstantArray->getKeyTypes() as $i => $clonePropertyKeyType) {
-						$clonePropertyKeyTypeScalars = $clonePropertyKeyType->getConstantScalarValues();
-						$propertyAttributes = $normalizedExpr->getAttributes();
-						$propertyAttributes['inCloneWith'] = true;
-						if (count($clonePropertyKeyTypeScalars) === 1) {
-							$this->processVirtualAssign(
-								$scope,
-								$storage,
-								$stmt,
-								new PropertyFetch($cloneExpr, (string) $clonePropertyKeyTypeScalars[0], $propertyAttributes),
-								new TypeExpr($clonePropertiesArgTypeConstantArray->getValueTypes()[$i]),
-								$nodeCallback,
-							);
-							continue;
-						}
-
-						$this->processVirtualAssign(
-							$scope,
-							$storage,
-							$stmt,
-							new PropertyFetch($cloneExpr, new TypeExpr($clonePropertyKeyType), $propertyAttributes),
-							new TypeExpr($clonePropertiesArgTypeConstantArray->getValueTypes()[$i]),
-							$nodeCallback,
-						);
-					}
-				}
-			}
-
-			$result = $this->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-
-			if ($normalizedExpr->name instanceof Expr) {
-				$nameType = $scope->getType($normalizedExpr->name);
-				if (
-					$nameType->isObject()->yes()
-					&& $nameType->isCallable()->yes()
-					&& (new ObjectType(Closure::class))->isSuperTypeOf($nameType)->no()
-				) {
-					$invokeResult = $this->processExprNode(
-						$stmt,
-						new MethodCall($normalizedExpr->name, '__invoke', $normalizedExpr->getArgs(), $normalizedExpr->getAttributes()),
-						$scope,
-						$storage,
-						new NoopNodeCallback(),
-						$context->enterDeep(),
-					);
-					$throwPoints = array_merge($throwPoints, $invokeResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $invokeResult->getImpurePoints());
-					$isAlwaysTerminating = $invokeResult->isAlwaysTerminating();
-				}
-			}
-
-			if ($functionReflection !== null) {
-				$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope);
-				if ($functionThrowPoint !== null) {
-					$throwPoints[] = $functionThrowPoint;
-				}
-			} else {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			}
-
-			if (
-				$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
-				&& $scope->isInClass()
-			) {
-				$scope = $scope->invalidateExpression(new Variable('this'), true);
-			}
-
-			if (
-				$functionReflection !== null
-				&& $this->rememberPossiblyImpureFunctionValues
-				&& $parametersAcceptor !== null
-				&& $functionReflection->hasSideEffects()->maybe()
-				&& !$functionReflection->isBuiltin()
-			) {
-				$scope = $scope->assignExpression(
-					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName())),
-					$parametersAcceptor->getReturnType(),
-					new MixedType(),
-				);
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['json_encode', 'json_decode'], true)
-			) {
-				$scope = $scope->invalidateExpression(new FuncCall(new Name('json_last_error'), []))
-					->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error'), []))
-					->invalidateExpression(new FuncCall(new Name('json_last_error_msg'), []))
-					->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error_msg'), []));
-			}
-
-			if (
-				$functionReflection !== null
-				&& $functionReflection->getName() === 'file_put_contents'
-				&& count($normalizedExpr->getArgs()) > 0
-			) {
-				$scope = $scope->invalidateExpression(new FuncCall(new Name('file_get_contents'), [$normalizedExpr->getArgs()[0]]))
-					->invalidateExpression(new FuncCall(new Name\FullyQualified('file_get_contents'), [$normalizedExpr->getArgs()[0]]));
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['array_pop', 'array_shift'], true)
-				&& count($normalizedExpr->getArgs()) >= 1
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-
-				$arrayArgType = $scope->getType($arrayArg);
-				$arrayArgNativeType = $scope->getNativeType($arrayArg);
-				$isArrayPop = $functionReflection->getName() === 'array_pop';
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr(
-						$isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
-						$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
-					),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
-				&& count($normalizedExpr->getArgs()) >= 2
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr(
-						$this->getArrayFunctionAppendingType($functionReflection, $scope, $normalizedExpr),
-						$this->getArrayFunctionAppendingType($functionReflection, $scope->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr),
-					),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
-			) {
-				$scope = $scope->assignVariable('http_response_header', new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()), new AccessoryArrayListType()]), new ArrayType(new IntegerType(), new StringType()), TrinaryLogic::createYes());
-			}
-
-			if (
-				$functionReflection !== null
-				&& $functionReflection->getName() === 'shuffle'
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr($scope->getType($arrayArg)->shuffleArray(), $scope->getNativeType($arrayArg)->shuffleArray()),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& $functionReflection->getName() === 'array_splice'
-				&& count($normalizedExpr->getArgs()) >= 2
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-				$arrayArgType = $scope->getType($arrayArg);
-				$arrayArgNativeType = $scope->getNativeType($arrayArg);
-
-				$offsetType = $scope->getType($normalizedExpr->getArgs()[1]->value);
-				$lengthType = isset($normalizedExpr->getArgs()[2]) ? $scope->getType($normalizedExpr->getArgs()[2]->value) : new NullType();
-				$replacementType = isset($normalizedExpr->getArgs()[3]) ? $scope->getType($normalizedExpr->getArgs()[3]->value) : new ConstantArrayType([], []);
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr(
-						$arrayArgType->spliceArray($offsetType, $lengthType, $replacementType),
-						$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementType),
-					),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['sort', 'rsort', 'usort'], true)
-				&& count($normalizedExpr->getArgs()) >= 1
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr($this->getArraySortPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortPreserveListFunctionType($scope->getNativeType($arrayArg))),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['natcasesort', 'natsort', 'arsort', 'asort', 'ksort', 'krsort', 'uasort', 'uksort'], true)
-				&& count($normalizedExpr->getArgs()) >= 1
-			) {
-				$arrayArg = $normalizedExpr->getArgs()[0]->value;
-
-				$scope = $this->processVirtualAssign(
-					$scope,
-					$storage,
-					$stmt,
-					$arrayArg,
-					new NativeTypeExpr($this->getArraySortDoNotPreserveListFunctionType($scope->getType($arrayArg)), $this->getArraySortDoNotPreserveListFunctionType($scope->getNativeType($arrayArg))),
-					$nodeCallback,
-				)->getScope();
-			}
-
-			if (
-				$functionReflection !== null
-				&& $functionReflection->getName() === 'extract'
-			) {
-				$extractedArg = $normalizedExpr->getArgs()[0]->value;
-				$extractedType = $scope->getType($extractedArg);
-				$constantArrays = $extractedType->getConstantArrays();
-				if (count($constantArrays) > 0) {
-					$properties = [];
-					$optionalProperties = [];
-					$refCount = [];
-					foreach ($constantArrays as $constantArray) {
-						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-							if ($keyType->isString()->no()) {
-								// integers as variable names not allowed
-								continue;
-							}
-							$key = (string) $keyType->getValue();
-							$valueType = $constantArray->getValueTypes()[$i];
-							$optional = $constantArray->isOptionalKey($i);
-							if ($optional) {
-								$optionalProperties[] = $key;
-							}
-							if (isset($properties[$key])) {
-								$properties[$key] = TypeCombinator::union($properties[$key], $valueType);
-								$refCount[$key]++;
-							} else {
-								$properties[$key] = $valueType;
-								$refCount[$key] = 1;
-							}
-						}
-					}
-					foreach ($properties as $name => $type) {
-						$optional = in_array($name, $optionalProperties, true) || $refCount[$name] < count($constantArrays);
-
-						if (!$optional) {
-							$scope = $scope->assignVariable($name, $type, $type, TrinaryLogic::createYes());
-						} else {
-							$hasVariable = $scope->hasVariableType($name);
-							if (!$hasVariable->no()) {
-								$type = TypeCombinator::union($scope->getVariableType($name), $type);
-							}
-
-							$scope = $scope->assignVariable($name, $type, $type, $scope->hasVariableType($name)->or(TrinaryLogic::createMaybe()));
-						}
-					}
-				} else {
-					$scope = $scope->afterExtractCall();
-				}
-			}
-
-			if (
-				$functionReflection !== null
-				&& in_array($functionReflection->getName(), ['clearstatcache', 'unlink'], true)
-			) {
-				$scope = $scope->afterClearstatcacheCall();
-			}
-
-			if (
-				$functionReflection !== null
-				&& str_starts_with($functionReflection->getName(), 'openssl')
-			) {
-				$scope = $scope->afterOpenSslCall($functionReflection->getName());
-			}
-
-		} elseif ($expr instanceof MethodCall) {
-			$originalScope = $scope;
-			if (
-				($expr->var instanceof Expr\Closure || $expr->var instanceof Expr\ArrowFunction)
-				&& $expr->name instanceof Node\Identifier
-				&& strtolower($expr->name->name) === 'call'
-				&& isset($expr->getArgs()[0])
-			) {
-				$closureCallScope = $scope->enterClosureCall(
-					$scope->getType($expr->getArgs()[0]->value),
-					$scope->getNativeType($expr->getArgs()[0]->value),
-				);
-			}
-
-			$result = $this->processExprNode($stmt, $expr->var, $closureCallScope ?? $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-			if (isset($closureCallScope)) {
-				$scope = $scope->restoreOriginalScopeAfterClosureBind($originalScope);
-			}
-			$parametersAcceptor = null;
-			$methodReflection = null;
-			$calledOnType = $scope->getType($expr->var);
-			if ($expr->name instanceof Expr) {
-				$methodNameResult = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$throwPoints = array_merge($throwPoints, $methodNameResult->getThrowPoints());
-				$scope = $methodNameResult->getScope();
-			} else {
-				$methodName = $expr->name->name;
-				$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-				if ($methodReflection !== null) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$methodReflection->getVariants(),
-						$methodReflection->getNamedArgumentsVariants(),
-					);
-
-					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-					if ($methodThrowPoint !== null) {
-						$throwPoints[] = $methodThrowPoint;
-					}
-				}
-			}
-
-			if ($methodReflection !== null) {
-				$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
-				if ($impurePoint !== null) {
-					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
-				}
-			} else {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'methodCall',
-					'call to unknown method',
-					false,
-				);
-			}
-
-			$normalizedExpr = $expr;
-			if ($parametersAcceptor !== null) {
-				$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
-				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
-			}
-
-			$result = $this->processArgs(
-				$stmt,
-				$methodReflection,
-				$methodReflection !== null ? $scope->getNakedMethod($calledOnType, $methodReflection->getName()) : null,
-				$parametersAcceptor,
-				$normalizedExpr,
-				$scope,
-				$storage,
-				$nodeCallback,
-				$context,
-			);
-			$scope = $result->getScope();
-
-			if ($methodReflection !== null) {
-				if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
-					$this->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
-					$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());
-				} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin() && $parametersAcceptor !== null) {
-					$scope = $scope->assignExpression(
-						new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-						$parametersAcceptor->getReturnType(),
-						new MixedType(),
-					);
-				}
-				if ($parametersAcceptor !== null && !$methodReflection->isStatic()) {
-					$selfOutType = $methodReflection->getSelfOutType();
-					if ($selfOutType !== null) {
-						$scope = $scope->assignExpression(
-							$normalizedExpr->var,
-							TemplateTypeHelper::resolveTemplateTypes(
-								$selfOutType,
-								$parametersAcceptor->getResolvedTemplateTypeMap(),
-								$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
-								TemplateTypeVariance::createCovariant(),
-							),
-							$scope->getNativeType($normalizedExpr->var),
-						);
-					}
-				}
-
-				if (
-					$scope->isInClass()
-					&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
-					&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
-					/*&& (
-						// should not be allowed but in practice has to be
-						$scope->getClassReflection()->isFinal()
-						|| $methodReflection->isFinal()->yes()
-						|| $methodReflection->isPrivate()
-					)*/
-					&& TypeUtils::findThisType($calledOnType) !== null
-				) {
-					$calledMethodScope = $this->processCalledMethod($methodReflection);
-					if ($calledMethodScope !== null) {
-						$scope = $scope->mergeInitializedProperties($calledMethodScope);
-					}
-				}
-			} else {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			}
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
-			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
-			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
-			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
-			$exprResult = $this->processExprNode(
-				$stmt,
-				new MethodCall(
-					$expr->var,
-					$expr->name,
-					$expr->args,
-					$attributes,
-				),
-				$nonNullabilityResult->getScope(),
-				$storage,
-				$nodeCallback,
-				$context,
-			);
-			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
-
-			return new ExpressionResult(
-				$scope,
-				$exprResult->hasYield(),
-				false,
-				$exprResult->getThrowPoints(),
-				$exprResult->getImpurePoints(),
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-			);
-		} elseif ($expr instanceof StaticCall) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			if ($expr->class instanceof Expr) {
-				$classResult = $this->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $classResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
-				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
-
-				$scope = $classResult->getScope();
-			}
-
-			$parametersAcceptor = null;
-			$methodReflection = null;
-			if ($expr->name instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$scope = $result->getScope();
-			} elseif ($expr->class instanceof Name) {
-				$classType = $scope->resolveTypeByName($expr->class);
-				$methodName = $expr->name->name;
-				if ($classType->hasMethod($methodName)->yes()) {
-					$methodReflection = $classType->getMethod($methodName, $scope);
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$methodReflection->getVariants(),
-						$methodReflection->getNamedArgumentsVariants(),
-					);
-
-					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-					if ($methodThrowPoint !== null) {
-						$throwPoints[] = $methodThrowPoint;
-					}
-
-					$declaringClass = $methodReflection->getDeclaringClass();
-					if (
-						$declaringClass->getName() === 'Closure'
-						&& strtolower($methodName) === 'bind'
-					) {
-						$thisType = null;
-						$nativeThisType = null;
-						if (isset($expr->getArgs()[1])) {
-							$argType = $scope->getType($expr->getArgs()[1]->value);
-							if ($argType->isNull()->yes()) {
-								$thisType = null;
-							} else {
-								$thisType = $argType;
-							}
-
-							$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
-							if ($nativeArgType->isNull()->yes()) {
-								$nativeThisType = null;
-							} else {
-								$nativeThisType = $nativeArgType;
-							}
-						}
-						$scopeClasses = ['static'];
-						if (isset($expr->getArgs()[2])) {
-							$argValue = $expr->getArgs()[2]->value;
-							$argValueType = $scope->getType($argValue);
-
-							$directClassNames = $argValueType->getObjectClassNames();
-							if (count($directClassNames) > 0) {
-								$scopeClasses = $directClassNames;
-								$thisTypes = [];
-								foreach ($directClassNames as $directClassName) {
-									$thisTypes[] = new ObjectType($directClassName);
-								}
-								$thisType = TypeCombinator::union(...$thisTypes);
-							} else {
-								$thisType = $argValueType->getClassStringObjectType();
-								$scopeClasses = $thisType->getObjectClassNames();
-							}
-						}
-						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
-					}
-				} else {
-					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-				}
-			}
-
-			if ($expr->class instanceof Expr) {
-				$objectClasses = $scope->getType($expr->class)->getObjectClassNames();
-				if (count($objectClasses) !== 1) {
-					$objectClasses = $scope->getType(new New_($expr->class))->getObjectClassNames();
-				}
-				if (count($objectClasses) === 1) {
-					$objectExprResult = $this->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-					$additionalThrowPoints = $objectExprResult->getThrowPoints();
-				} else {
-					$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
-				}
-				foreach ($additionalThrowPoints as $throwPoint) {
-					$throwPoints[] = $throwPoint;
-				}
-			}
-
-			if ($methodReflection !== null) {
-				$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
-				if ($impurePoint !== null) {
-					$impurePoints[] = new ImpurePoint($scope, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
-				}
-			} else {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'methodCall',
-					'call to unknown method',
-					false,
-				);
-			}
-
-			$normalizedExpr = $expr;
-			if ($parametersAcceptor !== null) {
-				$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
-				$returnType = $parametersAcceptor->getReturnType();
-				$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
-			}
-			$result = $this->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope ?? null);
-			$scope = $result->getScope();
-			$scopeFunction = $scope->getFunction();
-
-			if (
-				$methodReflection !== null
-				&& (
-					(
-						!$methodReflection->isStatic()
-						&& $methodReflection->getName() === '__construct'
-					)
-					|| $methodReflection->hasSideEffects()->yes()
-				)
-				&& $scope->isInClass()
-				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
-			) {
-				$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass());
-			} elseif (
-				$methodReflection !== null
-				&& $this->rememberPossiblyImpureFunctionValues
-				&& $parametersAcceptor !== null
-				&& $scope->isInClass()
-				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
-				&& $methodReflection->hasSideEffects()->maybe()
-				&& !$methodReflection->getDeclaringClass()->isBuiltin()
-			) {
-				$scope = $scope->assignExpression(
-					new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-					$parametersAcceptor->getReturnType(),
-					new MixedType(),
-				);
-			}
-
-			if (
-				$methodReflection !== null
-				&& !$methodReflection->isStatic()
-				&& $methodReflection->getName() === '__construct'
-				&& $scopeFunction instanceof MethodReflection
-				&& !$scopeFunction->isStatic()
-				&& $scope->isInClass()
-				&& $scope->getClassReflection()->isSubclassOfClass($methodReflection->getDeclaringClass())
-			) {
-				$thisType = $scope->getType(new Variable('this'));
-				$methodClassReflection = $methodReflection->getDeclaringClass();
-				foreach ($methodClassReflection->getNativeReflection()->getProperties(ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED) as $property) {
-					if (!$property->isPromoted() || $property->getDeclaringClass()->getName() !== $methodClassReflection->getName()) {
-						continue;
-					}
-
-					$scope = $scope->assignInitializedProperty($thisType, $property->getName());
-				}
-			}
-
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-		} elseif ($expr instanceof PropertyFetch) {
-			$scopeBeforeVar = $scope;
-			$result = $this->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-			if ($expr->name instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-				if ($this->phpVersion->supportsPropertyHooks()) {
-					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-				}
-			} else {
-				$propertyName = $expr->name->toString();
-				$propertyHolderType = $scopeBeforeVar->getType($expr->var);
-				$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
-				if ($propertyReflection !== null && $this->phpVersion->supportsPropertyHooks()) {
-					$propertyDeclaringClass = $propertyReflection->getDeclaringClass();
-					if ($propertyDeclaringClass->hasNativeProperty($propertyName)) {
-						$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
-						$throwPoints = array_merge($throwPoints, $this->getPropertyReadThrowPointsFromGetHook($scopeBeforeVar, $expr, $nativeProperty));
-					}
-				}
-			}
-		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
-			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
-			$attributes = array_merge($expr->getAttributes(), ['virtualNullsafePropertyFetch' => true]);
-			unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
-			$exprResult = $this->processExprNode($stmt, new PropertyFetch(
-				$expr->var,
-				$expr->name,
-				$attributes,
-			), $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
-			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
-
-			return new ExpressionResult(
-				$scope,
-				$exprResult->hasYield(),
-				false,
-				$exprResult->getThrowPoints(),
-				$exprResult->getImpurePoints(),
-				static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
-			);
-		} elseif ($expr instanceof StaticPropertyFetch) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [
-				new ImpurePoint(
-					$scope,
-					$expr,
-					'staticPropertyAccess',
-					'static property access',
-					true,
-				),
-			];
-			$isAlwaysTerminating = false;
-			if ($expr->class instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-			}
-			if ($expr->name instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-			}
-		} elseif ($expr instanceof Expr\Closure) {
+		if ($expr instanceof Expr\Closure) {
 			$processClosureResult = $this->processClosureNode($stmt, $expr, $scope, $storage, $nodeCallback, $context, null);
 			$scope = $processClosureResult->applyByRefUseScope($processClosureResult->getScope());
 
@@ -3613,934 +2557,9 @@ class NodeScopeResolver
 				[],
 				[],
 			);
-		} elseif ($expr instanceof Node\Scalar\InterpolatedString) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			foreach ($expr->parts as $part) {
-				if (!$part instanceof Expr) {
-					continue;
-				}
-				$result = $this->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-			}
-		} elseif ($expr instanceof ArrayDimFetch) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			if ($expr->dim !== null) {
-				$result = $this->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-				$scope = $result->getScope();
-			}
-
-			$result = $this->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-
-			$varType = $scope->getType($expr->var);
-			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-				$throwPoints = array_merge($throwPoints, $this->processExprNode(
-					$stmt,
-					new MethodCall($expr->var, 'offsetGet'),
-					$scope,
-					$storage,
-					new NoopNodeCallback(),
-					$context,
-				)->getThrowPoints());
-			}
-		} elseif ($expr instanceof Array_) {
-			$itemNodes = [];
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			foreach ($expr->items as $arrayItem) {
-				$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
-				$this->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
-				if ($arrayItem->key !== null) {
-					$keyResult = $this->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
-					$hasYield = $hasYield || $keyResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
-					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
-					$scope = $keyResult->getScope();
-				}
-
-				$valueResult = $this->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$hasYield = $hasYield || $valueResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
-				$scope = $valueResult->getScope();
-			}
-			$this->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
-		} elseif ($expr instanceof BooleanAnd || $expr instanceof BinaryOp\LogicalAnd) {
-			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$leftTruthyScope = $leftResult->getTruthyScope();
-			$rightResult = $this->processExprNode($stmt, $expr->right, $leftTruthyScope, $storage, $nodeCallback, $context);
-			$rightExprType = $rightResult->getScope()->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-				$leftMergedWithRightScope = $leftResult->getFalseyScope();
-			} else {
-				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
-			}
-
-			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftTruthyScope), $scope, $storage, $context);
-
-			$result = new ExpressionResult(
-				$leftMergedWithRightScope,
-				$leftResult->hasYield() || $rightResult->hasYield(),
-				$leftResult->isAlwaysTerminating(),
-				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
-				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-				static fn (): MutatingScope => $rightResult->getScope()->filterByTruthyValue($expr->right),
-				static fn (): MutatingScope => $leftMergedWithRightScope->filterByFalseyValue($expr),
-			);
-			return $result;
-		} elseif ($expr instanceof BooleanOr || $expr instanceof BinaryOp\LogicalOr) {
-			$leftResult = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$leftFalseyScope = $leftResult->getFalseyScope();
-			$rightResult = $this->processExprNode($stmt, $expr->right, $leftFalseyScope, $storage, $nodeCallback, $context);
-			$rightExprType = $rightResult->getScope()->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-				$leftMergedWithRightScope = $leftResult->getTruthyScope();
-			} else {
-				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
-			}
-
-			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $leftFalseyScope), $scope, $storage, $context);
-
-			return new ExpressionResult(
-				$leftMergedWithRightScope,
-				$leftResult->hasYield() || $rightResult->hasYield(),
-				$leftResult->isAlwaysTerminating(),
-				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
-				array_merge($leftResult->getImpurePoints(), $rightResult->getImpurePoints()),
-				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr->right),
-			);
-		} elseif ($expr instanceof Coalesce) {
-			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left);
-			$condScope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left);
-			$condResult = $this->processExprNode($stmt, $expr->left, $condScope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
-			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
-
-			$rightScope = $scope->filterByFalseyValue($expr);
-			$rightResult = $this->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeep());
-			$rightExprType = $scope->getType($expr->right);
-			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
-			} else {
-				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());
-			}
-
-			$hasYield = $condResult->hasYield() || $rightResult->hasYield();
-			$throwPoints = array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints());
-			$impurePoints = array_merge($condResult->getImpurePoints(), $rightResult->getImpurePoints());
-			$isAlwaysTerminating = $condResult->isAlwaysTerminating();
-		} elseif ($expr instanceof BinaryOp\Pipe) {
-			$rightAttributes = array_merge($expr->right->getAttributes(), ['virtualPipeOperatorCall' => true]);
-			unset($rightAttributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
-			if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
-				$exprResult = $this->processExprNode($stmt, new FuncCall($expr->right->name, [
-					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
-				$scope = $exprResult->getScope();
-				$hasYield = $exprResult->hasYield();
-				$throwPoints = $exprResult->getThrowPoints();
-				$impurePoints = $exprResult->getImpurePoints();
-				$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
-			} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
-				$exprResult = $this->processExprNode($stmt, new MethodCall($expr->right->var, $expr->right->name, [
-					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
-				$scope = $exprResult->getScope();
-				$hasYield = $exprResult->hasYield();
-				$throwPoints = $exprResult->getThrowPoints();
-				$impurePoints = $exprResult->getImpurePoints();
-				$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
-			} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
-				$exprResult = $this->processExprNode($stmt, new StaticCall($expr->right->class, $expr->right->name, [
-					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
-				$scope = $exprResult->getScope();
-				$hasYield = $exprResult->hasYield();
-				$throwPoints = $exprResult->getThrowPoints();
-				$impurePoints = $exprResult->getImpurePoints();
-				$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
-			} else {
-				$exprResult = $this->processExprNode($stmt, new FuncCall($expr->right, [
-					new Arg($expr->left, attributes: $expr->getAttribute(ReversePipeTransformerVisitor::ARG_ATTRIBUTES_NAME, [])),
-				], $rightAttributes), $scope, $storage, $nodeCallback, $context);
-				$scope = $exprResult->getScope();
-				$hasYield = $exprResult->hasYield();
-				$throwPoints = $exprResult->getThrowPoints();
-				$impurePoints = $exprResult->getImpurePoints();
-				$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
-			}
-		} elseif ($expr instanceof BinaryOp) {
-			$result = $this->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$result = $this->processExprNode($stmt, $expr->right, $scope, $storage, $nodeCallback, $context->enterDeep());
-			if (
-				($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
-				!$scope->getType($expr->right)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
-			) {
-				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
-			}
-			$scope = $result->getScope();
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-		} elseif ($expr instanceof Expr\Include_) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			$impurePoints = $result->getImpurePoints();
-			$impurePoints[] = new ImpurePoint(
-				$scope,
-				$expr,
-				in_array($expr->type, [Expr\Include_::TYPE_INCLUDE, Expr\Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require',
-				in_array($expr->type, [Expr\Include_::TYPE_INCLUDE, Expr\Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require',
-				true,
-			);
-			$hasYield = $result->hasYield();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope()->afterExtractCall();
-		} elseif ($expr instanceof Expr\Print_) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$impurePoints[] = new ImpurePoint($scope, $expr, 'print', 'print', true);
-			$hasYield = $result->hasYield();
-
-			$scope = $result->getScope();
-		} elseif ($expr instanceof Cast\String_) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$hasYield = $result->hasYield();
-
-			$exprType = $scope->getType($expr->expr);
-			$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
-			if ($toStringMethod !== null) {
-				if (!$toStringMethod->hasSideEffects()->no()) {
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'methodCall',
-						sprintf('call to method %s::%s()', $toStringMethod->getDeclaringClass()->getDisplayName(), $toStringMethod->getName()),
-						$toStringMethod->isPure()->no(),
-					);
-				}
-			}
-
-			$scope = $result->getScope();
-		} elseif (
-			$expr instanceof Expr\BitwiseNot
-			|| $expr instanceof Cast
-			|| $expr instanceof Expr\Clone_
-			|| $expr instanceof Expr\UnaryMinus
-			|| $expr instanceof Expr\UnaryPlus
-		) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$hasYield = $result->hasYield();
-
-			$scope = $result->getScope();
-		} elseif ($expr instanceof Expr\Eval_) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			$impurePoints = $result->getImpurePoints();
-			$impurePoints[] = new ImpurePoint($scope, $expr, 'eval', 'eval', true);
-			$hasYield = $result->hasYield();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-
-			$scope = $result->getScope();
-		} elseif ($expr instanceof Expr\YieldFrom) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $result->getThrowPoints();
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			$impurePoints = $result->getImpurePoints();
-			$impurePoints[] = new ImpurePoint(
-				$scope,
-				$expr,
-				'yieldFrom',
-				'yield from',
-				true,
-			);
-			$hasYield = true;
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-
-			$scope = $result->getScope();
-		} elseif ($expr instanceof BooleanNot) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-		} elseif ($expr instanceof Expr\ClassConstFetch) {
-			$isAlwaysTerminating = false;
-
-			if ($expr->class instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-			} else {
-				$hasYield = false;
-				$throwPoints = [];
-				$impurePoints = [];
-				$this->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
-			}
-
-			if ($expr->name instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			} else {
-				$this->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
-			}
-		} elseif ($expr instanceof Expr\Empty_) {
-			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);
-			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
-		} elseif ($expr instanceof Expr\Isset_) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$nonNullabilityResults = [];
-			$isAlwaysTerminating = false;
-			foreach ($expr->vars as $var) {
-				$nonNullabilityResult = $this->ensureNonNullability($scope, $var);
-				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-				$result = $this->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-				$nonNullabilityResults[] = $nonNullabilityResult;
-
-				if (!($var instanceof ArrayDimFetch)) {
-					continue;
-				}
-
-				$varType = $scope->getType($var->var);
-				if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-					continue;
-				}
-
-				$throwPoints = array_merge($throwPoints, $this->processExprNode(
-					$stmt,
-					new MethodCall($var->var, 'offsetExists'),
-					$scope,
-					$storage,
-					new NoopNodeCallback(),
-					$context,
-				)->getThrowPoints());
-			}
-			foreach (array_reverse($expr->vars) as $var) {
-				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);
-			}
-			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
-				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-			}
-		} elseif ($expr instanceof Instanceof_) {
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			if ($expr->class instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $hasYield || $result->hasYield();
-				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			}
 		} elseif ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
 			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
-		} elseif ($expr instanceof New_) {
-			$parametersAcceptor = null;
-			$constructorReflection = null;
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			$className = null;
-			$normalizedExpr = $expr;
-			if ($expr->class instanceof Expr || $expr->class instanceof Name) {
-				if ($expr->class instanceof Expr) {
-					$objectClasses = $scope->getType($expr)->getObjectClassNames();
-					if (count($objectClasses) === 1) {
-						$objectExprResult = $this->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-						$className = $objectClasses[0];
-						$additionalThrowPoints = $objectExprResult->getThrowPoints();
-					} else {
-						$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
-					}
-
-					$result = $this->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-					$scope = $result->getScope();
-					$hasYield = $result->hasYield();
-					$throwPoints = $result->getThrowPoints();
-					$impurePoints = $result->getImpurePoints();
-					$isAlwaysTerminating = $result->isAlwaysTerminating();
-					foreach ($additionalThrowPoints as $throwPoint) {
-						$throwPoints[] = $throwPoint;
-					}
-				} else {
-					$className = $scope->resolveName($expr->class);
-				}
-
-				$classReflection = null;
-				if ($className !== null && $this->reflectionProvider->hasClass($className)) {
-					$classReflection = $this->reflectionProvider->getClass($className);
-					if ($classReflection->hasConstructor()) {
-						$constructorReflection = $classReflection->getConstructor();
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-							$scope,
-							$expr->getArgs(),
-							$constructorReflection->getVariants(),
-							$constructorReflection->getNamedArgumentsVariants(),
-						);
-						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
-						if ($constructorThrowPoint !== null) {
-							$throwPoints[] = $constructorThrowPoint;
-						}
-					}
-				} else {
-					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-				}
-
-				if ($constructorReflection !== null) {
-					if (!$constructorReflection->hasSideEffects()->no()) {
-						$certain = $constructorReflection->isPure()->no();
-						$impurePoints[] = new ImpurePoint(
-							$scope,
-							$expr,
-							'new',
-							sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
-							$certain,
-						);
-					}
-				} elseif ($classReflection === null) {
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'new',
-						'instantiation of unknown class',
-						false,
-					);
-				}
-
-				if ($parametersAcceptor !== null) {
-					$normalizedExpr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-				}
-
-			} else {
-				$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
-				if ($classReflection->hasConstructor()) {
-					$constructorReflection = $classReflection->getConstructor();
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$constructorReflection->getVariants(),
-						$constructorReflection->getNamedArgumentsVariants(),
-					);
-
-					if ($constructorReflection->getDeclaringClass()->getName() === $classReflection->getName()) {
-						$constructorResult = null;
-						$this->processStmtNode($expr->class, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $classReflection, &$constructorResult): void {
-							$nodeCallback($node, $scope);
-							if (!$node instanceof MethodReturnStatementsNode) {
-								return;
-							}
-							if ($constructorResult !== null) {
-								return;
-							}
-							$currentClassReflection = $node->getClassReflection();
-							if ($currentClassReflection->getName() !== $classReflection->getName()) {
-								return;
-							}
-							if (!$currentClassReflection->hasConstructor()) {
-								return;
-							}
-							if ($currentClassReflection->getConstructor()->getName() !== $node->getMethodReflection()->getName()) {
-								return;
-							}
-							$constructorResult = $node;
-						}, StatementContext::createTopLevel());
-						if ($constructorResult !== null) {
-							$throwPoints = array_map(static fn (ThrowPoint $point) => InternalThrowPoint::createFromPublic($point), $constructorResult->getStatementResult()->getThrowPoints());
-							$impurePoints = $constructorResult->getImpurePoints();
-						}
-					} else {
-						$this->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
-						$declaringClass = $constructorReflection->getDeclaringClass();
-						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($declaringClass->getName()), $expr->getArgs(), $scope);
-						if ($constructorThrowPoint !== null) {
-							$throwPoints[] = $constructorThrowPoint;
-						}
-
-						if (!$constructorReflection->hasSideEffects()->no()) {
-							$certain = $constructorReflection->isPure()->no();
-							$impurePoints[] = new ImpurePoint(
-								$scope,
-								$expr,
-								'new',
-								sprintf('instantiation of class %s', $declaringClass->getDisplayName()),
-								$certain,
-							);
-						}
-					}
-				} else {
-					$this->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
-				}
-			}
-
-			$result = $this->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
-			$scope = $result->getScope();
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-		} elseif (
-			$expr instanceof Expr\PreInc
-			|| $expr instanceof Expr\PostInc
-			|| $expr instanceof Expr\PreDec
-			|| $expr instanceof Expr\PostDec
-		) {
-			$result = $this->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-
-			$newExpr = $expr;
-			if ($expr instanceof Expr\PostInc) {
-				$newExpr = new Expr\PreInc($expr->var);
-			} elseif ($expr instanceof Expr\PostDec) {
-				$newExpr = new Expr\PreDec($expr->var);
-			}
-
-			$scope = $this->processVirtualAssign(
-				$scope,
-				$storage,
-				$stmt,
-				$expr->var,
-				$newExpr,
-				$nodeCallback,
-			)->getScope();
-		} elseif ($expr instanceof Ternary) {
-			$ternaryCondResult = $this->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$throwPoints = $ternaryCondResult->getThrowPoints();
-			$impurePoints = $ternaryCondResult->getImpurePoints();
-			$isAlwaysTerminating = $ternaryCondResult->isAlwaysTerminating();
-			$ifTrueScope = $ternaryCondResult->getTruthyScope();
-			$ifFalseScope = $ternaryCondResult->getFalseyScope();
-			$ifTrueType = null;
-			if ($expr->if !== null) {
-				$ifResult = $this->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
-				$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
-				$ifTrueScope = $ifResult->getScope();
-				$ifTrueType = $ifTrueScope->getType($expr->if);
-			}
-
-			$elseResult = $this->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
-			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
-			$ifFalseScope = $elseResult->getScope();
-
-			$condType = $scope->getType($expr->cond);
-			if ($condType->isTrue()->yes()) {
-				$finalScope = $ifTrueScope;
-			} elseif ($condType->isFalse()->yes()) {
-				$finalScope = $ifFalseScope;
-			} else {
-				if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
-					$finalScope = $ifFalseScope;
-				} else {
-					$ifFalseType = $ifFalseScope->getType($expr->else);
-
-					if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
-						$finalScope = $ifTrueScope;
-					} else {
-						$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
-					}
-				}
-			}
-
-			return new ExpressionResult(
-				$finalScope,
-				$ternaryCondResult->hasYield(),
-				$isAlwaysTerminating,
-				$throwPoints,
-				$impurePoints,
-				static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
-				static fn (): MutatingScope => $finalScope->filterByFalseyValue($expr),
-			);
-		} elseif ($expr instanceof Expr\Yield_) {
-			$throwPoints = [
-				InternalThrowPoint::createImplicit($scope, $expr),
-			];
-			$impurePoints = [
-				new ImpurePoint(
-					$scope,
-					$expr,
-					'yield',
-					'yield',
-					true,
-				),
-			];
-			$isAlwaysTerminating = false;
-			if ($expr->key !== null) {
-				$keyResult = $this->processExprNode($stmt, $expr->key, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $keyResult->getScope();
-				$throwPoints = $keyResult->getThrowPoints();
-				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
-				$isAlwaysTerminating = $keyResult->isAlwaysTerminating();
-			}
-			if ($expr->value !== null) {
-				$valueResult = $this->processExprNode($stmt, $expr->value, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $valueResult->getScope();
-				$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
-			}
-			$hasYield = true;
-		} elseif ($expr instanceof Expr\Match_) {
-			$deepContext = $context->enterDeep();
-			$condType = $scope->getType($expr->cond);
-			$condNativeType = $scope->getNativeType($expr->cond);
-			$condResult = $this->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
-			$scope = $condResult->getScope();
-			$hasYield = $condResult->hasYield();
-			$throwPoints = $condResult->getThrowPoints();
-			$impurePoints = $condResult->getImpurePoints();
-			$isAlwaysTerminating = $condResult->isAlwaysTerminating();
-			$matchScope = $scope->enterMatch($expr, $condType, $condNativeType);
-			$armNodes = [];
-			$hasDefaultCond = false;
-			$hasAlwaysTrueCond = false;
-			$arms = $expr->arms;
-			$armCondsToSkip = [];
-			$armBodyScopes = [];
-			if ($condType->isEnum()->yes()) {
-				// enum match analysis would work even without this if branch
-				// but would be much slower
-				// this avoids using ObjectType::$subtractedType which is slow for huge enums
-				// because of repeated union type normalization
-				$enumCases = $condType->getEnumCases();
-				if (count($enumCases) > 0) {
-					$indexedEnumCases = [];
-					foreach ($enumCases as $enumCase) {
-						$indexedEnumCases[strtolower($enumCase->getClassName())][$enumCase->getEnumCaseName()] = $enumCase;
-					}
-					$unusedIndexedEnumCases = $indexedEnumCases;
-					foreach ($arms as $i => $arm) {
-						if ($arm->conds === null) {
-							continue;
-						}
-
-						// Pre-validate all conditions before processing to avoid
-						// partial consumption of enum cases when a later condition
-						// causes the arm to be skipped.
-						// Use break instead of continue to stop fast-path processing
-						// entirely - subsequent arms must also go through the slow
-						// path to preserve correct evaluation order.
-						foreach ($arm->conds as $cond) {
-							if (!$cond instanceof Expr\ClassConstFetch) {
-								break 2;
-							}
-							if (!$cond->class instanceof Name) {
-								break 2;
-							}
-							if (!$cond->name instanceof Node\Identifier) {
-								break 2;
-							}
-							$fetchedClassName = $scope->resolveName($cond->class);
-							$loweredFetchedClassName = strtolower($fetchedClassName);
-							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-								break 2;
-							}
-							$caseName = $cond->name->toString();
-							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								break 2;
-							}
-						}
-
-						$condNodes = [];
-						$conditionCases = [];
-						$conditionExprs = [];
-						foreach ($arm->conds as $j => $cond) {
-							if (!$cond instanceof Expr\ClassConstFetch) {
-								throw new ShouldNotHappenException();
-							}
-							if (!$cond->class instanceof Name) {
-								throw new ShouldNotHappenException();
-							}
-							if (!$cond->name instanceof Node\Identifier) {
-								throw new ShouldNotHappenException();
-							}
-							$fetchedClassName = $scope->resolveName($cond->class);
-							$loweredFetchedClassName = strtolower($fetchedClassName);
-							if (!array_key_exists($loweredFetchedClassName, $indexedEnumCases)) {
-								throw new ShouldNotHappenException();
-							}
-
-							if (!array_key_exists($loweredFetchedClassName, $unusedIndexedEnumCases)) {
-								throw new ShouldNotHappenException();
-							}
-
-							$caseName = $cond->name->toString();
-							if (!array_key_exists($caseName, $indexedEnumCases[$loweredFetchedClassName])) {
-								throw new ShouldNotHappenException();
-							}
-
-							$enumCase = $indexedEnumCases[$loweredFetchedClassName][$caseName];
-							$conditionCases[] = $enumCase;
-							$armConditionScope = $matchScope;
-							if (!array_key_exists($caseName, $unusedIndexedEnumCases[$loweredFetchedClassName])) {
-								// force "always false"
-								$armConditionScope = $armConditionScope->removeTypeFromExpression(
-									$expr->cond,
-									$enumCase,
-								);
-							} else {
-								$unusedCasesCount = 0;
-								foreach ($unusedIndexedEnumCases as $cases) {
-									$unusedCasesCount += count($cases);
-								}
-								if ($unusedCasesCount === 1) {
-									$hasAlwaysTrueCond = true;
-
-									// force "always true"
-									$armConditionScope = $armConditionScope->addTypeToExpression(
-										$expr->cond,
-										$enumCase,
-									);
-								}
-							}
-
-							$this->processExprNode($stmt, $cond, $armConditionScope, $storage, $nodeCallback, $deepContext);
-
-							$condNodes[] = new MatchExpressionArmCondition(
-								$cond,
-								$armConditionScope,
-								$cond->getStartLine(),
-							);
-							$conditionExprs[] = $cond;
-
-							unset($unusedIndexedEnumCases[$loweredFetchedClassName][$caseName]);
-							$armCondsToSkip[$i][$j] = true;
-						}
-
-						$conditionCasesCount = count($conditionCases);
-						if ($conditionCasesCount === 0) {
-							throw new ShouldNotHappenException();
-						} elseif ($conditionCasesCount === 1) {
-							$conditionCaseType = $conditionCases[0];
-						} else {
-							$conditionCaseType = new UnionType($conditionCases);
-						}
-
-						$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs);
-						$matchArmBodyScope = $matchScope->addTypeToExpression(
-							$expr->cond,
-							$conditionCaseType,
-						)->filterByTruthyValue($filteringExpr);
-						$matchArmBody = new MatchExpressionArmBody($matchArmBodyScope, $arm->body);
-						$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
-
-						$armResult = $this->processExprNode(
-							$stmt,
-							$arm->body,
-							$matchArmBodyScope,
-							$storage,
-							$nodeCallback,
-							ExpressionContext::createTopLevel(),
-						);
-						$armScope = $armResult->getScope();
-						$armBodyScopes[] = $armScope;
-						$hasYield = $hasYield || $armResult->hasYield();
-						$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
-						$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-
-						unset($arms[$i]);
-					}
-
-					$remainingCases = [];
-					foreach ($unusedIndexedEnumCases as $cases) {
-						foreach ($cases as $case) {
-							$remainingCases[] = $case;
-						}
-					}
-
-					$remainingCasesCount = count($remainingCases);
-					if ($remainingCasesCount === 0) {
-						$remainingType = new NeverType();
-					} elseif ($remainingCasesCount === 1) {
-						$remainingType = $remainingCases[0];
-					} else {
-						$remainingType = new UnionType($remainingCases);
-					}
-
-					$matchScope = $matchScope->addTypeToExpression($expr->cond, $remainingType);
-				}
-			}
-			foreach ($arms as $i => $arm) {
-				if ($arm->conds === null) {
-					$hasDefaultCond = true;
-					$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
-					$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
-					$armResult = $this->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
-					$matchScope = $armResult->getScope();
-					$hasYield = $hasYield || $armResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-					$armBodyScopes[] = $matchScope;
-					continue;
-				}
-
-				if (count($arm->conds) === 0) {
-					throw new ShouldNotHappenException();
-				}
-
-				$filteringExprs = [];
-				$armCondScope = $matchScope;
-				$condNodes = [];
-				$armCondResultScope = $matchScope;
-				$bodyScope = null;
-				foreach ($arm->conds as $j => $armCond) {
-					if (isset($armCondsToSkip[$i][$j])) {
-						continue;
-					}
-					$condNodes[] = new MatchExpressionArmCondition($armCond, $armCondScope, $armCond->getStartLine());
-					$armCondResult = $this->processExprNode($stmt, $armCond, $armCondScope, $storage, $nodeCallback, $deepContext);
-					$hasYield = $hasYield || $armCondResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
-					$impurePoints = array_merge($impurePoints, $armCondResult->getImpurePoints());
-					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
-					$armCondResultScope = $armCondResult->getScope();
-					$armCondType = $this->treatPhpDocTypesAsCertain ? $armCondResultScope->getType($armCondExpr) : $armCondResultScope->getNativeType($armCondExpr);
-					if ($armCondType->isTrue()->yes()) {
-						$hasAlwaysTrueCond = true;
-					}
-					$armCondScope = $armCondResultScope->filterByFalseyValue($armCondExpr);
-					if ($bodyScope === null) {
-						$bodyScope = $armCondResultScope->filterByTruthyValue($armCondExpr);
-					} else {
-						$bodyScope = $bodyScope->mergeWith($armCondResultScope->filterByTruthyValue($armCondExpr));
-					}
-					$filteringExprs[] = $armCond;
-				}
-
-				$filteringExpr = $this->getFilteringExprForMatchArm($expr, $filteringExprs);
-				$bodyScope ??= $matchScope->filterByTruthyValue($filteringExpr);
-				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
-				$armNodes[$i] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getStartLine());
-
-				$armResult = $this->processExprNode(
-					$stmt,
-					$arm->body,
-					$bodyScope,
-					$storage,
-					$nodeCallback,
-					ExpressionContext::createTopLevel(),
-				);
-				$armScope = $armResult->getScope();
-				$armBodyScopes[] = $armScope;
-				$hasYield = $hasYield || $armResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-				$matchScope = $armCondScope->filterByFalseyValue($filteringExpr);
-			}
-
-			if (!$hasDefaultCond && !$hasAlwaysTrueCond && $condType->isBoolean()->yes() && $condType->isConstantScalarValue()->yes()) {
-				if ($this->isScopeConditionallyImpossible($matchScope)) {
-					$hasAlwaysTrueCond = true;
-					$matchScope = $matchScope->addTypeToExpression($expr->cond, new NeverType());
-				}
-			}
-
-			$scopeForMatchNodeCallback = $scope;
-
-			$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
-			if (!$isExhaustive) {
-				$remainingType = $matchScope->getType($expr->cond);
-				if ($remainingType instanceof NeverType) {
-					$isExhaustive = true;
-				}
-			}
-
-			if ($isExhaustive) {
-				$armBodyFinalScope = null;
-				foreach ($armBodyScopes as $armBodyScope) {
-					$armBodyFinalScope = $armBodyScope->mergeWith($armBodyFinalScope);
-				}
-				$scope = $armBodyFinalScope ?? $scope;
-			} else {
-				$armBodyFinalScope = null;
-				foreach ($armBodyScopes as $armBodyScope) {
-					$armBodyFinalScope = $armBodyScope->mergeWith($armBodyFinalScope);
-				}
-				if ($armBodyFinalScope !== null) {
-					$scope = $scope->mergeWith($armBodyFinalScope);
-				}
-				$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
-			}
-
-			ksort($armNodes, SORT_NUMERIC);
-
-			$this->callNodeCallback($nodeCallback, new MatchExpressionNode($expr->cond, array_values($armNodes), $expr, $matchScope), $scopeForMatchNodeCallback, $storage);
-
-			if ($expr->cond instanceof AlwaysRememberedExpr) {
-				$expr->cond = $expr->cond->getExpr();
-			}
 		} elseif ($expr instanceof AlwaysRememberedExpr) {
 			$result = $this->processExprNode($stmt, $expr->getExpr(), $scope, $storage, $nodeCallback, $context);
 			$hasYield = $result->hasYield();
@@ -4549,13 +2568,6 @@ class NodeScopeResolver
 			$isAlwaysTerminating = $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 			$expr = $expr->getExpr();
-		} elseif ($expr instanceof Expr\Throw_) {
-			$hasYield = false;
-			$result = $this->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$throwPoints[] = InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false);
 		} elseif ($expr instanceof FunctionCallableNode) {
 			$throwPoints = [];
 			$impurePoints = [];
@@ -4618,17 +2630,6 @@ class NodeScopeResolver
 				$impurePoints = $classResult->getImpurePoints();
 				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			}
-		} elseif ($expr instanceof Node\Scalar) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-		} elseif ($expr instanceof ConstFetch) {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
-			$this->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		} else {
 			$hasYield = false;
 			$throwPoints = [];
@@ -4648,365 +2649,6 @@ class NodeScopeResolver
 		return $result;
 	}
 
-	private function getArrayFunctionAppendingType(FunctionReflection $functionReflection, Scope $scope, FuncCall $expr): Type
-	{
-		$arrayArg = $expr->getArgs()[0]->value;
-		$arrayType = $scope->getType($arrayArg);
-		$callArgs = array_slice($expr->getArgs(), 1);
-
-		/**
-		 * @param Arg[] $callArgs
-		 * @param callable(?Type, Type, bool): void $setOffsetValueType
-		 */
-		$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
-			foreach ($callArgs as $callArg) {
-				$callArgType = $scope->getType($callArg->value);
-				if ($callArg->unpack) {
-					$constantArrays = $callArgType->getConstantArrays();
-					if (count($constantArrays) === 1) {
-						$iterableValueTypes = $constantArrays[0]->getValueTypes();
-					} else {
-						$iterableValueTypes = [$callArgType->getIterableValueType()];
-						$nonConstantArrayWasUnpacked = true;
-					}
-
-					$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
-					foreach ($iterableValueTypes as $iterableValueType) {
-						if ($iterableValueType instanceof UnionType) {
-							foreach ($iterableValueType->getTypes() as $innerType) {
-								$setOffsetValueType(null, $innerType, $isOptional);
-							}
-						} else {
-							$setOffsetValueType(null, $iterableValueType, $isOptional);
-						}
-					}
-					continue;
-				}
-				$setOffsetValueType(null, $callArgType, false);
-			}
-		};
-
-		$constantArrays = $arrayType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$newArrayTypes = [];
-			$prepend = $functionReflection->getName() === 'array_unshift';
-			foreach ($constantArrays as $constantArray) {
-				$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($constantArray);
-
-				$setOffsetValueTypes(
-					$scope,
-					$callArgs,
-					static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
-						$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
-					},
-					$nonConstantArrayWasUnpacked,
-				);
-
-				if ($prepend) {
-					$keyTypes = $constantArray->getKeyTypes();
-					$valueTypes = $constantArray->getValueTypes();
-					foreach ($keyTypes as $k => $keyType) {
-						$arrayTypeBuilder->setOffsetValueType(
-							count($keyType->getConstantStrings()) === 1 ? $keyType->getConstantStrings()[0] : null,
-							$valueTypes[$k],
-							$constantArray->isOptionalKey($k),
-						);
-					}
-				}
-
-				$constantArray = $arrayTypeBuilder->getArray();
-
-				if ($constantArray->isConstantArray()->yes() && $nonConstantArrayWasUnpacked) {
-					$array = new ArrayType($constantArray->generalize(GeneralizePrecision::lessSpecific())->getIterableKeyType(), $constantArray->getIterableValueType());
-					$isList = $constantArray->isList()->yes();
-					$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
-						? new IntersectionType([$array, new NonEmptyArrayType()])
-						: $array;
-					$constantArray = $isList
-						? TypeCombinator::intersect($constantArray, new AccessoryArrayListType())
-						: $constantArray;
-				}
-
-				$newArrayTypes[] = $constantArray;
-			}
-
-			return TypeCombinator::union(...$newArrayTypes);
-		}
-
-		$setOffsetValueTypes(
-			$scope,
-			$callArgs,
-			static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayType): void {
-				$isIterableAtLeastOnce = $arrayType->isIterableAtLeastOnce()->yes() || !$optional;
-				$arrayType = $arrayType->setOffsetValueType($offsetType, $valueType);
-				if ($isIterableAtLeastOnce) {
-					return;
-				}
-
-				$arrayType = TypeCombinator::union($arrayType, new ConstantArrayType([], []));
-			},
-		);
-
-		return $arrayType;
-	}
-
-	private function getArraySortPreserveListFunctionType(Type $type): Type
-	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			if (!$type instanceof ArrayType && !$type instanceof ConstantArrayType) {
-				return $type;
-			}
-
-			$newArrayType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $type->getIterableValueType()), new AccessoryArrayListType()]);
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = TypeCombinator::intersect($newArrayType, new NonEmptyArrayType());
-			}
-
-			return $newArrayType;
-		});
-	}
-
-	private function getArraySortDoNotPreserveListFunctionType(Type $type): Type
-	{
-		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
-		if ($isIterableAtLeastOnce->no()) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($isIterableAtLeastOnce): Type {
-			if ($type instanceof UnionType) {
-				return $traverse($type);
-			}
-
-			$constantArrays = $type->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				$types = [];
-				foreach ($constantArrays as $constantArray) {
-					$types[] = new ConstantArrayType(
-						$constantArray->getKeyTypes(),
-						$constantArray->getValueTypes(),
-						$constantArray->getNextAutoIndexes(),
-						$constantArray->getOptionalKeys(),
-						$constantArray->isList()->and(TrinaryLogic::createMaybe()),
-					);
-				}
-
-				return TypeCombinator::union(...$types);
-			}
-
-			$newArrayType = new ArrayType($type->getIterableKeyType(), $type->getIterableValueType());
-			if ($isIterableAtLeastOnce->yes()) {
-				$newArrayType = new IntersectionType([$newArrayType, new NonEmptyArrayType()]);
-			}
-
-			return $newArrayType;
-		});
-	}
-
-	private function getFunctionThrowPoint(
-		FunctionReflection $functionReflection,
-		?ParametersAcceptor $parametersAcceptor,
-		FuncCall $funcCall,
-		MutatingScope $scope,
-	): ?InternalThrowPoint
-	{
-		$normalizedFuncCall = $funcCall;
-		if ($parametersAcceptor !== null) {
-			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $funcCall);
-		}
-
-		if ($normalizedFuncCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
-				if (!$extension->isFunctionSupported($functionReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
-			}
-		}
-
-		$throwType = $functionReflection->getThrowType();
-		if ($throwType === null && $parametersAcceptor !== null) {
-			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-				$throwType = new ObjectType(Throwable::class);
-			}
-		}
-
-		if ($throwType !== null) {
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $funcCall, true);
-			}
-		} elseif ($this->implicitThrows) {
-			$requiredParameters = null;
-			if ($parametersAcceptor !== null) {
-				$requiredParameters = 0;
-				foreach ($parametersAcceptor->getParameters() as $parameter) {
-					if ($parameter->isOptional()) {
-						continue;
-					}
-
-					$requiredParameters++;
-				}
-			}
-			if (
-				!$functionReflection->isBuiltin()
-				|| $requiredParameters === null
-				|| $requiredParameters > 0
-				|| count($funcCall->getArgs()) > 0
-			) {
-				$functionReturnedType = $scope->getType($funcCall);
-				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
-					return InternalThrowPoint::createImplicit($scope, $funcCall);
-				}
-			}
-		}
-
-		return null;
-	}
-
-	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
-	{
-		$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
-				if (!$extension->isMethodSupported($methodReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
-			}
-		}
-
-		if (
-			in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
-			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
-		) {
-			return InternalThrowPoint::createImplicit($scope, $methodCall);
-		}
-
-		$throwType = $methodReflection->getThrowType();
-		if ($throwType === null) {
-			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
-				$throwType = new ObjectType(Throwable::class);
-			}
-		}
-
-		if ($throwType !== null) {
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
-			}
-		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($methodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param list<Node\Arg> $args
-	 */
-	private function getConstructorThrowPoint(MethodReflection $constructorReflection, ParametersAcceptor $parametersAcceptor, ClassReflection $classReflection, New_ $new, Name $className, array $args, MutatingScope $scope): ?InternalThrowPoint
-	{
-		$methodCall = new StaticCall($className, $constructorReflection->getName(), $args);
-		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-				if (!$extension->isStaticMethodSupported($constructorReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $new, false);
-			}
-		}
-
-		if ($constructorReflection->getThrowType() !== null) {
-			$throwType = $constructorReflection->getThrowType();
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $new, true);
-			}
-		} elseif ($this->implicitThrows) {
-			if (!$classReflection->is(Throwable::class)) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
-			}
-		}
-
-		return null;
-	}
-
-	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, StaticCall $methodCall, MutatingScope $scope): ?InternalThrowPoint
-	{
-		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-		if ($normalizedMethodCall !== null) {
-			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-				if (!$extension->isStaticMethodSupported($methodReflection)) {
-					continue;
-				}
-
-				$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
-				if ($throwType === null) {
-					return null;
-				}
-
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
-			}
-		}
-
-		if ($methodReflection->getThrowType() !== null) {
-			$throwType = $methodReflection->getThrowType();
-			if (!$throwType->isVoid()->yes()) {
-				return InternalThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
-			}
-		} elseif ($this->implicitThrows) {
-			$methodReturnedType = $scope->getType($methodCall);
-			if (!(new ObjectType(Throwable::class))->isSuperTypeOf($methodReturnedType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $methodCall);
-			}
-		}
-
-		return null;
-	}
-
-	/**
-	 * @return InternalThrowPoint[]
-	 */
-	private function getPropertyReadThrowPointsFromGetHook(
-		MutatingScope $scope,
-		PropertyFetch $propertyFetch,
-		PhpPropertyReflection $propertyReflection,
-	): array
-	{
-		return $this->getThrowPointsFromPropertyHook($scope, $propertyFetch, $propertyReflection, 'get');
-	}
-
 	/**
 	 * @return InternalThrowPoint[]
 	 */
@@ -5023,7 +2665,7 @@ class NodeScopeResolver
 	 * @param 'get'|'set' $hookName
 	 * @return InternalThrowPoint[]
 	 */
-	private function getThrowPointsFromPropertyHook(
+	public function getThrowPointsFromPropertyHook(
 		MutatingScope $scope,
 		PropertyFetch $propertyFetch,
 		PhpPropertyReflection $propertyReflection,
@@ -5075,7 +2717,7 @@ class NodeScopeResolver
 	/**
 	 * @return string[]
 	 */
-	private function getAssignedVariables(Expr $expr): array
+	public function getAssignedVariables(Expr $expr): array
 	{
 		if ($expr instanceof Expr\Variable) {
 			if (is_string($expr->name)) {
@@ -5108,7 +2750,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function callNodeCallbackWithExpression(
+	public function callNodeCallbackWithExpression(
 		callable $nodeCallback,
 		Expr $expr,
 		MutatingScope $scope,
@@ -5125,7 +2767,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	protected function callNodeCallback(
+	public function callNodeCallback(
 		callable $nodeCallback,
 		Node $node,
 		MutatingScope $scope,
@@ -5138,7 +2780,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processClosureNode(
+	public function processClosureNode(
 		Node\Stmt $stmt,
 		Expr\Closure $expr,
 		MutatingScope $scope,
@@ -5330,7 +2972,7 @@ class NodeScopeResolver
 	 * @param InvalidateExprNode[] $invalidatedExpressions
 	 * @param string[] $uses
 	 */
-	private function processImmediatelyCalledCallable(MutatingScope $scope, array $invalidatedExpressions, array $uses): MutatingScope
+	public function processImmediatelyCalledCallable(MutatingScope $scope, array $invalidatedExpressions, array $uses): MutatingScope
 	{
 		if ($scope->isInClass()) {
 			$uses[] = 'this';
@@ -5352,7 +2994,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processArrowFunctionNode(
+	public function processArrowFunctionNode(
 		Node\Stmt $stmt,
 		Expr\ArrowFunction $expr,
 		MutatingScope $scope,
@@ -5706,7 +3348,7 @@ class NodeScopeResolver
 	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processArgs(
+	public function processArgs(
 		Node\Stmt $stmt,
 		$calleeReflection,
 		?ExtendedMethodReflection $nakedMethodReflection,
@@ -6151,7 +3793,7 @@ class NodeScopeResolver
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 * @param Closure(MutatingScope $scope): ExpressionResult $processExprCallback
 	 */
-	private function processAssignVar(
+	public function processAssignVar(
 		MutatingScope $scope,
 		ExpressionResultStorage $storage,
 		Node\Stmt $stmt,
@@ -6779,7 +4421,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
+	public function processVirtualAssign(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback): ExpressionResult
 	{
 		return $this->processAssignVar(
 			$scope,
@@ -7026,7 +4668,7 @@ class NodeScopeResolver
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processStmtVarAnnotation(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, ?Expr $defaultExpr, callable $nodeCallback): MutatingScope
+	public function processStmtVarAnnotation(MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, ?Expr $defaultExpr, callable $nodeCallback): MutatingScope
 	{
 		$function = $scope->getFunction();
 		$variableLessTags = [];
@@ -7107,7 +4749,7 @@ class NodeScopeResolver
 	/**
 	 * @param array<int, string> $variableNames
 	 */
-	private function processVarAnnotation(MutatingScope $scope, array $variableNames, Node\Stmt $node, bool &$changed = false): MutatingScope
+	public function processVarAnnotation(MutatingScope $scope, array $variableNames, Node\Stmt $node, bool &$changed = false): MutatingScope
 	{
 		$function = $scope->getFunction();
 		$varTags = [];
@@ -7385,7 +5027,43 @@ class NodeScopeResolver
 		}
 	}
 
-	private function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope
+	private function processMethodCallInitializedProperties(MethodCall $expr, MutatingScope $originalScope, ExpressionResult $handlerResult): ExpressionResult
+	{
+		$scope = $handlerResult->getScope();
+		$calledOnType = $originalScope->getType($expr->var);
+		if ($expr->name instanceof Expr) {
+			return $handlerResult;
+		}
+		$methodName = $expr->name->name;
+		$methodReflection = $originalScope->getMethodReflection($calledOnType, $methodName);
+		if ($methodReflection === null) {
+			return $handlerResult;
+		}
+		if (
+			$scope->isInClass()
+			&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
+			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
+			&& TypeUtils::findThisType($calledOnType) !== null
+		) {
+			$calledMethodScope = $this->processCalledMethod($methodReflection);
+			if ($calledMethodScope !== null) {
+				$scope = $scope->mergeInitializedProperties($calledMethodScope);
+				return new ExpressionResult(
+					$scope,
+					hasYield: $handlerResult->hasYield(),
+					isAlwaysTerminating: $handlerResult->isAlwaysTerminating(),
+					throwPoints: $handlerResult->getThrowPoints(),
+					impurePoints: $handlerResult->getImpurePoints(),
+					truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+					falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+				);
+			}
+		}
+
+		return $handlerResult;
+	}
+
+	public function processCalledMethod(MethodReflection $methodReflection): ?MutatingScope
 	{
 		$declaringClass = $methodReflection->getDeclaringClass();
 		if ($declaringClass->isAnonymous()) {
@@ -7412,6 +5090,7 @@ class NodeScopeResolver
 
 		$fileName = $this->fileHelper->normalizePath($declaringClass->getFileName());
 		if (!isset($this->analysedFiles[$fileName])) {
+			unset($this->calledMethodStack[$stackName]);
 			return null;
 		}
 		$parserNodes = $this->parser->parseFile($fileName);
@@ -7787,86 +5466,6 @@ class NodeScopeResolver
 			$isPassedUnreachableStatement = true;
 		}
 		return $stmts;
-	}
-
-	/**
-	 * @param array<Expr> $conditions
-	 */
-	private function getFilteringExprForMatchArm(Expr\Match_ $expr, array $conditions): BinaryOp\Identical|FuncCall
-	{
-		if (count($conditions) === 1) {
-			return new BinaryOp\Identical($expr->cond, $conditions[0]);
-		}
-
-		$items = [];
-		foreach ($conditions as $filteringExpr) {
-			$items[] = new Node\ArrayItem($filteringExpr);
-		}
-
-		return new FuncCall(
-			new Name\FullyQualified('in_array'),
-			[
-				new Arg($expr->cond),
-				new Arg(new Array_($items)),
-				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
-			],
-		);
-	}
-
-	/**
-	 * Checks if a scope's conditional expressions form a contradiction,
-	 * meaning no combination of variable values is possible.
-	 * Used for match(true) exhaustiveness detection.
-	 */
-	private function isScopeConditionallyImpossible(MutatingScope $scope): bool
-	{
-		$boolVars = [];
-		foreach ($scope->getDefinedVariables() as $varName) {
-			$varType = $scope->getVariableType($varName);
-			if (!$varType->isBoolean()->yes() || $varType->isConstantScalarValue()->yes()) {
-				continue;
-			}
-
-			$boolVars[] = $varName;
-		}
-
-		if ($boolVars === []) {
-			return false;
-		}
-
-		// Check if any boolean variable's both truth values lead to contradictions
-		foreach ($boolVars as $varName) {
-			$varExpr = new Variable($varName);
-
-			$truthyScope = $scope->filterByTruthyValue($varExpr);
-			$truthyContradiction = $this->scopeHasNeverVariable($truthyScope, $boolVars);
-			if (!$truthyContradiction) {
-				continue;
-			}
-
-			$falseyScope = $scope->filterByFalseyValue($varExpr);
-			$falseyContradiction = $this->scopeHasNeverVariable($falseyScope, $boolVars);
-			if ($falseyContradiction) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param string[] $varNames
-	 */
-	private function scopeHasNeverVariable(MutatingScope $scope, array $varNames): bool
-	{
-		foreach ($varNames as $varName) {
-			$type = $scope->getVariableType($varName);
-			if ($type instanceof NeverType) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private function inferForLoopExpressions(For_ $stmt, Expr $lastCondExpr, MutatingScope $bodyScope): MutatingScope

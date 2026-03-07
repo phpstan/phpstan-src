@@ -3,23 +3,22 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use function array_merge;
 
 /**
- * @implements ExprHandler<Exit_>
+ * @implements ExprHandler<ClassConstFetch>
  */
 #[AutowiredService]
-final class ExitHandler implements ExprHandler
+final class ClassConstFetchHandler implements ExprHandler
 {
 
 	public function __construct(
@@ -30,31 +29,42 @@ final class ExitHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof Exit_;
+		return $expr instanceof ClassConstFetch;
 	}
 
 	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$kind = $expr->getAttribute('kind', Exit_::KIND_EXIT);
-		$identifier = $kind === Exit_::KIND_DIE ? 'die' : 'exit';
-		$impurePoints = [
-			new ImpurePoint($scope, $expr, $identifier, $identifier, true),
-		];
-
 		$hasYield = false;
 		$throwPoints = [];
-		if ($expr->expr !== null) {
-			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$impurePoints = [];
+		$isAlwaysTerminating = false;
+
+		if ($expr->class instanceof Expr) {
+			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+		} else {
+			$this->nodeScopeResolver->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
+		}
+
+		if ($expr->name instanceof Expr) {
+			$result = $this->nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+		} else {
+			$this->nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		}
 
 		return new ExpressionResult(
 			$scope,
 			hasYield: $hasYield,
-			isAlwaysTerminating: true,
+			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),

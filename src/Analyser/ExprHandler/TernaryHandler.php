@@ -1,0 +1,87 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Analyser\ExprHandler;
+
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ExpressionContext;
+use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\NeverType;
+use function array_merge;
+
+/**
+ * @implements ExprHandler<Ternary>
+ */
+#[AutowiredService]
+final class TernaryHandler implements ExprHandler
+{
+
+	public function __construct(
+		private NodeScopeResolver $nodeScopeResolver,
+	)
+	{
+	}
+
+	public function supports(Expr $expr): bool
+	{
+		return $expr instanceof Ternary;
+	}
+
+	public function processExpr(Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	{
+		$ternaryCondResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$throwPoints = $ternaryCondResult->getThrowPoints();
+		$impurePoints = $ternaryCondResult->getImpurePoints();
+		$ifTrueScope = $ternaryCondResult->getTruthyScope();
+		$ifFalseScope = $ternaryCondResult->getFalseyScope();
+		$ifTrueType = null;
+		if ($expr->if !== null) {
+			$ifResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
+			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
+			$ifTrueScope = $ifResult->getScope();
+			$ifTrueType = $ifTrueScope->getType($expr->if);
+		}
+
+		$elseResult = $this->nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+		$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
+		$ifFalseScope = $elseResult->getScope();
+
+		$condType = $scope->getType($expr->cond);
+		if ($condType->isTrue()->yes()) {
+			$finalScope = $ifTrueScope;
+		} elseif ($condType->isFalse()->yes()) {
+			$finalScope = $ifFalseScope;
+		} else {
+			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+				$finalScope = $ifFalseScope;
+			} else {
+				$ifFalseType = $ifFalseScope->getType($expr->else);
+
+				if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+					$finalScope = $ifTrueScope;
+				} else {
+					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+				}
+			}
+		}
+
+		return new ExpressionResult(
+			$finalScope,
+			hasYield: $ternaryCondResult->hasYield(),
+			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
+			throwPoints: $throwPoints,
+			impurePoints: $impurePoints,
+			truthyScopeCallback: static fn (): MutatingScope => $finalScope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $finalScope->filterByFalseyValue($expr),
+		);
+	}
+
+}

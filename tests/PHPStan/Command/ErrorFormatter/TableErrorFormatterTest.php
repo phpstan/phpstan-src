@@ -449,8 +449,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 		$formatter = $this->createErrorFormatter(
 			null,
-			usedLevel: $usedLevel,
-			errorsBudget: $errorsBudget,
+			null,
+			$usedLevel,
+			$errorsBudget,
 		);
 		$errors = [];
 		$errors[] = new Error('Test', 'Foo.php (in context of trait)', 12, filePath: 'Foo.php', traitFilePath: 'Bar.php');

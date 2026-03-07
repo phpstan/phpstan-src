@@ -25,6 +25,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateIterableType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -33,6 +34,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use Throwable;
+use Traversable;
 use function array_diff_assoc;
 use function array_fill_keys;
 use function array_map;
@@ -194,6 +196,16 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
+		if ($type instanceof IterableType) {
+			return $this->accepts(new UnionType([
+				new ArrayType($type->getIterableKeyType(), $type->getIterableValueType()),
+				new GenericObjectType(Traversable::class, [
+					$type->getIterableKeyType(),
+					$type->getIterableValueType(),
+				]),
+			]), $strictTypes);
+		}
+
 		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
 			if (!$type->equals(new ObjectType($baseClass))) {
 				continue;
@@ -1073,6 +1085,16 @@ class UnionType implements CompoundType
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
+		if ($receivedType instanceof IterableType) {
+			$receivedType = new UnionType([
+				new ArrayType($receivedType->getIterableKeyType(), $receivedType->getIterableValueType()),
+				new GenericObjectType(Traversable::class, [
+					$receivedType->getIterableKeyType(),
+					$receivedType->getIterableValueType(),
+				]),
+			]);
+		}
+
 		$types = TemplateTypeMap::createEmpty();
 		if ($receivedType instanceof UnionType) {
 			$myTypes = [];

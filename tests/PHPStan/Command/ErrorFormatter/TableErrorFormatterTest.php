@@ -299,6 +299,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		yield [
 			'errorsBudget' => null,
+			'usedLevel' => CommandHelper::DEFAULT_LEVEL,
+			'showAllErrors' => false,
 			'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -315,6 +317,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		];
 		yield [
 			'errorsBudget' => 1,
+			'usedLevel' => CommandHelper::DEFAULT_LEVEL,
+			'showAllErrors' => false,
 			'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -325,8 +329,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  [ERROR] Found 1+ errors
 
  ! [NOTE] Result is limited to the first 1 errors
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
- !        environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
 
@@ -336,6 +339,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		yield [
 			'errorsBudget' => 3,
 			'usedLevel' => '8',
+			'showAllErrors' => false,
 			'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -349,8 +353,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
  ! [NOTE] Result is limited to the first 3 errors
  !        - Consider lowering the PHPStan level
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
- !        environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
 
@@ -359,6 +362,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 			yield [
 				'errorsBudget' => 3,
+				'usedLevel' => CommandHelper::DEFAULT_LEVEL,
+				'showAllErrors' => false,
 				'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -371,8 +376,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
  [ERROR] Found 3+ errors
 
  ! [NOTE] Result is limited to the first 3 errors
- !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1
- !        environment variable to show all errors
+ !        - Pass PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1 environment variable to show all errors
  !        - Consider using PHPStan Pro for more comfortable error browsing
  !          Learn more: https://phpstan.com
 
@@ -381,6 +385,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 			yield [
 				'errorsBudget' => 4,
+				'usedLevel' => CommandHelper::DEFAULT_LEVEL,
+				'showAllErrors' => false,
 				'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -397,6 +403,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			];
 			yield [
 				'errorsBudget' => 5,
+				'usedLevel' => CommandHelper::DEFAULT_LEVEL,
+				'showAllErrors' => false,
 				'expected' => ' ------ -------------------------------
   Line   Foo.php (in context of trait)
  ------ -------------------------------
@@ -413,6 +421,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			];
 
 			yield [
+				'errorsBudget' => null,
 				'usedLevel' => '8',
 				'showAllErrors' => true,
 				'expected' => ' ------ -------------------------------
@@ -433,10 +442,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	#[DataProvider('dataErrorLimit')]
 	public function testErrorLimit(
+		?int $errorsBudget,
+		string $usedLevel,
+		bool $showAllErrors,
 		string $expected,
-		?int $errorsBudget = null,
-		string $usedLevel = CommandHelper::DEFAULT_LEVEL,
-		bool $showAllErrors = false,
 	): void
 	{
 		if ($showAllErrors) {

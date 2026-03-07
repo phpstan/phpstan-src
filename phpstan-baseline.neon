@@ -13,6 +13,18 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 2
+			path: src/Analyser/ExprHandler/BinaryOpHandler.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Analyser/ExprHandler/BooleanNotHandler.php
+
+		-
 			rawMessage: Cannot assign offset 'realCount' to array<mixed>|string.
 			identifier: offsetAssign.dimType
 			count: 1
@@ -27,7 +39,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 4
+			count: 1
 			path: src/Analyser/MutatingScope.php
 
 		-

@@ -78,11 +78,12 @@ $fstat = fstat($resource);
 $fileObject = new \SplFileObject(__FILE__);
 $fileObjectStat = $fileObject->fstat();
 
-$base64DecodeWithoutStrict = base64_decode('');
-$base64DecodeWithStrictDisabled = base64_decode('', false);
-$base64DecodeWithStrictEnabled = base64_decode('', true);
-$base64DecodeDefault = base64_decode('', null);
-$base64DecodeBenevolent = base64_decode('', $undefined);
+$string = (string)time();
+$base64DecodeWithoutStrict = base64_decode($string);
+$base64DecodeWithStrictDisabled = base64_decode($string, false);
+$base64DecodeWithStrictEnabled = base64_decode($string, true);
+$base64DecodeDefault = base64_decode($string, null);
+$base64DecodeBenevolent = base64_decode($string, $undefined);
 
 
 //str_word_count

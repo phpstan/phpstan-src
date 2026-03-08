@@ -26,6 +26,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_merge;
@@ -36,6 +37,7 @@ use function count;
 use function get_class;
 use function in_array;
 use function is_int;
+use function ksort;
 use function sprintf;
 use function usort;
 use const PHP_INT_MAX;
@@ -1298,6 +1300,38 @@ final class TypeCombinator
 						$typesCount--;
 						continue 2;
 					}
+				}
+
+				if ($types[$i] instanceof ObjectShapeType && $types[$j] instanceof ObjectShapeType) {
+					$mergedProperties = $types[$i]->getProperties();
+					$mergedOptionalProperties = $types[$i]->getOptionalProperties();
+					foreach ($types[$j]->getProperties() as $propertyName => $propertyType) {
+						if (array_key_exists($propertyName, $mergedProperties)) {
+							$intersectedPropertyType = self::intersect($mergedProperties[$propertyName], $propertyType);
+							if ($intersectedPropertyType instanceof NeverType) {
+								return new NeverType();
+							}
+							$mergedProperties[$propertyName] = $intersectedPropertyType;
+							$isOptionalInI = in_array($propertyName, $mergedOptionalProperties, true);
+							$isOptionalInJ = in_array($propertyName, $types[$j]->getOptionalProperties(), true);
+							if ($isOptionalInI && !$isOptionalInJ) {
+								$mergedOptionalProperties = array_values(array_filter(
+									$mergedOptionalProperties,
+									static fn ($p) => $p !== $propertyName,
+								));
+							}
+						} else {
+							$mergedProperties[$propertyName] = $propertyType;
+							if (in_array($propertyName, $types[$j]->getOptionalProperties(), true)) {
+								$mergedOptionalProperties[] = $propertyName;
+							}
+						}
+					}
+					ksort($mergedProperties);
+					$types[$i] = new ObjectShapeType($mergedProperties, $mergedOptionalProperties);
+					array_splice($types, $j--, 1);
+					$typesCount--;
+					continue;
 				}
 
 				if ($types[$j] instanceof IterableType) {

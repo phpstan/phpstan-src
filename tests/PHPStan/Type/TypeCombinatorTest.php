@@ -4616,8 +4616,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ObjectShapeType(['foo' => new IntegerType()], []),
 				new ObjectShapeType(['bar' => new StringType()], []),
 			],
-			NeverType::class,
-			'*NEVER*=implicit',
+			ObjectShapeType::class,
+			'object{bar: string, foo: int}',
 		];
 		yield [
 			[

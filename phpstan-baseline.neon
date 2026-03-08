@@ -1734,7 +1734,7 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ObjectShapeType is error-prone and deprecated. Use Type::isObject() and Type::hasProperty() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 2
+			count: 4
 			path: src/Type/TypeCombinator.php
 
 		-

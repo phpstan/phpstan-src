@@ -1272,13 +1272,20 @@ final class TypeSpecifier
 		}
 
 		$resultTypes = [];
+		$nonMatchingTypes = [];
+		$allArraysHaveDefiniteSize = true;
 		foreach ($type->getArrays() as $arrayType) {
+			if (!$arrayType->getArraySize()->isConstantScalarValue()->yes()) {
+				$allArraysHaveDefiniteSize = false;
+			}
 			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($arrayType->getArraySize());
 			if ($isSizeSuperTypeOfArraySize->no()) {
+				$nonMatchingTypes[] = $arrayType;
 				continue;
 			}
 
 			if ($context->falsey() && $isSizeSuperTypeOfArraySize->maybe()) {
+				$nonMatchingTypes[] = $arrayType;
 				continue;
 			}
 
@@ -1369,6 +1376,13 @@ final class TypeSpecifier
 			}
 
 			$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		if ($context->falsey() && $isConstantArray->yes() && $allArraysHaveDefiniteSize) {
+			if ($nonMatchingTypes === []) {
+				return $this->create($countFuncCall->getArgs()[0]->value, new NeverType(), TypeSpecifierContext::createTrue(), $scope)->setAlwaysOverwriteTypes()->setRootExpr($rootExpr);
+			}
+			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$nonMatchingTypes), TypeSpecifierContext::createTrue(), $scope)->setAlwaysOverwriteTypes()->setRootExpr($rootExpr);
 		}
 
 		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);

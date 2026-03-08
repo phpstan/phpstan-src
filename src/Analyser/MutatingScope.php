@@ -7,7 +7,6 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Match_;
@@ -23,8 +22,6 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
-use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
-use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransfomer;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -65,7 +62,6 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
@@ -87,7 +83,6 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
-use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 use PHPStan\Type\GeneralizePrecision;
@@ -187,7 +182,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		protected InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
 		private ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry,
 		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
@@ -1070,20 +1064,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
 		}
 
-		if ($node instanceof MethodCall) {
-			$callType = $this->getMethodCallType($node);
-			if ($callType !== null) {
-				return $callType;
-			}
-		}
-
-		if ($node instanceof Expr\StaticCall) {
-			$callType = $this->getStaticCallType($node);
-			if ($callType !== null) {
-				return $callType;
-			}
-		}
-
 		return new MixedType();
 	}
 
@@ -1365,26 +1345,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return new ObjectType($originalClass);
-	}
-
-	private function resolveTypeByNameWithLateStaticBinding(Name $class, Node\Identifier $name): TypeWithClassName
-	{
-		$classType = $this->resolveTypeByName($class);
-
-		if (
-			$classType instanceof StaticType
-			&& !in_array($class->toLowerString(), ['self', 'static', 'parent'], true)
-		) {
-			$methodReflectionCandidate = $this->getMethodReflection(
-				$classType,
-				$name->name,
-			);
-			if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
-				$classType = $classType->getStaticObjectType();
-			}
-		}
-
-		return $classType;
 	}
 
 	/**
@@ -4476,7 +4436,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $descriptions;
 	}
 
-	private function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
+	public function filterTypeWithMethod(Type $typeWithMethod, string $methodName): ?Type
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$typeWithMethod = $typeWithMethod->filterTypes(static fn (Type $innerType) => $innerType->hasMethod($methodName)->yes());
@@ -4508,74 +4468,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $type->getUnresolvedMethodPrototype($methodName, $this)->getNakedMethod();
-	}
-
-	/**
-	 * @param MethodCall|Node\Expr\StaticCall $methodCall
-	 */
-	private function methodCallReturnType(Type $typeWithMethod, string $methodName, Expr $methodCall): ?Type
-	{
-		$typeWithMethod = $this->filterTypeWithMethod($typeWithMethod, $methodName);
-		if ($typeWithMethod === null) {
-			return null;
-		}
-
-		$methodReflection = $typeWithMethod->getMethod($methodName, $this);
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-			$this,
-			$methodCall->getArgs(),
-			$methodReflection->getVariants(),
-			$methodReflection->getNamedArgumentsVariants(),
-		);
-		if ($methodCall instanceof MethodCall) {
-			$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
-		} else {
-			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
-		}
-		if ($normalizedMethodCall === null) {
-			return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
-		}
-
-		$resolvedTypes = [];
-		foreach ($typeWithMethod->getObjectClassNames() as $className) {
-			if ($normalizedMethodCall instanceof MethodCall) {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
-					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
-						continue;
-					}
-
-					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $normalizedMethodCall, $this);
-					if ($resolvedType === null) {
-						continue;
-					}
-
-					$resolvedTypes[] = $resolvedType;
-				}
-			} else {
-				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
-					if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($methodReflection)) {
-						continue;
-					}
-
-					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-						$methodReflection,
-						$normalizedMethodCall,
-						$this,
-					);
-					if ($resolvedType === null) {
-						continue;
-					}
-
-					$resolvedTypes[] = $resolvedType;
-				}
-			}
-		}
-
-		if (count($resolvedTypes) > 0) {
-			return VoidToNullTypeTransfomer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
-		}
-
-		return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 	/**
@@ -4743,106 +4635,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$nodeCallback($node, $this);
-	}
-
-	private function getStaticCallType(Expr\StaticCall $node): ?Type
-	{
-		if ($node->name instanceof Node\Identifier) {
-			if ($this->nativeTypesPromoted) {
-				if ($node->class instanceof Name) {
-					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-				} else {
-					$staticMethodCalledOnType = $this->getNativeType($node->class);
-				}
-				$methodReflection = $this->getMethodReflection(
-					$staticMethodCalledOnType,
-					$node->name->name,
-				);
-				if ($methodReflection === null) {
-					$callType = new ErrorType();
-				} else {
-					$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-				}
-
-				if ($node->class instanceof Expr) {
-					return NullsafeShortCircuitingHelper::getType($this, $node->class, $callType);
-				}
-
-				return $callType;
-			}
-
-			if ($node->class instanceof Name) {
-				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($node->class, $node->name);
-			} else {
-				$staticMethodCalledOnType = TypeCombinator::removeNull($this->getType($node->class))->getObjectTypeOrClassStringObjectType();
-			}
-
-			$callType = $this->methodCallReturnType(
-				$staticMethodCalledOnType,
-				$node->name->toString(),
-				$node,
-			);
-			if ($callType === null) {
-				$callType = new ErrorType();
-			}
-
-			if ($node->class instanceof Expr) {
-				return NullsafeShortCircuitingHelper::getType($this, $node->class, $callType);
-			}
-
-			return $callType;
-		}
-
-		$nameType = $this->getType($node->name);
-		if (count($nameType->getConstantStrings()) > 0) {
-			return TypeCombinator::union(
-				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-					->getType(new Expr\StaticCall($node->class, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
-			);
-		}
-
-		return null;
-	}
-
-	private function getMethodCallType(MethodCall $node): ?Type
-	{
-		if ($node->name instanceof Node\Identifier) {
-			if ($this->nativeTypesPromoted) {
-				$methodReflection = $this->getMethodReflection(
-					$this->getNativeType($node->var),
-					$node->name->name,
-				);
-				if ($methodReflection === null) {
-					$returnType = new ErrorType();
-				} else {
-					$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
-				}
-
-				return NullsafeShortCircuitingHelper::getType($this, $node->var, $returnType);
-			}
-
-			$returnType = $this->methodCallReturnType(
-				$this->getType($node->var),
-				$node->name->name,
-				$node,
-			);
-			if ($returnType === null) {
-				$returnType = new ErrorType();
-			}
-			return NullsafeShortCircuitingHelper::getType($this, $node->var, $returnType);
-		}
-
-		$nameType = $this->getType($node->name);
-		if (count($nameType->getConstantStrings()) > 0) {
-			return TypeCombinator::union(
-				...array_map(fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $this
-					->filterByTruthyValue(new BinaryOp\Identical($node->name, new String_($constantString->getValue())))
-					->getType(new MethodCall($node->var, new Identifier($constantString->getValue()), $node->args)), $nameType->getConstantStrings()),
-			);
-		}
-
-		return null;
 	}
 
 }

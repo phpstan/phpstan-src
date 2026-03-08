@@ -519,8 +519,9 @@ final class ParametersAcceptorSelector
 				$constantArrays = $type->getConstantArrays();
 				if (count($constantArrays) > 0) {
 					foreach ($constantArrays as $constantArray) {
+						$values = $constantArray->getValueTypes();
 						foreach ($constantArray->getKeyTypes() as $j => $keyType) {
-							$valueType = $constantArray->getValueTypes()[$j];
+							$valueType = $values[$j];
 							$valueIndex = $keyType->getValue();
 							if (is_string($valueIndex)) {
 								$hasName = true;

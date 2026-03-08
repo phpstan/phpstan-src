@@ -390,6 +390,11 @@ function abs($num) {}
 function get_defined_constants(bool $categorize = false): array {}
 
 /**
+ * @return ($associative is false ? list<string>|false : array<int|string, string|list<string>>|false)
+ */
+function get_headers(string $url, bool $associative = false, ?resource $context = null): array|false {}
+
+/**
  * @param array<string> $long_options
  * @param mixed $rest_index
  * @param-out positive-int $rest_index

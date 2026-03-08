@@ -2,25 +2,71 @@
 
 namespace PHPStan\Analyser\ExprHandler;
 
+use ArrayAccess;
+use Closure;
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignRef;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\List_;
+use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
+use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
+use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\ExistingArrayDimFetch;
+use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Node\VariableAssignNode;
+use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
+use TypeError;
+use function array_key_last;
 use function array_merge;
+use function array_pop;
+use function array_reverse;
+use function array_slice;
 use function count;
+use function in_array;
 use function is_string;
 
 /**
@@ -29,6 +75,13 @@ use function is_string;
 #[AutowiredService]
 final class AssignHandler implements ExprHandler
 {
+
+	public function __construct(
+		private TypeSpecifier $typeSpecifier,
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -45,7 +98,8 @@ final class AssignHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processAssignVar(
+		$result = $this->processAssignVar(
+			$nodeScopeResolver,
 			$scope,
 			$storage,
 			$stmt,
@@ -116,6 +170,866 @@ final class AssignHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param Closure(MutatingScope $scope): ExpressionResult $processExprCallback
+	 */
+	public function processAssignVar(
+		NodeScopeResolver $nodeScopeResolver,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		Node\Stmt $stmt,
+		Expr $var,
+		Expr $assignedExpr,
+		callable $nodeCallback,
+		ExpressionContext $context,
+		Closure $processExprCallback,
+		bool $enterExpressionAssign,
+	): ExpressionResult
+	{
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope, $storage);
+		$hasYield = false;
+		$throwPoints = [];
+		$impurePoints = [];
+		$isAlwaysTerminating = false;
+		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
+		if ($var instanceof Variable) {
+			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
+			$result = $processExprCallback($scope);
+			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
+			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$scopeBeforeAssignEval = $scope;
+			$scope = $result->getScope();
+			if (is_string($var->name)) {
+				if (in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
+					$impurePoints[] = new ImpurePoint($scopeBeforeAssignEval, $var, 'superglobal', 'assign to superglobal variable', true);
+				}
+				$assignedExpr = $this->unwrapAssign($assignedExpr);
+				$type = $scopeBeforeAssignEval->getType($assignedExpr);
+
+				$conditionalExpressions = [];
+				if ($assignedExpr instanceof Ternary) {
+					$if = $assignedExpr->if;
+					if ($if === null) {
+						$if = $assignedExpr->cond;
+					}
+					$condScope = $nodeScopeResolver->processExprNode($stmt, $assignedExpr->cond, $scope, $storage->duplicate(), new NoopNodeCallback(), ExpressionContext::createDeep())->getScope();
+					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createTruthy());
+					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($condScope, $assignedExpr->cond, TypeSpecifierContext::createFalsey());
+					$truthyScope = $condScope->filterBySpecifiedTypes($truthySpecifiedTypes);
+					$falsyScope = $condScope->filterBySpecifiedTypes($falseySpecifiedTypes);
+					$truthyType = $truthyScope->getType($if);
+					$falseyType = $falsyScope->getType($assignedExpr->else);
+
+					if (
+						$truthyType->isSuperTypeOf($falseyType)->no()
+						&& $falseyType->isSuperTypeOf($truthyType)->no()
+					) {
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($condScope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					}
+				}
+
+				$truthyType = TypeCombinator::removeFalsey($type);
+				if ($truthyType !== $type) {
+					$truthySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);
+
+					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
+					$falseySpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
+				}
+
+				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
+					$falseyType = ConstantTypeHelper::getTypeFromValue($falseyScalar);
+					$withoutFalseyType = TypeCombinator::remove($type, $falseyType);
+					if (
+						$withoutFalseyType->equals($type)
+						|| $withoutFalseyType->equals($truthyType)
+					) {
+						continue;
+					}
+
+					if ($falseyScalar === null) {
+						$astNode = new ConstFetch(new Name('null'));
+					} elseif ($falseyScalar === false) {
+						$astNode = new ConstFetch(new Name('false'));
+					} elseif ($falseyScalar === 0) {
+						$astNode = new Node\Scalar\Int_($falseyScalar);
+					} elseif ($falseyScalar === 0.0) {
+						$astNode = new Node\Scalar\Float_($falseyScalar);
+					} elseif (in_array($falseyScalar, ['', '0'], true)) {
+						$astNode = new Node\Scalar\String_($falseyScalar);
+					} elseif ($falseyScalar === []) {
+						$astNode = new Node\Expr\Array_($falseyScalar);
+					}
+
+					$notIdenticalConditionExpr = new Expr\BinaryOp\NotIdentical($assignedExpr, $astNode);
+					$notIdenticalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $notIdenticalConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $notIdenticalSpecifiedTypes, $withoutFalseyType);
+
+					$identicalConditionExpr = new Expr\BinaryOp\Identical($assignedExpr, $astNode);
+					$identicalSpecifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $identicalConditionExpr, TypeSpecifierContext::createTrue());
+					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
+				}
+
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
+				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
+				foreach ($conditionalExpressions as $exprString => $holders) {
+					$scope = $scope->addConditionalExpressions($exprString, $holders);
+				}
+			} else {
+				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $hasYield || $nameExprResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $nameExprResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $nameExprResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $nameExprResult->isAlwaysTerminating();
+				$scope = $nameExprResult->getScope();
+			}
+		} elseif ($var instanceof ArrayDimFetch) {
+			$dimFetchStack = [];
+			$originalVar = $var;
+			$assignedPropertyExpr = $assignedExpr;
+			while ($var instanceof ArrayDimFetch) {
+				$varForSetOffsetValue = $var->var;
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				}
+
+				if (
+					$var === $originalVar
+					&& $var->dim !== null
+					&& $scope->hasExpressionType($var)->yes()
+				) {
+					$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				} else {
+					$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+						$varForSetOffsetValue,
+						$var->dim,
+						$assignedPropertyExpr,
+					);
+				}
+				$dimFetchStack[] = $var;
+				$var = $var->var;
+			}
+
+			// 1. eval root expr
+			if ($enterExpressionAssign) {
+				$scope = $scope->enterExpressionAssign($var);
+			}
+			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
+			$impurePoints = $result->getImpurePoints();
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+			if ($enterExpressionAssign) {
+				$scope = $scope->exitExpressionAssign($var);
+			}
+
+			// 2. eval dimensions
+			$offsetTypes = [];
+			$offsetNativeTypes = [];
+			$dimFetchStack = array_reverse($dimFetchStack);
+			$lastDimKey = array_key_last($dimFetchStack);
+			foreach ($dimFetchStack as $key => $dimFetch) {
+				$dimExpr = $dimFetch->dim;
+
+				// Callback was already called for last dim at the beginning of the method.
+				if ($key !== $lastDimKey) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $scope->enterExpressionAssign($dimFetch) : $scope, $storage);
+				}
+
+				if ($dimExpr === null) {
+					$offsetTypes[] = [null, $dimFetch];
+					$offsetNativeTypes[] = [null, $dimFetch];
+					$nodeScopeResolver->storeBeforeScope($storage, $dimFetch, $scope);
+
+				} else {
+					$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
+					$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
+
+					if ($enterExpressionAssign) {
+						$scope->enterExpressionAssign($dimExpr);
+					}
+					$nodeScopeResolver->storeBeforeScope($storage, $dimFetch, $scope);
+					$result = $nodeScopeResolver->processExprNode($stmt, $dimExpr, $scope, $storage, $nodeCallback, $context->enterDeep());
+					$hasYield = $hasYield || $result->hasYield();
+					$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+					$scope = $result->getScope();
+
+					if ($enterExpressionAssign) {
+						$scope = $scope->exitExpressionAssign($dimExpr);
+					}
+				}
+			}
+
+			$valueToWrite = $scope->getType($assignedExpr);
+			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
+			$scopeBeforeAssignEval = $scope;
+
+			// 3. eval assigned expr
+			$result = $processExprCallback($scope);
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+
+			$varType = $scope->getType($var);
+			$varNativeType = $scope->getNativeType($var);
+
+			// 4. compose types
+			$isImplicitArrayCreation = $this->isImplicitArrayCreation($dimFetchStack, $scope);
+			if ($isImplicitArrayCreation->yes()) {
+				$varType = new ConstantArrayType([], []);
+				$varNativeType = new ConstantArrayType([], []);
+			}
+			$offsetValueType = $varType;
+			$offsetNativeValueType = $varNativeType;
+
+			[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope);
+
+			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
+				[$nativeValueToWrite, $additionalNativeExpressions] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
+			} else {
+				$rewritten = false;
+				foreach ($offsetTypes as $i => [$offsetType]) {
+					[$offsetNativeType] = $offsetNativeTypes[$i];
+
+					if ($offsetType === null) {
+						if ($offsetNativeType !== null) {
+							throw new ShouldNotHappenException();
+						}
+
+						continue;
+					} elseif ($offsetNativeType === null) {
+						throw new ShouldNotHappenException();
+					}
+					if ($offsetType->equals($offsetNativeType)) {
+						continue;
+					}
+
+					[$nativeValueToWrite] = $this->produceArrayDimFetchAssignValueToWrite($dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope);
+					$rewritten = true;
+					break;
+				}
+
+				if (!$rewritten) {
+					$nativeValueToWrite = $valueToWrite;
+				}
+			}
+
+			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
+				if ($var instanceof Variable && is_string($var->name)) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scopeBeforeAssignEval, $storage);
+					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
+				} else {
+					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+						$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+						if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
+							$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
+						}
+					}
+					$scope = $scope->assignExpression(
+						$var,
+						$valueToWrite,
+						$nativeValueToWrite,
+					);
+				}
+			} else {
+				if ($var instanceof Variable) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scopeBeforeAssignEval, $storage);
+				} elseif ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
+						$scope = $scope->assignInitializedProperty($scope->getType($var->var), $var->name->toString());
+					}
+				}
+			}
+
+			foreach ($additionalExpressions as $k => $additionalExpression) {
+				[$expr, $type] = $additionalExpression;
+				$nativeType = $type;
+				if (isset($additionalNativeExpressions[$k])) {
+					[, $nativeType] = $additionalNativeExpressions[$k];
+				}
+
+				$scope = $scope->assignExpression($expr, $type, $nativeType);
+			}
+
+			$setVarType = $scope->getType($originalVar->var);
+			if (
+				!$setVarType instanceof ErrorType
+				&& !$setVarType->isArray()->yes()
+				&& !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($setVarType)->no()
+			) {
+				$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
+					$stmt,
+					new MethodCall($originalVar->var, 'offsetSet'),
+					$scope,
+					$storage,
+					new NoopNodeCallback(),
+					$context,
+				)->getThrowPoints());
+			}
+		} elseif ($var instanceof PropertyFetch) {
+			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
+			$objectResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, $context);
+			$hasYield = $objectResult->hasYield();
+			$throwPoints = $objectResult->getThrowPoints();
+			$impurePoints = $objectResult->getImpurePoints();
+			$isAlwaysTerminating = $objectResult->isAlwaysTerminating();
+			$scope = $objectResult->getScope();
+
+			$propertyName = null;
+			if ($var->name instanceof Node\Identifier) {
+				$propertyName = $var->name->name;
+			} else {
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $hasYield || $propertyNameResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $propertyNameResult->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $propertyNameResult->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $propertyNameResult->isAlwaysTerminating();
+				$scope = $propertyNameResult->getScope();
+			}
+
+			$scopeBeforeAssignEval = $scope;
+			$result = $processExprCallback($scope);
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+
+			if ($var->name instanceof Expr && $this->phpVersion->supportsPropertyHooks()) {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var);
+			}
+
+			$propertyHolderType = $scope->getType($var->var);
+			if ($propertyName !== null && $propertyHolderType->hasInstanceProperty($propertyName)->yes()) {
+				$propertyReflection = $propertyHolderType->getInstanceProperty($propertyName, $scope);
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				if ($propertyReflection->canChangeTypeAfterAssignment()) {
+					if ($propertyReflection->hasNativeType()) {
+						$propertyNativeType = $propertyReflection->getNativeType();
+
+						$assignedTypeIsCompatible = $propertyNativeType->isSuperTypeOf($assignedExprType)->yes();
+						if (!$assignedTypeIsCompatible) {
+							foreach (TypeUtils::flattenTypes($propertyNativeType) as $type) {
+								if ($type->isSuperTypeOf($assignedExprType)->yes()) {
+									$assignedTypeIsCompatible = true;
+									break;
+								}
+							}
+						}
+
+						if ($assignedTypeIsCompatible) {
+							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+						} else {
+							$scope = $scope->assignExpression(
+								$var,
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+							);
+						}
+					} else {
+						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+					}
+				}
+				$declaringClass = $propertyReflection->getDeclaringClass();
+				if ($declaringClass->hasNativeProperty($propertyName)) {
+					$nativeProperty = $declaringClass->getNativeProperty($propertyName);
+					$propertyNativeType = $nativeProperty->getNativeType();
+
+					$assignedTypeIsCompatible = $propertyNativeType->isSuperTypeOf($assignedExprType)->yes();
+					if (!$assignedTypeIsCompatible && !$assignedExprType instanceof MixedType) {
+						foreach (TypeUtils::flattenTypes($assignedExprType->toCoercedArgumentType(true)) as $type) {
+							$accepts = $propertyNativeType->accepts($type, true);
+							if ($accepts->yes()) {
+								$assignedTypeIsCompatible = true;
+								continue;
+							}
+							$assignedTypeIsCompatible = false;
+							break;
+						}
+					}
+
+					if (
+						!$assignedTypeIsCompatible
+					) {
+						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
+					}
+					if ($this->phpVersion->supportsPropertyHooks()) {
+						$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
+					}
+					if ($enterExpressionAssign) {
+						$scope = $scope->assignInitializedProperty($propertyHolderType, $propertyName);
+					}
+				}
+			} else {
+				// fallback
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+				// simulate dynamic property assign by __set to get throw points
+				if (!$propertyHolderType->hasMethod('__set')->no()) {
+					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
+						$stmt,
+						new MethodCall($var->var, '__set'),
+						$scope,
+						$storage,
+						new NoopNodeCallback(),
+						$context,
+					)->getThrowPoints());
+				}
+			}
+
+		} elseif ($var instanceof Expr\StaticPropertyFetch) {
+			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
+			if ($var->class instanceof Node\Name) {
+				$propertyHolderType = $scope->resolveTypeByName($var->class);
+			} else {
+				$nodeScopeResolver->processExprNode($stmt, $var->class, $scope, $storage, $nodeCallback, $context);
+				$propertyHolderType = $scope->getType($var->class);
+			}
+
+			$propertyName = null;
+			if ($var->name instanceof Node\Identifier) {
+				$propertyName = $var->name->name;
+			} else {
+				$propertyNameResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
+				$hasYield = $propertyNameResult->hasYield();
+				$throwPoints = $propertyNameResult->getThrowPoints();
+				$impurePoints = $propertyNameResult->getImpurePoints();
+				$isAlwaysTerminating = $propertyNameResult->isAlwaysTerminating();
+				$scope = $propertyNameResult->getScope();
+			}
+
+			$scopeBeforeAssignEval = $scope;
+			$result = $processExprCallback($scope);
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+
+			if ($propertyName !== null) {
+				$propertyReflection = $scope->getStaticPropertyReflection($propertyHolderType, $propertyName);
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
+					if ($propertyReflection->hasNativeType()) {
+						$propertyNativeType = $propertyReflection->getNativeType();
+						$assignedTypeIsCompatible = $propertyNativeType->isSuperTypeOf($assignedExprType)->yes();
+
+						if (!$assignedTypeIsCompatible) {
+							foreach (TypeUtils::flattenTypes($propertyNativeType) as $type) {
+								if ($type->isSuperTypeOf($assignedExprType)->yes()) {
+									$assignedTypeIsCompatible = true;
+									break;
+								}
+							}
+						}
+
+						if ($assignedTypeIsCompatible) {
+							$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+						} else {
+							$scope = $scope->assignExpression(
+								$var,
+								TypeCombinator::intersect($assignedExprType->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+								TypeCombinator::intersect($scope->getNativeType($assignedExpr)->toCoercedArgumentType($scope->isDeclareStrictTypes()), $propertyNativeType),
+							);
+						}
+					} else {
+						$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+					}
+				}
+			} else {
+				// fallback
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
+			}
+		} elseif ($var instanceof List_) {
+			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
+			$result = $processExprCallback($scope);
+			$hasYield = $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+			foreach ($var->items as $i => $arrayItem) {
+				if ($arrayItem === null) {
+					continue;
+				}
+
+				$itemScope = $scope;
+				if ($enterExpressionAssign) {
+					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
+				}
+				$itemScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemScope, $storage);
+				if ($arrayItem->key !== null) {
+					$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $itemScope, $storage, $nodeCallback, $context->enterDeep());
+					$hasYield = $hasYield || $keyResult->hasYield();
+					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
+					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
+					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
+					// no need for $keyResult->getScope()
+				}
+
+				if ($arrayItem->key === null) {
+					$dimExpr = new Node\Scalar\Int_($i);
+				} else {
+					$dimExpr = $arrayItem->key;
+				}
+				$result = $this->processAssignVar(
+					$nodeScopeResolver,
+					$scope,
+					$storage,
+					$stmt,
+					$arrayItem->value,
+					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
+					$nodeCallback,
+					$context,
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+					$enterExpressionAssign,
+				);
+				$scope = $result->getScope();
+				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			}
+		} elseif ($var instanceof ExistingArrayDimFetch) {
+			$dimFetchStack = [];
+			$assignedPropertyExpr = $assignedExpr;
+			while ($var instanceof ExistingArrayDimFetch) {
+				$varForSetOffsetValue = $var->getVar();
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				}
+				$assignedPropertyExpr = new SetExistingOffsetValueTypeExpr(
+					$varForSetOffsetValue,
+					$var->getDim(),
+					$assignedPropertyExpr,
+				);
+				$dimFetchStack[] = $var;
+				$var = $var->getVar();
+			}
+
+			$offsetTypes = [];
+			$offsetNativeTypes = [];
+			foreach (array_reverse($dimFetchStack) as $dimFetch) {
+				$dimExpr = $dimFetch->getDim();
+				$offsetTypes[] = [$scope->getType($dimExpr), $dimFetch];
+				$offsetNativeTypes[] = [$scope->getNativeType($dimExpr), $dimFetch];
+			}
+
+			$valueToWrite = $scope->getType($assignedExpr);
+			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
+			$varType = $scope->getType($var);
+			$varNativeType = $scope->getNativeType($var);
+
+			$offsetValueType = $varType;
+			$offsetNativeValueType = $varNativeType;
+			$offsetValueTypeStack = [$offsetValueType];
+			$offsetValueNativeTypeStack = [$offsetNativeValueType];
+			foreach (array_slice($offsetTypes, 0, -1) as [$offsetType]) {
+				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+				$offsetValueTypeStack[] = $offsetValueType;
+			}
+			foreach (array_slice($offsetNativeTypes, 0, -1) as [$offsetNativeType]) {
+				$offsetNativeValueType = $offsetNativeValueType->getOffsetValueType($offsetNativeType);
+				$offsetValueNativeTypeStack[] = $offsetNativeValueType;
+			}
+
+			foreach (array_reverse($offsetTypes) as [$offsetType]) {
+				/** @var Type $offsetValueType */
+				$offsetValueType = array_pop($offsetValueTypeStack);
+				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+			}
+			foreach (array_reverse($offsetNativeTypes) as [$offsetNativeType]) {
+				/** @var Type $offsetNativeValueType */
+				$offsetNativeValueType = array_pop($offsetValueNativeTypeStack);
+				$nativeValueToWrite = $offsetNativeValueType->setExistingOffsetValueType($offsetNativeType, $nativeValueToWrite);
+			}
+
+			if ($var instanceof Variable && is_string($var->name)) {
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scope, $storage);
+				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
+			} else {
+				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope, $storage);
+				}
+				$scope = $scope->assignExpression(
+					$var,
+					$valueToWrite,
+					$nativeValueToWrite,
+				);
+			}
+		} else {
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context);
+			$hasYield = $varResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
+			$isAlwaysTerminating = $varResult->isAlwaysTerminating();
+			$scope = $varResult->getScope();
+			$result = $processExprCallback($scope);
+			$hasYield = $hasYield || $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$scope = $result->getScope();
+		}
+
+		// stored where processAssignVar is called
+		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	private function unwrapAssign(Expr $expr): Expr
+	{
+		if ($expr instanceof Assign) {
+			return $this->unwrapAssign($expr->expr);
+		}
+
+		return $expr;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	{
+		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $exprType]) {
+			if ($expr instanceof Variable) {
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if ($expr->name === $variableName) {
+					continue;
+				}
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+			) {
+				continue;
+			}
+
+			if (!isset($conditionalExpressions[$exprString])) {
+				$conditionalExpressions[$exprString] = [];
+			}
+
+			$holder = new ConditionalExpressionHolder([
+				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
+			], ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::intersect($scope->getType($expr), $exprType),
+			));
+			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processSureNotTypesForConditionalExpressionsAfterAssign(Scope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType): array
+	{
+		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $exprType]) {
+			if ($expr instanceof Variable) {
+				if (!is_string($expr->name)) {
+					continue;
+				}
+
+				if ($expr->name === $variableName) {
+					continue;
+				}
+			} elseif (
+				!$expr instanceof PropertyFetch
+				&& !$expr instanceof ArrayDimFetch
+			) {
+				continue;
+			}
+
+			if (!isset($conditionalExpressions[$exprString])) {
+				$conditionalExpressions[$exprString] = [];
+			}
+
+			$holder = new ConditionalExpressionHolder([
+				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
+			], ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::remove($scope->getType($expr), $exprType),
+			));
+			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * @param list<ArrayDimFetch> $dimFetchStack
+	 */
+	private function isImplicitArrayCreation(array $dimFetchStack, Scope $scope): TrinaryLogic
+	{
+		if (count($dimFetchStack) === 0) {
+			return TrinaryLogic::createNo();
+		}
+
+		$varNode = $dimFetchStack[0]->var;
+		if (!$varNode instanceof Variable) {
+			return TrinaryLogic::createNo();
+		}
+
+		if (!is_string($varNode->name)) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $scope->hasVariableType($varNode->name)->negate();
+	}
+
+	/**
+	 * @param list<ArrayDimFetch> $dimFetchStack
+	 * @param list<array{Type|null, ArrayDimFetch}> $offsetTypes
+	 *
+	 * @return array{Type, list<array{Expr, Type}>}
+	 */
+	private function produceArrayDimFetchAssignValueToWrite(array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, Scope $scope): array
+	{
+		$originalValueToWrite = $valueToWrite;
+
+		$offsetValueTypeStack = [$offsetValueType];
+		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
+			if ($offsetType === null) {
+				$offsetValueType = new ConstantArrayType([], []);
+
+			} else {
+				$has = $offsetValueType->hasOffsetValueType($offsetType);
+				if ($has->yes()) {
+					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+				} elseif ($has->maybe()) {
+					if (!$scope->hasExpressionType($dimFetch)->yes()) {
+						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
+					} else {
+						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					}
+				} else {
+					$offsetValueType = new ConstantArrayType([], []);
+				}
+			}
+
+			$offsetValueTypeStack[] = $offsetValueType;
+		}
+
+		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
+			/** @var Type $offsetValueType */
+			$offsetValueType = array_pop($offsetValueTypeStack);
+			if (
+				!$offsetValueType instanceof MixedType
+				&& !$offsetValueType->isArray()->yes()
+			) {
+				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::intOffsetAccessibleType());
+				} else {
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::generalOffsetAccessibleType());
+				}
+			}
+
+			$arrayDimFetch = $dimFetchStack[$i] ?? null;
+			if (
+				$offsetType !== null
+				&& $arrayDimFetch !== null
+				&& $scope->hasExpressionType($arrayDimFetch)->yes()
+			) {
+				$hasOffsetType = null;
+				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
+					$hasOffsetType = new HasOffsetValueType($offsetType, $valueToWrite);
+				}
+				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+
+				if ($valueToWrite->isArray()->yes()) {
+					if ($hasOffsetType !== null) {
+						$valueToWrite = TypeCombinator::intersect(
+							$valueToWrite,
+							$hasOffsetType,
+						);
+					} else {
+						$valueToWrite = TypeCombinator::intersect(
+							$valueToWrite,
+							new NonEmptyArrayType(),
+						);
+					}
+				}
+
+			} else {
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			}
+
+			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {
+				continue;
+			}
+
+			if (!$arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
+				continue;
+			}
+
+			if ( // keep list for $list[$index + 1] assignments
+				$arrayDimFetch->dim->right instanceof Variable
+				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->left->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
+			) {
+				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+			} elseif ( // keep list for $list[1 + $index] assignments
+				$arrayDimFetch->dim->left instanceof Variable
+				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->right->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
+			) {
+				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
+			}
+		}
+
+		$additionalExpressions = [];
+		$offsetValueType = $valueToWrite;
+		$lastDimKey = array_key_last($dimFetchStack);
+		foreach ($dimFetchStack as $key => $dimFetch) {
+			if ($dimFetch->dim === null) {
+				continue;
+			}
+
+			if ($key === $lastDimKey) {
+				$offsetValueType = $originalValueToWrite;
+			} else {
+				$offsetType = $scope->getType($dimFetch->dim);
+				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+			}
+
+			$additionalExpressions[] = [$dimFetch, $offsetValueType];
+		}
+
+		return [$valueToWrite, $additionalExpressions];
 	}
 
 }

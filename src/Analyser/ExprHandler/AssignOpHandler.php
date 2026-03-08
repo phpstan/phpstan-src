@@ -33,6 +33,7 @@ final class AssignOpHandler implements ExprHandler
 {
 
 	public function __construct(
+		private AssignHandler $assignHandler,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
@@ -45,7 +46,8 @@ final class AssignOpHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processAssignVar(
+		$result = $this->assignHandler->processAssignVar(
+			$nodeScopeResolver,
 			$scope,
 			$storage,
 			$stmt,

@@ -220,7 +220,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		private bool $declareStrictTypes = false,
 		private PhpFunctionFromParserNodeReflection|null $function = null,
 		?string $namespace = null,
-		protected array $expressionTypes = [],
+		public array $expressionTypes = [],
 		protected array $nativeExpressionTypes = [],
 		protected array $conditionalExpressions = [],
 		protected array $inClosureBindScopeClasses = [],
@@ -1005,7 +1005,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->getNativeType($expr);
 	}
 
-	private function getNodeKey(Expr $node): string
+	public function getNodeKey(Expr $node): string
 	{
 		// perf optimize for the most common path
 		if ($node instanceof Variable && !$node->name instanceof Expr) {
@@ -1094,44 +1094,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this->getClosureType($node);
 		} elseif ($node instanceof Unset_) {
 			return new NullType();
-		}
-
-		if ($node instanceof ConstFetch) {
-			$constName = (string) $node->name;
-			$loweredConstName = strtolower($constName);
-			if ($loweredConstName === 'true') {
-				return new ConstantBooleanType(true);
-			} elseif ($loweredConstName === 'false') {
-				return new ConstantBooleanType(false);
-			} elseif ($loweredConstName === 'null') {
-				return new NullType();
-			}
-
-			$namespacedName = null;
-			if (!$node->name->isFullyQualified() && $this->getNamespace() !== null) {
-				$namespacedName = new FullyQualified([$this->getNamespace(), $node->name->toString()]);
-			}
-			$globalName = new FullyQualified($node->name->toString());
-
-			foreach ([$namespacedName, $globalName] as $name) {
-				if ($name === null) {
-					continue;
-				}
-				$constFetch = new ConstFetch($name);
-				if ($this->hasExpressionType($constFetch)->yes()) {
-					return $this->constantResolver->resolveConstantType(
-						$name->toString(),
-						$this->expressionTypes[$this->getNodeKey($constFetch)]->getType(),
-					);
-				}
-			}
-
-			$constantType = $this->constantResolver->resolveConstant($node->name, $this);
-			if ($constantType !== null) {
-				return $constantType;
-			}
-
-			return new ErrorType();
 		}
 
 		if ($node instanceof MethodCall) {

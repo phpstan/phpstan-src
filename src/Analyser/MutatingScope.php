@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use ArrayAccess;
 use Closure;
 use Generator;
 use PhpParser\Node;
@@ -5688,7 +5687,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$nativeType = $propertyReflection->getNativeType();
 
 				if ($node->class instanceof Expr) {
-					return NullsafeShortCircuitingHelper::getType($this,$node->class, $nativeType);
+					return NullsafeShortCircuitingHelper::getType($this, $node->class, $nativeType);
 				}
 
 				return $nativeType;
@@ -5710,7 +5709,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			if ($node->class instanceof Expr) {
-				return NullsafeShortCircuitingHelper::getType($this,$node->class, $fetchType);
+				return NullsafeShortCircuitingHelper::getType($this, $node->class, $fetchType);
 			}
 
 			return $fetchType;
@@ -5743,7 +5742,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				$nativeType = $propertyReflection->getNativeType();
 
-				return NullsafeShortCircuitingHelper::getType($this,$node->var, $nativeType);
+				return NullsafeShortCircuitingHelper::getType($this, $node->var, $nativeType);
 			}
 
 			$returnType = $this->propertyFetchType(
@@ -5755,7 +5754,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$returnType = new ErrorType();
 			}
 
-			return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
+			return NullsafeShortCircuitingHelper::getType($this, $node->var, $returnType);
 		}
 
 		$nameType = $this->getType($node->name);
@@ -5792,7 +5791,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 
 				if ($node->class instanceof Expr) {
-					return NullsafeShortCircuitingHelper::getType($this,$node->class, $callType);
+					return NullsafeShortCircuitingHelper::getType($this, $node->class, $callType);
 				}
 
 				return $callType;
@@ -5814,7 +5813,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			if ($node->class instanceof Expr) {
-				return NullsafeShortCircuitingHelper::getType($this,$node->class, $callType);
+				return NullsafeShortCircuitingHelper::getType($this, $node->class, $callType);
 			}
 
 			return $callType;
@@ -5846,7 +5845,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
 				}
 
-				return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
+				return NullsafeShortCircuitingHelper::getType($this, $node->var, $returnType);
 			}
 
 			$returnType = $this->methodCallReturnType(
@@ -5857,7 +5856,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($returnType === null) {
 				$returnType = new ErrorType();
 			}
-			return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
+			return NullsafeShortCircuitingHelper::getType($this, $node->var, $returnType);
 		}
 
 		$nameType = $this->getType($node->name);

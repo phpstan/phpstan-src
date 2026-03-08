@@ -51,7 +51,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 		if (
 			!$offsetAccessibleType->isArray()->yes()
-			&& (new ObjectType(\ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
+			&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
 		) {
 			return NullsafeShortCircuitingHelper::getType(
 				$scope,

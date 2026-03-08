@@ -141,6 +141,11 @@ final class ImpossibleCheckTypeHelper
 
 							return null;
 						}
+
+						if (!$isNeedleSupertype->no()) {
+							// Array might be empty, so in_array can return false
+							return null;
+						}
 					}
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {

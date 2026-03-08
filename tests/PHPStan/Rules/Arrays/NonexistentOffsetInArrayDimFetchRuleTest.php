@@ -64,10 +64,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				111,
 			],
 			[
-				'Offset \'0\' does not exist on array<string, string>.',
-				112,
-			],
-			[
 				'Offset int does not exist on array<string, string>.',
 				114,
 			],

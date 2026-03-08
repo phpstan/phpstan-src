@@ -8,7 +8,7 @@ use SomeNamespace\Consecteur;
 trait RecursiveFooTrait
 {
 
-	use FooTrait;
+	use FooTraitForRecursive;
 
 }
 

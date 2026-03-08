@@ -13,7 +13,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use SomeNodeScopeResolverNamespace\Foo;
 use function sprintf;
-use function str_replace;
 
 class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 {
@@ -50,476 +49,128 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		});
 	}
 
-	public static function dataTypeFromFunctionPhpDocs(): array
+	public static function dataTypeFromMethodPhpDocsNoReplace(): array
 	{
 		return [
-			[
-				'mixed',
-				'$mixedParameter',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar|MethodPhpDocsNamespace\Foo',
-				'$unionTypeParameter',
-			],
-			[
-				'int',
-				'$anotherMixedParameter',
-			],
-			[
-				'mixed',
-				'$yetAnotherMixedParameter',
-			],
-			[
-				'int',
-				'$integerParameter',
-			],
-			[
-				'int',
-				'$anotherIntegerParameter',
-			],
-			[
-				'array',
-				'$arrayParameterOne',
-			],
-			[
-				'array<mixed>',
-				'$arrayParameterOther',
-			],
-			[
-				'MethodPhpDocsNamespace\\Lorem',
-				'$objectRelative',
-			],
-			[
-				'SomeOtherNamespace\\Ipsum',
-				'$objectFullyQualified',
-			],
-			[
-				'SomeNamespace\\Amet',
-				'$objectUsed',
-			],
-			[
-				'*ERROR*',
-				'$nonexistentParameter',
-			],
-			[
-				'int|null',
-				'$nullableInteger',
-			],
-			[
-				'SomeNamespace\Amet|null',
-				'$nullableObject',
-			],
-			[
-				'SomeNamespace\Amet|null',
-				'$anotherNullableObject',
-			],
-			[
-				'null',
-				'$nullType',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'$barObject->doBar()',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'$conflictedObject',
-			],
-			[
-				'MethodPhpDocsNamespace\Baz',
-				'$moreSpecifiedObject',
-			],
-			[
-				'MethodPhpDocsNamespace\Baz',
-				'$moreSpecifiedObject->doFluent()',
-			],
-			[
-				'MethodPhpDocsNamespace\Baz|null',
-				'$moreSpecifiedObject->doFluentNullable()',
-			],
-			[
-				'MethodPhpDocsNamespace\Baz',
-				'$moreSpecifiedObject->doFluentArray()[0]',
-			],
-			[
-				'iterable<MethodPhpDocsNamespace\Baz>&MethodPhpDocsNamespace\Collection',
-				'$moreSpecifiedObject->doFluentUnionIterable()',
-			],
-			[
-				'MethodPhpDocsNamespace\Baz',
-				'$fluentUnionIterableBaz',
-			],
-			[
-				'resource',
-				'$resource',
-			],
-			[
-				'mixed',
-				'$yetAnotherAnotherMixedParameter',
-			],
-			[
-				'mixed',
-				'$yetAnotherAnotherAnotherMixedParameter',
-			],
-			[
-				'void',
-				'$voidParameter',
-			],
-			[
-				'SomeNamespace\Consecteur',
-				'$useWithoutAlias',
-			],
-			[
-				'true',
-				'$true',
-			],
-			[
-				'false',
-				'$false',
-			],
-			[
-				'true',
-				'$boolTrue',
-			],
-			[
-				'false',
-				'$boolFalse',
-			],
-			[
-				'bool',
-				'$trueBoolean',
-			],
-			[
-				'bool',
-				'$parameterWithDefaultValueFalse',
-			],
-		];
-	}
-
-	public static function dataTypeFromMethodPhpDocs(): array
-	{
-		return [
-			[
-				'MethodPhpDocsNamespace\\Foo',
-				'$selfType',
-			],
-			[
-				'static(MethodPhpDocsNamespace\Foo)',
-				'$staticType',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->doFoo()',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'static::doSomethingStatic()',
-			],
-			[
-				'static(MethodPhpDocsNamespace\Foo)',
-				'parent::doLorem()',
-			],
 			[
 				'MethodPhpDocsNamespace\FooParent',
 				'$parent->doLorem()',
-				false,
-			],
-			[
-				'static(MethodPhpDocsNamespace\Foo)',
-				'$this->doLorem()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$differentInstance->doLorem()',
-			],
-			[
-				'static(MethodPhpDocsNamespace\Foo)',
-				'parent::doIpsum()',
 			],
 			[
 				'MethodPhpDocsNamespace\FooParent',
 				'$parent->doIpsum()',
-				false,
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$differentInstance->doIpsum()',
-			],
-			[
-				'static(MethodPhpDocsNamespace\Foo)',
-				'$this->doIpsum()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->doBar()[0]',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'self::doSomethingStatic()',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'\MethodPhpDocsNamespace\Foo::doSomethingStatic()',
-			],
-			[
-				'$this(MethodPhpDocsNamespace\Foo)',
-				'parent::doThis()',
-			],
-			[
-				'$this(MethodPhpDocsNamespace\Foo)|null',
-				'parent::doThisNullable()',
-			],
-			[
-				'$this(MethodPhpDocsNamespace\Foo)|MethodPhpDocsNamespace\Bar|null',
-				'parent::doThisUnion()',
 			],
 			[
 				'MethodPhpDocsNamespace\FooParent',
 				'$this->returnParent()',
-				false,
 			],
 			[
 				'MethodPhpDocsNamespace\FooParent',
 				'$this->returnPhpDocParent()',
-				false,
-			],
-			[
-				'array<null>',
-				'$this->returnNulls()',
-			],
-			[
-				'object',
-				'$objectWithoutNativeTypehint',
-			],
-			[
-				'object',
-				'$objectWithNativeTypehint',
-			],
-			[
-				'object',
-				'$this->returnObject()',
-			],
-			[
-				'MethodPhpDocsNamespace\FooParent',
-				'new parent()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$inlineSelf',
-			],
-			[
-				'MethodPhpDocsNamespace\Bar',
-				'$inlineBar',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->phpDocVoidMethod()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->phpDocVoidMethodFromInterface()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->phpDocVoidParentMethod()',
-			],
-			[
-				'MethodPhpDocsNamespace\Foo',
-				'$this->phpDocWithoutCurlyBracesVoidParentMethod()',
-			],
-			[
-				'array<string>',
-				'$this->returnsStringArray()',
-			],
-			[
-				'mixed',
-				'$this->privateMethodWithPhpDoc()',
 			],
 		];
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsPsalmPrefix(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPsalmPrefix)', $description);
-
-		if ($replaceClass && $expression !== '$this->doFoo()') {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooPsalmPrefix)', $description);
-			if ($description === 'MethodPhpDocsNamespace\Foo') {
-				$description = 'MethodPhpDocsNamespace\FooPsalmPrefix';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-psalmPrefix.php',
+			__DIR__ . '/nsrt/methodPhpDocs-psalmPrefix.php',
 			$description,
 			$expression,
 		);
 	}
 
-	/**
-	 * @param bool $replaceClass = true
-	 */
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsPhpstanPrefix(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPhpstanPrefix)', $description);
-
-		if ($replaceClass && $expression !== '$this->doFoo()') {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooPhpstanPrefix)', $description);
-			if ($description === 'MethodPhpDocsNamespace\Foo') {
-				$description = 'MethodPhpDocsNamespace\FooPhpstanPrefix';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-phpstanPrefix.php',
+			__DIR__ . '/nsrt/methodPhpDocs-phpstanPrefix.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsPhanPrefix(
 		string $description,
 		string $expression,
 		bool $replaceClass = true,
 	): void
 	{
-		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPhanPrefix)', $description);
-
-		if ($replaceClass && $expression !== '$this->doFoo()') {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooPhanPrefix)', $description);
-			if ($description === 'MethodPhpDocsNamespace\Foo') {
-				$description = 'MethodPhpDocsNamespace\FooPhanPrefix';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-phanPrefix.php',
+			__DIR__ . '/nsrt/methodPhpDocs-phanPrefix.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromTraitPhpDocs(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooWithTrait)', $description);
-
-		if ($replaceClass && $expression !== '$this->doFoo()') {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooWithTrait)', $description);
-			if ($description === 'MethodPhpDocsNamespace\Foo') {
-				$description = 'MethodPhpDocsNamespace\FooWithTrait';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-trait.php',
+			__DIR__ . '/nsrt/methodPhpDocs-trait.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsInheritDocWithoutCurlyBraces(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		if ($replaceClass) {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly)', $description);
-			$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly)', $description);
-			$description = str_replace('MethodPhpDocsNamespace\FooParent', 'MethodPhpDocsNamespace\Foo', $description);
-			if ($expression === '$inlineSelf') {
-				$description = 'MethodPhpDocsNamespace\FooInheritDocChildWithoutCurly';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/method-phpDocs-inheritdoc-without-curly-braces.php',
+			__DIR__ . '/nsrt/method-phpDocs-inheritdoc-without-curly-braces.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromRecursiveTraitPhpDocs(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $description);
-
-		if ($replaceClass && $expression !== '$this->doFoo()') {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $description);
-			if ($description === 'MethodPhpDocsNamespace\Foo') {
-				$description = 'MethodPhpDocsNamespace\FooWithRecursiveTrait';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-recursiveTrait.php',
+			__DIR__ . '/nsrt/methodPhpDocs-recursiveTrait.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsInheritDoc(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		if ($replaceClass) {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooInheritDocChild)', $description);
-			$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooInheritDocChild)', $description);
-			$description = str_replace('MethodPhpDocsNamespace\FooParent', 'MethodPhpDocsNamespace\Foo', $description);
-			if ($expression === '$inlineSelf') {
-				$description = 'MethodPhpDocsNamespace\FooInheritDocChild';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/method-phpDocs-inheritdoc.php',
+			__DIR__ . '/nsrt/method-phpDocs-inheritdoc.php',
 			$description,
 			$expression,
 		);
 	}
 
-	#[DataProvider('dataTypeFromFunctionPhpDocs')]
-	#[DataProvider('dataTypeFromMethodPhpDocs')]
+	#[DataProvider('dataTypeFromMethodPhpDocsNoReplace')]
 	public function testTypeFromMethodPhpDocsImplicitInheritance(
 		string $description,
 		string $expression,
-		bool $replaceClass = true,
 	): void
 	{
-		if ($replaceClass) {
-			$description = str_replace('$this(MethodPhpDocsNamespace\Foo)', '$this(MethodPhpDocsNamespace\FooPhpDocsImplicitInheritanceChild)', $description);
-			$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPhpDocsImplicitInheritanceChild)', $description);
-			$description = str_replace('MethodPhpDocsNamespace\FooParent', 'MethodPhpDocsNamespace\Foo', $description);
-			if ($expression === '$inlineSelf') {
-				$description = 'MethodPhpDocsNamespace\FooPhpDocsImplicitInheritanceChild';
-			}
-		}
 		$this->assertTypes(
-			__DIR__ . '/data/methodPhpDocs-implicitInheritance.php',
+			__DIR__ . '/nsrt/methodPhpDocs-implicitInheritance.php',
 			$description,
 			$expression,
 		);
@@ -752,6 +403,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			__DIR__ . '/data/methodPhpDocs-trait-defined.php',
+			__DIR__ . '/data/methodPhpDocs-recursive-trait-defined.php',
 		];
 	}
 

@@ -337,6 +337,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			__DIR__ . '/data/methodPhpDocs-trait-defined.php',
+			__DIR__ . '/data/methodPhpDocs-recursive-trait-defined.php',
 			__DIR__ . '/data/anonymous-class-name-in-trait-trait.php',
 		];
 	}

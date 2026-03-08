@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 use SomeNamespace\Amet as Dolor;
 use SomeNamespace\Consecteur;
 
-trait FooTrait
+trait FooTraitForRecursive
 {
 
 	/**
@@ -127,33 +127,33 @@ trait FooTrait
 		assertType('false', $boolFalse);
 		assertType('bool', $trueBoolean);
 		assertType('bool', $parameterWithDefaultValueFalse);
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $selfType);
-		assertType('static(MethodPhpDocsNamespace\FooWithTrait)', $staticType);
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $selfType);
+		assertType('static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $staticType);
 		assertType('MethodPhpDocsNamespace\Foo', $this->doFoo());
 		assertType('MethodPhpDocsNamespace\Bar', static::doSomethingStatic());
-		assertType('static(MethodPhpDocsNamespace\FooWithTrait)', parent::doLorem());
-		assertType('static(MethodPhpDocsNamespace\FooWithTrait)', $this->doLorem());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $differentInstance->doLorem());
-		assertType('static(MethodPhpDocsNamespace\FooWithTrait)', parent::doIpsum());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $differentInstance->doIpsum());
-		assertType('static(MethodPhpDocsNamespace\FooWithTrait)', $this->doIpsum());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->doBar()[0]);
+		assertType('static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', parent::doLorem());
+		assertType('static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $this->doLorem());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $differentInstance->doLorem());
+		assertType('static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', parent::doIpsum());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $differentInstance->doIpsum());
+		assertType('static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $this->doIpsum());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $this->doBar()[0]);
 		assertType('MethodPhpDocsNamespace\Bar', self::doSomethingStatic());
 		assertType('MethodPhpDocsNamespace\Bar', \MethodPhpDocsNamespace\Foo::doSomethingStatic());
-		assertType('$this(MethodPhpDocsNamespace\FooWithTrait)', parent::doThis());
-		assertType('$this(MethodPhpDocsNamespace\FooWithTrait)|null', parent::doThisNullable());
-		assertType('$this(MethodPhpDocsNamespace\FooWithTrait)|MethodPhpDocsNamespace\Bar|null', parent::doThisUnion());
+		assertType('$this(MethodPhpDocsNamespace\FooWithRecursiveTrait)', parent::doThis());
+		assertType('$this(MethodPhpDocsNamespace\FooWithRecursiveTrait)|null', parent::doThisNullable());
+		assertType('$this(MethodPhpDocsNamespace\FooWithRecursiveTrait)|MethodPhpDocsNamespace\Bar|null', parent::doThisUnion());
 		assertType('array<null>', $this->returnNulls());
 		assertType('object', $objectWithoutNativeTypehint);
 		assertType('object', $objectWithNativeTypehint);
 		assertType('object', $this->returnObject());
 		assertType('MethodPhpDocsNamespace\FooParent', new parent());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $inlineSelf);
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $inlineSelf);
 		assertType('MethodPhpDocsNamespace\Bar', $inlineBar);
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->phpDocVoidMethod());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->phpDocVoidMethodFromInterface());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->phpDocVoidParentMethod());
-		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->phpDocWithoutCurlyBracesVoidParentMethod());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $this->phpDocVoidMethod());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $this->phpDocVoidMethodFromInterface());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $this->phpDocVoidParentMethod());
+		assertType('MethodPhpDocsNamespace\FooWithRecursiveTrait', $this->phpDocWithoutCurlyBracesVoidParentMethod());
 		assertType('array<string>', $this->returnsStringArray());
 		assertType('mixed', $this->privateMethodWithPhpDoc());
 		die;

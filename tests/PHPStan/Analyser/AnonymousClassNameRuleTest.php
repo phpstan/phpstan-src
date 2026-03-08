@@ -16,10 +16,10 @@ class AnonymousClassNameRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/anonymous-class-name.php'], [
+		$this->analyse([__DIR__ . '/nsrt/anonymous-class-name.php'], [
 			[
 				'found',
-				6,
+				8,
 			],
 		]);
 	}

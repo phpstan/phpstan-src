@@ -65,9 +65,6 @@ final class InterpolatedStringHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param InterpolatedString $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$resultType = null;

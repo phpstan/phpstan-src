@@ -21,16 +21,35 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\ThrowPoint;
+use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
+use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\MethodReturnStatementsNode;
+use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NonexistentParentClassType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use Throwable;
+use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
@@ -46,6 +65,7 @@ final class NewHandler implements ExprHandler
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
+		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
@@ -54,7 +74,7 @@ final class NewHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof New_;
+		return $expr instanceof New_ && !$expr->isFirstClassCallable();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -249,6 +269,300 @@ final class NewHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		if ($expr->class instanceof Name) {
+			return $this->exactInstantiation($scope, $expr, $expr->class);
+		}
+		if ($expr->class instanceof Node\Stmt\Class_) {
+			$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope);
+
+			return new ObjectType($anonymousClassReflection->getName());
+		}
+
+		$exprType = $scope->getType($expr->class);
+		return $exprType->getObjectTypeOrClassStringObjectType();
+	}
+
+	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className): Type
+	{
+		$resolvedClassName = $scope->resolveName($className);
+		$isStatic = false;
+		$lowercasedClassName = $className->toLowerString();
+		if ($lowercasedClassName === 'static') {
+			$isStatic = true;
+		}
+
+		if (!$this->reflectionProvider->hasClass($resolvedClassName)) {
+			if ($lowercasedClassName === 'static') {
+				if (!$scope->isInClass()) {
+					return new ErrorType();
+				}
+
+				return new StaticType($scope->getClassReflection());
+			}
+			if ($lowercasedClassName === 'parent') {
+				return new NonexistentParentClassType();
+			}
+
+			return new ObjectType($resolvedClassName);
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($resolvedClassName);
+		$nonFinalClassReflection = $classReflection;
+		if (!$isStatic) {
+			$classReflection = $classReflection->asFinal();
+		}
+		if ($classReflection->hasConstructor()) {
+			$constructorMethod = $classReflection->getConstructor();
+		} else {
+			$constructorMethod = new DummyConstructorReflection($classReflection);
+		}
+
+		if ($constructorMethod->getName() === '') {
+			throw new ShouldNotHappenException();
+		}
+
+		$resolvedTypes = [];
+		$methodCall = new Expr\StaticCall(
+			new Name($resolvedClassName),
+			new Node\Identifier($constructorMethod->getName()),
+			$node->getArgs(),
+		);
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$methodCall->getArgs(),
+			$constructorMethod->getVariants(),
+			$constructorMethod->getNamedArgumentsVariants(),
+		);
+		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+
+		if ($normalizedMethodCall !== null) {
+			foreach ($this->dynamicReturnTypeExtensionRegistryProvider->getRegistry()->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
+					continue;
+				}
+
+				$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+					$constructorMethod,
+					$normalizedMethodCall,
+					$scope,
+				);
+				if ($resolvedType === null) {
+					continue;
+				}
+
+				$resolvedTypes[] = $resolvedType;
+			}
+		}
+
+		if (count($resolvedTypes) > 0) {
+			return TypeCombinator::union(...$resolvedTypes);
+		}
+
+		$methodResult = $scope->getType($methodCall);
+		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+			return $methodResult;
+		}
+
+		$objectType = $isStatic ? new StaticType($classReflection) : new ObjectType($resolvedClassName, classReflection: $classReflection);
+		if (!$classReflection->isGeneric()) {
+			return $objectType;
+		}
+
+		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
+		if ($assignedToProperty !== null) {
+			$constructorVariants = $constructorMethod->getVariants();
+			if (count($constructorVariants) === 1) {
+				$constructorVariant = $constructorVariants[0];
+				$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
+				$originalClassTemplateTypes = $classTemplateTypes;
+
+				$traverser = new ConstructorClassTemplateTraverser($classTemplateTypes);
+				foreach ($constructorVariant->getParameters() as $parameter) {
+					if (!$parameter->getType()->hasTemplateOrLateResolvableType()) {
+						continue;
+					}
+					TypeTraverser::map($parameter->getType(), $traverser);
+				}
+				$classTemplateTypes = $traverser->getClassTemplateTypes();
+
+				if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
+					$propertyType = TypeCombinator::removeNull($scope->getType($assignedToProperty));
+					$nonFinalObjectType = $isStatic ? new StaticType($nonFinalClassReflection) : new ObjectType($resolvedClassName, classReflection: $nonFinalClassReflection);
+					if ($nonFinalObjectType->isSuperTypeOf($propertyType)->yes()) {
+						return $propertyType;
+					}
+				}
+			}
+		}
+
+		if ($constructorMethod instanceof DummyConstructorReflection) {
+			if ($isStatic) {
+				return new GenericStaticType(
+					$classReflection,
+					$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
+					null,
+					[],
+				);
+			}
+
+			$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+			return new GenericObjectType(
+				$resolvedClassName,
+				$types,
+				classReflection: $classReflection->withTypes($types)->asFinal(),
+			);
+		}
+
+		if ($constructorMethod->getDeclaringClass()->getName() !== $classReflection->getName()) {
+			if (!$constructorMethod->getDeclaringClass()->isGeneric()) {
+				if ($isStatic) {
+					return new GenericStaticType(
+						$classReflection,
+						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
+						null,
+						[],
+					);
+				}
+
+				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+				return new GenericObjectType(
+					$resolvedClassName,
+					$types,
+					classReflection: $classReflection->withTypes($types)->asFinal(),
+				);
+			}
+			$newType = new GenericObjectType($resolvedClassName, $classReflection->typeMapToList($classReflection->getTemplateTypeMap()));
+			$ancestorType = $newType->getAncestorWithClassName($constructorMethod->getDeclaringClass()->getName());
+			if ($ancestorType === null) {
+				if ($isStatic) {
+					return new GenericStaticType(
+						$classReflection,
+						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
+						null,
+						[],
+					);
+				}
+
+				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+				return new GenericObjectType(
+					$resolvedClassName,
+					$types,
+					classReflection: $classReflection->withTypes($types)->asFinal(),
+				);
+			}
+			$ancestorClassReflections = $ancestorType->getObjectClassReflections();
+			if (count($ancestorClassReflections) !== 1) {
+				if ($isStatic) {
+					return new GenericStaticType(
+						$classReflection,
+						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
+						null,
+						[],
+					);
+				}
+
+				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+				return new GenericObjectType(
+					$resolvedClassName,
+					$types,
+					classReflection: $classReflection->withTypes($types)->asFinal(),
+				);
+			}
+
+			$newParentNode = new New_(new Name($constructorMethod->getDeclaringClass()->getName()), $node->args);
+			$newParentType = $scope->getType($newParentNode);
+			$newParentTypeClassReflections = $newParentType->getObjectClassReflections();
+			if (count($newParentTypeClassReflections) !== 1) {
+				if ($isStatic) {
+					return new GenericStaticType(
+						$classReflection,
+						$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
+						null,
+						[],
+					);
+				}
+
+				$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds());
+				return new GenericObjectType(
+					$resolvedClassName,
+					$types,
+					classReflection: $classReflection->withTypes($types)->asFinal(),
+				);
+			}
+			$newParentTypeClassReflection = $newParentTypeClassReflections[0];
+
+			$ancestorClassReflection = $ancestorClassReflections[0];
+			$ancestorMapping = [];
+			foreach ($ancestorClassReflection->getActiveTemplateTypeMap()->getTypes() as $typeName => $templateType) {
+				if (!$templateType instanceof TemplateType) {
+					continue;
+				}
+
+				$ancestorMapping[$typeName] = $templateType;
+			}
+
+			$resolvedTypeMap = [];
+			foreach ($newParentTypeClassReflection->getActiveTemplateTypeMap()->getTypes() as $typeName => $type) {
+				if (!array_key_exists($typeName, $ancestorMapping)) {
+					continue;
+				}
+
+				$ancestorType = $ancestorMapping[$typeName];
+				if (!$ancestorType->getBound()->isSuperTypeOf($type)->yes()) {
+					continue;
+				}
+
+				if (!array_key_exists($ancestorType->getName(), $resolvedTypeMap)) {
+					$resolvedTypeMap[$ancestorType->getName()] = $type;
+					continue;
+				}
+
+				$resolvedTypeMap[$ancestorType->getName()] = TypeCombinator::union($resolvedTypeMap[$ancestorType->getName()], $type);
+			}
+
+			if ($isStatic) {
+				return new GenericStaticType(
+					$classReflection,
+					$classReflection->typeMapToList(new TemplateTypeMap($resolvedTypeMap)),
+					null,
+					[],
+				);
+			}
+
+			$types = $classReflection->typeMapToList(new TemplateTypeMap($resolvedTypeMap));
+			return new GenericObjectType(
+				$resolvedClassName,
+				$types,
+				classReflection: $classReflection->withTypes($types)->asFinal(),
+			);
+		}
+
+		$resolvedTemplateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+		$types = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		$newGenericType = new GenericObjectType(
+			$resolvedClassName,
+			$types,
+			classReflection: $classReflection->withTypes($types)->asFinal(),
+		);
+		if ($isStatic) {
+			$newGenericType = new GenericStaticType(
+				$classReflection,
+				$types,
+				null,
+				[],
+			);
+		}
+
+		if (!$newGenericType->hasTemplateOrLateResolvableType()) {
+			return $newGenericType;
+		}
+
+		return TypeTraverser::map($newGenericType, new GenericTypeTemplateTraverser($resolvedTemplateTypeMap));
 	}
 
 }

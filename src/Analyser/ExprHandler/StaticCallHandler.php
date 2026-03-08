@@ -3,16 +3,21 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
+use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -26,14 +31,20 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StaticType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeWithClassName;
 use ReflectionProperty;
 use Throwable;
+use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 use function strtolower;
 
@@ -46,6 +57,7 @@ final class StaticCallHandler implements ExprHandler
 
 	public function __construct(
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
+		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 		#[AutowiredParameter]
@@ -56,7 +68,7 @@ final class StaticCallHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof StaticCall;
+		return $expr instanceof StaticCall && !$expr->isFirstClassCallable();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -285,6 +297,87 @@ final class StaticCallHandler implements ExprHandler
 		}
 
 		return null;
+	}
+
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		if ($expr->name instanceof Identifier) {
+			if ($scope->nativeTypesPromoted) {
+				if ($expr->class instanceof Name) {
+					$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($scope, $expr->class, $expr->name);
+				} else {
+					$staticMethodCalledOnType = $scope->getNativeType($expr->class);
+				}
+				$methodReflection = $scope->getMethodReflection(
+					$staticMethodCalledOnType,
+					$expr->name->name,
+				);
+				if ($methodReflection === null) {
+					$callType = new ErrorType();
+				} else {
+					$callType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+				}
+
+				if ($expr->class instanceof Expr) {
+					return NullsafeShortCircuitingHelper::getType($scope, $expr->class, $callType);
+				}
+
+				return $callType;
+			}
+
+			if ($expr->class instanceof Name) {
+				$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($scope, $expr->class, $expr->name);
+			} else {
+				$staticMethodCalledOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
+			}
+
+			$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+				$scope,
+				$staticMethodCalledOnType,
+				$expr->name->toString(),
+				$expr,
+			);
+			if ($callType === null) {
+				$callType = new ErrorType();
+			}
+
+			if ($expr->class instanceof Expr) {
+				return NullsafeShortCircuitingHelper::getType($scope, $expr->class, $callType);
+			}
+
+			return $callType;
+		}
+
+		$nameType = $scope->getType($expr->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(static fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $scope
+					->filterByTruthyValue(new Identical($expr->name, new String_($constantString->getValue())))
+					->getType(new Expr\StaticCall($expr->class, new Identifier($constantString->getValue()), $expr->args)), $nameType->getConstantStrings()),
+			);
+		}
+
+		return new MixedType();
+	}
+
+	private function resolveTypeByNameWithLateStaticBinding(MutatingScope $scope, Name $class, Identifier $name): TypeWithClassName
+	{
+		$classType = $scope->resolveTypeByName($class);
+
+		if (
+			$classType instanceof StaticType
+			&& !in_array($class->toLowerString(), ['self', 'static', 'parent'], true)
+		) {
+			$methodReflectionCandidate = $scope->getMethodReflection(
+				$classType,
+				$name->name,
+			);
+			if ($methodReflectionCandidate !== null && $methodReflectionCandidate->isStatic()) {
+				$classType = $classType->getStaticObjectType();
+			}
+		}
+
+		return $classType;
 	}
 
 }

@@ -4,7 +4,9 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
@@ -12,6 +14,11 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\Type;
+use function strtolower;
 
 /**
  * @implements ExprHandler<ConstFetch>
@@ -19,6 +26,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 #[AutowiredService]
 final class ConstFetchHandler implements ExprHandler
 {
+
+	public function __construct(
+		private ConstantResolver $constantResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -38,6 +51,45 @@ final class ConstFetchHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$constName = (string) $expr->name;
+		$loweredConstName = strtolower($constName);
+		if ($loweredConstName === 'true') {
+			return new ConstantBooleanType(true);
+		} elseif ($loweredConstName === 'false') {
+			return new ConstantBooleanType(false);
+		} elseif ($loweredConstName === 'null') {
+			return new NullType();
+		}
+
+		$namespacedName = null;
+		if (!$expr->name->isFullyQualified() && $scope->getNamespace() !== null) {
+			$namespacedName = new FullyQualified([$scope->getNamespace(), $expr->name->toString()]);
+		}
+		$globalName = new FullyQualified($expr->name->toString());
+
+		foreach ([$namespacedName, $globalName] as $name) {
+			if ($name === null) {
+				continue;
+			}
+			$constFetch = new ConstFetch($name);
+			if ($scope->hasExpressionType($constFetch)->yes()) {
+				return $this->constantResolver->resolveConstantType(
+					$name->toString(),
+					$scope->expressionTypes[$scope->getNodeKey($constFetch)]->getType(),
+				);
+			}
+		}
+
+		$constantType = $this->constantResolver->resolveConstant($expr->name, $scope);
+		if ($constantType !== null) {
+			return $constantType;
+		}
+
+		return new ErrorType();
 	}
 
 }

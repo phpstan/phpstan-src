@@ -45,9 +45,6 @@ final class ThrowHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Throw_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return new NonAcceptingNeverType();

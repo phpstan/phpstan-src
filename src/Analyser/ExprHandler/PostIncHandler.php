@@ -52,9 +52,6 @@ final class PostIncHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param PostInc $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $scope->getType($expr->var);

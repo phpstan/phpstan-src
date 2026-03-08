@@ -9,9 +9,11 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<ArrowFunction>
@@ -19,6 +21,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 #[AutowiredService]
 final class ArrowFunctionHandler implements ExprHandler
 {
+
+	public function __construct(
+		private ClosureTypeResolver $closureTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -36,6 +44,11 @@ final class ArrowFunctionHandler implements ExprHandler
 			throwPoints: [],
 			impurePoints: [],
 		);
+	}
+
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return $this->closureTypeResolver->getClosureType($scope, $expr);
 	}
 
 }

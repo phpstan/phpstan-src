@@ -31,9 +31,6 @@ final class IncludeHandler implements ExprHandler
 		return $expr instanceof Include_;
 	}
 
-	/**
-	 * @param Include_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return new MixedType();

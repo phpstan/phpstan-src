@@ -48,9 +48,6 @@ final class ScalarHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Scalar $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope));

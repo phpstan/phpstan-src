@@ -35,9 +35,6 @@ final class EmptyHandler implements ExprHandler
 		return $expr instanceof Empty_;
 	}
 
-	/**
-	 * @param Empty_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$result = $scope->issetCheck($expr->expr, static function (Type $type): ?bool {

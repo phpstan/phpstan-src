@@ -41,9 +41,6 @@ final class PreDecHandler implements ExprHandler
 		return $expr instanceof PreDec;
 	}
 
-	/**
-	 * @param PreDec $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$varType = $scope->getType($expr->var);

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Fiber\FiberScope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\GenerateFactory;
-use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
@@ -17,7 +16,6 @@ use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
 
 #[GenerateFactory(interface: InternalScopeFactoryFactory::class, resultType: LazyInternalScopeFactory::class)]
@@ -33,8 +31,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private ?InitializerExprTypeResolver $initializerExprTypeResolver = null;
 
-	private ?DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry = null;
-
 	private ?ExpressionTypeResolverExtensionRegistry $expressionTypeResolverExtensionRegistry = null;
 
 	private ?ExprPrinter $exprPrinter = null;
@@ -42,8 +38,6 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	private ?TypeSpecifier $typeSpecifier = null;
 
 	private ?PropertyReflectionFinder $propertyReflectionFinder = null;
-
-	private ?NodeScopeResolver $nodeScopeResolver = null;
 
 	private ?ConstantResolver $constantResolver = null;
 
@@ -90,13 +84,11 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 
 		$this->reflectionProvider ??= $this->container->getByType(ReflectionProvider::class);
 		$this->initializerExprTypeResolver ??= $this->container->getByType(InitializerExprTypeResolver::class);
-		$this->dynamicReturnTypeExtensionRegistry ??= $this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry();
 		$this->expressionTypeResolverExtensionRegistry ??= $this->container->getByType(ExpressionTypeResolverExtensionRegistryProvider::class)->getRegistry();
 		$this->exprPrinter ??= $this->container->getByType(ExprPrinter::class);
 		$this->typeSpecifier ??= $this->container->getByType(TypeSpecifier::class);
 		$this->propertyReflectionFinder ??= $this->container->getByType(PropertyReflectionFinder::class);
 
-		$this->nodeScopeResolver ??= $this->container->getByType(NodeScopeResolver::class);
 		$this->constantResolver ??= $this->container->getByType(ConstantResolver::class);
 
 		$this->phpVersionType ??= $this->container->getByType(PhpVersion::class);
@@ -107,13 +99,11 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this,
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
-			$this->dynamicReturnTypeExtensionRegistry,
 			$this->expressionTypeResolverExtensionRegistry,
 			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->currentSimpleVersionParser,
-			$this->nodeScopeResolver,
 			$this->constantResolver,
 			$context,
 			$this->phpVersionType,

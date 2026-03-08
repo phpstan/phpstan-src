@@ -102,9 +102,6 @@ final class AssignOpHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param AssignOp $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$getType = static fn (Expr $expr): Type => $scope->getType($expr);

@@ -36,9 +36,6 @@ final class CoalesceHandler implements ExprHandler
 		return $expr instanceof Coalesce;
 	}
 
-	/**
-	 * @param Coalesce $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$issetLeftExpr = new Expr\Isset_([$expr->left]);

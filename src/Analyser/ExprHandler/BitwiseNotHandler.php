@@ -49,9 +49,6 @@ final class BitwiseNotHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param BitwiseNot $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getBitwiseNotType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));

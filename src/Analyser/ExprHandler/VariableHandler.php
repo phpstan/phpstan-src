@@ -36,9 +36,6 @@ final class VariableHandler implements ExprHandler
 		return $expr instanceof Variable;
 	}
 
-	/**
-	 * @param Variable $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if (is_string($expr->name)) {

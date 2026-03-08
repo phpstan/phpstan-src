@@ -42,9 +42,6 @@ final class UnaryPlusHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param UnaryPlus $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $scope->getType($expr->expr)->toNumber();

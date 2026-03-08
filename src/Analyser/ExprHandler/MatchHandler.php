@@ -62,9 +62,6 @@ final class MatchHandler implements ExprHandler
 		return $expr instanceof Match_;
 	}
 
-	/**
-	 * @param Match_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$cond = $expr->cond;

@@ -33,9 +33,6 @@ final class PipeHandler implements ExprHandler
 		return $expr instanceof Pipe;
 	}
 
-	/**
-	 * @param Pipe $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {

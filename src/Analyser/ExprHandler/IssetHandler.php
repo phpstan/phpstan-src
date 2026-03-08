@@ -42,9 +42,6 @@ final class IssetHandler implements ExprHandler
 		return $expr instanceof Isset_;
 	}
 
-	/**
-	 * @param Isset_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$issetResult = true;

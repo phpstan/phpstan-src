@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
@@ -1072,9 +1071,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
 		}
 
-		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
-			return $this->getFirstClassCallableType($node);
-		} elseif ($node instanceof Unset_) {
+		if ($node instanceof Unset_) {
 			return new NullType();
 		}
 
@@ -4851,41 +4848,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return null;
-	}
-
-	private function getFirstClassCallableType(Expr\CallLike $node): Type
-	{
-		if ($node instanceof FuncCall && $node->name instanceof Expr) {
-			$callableType = $this->getType($node->name);
-			if (!$callableType->isCallable()->yes()) {
-				return new ObjectType(Closure::class);
-			}
-
-			return $this->initializerExprTypeResolver->createFirstClassCallable(
-				null,
-				$callableType->getCallableParametersAcceptors($this),
-				$this->nativeTypesPromoted,
-			);
-		}
-		if ($node instanceof MethodCall) {
-			if (!$node->name instanceof Node\Identifier) {
-				return new ObjectType(Closure::class);
-			}
-
-			$varType = $this->getType($node->var);
-			$method = $this->getMethodReflection($varType, $node->name->toString());
-			if ($method === null) {
-				return new ObjectType(Closure::class);
-			}
-
-			return $this->initializerExprTypeResolver->createFirstClassCallable(
-				$method,
-				$method->getVariants(),
-				$this->nativeTypesPromoted,
-			);
-		}
-
-		return $this->initializerExprTypeResolver->getFirstClassCallableType($node, InitializerExprContext::fromScope($this), $this->nativeTypesPromoted);
 	}
 
 }

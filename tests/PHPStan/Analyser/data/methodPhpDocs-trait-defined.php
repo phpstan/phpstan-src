@@ -156,7 +156,6 @@ trait FooTrait
 		assertType('MethodPhpDocsNamespace\FooWithTrait', $this->phpDocWithoutCurlyBracesVoidParentMethod());
 		assertType('array<string>', $this->returnsStringArray());
 		assertType('mixed', $this->privateMethodWithPhpDoc());
-		die;
 		}
 	}
 

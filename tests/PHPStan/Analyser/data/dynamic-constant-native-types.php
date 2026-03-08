@@ -2,6 +2,8 @@
 
 namespace DynamicConstantNativeTypes;
 
+use function PHPStan\Testing\assertType;
+
 final class Foo
 {
 
@@ -11,5 +13,8 @@ final class Foo
 }
 
 function (Foo $foo): void {
-	die;
+	assertType('int', Foo::FOO);
+	assertType('int|string', Foo::BAR);
+	assertType('int', $foo::FOO);
+	assertType('int|string', $foo::BAR);
 };

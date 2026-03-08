@@ -2,6 +2,8 @@
 
 namespace MethodPhpDocsNamespace;
 
+use function PHPStan\Testing\assertType;
+
 use SomeNamespace\Amet as Dolor;
 use SomeNamespace\Consecteur;
 
@@ -86,3 +88,11 @@ class FooWithTrait extends FooParent
 	}
 
 }
+
+function (FooWithTrait $foo): void {
+	$parent = new FooParent();
+	assertType('MethodPhpDocsNamespace\FooParent', $parent->doLorem());
+	assertType('MethodPhpDocsNamespace\FooParent', $parent->doIpsum());
+	assertType('MethodPhpDocsNamespace\FooParent', $foo->returnParent());
+	assertType('MethodPhpDocsNamespace\FooParent', $foo->returnPhpDocParent());
+};

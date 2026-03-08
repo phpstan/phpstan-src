@@ -119,7 +119,10 @@ class FooPhpDocsImplicitInheritanceChild extends Foo
 			assertType('MethodPhpDocsNamespace\Foo', $this->phpDocWithoutCurlyBracesVoidParentMethod());
 			assertType('array<string>', $this->returnsStringArray());
 			assertType('mixed', $this->privateMethodWithPhpDoc());
-			die;
+			assertType('MethodPhpDocsNamespace\FooParent', $parent->doLorem());
+			assertType('MethodPhpDocsNamespace\FooParent', $parent->doIpsum());
+			assertType('MethodPhpDocsNamespace\FooParent', $this->returnParent());
+			assertType('MethodPhpDocsNamespace\FooParent', $this->returnPhpDocParent());
 		}
 	}
 

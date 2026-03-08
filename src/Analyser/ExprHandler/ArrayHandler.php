@@ -36,9 +36,6 @@ final class ArrayHandler implements ExprHandler
 		return $expr instanceof Array_;
 	}
 
-	/**
-	 * @param Array_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $expr): Type => $scope->getType($expr));

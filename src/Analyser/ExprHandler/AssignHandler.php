@@ -88,9 +88,6 @@ final class AssignHandler implements ExprHandler
 		return $expr instanceof Assign || $expr instanceof AssignRef;
 	}
 
-	/**
-	 * @param Assign|AssignRef $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $scope->getType($expr->expr);

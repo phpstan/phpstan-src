@@ -52,9 +52,6 @@ final class PostDecHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param PostDec $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $scope->getType($expr->var);

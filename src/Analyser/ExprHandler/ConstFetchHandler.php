@@ -53,9 +53,6 @@ final class ConstFetchHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param ConstFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$constName = (string) $expr->name;

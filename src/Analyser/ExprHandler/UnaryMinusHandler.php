@@ -49,9 +49,6 @@ final class UnaryMinusHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param UnaryMinus $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getUnaryMinusType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));

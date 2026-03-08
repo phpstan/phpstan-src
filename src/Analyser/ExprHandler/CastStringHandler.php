@@ -67,9 +67,6 @@ final class CastStringHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Cast\String_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getCastType($expr, static fn (Expr $expr): Type => $scope->getType($expr));

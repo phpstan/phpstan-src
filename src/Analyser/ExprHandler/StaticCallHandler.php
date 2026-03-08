@@ -299,9 +299,6 @@ final class StaticCallHandler implements ExprHandler
 		return null;
 	}
 
-	/**
-	 * @param StaticCall $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof Identifier) {

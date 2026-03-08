@@ -42,9 +42,6 @@ final class PreIncHandler implements ExprHandler
 		return $expr instanceof PreInc;
 	}
 
-	/**
-	 * @param PreInc $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$varType = $scope->getType($expr->var);

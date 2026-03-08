@@ -43,9 +43,6 @@ final class BooleanAndHandler implements ExprHandler
 		return $expr instanceof BooleanAnd || $expr instanceof LogicalAnd;
 	}
 
-	/**
-	 * @param BooleanAnd|LogicalAnd $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$leftBooleanType = $scope->getType($expr->left)->toBoolean();

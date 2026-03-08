@@ -41,9 +41,6 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 		return $expr instanceof NullsafePropertyFetch;
 	}
 
-	/**
-	 * @param NullsafePropertyFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$varType = $scope->getType($expr->var);

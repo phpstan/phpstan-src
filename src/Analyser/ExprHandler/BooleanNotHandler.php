@@ -44,9 +44,6 @@ final class BooleanNotHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param BooleanNot $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$exprBooleanType = $scope->getType($expr->expr)->toBoolean();

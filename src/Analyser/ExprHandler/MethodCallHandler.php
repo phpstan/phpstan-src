@@ -287,9 +287,6 @@ final class MethodCallHandler implements ExprHandler
 		return null;
 	}
 
-	/**
-	 * @param MethodCall $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof Identifier) {

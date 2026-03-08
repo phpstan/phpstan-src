@@ -29,9 +29,6 @@ final class PrintHandler implements ExprHandler
 		return $expr instanceof Print_;
 	}
 
-	/**
-	 * @param Print_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return new ConstantIntegerType(1);

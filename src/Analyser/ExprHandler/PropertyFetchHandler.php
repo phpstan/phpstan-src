@@ -88,9 +88,6 @@ final class PropertyFetchHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param PropertyFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof Identifier) {

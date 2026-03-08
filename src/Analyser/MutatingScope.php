@@ -130,7 +130,6 @@ use function is_array;
 use function is_string;
 use function ltrim;
 use function md5;
-use function method_exists;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -1050,10 +1049,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		/** @var ExprHandler<Expr> $exprHandler */
 		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
 			if (!$exprHandler->supports($node)) {
-				continue;
-			}
-
-			if (!method_exists($exprHandler, 'resolveType')) {
 				continue;
 			}
 

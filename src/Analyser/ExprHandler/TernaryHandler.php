@@ -36,9 +36,6 @@ final class TernaryHandler implements ExprHandler
 		return $expr instanceof Ternary;
 	}
 
-	/**
-	 * @param Ternary $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$condResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->cond), $expr->cond, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());

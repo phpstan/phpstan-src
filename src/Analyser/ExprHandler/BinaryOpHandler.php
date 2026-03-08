@@ -89,9 +89,6 @@ final class BinaryOpHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param BinaryOp $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$getType = static fn (Expr $expr): Type => $scope->getType($expr);

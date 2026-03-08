@@ -32,9 +32,6 @@ final class YieldFromHandler implements ExprHandler
 		return $expr instanceof YieldFrom;
 	}
 
-	/**
-	 * @param YieldFrom $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$yieldFromType = $scope->getType($expr->expr);

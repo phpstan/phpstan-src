@@ -35,9 +35,6 @@ final class ArrayDimFetchHandler implements ExprHandler
 		return $expr instanceof ArrayDimFetch;
 	}
 
-	/**
-	 * @param ArrayDimFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->dim === null) {

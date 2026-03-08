@@ -46,9 +46,6 @@ final class ArrowFunctionHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param ArrowFunction $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->closureTypeResolver->getClosureType($scope, $expr);

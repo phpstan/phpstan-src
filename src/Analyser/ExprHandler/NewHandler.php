@@ -271,9 +271,6 @@ final class NewHandler implements ExprHandler
 		return null;
 	}
 
-	/**
-	 * @param New_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->class instanceof Name) {

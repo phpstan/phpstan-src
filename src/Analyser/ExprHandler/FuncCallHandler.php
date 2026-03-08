@@ -712,9 +712,6 @@ final class FuncCallHandler implements ExprHandler
 		});
 	}
 
-	/**
-	 * @param FuncCall $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof Expr) {

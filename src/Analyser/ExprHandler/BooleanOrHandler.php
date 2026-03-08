@@ -41,9 +41,6 @@ final class BooleanOrHandler implements ExprHandler
 		return $expr instanceof BooleanOr || $expr instanceof LogicalOr;
 	}
 
-	/**
-	 * @param BooleanOr|LogicalOr $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$leftBooleanType = $scope->getType($expr->left)->toBoolean();

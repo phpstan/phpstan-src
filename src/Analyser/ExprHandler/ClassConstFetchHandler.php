@@ -36,9 +36,6 @@ final class ClassConstFetchHandler implements ExprHandler
 		return $expr instanceof ClassConstFetch;
 	}
 
-	/**
-	 * @param ClassConstFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if (!$expr->name instanceof Identifier) {

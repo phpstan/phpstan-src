@@ -30,9 +30,6 @@ final class EvalHandler implements ExprHandler
 		return $expr instanceof Eval_;
 	}
 
-	/**
-	 * @param Eval_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return new MixedType();

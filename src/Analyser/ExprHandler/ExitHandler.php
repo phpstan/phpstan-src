@@ -58,9 +58,6 @@ final class ExitHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Exit_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return new NonAcceptingNeverType();

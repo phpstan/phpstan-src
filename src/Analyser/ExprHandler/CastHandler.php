@@ -50,9 +50,6 @@ final class CastHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Cast $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr instanceof Cast\Unset_) {

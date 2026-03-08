@@ -87,9 +87,6 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param StaticPropertyFetch $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof VarLikeIdentifier) {

@@ -46,9 +46,6 @@ final class CloneHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Clone_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$cloneType = TypeCombinator::intersect($scope->getType($expr->expr), new ObjectWithoutClassType());

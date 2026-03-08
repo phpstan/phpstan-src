@@ -51,9 +51,6 @@ final class FirstClassCallableFuncCallHandler implements ExprHandler
 		throw new ShouldNotHappenException();
 	}
 
-	/**
-	 * @param FuncCall $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		if ($expr->name instanceof Expr) {

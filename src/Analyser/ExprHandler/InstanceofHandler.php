@@ -66,9 +66,6 @@ final class InstanceofHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Instanceof_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$expressionType = $scope->getType($expr->expr);

@@ -50,9 +50,6 @@ final class FirstClassCallableNewHandler implements ExprHandler
 		throw new ShouldNotHappenException();
 	}
 
-	/**
-	 * @param New_ $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->initializerExprTypeResolver->getFirstClassCallableType($expr, InitializerExprContext::fromScope($scope), $scope->nativeTypesPromoted);

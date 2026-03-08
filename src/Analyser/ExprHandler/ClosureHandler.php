@@ -47,9 +47,6 @@ final class ClosureHandler implements ExprHandler
 		);
 	}
 
-	/**
-	 * @param Closure $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		return $this->closureTypeResolver->getClosureType($scope, $expr);

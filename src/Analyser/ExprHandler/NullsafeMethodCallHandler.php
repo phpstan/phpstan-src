@@ -41,9 +41,6 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		return $expr instanceof NullsafeMethodCall;
 	}
 
-	/**
-	 * @param NullsafeMethodCall $expr
-	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
 		$varType = $scope->getType($expr->var);

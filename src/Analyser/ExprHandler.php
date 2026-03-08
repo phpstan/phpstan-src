@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt;
+use PHPStan\Type\Type;
 
 /**
  * @template T of Expr
@@ -30,5 +31,10 @@ interface ExprHandler
 		callable $nodeCallback,
 		ExpressionContext $context,
 	): ExpressionResult;
+
+	/**
+	 * @param T $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type;
 
 }

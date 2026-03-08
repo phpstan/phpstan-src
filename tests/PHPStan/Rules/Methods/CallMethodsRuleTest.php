@@ -3908,6 +3908,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1501.php'], []);
 	}
 
+	public function testBug7369(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-7369.php'], [
+			[
+				'Cannot call method isAllowed() on bool.',
+				40,
+			],
+		]);
+	}
+
 	public function testBug11463(): void
 	{
 		$this->checkThisOnly = false;

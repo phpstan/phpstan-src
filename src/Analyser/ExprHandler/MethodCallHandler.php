@@ -174,6 +174,9 @@ final class MethodCallHandler implements ExprHandler
 			}
 
 		} else {
+			if ($expr->name instanceof Expr) {
+				$scope = $scope->invalidateAllOnExpression($normalizedExpr->var);
+			}
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
 		$hasYield = $hasYield || $result->hasYield();

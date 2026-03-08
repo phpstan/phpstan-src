@@ -66,42 +66,13 @@ final class InvalidAssignVarRule implements Rule
 			];
 		}
 
-		if ($this->containsThisVariable($node->var)) {
-			return [
-				RuleErrorBuilder::message('Cannot re-assign $this.')
-					->identifier('assign.this')
-					->nonIgnorable()
-					->build(),
-			];
-		}
-
 		return [];
-	}
-
-	private function containsThisVariable(Expr $expr): bool
-	{
-		if ($expr instanceof Expr\Variable && $expr->name === 'this') {
-			return true;
-		}
-
-		if ($expr instanceof Expr\List_) {
-			foreach ($expr->items as $item) {
-				if ($item === null) {
-					continue;
-				}
-				if ($this->containsThisVariable($item->value)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	private function containsNonAssignableExpression(Expr $expr): bool
 	{
 		if ($expr instanceof Expr\Variable) {
-			return false;
+			return $expr->name !== 'this';
 		}
 
 		if ($expr instanceof Expr\PropertyFetch) {

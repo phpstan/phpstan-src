@@ -2,6 +2,8 @@
 
 namespace CatchUnion;
 
+use function PHPStan\Testing\assertType;
+
 class FooException extends \Exception
 {
 
@@ -16,6 +18,6 @@ function () {
 	try {
 		maybeThrows();
 	} catch (FooException | BarException $e) {
-		die;
+		assertType('CatchUnion\BarException|CatchUnion\FooException', $e);
 	}
 };

@@ -80,29 +80,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		return $testScope;
 	}
 
-	public static function dataUnionInCatch(): array
-	{
-		return [
-			[
-				'CatchUnion\BarException|CatchUnion\FooException',
-				'$e',
-			],
-		];
-	}
-
-	#[DataProvider('dataUnionInCatch')]
-	public function testUnionInCatch(
-		string $description,
-		string $expression,
-	): void
-	{
-		$this->assertTypes(
-			__DIR__ . '/data/catch-union.php',
-			$description,
-			$expression,
-		);
-	}
-
 	public static function dataUnionAndIntersection(): array
 	{
 		return [

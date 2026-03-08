@@ -195,10 +195,7 @@ class UnionType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof IterableType) {
-			return $this->accepts(new UnionType([
-				$type->toArray(),
-				$type->toTraversable(),
-			]), $strictTypes);
+			return $this->accepts($type->toArrayOrTraversable(), $strictTypes);
 		}
 
 		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
@@ -1081,10 +1078,7 @@ class UnionType implements CompoundType
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if ($receivedType instanceof IterableType) {
-			$receivedType = new UnionType([
-				$receivedType->toArray(),
-				$receivedType->toTraversable(),
-			]);
+			$receivedType = $receivedType->toArrayOrTraversable();
 		}
 
 		$types = TemplateTypeMap::createEmpty();

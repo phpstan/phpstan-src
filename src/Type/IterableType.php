@@ -136,10 +136,7 @@ class IterableType implements CompoundType
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
-			return $otherType->isSuperTypeOf(new UnionType([
-				$this->toArray(),
-				$this->toTraversable(),
-			]));
+			return $otherType->isSuperTypeOf($this->toArrayOrTraversable());
 		}
 
 		if ($otherType instanceof self) {
@@ -228,6 +225,17 @@ class IterableType implements CompoundType
 		return new ArrayType($this->keyType, $this->getItemType());
 	}
 
+	public function toArrayOrTraversable(): Type
+	{
+		return new UnionType([
+			new ArrayType($this->keyType, $this->itemType),
+			new GenericObjectType(Traversable::class, [
+				$this->keyType,
+				$this->itemType,
+			]),
+		]);
+	}
+
 	public function toArrayKey(): Type
 	{
 		return new ErrorType();
@@ -247,7 +255,10 @@ class IterableType implements CompoundType
 				),
 				$this->itemType,
 			),
-			$this->toTraversable(),
+			new GenericObjectType(Traversable::class, [
+				$this->keyType,
+				$this->itemType,
+			]),
 		);
 	}
 
@@ -475,12 +486,15 @@ class IterableType implements CompoundType
 	{
 		$arrayType = new ArrayType(new MixedType(), new MixedType());
 		if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-			return $this->toTraversable();
+			return new GenericObjectType(Traversable::class, [
+				$this->getIterableKeyType(),
+				$this->getIterableValueType(),
+			]);
 		}
 
 		$traversableType = new ObjectType(Traversable::class);
 		if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
-			return $this->toArray();
+			return new ArrayType($this->getIterableKeyType(), $this->getIterableValueType());
 		}
 
 		return null;
@@ -526,14 +540,6 @@ class IterableType implements CompoundType
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
-	}
-
-	public function toTraversable(): Type
-	{
-		return new GenericObjectType(Traversable::class, [
-			$this->keyType,
-			$this->itemType,
-		]);
 	}
 
 }

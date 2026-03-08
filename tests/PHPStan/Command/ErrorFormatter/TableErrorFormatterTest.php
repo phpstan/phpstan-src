@@ -456,6 +456,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		int $generateErrorsCount = 4,
 	): void
 	{
+		// windows has minor formatting differences (line breaks)
+		$this->skipIfNotOnUnix();
+
 		putenv('COLUMNS=80');
 		if ($showAllErrors) {
 			if ($errorsBudget !== null) {

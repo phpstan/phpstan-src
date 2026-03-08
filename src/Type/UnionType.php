@@ -25,7 +25,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateIterableType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -34,7 +33,6 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use Throwable;
-use Traversable;
 use function array_diff_assoc;
 use function array_fill_keys;
 use function array_map;
@@ -198,11 +196,8 @@ class UnionType implements CompoundType
 	{
 		if ($type instanceof IterableType) {
 			return $this->accepts(new UnionType([
-				new ArrayType($type->getIterableKeyType(), $type->getIterableValueType()),
-				new GenericObjectType(Traversable::class, [
-					$type->getIterableKeyType(),
-					$type->getIterableValueType(),
-				]),
+				$type->toArray(),
+				$type->toTraversable(),
 			]), $strictTypes);
 		}
 
@@ -1087,11 +1082,8 @@ class UnionType implements CompoundType
 	{
 		if ($receivedType instanceof IterableType) {
 			$receivedType = new UnionType([
-				new ArrayType($receivedType->getIterableKeyType(), $receivedType->getIterableValueType()),
-				new GenericObjectType(Traversable::class, [
-					$receivedType->getIterableKeyType(),
-					$receivedType->getIterableValueType(),
-				]),
+				$receivedType->toArray(),
+				$receivedType->toTraversable(),
 			]);
 		}
 

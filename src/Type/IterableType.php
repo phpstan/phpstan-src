@@ -137,11 +137,8 @@ class IterableType implements CompoundType
 	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
 			return $otherType->isSuperTypeOf(new UnionType([
-				new ArrayType($this->keyType, $this->itemType),
-				new GenericObjectType(Traversable::class, [
-					$this->keyType,
-					$this->itemType,
-				]),
+				$this->toArray(),
+				$this->toTraversable(),
 			]));
 		}
 
@@ -250,10 +247,7 @@ class IterableType implements CompoundType
 				),
 				$this->itemType,
 			),
-			new GenericObjectType(Traversable::class, [
-				$this->keyType,
-				$this->itemType,
-			]),
+			$this->toTraversable(),
 		);
 	}
 
@@ -481,15 +475,12 @@ class IterableType implements CompoundType
 	{
 		$arrayType = new ArrayType(new MixedType(), new MixedType());
 		if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-			return new GenericObjectType(Traversable::class, [
-				$this->getIterableKeyType(),
-				$this->getIterableValueType(),
-			]);
+			return $this->toTraversable();
 		}
 
 		$traversableType = new ObjectType(Traversable::class);
 		if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
-			return new ArrayType($this->getIterableKeyType(), $this->getIterableValueType());
+			return $this->toArray();
 		}
 
 		return null;
@@ -535,6 +526,14 @@ class IterableType implements CompoundType
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
+	}
+
+	public function toTraversable(): Type
+	{
+		return new GenericObjectType(Traversable::class, [
+			$this->keyType,
+			$this->itemType,
+		]);
 	}
 
 }

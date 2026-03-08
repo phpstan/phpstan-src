@@ -4,17 +4,27 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use function array_map;
 use function array_merge;
+use function count;
 
 /**
  * @implements ExprHandler<PropertyFetch>
@@ -25,6 +35,7 @@ final class PropertyFetchHandler implements ExprHandler
 
 	public function __construct(
 		private PhpVersion $phpVersion,
+		private PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
 	}
@@ -75,6 +86,68 @@ final class PropertyFetchHandler implements ExprHandler
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
+	}
+
+	/**
+	 * @param PropertyFetch $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		if ($expr->name instanceof Identifier) {
+			if ($scope->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $scope);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+
+				if (!$propertyReflection->hasNativeType()) {
+					return new MixedType();
+				}
+
+				$nativeType = $propertyReflection->getNativeType();
+
+				return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $nativeType);
+			}
+
+			$returnType = $this->propertyFetchType(
+				$scope,
+				$scope->getType($expr->var),
+				$expr->name->name,
+				$expr,
+			);
+			if ($returnType === null) {
+				$returnType = new ErrorType();
+			}
+
+			return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $returnType);
+		}
+
+		$nameType = $scope->getType($expr->name);
+		if (count($nameType->getConstantStrings()) > 0) {
+			return TypeCombinator::union(
+				...array_map(static fn ($constantString) => $constantString->getValue() === '' ? new ErrorType() : $scope
+					->filterByTruthyValue(new Expr\BinaryOp\Identical($expr->name, new String_($constantString->getValue())))
+					->getType(
+						new PropertyFetch($expr->var, new Identifier($constantString->getValue())),
+					), $nameType->getConstantStrings()),
+			);
+		}
+
+		return new MixedType();
+	}
+
+	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, PropertyFetch $propertyFetch): ?Type
+	{
+		$propertyReflection = $scope->getInstancePropertyReflection($fetchedOnType, $propertyName);
+		if ($propertyReflection === null) {
+			return null;
+		}
+
+		if ($scope->isInExpressionAssign($propertyFetch)) {
+			return $propertyReflection->getWritableType();
+		}
+
+		return $propertyReflection->getReadableType();
 	}
 
 }

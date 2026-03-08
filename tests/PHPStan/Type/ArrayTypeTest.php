@@ -301,4 +301,86 @@ class ArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public static function dataSpliceArray(): array
+	{
+		return [
+			[
+				new ArrayType(new UnionType([
+					new ConstantIntegerType(10),
+					new ConstantIntegerType(20),
+					new ConstantIntegerType(30),
+					new ConstantStringType('a'),
+				]), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType([], []),
+				"array<'a'|int<0, max>, mixed>",
+			],
+			[
+				new ArrayType(new UnionType([
+					new IntegerType(),
+					new ConstantStringType('a'),
+				]), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType([], []),
+				"array<'a'|int<0, max>, mixed>",
+			],
+			[
+				new ArrayType(new IntegerType(), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType([], []),
+				'list',
+			],
+			[
+				new ArrayType(new StringType(), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType([], []),
+				'array<string, mixed>',
+			],
+			[
+				new ArrayType(new MixedType(), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType([], []),
+				'array<(int<0, max>|string), mixed>',
+			],
+			[
+				new ArrayType(new StringType(), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ConstantArrayType(
+					[new ConstantStringType('key')],
+					[new ConstantStringType('value')],
+				),
+				'non-empty-array<0|string, mixed>',
+			],
+			[
+				new ArrayType(new StringType(), new MixedType()),
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(0),
+				new ArrayType(new MixedType(), new MixedType()),
+				'array<int<0, max>|string, mixed>',
+			],
+		];
+	}
+
+	#[DataProvider('dataSpliceArray')]
+	public function testSpliceArray(
+		ArrayType $type,
+		Type $offsetType,
+		Type $lengthType,
+		Type $replacementType,
+		string $expectedType,
+	): void
+	{
+		$actualResult = $type->spliceArray($offsetType, $lengthType, $replacementType);
+		$this->assertSame(
+			$expectedType,
+			$actualResult->describe(VerbosityLevel::precise()),
+		);
+	}
+
 }

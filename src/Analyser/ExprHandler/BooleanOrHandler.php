@@ -12,9 +12,13 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanOrNode;
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -24,9 +28,48 @@ use function array_merge;
 final class BooleanOrHandler implements ExprHandler
 {
 
+	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
+
+	public function __construct(
+		private NodeScopeResolver $nodeScopeResolver,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof BooleanOr || $expr instanceof LogicalOr;
+	}
+
+	/**
+	 * @param BooleanOr|LogicalOr $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$leftBooleanType = $scope->getType($expr->left)->toBoolean();
+		if ($leftBooleanType->isTrue()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if (BooleanAndHandler::getBooleanExpressionDepth($expr->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+			$leftResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->left), $expr->left, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+			$rightBooleanType = $leftResult->getFalseyScope()->getType($expr->right)->toBoolean();
+		} else {
+			$rightBooleanType = $scope->filterByFalseyValue($expr->left)->getType($expr->right)->toBoolean();
+		}
+
+		if ($rightBooleanType->isTrue()->yes()) {
+			return new ConstantBooleanType(true);
+		}
+
+		if (
+			$leftBooleanType->isFalse()->yes()
+			&& $rightBooleanType->isFalse()->yes()
+		) {
+			return new ConstantBooleanType(false);
+		}
+
+		return new BooleanType();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

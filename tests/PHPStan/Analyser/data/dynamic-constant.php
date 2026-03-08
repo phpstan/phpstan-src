@@ -2,6 +2,8 @@
 
 namespace DynamicConstants;
 
+use function PHPStan\Testing\assertType;
+
 define('GLOBAL_PURE_CONSTANT', 123);
 define('GLOBAL_DYNAMIC_CONSTANT', false);
 define('GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES', null);
@@ -20,6 +22,12 @@ class NoDynamicConstantClass
 
 	private function rip()
 	{
-		die;
+		assertType('string', DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS);
+		assertType('string|null', DynamicConstantClass::DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES_IN_CLASS);
+		assertType("'abc123def'", DynamicConstantClass::PURE_CONSTANT_IN_CLASS);
+		assertType("'xyz'", NoDynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS);
+		assertType('bool', GLOBAL_DYNAMIC_CONSTANT);
+		assertType('123', GLOBAL_PURE_CONSTANT);
+		assertType('string|null', GLOBAL_DYNAMIC_CONSTANT_WITH_EXPLICIT_TYPES);
 	}
 }

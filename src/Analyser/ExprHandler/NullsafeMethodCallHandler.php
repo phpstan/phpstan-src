@@ -3,8 +3,11 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafeMethodCall;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -15,6 +18,9 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Type\NullType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -33,6 +39,26 @@ final class NullsafeMethodCallHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof NullsafeMethodCall;
+	}
+
+	/**
+	 * @param NullsafeMethodCall $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$varType = $scope->getType($expr->var);
+		if ($varType->isNull()->yes()) {
+			return new NullType();
+		}
+		if (!TypeCombinator::containsNull($varType)) {
+			return $scope->getType(new MethodCall($expr->var, $expr->name, $expr->args));
+		}
+
+		return TypeCombinator::union(
+			$scope->filterByTruthyValue(new NotIdentical($expr->var, new ConstFetch(new Name('null'))))
+				->getType(new MethodCall($expr->var, $expr->name, $expr->args)),
+			new NullType(),
+		);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

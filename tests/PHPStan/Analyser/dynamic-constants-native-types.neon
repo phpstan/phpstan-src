@@ -1,0 +1,7 @@
+includes:
+	- ../../../conf/bleedingEdge.neon
+
+parameters:
+	dynamicConstantNames:
+		- DynamicConstantNativeTypes\Foo::FOO
+		- DynamicConstantNativeTypes\Foo::BAR

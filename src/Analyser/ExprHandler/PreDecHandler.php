@@ -3,7 +3,9 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\Minus;
 use PhpParser\Node\Expr\PreDec;
+use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -12,6 +14,20 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use ValueError;
+use function count;
+use function is_numeric;
+use function is_string;
+use function str_decrement;
 
 /**
  * @implements ExprHandler<PreDec>
@@ -23,6 +39,58 @@ final class PreDecHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof PreDec;
+	}
+
+	/**
+	 * @param PreDec $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$varType = $scope->getType($expr->var);
+		$varScalars = $varType->getConstantScalarValues();
+
+		if (count($varScalars) > 0) {
+			$newTypes = [];
+
+			foreach ($varScalars as $varValue) {
+				if ($varValue === '') {
+					$varValue = -1;
+				} elseif (is_string($varValue) && !is_numeric($varValue)) {
+					try {
+						$varValue = str_decrement($varValue);
+					} catch (ValueError) {
+						return new NeverType();
+					}
+				} elseif (is_numeric($varValue)) {
+					--$varValue;
+				}
+
+				$newTypes[] = $scope->getTypeFromValue($varValue);
+			}
+			return TypeCombinator::union(...$newTypes);
+		} elseif ($varType->isString()->yes()) {
+			if ($varType->isLiteralString()->yes()) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				]);
+			}
+
+			if ($varType->isNumericString()->yes()) {
+				return new BenevolentUnionType([
+					new IntegerType(),
+					new FloatType(),
+				]);
+			}
+
+			return new BenevolentUnionType([
+				new StringType(),
+				new IntegerType(),
+				new FloatType(),
+			]);
+		}
+
+		return $scope->getType(new Minus($expr->var, new Int_(1)));
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -10,6 +10,7 @@ use stdClass;
 use function array_merge;
 use function define;
 use function dirname;
+use function function_exists;
 use function implode;
 use function sprintf;
 use function str_starts_with;
@@ -248,6 +249,10 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield __DIR__ . '/../Rules/Classes/data/bug-11591-property-tag.php';
 		yield __DIR__ . '/../Rules/Classes/data/mixin-trait-use.php';
 
+		if (function_exists('dio_stat')) {
+			yield __DIR__ . '/data/dio-functions.php';
+		}
+
 		yield __DIR__ . '/../Rules/Arrays/data/bug-14234.php';
 		yield __DIR__ . '/../Rules/Arrays/data/bug-11679.php';
 		yield __DIR__ . '/../Rules/Methods/data/bug-4801.php';
@@ -325,6 +330,31 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 				__DIR__ . '/typeAliases.neon',
 			],
 		);
+	}
+
+	/** @return string[] */
+	protected static function getAdditionalAnalysedFiles(): array
+	{
+		return [
+			__DIR__ . '/data/methodPhpDocs-trait-defined.php',
+			__DIR__ . '/data/methodPhpDocs-recursive-trait-defined.php',
+			__DIR__ . '/data/anonymous-class-name-in-trait-trait.php',
+		];
+	}
+
+	protected static function getEarlyTerminatingMethodCalls(): array
+	{
+		return [
+			\EarlyTermination\Foo::class => [
+				'doFoo',
+				'doBar',
+			],
+		];
+	}
+
+	protected static function getEarlyTerminatingFunctionCalls(): array
+	{
+		return ['baz'];
 	}
 
 }

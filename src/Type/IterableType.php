@@ -136,13 +136,7 @@ class IterableType implements CompoundType
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
 	{
 		if ($otherType instanceof IntersectionType || $otherType instanceof UnionType) {
-			return $otherType->isSuperTypeOf(new UnionType([
-				new ArrayType($this->keyType, $this->itemType),
-				new IntersectionType([
-					new ObjectType(Traversable::class),
-					$this,
-				]),
-			]));
+			return $otherType->isSuperTypeOf($this->toArrayOrTraversable());
 		}
 
 		if ($otherType instanceof self) {
@@ -229,6 +223,17 @@ class IterableType implements CompoundType
 	public function toArray(): Type
 	{
 		return new ArrayType($this->keyType, $this->getItemType());
+	}
+
+	public function toArrayOrTraversable(): Type
+	{
+		return new UnionType([
+			new ArrayType($this->keyType, $this->itemType),
+			new GenericObjectType(Traversable::class, [
+				$this->keyType,
+				$this->itemType,
+			]),
+		]);
 	}
 
 	public function toArrayKey(): Type

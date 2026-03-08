@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -12,6 +13,9 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -21,9 +25,32 @@ use function array_merge;
 final class ClassConstFetchHandler implements ExprHandler
 {
 
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof ClassConstFetch;
+	}
+
+	/**
+	 * @param ClassConstFetch $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		if (!$expr->name instanceof Identifier) {
+			return new MixedType();
+		}
+
+		return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
+			$expr->class,
+			$expr->name->name,
+			$scope->isInClass() ? $scope->getClassReflection() : null,
+			static fn (Expr $e): Type => $scope->getType($e),
+		);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

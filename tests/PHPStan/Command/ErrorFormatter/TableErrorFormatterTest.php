@@ -466,6 +466,8 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			}
 			putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS=1');
 			$errorsBudget = null;
+		} else {
+			putenv('PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS');
 		}
 
 		$formatter = $this->createErrorFormatter(

@@ -28,6 +28,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
 use PHPStan\Analyser\Traverser\ConstructorClassTemplateTraverser;
 use PHPStan\Analyser\Traverser\GenericTypeTemplateTraverser;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
@@ -91,14 +92,12 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -110,7 +109,6 @@ use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ExpressionTypeResolverExtensionRegistry;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
@@ -140,7 +138,6 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
-use ValueError;
 use function abs;
 use function array_filter;
 use function array_key_exists;
@@ -160,15 +157,11 @@ use function get_class;
 use function implode;
 use function in_array;
 use function is_array;
-use function is_bool;
-use function is_numeric;
 use function is_string;
 use function ltrim;
 use function md5;
 use function method_exists;
 use function sprintf;
-use function str_decrement;
-use function str_increment;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -181,8 +174,6 @@ use const PHP_VERSION_ID;
 
 class MutatingScope implements Scope, NodeCallbackInvoker
 {
-
-	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
@@ -1107,66 +1098,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
 		}
 
-		if (
-			$node instanceof Node\Expr\BinaryOp\BooleanAnd
-			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
-		) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if ($leftBooleanType->isFalse()->yes()) {
-				return new ConstantBooleanType(false);
-			}
-
-			if ($this->getBooleanExpressionDepth($node->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
-				$leftResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($node->left), $node->left, $this, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
-				$rightBooleanType = $leftResult->getTruthyScope()->getType($node->right)->toBoolean();
-			} else {
-				$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
-			}
-
-			if ($rightBooleanType->isFalse()->yes()) {
-				return new ConstantBooleanType(false);
-			}
-
-			if (
-				$leftBooleanType->isTrue()->yes()
-				&& $rightBooleanType->isTrue()->yes()
-			) {
-				return new ConstantBooleanType(true);
-			}
-
-			return new BooleanType();
-		}
-
-		if (
-			$node instanceof Node\Expr\BinaryOp\BooleanOr
-			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
-		) {
-			$leftBooleanType = $this->getType($node->left)->toBoolean();
-			if ($leftBooleanType->isTrue()->yes()) {
-				return new ConstantBooleanType(true);
-			}
-
-			if ($this->getBooleanExpressionDepth($node->left) <= self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
-				$leftResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($node->left), $node->left, $this, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
-				$rightBooleanType = $leftResult->getFalseyScope()->getType($node->right)->toBoolean();
-			} else {
-				$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
-			}
-
-			if ($rightBooleanType->isTrue()->yes()) {
-				return new ConstantBooleanType(true);
-			}
-
-			if (
-				$leftBooleanType->isFalse()->yes()
-				&& $rightBooleanType->isFalse()->yes()
-			) {
-				return new ConstantBooleanType(false);
-			}
-
-			return new BooleanType();
-		}
-
 		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
 			return $this->getFirstClassCallableType($node);
 		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
@@ -1186,12 +1117,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		} elseif ($node instanceof Unset_) {
 			return new NullType();
-		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
-			return $this->getPreIncDecType($node);
-		}
-
-		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			return $this->getCoalesceType($node);
 		}
 
 		if ($node instanceof ConstFetch) {
@@ -1242,69 +1167,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			);
 		}
 
-		if ($node instanceof Expr\Ternary) {
-			return $this->getTernaryType($node);
-		}
-
-		if ($node instanceof Variable) {
-			if (is_string($node->name)) {
-				if ($this->hasVariableType($node->name)->no()) {
-					return new ErrorType();
-				}
-
-				return $this->getVariableType($node->name);
-			}
-
-			$nameType = $this->getType($node->name);
-			if (count($nameType->getConstantStrings()) > 0) {
-				$types = [];
-				foreach ($nameType->getConstantStrings() as $constantString) {
-					$variableScope = $this
-						->filterByTruthyValue(
-							new BinaryOp\Identical($node->name, new String_($constantString->getValue())),
-						);
-					if ($variableScope->hasVariableType($constantString->getValue())->no()) {
-						$types[] = new ErrorType();
-						continue;
-					}
-
-					$types[] = $variableScope->getVariableType($constantString->getValue());
-				}
-
-				return TypeCombinator::union(...$types);
-			}
-		}
-
-		if ($node instanceof Expr\ArrayDimFetch && $node->dim !== null) {
-			return $this->getNullsafeShortCircuitingType(
-				$node->var,
-				$this->getTypeFromArrayDimFetch(
-					$node,
-				),
-			);
-		}
-
 		if ($node instanceof MethodCall) {
 			$callType = $this->getMethodCallType($node);
 			if ($callType !== null) {
 				return $callType;
 			}
-		}
-
-		if ($node instanceof Expr\NullsafeMethodCall) {
-			$varType = $this->getType($node->var);
-			if ($varType->isNull()->yes()) {
-				return new NullType();
-			}
-			if (!TypeCombinator::containsNull($varType)) {
-				return $this->getType(new MethodCall($node->var, $node->name, $node->args));
-			}
-
-			return TypeCombinator::union(
-				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
-					->getType(new MethodCall($node->var, $node->name, $node->args)),
-				new NullType(),
-			);
 		}
 
 		if ($node instanceof Expr\StaticCall) {
@@ -1314,47 +1181,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		if ($node instanceof BinaryOp\Pipe) {
-			if ($node->right instanceof FuncCall && $node->right->isFirstClassCallable()) {
-				return $this->getType(new FuncCall($node->right->name, [
-					new Arg($node->left),
-				]));
-			} elseif ($node->right instanceof MethodCall && $node->right->isFirstClassCallable()) {
-				return $this->getType(new MethodCall($node->right->var, $node->right->name, [
-					new Arg($node->left),
-				]));
-			} elseif ($node->right instanceof Expr\StaticCall && $node->right->isFirstClassCallable()) {
-				return $this->getType(new Expr\StaticCall($node->right->class, $node->right->name, [
-					new Arg($node->left),
-				]));
-			}
-
-			return $this->getType(new FuncCall($node->right, [
-				new Arg($node->left),
-			]));
-		}
-
 		if ($node instanceof PropertyFetch) {
 			$fetchType = $this->getPropertyFetchType($node);
 			if ($fetchType !== null) {
 				return $fetchType;
 			}
-		}
-
-		if ($node instanceof Expr\NullsafePropertyFetch) {
-			$varType = $this->getType($node->var);
-			if ($varType->isNull()->yes()) {
-				return new NullType();
-			}
-			if (!TypeCombinator::containsNull($varType)) {
-				return $this->getType(new PropertyFetch($node->var, $node->name));
-			}
-
-			return TypeCombinator::union(
-				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
-					->getType(new PropertyFetch($node->var, $node->name)),
-				new NullType(),
-			);
 		}
 
 		if ($node instanceof Expr\StaticPropertyFetch) {
@@ -1386,40 +1217,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return null;
-	}
-
-	private function getNullsafeShortCircuitingType(Expr $expr, Type $type): Type
-	{
-		if ($expr instanceof Expr\NullsafePropertyFetch || $expr instanceof Expr\NullsafeMethodCall) {
-			$varType = $this->getType($expr->var);
-			if (TypeCombinator::containsNull($varType)) {
-				return TypeCombinator::addNull($type);
-			}
-
-			return $type;
-		}
-
-		if ($expr instanceof Expr\ArrayDimFetch) {
-			return $this->getNullsafeShortCircuitingType($expr->var, $type);
-		}
-
-		if ($expr instanceof PropertyFetch) {
-			return $this->getNullsafeShortCircuitingType($expr->var, $type);
-		}
-
-		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
-			return $this->getNullsafeShortCircuitingType($expr->class, $type);
-		}
-
-		if ($expr instanceof MethodCall) {
-			return $this->getNullsafeShortCircuitingType($expr->var, $type);
-		}
-
-		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
-			return $this->getNullsafeShortCircuitingType($expr->class, $type);
-		}
-
-		return $type;
 	}
 
 	private function transformVoidToNull(Type $type, Node $node): Type
@@ -1652,38 +1449,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			true,
 		);
-	}
-
-	private function getTypeFromArrayDimFetch(
-		Expr\ArrayDimFetch $arrayDimFetch,
-	): Type
-	{
-		if ($arrayDimFetch->dim === null) {
-			throw new ShouldNotHappenException();
-		}
-
-		$offsetAccessibleType = $this->getType($arrayDimFetch->var);
-		if ($offsetAccessibleType instanceof NeverType) {
-			return $offsetAccessibleType;
-		}
-
-		if (
-			!$offsetAccessibleType->isArray()->yes()
-			&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()
-		) {
-			return $this->getType(
-				new MethodCall(
-					$arrayDimFetch->var,
-					new Node\Identifier('offsetGet'),
-					[
-						new Node\Arg($arrayDimFetch->dim),
-					],
-				),
-			);
-		}
-
-		$offsetType = $this->getType($arrayDimFetch->dim);
-		return $offsetAccessibleType->getOffsetValueType($offsetType);
 	}
 
 	/** @api */
@@ -4690,20 +4455,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return true;
 	}
 
-	private function getBooleanExpressionDepth(Expr $expr, int $depth = 0): int
-	{
-		while (
-			$expr instanceof BinaryOp\BooleanOr
-			|| $expr instanceof BinaryOp\LogicalOr
-			|| $expr instanceof BinaryOp\BooleanAnd
-			|| $expr instanceof BinaryOp\LogicalAnd
-		) {
-			return $this->getBooleanExpressionDepth($expr->left, $depth + 1);
-		}
-
-		return $depth;
-	}
-
 	/**
 	 * @api
 	 * @deprecated Use canReadProperty() or canWriteProperty()
@@ -5937,7 +5688,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$nativeType = $propertyReflection->getNativeType();
 
 				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
+					return NullsafeShortCircuitingHelper::getType($this,$node->class, $nativeType);
 				}
 
 				return $nativeType;
@@ -5959,7 +5710,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			if ($node->class instanceof Expr) {
-				return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
+				return NullsafeShortCircuitingHelper::getType($this,$node->class, $fetchType);
 			}
 
 			return $fetchType;
@@ -5992,7 +5743,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 				$nativeType = $propertyReflection->getNativeType();
 
-				return $this->getNullsafeShortCircuitingType($node->var, $nativeType);
+				return NullsafeShortCircuitingHelper::getType($this,$node->var, $nativeType);
 			}
 
 			$returnType = $this->propertyFetchType(
@@ -6004,7 +5755,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$returnType = new ErrorType();
 			}
 
-			return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+			return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
 		}
 
 		$nameType = $this->getType($node->name);
@@ -6041,7 +5792,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 
 				if ($node->class instanceof Expr) {
-					return $this->getNullsafeShortCircuitingType($node->class, $callType);
+					return NullsafeShortCircuitingHelper::getType($this,$node->class, $callType);
 				}
 
 				return $callType;
@@ -6063,7 +5814,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			if ($node->class instanceof Expr) {
-				return $this->getNullsafeShortCircuitingType($node->class, $callType);
+				return NullsafeShortCircuitingHelper::getType($this,$node->class, $callType);
 			}
 
 			return $callType;
@@ -6095,7 +5846,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
 				}
 
-				return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+				return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
 			}
 
 			$returnType = $this->methodCallReturnType(
@@ -6106,7 +5857,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($returnType === null) {
 				$returnType = new ErrorType();
 			}
-			return $this->getNullsafeShortCircuitingType($node->var, $returnType);
+			return NullsafeShortCircuitingHelper::getType($this,$node->var, $returnType);
 		}
 
 		$nameType = $this->getType($node->name);
@@ -6119,139 +5870,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return null;
-	}
-
-	private function getTernaryType(Expr\Ternary $node): Type
-	{
-		$condResult = $this->nodeScopeResolver->processExprNode(new Node\Stmt\Expression($node->cond), $node->cond, $this, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
-		if ($node->if === null) {
-			$conditionType = $this->getType($node->cond);
-			$booleanConditionType = $conditionType->toBoolean();
-			if ($booleanConditionType->isTrue()->yes()) {
-				return $condResult->getTruthyScope()->getType($node->cond);
-			}
-
-			if ($booleanConditionType->isFalse()->yes()) {
-				return $condResult->getFalseyScope()->getType($node->else);
-			}
-
-			return TypeCombinator::union(
-				TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($node->cond)),
-				$condResult->getFalseyScope()->getType($node->else),
-			);
-		}
-
-		$booleanConditionType = $this->getType($node->cond)->toBoolean();
-		if ($booleanConditionType->isTrue()->yes()) {
-			return $condResult->getTruthyScope()->getType($node->if);
-		}
-
-		if ($booleanConditionType->isFalse()->yes()) {
-			return $condResult->getFalseyScope()->getType($node->else);
-		}
-
-		return TypeCombinator::union(
-			$condResult->getTruthyScope()->getType($node->if),
-			$condResult->getFalseyScope()->getType($node->else),
-		);
-	}
-
-	private function getCoalesceType(BinaryOp\Coalesce $node): Type
-	{
-		$issetLeftExpr = new Expr\Isset_([$node->left]);
-
-		$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
-			$isNull = $type->isNull();
-			if ($isNull->maybe()) {
-				return null;
-			}
-
-			return !$isNull->yes();
-		});
-
-		if ($result !== null && $result !== false) {
-			return TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left));
-		}
-
-		$rightType = $this->filterByFalseyValue($issetLeftExpr)->getType($node->right);
-
-		if ($result === null) {
-			return TypeCombinator::union(
-				TypeCombinator::removeNull($this->filterByTruthyValue($issetLeftExpr)->getType($node->left)),
-				$rightType,
-			);
-		}
-
-		return $rightType;
-	}
-
-	private function getPreIncDecType(Expr\PreInc|Expr\PreDec $node): Type
-	{
-		$varType = $this->getType($node->var);
-		$varScalars = $varType->getConstantScalarValues();
-
-		if (count($varScalars) > 0) {
-			$newTypes = [];
-
-			foreach ($varScalars as $varValue) {
-				// until PHP 8.5 it was valid to increment/decrement an empty string.
-				// see https://github.com/php/php-src/issues/19597
-				if ($node instanceof Expr\PreInc) {
-					if ($varValue === '') {
-						$varValue = '1';
-					} elseif (is_string($varValue) && !is_numeric($varValue)) {
-						try {
-							$varValue = str_increment($varValue);
-						} catch (ValueError) {
-							return new NeverType();
-						}
-					} elseif (!is_bool($varValue)) {
-						++$varValue;
-					}
-				} else {
-					if ($varValue === '') {
-						$varValue = -1;
-					} elseif (is_string($varValue) && !is_numeric($varValue)) {
-						try {
-							$varValue = str_decrement($varValue);
-						} catch (ValueError) {
-							return new NeverType();
-						}
-					} elseif (is_numeric($varValue)) {
-						--$varValue;
-					}
-				}
-
-				$newTypes[] = $this->getTypeFromValue($varValue);
-			}
-			return TypeCombinator::union(...$newTypes);
-		} elseif ($varType->isString()->yes()) {
-			if ($varType->isLiteralString()->yes()) {
-				return new IntersectionType([
-					new StringType(),
-					new AccessoryLiteralStringType(),
-				]);
-			}
-
-			if ($varType->isNumericString()->yes()) {
-				return new BenevolentUnionType([
-					new IntegerType(),
-					new FloatType(),
-				]);
-			}
-
-			return new BenevolentUnionType([
-				new StringType(),
-				new IntegerType(),
-				new FloatType(),
-			]);
-		}
-
-		if ($node instanceof Expr\PreInc) {
-			return $this->getType(new BinaryOp\Plus($node->var, new Node\Scalar\Int_(1)));
-		}
-
-		return $this->getType(new BinaryOp\Minus($node->var, new Node\Scalar\Int_(1)));
 	}
 
 	private function getFirstClassCallableType(Expr\CallLike $node): Type

@@ -18,6 +18,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ReversePipeTransformerVisitor;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -30,6 +31,30 @@ final class PipeHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Pipe;
+	}
+
+	/**
+	 * @param Pipe $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		if ($expr->right instanceof FuncCall && $expr->right->isFirstClassCallable()) {
+			return $scope->getType(new FuncCall($expr->right->name, [
+				new Arg($expr->left),
+			]));
+		} elseif ($expr->right instanceof MethodCall && $expr->right->isFirstClassCallable()) {
+			return $scope->getType(new MethodCall($expr->right->var, $expr->right->name, [
+				new Arg($expr->left),
+			]));
+		} elseif ($expr->right instanceof StaticCall && $expr->right->isFirstClassCallable()) {
+			return $scope->getType(new StaticCall($expr->right->class, $expr->right->name, [
+				new Arg($expr->left),
+			]));
+		}
+
+		return $scope->getType(new FuncCall($expr->right, [
+			new Arg($expr->left),
+		]));
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

@@ -13,6 +13,8 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -25,6 +27,14 @@ final class PrintHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Print_;
+	}
+
+	/**
+	 * @param Print_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return new ConstantIntegerType(1);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

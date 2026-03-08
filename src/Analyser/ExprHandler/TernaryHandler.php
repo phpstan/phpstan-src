@@ -11,8 +11,11 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -22,9 +25,53 @@ use function array_merge;
 final class TernaryHandler implements ExprHandler
 {
 
+	public function __construct(
+		private NodeScopeResolver $nodeScopeResolver,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Ternary;
+	}
+
+	/**
+	 * @param Ternary $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$condResult = $this->nodeScopeResolver->processExprNode(new Stmt\Expression($expr->cond), $expr->cond, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+		if ($expr->if === null) {
+			$conditionType = $scope->getType($expr->cond);
+			$booleanConditionType = $conditionType->toBoolean();
+			if ($booleanConditionType->isTrue()->yes()) {
+				return $condResult->getTruthyScope()->getType($expr->cond);
+			}
+
+			if ($booleanConditionType->isFalse()->yes()) {
+				return $condResult->getFalseyScope()->getType($expr->else);
+			}
+
+			return TypeCombinator::union(
+				TypeCombinator::removeFalsey($condResult->getTruthyScope()->getType($expr->cond)),
+				$condResult->getFalseyScope()->getType($expr->else),
+			);
+		}
+
+		$booleanConditionType = $scope->getType($expr->cond)->toBoolean();
+		if ($booleanConditionType->isTrue()->yes()) {
+			return $condResult->getTruthyScope()->getType($expr->if);
+		}
+
+		if ($booleanConditionType->isFalse()->yes()) {
+			return $condResult->getFalseyScope()->getType($expr->else);
+		}
+
+		return TypeCombinator::union(
+			$condResult->getTruthyScope()->getType($expr->if),
+			$condResult->getFalseyScope()->getType($expr->else),
+		);
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

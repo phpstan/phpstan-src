@@ -14,6 +14,8 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -32,6 +34,38 @@ final class CoalesceHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Coalesce;
+	}
+
+	/**
+	 * @param Coalesce $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		$issetLeftExpr = new Expr\Isset_([$expr->left]);
+
+		$result = $scope->issetCheck($expr->left, static function (Type $type): ?bool {
+			$isNull = $type->isNull();
+			if ($isNull->maybe()) {
+				return null;
+			}
+
+			return !$isNull->yes();
+		});
+
+		if ($result !== null && $result !== false) {
+			return TypeCombinator::removeNull($scope->filterByTruthyValue($issetLeftExpr)->getType($expr->left));
+		}
+
+		$rightType = $scope->filterByFalseyValue($issetLeftExpr)->getType($expr->right);
+
+		if ($result === null) {
+			return TypeCombinator::union(
+				TypeCombinator::removeNull($scope->filterByTruthyValue($issetLeftExpr)->getType($expr->left)),
+				$rightType,
+			);
+		}
+
+		return $rightType;
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

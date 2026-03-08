@@ -14,6 +14,8 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use function array_merge;
 
 /**
@@ -26,6 +28,14 @@ final class EvalHandler implements ExprHandler
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Eval_;
+	}
+
+	/**
+	 * @param Eval_ $expr
+	 */
+	public function resolveType(MutatingScope $scope, Expr $expr): Type
+	{
+		return new MixedType();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

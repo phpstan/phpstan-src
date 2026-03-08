@@ -8,7 +8,6 @@ use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\BinaryOp;
-use PhpParser\Node\Expr\Cast\Unset_;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Match_;
@@ -1069,10 +1068,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		if ($node instanceof AlwaysRememberedExpr) {
 			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
-		}
-
-		if ($node instanceof Unset_) {
-			return new NullType();
 		}
 
 		if ($node instanceof MethodCall) {

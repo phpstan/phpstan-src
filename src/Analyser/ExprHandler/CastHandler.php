@@ -13,6 +13,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
@@ -54,6 +55,10 @@ final class CastHandler implements ExprHandler
 	 */
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		if ($expr instanceof Cast\Unset_) {
+			return new NullType();
+		}
+
 		return $this->initializerExprTypeResolver->getCastType($expr, static fn (Expr $expr): Type => $scope->getType($expr));
 	}
 

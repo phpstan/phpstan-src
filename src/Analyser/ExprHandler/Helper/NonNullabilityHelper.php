@@ -42,7 +42,7 @@ final class NonNullabilityHelper
 				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 
 				return new EnsuredNonNullabilityResult($scope, [
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $certainty),
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType, $hasExpressionType),
 				]);
 			}
 			return new EnsuredNonNullabilityResult($scope, []);
@@ -55,16 +55,13 @@ final class NonNullabilityHelper
 		// To properly revert this, we must also save and restore the parent expression's type.
 		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
 			$parentExpr = $exprToSpecify->var;
-			$parentCertainty = TrinaryLogic::createYes();
 			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
-			if (!$hasParentExpressionType->no()) {
-				$parentCertainty = $hasParentExpressionType;
-			}
+
 			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
 				$parentExpr,
 				$scope->getType($parentExpr),
 				$scope->getNativeType($parentExpr),
-				$parentCertainty,
+				$hasParentExpressionType,
 			);
 		}
 
@@ -104,6 +101,10 @@ final class NonNullabilityHelper
 	public function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
 		foreach ($specifiedExpressions as $specifiedExpressionResult) {
+			if ($specifiedExpressionResult->getCertainty()->no()) {
+				$scope = $scope->invalidateExpression($specifiedExpressionResult->getExpression());
+				continue;
+			}
 			$scope = $scope->specifyExpressionType(
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),

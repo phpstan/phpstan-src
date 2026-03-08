@@ -1274,11 +1274,16 @@ final class TypeSpecifier
 		$resultTypes = [];
 		foreach ($type->getArrays() as $arrayType) {
 			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($arrayType->getArraySize());
-			if ($isSizeSuperTypeOfArraySize->no()) {
+
+			if ($context->falsey()) {
+				if ($isSizeSuperTypeOfArraySize->yes()) {
+					continue;
+				}
+				$resultTypes[] = $arrayType;
 				continue;
 			}
 
-			if ($context->falsey() && $isSizeSuperTypeOfArraySize->maybe()) {
+			if ($isSizeSuperTypeOfArraySize->no()) {
 				continue;
 			}
 
@@ -1369,6 +1374,13 @@ final class TypeSpecifier
 			}
 
 			$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		if ($context->falsey()) {
+			if (count($resultTypes) === 0) {
+				return null;
+			}
+			return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($rootExpr);
 		}
 
 		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);

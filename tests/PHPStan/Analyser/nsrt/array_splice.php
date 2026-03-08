@@ -385,10 +385,9 @@ function lists(array $arr): void
 	assertType('list<string>', $extract);
 }
 
-function mort(array $arr): void
+/** @param array<string, string> $arr */
+function more(array $arr): void
 {
-	/** @var array<string, string> $arr */
-	$arr;
 	$extract = array_splice($arr, 0, 1, [17 => 'foo', 18 => 'bar']);
 	assertType('non-empty-array<0|1|string, string>', $arr);
 	assertType('array<string, string>', $extract);

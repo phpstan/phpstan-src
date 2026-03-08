@@ -10,7 +10,6 @@ use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterOutTypeExtensionProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\Node\DeepNodeCloner;
-use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -122,7 +121,6 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getByType(ParameterOutTypeExtensionProvider::class),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
-			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(FileHelper::class),
 			$typeSpecifier,

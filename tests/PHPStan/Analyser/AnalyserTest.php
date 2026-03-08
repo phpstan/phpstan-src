@@ -19,7 +19,6 @@ use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
-use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -818,7 +817,6 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(ParameterOutTypeExtensionProvider::class),
 			$this->getParser(),
 			$fileTypeMapper,
-			$container->getByType(PhpVersion::class),
 			$phpDocInheritanceResolver,
 			$fileHelper,
 			$typeSpecifier,

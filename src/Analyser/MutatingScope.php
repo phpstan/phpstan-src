@@ -1081,6 +1081,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
+		if (
+			!$node instanceof Variable
+			&& !$node instanceof Expr\Closure
+			&& !$node instanceof Expr\ArrowFunction
+			&& $this->hasExpressionType($node)->yes()
+		) {
+			return $this->expressionTypes[$exprString]->getType();
+		}
+
 		/** @var ExprHandler<Expr> $exprHandler */
 		foreach ($this->container->getServicesByTag(ExprHandler::EXTENSION_TAG) as $exprHandler) {
 			if (!$exprHandler->supports($node)) {
@@ -1092,15 +1101,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			return $exprHandler->resolveType($this, $node);
-		}
-
-		if (
-			!$node instanceof Variable
-			&& !$node instanceof Expr\Closure
-			&& !$node instanceof Expr\ArrowFunction
-			&& $this->hasExpressionType($node)->yes()
-		) {
-			return $this->expressionTypes[$exprString]->getType();
 		}
 
 		if ($node instanceof AlwaysRememberedExpr) {

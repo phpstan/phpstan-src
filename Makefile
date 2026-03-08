@@ -126,6 +126,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/property-override-attr-missing.php \
 		--exclude tests/PHPStan/Rules/Properties/data/override-attr-on-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/property-override-attr.php \
+		--exclude tests/PHPStan/Rules/Operators/data/bug-3585.php \
 		src tests
 
 install-paratest:

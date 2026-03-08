@@ -27,8 +27,8 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
+use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransfomer;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
-use PHPStan\Analyser\Traverser\VoidToNullTraverser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
@@ -87,7 +87,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
-use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
@@ -1149,37 +1148,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 		}
 
-		if ($node instanceof FuncCall) {
-			return $this->getFunctionCallType($node);
-		}
-
 		return new MixedType();
-	}
-
-	private function getDynamicFunctionReturnType(FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type
-	{
-		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions($functionReflection) as $dynamicFunctionReturnTypeExtension) {
-			$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
-				$functionReflection,
-				$normalizedNode,
-				$this,
-			);
-
-			if ($resolvedType !== null) {
-				return $resolvedType;
-			}
-		}
-
-		return null;
-	}
-
-	private function transformVoidToNull(Type $type, Node $node): Type
-	{
-		if ($node->getAttribute(self::KEEP_VOID_ATTRIBUTE_NAME) === true) {
-			return $type;
-		}
-
-		return TypeTraverser::map($type, new VoidToNullTraverser());
 	}
 
 	/**
@@ -4628,7 +4597,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
+			return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
 		}
 
 		$resolvedTypes = [];
@@ -4667,10 +4636,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if (count($resolvedTypes) > 0) {
-			return $this->transformVoidToNull(TypeCombinator::union(...$resolvedTypes), $methodCall);
+			return VoidToNullTypeTransfomer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 
-		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $methodCall);
+		return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 	/**
@@ -5225,105 +5194,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			acceptsNamedArguments: TrinaryLogic::createYes(),
 			mustUseReturnValue: $mustUseReturnValue,
 		);
-	}
-
-	private function getFunctionCallType(FuncCall $node): Type
-	{
-		if ($node->name instanceof Expr) {
-			$calledOnType = $this->getType($node->name);
-			if ($calledOnType->isCallable()->no()) {
-				return new ErrorType();
-			}
-
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-				$this,
-				$node->getArgs(),
-				$calledOnType->getCallableParametersAcceptors($this),
-				null,
-			);
-
-			$functionName = null;
-			if ($node->name instanceof String_) {
-				/** @var non-empty-string $name */
-				$name = $node->name->value;
-				$functionName = new Name($name);
-			} elseif (
-				$node->name instanceof FuncCall
-				&& $node->name->name instanceof Name
-				&& $node->name->isFirstClassCallable()
-			) {
-				$functionName = $node->name->name;
-			}
-
-			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-			if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $this)) {
-				$functionReflection = $this->reflectionProvider->getFunction($functionName, $this);
-				$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
-				if ($resolvedType !== null) {
-					return $resolvedType;
-				}
-			}
-
-			return $parametersAcceptor->getReturnType();
-		}
-
-		if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
-			return new ErrorType();
-		}
-
-		$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
-		if ($this->nativeTypesPromoted) {
-			return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
-		}
-
-		if ($functionReflection->getName() === 'call_user_func') {
-			$result = ArgumentsNormalizer::reorderCallUserFuncArguments($node, $this);
-			if ($result !== null) {
-				[, $innerFuncCall] = $result;
-
-				return $this->getType($innerFuncCall);
-			}
-		}
-
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-			$this,
-			$node->getArgs(),
-			$functionReflection->getVariants(),
-			$functionReflection->getNamedArgumentsVariants(),
-		);
-		$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-		if ($normalizedNode !== null) {
-			if ($functionReflection->getName() === 'clone' && count($normalizedNode->getArgs()) > 0) {
-				$cloneType = $this->getType(new Expr\Clone_($normalizedNode->getArgs()[0]->value));
-				if (count($normalizedNode->getArgs()) === 2) {
-					$propertiesType = $this->getType($normalizedNode->getArgs()[1]->value);
-					if ($propertiesType->isConstantArray()->yes()) {
-						$constantArrays = $propertiesType->getConstantArrays();
-						if (count($constantArrays) === 1) {
-							$accessories = [];
-							foreach ($constantArrays[0]->getKeyTypes() as $keyType) {
-								$constantKeyTypes = $keyType->getConstantScalarValues();
-								if (count($constantKeyTypes) !== 1) {
-									return $cloneType;
-								}
-								$accessories[] = new HasPropertyType((string) $constantKeyTypes[0]);
-							}
-							if (count($accessories) > 0 && count($accessories) <= 16) {
-								return TypeCombinator::intersect($cloneType, ...$accessories);
-							}
-						}
-					}
-				}
-
-				return $cloneType;
-			}
-			$resolvedType = $this->getDynamicFunctionReturnType($normalizedNode, $functionReflection);
-			if ($resolvedType !== null) {
-				return $resolvedType;
-			}
-		}
-
-		return $this->transformVoidToNull($parametersAcceptor->getReturnType(), $node);
 	}
 
 	private function getStaticCallType(Expr\StaticCall $node): ?Type

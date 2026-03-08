@@ -72,7 +72,7 @@ final class InvalidAssignVarRule implements Rule
 	private function containsNonAssignableExpression(Expr $expr): bool
 	{
 		if ($expr instanceof Expr\Variable) {
-			return $expr->name !== 'this';
+			return $expr->name === 'this';
 		}
 
 		if ($expr instanceof Expr\PropertyFetch) {

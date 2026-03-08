@@ -2520,6 +2520,38 @@ final class TypeSpecifier
 				);
 			}
 
+			// For falsey context with unions of multiple constant arrays, directly
+			// filter union members by size to avoid TypeCombinator::remove issues
+			// where array types have supertype relationships (e.g. array{mixed} is
+			// a supertype of array{mixed, string|null, mixed}, causing remove to
+			// incorrectly eliminate all union members)
+			$arrays = $argType->getArrays();
+			if (
+				$context->falsey()
+				&& count($arrays) > 1
+				&& $argType->isConstantArray()->yes()
+				&& $rightType->isInteger()->yes()
+				&& $this->isNormalCountCall($unwrappedLeftExpr, $argType, $scope)->yes()
+			) {
+				$result = [];
+				foreach ($arrays as $innerType) {
+					$arraySize = $innerType->getArraySize();
+					$isSize = $rightType->isSuperTypeOf($arraySize);
+					if ($isSize->yes()) {
+						continue;
+					}
+
+					$result[] = $innerType;
+				}
+
+				if (count($result) > 0) {
+					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+					return $funcTypes->unionWith(
+						$this->create($unwrappedLeftExpr->getArgs()[0]->value, TypeCombinator::union(...$result), TypeSpecifierContext::createTrue(), $scope)->setAlwaysOverwriteTypes()->setRootExpr($expr),
+					);
+				}
+			}
+
 			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
 			if ($specifiedTypes !== null) {
 				return $specifiedTypes;

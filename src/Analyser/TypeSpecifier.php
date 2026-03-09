@@ -1080,6 +1080,17 @@ final class TypeSpecifier
 								)->setRootExpr($expr),
 							);
 						}
+
+						if ($varType->isArray()->yes() && $scope->getNativeType($var->var)->isArray()->yes()) {
+							$types = $types->unionWith(
+								$this->create(
+									$var->var,
+									new NonEmptyArrayType(),
+									$context,
+									$scope,
+								)->setRootExpr($expr),
+							);
+						}
 					}
 				}
 

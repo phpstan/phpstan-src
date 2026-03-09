@@ -40,7 +40,7 @@ function getItemsByModifiedIndex(array $items): array
 function testKeepListAfterIssetIndex(array $list, int $i): void
 {
 	if (isset($list[$i])) {
-		assertType('list<int>', $list);
+		assertType('non-empty-list<int>', $list);
 		$list[$i] = 21;
 		assertType('non-empty-list<int>', $list);
 		$list[$i+1] = 21;
@@ -53,7 +53,7 @@ function testKeepListAfterIssetIndex(array $list, int $i): void
 function testKeepNestedListAfterIssetIndex(array $nestedList, int $i, int $j): void
 {
 	if (isset($nestedList[$i][$j])) {
-		assertType('list<list<int>>', $nestedList);
+		assertType('non-empty-list<list<int>>', $nestedList);
 		assertType('list<int>', $nestedList[$i]);
 		$nestedList[$i][$j] = 21;
 		assertType('non-empty-list<list<int>>', $nestedList);
@@ -66,7 +66,7 @@ function testKeepNestedListAfterIssetIndex(array $nestedList, int $i, int $j): v
 function testKeepListAfterIssetIndexPlusOne(array $list, int $i): void
 {
 	if (isset($list[$i])) {
-		assertType('list<int>', $list);
+		assertType('non-empty-list<int>', $list);
 		$list[$i+1] = 21;
 		assertType('non-empty-list<int>', $list);
 	}
@@ -77,7 +77,7 @@ function testKeepListAfterIssetIndexPlusOne(array $list, int $i): void
 function testKeepListAfterIssetIndexOnePlus(array $list, int $i): void
 {
 	if (isset($list[$i])) {
-		assertType('list<int>', $list);
+		assertType('non-empty-list<int>', $list);
 		$list[1+$i] = 21;
 		assertType('non-empty-list<int>', $list);
 	}
@@ -90,7 +90,7 @@ function testShouldLooseListbyAst(array $list, int $i): void
 	if (isset($list[$i])) {
 		$i++;
 
-		assertType('list<int>', $list);
+		assertType('non-empty-list<int>', $list);
 		$list[1+$i] = 21;
 		assertType('non-empty-array<int<0, max>, int>', $list);
 	}
@@ -101,7 +101,7 @@ function testShouldLooseListbyAst(array $list, int $i): void
 function testShouldLooseListbyAst2(array $list, int $i): void
 {
 	if (isset($list[$i])) {
-		assertType('list<int>', $list);
+		assertType('non-empty-list<int>', $list);
 		$list[2+$i] = 21;
 		assertType('non-empty-array<int<0, max>, int>', $list);
 	}

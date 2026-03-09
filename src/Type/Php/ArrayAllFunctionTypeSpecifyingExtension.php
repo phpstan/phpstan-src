@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Param;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -53,12 +55,20 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			$callableParms = $callable->params;
 			$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callable->expr, $context)->getSureTypes();
 
-			if (isset($callableParms[0]) && $callableParms[0] instanceof Expr\Variable) {
-				$valueType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParms[0]->name);
+			if (
+				isset($callableParms[0]) &&
+				$callableParms[0] instanceof Param &&
+				$callableParms[0]->var instanceof Variable
+			) {
+				$valueType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParms[0]->var->name);
 			}
 
-			if (isset($callableParms[1]) && $callableParms[1] instanceof Expr\Variable) {
-				$keyType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParms[1]->name);
+			if (
+				isset($callableParms[1]) &&
+				$callableParms[1] instanceof Param &&
+				$callableParms[1]->var instanceof Variable
+			) {
+				$keyType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParms[1]->var->name);
 			}
 
 			if (isset($keyType) || isset($valueType)) {

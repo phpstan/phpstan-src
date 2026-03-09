@@ -53,6 +53,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
@@ -1005,20 +1006,19 @@ final class AssignHandler implements ExprHandler
 					$keepList = true;
 				}
 			} elseif ( // keep list for $list[count($list) - n] assignments
-				$offsetValueType->isIterableAtLeastOnce()->yes()
-				&& $arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
+				$arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
 				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->right->value >= 1
 				&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
 				&& $arrayDimFetch->dim->left->name instanceof Name
 				&& $arrayDimFetch->dim->left->name->toLowerString() === 'count'
-				&& count($arrayDimFetch->dim->left->getArgs()) >= 1
+				&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
 				&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
+				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()
+				&& $offsetValueType->isIterableAtLeastOnce()->yes()
 			) {
 				$keepList = true;
 			} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
-				$offsetValueType->isIterableAtLeastOnce()->yes()
-				&& $arrayDimFetch->dim instanceof Expr\FuncCall
+				$arrayDimFetch->dim instanceof Expr\FuncCall
 				&& $arrayDimFetch->dim->name instanceof Name
 				&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
 				&& count($arrayDimFetch->dim->getArgs()) >= 1

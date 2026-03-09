@@ -32,14 +32,28 @@ function doFoo2(): void {
 	assertType('list<int>', $list);
 	if ($count > 0) {
 		assertType('non-empty-list<int>', $list);
-		$list[count($list) - 5] = 37; // we don't know the $list length, therefore count() - N might be before the first element
-		assertType('array<int>', $list);
+		// we don't know the $list length,
+		// therefore count() - N might be before the first element -> degrade to array
+		$list[count($list) - 5] = 37;
+		assertType('non-empty-array<int<-4, max>, int>', $list);
+	}
+
+	assertType('array<int<-4, max>, int>', $list);
+}
+
+function listKnownSize(): void {
+	$list = foo();
+	assertType('list<int>', $list);
+	if (count($list) === 5) {
+		assertType('array{int, int, int, int, int}', $list);
+		$list[count($list) - 3] = 37;
+		assertType('array{int, int, 37, int, int}', $list);
 	}
 
 	assertType('list<int>', $list);
 }
 
-function doBar(): void {
+function overwriteKeyLast(): void {
 	$list = foo();
 	$count = count($list);
 	assertType('list<int>', $list);
@@ -52,7 +66,7 @@ function doBar(): void {
 	assertType('list<int>', $list);
 }
 
-function doBaz(): void {
+function overwriteKeyFirst(): void {
 	$list = foo();
 	$count = count($list);
 	assertType('list<int>', $list);
@@ -63,4 +77,19 @@ function doBaz(): void {
 	}
 
 	assertType('list<int>', $list);
+}
+
+function overwriteKeyFirstMaybeEmptyArray(): void {
+	$list = foo();
+	assertType('list<int>', $list);
+	// empty list might return NULL for array_key_first()
+	$list[array_key_first($list)] = 37;
+	assertType('non-empty-list<int>', $list);
+}
+
+function keyDifferentArray(array $arr): void {
+	$list = foo();
+	assertType('list<int>', $list);
+	$list[array_key_first($arr)] = 37;
+	assertType('non-empty-array<int|string, int>', $list);
 }

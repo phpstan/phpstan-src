@@ -8,7 +8,7 @@ use function PHPStan\Testing\assertType;
 
 $arr = new ArrayObject(['a' => 1, 'b' => 2]);
 
-assertType('ArrayObject<string, int>', $arr); // correctly inferred as `ArrayObject<string, int>`
+assertType("ArrayObject<'a'|'b', int>", $arr);
 
 $a = $arr['a']; // ok
 $b = $arr['b']; // ok

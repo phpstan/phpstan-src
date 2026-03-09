@@ -362,4 +362,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13921(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13921.php'], [
+			[
+				'Offset 0 on non-empty-list<array<string|null>> on left side of ?? always exists and is not nullable.',
+				19,
+			],
+		]);
+	}
+
 }

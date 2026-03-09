@@ -371,4 +371,17 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4004.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug10305(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-10305.php'], [
+			[
+				'Result of || is always true.',
+				10,
+			],
+		]);
+	}
+
 }

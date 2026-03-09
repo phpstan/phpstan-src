@@ -10,6 +10,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -61,6 +62,8 @@ final class GenericParametersAcceptorResolver
 				$argType = $namedArgTypes[$param->getName()];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
+			} elseif ($param->isVariadic()) {
+				$argType = new NeverType();
 			} else {
 				continue;
 			}

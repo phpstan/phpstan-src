@@ -2,6 +2,9 @@
 
 namespace ArrayAll;
 
+use DateTime;
+use DateTimeImmutable;
+
 use function PHPStan\Testing\assertType;
 
 class Foo {
@@ -56,6 +59,24 @@ class Foo {
 	public function test6($array) {
 		if (array_all($array, fn ($value) => is_float(1))) {
 			assertType("array<mixed>", $array);
+		}
+	}
+
+	/**
+	 * @param array<mixed> $array
+	 */
+	public function test7($array) {
+		if (array_all($array, fn ($value) => $value instanceof DateTime)) {
+			assertType("array<DateTime>", $array);
+		}
+	}
+
+	/**
+	 * @param array<mixed> $array
+	 */
+	public function test8($array) {
+		if (array_all($array, fn ($value) => $value instanceof DateTime || $value instanceof DateTimeImmutable)) {
+			assertType("array<DateTime|DateTimeImmutable>", $array);
 		}
 	}
 }

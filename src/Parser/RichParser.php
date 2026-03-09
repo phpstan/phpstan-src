@@ -12,6 +12,7 @@ use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\IgnoreParseException;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
+use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function array_key_last;
@@ -49,6 +50,7 @@ final class RichParser implements Parser
 		private NameResolver $nameResolver,
 		private Container $container,
 		private IgnoreLexer $ignoreLexer,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -81,6 +83,10 @@ final class RichParser implements Parser
 		if ($nodes === null) {
 			throw new ShouldNotHappenException();
 		}
+
+		$phpVersionIdCleaner = new NodeTraverser(new RemoveUnusedCodeByPhpVersionIdVisitor($this->phpVersion->getVersionString()));
+		/** @var array<Node\Stmt> */
+		$nodes = $phpVersionIdCleaner->traverse($nodes);
 
 		$pipeTransformer = new NodeTraverser(new PipeTransformerVisitor());
 		/** @var array<Node\Stmt> */

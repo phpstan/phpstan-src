@@ -1818,12 +1818,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 
-		$this->analyse([__DIR__ . '/data/disallow-named-arguments-php-version-scope.php'], [
-			[
+		$errors = [];
+		if (PHP_VERSION_ID < 80000) {
+			$errors[] = [
 				'Named arguments are supported only on PHP 8.0 and later.',
 				26,
-			],
-		]);
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/disallow-named-arguments-php-version-scope.php'], $errors);
 	}
 
 	#[RequiresPhp('>= 8.0')]

@@ -4112,7 +4112,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = new IntegerType();
+						$newMin = $min;
+						$newMax = $max;
+						foreach ($constantIntegers['b'] as $int) {
+							if ($int->getValue() < $newMin) {
+								$newMin = $int->getValue();
+							}
+							if ($int->getValue() <= $newMax) {
+								continue;
+							}
+
+							$newMax = $int->getValue();
+						}
+						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
 					} elseif ($gotGreater) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
 					} elseif ($gotSmaller) {

@@ -15,7 +15,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\TypeCombinator;
-use function array_unshift;
 
 #[AutowiredService]
 final class NonNullabilityHelper
@@ -49,11 +48,7 @@ final class NonNullabilityHelper
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
 
-		$nativeType = $scope->getNativeType($exprToSpecify);
-
-		$specifiedExpressions = [
-			new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty),
-		];
+		$specifiedExpressions = [];
 
 		// When narrowing an ArrayDimFetch, specifyExpressionType also recursively
 		// narrows the parent array's offset type via intersection with HasOffsetValueType.
@@ -65,14 +60,16 @@ final class NonNullabilityHelper
 			if (!$hasParentExpressionType->no()) {
 				$parentCertainty = $hasParentExpressionType;
 			}
-			array_unshift($specifiedExpressions, new EnsuredNonNullabilityResultExpression(
+			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
 				$parentExpr,
 				$scope->getType($parentExpr),
 				$scope->getNativeType($parentExpr),
 				$parentCertainty,
-			));
+			);
 		}
 
+		$nativeType = $scope->getNativeType($exprToSpecify);
+		$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType, $certainty);
 		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,
 			$exprTypeWithoutNull,

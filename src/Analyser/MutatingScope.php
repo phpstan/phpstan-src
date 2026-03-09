@@ -3072,15 +3072,57 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		if ($originalExprType->equals($nativeType)) {
 			$newType = TypeCombinator::intersect($type, $originalExprType);
-			return $this->specifyExpressionType($expr, $newType, $newType, TrinaryLogic::createYes());
+			$scope = $this->specifyExpressionType($expr, $newType, $newType, TrinaryLogic::createYes());
+		} else {
+			$newType = TypeCombinator::intersect($type, $originalExprType);
+			$scope = $this->specifyExpressionType(
+				$expr,
+				$newType,
+				TypeCombinator::intersect($type, $nativeType),
+				TrinaryLogic::createYes(),
+			);
 		}
 
-		return $this->specifyExpressionType(
-			$expr,
-			TypeCombinator::intersect($type, $originalExprType),
-			TypeCombinator::intersect($type, $nativeType),
-			TrinaryLogic::createYes(),
-		);
+		if ($originalExprType instanceof MixedType && $newType->isArray()->yes()) {
+			$exprKey = $this->getNodeKey($expr);
+			foreach ($this->expressionTypes as $holder) {
+				$holderExpr = $holder->getExpr();
+				if (!$holderExpr instanceof Node\Expr\ArrayDimFetch || $holderExpr->dim === null) {
+					continue;
+				}
+				if ($this->getNodeKey($holderExpr->var) !== $exprKey) {
+					continue;
+				}
+				if (!$holder->getCertainty()->yes()) {
+					continue;
+				}
+				$dimType = $scope->getType($holderExpr->dim)->toArrayKey();
+				$constantStrings = $dimType->getConstantStrings();
+				$offsetKey = null;
+				if (count($constantStrings) === 1) {
+					$offsetKey = $constantStrings[0];
+				} elseif ($dimType instanceof ConstantIntegerType) {
+					$offsetKey = $dimType;
+				}
+				if ($offsetKey === null) {
+					continue;
+				}
+
+				$currentType = $scope->getType($expr);
+				$enrichedType = TypeCombinator::intersect(
+					$currentType,
+					new HasOffsetValueType($offsetKey, $holder->getType()),
+				);
+				$scope = $scope->specifyExpressionType(
+					$expr,
+					$enrichedType,
+					$scope->getNativeType($expr),
+					TrinaryLogic::createYes(),
+				);
+			}
+		}
+
+		return $scope;
 	}
 
 	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self

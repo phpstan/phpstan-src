@@ -1081,7 +1081,7 @@ final class TypeSpecifier
 							);
 						}
 
-						if ($varType->isArray()->yes() && $scope->getNativeType($var->var)->isArray()->yes()) {
+						if ($scope->getNativeType($var->var)->isArray()->yes()) {
 							$types = $types->unionWith(
 								$this->create(
 									$var->var,

@@ -688,7 +688,7 @@ final class AssignHandler implements ExprHandler
 					$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $keyResult->isAlwaysTerminating();
-					// no need for $keyResult->getScope()
+					$scope = $keyResult->getScope();
 				}
 
 				if ($arrayItem->key === null) {

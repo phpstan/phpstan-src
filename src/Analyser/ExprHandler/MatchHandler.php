@@ -335,7 +335,9 @@ final class MatchHandler implements ExprHandler
 						ExpressionContext::createTopLevel(),
 					);
 					$armScope = $armResult->getScope();
-					$armBodyScopes[] = $armScope;
+					if (!$matchArmBodyScope->getType($arm->body) instanceof NeverType) {
+						$armBodyScopes[] = $armScope;
+					}
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
@@ -367,12 +369,15 @@ final class MatchHandler implements ExprHandler
 				$hasDefaultCond = true;
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
+				$armBodyType = $matchScope->getType($arm->body);
 				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
 				$matchScope = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-				$armBodyScopes[] = $matchScope;
+				if (!$armBodyType instanceof NeverType) {
+					$armBodyScopes[] = $matchScope;
+				}
 				continue;
 			}
 
@@ -423,7 +428,9 @@ final class MatchHandler implements ExprHandler
 				ExpressionContext::createTopLevel(),
 			);
 			$armScope = $armResult->getScope();
-			$armBodyScopes[] = $armScope;
+			if (!$bodyScope->getType($arm->body) instanceof NeverType) {
+				$armBodyScopes[] = $armScope;
+			}
 			$hasYield = $hasYield || $armResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());

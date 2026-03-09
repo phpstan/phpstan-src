@@ -1691,6 +1691,16 @@ class NodeScopeResolver
 			foreach ($stmt->loop as $loopExpr) {
 				$loopScope = $this->processExprNode($stmt, $loopExpr, $loopScope, $storage, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
+
+			if (
+				!$alwaysIterates->yes()
+				&& $context->isTopLevel()
+				&& $lastCondExpr !== null
+				&& ($this->treatPhpDocTypesAsCertain ? $loopScope->getType($lastCondExpr) : $loopScope->getNativeType($lastCondExpr))->toBoolean()->isTrue()->yes()
+			) {
+				$alwaysIterates = TrinaryLogic::createYes();
+			}
+
 			$finalScope = $finalScope->generalizeWith($loopScope);
 
 			if ($lastCondExpr !== null) {

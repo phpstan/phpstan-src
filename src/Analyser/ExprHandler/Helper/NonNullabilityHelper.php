@@ -55,13 +55,11 @@ final class NonNullabilityHelper
 		// To properly revert this, we must also save and restore the parent expression's type.
 		if ($exprToSpecify instanceof Expr\ArrayDimFetch && $exprToSpecify->dim !== null) {
 			$parentExpr = $exprToSpecify->var;
-			$hasParentExpressionType = $originalScope->hasExpressionType($parentExpr);
-
 			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression(
 				$parentExpr,
 				$scope->getType($parentExpr),
 				$scope->getNativeType($parentExpr),
-				$hasParentExpressionType,
+				$originalScope->hasExpressionType($parentExpr),
 			);
 		}
 

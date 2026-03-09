@@ -14,40 +14,53 @@ function foo(): array {
 }
 
 function doFoo(): void {
-	$range = foo();
-	$count = count($range);
-	assertType('list<int>', $range);
+	$list = foo();
+	$count = count($list);
+	assertType('list<int>', $list);
 	if ($count > 0) {
-		assertType('non-empty-list<int>', $range);
-		$range[count($range) - 1] = 37;
-		assertType('non-empty-list<int>', $range);
+		assertType('non-empty-list<int>', $list);
+		$list[count($list) - 1] = 37;
+		assertType('non-empty-list<int>', $list);
 	}
 
-	assertType('list<int>', $range);
+	assertType('list<int>', $list);
+}
+
+function doFoo2(): void {
+	$list = foo();
+	$count = count($list);
+	assertType('list<int>', $list);
+	if ($count > 0) {
+		assertType('non-empty-list<int>', $list);
+		$list[count($list) - 5] = 37; // we don't know the $list length, therefore count() - N might be before the first element
+		assertType('array<int>', $list);
+	}
+
+	assertType('list<int>', $list);
 }
 
 function doBar(): void {
-	$range = foo();
-	$count = count($range);
-	assertType('list<int>', $range);
+	$list = foo();
+	$count = count($list);
+	assertType('list<int>', $list);
 	if ($count > 0) {
-		assertType('non-empty-list<int>', $range);
-		$range[array_key_last($range)] = 37;
-		assertType('non-empty-list<int>', $range);
+		assertType('non-empty-list<int>', $list);
+		$list[array_key_last($list)] = 37;
+		assertType('non-empty-list<int>', $list);
 	}
 
-	assertType('list<int>', $range);
+	assertType('list<int>', $list);
 }
 
 function doBaz(): void {
-	$range = foo();
-	$count = count($range);
-	assertType('list<int>', $range);
+	$list = foo();
+	$count = count($list);
+	assertType('list<int>', $list);
 	if ($count > 0) {
-		assertType('non-empty-list<int>', $range);
-		$range[array_key_first($range)] = 37;
-		assertType('non-empty-list<int>', $range);
+		assertType('non-empty-list<int>', $list);
+		$list[array_key_first($list)] = 37;
+		assertType('non-empty-list<int>', $list);
 	}
 
-	assertType('list<int>', $range);
+	assertType('list<int>', $list);
 }

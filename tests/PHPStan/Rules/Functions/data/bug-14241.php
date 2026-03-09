@@ -22,3 +22,5 @@ $g = fn ($_REQUEST) => $_REQUEST;
 function doQux($_ENV): void {}
 
 function doQuux($GLOBALS): void {}
+
+function doThis($this) {}

@@ -6,14 +6,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<SuperGlobalParameterRule>
+ * @extends RuleTestCase<InvalidParameterNameRule>
  */
-class SuperGlobalParameterRuleTest extends RuleTestCase
+class InvalidParameterNameRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new SuperGlobalParameterRule();
+		return new InvalidParameterNameRule();
 	}
 
 	public function testRule(): void
@@ -54,6 +54,10 @@ class SuperGlobalParameterRuleTest extends RuleTestCase
 			[
 				'Cannot re-assign auto-global variable $GLOBALS.',
 				24,
+			],
+			[
+				'Cannot use $this as parameter.',
+				26,
 			],
 		]);
 	}

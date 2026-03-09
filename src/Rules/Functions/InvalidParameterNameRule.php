@@ -15,7 +15,7 @@ use function sprintf;
  * @implements Rule<Node\FunctionLike>
  */
 #[RegisteredRule(level: 0)]
-final class SuperGlobalParameterRule implements Rule
+final class InvalidParameterNameRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -36,17 +36,22 @@ final class SuperGlobalParameterRule implements Rule
 				continue;
 			}
 
-			$var = $param->var->name;
+			$variableName = $param->var->name;
 
-			if (!in_array($var, Scope::SUPERGLOBAL_VARIABLES, true)) {
-				continue;
+			if (in_array($variableName, Scope::SUPERGLOBAL_VARIABLES, true)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot re-assign auto-global variable $%s.', $variableName))
+					->line($param->getStartLine())
+					->identifier('parameter.invalidExpr')
+					->nonIgnorable()
+					->build();
+			} elseif ($variableName === 'this') {
+				$errors[] = RuleErrorBuilder::message('Cannot use $this as parameter.')
+					->line($param->getStartLine())
+					->identifier('parameter.invalidExpr')
+					->nonIgnorable()
+					->build();
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Cannot re-assign auto-global variable $%s.', $var))
-				->line($param->getStartLine())
-				->identifier('parameter.superGlobal')
-				->nonIgnorable()
-				->build();
 		}
 
 		return $errors;

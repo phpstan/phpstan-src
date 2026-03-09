@@ -1,4 +1,4 @@
-name: "Claude Random Easy Fixes (Scheduled)"
+name: "Claude Random Fixes (Scheduled)"
 
 on:
   schedule:
@@ -23,4 +23,4 @@ jobs:
       - name: Trigger Claude Random Easy Fixes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run claude-random-easy-fixes.yml -f issue_count=5 --repo ${{ github.repository }}
+        run: gh workflow run claude-random-fixes.yml -f issue_count=5 --repo ${{ github.repository }}

@@ -1,0 +1,124 @@
+name: "Claude Random Fixes"
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_count:
+        description: "Number of issues to pick and fix in parallel"
+        required: false
+        default: "1"
+        type: string
+
+jobs:
+  pick-issues:
+    name: "Pick issues"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      matrix: ${{ steps.pick-issues.outputs.matrix }}
+
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Pick random issues"
+        id: pick-issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_COUNT: ${{ inputs.issue_count || '1' }}
+        run: |
+          # Fetch all milestones once
+          MILESTONES=$(gh api "repos/phpstan/phpstan/milestones?per_page=100&state=all" \
+            --jq '[.[] | {title: .title, number: .number}]')
+
+          ISSUE_JSON="[]"
+
+          # Easy fixes - all issues
+          MILESTONE_NUM=$(echo "$MILESTONES" | jq -r '.[] | select(.title == "Easy fixes") | .number')
+          if [ -n "$MILESTONE_NUM" ]; then
+            ISSUES=$(gh api --paginate \
+              "repos/phpstan/phpstan/issues?state=open&milestone=${MILESTONE_NUM}&per_page=100" \
+              --jq '[.[] | {number: .number, title: .title}]' \
+            | jq -s 'add // []')
+            ISSUE_JSON=$(echo "[$ISSUE_JSON, $ISSUES]" | jq '.[0] + .[1]')
+            echo "Fetched $(echo "$ISSUES" | jq 'length') issues from Easy fixes"
+          else
+            echo "Warning: Could not find 'Easy fixes' milestone"
+          fi
+
+          # Dependent types - Bug label only
+          MILESTONE_NUM=$(echo "$MILESTONES" | jq -r '.[] | select(.title == "Dependent types") | .number')
+          if [ -n "$MILESTONE_NUM" ]; then
+            ISSUES=$(gh api --paginate \
+              "repos/phpstan/phpstan/issues?state=open&milestone=${MILESTONE_NUM}&labels=Bug&per_page=100" \
+              --jq '[.[] | {number: .number, title: .title}]' \
+            | jq -s 'add // []')
+            ISSUE_JSON=$(echo "[$ISSUE_JSON, $ISSUES]" | jq '.[0] + .[1]')
+            echo "Fetched $(echo "$ISSUES" | jq 'length') Bug issues from Dependent types"
+          else
+            echo "Warning: Could not find 'Dependent types' milestone"
+          fi
+
+          # Generics - Bug label only
+          MILESTONE_NUM=$(echo "$MILESTONES" | jq -r '.[] | select(.title == "Generics") | .number')
+          if [ -n "$MILESTONE_NUM" ]; then
+            ISSUES=$(gh api --paginate \
+              "repos/phpstan/phpstan/issues?state=open&milestone=${MILESTONE_NUM}&labels=Bug&per_page=100" \
+              --jq '[.[] | {number: .number, title: .title}]' \
+            | jq -s 'add // []')
+            ISSUE_JSON=$(echo "[$ISSUE_JSON, $ISSUES]" | jq '.[0] + .[1]')
+            echo "Fetched $(echo "$ISSUES" | jq 'length') Bug issues from Generics"
+          else
+            echo "Warning: Could not find 'Generics' milestone"
+          fi
+
+          # Deduplicate
+          ISSUE_JSON=$(echo "$ISSUE_JSON" | jq 'unique_by(.number)')
+
+          TOTAL=$(echo "$ISSUE_JSON" | jq 'length')
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "No issues found across milestones"
+            exit 1
+          fi
+
+          COUNT=$ISSUE_COUNT
+          if [ "$COUNT" -gt "$TOTAL" ]; then
+            COUNT=$TOTAL
+          fi
+
+          # Pick COUNT random unique issues
+          SELECTED=$(echo "$ISSUE_JSON" | python3 -c "
+          import json, sys, random
+          issues = json.load(sys.stdin)
+          random.shuffle(issues)
+          count = min(int('$COUNT'), len(issues))
+          print(json.dumps(issues[:count]))
+          ")
+
+          echo "Selected $COUNT issue(s) from $TOTAL total candidates"
+
+          for NUMBER in $(echo "$SELECTED" | jq -r '.[].number'); do
+            TITLE=$(echo "$SELECTED" | jq -r --argjson n "$NUMBER" '.[] | select(.number == $n) | .title')
+            echo "### Selected issue: #$NUMBER - $TITLE" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          echo "matrix=$(echo "$SELECTED" | jq -c '.')" >> "$GITHUB_OUTPUT"
+
+  fix:
+    name: "Fix #${{ matrix.issue.number }}: ${{ matrix.issue.title }}"
+    needs: pick-issues
+    strategy:
+      fail-fast: false
+      matrix:
+        issue: ${{ fromJson(needs.pick-issues.outputs.matrix) }}
+    uses: ./.github/workflows/claude-fix-issue.yml
+    with:
+      issue-number: ${{ matrix.issue.number }}
+    secrets: inherit

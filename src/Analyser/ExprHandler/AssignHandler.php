@@ -980,7 +980,9 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				$unionValues = $i === 0
+					|| ($offsetType !== null && count($offsetType->getConstantScalarTypes()) === 0);
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {

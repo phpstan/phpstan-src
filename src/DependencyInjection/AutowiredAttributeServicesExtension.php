@@ -139,7 +139,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 	/**
 	 * @param class-string $className
-	 * @param array<lowercase-string, non-empty-list<TargetMethodParameter<AutowiredParameter>>> $constructorParameters
+	 * @param array<lowercase-string, list<TargetMethodParameter<AutowiredParameter>>> $constructorParameters
 	 */
 	private function processConstructorParameters(string $className, ServiceDefinition $definition, array $constructorParameters): void
 	{

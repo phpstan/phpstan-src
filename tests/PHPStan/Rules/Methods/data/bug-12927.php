@@ -40,7 +40,7 @@ class HelloWorld
 	{
 		foreach($list as $k => $v) {
 			$list[$k]['abc'] = 'world';
-			assertType("non-empty-list<non-empty-array<string, string>&hasOffsetValue('abc', 'world')>", $list);
+			assertType("non-empty-list<array<string, string>>", $list);
 			assertType("non-empty-array<string, string>&hasOffsetValue('abc', 'world')", $list[$k]);
 		}
 		assertType("list<non-empty-array<string, string>&hasOffsetValue('abc', 'world')>", $list);

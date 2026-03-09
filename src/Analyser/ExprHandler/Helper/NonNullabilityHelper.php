@@ -28,12 +28,7 @@ final class NonNullabilityHelper
 			return new EnsuredNonNullabilityResult($scope, []);
 		}
 
-		// keep certainty
-		$certainty = TrinaryLogic::createYes();
 		$hasExpressionType = $originalScope->hasExpressionType($exprToSpecify);
-		if (!$hasExpressionType->no()) {
-			$certainty = $hasExpressionType;
-		}
 
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
@@ -61,6 +56,12 @@ final class NonNullabilityHelper
 				$scope->getNativeType($parentExpr),
 				$originalScope->hasExpressionType($parentExpr),
 			);
+		}
+
+		// keep certainty
+		$certainty = TrinaryLogic::createYes();
+		if (!$hasExpressionType->no()) {
+			$certainty = $hasExpressionType;
 		}
 
 		$nativeType = $scope->getNativeType($exprToSpecify);

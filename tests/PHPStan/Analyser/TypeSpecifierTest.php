@@ -2,7 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use Bug4820\Param;
 use Override;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Param;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -19,6 +18,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_find;
 use function count;
+use function is_string;
 use function strtolower;
 
 #[AutowiredService]

@@ -16,6 +16,7 @@ final class CallableTypeHelper
 		CallableParametersAcceptor $ours,
 		CallableParametersAcceptor $theirs,
 		bool $treatMixedAsAny,
+		bool $strictTypes = true,
 	): IsSuperTypeOfResult
 	{
 		$theirParameters = $theirs->getParameters();
@@ -72,7 +73,7 @@ final class CallableTypeHelper
 			}
 
 			if ($treatMixedAsAny) {
-				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, true);
+				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, $strictTypes);
 				$isSuperType = new IsSuperTypeOfResult($isSuperType->result, $isSuperType->reasons);
 			} else {
 				$isSuperType = $theirParameter->getType()->isSuperTypeOf($ourParameterType);

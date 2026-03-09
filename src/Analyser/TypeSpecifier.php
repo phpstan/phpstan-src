@@ -1506,7 +1506,7 @@ final class TypeSpecifier
 			&& $exprNode instanceof FuncCall
 			&& $exprNode->name instanceof Name
 			&& in_array(strtolower((string) $exprNode->name), [
-				'trim', 'ltrim', 'rtrim',
+				'trim', 'ltrim', 'rtrim', 'chop',
 				'mb_trim', 'mb_ltrim', 'mb_rtrim',
 			], true)
 			&& isset($exprNode->getArgs()[0])

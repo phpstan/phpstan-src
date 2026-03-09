@@ -77,3 +77,20 @@ function rtrimTypes(string $value): void
 	}
 	assertType('string', $value);
 }
+
+function chopTypes(string $value): void
+{
+	if (chop($value) === '') {
+		assertType('string', $value);
+	} else {
+		assertType('non-empty-string', $value);
+	}
+	assertType('string', $value);
+
+	if (chop($value) !== '') {
+		assertType('non-empty-string', $value);
+	} else {
+		assertType('string', $value);
+	}
+	assertType('string', $value);
+}

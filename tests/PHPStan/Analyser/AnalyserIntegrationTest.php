@@ -1656,6 +1656,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug12246(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12246.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Do-while loop condition is always true.', $errors[0]->getMessage());
+		$this->assertSame(11, $errors[0]->getLine());
+	}
+
 	public function testBigPhpdocArrayShape(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-14012b.php');

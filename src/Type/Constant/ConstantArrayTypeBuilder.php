@@ -258,6 +258,7 @@ final class ConstantArrayTypeBuilder
 			}
 			if (count($scalarTypes) > 0 && count($scalarTypes) < self::ARRAY_COUNT_LIMIT) {
 				$match = true;
+				$hasMatch = false;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {
 					$offsetMatch = false;
@@ -273,6 +274,7 @@ final class ConstantArrayTypeBuilder
 					}
 
 					if ($offsetMatch) {
+						$hasMatch = true;
 						continue;
 					}
 
@@ -281,6 +283,26 @@ final class ConstantArrayTypeBuilder
 
 				if ($match) {
 					$this->valueTypes = $valueTypes;
+					return;
+				}
+
+				if (!$hasMatch && count($this->keyTypes) > 0) {
+					foreach ($scalarTypes as $scalarType) {
+						$this->keyTypes[] = $scalarType;
+						$this->valueTypes[] = $valueType;
+						$this->optionalKeys[] = count($this->keyTypes) - 1;
+					}
+
+					$this->isList = TrinaryLogic::createNo();
+
+					if (
+						!$this->disableArrayDegradation
+						&& count($this->keyTypes) > self::ARRAY_COUNT_LIMIT
+					) {
+						$this->degradeToGeneralArray = true;
+						$this->oversized = true;
+					}
+
 					return;
 				}
 			}

@@ -48,7 +48,7 @@ final class MethodCallReturnTypeHelper
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
+			return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $methodCall);
 		}
 
 		$resolvedTypes = [];
@@ -87,10 +87,10 @@ final class MethodCallReturnTypeHelper
 		}
 
 		if (count($resolvedTypes) > 0) {
-			return VoidToNullTypeTransfomer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
+			return VoidToNullTypeTransformer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 
-		return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $methodCall);
+		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 }

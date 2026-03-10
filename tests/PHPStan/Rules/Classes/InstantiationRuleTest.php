@@ -599,4 +599,14 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14251(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14251.php'], [
+			[
+				'Cannot instantiate trait Bug14251\InternalTrait.',
+				9,
+			],
+		]);
+	}
+
 }

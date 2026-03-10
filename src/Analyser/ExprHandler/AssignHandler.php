@@ -946,6 +946,7 @@ final class AssignHandler implements ExprHandler
 			if (
 				!$offsetValueType instanceof MixedType
 				&& !$offsetValueType->isArray()->yes()
+				&& !($offsetValueType->isIterable()->yes() && !$offsetValueType->isObject()->yes())
 			) {
 				if ($offsetType !== null && $offsetType->isInteger()->yes()) {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::intOffsetAccessibleType());

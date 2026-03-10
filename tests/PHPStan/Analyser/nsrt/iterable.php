@@ -95,7 +95,7 @@ class Foo
 											assertType('mixed', $iterableWithIterableTypehint[0]);
 											assertType('mixed', $mixed);
 											assertType('iterable<Iterables\Bar>', $iterableWithConcreteTypehint);
-											assertType('mixed', $iterableWithConcreteTypehint[0]);
+											assertType('Iterables\Bar', $iterableWithConcreteTypehint[0]);
 											assertType('Iterables\Bar', $bar);
 											assertType('iterable', $this->doBar());
 											assertType('iterable<Iterables\Baz>', $this->doBaz());

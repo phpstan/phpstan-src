@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: some.identifier
+			path:
+				- tests/some-file.php

@@ -38,10 +38,12 @@ use PHPStan\Type\TypeAliasResolver;
 use function array_keys;
 use function array_map;
 use function count;
+use function gettype;
 use function implode;
 use function is_array;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -167,8 +169,16 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 					}
 
 					if (isset($ignoreError['path'])) {
+						if (!is_string($ignoreError['path'])) {
+							$errors[] = sprintf("Key 'path' of ignoreErrors expects a string, %s given. Did you mean 'paths'?", gettype($ignoreError['path']));
+							continue;
+						}
 						$ignorePaths = [$ignoreError['path']];
 					} elseif (isset($ignoreError['paths'])) {
+						if (!is_array($ignoreError['paths'])) {
+							$errors[] = sprintf("Key 'paths' of ignoreErrors expects an array, %s given. Did you mean 'path'?", gettype($ignoreError['paths']));
+							continue;
+						}
 						$ignorePaths = $ignoreError['paths'];
 					} else {
 						continue;

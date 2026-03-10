@@ -2,6 +2,7 @@
 
 namespace Bug14245;
 
+use function array_key_exists;
 use function array_key_first;
 use function array_key_last;
 use function PHPStan\Testing\assertType;
@@ -134,4 +135,14 @@ function ArraySearchWithDifferentArray($array2, $needle): void {
 	assertType('list<int>', $list);
 	$list[array_search($needle, $array2, true)] = 37;
 	assertType('non-empty-array<int|string, int>', $list);
+}
+
+function ArrayKeyExistsKeepsList($needle): void {
+	$list = foo();
+
+	assertType('list<int>', $list);
+	if (array_key_exists($needle, $list)) {
+		$list[$needle] = 37;
+	}
+	assertType('list<int>', $list);
 }

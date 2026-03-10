@@ -97,7 +97,7 @@ final class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
 					$haystackArg = $args[1]->value;
-					$haystackType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg));
+					$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg) : $scope->getNativeType($haystackArg);
 					if ($haystackType instanceof MixedType) {
 						return null;
 					}
@@ -107,7 +107,7 @@ final class ImpossibleCheckTypeHelper
 					}
 
 					$needleArg = $args[0]->value;
-					$needleType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg));
+					$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg) : $scope->getNativeType($needleArg);
 
 					$isStrictComparison = false;
 					if ($argsCount >= 3) {
@@ -198,7 +198,7 @@ final class ImpossibleCheckTypeHelper
 					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectArg = $args[0]->value;
-					$objectType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg));
+					$objectType = $this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg);
 
 					if ($objectType instanceof ConstantStringType
 						&& !$this->reflectionProvider->hasClass($objectType->getValue())
@@ -207,7 +207,7 @@ final class ImpossibleCheckTypeHelper
 					}
 
 					$methodArg = $args[1]->value;
-					$methodType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($methodArg) : $scope->getNativeType($methodArg));
+					$methodType = $this->treatPhpDocTypesAsCertain ? $scope->getType($methodArg) : $scope->getNativeType($methodArg);
 
 					if ($methodType instanceof ConstantStringType) {
 						if ($objectType instanceof ConstantStringType) {
@@ -273,7 +273,7 @@ final class ImpossibleCheckTypeHelper
 				return null;
 			}
 
-			$rootExprType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr));
+			$rootExprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($rootExpr) : $scope->getNativeType($rootExpr);
 			if ($rootExprType instanceof ConstantBooleanType) {
 				return $rootExprType->getValue();
 			}

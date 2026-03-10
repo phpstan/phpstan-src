@@ -200,8 +200,7 @@ final class IgnoredErrorHelperResult
 					continue;
 				}
 				if (
-					isset($unmatchedIgnoredError['count'])
-					&& isset($unmatchedIgnoredError['realCount'])
+					isset($unmatchedIgnoredError['count'], $unmatchedIgnoredError['realCount'])
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($unmatchedIgnoredError['realCount'] < $unmatchedIgnoredError['count']) {

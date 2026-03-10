@@ -2247,13 +2247,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$arrowFunctionScope = $arrowFunctionScope->invalidateExpression(new Variable('this'));
 		}
 
+		$filteredExpressionTypes = $this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes);
+		$filteredNativeExpressionTypes = $arrowFunctionScope->nativeExpressionTypes;
+
+		if (!$arrowFunction->static && $this->hasVariableType('this')->yes()) {
+			foreach ($filteredExpressionTypes as $exprString => $typeHolder) {
+				$expr = $typeHolder->getExpr();
+				if (!$expr instanceof PropertyFetch) {
+					continue;
+				}
+				if ($this->isReadonlyPropertyFetch($expr, true)) {
+					continue;
+				}
+				unset($filteredExpressionTypes[$exprString]);
+			}
+			foreach ($filteredNativeExpressionTypes as $exprString => $typeHolder) {
+				$expr = $typeHolder->getExpr();
+				if (!$expr instanceof PropertyFetch) {
+					continue;
+				}
+				if ($this->isReadonlyPropertyFetch($expr, true)) {
+					continue;
+				}
+				unset($filteredNativeExpressionTypes[$exprString]);
+			}
+		}
+
 		return $this->scopeFactory->create(
 			$arrowFunctionScope->context,
 			$this->isDeclareStrictTypes(),
 			$arrowFunctionScope->getFunction(),
 			$arrowFunctionScope->getNamespace(),
-			$this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes),
-			$arrowFunctionScope->nativeExpressionTypes,
+			$filteredExpressionTypes,
+			$filteredNativeExpressionTypes,
 			$arrowFunctionScope->conditionalExpressions,
 			$arrowFunctionScope->inClosureBindScopeClasses,
 			new ClosureType(),

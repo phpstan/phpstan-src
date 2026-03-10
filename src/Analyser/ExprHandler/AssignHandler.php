@@ -53,6 +53,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
@@ -987,25 +988,11 @@ final class AssignHandler implements ExprHandler
 				continue;
 			}
 
-			if (!$arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
+			if (!$this->shouldKeepList($arrayDimFetch, $scope, $offsetValueType)) {
 				continue;
 			}
 
-			if ( // keep list for $list[$index + 1] assignments
-				$arrayDimFetch->dim->right instanceof Variable
-				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->left->value === 1
-				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
-			) {
-				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
-			} elseif ( // keep list for $list[1 + $index] assignments
-				$arrayDimFetch->dim->left instanceof Variable
-				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->right->value === 1
-				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
-			) {
-				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
-			}
+			$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 		}
 
 		$additionalExpressions = [];
@@ -1027,6 +1014,66 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return [$valueToWrite, $additionalExpressions];
+	}
+
+	private function shouldKeepList(ArrayDimFetch $arrayDimFetch, Scope $scope, Type $offsetValueType): bool
+	{
+		if ($arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
+			if ( // keep list for $list[$index + 1] assignments
+				$arrayDimFetch->dim->right instanceof Variable
+				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->left->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
+			) {
+				return true;
+			} elseif ( // keep list for $list[1 + $index] assignments
+				$arrayDimFetch->dim->left instanceof Variable
+				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->right->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
+			) {
+				return true;
+			}
+		} elseif ( // keep list for $list[count($list) - n] assignments
+			$arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
+			&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+			&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->left->name instanceof Name
+			&& in_array($arrayDimFetch->dim->left->name->toLowerString(), ['count', 'sizeof'], true)
+			&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
+			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()
+			&& $offsetValueType->isIterableAtLeastOnce()->yes()
+		) {
+			return true;
+		} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
+			$arrayDimFetch->dim instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->name instanceof Name
+			&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
+			&& count($arrayDimFetch->dim->getArgs()) >= 1
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
+		) {
+			return true;
+		} elseif ( // keep list for $list[array_search($needle, $list)] assignments
+			$arrayDimFetch->dim instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->name instanceof Name
+			&& $arrayDimFetch->dim->name->toLowerString() === 'array_search'
+			&& count($arrayDimFetch->dim->getArgs()) >= 1
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[1]->value)
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private function isSameVariable(Expr $a, Expr $b): bool
+	{
+		if ($a instanceof Variable && $b instanceof Variable && is_string($a->name) && is_string($b->name)) {
+			return $a->name === $b->name;
+		}
+
+		return false;
 	}
 
 }

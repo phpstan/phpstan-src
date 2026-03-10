@@ -17,7 +17,7 @@ use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransfomer;
+use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -808,7 +808,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		return VoidToNullTypeTransfomer::transform($parametersAcceptor->getReturnType(), $expr);
+		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

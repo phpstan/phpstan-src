@@ -3431,16 +3431,68 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$otherHolders = $otherConditionalExpressions[$exprString];
+			$allKeysMatch = true;
 			foreach (array_keys($holders) as $key) {
 				if (!array_key_exists($key, $otherHolders)) {
-					continue 2;
+					$allKeysMatch = false;
+					break;
 				}
 			}
 
-			$newConditionalExpressions[$exprString] = $holders;
+			if ($allKeysMatch) {
+				$newConditionalExpressions[$exprString] = $holders;
+				continue;
+			}
+
+			// Keys don't match exactly - try matching by condition expressions
+			// and merge result type holders
+			$mergedHolders = [];
+			foreach ($holders as $holder) {
+				$conditionHolders = $holder->getConditionExpressionTypeHolders();
+				foreach ($otherHolders as $otherHolder) {
+					if ($this->conditionExpressionHoldersMatch($conditionHolders, $otherHolder->getConditionExpressionTypeHolders())) {
+						$mergedTypeHolder = $holder->getTypeHolder()->and($otherHolder->getTypeHolder());
+						$mergedHolder = new ConditionalExpressionHolder(
+							$conditionHolders,
+							$mergedTypeHolder,
+						);
+						$mergedHolders[$mergedHolder->getKey()] = $mergedHolder;
+						break;
+					}
+				}
+			}
+
+			if (count($mergedHolders) <= 0) {
+				continue;
+			}
+
+			$newConditionalExpressions[$exprString] = $mergedHolders;
 		}
 
 		return $newConditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $a
+	 * @param array<string, ExpressionTypeHolder> $b
+	 */
+	private function conditionExpressionHoldersMatch(array $a, array $b): bool
+	{
+		if (count($a) !== count($b)) {
+			return false;
+		}
+
+		foreach ($a as $key => $holder) {
+			if (!array_key_exists($key, $b)) {
+				return false;
+			}
+
+			if (!$holder->equals($b[$key])) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

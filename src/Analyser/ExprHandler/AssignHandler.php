@@ -988,46 +988,7 @@ final class AssignHandler implements ExprHandler
 				continue;
 			}
 
-			$keepList = false;
-			if ($arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
-				if ( // keep list for $list[$index + 1] assignments
-					$arrayDimFetch->dim->right instanceof Variable
-					&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
-					&& $arrayDimFetch->dim->left->value === 1
-					&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
-				) {
-					$keepList = true;
-				} elseif ( // keep list for $list[1 + $index] assignments
-					$arrayDimFetch->dim->left instanceof Variable
-					&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-					&& $arrayDimFetch->dim->right->value === 1
-					&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
-				) {
-					$keepList = true;
-				}
-			} elseif ( // keep list for $list[count($list) - n] assignments
-				$arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
-				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
-				&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
-				&& $arrayDimFetch->dim->left->name instanceof Name
-				&& $arrayDimFetch->dim->left->name->toLowerString() === 'count'
-				&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
-				&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
-				&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()
-				&& $offsetValueType->isIterableAtLeastOnce()->yes()
-			) {
-				$keepList = true;
-			} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
-				$arrayDimFetch->dim instanceof Expr\FuncCall
-				&& $arrayDimFetch->dim->name instanceof Name
-				&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
-				&& count($arrayDimFetch->dim->getArgs()) >= 1
-				&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
-			) {
-				$keepList = true;
-			}
-
-			if (!$keepList) {
+			if (!$this->shouldKeepList($arrayDimFetch, $scope, $offsetValueType)) {
 				continue;
 			}
 
@@ -1053,6 +1014,49 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return [$valueToWrite, $additionalExpressions];
+	}
+
+	private function shouldKeepList(ArrayDimFetch $arrayDimFetch, Scope $scope, Type $offsetValueType): bool
+	{
+		if ($arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
+			if ( // keep list for $list[$index + 1] assignments
+				$arrayDimFetch->dim->right instanceof Variable
+				&& $arrayDimFetch->dim->left instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->left->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->right))->yes()
+			) {
+				return true;
+			} elseif ( // keep list for $list[1 + $index] assignments
+				$arrayDimFetch->dim->left instanceof Variable
+				&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+				&& $arrayDimFetch->dim->right->value === 1
+				&& $scope->hasExpressionType(new ArrayDimFetch($arrayDimFetch->var, $arrayDimFetch->dim->left))->yes()
+			) {
+				return true;
+			}
+		} elseif ( // keep list for $list[count($list) - n] assignments
+			$arrayDimFetch->dim instanceof Expr\BinaryOp\Minus
+			&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
+			&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->left->name instanceof Name
+			&& $arrayDimFetch->dim->left->name->toLowerString() === 'count'
+			&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
+			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()
+			&& $offsetValueType->isIterableAtLeastOnce()->yes()
+		) {
+			return true;
+		} elseif ( // keep list for $list[array_key_last($list)] and $list[array_key_first($list)] assignments
+			$arrayDimFetch->dim instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->name instanceof Name
+			&& in_array($arrayDimFetch->dim->name->toLowerString(), ['array_key_last', 'array_key_first'], true)
+			&& count($arrayDimFetch->dim->getArgs()) >= 1
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
+		) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private function isSameVariable(Expr $a, Expr $b): bool

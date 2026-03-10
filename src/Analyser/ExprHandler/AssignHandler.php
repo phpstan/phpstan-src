@@ -1054,6 +1054,14 @@ final class AssignHandler implements ExprHandler
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[0]->value)
 		) {
 			return true;
+		} elseif ( // keep list for $list[array_search($needle, $list)] assignments
+			$arrayDimFetch->dim instanceof Expr\FuncCall
+			&& $arrayDimFetch->dim->name instanceof Name
+			&& $arrayDimFetch->dim->name->toLowerString() === 'array_search'
+			&& count($arrayDimFetch->dim->getArgs()) >= 1
+			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->getArgs()[1]->value)
+		) {
+			return true;
 		}
 
 		return false;

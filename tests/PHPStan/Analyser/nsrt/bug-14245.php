@@ -93,3 +93,33 @@ function keyDifferentArray(array $arr): void {
 	$list[array_key_first($arr)] = 37;
 	assertType('non-empty-array<int|string, int>', $list);
 }
+
+function overwriteArraySearch($needle): void {
+	$list = foo();
+
+	assertType('list<int>', $list);
+	// search in empty-array, or with a non-existent key will return false,
+	// which gets auto-casted to 0, so we still have a list
+	// https://3v4l.org/RZbOK
+	$list[array_search($needle, $list)] = 37;
+	assertType('non-empty-list<int>', $list);
+}
+
+function overwriteArraySearchStrict($needle): void {
+	$list = foo();
+
+	assertType('list<int>', $list);
+	// search in empty-array, or with a non-existent key will return false,
+	// which gets auto-casted to 0, so we still have a list
+	// https://3v4l.org/RZbOK
+	$list[array_search($needle, $list, true)] = 37;
+	assertType('non-empty-list<int>', $list);
+}
+
+function ArraySearchWithDifferentArray($array2, $needle): void {
+	$list = foo();
+
+	assertType('list<int>', $list);
+	$list[array_search($needle, $array2, true)] = 37;
+	assertType('non-empty-array<int|string, int>', $list);
+}

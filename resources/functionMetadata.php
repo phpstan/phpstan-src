@@ -737,6 +737,7 @@ return [
 	'array_key_last' => ['hasSideEffects' => false],
 	'array_keys' => ['hasSideEffects' => false],
 	'array_last' => ['hasSideEffects' => false],
+	'array_map' => ['hasSideEffects' => false],
 	'array_merge' => ['hasSideEffects' => false],
 	'array_merge_recursive' => ['hasSideEffects' => false],
 	'array_pad' => ['hasSideEffects' => false],

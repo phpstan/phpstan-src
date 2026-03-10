@@ -47,3 +47,25 @@ class Test2
 		}
 	}
 }
+
+class Test3
+{
+	/**
+	 * @param int<0, 30> $columnIndex
+	 */
+	public function iterateRowColumnIndicesDecrementing(int $rows, int $columns, int $columnIndex): void
+	{
+		if ($rows < 1 || $columns < 1) return;
+		$size = $rows * $columns;
+
+		for ($i = 0; $i < $size; $i++) {
+			assertType('int<min, 30>', $columnIndex);
+			if ($columnIndex < 3) {
+				$columnIndex--;
+			} else {
+				$columnIndex = 0;
+			}
+			assertType('int<min, 1>', $columnIndex);
+		}
+	}
+}

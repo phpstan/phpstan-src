@@ -4536,7 +4536,7 @@ class NodeScopeResolver
 				&& $lastCondExpr->left instanceof Variable
 				&& $lastCondExpr->right instanceof FuncCall
 				&& $lastCondExpr->right->name instanceof Name
-				&& $lastCondExpr->right->name->toLowerString() === 'count'
+				&& in_array($lastCondExpr->right->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->right->getArgs()) > 0
 				&& $lastCondExpr->right->getArgs()[0]->value instanceof Variable
 				&& is_string($stmt->init[0]->var->name)
@@ -4557,7 +4557,7 @@ class NodeScopeResolver
 				&& $lastCondExpr->right instanceof Variable
 				&& $lastCondExpr->left instanceof FuncCall
 				&& $lastCondExpr->left->name instanceof Name
-				&& $lastCondExpr->left->name->toLowerString() === 'count'
+				&& in_array($lastCondExpr->left->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->left->getArgs()) > 0
 				&& $lastCondExpr->left->getArgs()[0]->value instanceof Variable
 				&& is_string($stmt->init[0]->var->name)

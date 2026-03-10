@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -12,9 +13,11 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
+use function array_slice;
 use function count;
 use function explode;
 use function getenv;
+use function implode;
 use function in_array;
 use function is_string;
 use function ltrim;
@@ -27,6 +30,9 @@ use function str_replace;
 final class TableErrorFormatter implements ErrorFormatter
 {
 
+	public const ERRORS_LIMIT = 1000;
+	private const FORCE_SHOW_ALL_ERRORS = 'PHPSTAN_TABLE_ERROR_FORMATTER_FORCE_SHOW_ALL_ERRORS';
+
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
 		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
@@ -38,8 +44,21 @@ final class TableErrorFormatter implements ErrorFormatter
 		private ?string $editorUrl,
 		#[AutowiredParameter]
 		private ?string $editorUrlTitle,
+		#[AutowiredParameter]
+		private string $usedLevel,
+		private ?int $errorsBudget = null,
 	)
 	{
+		if ($this->errorsBudget !== null) {
+			return;
+		}
+
+		$forceShowAll = getenv(self::FORCE_SHOW_ALL_ERRORS);
+		if (!in_array($forceShowAll, [false, '0'], true)) {
+			return;
+		}
+
+		$this->errorsBudget = self::ERRORS_LIMIT;
 	}
 
 	/** @api */
@@ -84,6 +103,8 @@ final class TableErrorFormatter implements ErrorFormatter
 			$fileErrors[$fileSpecificError->getFile()][] = $fileSpecificError;
 		}
 
+		$errorsBudget = $this->errorsBudget;
+		$printedErrors = 0;
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
@@ -149,6 +170,14 @@ final class TableErrorFormatter implements ErrorFormatter
 				];
 			}
 
+			$printedErrors += count($rows);
+			if ($errorsBudget !== null && $printedErrors > $errorsBudget) {
+				$rows = array_slice($rows, 0, $errorsBudget - ($printedErrors - count($rows)));
+
+				$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
+				break;
+			}
+
 			$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
 		}
 
@@ -161,15 +190,29 @@ final class TableErrorFormatter implements ErrorFormatter
 			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', OutputFormatter::escape($warning)], $analysisResult->getWarnings()));
 		}
 
-		$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());
-		if ($warningsCount > 0) {
-			$finalMessage .= sprintf($warningsCount === 1 ? ' and %d warning' : ' and %d warnings', $warningsCount);
-		}
+		if ($errorsBudget !== null && $printedErrors > $errorsBudget) {
+			$style->error(sprintf('Found %s+ errors', $errorsBudget));
 
-		if ($analysisResult->getTotalErrorsCount() > 0) {
-			$style->error($finalMessage);
+			$note = [];
+			$note[] = sprintf('Result is limited to the first %d errors', $errorsBudget);
+			if ($this->usedLevel !== CommandHelper::DEFAULT_LEVEL) {
+				$note[] = '- Consider lowering the PHPStan level';
+			}
+			$note[] = sprintf('- Pass %s=1 environment variable to show all errors', self::FORCE_SHOW_ALL_ERRORS);
+			$note[] = '- Consider using PHPStan Pro for more comfortable error browsing';
+			$note[] = '  Learn more: https://phpstan.com';
+			$style->note(implode("\n", $note));
 		} else {
-			$style->warning($finalMessage);
+			$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());
+			if ($warningsCount > 0) {
+				$finalMessage .= sprintf($warningsCount === 1 ? ' and %d warning' : ' and %d warnings', $warningsCount);
+			}
+
+			if ($analysisResult->getTotalErrorsCount() > 0) {
+				$style->error($finalMessage);
+			} else {
+				$style->warning($finalMessage);
+			}
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;

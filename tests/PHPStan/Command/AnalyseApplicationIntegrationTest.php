@@ -76,6 +76,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			false,
 			null,
 			null,
+			CommandHelper::DEFAULT_LEVEL,
 		);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],

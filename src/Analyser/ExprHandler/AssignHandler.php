@@ -1039,7 +1039,7 @@ final class AssignHandler implements ExprHandler
 			&& $arrayDimFetch->dim->right instanceof Node\Scalar\Int_
 			&& $arrayDimFetch->dim->left instanceof Expr\FuncCall
 			&& $arrayDimFetch->dim->left->name instanceof Name
-			&& $arrayDimFetch->dim->left->name->toLowerString() === 'count'
+			&& in_array($arrayDimFetch->dim->left->name->toLowerString(), ['count', 'sizeof'], true)
 			&& count($arrayDimFetch->dim->left->getArgs()) === 1 // could support COUNT_RECURSIVE, COUNT_NORMAL
 			&& $this->isSameVariable($arrayDimFetch->var, $arrayDimFetch->dim->left->getArgs()[0]->value)
 			&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($arrayDimFetch->dim))->yes()

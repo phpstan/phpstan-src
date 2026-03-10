@@ -592,6 +592,8 @@ final class TypeNodeResolver
 			$arrayTypeType = TypeCombinator::union(...$arrayTypeTypes);
 			$addArray = true;
 
+			// Pass 1: merge non-array iterables (ObjectType, IterableType)
+			$nonArrayMerged = false;
 			foreach ($otherTypeTypes as &$type) {
 				if (!$type->isIterable()->yes() || !$type->getIterableValueType()->isSuperTypeOf($arrayTypeType)->yes()) {
 					continue;
@@ -599,17 +601,33 @@ final class TypeNodeResolver
 
 				if ($type instanceof ObjectType && !$type instanceof GenericObjectType) {
 					$type = new IntersectionType([$type, new IterableType(new MixedType(), $arrayTypeType)]);
-				} elseif ($type instanceof ArrayType) {
-					$type = new ArrayType(new MixedType(), $arrayTypeType);
-				} elseif ($type instanceof ConstantArrayType) {
-					$type = new ArrayType(new MixedType(), $arrayTypeType);
+					$nonArrayMerged = true;
 				} elseif ($type instanceof IterableType) {
 					$type = new IterableType(new MixedType(), $arrayTypeType);
+					$nonArrayMerged = true;
 				} else {
 					continue;
 				}
 
 				$addArray = false;
+			}
+			unset($type);
+
+			// Pass 2: merge array types only if non-array iterables were also merged
+			if ($nonArrayMerged) {
+				foreach ($otherTypeTypes as &$type) {
+					if (!$type->isIterable()->yes() || !$type->getIterableValueType()->isSuperTypeOf($arrayTypeType)->yes()) {
+						continue;
+					}
+
+					if (!($type instanceof ArrayType) && !($type instanceof ConstantArrayType)) {
+						continue;
+					}
+
+					$type = new ArrayType(new MixedType(), $arrayTypeType);
+					$addArray = false;
+				}
+				unset($type);
 			}
 
 			if ($addArray) {

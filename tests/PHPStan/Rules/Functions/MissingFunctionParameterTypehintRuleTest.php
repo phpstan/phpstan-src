@@ -34,6 +34,11 @@ class MissingFunctionParameterTypehintRuleTest extends RuleTestCase
 				24,
 			],
 			[
+				'Function MissingFunctionParameterTypehint\intIterableTypehint() has parameter $a with no value type specified in iterable type array.',
+				31,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+			[
 				'Function MissingFunctionParameterTypehint\missingArrayTypehint() has parameter $a with no value type specified in iterable type array.',
 				36,
 				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,

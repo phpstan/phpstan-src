@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -41,44 +42,45 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		}
 
 		$array = $args[0]->value;
-		$arrayArgType = $scope->getType($array);
-		$arrayTypes = $arrayArgType->getArrays();
-
-		if (count($arrayTypes) === 0) {
+		$callable = $args[1]->value;
+		if ($callable instanceof Expr\ArrowFunction) {
+			$callableExpr = $callable->expr;
+		} elseif (
+			$callable instanceof Expr\Closure &&
+			count($callable->stmts) === 1 &&
+			$callable->stmts[0] instanceof Stmt\Return_
+		) {
+			$callableExpr = $callable->stmts[0]->expr;
+		} else {
 			return new SpecifiedTypes();
 		}
 
-		$callable = $args[1]->value;
+		$callableParams = $callable->params;
+		$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callableExpr, $context)->getSureTypes();
 
-		if ($callable instanceof Expr\ArrowFunction) {
+		if (
+			isset($callableParams[0]) &&
+			$callableParams[0]->var instanceof Variable &&
+			is_string($callableParams[0]->var->name)
+		) {
+			$valueType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParams[0]->var->name);
+		}
 
-			$callableParams = $callable->params;
-			$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callable->expr, $context)->getSureTypes();
+		if (
+			isset($callableParams[1]) &&
+			$callableParams[1]->var instanceof Variable &&
+			is_string($callableParams[1]->var->name)
+		) {
+			$keyType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParams[1]->var->name);
+		}
 
-			if (
-				isset($callableParams[0]) &&
-				$callableParams[0]->var instanceof Variable &&
-				is_string($callableParams[0]->var->name)
-			) {
-				$valueType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParams[0]->var->name);
-			}
-
-			if (
-				isset($callableParams[1]) &&
-				$callableParams[1]->var instanceof Variable &&
-				is_string($callableParams[1]->var->name)
-			) {
-				$keyType = $this->fetchTypeByVariable($specifiedTypesInFuncCall, $callableParams[1]->var->name);
-			}
-
-			if (isset($keyType) || isset($valueType)) {
-				return $this->typeSpecifier->create(
-					$array,
-					new ArrayType($keyType ?? new MixedType(), $valueType ?? new MixedType()),
-					$context,
-					$scope,
-				);
-			}
+		if (isset($keyType) || isset($valueType)) {
+			return $this->typeSpecifier->create(
+				$array,
+				new ArrayType($keyType ?? new MixedType(), $valueType ?? new MixedType()),
+				$context,
+				$scope,
+			);
 		}
 
 		return new SpecifiedTypes();

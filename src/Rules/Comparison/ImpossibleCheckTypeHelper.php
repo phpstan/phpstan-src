@@ -310,6 +310,11 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
+			if ($scope->isInTrait() && $sureType[0] instanceof Expr\Variable && $sureType[0]->name === 'this') {
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
+			}
+
 			if ($this->treatPhpDocTypesAsCertain) {
 				$argumentType = $scope->getType($sureType[0]);
 			} else {
@@ -332,6 +337,11 @@ final class ImpossibleCheckTypeHelper
 
 		foreach ($sureNotTypes as $sureNotType) {
 			if (self::isSpecified($typeSpecifierScope, $node, $sureNotType[0])) {
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
+			}
+
+			if ($scope->isInTrait() && $sureNotType[0] instanceof Expr\Variable && $sureNotType[0]->name === 'this') {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}

@@ -8,7 +8,7 @@ use PHPStan\Analyser\Traverser\VoidToNullTraverser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
-final class VoidToNullTypeTransfomer
+final class VoidToNullTypeTransformer
 {
 
 	public static function transform(Type $type, Node $node): Type

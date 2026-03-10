@@ -32,11 +32,23 @@ final class GenericParametersAcceptorResolver
 		$passedArgs = [];
 
 		$parameters = $parametersAcceptor->getParameters();
+
+		// Build a name map that handles unnamed parameters (e.g. from PHPDoc callables)
+		// by assigning unique synthetic names to avoid collisions
+		$paramNameMap = [];
+		foreach ($parameters as $idx => $param) {
+			$name = $param->getName();
+			if ($name === '' || isset($paramNameMap[$name])) {
+				$name = '__param_' . $idx;
+			}
+			$paramNameMap[$idx] = $name;
+		}
+
 		$namedArgTypes = [];
 		foreach ($argTypes as $i => $argType) {
 			if (is_int($i)) {
 				if (isset($parameters[$i])) {
-					$namedArgTypes[$parameters[$i]->getName()] = $argType;
+					$namedArgTypes[$paramNameMap[$i]] = $argType;
 					continue;
 				}
 				if (count($parameters) > 0) {
@@ -56,8 +68,11 @@ final class GenericParametersAcceptorResolver
 			$namedArgTypes[$i] = $argType;
 		}
 
-		foreach ($parameters as $param) {
-			if (isset($namedArgTypes[$param->getName()])) {
+		foreach ($parameters as $idx => $param) {
+			$lookupName = $paramNameMap[$idx] ?? $param->getName();
+			if (isset($namedArgTypes[$lookupName])) {
+				$argType = $namedArgTypes[$lookupName];
+			} elseif (isset($namedArgTypes[$param->getName()])) {
 				$argType = $namedArgTypes[$param->getName()];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();

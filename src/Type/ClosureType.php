@@ -596,9 +596,46 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	private function inferTemplateTypesOnParametersAcceptor(ParametersAcceptor $parametersAcceptor): TemplateTypeMap
 	{
 		$parameterTypes = array_map(static fn ($parameter) => $parameter->getType(), $this->getParameters());
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$parametersAcceptor], false);
-		$args = $parametersAcceptor->getParameters();
-		$returnType = $parametersAcceptor->getReturnType();
+		$resolvedAcceptor = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$parametersAcceptor], false);
+
+		// If the inner callable had template types that couldn't be resolved
+		// (mapped to ErrorType), use the original unresolved parameters to
+		// preserve template types through composition (e.g. flip(zip(...)))
+		// But only when inner template names don't collide with outer ones,
+		// to avoid cross-resolution issues.
+		$useOriginal = false;
+		if ($parametersAcceptor->getTemplateTypeMap()->count() > 0) {
+			$hasUnresolved = false;
+			foreach ($resolvedAcceptor->getResolvedTemplateTypeMap()->getTypes() as $type) {
+				if ($type instanceof ErrorType) {
+					$hasUnresolved = true;
+					break;
+				}
+			}
+			if ($hasUnresolved) {
+				$outerTemplateNames = [];
+				foreach ($this->getParameters() as $param) {
+					foreach ($param->getType()->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant()) as $ref) {
+						$outerTemplateNames[$ref->getType()->getName()] = true;
+					}
+				}
+				foreach ($this->getReturnType()->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant()) as $ref) {
+					$outerTemplateNames[$ref->getType()->getName()] = true;
+				}
+				$hasCollision = false;
+				foreach ($parametersAcceptor->getTemplateTypeMap()->getTypes() as $name => $type) {
+					if (isset($outerTemplateNames[$name])) {
+						$hasCollision = true;
+						break;
+					}
+				}
+				$useOriginal = !$hasCollision;
+			}
+		}
+
+		$acceptor = $useOriginal ? $parametersAcceptor : $resolvedAcceptor;
+		$args = $acceptor->getParameters();
+		$returnType = $acceptor->getReturnType();
 
 		$typeMap = TemplateTypeMap::createEmpty();
 		foreach ($this->getParameters() as $i => $param) {

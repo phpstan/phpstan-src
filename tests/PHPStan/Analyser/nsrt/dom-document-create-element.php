@@ -10,7 +10,7 @@ class Foo
 
 	public function dynamicName(DOMDocument $doc, string $name): void
 	{
-		assertType('DOMElement|false', $doc->createElement($name));
+		assertType('(DOMElement|false)', $doc->createElement($name));
 	}
 
 	public function validConstantNames(DOMDocument $doc): void
@@ -24,9 +24,9 @@ class Foo
 
 	public function invalidConstantNames(DOMDocument $doc): void
 	{
-		assertType('DOMElement|false', $doc->createElement(''));
-		assertType('DOMElement|false', $doc->createElement('123element'));
-		assertType('DOMElement|false', $doc->createElement('my element'));
+		assertType('(DOMElement|false)', $doc->createElement(''));
+		assertType('(DOMElement|false)', $doc->createElement('123element'));
+		assertType('(DOMElement|false)', $doc->createElement('my element'));
 	}
 
 	/**
@@ -36,7 +36,7 @@ class Foo
 	public function unions(DOMDocument $doc, string $validUnion, string $mixedUnion): void
 	{
 		assertType('DOMElement', $doc->createElement($validUnion));
-		assertType('DOMElement|false', $doc->createElement($mixedUnion));
+		assertType('(DOMElement|false)', $doc->createElement($mixedUnion));
 	}
 
 	public function localVariable(DOMDocument $doc): void

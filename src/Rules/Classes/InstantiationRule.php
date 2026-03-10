@@ -156,6 +156,14 @@ final class InstantiationRule implements Rule
 			$classReflection = $this->reflectionProvider->getClass($class);
 		}
 
+		if ($classReflection->isTrait() && $isName) {
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Cannot instantiate trait %s.', $classReflection->getDisplayName()),
+				)->identifier('new.trait')->build(),
+			];
+		}
+
 		if ($classReflection->isEnum() && $isName) {
 			return [
 				RuleErrorBuilder::message(

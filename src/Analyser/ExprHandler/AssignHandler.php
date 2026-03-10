@@ -940,7 +940,9 @@ final class AssignHandler implements ExprHandler
 			$offsetValueTypeStack[] = $offsetValueType;
 		}
 
-		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
+		$reversedOffsetTypes = array_reverse($offsetTypes);
+		$lastOffsetIndex = count($reversedOffsetTypes) - 1;
+		foreach ($reversedOffsetTypes as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
 			if (
@@ -981,7 +983,11 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				$unionValues = $i === 0;
+				if (!$unionValues && $i === $lastOffsetIndex && $offsetType !== null) {
+					$unionValues = $this->shouldUnionExistingItemType($offsetValueType, $valueToWrite);
+				}
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {
@@ -1071,6 +1077,36 @@ final class AssignHandler implements ExprHandler
 	{
 		if ($a instanceof Variable && $b instanceof Variable && is_string($a->name) && is_string($b->name)) {
 			return $a->name === $b->name;
+		}
+
+		return false;
+	}
+
+	/**
+	 * When modifying a nested array dimension with a non-constant key,
+	 * check if the composed value changes any existing constant-array
+	 * key values. If it does, the existing item type should be unioned
+	 * because unmodified elements still have their original types.
+	 */
+	private function shouldUnionExistingItemType(Type $offsetValueType, Type $composedValue): bool
+	{
+		$existingItemType = $offsetValueType->getIterableValueType();
+
+		if (!$existingItemType->isConstantArray()->yes() || !$composedValue->isConstantArray()->yes()) {
+			return false;
+		}
+
+		foreach ($existingItemType->getConstantArrays() as $existingArray) {
+			foreach ($existingArray->getKeyTypes() as $i => $keyType) {
+				$existingValue = $existingArray->getValueTypes()[$i];
+				if ($composedValue->hasOffsetValueType($keyType)->no()) {
+					continue;
+				}
+				$newValue = $composedValue->getOffsetValueType($keyType);
+				if (!$newValue->isSuperTypeOf($existingValue)->yes()) {
+					return true;
+				}
+			}
 		}
 
 		return false;

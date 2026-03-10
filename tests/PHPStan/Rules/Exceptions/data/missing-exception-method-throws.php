@@ -122,4 +122,15 @@ class Foo
 		$dti->modify($m);
 	}
 
+	public function domCreateElementDoesNotThrow(\DOMDocument $doc): void
+	{
+		$doc->createElement('div');
+		$doc->createElement('my-element');
+	}
+
+	public function domCreateElementDoesThrow(\DOMDocument $doc, string $name): void
+	{
+		$doc->createElement($name);
+	}
+
 }

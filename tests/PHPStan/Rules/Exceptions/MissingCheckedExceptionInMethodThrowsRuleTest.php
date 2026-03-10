@@ -67,6 +67,10 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 				122,
 			];
 		}
+		$errors[] = [
+			'Method MissingExceptionMethodThrows\Foo::domCreateElementDoesThrow() throws checked exception DOMException but it\'s missing from the PHPDoc @throws tag.',
+			133,
+		];
 		$this->analyse([__DIR__ . '/data/missing-exception-method-throws.php'], $errors);
 	}
 

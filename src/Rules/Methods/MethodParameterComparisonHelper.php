@@ -355,8 +355,6 @@ final class MethodParameterComparisonHelper
 			}
 
 			$messages[] = $error->build();
-
-			continue;
 		}
 
 		return $messages;

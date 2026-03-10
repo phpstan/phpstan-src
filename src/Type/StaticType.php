@@ -16,6 +16,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -200,7 +201,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function getClassStringType(): Type
 	{
-		return $this->getStaticObjectType()->getClassStringType();
+		return new GenericClassStringType($this);
 	}
 
 	public function isEnum(): TrinaryLogic

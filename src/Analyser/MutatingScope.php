@@ -2080,6 +2080,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 			}
 
+			if ($this->shouldNotCarryForwardPropertyFetchInClosure($expr)) {
+				continue;
+			}
+
 			$expressionTypes[$exprString] = $typeHolder;
 		}
 
@@ -2144,6 +2148,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	private function shouldNotCarryForwardPropertyFetchInClosure(Expr $expr): bool
+	{
+		if (!$expr instanceof PropertyFetch) {
+			return false;
+		}
+
+		if (!$expr->name instanceof Identifier) {
+			return false;
+		}
+
+		$objectType = $this->getType($expr->var);
+		$propertyName = $expr->name->name;
+
+		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->hasNativeProperty($propertyName)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool

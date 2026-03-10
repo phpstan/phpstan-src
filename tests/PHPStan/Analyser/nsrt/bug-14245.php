@@ -53,6 +53,18 @@ function listKnownSize(): void {
 	assertType('list<int>', $list);
 }
 
+function listKnownHugeSize(): void {
+	$list = foo();
+	assertType('list<int>', $list);
+	if (count($list) === 50000) {
+		assertType('non-empty-list<int>', $list);
+		$list[count($list) - 3000] = 37;
+		assertType('non-empty-array<int<-2999, max>, int>', $list);
+	}
+
+	assertType('array<int<-2999, max>, int>', $list);
+}
+
 function overwriteKeyLast(): void {
 	$list = foo();
 	$count = count($list);

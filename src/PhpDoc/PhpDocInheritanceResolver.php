@@ -8,6 +8,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
 use function count;
+use function explode;
 use function is_bool;
 use function strtolower;
 
@@ -81,10 +82,12 @@ final class PhpDocInheritanceResolver
 		array $currentPositionalParameterNames,
 	): ?ResolvedPhpDocBlock
 	{
+		$methodNameForLookup = $this->resolveOriginalMethodName($declaringClass, $methodName);
+
 		$parent = $declaringClass->getParentClass();
 		if ($parent !== null) {
-			if ($parent->hasNativeMethod($methodName)) {
-				$parentMethod = $parent->getNativeMethod($methodName);
+			if ($parent->hasNativeMethod($methodNameForLookup)) {
+				$parentMethod = $parent->getNativeMethod($methodNameForLookup);
 				if (!$parentMethod->isPrivate() && $parentMethod->getResolvedPhpDoc() !== null) {
 					if ($parentMethod->getName() !== '__construct' || !$parentMethod->getDeclaringClass()->isBuiltin()) {
 						return $this->resolveMethodPhpDocFromParentClass($parentMethod, $parentMethod->getResolvedPhpDoc(), $declaringClass, $parent, $currentResolvedPhpDoc, $currentPositionalParameterNames);
@@ -94,11 +97,11 @@ final class PhpDocInheritanceResolver
 		}
 
 		foreach ($declaringClass->getImmediateInterfaces() as $interface) {
-			if (!$interface->hasNativeMethod($methodName)) {
+			if (!$interface->hasNativeMethod($methodNameForLookup)) {
 				continue;
 			}
 
-			$interfaceMethod = $interface->getNativeMethod($methodName);
+			$interfaceMethod = $interface->getNativeMethod($methodNameForLookup);
 			if ($interfaceMethod->isPrivate()) {
 				continue;
 			}
@@ -110,11 +113,11 @@ final class PhpDocInheritanceResolver
 		}
 
 		foreach ($declaringClass->getTraits() as $trait) {
-			if (!$trait->hasNativeMethod($methodName)) {
+			if (!$trait->hasNativeMethod($methodNameForLookup)) {
 				continue;
 			}
 
-			$traitMethod = $trait->getNativeMethod($methodName);
+			$traitMethod = $trait->getNativeMethod($methodNameForLookup);
 			if ($traitMethod->getDocComment() === null) {
 				continue;
 			}
@@ -135,7 +138,7 @@ final class PhpDocInheritanceResolver
 				$declaringClass->getFileName(),
 				$declaringClass->getName(),
 				$trait->getName(),
-				$methodName,
+				$methodNameForLookup,
 				$traitMethod->getDocComment(),
 			);
 
@@ -208,6 +211,19 @@ final class PhpDocInheritanceResolver
 		}
 
 		return $parameterNameMapping;
+	}
+
+	private function resolveOriginalMethodName(ClassReflection $declaringClass, string $methodName): string
+	{
+		$traitAliases = $declaringClass->getNativeReflection()->getTraitAliases();
+		if (array_key_exists($methodName, $traitAliases)) {
+			$parts = explode('::', $traitAliases[$methodName]);
+			if (count($parts) === 2) {
+				return $parts[1];
+			}
+		}
+
+		return $methodName;
 	}
 
 	private function resolveConstantPhpDocFromParentClass(

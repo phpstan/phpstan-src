@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.1
 
 namespace PropertiesNamespace;
 
@@ -6,6 +6,7 @@ use function PHPStan\Testing\assertType;
 
 use SomeNamespace\Amet as Dolor;
 use SomeGroupNamespace\{One, Two as Too, Three};
+use const PHP_VERSION_ID;
 
 /**
  * @property-read string $overriddenReadOnlyProperty
@@ -166,7 +167,7 @@ abstract class Foo extends Bar
 		assertType('PropertiesNamespace\Bar', $this->implicitInheritDocProperty);
 		assertType('int', $this->readOnlyProperty);
 		assertType('string', $this->overriddenReadOnlyProperty);
-		assertType(PHP_VERSION_ID < 80100 ? 'string' : 'DOMElement|null', $this->documentElement);
+		assertType('DOMElement|null', $this->documentElement);
 	}
 
 }

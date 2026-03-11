@@ -1,0 +1,23 @@
+name: "Claude React On Review"
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    if: github.event.pull_request.user.login == 'phpstan-bot'
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Trigger Claude Review PR
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: gh workflow run claude-pr-review.yml -f pr_number=${{ github.event.pull_request.number }} -f review_id=${{ github.event.review.id }} --repo phpstan-bot/phpstan-src

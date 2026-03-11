@@ -1475,6 +1475,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug12246(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12246.php');
+		$this->assertCount(4, $errors);
+		$this->assertSame('Do-while loop condition is always true.', $errors[0]->getMessage());
+		$this->assertSame('Do-while loop condition is always true.', $errors[1]->getMessage());
+		$this->assertSame('Do-while loop condition is always true.', $errors[2]->getMessage());
+		$this->assertSame('Cannot create callable from the new operator.', $errors[3]->getMessage());
+	}
+
 	public function testBigPhpdocArrayShape(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/nsrt/bug-14012b.php');

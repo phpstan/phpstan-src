@@ -23,7 +23,11 @@ use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
+use PHPStan\Node\FunctionCallableNode;
+use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\IssetExpr;
+use PHPStan\Node\MethodCallableNode;
+use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -132,6 +136,26 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_BooleanAndNode(BooleanAndNode $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanBooleanAnd(%s, %s)', $this->p($expr->getOriginalNode()->left), $this->p($expr->getOriginalNode()->right));
+	}
+
+	protected function pPHPStan_Node_FunctionCallableNode(FunctionCallableNode $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanFunctionCallable(%s)', $this->p($expr->getOriginalNode()));
+	}
+
+	protected function pPHPStan_Node_MethodCallableNode(MethodCallableNode $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanMethodCallable(%s)', $this->p($expr->getOriginalNode()));
+	}
+
+	protected function pPHPStan_Node_StaticMethodCallableNode(StaticMethodCallableNode $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanStaticMethodCallable(%s)', $this->p($expr->getOriginalNode()));
+	}
+
+	protected function pPHPStan_Node_InstantiationCallableNode(InstantiationCallableNode $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanInstantiationCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 }

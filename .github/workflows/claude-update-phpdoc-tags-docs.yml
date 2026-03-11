@@ -149,7 +149,7 @@ jobs:
               echo "${delimiter}"
             } >> "$GITHUB_OUTPUT"
           else
-            echo "commit_message=Update error identifiers docs" >> "$GITHUB_OUTPUT"
+            echo "commit_message=Update PHPDoc tags docs" >> "$GITHUB_OUTPUT"
           fi
 
           if [ -f /tmp/pr-description.md ]; then
@@ -160,7 +160,7 @@ jobs:
               echo "${delimiter}"
             } >> "$GITHUB_OUTPUT"
           else
-            echo "pr_bodyUpdate error identifiers docs" >> "$GITHUB_OUTPUT"
+            echo "pr_body=Update PHPDoc tags docs" >> "$GITHUB_OUTPUT"
           fi
 
       - name: "Delete __phpstan-src"

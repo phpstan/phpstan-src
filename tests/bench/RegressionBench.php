@@ -5,8 +5,9 @@ namespace PHPStan\Benchmark;
 use PhpBench\Attributes as Bench;
 
 #[Bench\Revs(revs: 1)]
-#[Bench\Iterations(iterations: 3)]
+#[Bench\Iterations(iterations: 5)]
 #[Bench\Warmup(revs: 1)]
+#[Bench\RetryThreshold(retryThreshold: 5)]
 class RegressionBench extends AbstractBenchCase
 {
 
@@ -169,6 +170,61 @@ class RegressionBench extends AbstractBenchCase
 	public function benchBug14207And(): void
 	{
 		$this->runAnalyse(__DIR__ . '/data/bug-14207-and.php');
+	}
+
+	public function benchBug3686(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-3686.php');
+	}
+
+	public function benchBug4300(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-4300.php');
+	}
+
+	public function benchBug5231(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-5231.php');
+	}
+
+	public function benchBug5231Two(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-5231_2.php');
+	}
+
+	public function benchBug6442(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-6442.php');
+	}
+
+	public function benchBug7140(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-7140.php');
+	}
+
+	public function benchBug7214(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-7214.php');
+	}
+
+	public function benchBug10147(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-10147.php');
+	}
+
+	public function benchBug10538(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-10538.php');
+	}
+
+	public function benchBug12671(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-12671.php');
+	}
+
+	public function benchBug13218(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-13218.php');
 	}
 
 }

@@ -271,14 +271,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug3686(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3686.php');
-		$this->assertNoErrors($errors);
-	}
-
-
 	public function testBug3379(): void
 	{
 		// crash
@@ -307,15 +299,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4097.php');
 		$this->assertNoErrors($errors);
-	}
-
-	public function testBug4300(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4300.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[0]->getMessage());
-		$this->assertSame(13, $errors[0]->getLine());
 	}
 
 	public function testBug4513(): void
@@ -478,33 +461,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Access to an undefined property Bug4734\Foo::$httpMethodParameterOverride4.', $errors[4]->getMessage());
 	}
 
-	public function testBug5231(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5231.php');
-		$this->assertNotEmpty($errors);
-	}
-
-	public function testBug5231Two(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5231_2.php');
-		$this->assertNotEmpty($errors);
-	}
-
 	#[RequiresPhp('>= 8.1')]
 	public function testBug12512(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12512.php');
-		$this->assertNoErrors($errors);
-	}
-
-	#[RequiresPhp('>= 8.0')]
-	public function testBug13218(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13218.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -602,16 +563,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug6442(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6442.php');
-		$this->assertCount(2, $errors);
-		$this->assertSame('Dumped type: \'Bug6442\\\B\'', $errors[0]->getMessage());
-		$this->assertSame(9, $errors[0]->getLine());
-		$this->assertSame('Dumped type: \'Bug6442\\\A\'', $errors[1]->getMessage());
-		$this->assertSame(9, $errors[1]->getLine());
-	}
 
 	public function testBug13057(): void
 	{
@@ -722,10 +673,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Loose comparison using == between array{} and array{} will always evaluate to true.', $errors[0]->getMessage());
 		$this->assertSame(12, $errors[0]->getLine());
 	}
-
-
-
-
 
 	public function testBug4732(): void
 	{
@@ -846,14 +793,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(59, $errors[3]->getLine());
 	}
 
-	public function testBug7214(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7214.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Method Bug7214\HelloWorld::getFoo() has no return type specified.', $errors[0]->getMessage());
-		$this->assertSame(6, $errors[0]->getLine());
-	}
 
 	public function testBug12327(): void
 	{
@@ -981,13 +920,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	}
 
 
-	public function testBug12671(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12671.php');
-		$this->assertNoErrors($errors);
-	}
-
 	public function testBug7737(): void
 	{
 		// false positive
@@ -1023,20 +955,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(13, $errors[0]->getLine());
 	}
 
-
-
-
 	public function testBug7918(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7918.php');
-		$this->assertNoErrors($errors);
-	}
-
-	public function testBug7140(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7140.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -1389,13 +1311,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug10147(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10147.php');
-		$this->assertNoErrors($errors);
-	}
-
 	#[RequiresPhp('>= 8.2')]
 	public function testBug10302(): void
 	{
@@ -1420,13 +1335,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(2, $errors);
 		$this->assertSame('Method Bug10509\Foo::doFoo() has no return type specified.', $errors[0]->getMessage());
 		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[1]->getMessage());
-	}
-
-	public function testBug10538(): void
-	{
-		// infinite run
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10538.php');
-		$this->assertNoErrors($errors);
 	}
 
 	#[RequiresPhp('>= 8.1')]

@@ -58,6 +58,7 @@ jobs:
           # Additional context: all comments, all reviews, and PR diff
           gh api "repos/$REPO/issues/$PR_NUM/comments" --paginate > /tmp/pr-comments.json
           gh api "repos/$REPO/pulls/$PR_NUM/reviews" --paginate > /tmp/all-reviews.json
+          gh api "repos/$REPO/pulls/$PR_NUM/comments" --paginate > /tmp/all-review-comments.json
           gh api "repos/$REPO/pulls/$PR_NUM" -H "Accept: application/vnd.github.diff" > /tmp/pr.diff
 
           # Fetch linked issues referenced in the PR body
@@ -235,6 +236,35 @@ jobs:
               if [ -n "$rev_body" ] && [ "$rev_body" != "null" ] && [ "$rev_body" != "" ]; then
                 prompt+="$rev_body"
                 prompt+=$'\n'
+              fi
+
+              # Include inline comments for this review
+              rev_comments=$(jq -r --argjson rid "$rid" '[.[] | select(.pull_request_review_id == $rid)]' /tmp/all-review-comments.json)
+              num_rev_comments=$(echo "$rev_comments" | jq 'length')
+
+              if [ "$num_rev_comments" -gt 0 ]; then
+                for j in $(seq 0 $((num_rev_comments - 1))); do
+                  rc_path=$(echo "$rev_comments" | jq -r ".[$j].path")
+                  rc_line=$(echo "$rev_comments" | jq -r ".[$j].line // .[$j].original_line // \"?\"")
+                  rc_body=$(echo "$rev_comments" | jq -r ".[$j].body")
+                  rc_diff_hunk=$(echo "$rev_comments" | jq -r ".[$j].diff_hunk // \"\"")
+
+                  prompt+=$'\n'
+                  prompt+="**$rc_path** (line $rc_line):"
+                  prompt+=$'\n\n'
+
+                  if [ -n "$rc_diff_hunk" ] && [ "$rc_diff_hunk" != "null" ]; then
+                    prompt+='```diff'
+                    prompt+=$'\n'
+                    prompt+="$rc_diff_hunk"
+                    prompt+=$'\n'
+                    prompt+='```'
+                    prompt+=$'\n\n'
+                  fi
+
+                  prompt+="$rc_body"
+                  prompt+=$'\n'
+                done
               fi
             done
           fi

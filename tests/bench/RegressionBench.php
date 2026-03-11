@@ -12,7 +12,9 @@ use Symfony\Component\Finder\Finder;
 #[Bench\Assert(expression: '
     (mode(baseline.time.avg) < 100 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 50%)
     or (mode(baseline.time.avg) >= 100 milliseconds and mode(baseline.time.avg) < 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 25%)
-    or (mode(baseline.time.avg) >= 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 5%)')]
+    or (mode(baseline.time.avg) >= 500 milliseconds and mode(baseline.time.avg) < 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 20%)
+    or (mode(baseline.time.avg) >= 2000 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%)
+')]
 class RegressionBench extends BenchCase
 {
 

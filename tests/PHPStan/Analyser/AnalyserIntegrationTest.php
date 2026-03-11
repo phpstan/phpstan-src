@@ -240,12 +240,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(36, $error->getLine());
 	}
 
-	public function testBug6936(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6936.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug3405(): void
 	{
@@ -284,13 +278,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.0')]
-	public function testBug13352(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13352.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug3379(): void
 	{
@@ -300,12 +287,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Constant SOME_UNKNOWN_CONST not found.', $errors[0]->getMessage());
 	}
 
-	public function testBug13685(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13685.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug3798(): void
 	{
@@ -742,34 +723,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(12, $errors[0]->getLine());
 	}
 
-	public function testBug1447(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-1447.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug5081(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5081.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug1388(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-1388.php');
-		$this->assertNoErrors($errors);
-	}
 
-	#[RequiresPhp('>= 8.0')]
-	public function testBug4308(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4308.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug4732(): void
 	{
@@ -1024,21 +980,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(27, $errors[1]->getLine());
 	}
 
-	public function testBug7637(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7637.php');
-		$this->assertCount(3, $errors);
-
-		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_backend_login.', $errors[0]->getMessage());
-		$this->assertSame(54, $errors[0]->getLine());
-
-		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_timer.', $errors[1]->getMessage());
-		$this->assertSame(54, $errors[1]->getLine());
-
-		$this->assertSame('Call to function is_string() with string will always evaluate to true.', $errors[2]->getMessage());
-		$this->assertSame(57, $errors[2]->getLine());
-	}
 
 	public function testBug12671(): void
 	{
@@ -1082,26 +1023,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(13, $errors[0]->getLine());
 	}
 
-	public function testBug7581(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7581.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug7903(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7903.php');
-		$this->assertCount(39, $errors);
-	}
 
-	public function testBug7901(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7901.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug7918(): void
 	{
@@ -1123,12 +1046,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug6948(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6948.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug7963(): void
 	{
@@ -1238,13 +1155,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(238, $errors[3]->getLine());
 	}
 
-	#[RequiresPhp('>= 8.0')]
-	public function testBug8147(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8147.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug12934(): void
@@ -1266,19 +1176,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug6265(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6265.php');
-		$this->assertNotEmpty($errors);
-	}
 
-	public function testBug8503(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8503.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug8537(): void
@@ -1298,26 +1196,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Enum case Bug7927\Test::Two does not have a value but the enum is backed with the "int" type.', $errors[1]->getMessage());
 	}
 
-	public function testBug8146(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8146b.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug8215(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8215.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug8146a(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8146a.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public static function getAdditionalConfigFiles(): array
 	{
@@ -1438,12 +1318,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug9690(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9690.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testIgnoreIdentifiers(): void
 	{
@@ -1563,13 +1437,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
-	public function testBug10772(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10772.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.1')]
 	public function testBug10985(): void
@@ -1579,13 +1446,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
-	public function testBug10979(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10979.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug11026(): void
 	{
@@ -1601,13 +1461,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
-	public function testBug11263(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11263.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug11147(): void
@@ -1618,13 +1471,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method Bug11147\RedisAdapter::createConnection() has invalid return type Bug11147\NonExistentClass.', $errors[0]->getMessage());
 	}
 
-	#[RequiresPhp('>= 8.0')]
-	public function testBug11283(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11283.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug11292(): void
 	{
@@ -1633,13 +1479,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.1')]
-	public function testBug11297(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11297.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug5597(): void
@@ -1687,12 +1526,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug11913(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11913.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.3')]
 	public function testBug12549(): void
@@ -1709,27 +1542,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	#[RequiresPhp('>= 8.3')]
-	public function testBug12159(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12159.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug12787(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12787.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug12800(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12800.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.3')]
 	public function testBug12949(): void
@@ -1764,15 +1578,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Parameter #2 $offset of function array_splice expects int, string given.', $errors[0]->getMessage());
 	}
 
-	public function testBug13310(): void
-	{
-		// performance
-		// require file to make sure the defined function is known
-		require_once __DIR__ . '/data/bug-13310.php';
-
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13310.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug13714(): void
 	{
@@ -1788,12 +1593,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Function Bug13714\array_find invoked with 2 parameters, 0 required.', $errors[6]->getMessage());
 	}
 
-	public function testBug13933(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13933.php');
-		$this->assertNoErrors($errors);
-	}
 
 	#[RequiresPhp('>= 8.4')]
 	public function testBug13980(): void
@@ -1803,19 +1602,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-	public function testBug14207(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14207.php');
-		$this->assertNoErrors($errors);
-	}
 
-	public function testBug14207And(): void
-	{
-		// performance
-		$errors = $this->runAnalyse(__DIR__ . '/data/bug-14207-and.php');
-		$this->assertNoErrors($errors);
-	}
 
 	public function testBug13945(): void
 	{

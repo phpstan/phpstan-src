@@ -1869,11 +1869,6 @@ parameters:
 			count: 1
 			path: tests/bench/AbstractBenchCase.php
 
-		-
-			rawMessage: Unused PHPStan\Benchmark\AbstractBenchCase::runAnalyse
-			identifier: shipmonk.deadMethod
-			count: 1
-			path: tests/bench/AbstractBenchCase.php
 
 		-
 			rawMessage: Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found.

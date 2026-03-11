@@ -51,7 +51,7 @@ jobs:
           working-directory: "tests/"
 
       - name: "Run phpbench baseline"
-        run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml --tag=baseline"
+        run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml"
 
       - name: "Upload baseline artifact"
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -89,4 +89,4 @@ jobs:
           working-directory: "tests/"
 
       - name: "Run phpbench test"
-        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --ref=baseline --report=aggregate --assert=\"mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%\""
+        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --report=aggregate --assert=\"mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%\""

@@ -239,7 +239,7 @@ function doFoo(string $row): void
 		assertType("array{0: non-falsy-string, 1: non-falsy-string, 2?: 'b'}", $matches);
 	}
 	if (preg_match('~^(a(b)?)?$~', $row, $matches) === 1) {
-		assertType("array{0: string, 1?: non-falsy-string, 2?: 'b'}", $matches);
+		assertType("list{0: string, 1?: non-falsy-string, 2?: 'b'}", $matches);
 	}
 }
 
@@ -286,7 +286,7 @@ function (string $size): void {
 	if (preg_match('~^a\.b(c(\d+)?)?d~', $size, $matches) !== 1) {
 		throw new InvalidArgumentException(sprintf('Invalid size "%s"', $size));
 	}
-	assertType('array{0: non-falsy-string, 1?: non-falsy-string, 2?: numeric-string}', $matches);
+	assertType('list{0: non-falsy-string, 1?: non-falsy-string, 2?: numeric-string}', $matches);
 };
 
 function (string $size): void {
@@ -346,11 +346,11 @@ function bug11277b(string $value): void
 // https://3v4l.org/09qdT
 function bug11291(string $s): void {
 	if (preg_match('/(?|(a)|(b)(c)|(d)(e)(f))/', $s, $matches)) {
-		assertType('array{0: non-empty-string, 1: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
+		assertType('list{0: non-empty-string, 1: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
 	} else {
 		assertType('array{}', $matches);
 	}
-	assertType('array{}|array{0: non-empty-string, 1: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
+	assertType('array{}|list{0: non-empty-string, 1: non-empty-string, 2?: non-empty-string, 3?: non-empty-string}', $matches);
 }
 
 function bug11323a(string $s): void

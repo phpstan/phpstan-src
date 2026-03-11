@@ -715,7 +715,15 @@ class ConstantArrayType implements Type
 		return $builder->getArray();
 	}
 
-	public function unsetOffset(Type $offsetType): Type
+	/**
+	 * Removes or marks as optional the key(s) matching the given offset type from this constant array.
+	 *
+	 * By default, the method assumes an actual `unset()` call was made, which actively modifies the
+	 * array and weakens its list certainty to "maybe". However, in some contexts, such as the else
+	 * branch of an array_key_exists() check, the key is statically known to be absent without any
+	 * modification, so list certainty should be preserved as-is.
+	 */
+	public function unsetOffset(Type $offsetType, bool $preserveListCertainty = false): Type
 	{
 		$offsetType = $offsetType->toArrayKey();
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
@@ -749,6 +757,11 @@ class ConstantArrayType implements Type
 					$this->isList,
 					in_array($i, $this->optionalKeys, true),
 				);
+				if (!$preserveListCertainty) {
+					$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+				} elseif ($this->isList->yes() && $newIsList->no()) {
+					return new NeverType();
+				}
 
 				return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys, $newIsList);
 			}
@@ -791,6 +804,11 @@ class ConstantArrayType implements Type
 				$this->isList,
 				count($optionalKeys) === count($this->optionalKeys),
 			);
+			if (!$preserveListCertainty) {
+				$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+			} elseif ($this->isList->yes() && $newIsList->no()) {
+				return new NeverType();
+			}
 
 			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 		}
@@ -816,6 +834,11 @@ class ConstantArrayType implements Type
 			$this->isList,
 			count($optionalKeys) === count($this->optionalKeys),
 		);
+		if (!$preserveListCertainty) {
+			$newIsList = $newIsList->and(TrinaryLogic::createMaybe());
+		} elseif ($this->isList->yes() && $newIsList->no()) {
+			return new NeverType();
+		}
 
 		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, $newIsList);
 	}
@@ -851,7 +874,7 @@ class ConstantArrayType implements Type
 			}
 		}
 
-		return TrinaryLogic::createMaybe();
+		return $arrayIsList;
 	}
 
 	public function chunkArray(Type $lengthType, TrinaryLogic $preserveKeys): Type
@@ -1531,7 +1554,9 @@ class ConstantArrayType implements Type
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$describeValue = function (bool $truncate) use ($level): string {
+		$arrayName = $this->shouldBeDescribedAsAList() ? 'list' : 'array';
+
+		$describeValue = function (bool $truncate) use ($level, $arrayName): string {
 			$items = [];
 			$values = [];
 			$exportValuesOnly = true;
@@ -1570,16 +1595,34 @@ class ConstantArrayType implements Type
 			}
 
 			return sprintf(
-				'array{%s%s}',
+				'%s{%s%s}',
+				$arrayName,
 				implode(', ', $exportValuesOnly ? $values : $items),
 				$append,
 			);
 		};
 		return $level->handle(
-			fn (): string => $this->isIterableAtLeastOnce()->no() ? 'array' : sprintf('array<%s, %s>', $this->getIterableKeyType()->describe($level), $this->getIterableValueType()->describe($level)),
+			fn (): string => $this->isIterableAtLeastOnce()->no() ? $arrayName : sprintf('%s<%s, %s>', $arrayName, $this->getIterableKeyType()->describe($level), $this->getIterableValueType()->describe($level)),
 			static fn (): string => $describeValue(true),
 			static fn (): string => $describeValue(false),
 		);
+	}
+
+	private function shouldBeDescribedAsAList(): bool
+	{
+		if (!$this->isList->yes()) {
+			return false;
+		}
+
+		if (count($this->optionalKeys) === 0) {
+			return false;
+		}
+
+		if (count($this->optionalKeys) > 1) {
+			return true;
+		}
+
+		return $this->optionalKeys[0] !== count($this->keyTypes) - 1;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -1643,11 +1686,11 @@ class ConstantArrayType implements Type
 		}
 
 		if ($typeToRemove instanceof HasOffsetType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType());
+			return $this->unsetOffset($typeToRemove->getOffsetType(), true);
 		}
 
 		if ($typeToRemove instanceof HasOffsetValueType) {
-			return $this->unsetOffset($typeToRemove->getOffsetType());
+			return $this->unsetOffset($typeToRemove->getOffsetType(), true);
 		}
 
 		return null;
@@ -1823,6 +1866,19 @@ class ConstantArrayType implements Type
 		return $this;
 	}
 
+	public function makeList(): Type
+	{
+		if ($this->isList->yes()) {
+			return $this;
+		}
+
+		if ($this->isList->no()) {
+			return new NeverType();
+		}
+
+		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, TrinaryLogic::createYes());
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		$items = [];
@@ -1863,7 +1919,10 @@ class ConstantArrayType implements Type
 			);
 		}
 
-		return ArrayShapeNode::createSealed($exportValuesOnly ? $values : $items);
+		return ArrayShapeNode::createSealed(
+			$exportValuesOnly ? $values : $items,
+			$this->shouldBeDescribedAsAList() ? ArrayShapeNode::KIND_LIST : ArrayShapeNode::KIND_ARRAY,
+		);
 	}
 
 	public static function isValidIdentifier(string $value): bool

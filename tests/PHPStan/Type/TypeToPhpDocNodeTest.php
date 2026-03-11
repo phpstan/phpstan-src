@@ -369,7 +369,8 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			]),
 			'non-empty-array<mixed>',
 		];
-		$constantArrayWithOptionalKeys = new ConstantArrayType([
+
+		$listWithOptionalKeys = new ConstantArrayType([
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),
 			new ConstantIntegerType(2),
@@ -379,22 +380,36 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			new StringType(),
 			new StringType(),
 			new StringType(),
-		], [3], [2, 3], TrinaryLogic::createMaybe());
+		], [3], [2, 3], TrinaryLogic::createYes());
 
 		yield [
-			new IntersectionType([
-				$constantArrayWithOptionalKeys,
-				new AccessoryArrayListType(),
-			]),
+			$listWithOptionalKeys,
 			'list{0: string, 1: string, 2?: string, 3?: string}',
+		];
+
+		$listArrayWithAllOptionalKeys = new ConstantArrayType([
+			new ConstantIntegerType(0),
+			new ConstantIntegerType(1),
+			new ConstantIntegerType(2),
+			new ConstantIntegerType(3),
+		], [
+			new StringType(),
+			new StringType(),
+			new StringType(),
+			new StringType(),
+		], [3], [0, 1, 2, 3], TrinaryLogic::createYes());
+
+		yield [
+			$listArrayWithAllOptionalKeys,
+			'list{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 
 		yield [
 			new IntersectionType([
-				$constantArrayWithOptionalKeys,
-				new AccessoryArrayListType(),
+				$listArrayWithAllOptionalKeys,
+				new NonEmptyArrayType(),
 			]),
-			'list{0: string, 1: string, 2?: string, 3?: string}',
+			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 
 		$constantArrayWithAllOptionalKeys = new ConstantArrayType([
@@ -408,23 +423,6 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			new StringType(),
 			new StringType(),
 		], [3], [0, 1, 2, 3], TrinaryLogic::createMaybe());
-
-		yield [
-			new IntersectionType([
-				$constantArrayWithAllOptionalKeys,
-				new AccessoryArrayListType(),
-			]),
-			'list{0?: string, 1?: string, 2?: string, 3?: string}',
-		];
-
-		yield [
-			new IntersectionType([
-				$constantArrayWithAllOptionalKeys,
-				new NonEmptyArrayType(),
-				new AccessoryArrayListType(),
-			]),
-			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
-		];
 
 		yield [
 			new IntersectionType([

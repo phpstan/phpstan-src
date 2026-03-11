@@ -49,7 +49,7 @@ class Foo
 		assertType('array{\'bar\', \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b));
 		assertType('array{19: \'bar\', 17: \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b, true));
 
-		assertType("array{0: 'A'|'B'|'C', 1?: 'A'|'B', 2?: 'A'}", array_reverse($c));
+		assertType("list{0: 'A'|'B'|'C', 1?: 'A'|'B', 2?: 'A'}", array_reverse($c));
 		assertType("array{2?: 'C', 1?: 'B', 0: 'A'}", array_reverse($c, true));
 	}
 

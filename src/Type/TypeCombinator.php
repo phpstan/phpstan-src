@@ -1333,6 +1333,20 @@ final class TypeCombinator
 						continue 2;
 					}
 
+					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof AccessoryArrayListType) {
+						$types[$i] = $types[$i]->makeList();
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
+					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof AccessoryArrayListType) {
+						$types[$j] = $types[$j]->makeList();
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
 					if (
 						$types[$i] instanceof ConstantArrayType
 						&& count($types[$i]->getKeyTypes()) === 1

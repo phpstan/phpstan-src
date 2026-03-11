@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.3
 
 use function PHPStan\Testing\assertType;
 

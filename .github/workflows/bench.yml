@@ -1,0 +1,86 @@
+name: "Benchmark"
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
+      - 'issue-bot/**'
+  push:
+    branches:
+      - "2.1.x"
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
+      - 'issue-bot/**'
+
+concurrency:
+  group: bench-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    name: "Baseline"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout base branch"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=-1
+
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+
+      - name: "Run phpbench baseline"
+        run: "vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml --tag=baseline"
+
+      - name: "Upload baseline artifact"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phpbench-baseline
+          path: tests/bench/storage/baseline.xml
+
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        with:
+          coverage: "none"
+          php-version: "8.5"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-file: development
+          ini-values: memory_limit=-1
+
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+
+      - name: "Run phpbench test"
+        run: "vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --ref=baseline --report=aggregate --assert=\"variant.mode <= baseline.mode +/- 5%\""

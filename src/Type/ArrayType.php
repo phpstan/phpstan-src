@@ -410,6 +410,24 @@ class ArrayType implements Type
 			}
 		}
 
+		if (
+			$this->itemType->isArray()->yes()
+			&& $valueType->isArray()->yes()
+			&& $this->itemType->getIterableValueType()->isConstantArray()->yes()
+			&& $valueType->getIterableValueType()->isConstantArray()->yes()
+		) {
+			$newItemType = $this->itemType->setExistingOffsetValueType(
+				$valueType->getIterableKeyType(),
+				$valueType->getIterableValueType(),
+			);
+			if ($newItemType !== $this->itemType) {
+				return new self(
+					$this->keyType,
+					$newItemType,
+				);
+			}
+		}
+
 		return new self(
 			$this->keyType,
 			TypeCombinator::union($this->itemType, $valueType),

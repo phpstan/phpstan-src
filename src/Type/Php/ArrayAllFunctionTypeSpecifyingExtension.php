@@ -18,7 +18,6 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_find;
-use function assert;
 use function count;
 use function is_string;
 use function strtolower;
@@ -38,7 +37,7 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$args = $node->getArgs();
-		if (!$context->true() || count($args) < 2) {
+		if (!$context->truthy() || count($args) < 2) {
 			return new SpecifiedTypes();
 		}
 
@@ -49,14 +48,13 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		} elseif (
 			$callable instanceof Expr\Closure &&
 			count($callable->stmts) === 1 &&
-			$callable->stmts[0] instanceof Stmt\Return_
+			$callable->stmts[0] instanceof Stmt\Return_ &&
+			isset($callable->stmts[0]->expr)
 		) {
 			$callableExpr = $callable->stmts[0]->expr;
 		} else {
 			return new SpecifiedTypes();
 		}
-
-		assert(isset($callableExpr));
 
 		$callableParams = $callable->params;
 		$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callableExpr, $context)->getSureTypes();

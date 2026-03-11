@@ -74,6 +74,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
+use PHPStan\Type\Generic\TemplateAppliedGenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -837,6 +838,29 @@ final class TypeNodeResolver
 			throw new ShouldNotHappenException();
 		}
 		$mainTypeClassName = $mainTypeObjectClassNames[0] ?? null;
+
+		if ($mainType instanceof TemplateType && $mainTypeClassName !== null) {
+			if ($this->getReflectionProvider()->hasClass($mainTypeClassName)) {
+				$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
+				if ($classReflection->isGeneric()) {
+					$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
+					for ($i = count($genericTypes), $templateTypesCount = count($templateTypes); $i < $templateTypesCount; $i++) {
+						$templateType = $templateTypes[$i];
+						if (!$templateType instanceof TemplateType || $templateType->getDefault() === null) {
+							continue;
+						}
+						$genericTypes[] = $templateType->getDefault();
+					}
+				}
+			}
+
+			return new TemplateAppliedGenericObjectType(
+				$mainType->getName(),
+				$mainTypeClassName,
+				$genericTypes,
+				variances: array_values($variances),
+			);
+		}
 
 		if ($mainTypeClassName !== null) {
 			if (!$this->getReflectionProvider()->hasClass($mainTypeClassName)) {

@@ -7,6 +7,7 @@ use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
+use PHPStan\Type\Generic\TemplateAppliedGenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -18,6 +19,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
+use function count;
 
 final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVariant
 {
@@ -242,7 +244,23 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				return $newType;
 			}
 
-			return $traverse($type);
+			$result = $traverse($type);
+
+			if ($result instanceof TemplateAppliedGenericObjectType) {
+				$resolvedType = $this->resolvedTemplateTypeMap->getType($result->getTemplateName());
+				if ($resolvedType !== null && !$resolvedType instanceof ErrorType) {
+					$resolvedClassNames = $resolvedType->getObjectClassNames();
+					if (count($resolvedClassNames) === 1) {
+						return new GenericObjectType(
+							$resolvedClassNames[0],
+							$result->getTypes(),
+							variances: $result->getVariances(),
+						);
+					}
+				}
+			}
+
+			return $result;
 		};
 
 		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($references, $objectCb): Type {

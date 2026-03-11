@@ -30,7 +30,35 @@ permissions:
   contents: read
 
 jobs:
+  check-reviewer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Check if review is from phpstan-bot
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+        run: |
+          reviewer=$(gh api "repos/phpstan/phpstan-src/pulls/${{ inputs.pr_number }}/reviews/${{ inputs.review_id }}" --jq '.user.login')
+          if [ "$reviewer" = "phpstan-bot" ]; then
+            echo "Skipping review from phpstan-bot"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
   respond:
+    needs: check-reviewer
+    if: needs.check-reviewer.outputs.skip != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

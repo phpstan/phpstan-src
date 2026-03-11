@@ -1,0 +1,168 @@
+name: "Claude Update PHPDoc Types Docs"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    name: "Update PHPDoc Types Docs"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout phpstan-dist"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: 2.2.x
+          repository: phpstan/phpstan
+
+      - name: "Checkout phpstan-src"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: 2.2.x
+          repository: phpstan/phpstan-src
+          path: __phpstan-src
+
+      - name: "Install Claude Code"
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: "Run Claude Code"
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude --model claude-opus-4-6 \
+          --dangerously-skip-permissions \
+          -p "$(cat << 'PROMPT_EOF'
+
+            You are a documentation agent for PHPStan. Your job is to find PHPDoc types supported by `TypeNodeResolver` that are not yet documented in the user-facing PHPDoc types reference, and to add documentation for them.
+
+          ## Source files
+
+          - **Type resolver**: `__phpstan-src/PhpDoc/TypeNodeResolver.php` (checked-out phpstan-src repo)
+          - **PHPDoc types docs**: `website/src/writing-php-code/phpdoc-types.md` (this workspace)
+
+          ## Task
+
+          ### Step 1: Extract supported types from TypeNodeResolver
+
+          Read `src/PhpDoc/TypeNodeResolver.php` and extract every type name that it resolves. The types come from two places:
+
+            1. **`resolveIdentifierTypeNode()`** — contains a `switch (strtolower($typeNode->name))` with `case` entries for each identifier type (e.g. `int`, `non-empty-string`, `callable-object`, etc.).
+
+            2. **`resolveGenericTypeNode()`** — contains `if`/`elseif` checks on `$mainTypeName` for generic type forms (e.g. `array<T>`, `class-string<T>`, `key-of<T>`, `int-mask<T>`, etc.).
+
+            **Skip** any type names that begin with `__` (double underscore) — these are internal.
+
+          ### Step 2: Extract documented types from phpdoc-types.md
+
+          Read `website/src/writing-php-code/phpdoc-types.md` and extract all type names that are already documented. Types appear as:
+            - Bullet list items with inline code (e.g. `* \`int\`, \`integer\``)
+            - In code block examples
+            - In prose descriptions (e.g. "`non-falsy-string` (also known as `truthy-string`)")
+
+            Be thorough — a type counts as "documented" even if it only appears as a secondary mention, alias, or in a code example.
+
+          ### Step 3: Compare and identify undocumented types
+
+              Compare ALL non-skipped types from TypeNodeResolver against the documentation. Document every supported type that is not yet mentioned anywhere in phpdoc-types.md.
+
+              If there are no undocumented types, stop and report that all types are documented. Make sure there are no changes to submit as a PR.
+
+              ### Step 4: Add documentation for undocumented types
+
+              Edit `website/src/writing-php-code/phpdoc-types.md` to add the missing types. Use **targeted edits** — do not overwrite the file.
+
+              **Placement rules** — add each type to the correct existing section:
+
+                            - Integer types/ranges → "Integer ranges" section
+                            - String types → "Other advanced string types" section
+                            - Array types → "General arrays" section
+                            - Class/interface/trait/enum string types → "class-string" section
+                            - Callable types → "Callables" or "Basic types" section as appropriate
+                            - Bottom type synonyms → "Bottom type" section
+                            - Mixed variants → "Mixed" section
+                            - Scalar variants → "Basic types" section
+                            - Object variants → "Basic types" section
+
+              **Follow the existing writing style exactly.** The documentation is concise:
+
+                         - For types added to a bullet list, just add a new `* \`type-name\`` entry or append to an existing line (e.g. adding `noreturn` to the bottom type synonyms list).
+                          - For types that need a brief explanation, write one or two sentences in the same style as existing entries. For example, the string types section uses patterns like:
+                                                                                                                                                      - `` `non-empty-string` is any string except `''`. ``
+                                                                                                                                                      - `` `lowercase-string` accepts strings where `strtolower($string) === $string` is true. ``
+                                                                                                                                                      - Only add code examples if the type's behavior is non-obvious.
+                                                                                                                                                      - If the new type is an alias or synonym of an already-documented type, mention it alongside the existing type (e.g. add `noreturn` to the bottom type list, add `interface-string` next to `class-string`).
+
+
+            ## Step 5: Write a summary
+
+            After completing the fix, write two files:
+
+            1. /tmp/commit-message.txt - A concise commit message (first line: short summary under 72 chars, then a blank line, then a few bullet points describing key changes). Example:
+               Update error docs - added new `new.trait` identifier
+
+              More detailed description of the commit
+            2. /tmp/pr-description.md - A pull request description in this format:
+               What was the work involved in updating the docs.
+
+            These files are critical - they will be used for the commit message and PR description.
+
+          PROMPT_EOF
+          )"
+
+      - name: "Read Claude's summary"
+        id: claude-summary
+        run: |
+          if [ -f /tmp/commit-message.txt ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "commit_message<<${delimiter}"
+              cat /tmp/commit-message.txt
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "commit_message=Update error identifiers docs" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -f /tmp/pr-description.md ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "pr_body<<${delimiter}"
+              cat /tmp/pr-description.md
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_bodyUpdate error identifiers docs" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Create Pull Request"
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch-token: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+          token: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+          push-to-fork: phpstan-bot/phpstan
+          branch-suffix: random
+          delete-branch: true
+          base: 2.2.x
+          title: "Update PHPDoc Types Docs"
+          body: ${{ steps.claude-summary.outputs.pr_body }}
+          committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          commit-message: ${{ steps.claude-summary.outputs.commit_message }}

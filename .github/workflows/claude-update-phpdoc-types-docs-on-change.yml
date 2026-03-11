@@ -1,0 +1,26 @@
+name: "Claude Update PHPDoc Types Docs On Change"
+
+on:
+  push:
+    branches:
+      - "2.2.x"
+    paths:
+      - '.github/workflows/claude-update-phpdoc-types-docs-on-change.yml'
+      - 'src/PhpDoc/TypeNodeResolver.php'
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Trigger Claude Update PHPDoc Types Docs
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: gh workflow run claude-update-phpdoc-types-docs.yml --repo phpstan-bot/phpstan-src

@@ -1,0 +1,26 @@
+name: "Claude Update PHPDoc Tags Docs On Change"
+
+on:
+  push:
+    branches:
+      - "2.2.x"
+    paths:
+      - '.github/workflows/claude-update-phpdoc-tags-docs-on-change.yml'
+      - 'src/PhpDoc/PhpDocNodeResolver.php'
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Trigger Claude Update PHPDoc Tags Docs
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: gh workflow run claude-update-phpdoc-tags-docs.yml --repo phpstan-bot/phpstan-src

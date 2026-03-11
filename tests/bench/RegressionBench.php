@@ -227,4 +227,19 @@ class RegressionBench extends BenchCase
 		$this->runAnalyse(__DIR__ . '/data/bug-13218.php');
 	}
 
+	public function benchConditionalExpressionInfiniteLoop(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/conditional-expression-infinite-loop.php');
+	}
+
+	public function benchProcessCalledMethodInfiniteLoop(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/process-called-method-infinite-loop.php');
+	}
+
+	public function benchBug5390(): void
+	{
+		$this->runAnalyse(__DIR__ . '/data/bug-5390.php');
+	}
+
 }

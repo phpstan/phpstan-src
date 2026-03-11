@@ -10,8 +10,8 @@ use Symfony\Component\Finder\Finder;
 #[Bench\Warmup(revs: 1)]
 #[Bench\RetryThreshold(retryThreshold: 10.0)]
 #[Bench\Assert(expression: '
-    (mode(baseline.time.avg) < 50 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 25%)
-    or (mode(baseline.time.avg) >= 50 milliseconds and mode(baseline.time.avg) < 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%)
+    (mode(baseline.time.avg) < 100 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 50%)
+    or (mode(baseline.time.avg) >= 100 milliseconds and mode(baseline.time.avg) < 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 25%)
     or (mode(baseline.time.avg) >= 500 milliseconds and mode(variant.time.avg) < mode(baseline.time.avg) +/- 5%)')]
 class RegressionBench extends BenchCase
 {

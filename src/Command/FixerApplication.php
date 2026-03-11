@@ -295,6 +295,9 @@ final class FixerApplication
 		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), env: $env, fds: []);
 	}
 
+	/**
+	 * @throws GuzzleException
+	 */
 	private function downloadPhar(
 		OutputInterface $output,
 		string $pharPath,

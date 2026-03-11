@@ -302,7 +302,7 @@ final class FixerApplication
 	): void
 	{
 		$currentVersion = null;
-		$branch = '2.0.x';
+		$branch = '2.1.x';
 		if (is_file($pharPath) && is_file($infoPath)) {
 			/** @var array{version: string, date: string, branch?: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);

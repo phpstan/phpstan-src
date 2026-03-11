@@ -14,7 +14,7 @@ $mixed = doFoo();
 assertType('array{2, 3, 4, 5}', range(2, 5));
 assertType('array{2, 4}', range(2, 5, 2));
 assertType('array{2, 0}', range(2, '', 2));
-assertType('array{2, 3, 4, 5}', range(2, 5, 1.0));
+assertType(PHP_VERSION_ID < 80300 ? 'array{2.0, 3.0, 4.0, 5.0}' : 'array{2, 3, 4, 5}', range(2, 5, 1.0));
 assertType('array{2.1, 3.1, 4.1}', range(2.1, 5));
 assertType('non-empty-list<int>', range(2, 5, $integer));
 assertType('non-empty-list<float|int>', range($float, 5, $integer));

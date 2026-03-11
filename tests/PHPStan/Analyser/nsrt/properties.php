@@ -166,7 +166,7 @@ abstract class Foo extends Bar
 		assertType('PropertiesNamespace\Bar', $this->implicitInheritDocProperty);
 		assertType('int', $this->readOnlyProperty);
 		assertType('string', $this->overriddenReadOnlyProperty);
-		assertType('DOMElement|null', $this->documentElement);
+		assertType(PHP_VERSION_ID < 80100 ? 'string' : 'DOMElement|null', $this->documentElement);
 	}
 
 }

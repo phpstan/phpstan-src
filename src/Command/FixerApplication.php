@@ -4,10 +4,12 @@ namespace PHPStan\Command;
 
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
-use Composer\CaBundle\CaBundle;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
 use Phar;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
@@ -27,19 +29,12 @@ use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\ShouldNotHappenException;
-use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
-use React\Dns\Config\Config;
-use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
-use React\Http\Browser;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
-use React\Socket\Connector;
 use React\Socket\TcpServer;
-use React\Stream\ReadableStreamInterface;
-use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -48,18 +43,13 @@ use function array_merge;
 use function count;
 use function defined;
 use function escapeshellarg;
-use function fclose;
-use function fopen;
-use function fwrite;
 use function get_class;
 use function getenv;
 use function http_build_query;
 use function ini_get;
 use function is_file;
 use function parse_url;
-use function React\Async\await;
 use function sprintf;
-use function strlen;
 use function unlink;
 use const JSON_INVALID_UTF8_IGNORE;
 use const PHP_BINARY;
@@ -77,7 +67,6 @@ final class FixerApplication
 
 	/**
 	 * @param string[] $analysedPaths
-	 * @param list<string> $dnsServers
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $allConfigFiles
 	 * @param string[] $bootstrapFiles
@@ -92,8 +81,6 @@ final class FixerApplication
 		private string $currentWorkingDirectory,
 		#[AutowiredParameter(ref: '%pro.tmpDir%')]
 		private string $proTmpDir,
-		#[AutowiredParameter(ref: '%pro.dnsServers%')]
-		private array $dnsServers,
 		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
 		#[AutowiredParameter]
@@ -240,7 +227,7 @@ final class FixerApplication
 
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
-		} catch (RuntimeException $e) {
+		} catch (GuzzleException $e) {
 			if (!is_file($pharPath)) {
 				$this->printDownloadError($output, $e);
 
@@ -335,32 +322,17 @@ final class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
-		$dnsConfig = new Config();
-		$dnsConfig->nameservers = $this->dnsServers;
+		$client = new Client([
+			RequestOptions::TIMEOUT => 30,
+			RequestOptions::CONNECT_TIMEOUT => 5,
+		]);
 
-		$loop = new StreamSelectLoop();
-
-		// @phpstan-ignore staticMethod.internal (required because of the await() call below)
-		Loop::set($loop);
-
-		$client = new Browser(
-			new Connector(
-				[
-					'timeout' => 5,
-					'tls' => [
-						'cafile' => CaBundle::getBundledCaBundlePath(),
-					],
-					'dns' => $dnsConfig,
-				],
-				$loop,
-			),
-			$loop,
-		);
+		$latestUrl = sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch]));
 
 		/**
 		 * @var array{url: string, version: string} $latestInfo
 		 */
-		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch]))))->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode($client->get($latestUrl)->getBody()->getContents(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version'], $branch);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
@@ -369,35 +341,31 @@ final class FixerApplication
 
 		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
 
-		$pharPathResource = fopen($pharPath, 'w');
-		if ($pharPathResource === false) {
-			throw new ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
-		}
 		$progressBar = new ProgressBar($output);
-		$client->requestStreaming('GET', $latestInfo['url'])->then(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
-			$body = $response->getBody();
-			if (!$body instanceof ReadableStreamInterface) {
-				throw new ShouldNotHappenException();
-			}
+		$bytes = 0;
 
-			$totalSize = (int) $response->getHeaderLine('Content-Length');
-			$progressBar->setFormat('file_download');
-			$progressBar->setMessage(sprintf('%.2f MB', $totalSize / 1000000), 'fileSize');
-			$progressBar->start($totalSize);
+		$client->get($latestInfo['url'], [
+			RequestOptions::SINK => $pharPath,
+			RequestOptions::TIMEOUT => 120,
+			RequestOptions::PROGRESS => static function (int $downloadTotal, int $downloadedBytes) use ($progressBar, &$bytes): void {
+				if ($downloadTotal === 0) {
+					return;
+				}
 
-			$bytes = 0;
-			$body->on('data', static function ($chunk) use ($pharPathResource, $progressBar, &$bytes): void {
-				$bytes += strlen($chunk);
-				fwrite($pharPathResource, $chunk);
+				if ($progressBar->getMaxSteps() === 0) {
+					$progressBar->setFormat('file_download');
+					$progressBar->setMessage(sprintf('%.2f MB', $downloadTotal / 1000000), 'fileSize');
+					$progressBar->start($downloadTotal);
+				}
+
+				if ($downloadedBytes <= $bytes) {
+					return;
+				}
+
+				$bytes = $downloadedBytes;
 				$progressBar->setProgress($bytes);
-			});
-		}, function (Throwable $e) use ($output): void {
-			$this->printDownloadError($output, $e);
-		});
-
-		$loop->run();
-
-		fclose($pharPathResource);
+			},
+		]);
 
 		$progressBar->finish();
 		$output->writeln('');
@@ -409,13 +377,6 @@ final class FixerApplication
 	private function printDownloadError(OutputInterface $output, Throwable $e): void
 	{
 		$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
-		$output->writeln('');
-		$output->writeln('Try different DNS servers in your configuration file:');
-		$output->writeln('');
-		$output->writeln('parameters:');
-		$output->writeln("\tpro:");
-		$output->writeln("\t\tdnsServers!:");
-		$output->writeln("\t\t\t- '8.8.8.8'");
 		$output->writeln('');
 	}
 

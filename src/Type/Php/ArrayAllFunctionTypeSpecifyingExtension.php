@@ -18,6 +18,7 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_find;
+use function assert;
 use function count;
 use function is_string;
 use function strtolower;

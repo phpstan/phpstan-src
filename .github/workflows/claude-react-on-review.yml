@@ -5,11 +5,8 @@ on:
     types: [submitted]
 
 jobs:
-  claude:
+  save-context:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
     if: github.event.pull_request.user.login == 'phpstan-bot'
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -17,7 +14,14 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Trigger Claude Review PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run claude-pr-review.yml -f pr_number=${{ github.event.pull_request.number }} -f review_id=${{ github.event.review.id }} --repo phpstan-bot/phpstan-src
+      - name: Save review context
+        run: |
+          echo "${{ github.event.pull_request.number }}" > pr_number.txt
+          echo "${{ github.event.review.id }}" > review_id.txt
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: review-context
+          path: |
+            pr_number.txt
+            review_id.txt

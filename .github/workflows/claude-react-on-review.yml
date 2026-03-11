@@ -19,5 +19,5 @@ jobs:
 
       - name: Trigger Claude Review PR
         env:
-          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: gh workflow run claude-pr-review.yml -f pr_number=${{ github.event.pull_request.number }} -f review_id=${{ github.event.review.id }} --repo phpstan-bot/phpstan-src

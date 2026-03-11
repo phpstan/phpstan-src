@@ -6,7 +6,6 @@ use function PHPStan\Testing\assertType;
 
 use SomeNamespace\Amet as Dolor;
 use SomeGroupNamespace\{One, Two as Too, Three};
-use const PHP_VERSION_ID;
 
 /**
  * @property-read string $overriddenReadOnlyProperty

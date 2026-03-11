@@ -15,6 +15,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -66,6 +67,11 @@ final class ArrayHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 			$scope = $valueResult->getScope();
+			if (!$arrayItem->byRef) {
+				continue;
+			}
+
+			$scope = $scope->assignExpression($arrayItem->value, new MixedType(), new MixedType());
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 

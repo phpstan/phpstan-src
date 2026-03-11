@@ -163,6 +163,9 @@ jobs:
             echo "pr_bodyUpdate error identifiers docs" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: "Delete __phpstan-src"
+        run: "rm -r __phpstan-src"
+
       - name: "Create Pull Request"
         id: create-pr
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0

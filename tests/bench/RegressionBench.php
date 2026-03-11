@@ -22,9 +22,6 @@ class RegressionBench extends AbstractBenchCase
 
 	public function benchBug4308(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-4308.php');
 	}
 
@@ -80,9 +77,6 @@ class RegressionBench extends AbstractBenchCase
 
 	public function benchBug8147(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-8147.php');
 	}
 
@@ -103,41 +97,26 @@ class RegressionBench extends AbstractBenchCase
 
 	public function benchBug10772(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-10772.php');
 	}
 
 	public function benchBug10979(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-10979.php');
 	}
 
 	public function benchBug11263(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-11263.php');
 	}
 
 	public function benchBug11283(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-11283.php');
 	}
 
 	public function benchBug11297(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-11297.php');
 	}
 
@@ -148,9 +127,6 @@ class RegressionBench extends AbstractBenchCase
 
 	public function benchBug12159(): void
 	{
-		if (PHP_VERSION_ID < 80300) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-12159.php');
 	}
 
@@ -172,9 +148,6 @@ class RegressionBench extends AbstractBenchCase
 
 	public function benchBug13352(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return;
-		}
 		$this->runAnalyse(__DIR__ . '/data/bug-13352.php');
 	}
 

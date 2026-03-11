@@ -46,9 +46,12 @@ jobs:
           ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        with:
+          working-directory: "tests/"
 
       - name: "Run phpbench baseline"
-        run: "vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml --tag=baseline"
+        run: "tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/baseline.xml --tag=baseline"
 
       - name: "Upload baseline artifact"
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -81,6 +84,9 @@ jobs:
           ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+      - uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+        with:
+          working-directory: "tests/"
 
       - name: "Run phpbench test"
-        run: "vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --ref=baseline --report=aggregate --assert=\"mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%\""
+        run: "tests/vendor/bin/phpbench run --file=tests/bench/storage/baseline.xml --ref=baseline --report=aggregate --assert=\"mode(variant.time.avg) < mode(baseline.time.avg) +/- 10%\""

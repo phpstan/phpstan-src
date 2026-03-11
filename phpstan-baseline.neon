@@ -754,10 +754,10 @@ parameters:
 			path: src/Testing/LevelsTestCase.php
 
 		-
-			rawMessage: Unused PHPStan\Benchmark\AbstractBenchCase::runAnalyse
-			identifier: shipmonk.deadMethod
+			rawMessage: Anonymous function has an unused use $container.
+			identifier: closure.unusedUse
 			count: 1
-			path: tests/PHPStan/Benchmark/AbstractBenchCase.php
+			path: src/Testing/PHPStanTestCase.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
@@ -1862,6 +1862,18 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
+
+		-
+			rawMessage: Anonymous function has an unused use $container.
+			identifier: closure.unusedUse
+			count: 1
+			path: tests/bench/AbstractBenchCase.php
+
+		-
+			rawMessage: Unused PHPStan\Benchmark\AbstractBenchCase::runAnalyse
+			identifier: shipmonk.deadMethod
+			count: 1
+			path: tests/bench/AbstractBenchCase.php
 
 		-
 			rawMessage: Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found.

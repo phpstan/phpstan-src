@@ -46,7 +46,7 @@ trait PHPStanTestCaseTrait
 			self::$containers[$cacheKey] = $container;
 
 			foreach ($container->getParameter('bootstrapFiles') as $bootstrapFile) {
-				(static function (string $file): void {
+				(static function (string $file) use ($container): void {
 					require_once $file;
 				})($bootstrapFile);
 			}

@@ -153,7 +153,8 @@
 		},
 		"classmap": [
 			"tests/e2e",
-			"tests/PHPStan"
+			"tests/PHPStan",
+			"tests/bench"
 		]
 	},
 	"repositories": [

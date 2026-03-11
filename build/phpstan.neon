@@ -31,6 +31,7 @@ parameters:
 		- ../tests/PHPStan/Analyser/nsrt/*
 		- ../tests/PHPStan/Analyser/traits/*
 		- ../tests/notAutoloaded/*
+		- ../tests/bench/*
 		- ../tests/PHPStan/Reflection/UnionTypesTest.php
 		- ../tests/PHPStan/Reflection/MixedTypeTest.php
 		- ../tests/e2e/magic-setter/*

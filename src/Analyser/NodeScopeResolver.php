@@ -4298,9 +4298,10 @@ class NodeScopeResolver
 					$docComment,
 				);
 			}
+			$methodNameForInheritance = $node->getAttribute('originalTraitMethodName') ?? $node->name->name;
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 				$scope->getClassReflection(),
-				$node->name->name,
+				$methodNameForInheritance,
 				$currentResolvedPhpDoc,
 				$positionalParameterNames,
 			);

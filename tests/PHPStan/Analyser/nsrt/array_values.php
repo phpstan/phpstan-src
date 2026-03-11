@@ -35,7 +35,7 @@ class HelloWorld
 			[1 => 'a', 2 => 'b', 3 => 'c'],
 			static fn ($value) => mt_rand(0, 1) === 0,
 		);
-		assertType("array{0?: 'a'|'b'|'c', 1?: 'b'|'c', 2?: 'c'}", array_values($numbers));
+		assertType("list{0?: 'a'|'b'|'c', 1?: 'b'|'c', 2?: 'c'}", array_values($numbers));
 	}
 
 	/**

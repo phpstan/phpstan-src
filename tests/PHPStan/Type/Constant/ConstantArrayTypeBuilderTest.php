@@ -37,7 +37,7 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 
 		$this->assertTrue($array3->isKeysSupersetOf($array2));
 		$array2MergedWith3 = $array3->mergeWith($array2);
-		$this->assertSame('array{0: 1, 1?: 2|3, 2?: 3}', $array2MergedWith3->describe(VerbosityLevel::precise()));
+		$this->assertSame('list{0: 1, 1?: 2|3, 2?: 3}', $array2MergedWith3->describe(VerbosityLevel::precise()));
 		$this->assertSame([1, 2, 3], $array2MergedWith3->getNextAutoIndexes());
 
 		$builder->setOffsetValueType(null, new ConstantIntegerType(4));
@@ -95,10 +95,10 @@ class ConstantArrayTypeBuilderTest extends PHPStanTestCase
 		$this->assertSame('array{0?: bool}', $builder->getArray()->describe(VerbosityLevel::precise()));
 
 		$builder->setOffsetValueType(null, new NullType(), true);
-		$this->assertSame('array{0?: bool|null, 1?: null}', $builder->getArray()->describe(VerbosityLevel::precise()));
+		$this->assertSame('list{0?: bool|null, 1?: null}', $builder->getArray()->describe(VerbosityLevel::precise()));
 
 		$builder->setOffsetValueType(null, new ConstantIntegerType(17));
-		$this->assertSame('array{0: 17|bool|null, 1?: 17|null, 2?: 17}', $builder->getArray()->describe(VerbosityLevel::precise()));
+		$this->assertSame('list{0: 17|bool|null, 1?: 17|null, 2?: 17}', $builder->getArray()->describe(VerbosityLevel::precise()));
 	}
 
 	public function testDegradedArrayIsNotAlwaysOversized(): void

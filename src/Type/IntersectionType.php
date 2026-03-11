@@ -55,6 +55,7 @@ use function in_array;
 use function is_int;
 use function ksort;
 use function sprintf;
+use function str_starts_with;
 use function strcasecmp;
 use function strlen;
 use function substr;
@@ -456,7 +457,8 @@ class IntersectionType implements CompoundType
 					continue;
 				} elseif ($type instanceof ConstantArrayType) {
 					$description = $type->describe($level);
-					$descriptionWithoutKind = substr($description, strlen('array'));
+					$kind = str_starts_with($description, 'list') ? 'list' : 'array';
+					$descriptionWithoutKind = substr($description, strlen($kind));
 					$begin = $isList ? 'list' : 'array';
 					if ($isNonEmptyArray && !$type->isIterableAtLeastOnce()->yes()) {
 						$begin = 'non-empty-' . $begin;

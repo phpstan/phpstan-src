@@ -7,7 +7,7 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Testing\PHPStanTestCaseTrait;
 
-abstract class AbstractBenchCase
+abstract class BenchCase
 {
 
 	use PHPStanTestCaseTrait;
@@ -22,13 +22,11 @@ abstract class AbstractBenchCase
 
 		$analyser = self::getContainer()->getByType(Analyser::class);
 		$finalizer = self::getContainer()->getByType(AnalyserResultFinalizer::class);
-		$errors = $finalizer->finalize(
+		return $finalizer->finalize(
 			$analyser->analyse([$file], null, null, true, $allAnalysedFiles),
 			false,
 			true,
 		)->getErrors();
-
-		return $errors;
 	}
 
 }

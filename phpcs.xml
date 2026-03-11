@@ -53,7 +53,7 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure.UnusedInheritedVariable">
 		<exclude-pattern>src/Command/CommandHelper.php</exclude-pattern>
-		<exclude-pattern>src/Testing/PHPStanTestCase.php</exclude-pattern>
+		<exclude-pattern>src/Testing/PHPStanTestCaseTrait.php</exclude-pattern>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException">
 		<exclude-pattern>tests</exclude-pattern>
@@ -65,6 +65,7 @@
 				<element key="compiler/tests" value="PHPStan\Compiler"/>
 				<element key="src" value="PHPStan"/>
 				<element key="tests/PHPStan" value="PHPStan"/>
+				<element key="tests/bench" value="PHPStan\Benchmark"/>
 				<element key="tests/e2e" value="PHPStan\Tests"/>
 				<element key="apigen/src" value="PHPStan\ApiGen"/>
 				<element key="changelog-generator/src" value="PHPStan\ChangelogGenerator"/>

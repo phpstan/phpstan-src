@@ -240,7 +240,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(36, $error->getLine());
 	}
 
-
 	public function testBug3405(): void
 	{
 		// crash
@@ -278,7 +277,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(1, $errors);
 		$this->assertSame('Constant SOME_UNKNOWN_CONST not found.', $errors[0]->getMessage());
 	}
-
 
 	public function testBug3798(): void
 	{
@@ -563,7 +561,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	public function testBug13057(): void
 	{
 		// crash
@@ -793,7 +790,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(59, $errors[3]->getLine());
 	}
 
-
 	public function testBug12327(): void
 	{
 		// crash
@@ -919,7 +915,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(27, $errors[1]->getLine());
 	}
 
-
 	public function testBug7737(): void
 	{
 		// false positive
@@ -967,7 +962,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/array-union.php');
 		$this->assertNoErrors($errors);
 	}
-
 
 	public function testBug7963(): void
 	{
@@ -1077,7 +1071,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(238, $errors[3]->getLine());
 	}
 
-
 	#[RequiresPhp('>= 8.0')]
 	public function testBug12934(): void
 	{
@@ -1098,8 +1091,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
-
 	#[RequiresPhp('>= 8.0')]
 	public function testBug8537(): void
 	{
@@ -1117,9 +1108,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Enum case Bug7927\Test::One does not have a value but the enum is backed with the "int" type.', $errors[0]->getMessage());
 		$this->assertSame('Enum case Bug7927\Test::Two does not have a value but the enum is backed with the "int" type.', $errors[1]->getMessage());
 	}
-
-
-
 
 	public static function getAdditionalConfigFiles(): array
 	{
@@ -1240,7 +1228,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	public function testIgnoreIdentifiers(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/ignore-identifiers.php');
@@ -1345,7 +1332,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	#[RequiresPhp('>= 8.1')]
 	public function testBug10985(): void
 	{
@@ -1353,7 +1339,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10985.php');
 		$this->assertNoErrors($errors);
 	}
-
 
 	public function testBug11026(): void
 	{
@@ -1369,7 +1354,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	#[RequiresPhp('>= 8.0')]
 	public function testBug11147(): void
 	{
@@ -1379,14 +1363,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method Bug11147\RedisAdapter::createConnection() has invalid return type Bug11147\NonExistentClass.', $errors[0]->getMessage());
 	}
 
-
 	public function testBug11292(): void
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-11292.php');
 		$this->assertNoErrors($errors);
 	}
-
 
 	#[RequiresPhp('>= 8.0')]
 	public function testBug5597(): void
@@ -1434,7 +1416,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
-
 	#[RequiresPhp('>= 8.3')]
 	public function testBug12549(): void
 	{
@@ -1449,9 +1430,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-12627.php');
 		$this->assertNoErrors($errors);
 	}
-
-
-
 
 	#[RequiresPhp('>= 8.3')]
 	public function testBug12949(): void
@@ -1486,7 +1464,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Parameter #2 $offset of function array_splice expects int, string given.', $errors[0]->getMessage());
 	}
 
-
 	public function testBug13714(): void
 	{
 		// crash
@@ -1501,7 +1478,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Function Bug13714\array_find invoked with 2 parameters, 0 required.', $errors[6]->getMessage());
 	}
 
-
 	#[RequiresPhp('>= 8.4')]
 	public function testBug13980(): void
 	{
@@ -1509,8 +1485,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-13980.php');
 		$this->assertNoErrors($errors);
 	}
-
-
 
 	public function testBug13945(): void
 	{

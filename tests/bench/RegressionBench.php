@@ -7,7 +7,7 @@ use PhpBench\Attributes as Bench;
 #[Bench\Revs(revs: 1)]
 #[Bench\Iterations(iterations: 5)]
 #[Bench\Warmup(revs: 1)]
-#[Bench\RetryThreshold(retryThreshold: 5)]
+#[Bench\RetryThreshold(retryThreshold: 10.0)]
 class RegressionBench extends BenchCase
 {
 

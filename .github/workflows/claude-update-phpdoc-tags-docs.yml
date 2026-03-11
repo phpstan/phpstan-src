@@ -1,0 +1,179 @@
+name: "Claude Update PHPDoc Tags Docs"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    name: "Update PHPDoc Tags Docs"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: write
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: "Checkout phpstan-dist"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: 2.2.x
+          repository: phpstan/phpstan
+
+      - name: "Checkout phpstan-src"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: 2.2.x
+          repository: phpstan/phpstan-src
+          path: __phpstan-src
+
+      - name: "Install Claude Code"
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: "Run Claude Code"
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+        run: |
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+
+          claude --model claude-opus-4-6 \
+          --dangerously-skip-permissions \
+          -p "$(cat << 'PROMPT_EOF'
+
+          You are a documentation agent for PHPStan. Your job is to find PHPDoc tags that PHPStan supports but are not documented on the website, and to write documentation for them.
+
+          ## Source files
+
+          - **Tag handling code**: `__phpstan-src/src/PhpDoc/PhpDocNodeResolver.php` (phpstan-src repo)
+          - **Valid tag list**: `__phpstan-src/src/Rules/PhpDoc/InvalidPHPStanDocTagRule.php` — contains `POSSIBLE_PHPSTAN_TAGS` listing all recognized `@phpstan-*` tags
+          - **PHPDocs basics page**: `website/src/writing-php-code/phpdocs-basics.md` (checked out from `phpstan/phpstan`)
+          - **PHPDoc types page**: `website/src/writing-php-code/phpdoc-types.md` (checked out from `phpstan/phpstan`)
+          - **All website docs**: `website/src/` directory — search here for tags that may be documented on other pages
+          - **Source code for research**: `__phpstan-src/src/`, `__phpstan-src/conf/`, and `__phpstan-src/tests/` directories (phpstan-src repo)
+
+          ## Task
+
+          ### Step 1: Extract all supported tags from source code
+
+          1. Read `__phpstan-src/src/PhpDoc/PhpDocNodeResolver.php` and extract every PHPDoc tag name it processes. Tags appear as string literals in arrays like `['@var', '@phan-var', '@psalm-var', '@phpstan-var']` and in `getTagsByName()` calls.
+          2. Read `__phpstan-src/src/Rules/PhpDoc/InvalidPHPStanDocTagRule.php` and extract the list of recognized `@phpstan-*` tags.
+          3. Build a complete list of **base tags** that PHPStan supports. For tags that have `@phpstan-`/`@psalm-`/`@phan-` prefix variants, the base tag is the unprefixed form (e.g., `@param` is the base for `@phpstan-param`). For tags that only exist with a `@phpstan-` prefix (e.g., `@phpstan-type`, `@phpstan-assert`), keep the prefixed form.
+
+          ### Step 2: Check which tags are documented on the website
+
+          1. Read `website/src/writing-php-code/phpdocs-basics.md`
+          2. Read `website/src/writing-php-code/phpdoc-types.md`
+          3. Search the entire `website/src/` directory for each tag name to check if it's documented on any page
+
+          A tag counts as "documented" if it appears on any website page with an explanation of what it does. A tag does NOT count as documented if it only appears in passing examples without explanation, or only in the "Prefixed tags" section.
+
+          ### Step 3: Determine which tags need documentation
+
+          **Important — prefix variants are already handled:**
+
+          The "Prefixed tags" section of `phpdocs-basics.md` already explains that tags like `@param`, `@return`, `@var`, and generics-related tags can be prefixed with `@phpstan-` (and `@psalm-`, `@phan-`). Do NOT create separate documentation for prefix variants. Only document the base tag (e.g., `@param`, not `@phpstan-param`). Exception: tags that ONLY exist with a prefix (like `@phpstan-type`, `@phpstan-assert`) need to be documented with their prefix.
+
+          **Important — verify tag name accuracy:**
+
+          When checking whether a tag is documented, verify the exact tag name matches between the source code and the documentation. Flag and fix any mismatches (e.g., if docs use a slightly different tag name than the code).
+
+          Check ALL tags from the source code against the documentation. Do not look at git history or diffs — compare the full tag list against all website documentation and document every undocumented tag you find.
+
+          If there are no undocumented tags (and no mismatched tag names), stop and report that all tags are documented. Do not create a PR. Make sure there are no changes to submit as a PR.
+
+          ### Step 4: Research each undocumented tag
+
+          For each undocumented tag, investigate what it does:
+
+          1. **Read the resolver method** in `PhpDocNodeResolver.php` to understand how the tag is parsed.
+          2. **Search the source code** in `__phpstan-src/src/` for where the resolved tag data is used. For example, search for related method names in `ResolvedPhpDocBlock.php` and in rules under `__phpstan-src/src/Rules/`.
+          3. **Look at related rules** in `__phpstan-src/src/Rules/` that enforce or check the tag's semantics.
+          4. **Check tests** in `__phpstan-src/tests/` for test data files that exercise the tag — these show exactly what behavior the tag enables.
+
+          ### Step 5: Write documentation
+
+          Edit `website/src/writing-php-code/phpdocs-basics.md` to add documentation for missing tags. Do NOT overwrite the file — use targeted edits to insert new sections.
+
+          **Follow the existing writing style exactly:**
+
+          - Use section headings at the same level as similar existing sections
+          - Provide a concise description (one or two sentences)
+          - Include a short PHP code example showing the tag in use
+          - If the tag interacts with specific rules or features, mention that briefly
+          - Use fenced code blocks with `php` language annotation
+          - If the tag was introduced in a specific PHPStan version, add a version badge:
+
+          ```html
+          <div class="text-xs inline-block border border-green-600 text-green-600 bg-green-100 rounded px-1 mb-4">Available in PHPStan X.Y</div>
+          ```
+
+          **Placement:** Insert new sections near related existing content. For example, property-related tags go near `@readonly`, class-level tags go near other class-level tags, etc.
+
+          **Also fix any tag name mismatches** between documentation and source code to ensure the documented tag names match what the code actually accepts.
+
+            ## Step 6: Write a summary
+
+            After completing the fix, write two files:
+
+            1. /tmp/commit-message.txt - A concise commit message (first line: short summary under 72 chars, then a blank line, then a few bullet points describing key changes). Example:
+               Update error docs - added new `new.trait` identifier
+
+              More detailed description of the commit
+            2. /tmp/pr-description.md - A pull request description in this format:
+               What was the work involved in updating the docs.
+
+            These files are critical - they will be used for the commit message and PR description.
+
+          PROMPT_EOF
+          )"
+
+      - name: "Read Claude's summary"
+        id: claude-summary
+        run: |
+          if [ -f /tmp/commit-message.txt ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "commit_message<<${delimiter}"
+              cat /tmp/commit-message.txt
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "commit_message=Update error identifiers docs" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -f /tmp/pr-description.md ]; then
+            delimiter="EOF_$(openssl rand -hex 16)"
+            {
+              echo "pr_body<<${delimiter}"
+              cat /tmp/pr-description.md
+              echo "${delimiter}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_bodyUpdate error identifiers docs" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: "Create Pull Request"
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch-token: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+          token: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+          push-to-fork: phpstan-bot/phpstan
+          branch-suffix: random
+          delete-branch: true
+          base: 2.2.x
+          title: "Update PHPDoc Tags Docs"
+          body: ${{ steps.claude-summary.outputs.pr_body }}
+          committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          commit-message: ${{ steps.claude-summary.outputs.commit_message }}

@@ -165,4 +165,15 @@ class Foo {
 		assertType("array<mixed>", $array);
 	}
 
+	/**
+	 * @param array<mixed> $array
+	 */
+	public function test14($array) {
+		if (array_all($array, function ($value, $key) {return;})) {
+			assertType("array<mixed>", $array);
+		} else {
+			assertType("array<mixed>", $array);
+		}
+		assertType("array<mixed>", $array);
+	}
 }

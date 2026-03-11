@@ -61,13 +61,25 @@ jobs:
         run: |
           ISSUE_JSON=$(gh issue view "$ISSUE_NUMBER" \
             --repo phpstan/phpstan \
-            --json title,body,url)
+            --json title,body,url,comments)
 
           TITLE=$(echo "$ISSUE_JSON" | jq -r '.title')
           URL=$(echo "$ISSUE_JSON" | jq -r '.url')
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "$ISSUE_JSON" | jq -r '.body' > /tmp/issue-body.txt
+
+          {
+            echo "$ISSUE_JSON" | jq -r '.body'
+            COMMENT_COUNT=$(echo "$ISSUE_JSON" | jq '.comments | length')
+            if [ "$COMMENT_COUNT" -gt 0 ]; then
+              echo ""
+              echo "---"
+              echo ""
+              echo "## Comments"
+              echo ""
+              echo "$ISSUE_JSON" | jq -r '.comments[] | "### Comment by \(.author.login) (\(.createdAt))\n\n\(.body)\n\n---\n"'
+            fi
+          } > /tmp/issue-body.txt
 
       - name: "Run Claude Code"
         env:

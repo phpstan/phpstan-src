@@ -1,13 +1,18 @@
-@ -2,7 +2,7 @@
+<?php declare(strict_types = 1);
 
 namespace Bug12246;
 
-final class SkipFirstClassCallableInDo
 final class FirstClassCallableInDo
 {
 	public function getSubscribedEvents(): void
 	{
-@ -16,3 +16,44 @@ final class SkipFirstClassCallableInDo
+		do {
+
+		} while ($this->textElement(...));
+	}
+
+	public function textElement(): int
+	{
 		return 1;
 	}
 }

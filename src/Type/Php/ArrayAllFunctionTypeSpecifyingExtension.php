@@ -55,6 +55,8 @@ final class ArrayAllFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			return new SpecifiedTypes();
 		}
 
+		assert(isset($callableExpr));
+
 		$callableParams = $callable->params;
 		$specifiedTypesInFuncCall = $this->typeSpecifier->specifyTypesInCondition($scope, $callableExpr, $context)->getSureTypes();
 

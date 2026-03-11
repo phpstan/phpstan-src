@@ -5,7 +5,7 @@ on:
     branches:
       - "2.2.x"
     paths:
-      - '.github/workflows/claude-update-config-parameters-docs.yml'
+      - '.github/workflows/claude-update-config-parameters-docs-on-change.yml'
       - 'conf/parametersSchema.neon'
 
 jobs:

@@ -1864,12 +1864,6 @@ parameters:
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
 
 		-
-			rawMessage: Anonymous function has an unused use $container.
-			identifier: closure.unusedUse
-			count: 1
-			path: tests/bench/BenchCase.php
-
-		-
 			rawMessage: Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found.
 			identifier: constant.notFound
 			count: 1

@@ -45,6 +45,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -568,6 +569,13 @@ final class TypeSpecifier
 						return $specifiedTypes;
 					}
 				}
+			}
+
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+		} elseif ($expr instanceof FuncCall && !($expr->name instanceof Name)) {
+			$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $scope);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
 			}
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
@@ -1762,6 +1770,75 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
+	{
+		if (!$call->name instanceof Expr) {
+			return null;
+		}
+
+		$calleeType = $scope->getType($call->name);
+		$args = $call->getArgs();
+
+		$assertions = null;
+		$parametersAcceptor = null;
+
+		// Check for ClosureType with assertions (from first-class callables)
+		if ($calleeType->isCallable()->yes()) {
+			foreach ($calleeType->getCallableParametersAcceptors($scope) as $variant) {
+				if (!$variant instanceof ClosureType) {
+					continue;
+				}
+
+				$variantAssertions = $variant->getAsserts();
+				if ($variantAssertions->getAll() === []) {
+					continue;
+				}
+
+				$assertions = $variantAssertions;
+				$parametersAcceptor = $variant;
+				break;
+			}
+		}
+
+		// Check for constant string callables (e.g. $f = 'is_positive_int'; $f($v))
+		if ($assertions === null) {
+			foreach ($calleeType->getConstantStrings() as $constantString) {
+				if ($constantString->getValue() === '') {
+					continue;
+				}
+				$functionName = new Name($constantString->getValue());
+				if (!$this->reflectionProvider->hasFunction($functionName, $scope)) {
+					continue;
+				}
+
+				$functionReflection = $this->reflectionProvider->getFunction($functionName, $scope);
+				$functionAssertions = $functionReflection->getAsserts();
+				if ($functionAssertions->getAll() === []) {
+					continue;
+				}
+
+				$assertions = $functionAssertions;
+				if (count($args) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
+				}
+				break;
+			}
+		}
+
+		if ($assertions === null || $assertions->getAll() === [] || $parametersAcceptor === null) {
+			return null;
+		}
+
+		$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$parametersAcceptor->getResolvedTemplateTypeMap(),
+			$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
+		));
+
+		return $this->specifyTypesFromAsserts($context, $call, $asserts, $parametersAcceptor, $scope);
 	}
 
 	/**

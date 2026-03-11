@@ -88,6 +88,11 @@ final class InternalThrowPoint
 		return $this->canContainAnyThrowable;
 	}
 
+	public function replaceScope(MutatingScope $scope): self
+	{
+		return new self($scope, $this->type, $this->node, $this->explicit, $this->canContainAnyThrowable);
+	}
+
 	public function subtractCatchType(Type $catchType): self
 	{
 		return new self($this->scope, TypeCombinator::remove($this->type, $catchType), $this->node, $this->explicit, $this->canContainAnyThrowable);

@@ -1,0 +1,353 @@
+name: "Claude PR Review"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number"
+        required: true
+        type: number
+      review_id:
+        description: "Pull request review ID"
+        required: true
+        type: number
+  workflow_call:
+    inputs:
+      pr_number:
+        description: "Pull request number"
+        required: true
+        type: number
+      review_id:
+        description: "Pull request review ID"
+        required: true
+        type: number
+
+concurrency:
+  group: claude-pr-review-${{ inputs.pr_number }}-${{ inputs.review_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  respond:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Fetch PR and review details
+        id: review
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+        run: |
+          PR_NUM="${{ inputs.pr_number }}"
+          REPO="phpstan/phpstan-src"
+
+          # Core PR and review data
+          gh api "repos/$REPO/pulls/$PR_NUM" > /tmp/pr.json
+          gh api "repos/$REPO/pulls/$PR_NUM/reviews/${{ inputs.review_id }}" > /tmp/review.json
+          gh api "repos/$REPO/pulls/$PR_NUM/reviews/${{ inputs.review_id }}/comments" --paginate > /tmp/review-comments.json
+
+          # Additional context: all comments, all reviews, and PR diff
+          gh api "repos/$REPO/issues/$PR_NUM/comments" --paginate > /tmp/pr-comments.json
+          gh api "repos/$REPO/pulls/$PR_NUM/reviews" --paginate > /tmp/all-reviews.json
+          gh api "repos/$REPO/pulls/$PR_NUM" -H "Accept: application/vnd.github.diff" > /tmp/pr.diff
+
+          # Fetch linked issues referenced in the PR body
+          pr_body=$(jq -r '.body // ""' /tmp/pr.json)
+          echo '[]' > /tmp/linked-issues.json
+          if [ -n "$pr_body" ]; then
+            # Match patterns like #1234, phpstan/phpstan#1234, phpstan/phpstan-src#1234,
+            # and full GitHub issue/PR URLs
+            issue_refs=$(echo "$pr_body" | grep -oE '(phpstan/(phpstan-src|phpstan))?#[0-9]+|https://github\.com/phpstan/(phpstan|phpstan-src)/issues/[0-9]+' | sort -u || true)
+            issues_array="[]"
+            for ref in $issue_refs; do
+              # Normalize to owner/repo and number
+              if echo "$ref" | grep -qE '^https://'; then
+                issue_repo=$(echo "$ref" | grep -oE 'phpstan/(phpstan|phpstan-src)')
+                issue_num=$(echo "$ref" | grep -oE '[0-9]+$')
+              elif echo "$ref" | grep -qE '^phpstan/'; then
+                issue_repo=$(echo "$ref" | cut -d'#' -f1)
+                issue_num=$(echo "$ref" | cut -d'#' -f2)
+              else
+                # Plain #1234 - default to phpstan/phpstan (the issue tracker)
+                issue_repo="phpstan/phpstan"
+                issue_num=$(echo "$ref" | tr -d '#')
+              fi
+
+              issue_json=$(gh api "repos/$issue_repo/issues/$issue_num" 2>/dev/null || echo "")
+              if [ -n "$issue_json" ]; then
+                issues_array=$(echo "$issues_array" | jq --argjson item "$issue_json" '. + [$item]')
+              fi
+            done
+            echo "$issues_array" > /tmp/linked-issues.json
+          fi
+
+          echo "pr_head_ref=$(jq -r '.head.ref' /tmp/pr.json)" >> "$GITHUB_OUTPUT"
+
+      - name: "Checkout"
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ steps.review.outputs.pr_head_ref }}
+          token: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+          fetch-depth: 0
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1" # v2
+        with:
+          coverage: "none"
+          php-version: "8.4"
+          extensions: mbstring
+          ini-file: development
+          ini-values: memory_limit=-1
+
+      - name: "Install dependencies"
+        uses: "ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520" # v3
+
+      - name: "Install test dependencies"
+        run: composer install --working-dir tests
+
+      - name: Build prompt
+        id: prompt
+        shell: bash
+        run: |
+          review_body=$(jq -r '.body // ""' /tmp/review.json)
+          review_state=$(jq -r '.state' /tmp/review.json)
+          reviewer=$(jq -r '.user.login' /tmp/review.json)
+          num_comments=$(jq 'length' /tmp/review-comments.json)
+
+          prompt="A reviewer ($reviewer) submitted a review on PR #${{ inputs.pr_number }} with state: $review_state."
+          prompt+=$'\n'
+
+          # --- PR description ---
+          pr_title=$(jq -r '.title // ""' /tmp/pr.json)
+          pr_body=$(jq -r '.body // ""' /tmp/pr.json)
+          pr_author=$(jq -r '.user.login' /tmp/pr.json)
+
+          prompt+=$'\n'
+          prompt+="## Pull request"
+          prompt+=$'\n\n'
+          prompt+="**#${{ inputs.pr_number }}: $pr_title** (by $pr_author)"
+          prompt+=$'\n\n'
+
+          if [ -n "$pr_body" ] && [ "$pr_body" != "null" ]; then
+            prompt+="$pr_body"
+            prompt+=$'\n'
+          fi
+
+          # --- Linked issues ---
+          num_issues=$(jq 'length' /tmp/linked-issues.json)
+          if [ "$num_issues" -gt 0 ]; then
+            prompt+=$'\n'
+            prompt+="## Linked issues"
+            prompt+=$'\n'
+
+            for i in $(seq 0 $((num_issues - 1))); do
+              issue_title=$(jq -r ".[$i].title" /tmp/linked-issues.json)
+              issue_number=$(jq -r ".[$i].number" /tmp/linked-issues.json)
+              issue_body=$(jq -r ".[$i].body // \"\"" /tmp/linked-issues.json)
+              issue_repo=$(jq -r ".[$i].repository_url" /tmp/linked-issues.json | grep -oE '[^/]+/[^/]+$')
+              issue_state=$(jq -r ".[$i].state" /tmp/linked-issues.json)
+
+              prompt+=$'\n'
+              prompt+="### $issue_repo#$issue_number: $issue_title ($issue_state)"
+              prompt+=$'\n\n'
+
+              if [ -n "$issue_body" ] && [ "$issue_body" != "null" ]; then
+                # Truncate very long issue bodies
+                truncated=$(echo "$issue_body" | head -c 3000)
+                prompt+="$truncated"
+                if [ ${#issue_body} -gt 3000 ]; then
+                  prompt+=$'\n[...truncated]'
+                fi
+                prompt+=$'\n'
+              fi
+            done
+          fi
+
+          # --- PR diff ---
+          prompt+=$'\n'
+          prompt+="## PR diff"
+          prompt+=$'\n\n'
+          prompt+='```diff'
+          prompt+=$'\n'
+          # Truncate very large diffs
+          diff_content=$(head -c 50000 /tmp/pr.diff)
+          prompt+="$diff_content"
+          diff_size=$(wc -c < /tmp/pr.diff | tr -d ' ')
+          if [ "$diff_size" -gt 50000 ]; then
+            prompt+=$'\n[...diff truncated, read the full files for complete context]'
+          fi
+          prompt+=$'\n'
+          prompt+='```'
+          prompt+=$'\n'
+
+          # --- Previous PR comments (conversation) ---
+          num_pr_comments=$(jq 'length' /tmp/pr-comments.json)
+          if [ "$num_pr_comments" -gt 0 ]; then
+            prompt+=$'\n'
+            prompt+="## Previous PR comments"
+            prompt+=$'\n'
+
+            for i in $(seq 0 $((num_pr_comments - 1))); do
+              commenter=$(jq -r ".[$i].user.login" /tmp/pr-comments.json)
+              comment_body=$(jq -r ".[$i].body" /tmp/pr-comments.json)
+              comment_date=$(jq -r ".[$i].created_at" /tmp/pr-comments.json)
+
+              prompt+=$'\n'
+              prompt+="**$commenter** ($comment_date):"
+              prompt+=$'\n\n'
+              prompt+="$comment_body"
+              prompt+=$'\n'
+            done
+          fi
+
+          # --- Previous reviews ---
+          num_all_reviews=$(jq 'length' /tmp/all-reviews.json)
+          if [ "$num_all_reviews" -gt 0 ]; then
+            prompt+=$'\n'
+            prompt+="## Previous reviews"
+            prompt+=$'\n'
+
+            for i in $(seq 0 $((num_all_reviews - 1))); do
+              rid=$(jq -r ".[$i].id" /tmp/all-reviews.json)
+              # Skip the current review - it's shown separately below
+              if [ "$rid" = "${{ inputs.review_id }}" ]; then
+                continue
+              fi
+
+              rev_reviewer=$(jq -r ".[$i].user.login" /tmp/all-reviews.json)
+              rev_state=$(jq -r ".[$i].state" /tmp/all-reviews.json)
+              rev_body=$(jq -r ".[$i].body // \"\"" /tmp/all-reviews.json)
+              rev_date=$(jq -r ".[$i].submitted_at" /tmp/all-reviews.json)
+
+              prompt+=$'\n'
+              prompt+="### Review by $rev_reviewer ($rev_state, $rev_date)"
+              prompt+=$'\n\n'
+
+              if [ -n "$rev_body" ] && [ "$rev_body" != "null" ] && [ "$rev_body" != "" ]; then
+                prompt+="$rev_body"
+                prompt+=$'\n'
+              fi
+            done
+          fi
+
+          # --- Current review (the one to address) ---
+          prompt+=$'\n'
+          prompt+="## Current review to address"
+          prompt+=$'\n'
+
+          if [ -n "$review_body" ] && [ "$review_body" != "null" ]; then
+            prompt+=$'\n'
+            prompt+="### Review body"
+            prompt+=$'\n\n'
+            prompt+="$review_body"
+            prompt+=$'\n'
+          fi
+
+          if [ "$num_comments" -gt 0 ]; then
+            prompt+=$'\n'
+            prompt+="### Review comments"
+            prompt+=$'\n'
+
+            for i in $(seq 0 $((num_comments - 1))); do
+              file_path=$(jq -r ".[$i].path" /tmp/review-comments.json)
+              line=$(jq -r ".[$i].line // .[$i].original_line // \"?\"" /tmp/review-comments.json)
+              body=$(jq -r ".[$i].body" /tmp/review-comments.json)
+              diff_hunk=$(jq -r ".[$i].diff_hunk // \"\"" /tmp/review-comments.json)
+
+              prompt+=$'\n'
+              prompt+="#### $file_path (line $line)"
+              prompt+=$'\n\n'
+
+              if [ -n "$diff_hunk" ] && [ "$diff_hunk" != "null" ]; then
+                prompt+='```diff'
+                prompt+=$'\n'
+                prompt+="$diff_hunk"
+                prompt+=$'\n'
+                prompt+='```'
+                prompt+=$'\n\n'
+              fi
+
+              prompt+="$body"
+              prompt+=$'\n'
+            done
+          fi
+
+          prompt+=$'\n'
+          prompt+="## Instructions"
+          prompt+=$'\n\n'
+          prompt+="Please address this review. Make the requested code changes, then run tests with \`make tests\` and static analysis with \`make phpstan\` to verify."
+          prompt+=$'\n'
+          prompt+="Commit each logical change separately with a descriptive message."
+
+          {
+            echo 'PROMPT<<PROMPT_DELIMITER'
+            echo "$prompt"
+            echo 'PROMPT_DELIMITER'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Claude
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_FORK_TOKEN }}
+          PROMPT: ${{ steps.prompt.outputs.PROMPT }}
+        run: |
+          claude --model claude-opus-4-6 \
+            --dangerously-skip-permissions \
+            --output-format text \
+            -p "$PROMPT" \
+            > /tmp/claude-response.txt
+
+      - name: Commit and push changes
+        id: push
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "phpstan-bot"
+          git config user.email "ondrej+phpstanbot@mirtes.cz"
+          git add -A
+          git commit -m "Address review feedback on PR #${{ inputs.pr_number }}"
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Reply to review
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.PHPSTAN_BOT_PR_TOKEN }}
+          PUSHED: ${{ steps.push.outputs.pushed }}
+        run: |
+          body=""
+          if [ -f /tmp/claude-response.txt ]; then
+            body=$(cat /tmp/claude-response.txt)
+          fi
+
+          if [ "$PUSHED" = "true" ]; then
+            body+=$'\n\n---\n_I pushed a commit addressing this review._'
+          fi
+
+          if [ -z "$body" ]; then
+            body="I processed this review but have nothing to report."
+          fi
+
+          gh api \
+            "repos/phpstan/phpstan-src/pulls/${{ inputs.pr_number }}/comments" \
+            -f body="$body" \
+            -F in_reply_to="$(jq -r '.[0].id // empty' /tmp/review-comments.json)" \
+            2>/dev/null \
+          || gh pr comment "${{ inputs.pr_number }}" \
+            --repo "phpstan/phpstan-src" \
+            --body "$body"

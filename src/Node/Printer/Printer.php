@@ -140,22 +140,22 @@ final class Printer extends Standard
 
 	protected function pPHPStan_Node_FunctionCallableNode(FunctionCallableNode $expr): string // phpcs:ignore
 	{
-		return $this->p($expr->getOriginalNode());
+		return sprintf('__phpstanFunctionCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 	protected function pPHPStan_Node_MethodCallableNode(MethodCallableNode $expr): string // phpcs:ignore
 	{
-		return $this->p($expr->getOriginalNode());
+		return sprintf('__phpstanMethodCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 	protected function pPHPStan_Node_StaticMethodCallableNode(StaticMethodCallableNode $expr): string // phpcs:ignore
 	{
-		return $this->p($expr->getOriginalNode());
+		return sprintf('__phpstanStaticMethodCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 	protected function pPHPStan_Node_InstantiationCallableNode(InstantiationCallableNode $expr): string // phpcs:ignore
 	{
-		return $this->p($expr->getOriginalNode());
+		return sprintf('__phpstanInstantiationCallable(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 }

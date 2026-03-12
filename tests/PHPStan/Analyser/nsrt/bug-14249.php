@@ -29,3 +29,44 @@ function f(mixed $v): void {
 		assertType('int<1, max>', $v);
 	}
 }
+
+
+/**
+ * @template T of bool
+ * @param T $if
+ * @phpstan-assert (T is true ? true : false) $condition
+ */
+function assertIfTemplated(mixed $condition, bool $if)
+{
+}
+
+function doTemplated(): void {
+	$f1 = assertIfTemplated(...);
+	$f2 = 'Bug14249\assertIfTemplated';
+
+	$v = getMixed();
+	assertIfTemplated($v, true);
+	assertType('true', $v);
+
+	$v = getMixed();
+	$f1($v, true);
+	assertType('true', $v);
+
+	$v = getMixed();
+	$f2($v, true);
+	assertType('true', $v);
+
+	$v = getMixed();
+	assertIfTemplated($v, false);
+	assertType('false', $v);
+
+	$v = getMixed();
+	$f1($v, false);
+	assertType('false', $v);
+
+	$v = getMixed();
+	$f2($v, false);
+	assertType('false', $v);
+}
+
+function getMixed(): mixed {}

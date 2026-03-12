@@ -22,6 +22,15 @@ final class EnumCaseOutsideEnumRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($scope->isInTrait()) {
+			return [
+				RuleErrorBuilder::message('Enum case can only be used in enums.')
+					->nonIgnorable()
+					->identifier('enum.caseOutsideOfEnum')
+					->build(),
+			];
+		}
+
 		if (!$scope->isInClass()) {
 			return [];
 		}

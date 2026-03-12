@@ -29,6 +29,10 @@ class EnumCaseOutsideEnumRuleTest extends RuleTestCase
 				'Enum case can only be used in enums.',
 				14,
 			],
+			[
+				'Enum case can only be used in enums.',
+				19,
+			],
 		]);
 	}
 

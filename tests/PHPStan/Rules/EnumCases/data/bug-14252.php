@@ -14,6 +14,16 @@ interface Bar
 	case Active;
 }
 
+trait Baz
+{
+	case Active;
+}
+
+class BazConsumer
+{
+	use Baz;
+}
+
 enum Qux
 {
 	case Active;

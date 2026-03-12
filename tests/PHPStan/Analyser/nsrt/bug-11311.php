@@ -191,12 +191,12 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('/%a(\d*)/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{}|array{non-falsy-string, ''|numeric-string}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
+	assertType("array{}|array{non-falsy-string, ''|numeric-string}", $matches);
 };
 
 function (string $s): void {
 	preg_match('/%a(\d*)?/', $s, $matches, PREG_UNMATCHED_AS_NULL);
-	assertType("array{}|array{non-falsy-string, ''|numeric-string|null}", $matches); // could be array{0?: string, 1?: ''|numeric-string}
+	assertType("array{}|array{non-falsy-string, ''|numeric-string|null}", $matches);
 };
 
 function (string $s): void {

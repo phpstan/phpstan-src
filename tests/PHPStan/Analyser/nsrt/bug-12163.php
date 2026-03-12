@@ -69,3 +69,34 @@ class Test3
 		}
 	}
 }
+
+class Bug12163
+{
+	/**
+	 * @param non-negative-int $value
+	 * @return void
+	 */
+	private function checkNonNegative(int $value): void
+	{
+		sleep(1);
+	}
+
+	public function iterateRowColumnIndices(int $rows, int $columns): void
+	{
+		if ($rows < 1 || $columns < 1) return;
+		$size = $rows * $columns;
+
+		$rowIndex = 0;
+		$columnIndex = 0;
+		for ($i = 0; $i < $size; $i++) {
+			$this->checkNonNegative($rowIndex);
+			$this->checkNonNegative($columnIndex);
+			if ($columnIndex < $columns) {
+				$columnIndex++;
+			} else {
+				$columnIndex = 0;
+				$rowIndex++;
+			}
+		}
+	}
+}

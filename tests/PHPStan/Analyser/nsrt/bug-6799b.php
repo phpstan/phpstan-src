@@ -1,16 +1,20 @@
 <?php declare(strict_types = 1);
 
-namespace Bug6799;
-
 use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
+
+
 	/**
+	 * listingAddWhereFilterAtableRoleCategory
+	 *
 	 * @param string[] $where
 	 * @param string $sqlTableName
 	 * @param mixed[] $filter
 	 * @param string $value
+	 *
+	 * @return void
 	 */
 	protected function listingAddWhereFilterAtableDefault(array &$where, string $sqlTableName, array $filter, string $value): void
 	{
@@ -20,19 +24,22 @@ class HelloWorld
 	}
 
 	/**
+	 * listingAddWhereFilterAtableFilter
+	 *
 	 * @param string[] $filterValues
 	 * @param string[] $where
 	 * @param string[] $tables
 	 * @param mixed[] $filters
+	 * @return void
 	 */
 	protected function listingAddWhereFilterAtable(array $filterValues, array &$where, array &$tables, array $filters): void
 	{
 		if (!empty($filterValues) && !empty($filters)) {
 			$whereFilter = array();
 			foreach ($filterValues as $type => $value) {
-				call_user_func_array(array($this, 'listingAddWhereFilterAtableDefault'), array(&$whereFilter, 'xxxx', $filters[$type], $value));
+				$this->listingAddWhereFilterAtableDefault($whereFilter, 'xxxxx', $filters[$type], $value);
 			}
-			assertType('mixed', $whereFilter); // could be array<string>
+			assertType('array<string>', $whereFilter); // could be string[]
 		}
 	}
 }

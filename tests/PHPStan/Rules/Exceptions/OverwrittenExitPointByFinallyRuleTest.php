@@ -43,6 +43,21 @@ class OverwrittenExitPointByFinallyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6670.php'], []);
 	}
 
+	public function testBug12215(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12215.php'], []);
+	}
+
+	public function testBug11906(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11906.php'], []);
+	}
+
+	public function testBug7665(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7665.php'], []);
+	}
+
 	public function testBug5627(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5627.php'], [

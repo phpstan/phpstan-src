@@ -49,6 +49,11 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14270(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14270.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testRuleWithNullsafeVariant(): void
 	{

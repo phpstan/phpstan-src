@@ -393,4 +393,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12973.php'], []);
 	}
 
+	public function testBug12397(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-12397.php'], []);
+	}
+
 }

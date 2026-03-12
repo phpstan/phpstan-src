@@ -94,7 +94,7 @@ class Foo
 			return;
 		}
 
-		assertType('array{string, non-empty-string}', $matches);
+		assertType('array{non-falsy-string, non-empty-string}', $matches);
 	}
 
 }

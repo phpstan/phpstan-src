@@ -392,7 +392,7 @@ function () {
 							assertVariableCertainty(TrinaryLogic::createYes(), $anotherF);
 							assertType('int<1, max>', $anotherF);
 							assertVariableCertainty(TrinaryLogic::createYes(), $matches);
-							assertType('array{0?: string}', $matches);
+							assertType('array{}|array{string}', $matches);
 							assertVariableCertainty(TrinaryLogic::createYes(), $anotherArray);
 							assertType('array{test: array{\'another\'}}', $anotherArray);
 							assertVariableCertainty(TrinaryLogic::createYes(), $ifVar);
@@ -405,7 +405,7 @@ function () {
 							assertType('1|2|3', $ifNotNestedVar);
 							assertVariableCertainty(TrinaryLogic::createNo(), $variableOnlyInEarlyTerminatingElse);
 							assertVariableCertainty(TrinaryLogic::createMaybe(), $matches2);
-							assertType('array{0?: string}', $matches2);
+							assertType('array{}|array{string}', $matches2);
 							assertVariableCertainty(TrinaryLogic::createYes(), $inTry);
 							assertType('1', $inTry);
 							assertVariableCertainty(TrinaryLogic::createYes(), $matches3);

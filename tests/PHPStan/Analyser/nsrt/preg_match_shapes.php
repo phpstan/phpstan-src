@@ -525,7 +525,7 @@ function bug11323(string $s): void {
 
 function (string $s): void {
 	preg_match('/%a(\d*)/', $s, $matches);
-	assertType("list{0?: string, 1?: ''|numeric-string}", $matches);
+	assertType("array{}|array{non-falsy-string, ''|numeric-string}", $matches);
 };
 
 class Bug11376
@@ -533,7 +533,7 @@ class Bug11376
 	public function test(string $str): void
 	{
 		preg_match('~^(?:(\w+)::)?(\w+)$~', $str, $matches);
-		assertType('list{0?: string, 1?: string, 2?: non-empty-string}', $matches);
+		assertType("array{}|array{non-empty-string, string, non-empty-string}", $matches);
 	}
 
 	public function test2(string $str): void
@@ -706,7 +706,7 @@ class Bug11479
 		//  2 => '1',
 		//)
 
-		assertType("array{0?: string, dateFrom?: ''|numeric-string, 1?: ''|numeric-string, dateTo?: numeric-string, 2?: numeric-string}", $matches);
+		assertType("array{}|array{0: string, dateFrom?: ''|numeric-string, 1?: ''|numeric-string, dateTo?: numeric-string, 2?: numeric-string}", $matches);
 	}
 }
 
@@ -730,7 +730,7 @@ function (string $s): void {
 
 function (string $s): void {
 	preg_match('~a|(\d)|(\s)~', $s, $matches);
-	assertType("list{0?: string, 1?: '', 2?: non-empty-string}|list{0?: string, 1?: numeric-string}", $matches);
+	assertType("array{}|array{0: non-empty-string, 1?: numeric-string}|array{non-empty-string, '', non-empty-string}", $matches);
 };
 
 function bug11490 (string $expression): void {
@@ -1013,7 +1013,7 @@ function bug12749f(string $str): void
 
 function bug12397(string $string): void {
 	$m = preg_match('#\b([A-Z]{2,})-(\d+)#', $string, $match);
-	assertType('list{0?: string, 1?: non-falsy-string, 2?: numeric-string}', $match);
+	assertType("array{}|array{non-falsy-string, non-falsy-string, numeric-string}", $match);
 }
 
 function bug12792(string $string): void {

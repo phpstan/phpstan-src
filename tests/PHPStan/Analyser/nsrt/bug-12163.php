@@ -70,6 +70,46 @@ class Test3
 	}
 }
 
+class Test4
+{
+	/**
+	 * @param int<0, 10> $index
+	 */
+	public function integerRangeGeneralization(int $rows, int $index): void
+	{
+		if ($rows < 1) return;
+
+		for ($i = 0; $i < $rows; $i++) {
+			assertType('int<-3, 13>', $index);
+			if ($index > 5) {
+				$index++;
+			} else {
+				$index--;
+			}
+		}
+	}
+}
+
+class Test5
+{
+	/**
+	 * @param int<5, 15> $index
+	 */
+	public function integerRangeGeneralizationBothDirections(int $rows, int $index): void
+	{
+		if ($rows < 1) return;
+
+		for ($i = 0; $i < $rows; $i++) {
+			assertType('int<-10, max>', $index);
+			if ($index > 10) {
+				$index++;
+			} else {
+				$index = -$index;
+			}
+		}
+	}
+}
+
 class Bug12163
 {
 	/**

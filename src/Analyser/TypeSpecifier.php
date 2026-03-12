@@ -1782,26 +1782,11 @@ final class TypeSpecifier
 
 		$assertions = null;
 		$parametersAcceptor = null;
-
 		if ($calleeType->isCallable()->yes()) {
 			$variants = $calleeType->getCallableParametersAcceptors($scope);
-			$hasAssertions = false;
-			foreach ($variants as $variant) {
-				$variantAssertions = $variant->getAsserts();
-				if ($variantAssertions->getAll() === []) {
-					continue;
-				}
-
-				$hasAssertions = true;
-				break;
-			}
-
-			if ($hasAssertions) {
-				$resolvedAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
-				$parametersAcceptor = $resolvedAcceptor;
-				if ($resolvedAcceptor instanceof CallableParametersAcceptor) {
-					$assertions = $resolvedAcceptor->getAsserts();
-				}
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
+			if ($parametersAcceptor instanceof CallableParametersAcceptor) {
+				$assertions = $parametersAcceptor->getAsserts();
 			}
 		}
 

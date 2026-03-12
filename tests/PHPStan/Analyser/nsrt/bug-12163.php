@@ -36,7 +36,7 @@ class Test2
 		$rowIndex = 0;
 		$columnIndex = 0;
 		for ($i = 0; $i < $size; $i++) {
-			assertType('0', $rowIndex);
+			assertType('0', $rowIndex); // `0`, because the IF in line 41 is always TRUE
 			assertType('int<min, 0>', $columnIndex);
 			if ($columnIndex < $columns) {
 				$columnIndex--;

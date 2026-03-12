@@ -26,7 +26,6 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1779,7 +1778,6 @@ final class TypeSpecifier
 		}
 
 		$calleeType = $scope->getType($call->name);
-		$args = $call->getArgs();
 
 		$assertions = null;
 		$parametersAcceptor = null;

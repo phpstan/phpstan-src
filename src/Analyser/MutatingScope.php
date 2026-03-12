@@ -3431,13 +3431,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$otherHolders = $otherConditionalExpressions[$exprString];
-			foreach (array_keys($holders) as $key) {
+			$intersectedHolders = [];
+			foreach ($holders as $key => $holder) {
 				if (!array_key_exists($key, $otherHolders)) {
-					continue 2;
+					continue;
 				}
+				$intersectedHolders[$key] = $holder;
 			}
 
-			$newConditionalExpressions[$exprString] = $holders;
+			if (count($intersectedHolders) === 0) {
+				continue;
+			}
+
+			$newConditionalExpressions[$exprString] = $intersectedHolders;
 		}
 
 		return $newConditionalExpressions;

@@ -252,6 +252,16 @@ final class IssetCheck
 		}
 
 		if ($expr instanceof Expr\NullsafePropertyFetch) {
+			// For ?? the nullsafe operator is needed when the object can be null,
+			// because ?? does not catch TypeError from property access on null.
+			// isset()/empty() handle null objects natively so ?-> is truly redundant there.
+			if ($identifier === 'nullCoalesce') {
+				$varType = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr->var) : $scope->getScopeNativeType($expr->var);
+				if (!$varType->isNull()->no()) {
+					return null;
+				}
+			}
+
 			if ($expr->name instanceof Node\Identifier) {
 				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription))
 					->identifier('nullsafe.neverNull')

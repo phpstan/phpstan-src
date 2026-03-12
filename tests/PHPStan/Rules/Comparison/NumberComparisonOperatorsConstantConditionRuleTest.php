@@ -293,8 +293,8 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-12163.php'], [
 			[
 				'Comparison operation "<" between int<min, 0> and int<1, max> is always true.',
-				41
-			]
+				41,
+			],
 		]);
 	}
 

@@ -12,7 +12,7 @@ class HelloWorld
 	public function testList(array $b): void
 	{
 		if (array_key_exists(3, $b)) {
-			assertType('list{0: string, 1: string, 2?: string, 3: string}', $b);
+			assertType('array{string, string, string, string}', $b);
 		} else {
 			assertType('array{0: string, 1: string, 2?: string}', $b);
 		}
@@ -208,10 +208,10 @@ class HelloWorld2
 	{
 		if (array_key_exists(2, $l, true)) {
 			assertType('true', array_is_list($l));
-			assertType('list{0?: string, 1?: string, 2: string}', $l);
+			assertType('array{string, string, string}', $l);
 			if (array_key_exists(1, $l, true)) {
 				assertType('true', array_is_list($l));
-				assertType('list{0?: string, 1: string, 2: string}', $l);
+				assertType('array{string, string, string}', $l);
 			} else {
 				assertType('true', array_is_list($l));
 				assertType('*NEVER*', $l);

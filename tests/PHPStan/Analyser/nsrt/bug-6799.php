@@ -32,7 +32,7 @@ class HelloWorld
 			foreach ($filterValues as $type => $value) {
 				call_user_func_array(array($this, 'listingAddWhereFilterAtableDefault'), array(&$whereFilter, 'xxxx', $filters[$type], $value));
 			}
-			assertType('mixed', $whereFilter);
+			assertType('mixed', $whereFilter); // could be string[]
 		}
 	}
 }

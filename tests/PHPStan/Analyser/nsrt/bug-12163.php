@@ -70,6 +70,66 @@ class Test3
 	}
 }
 
+class Test4
+{
+	/**
+	 * @param int<0, 10> $columnIndex
+	 */
+	public function integerRangeBothDirections(int $rows, int $columns, int $columnIndex): void
+	{
+		if ($rows < 1 || $columns < 1) return;
+		$size = $rows * $columns;
+
+		for ($i = 0; $i < $size; $i++) {
+			assertType('int<0, max>', $columnIndex);
+			if ($columnIndex < $columns) {
+				$columnIndex++;
+			} else {
+				$columnIndex--;
+			}
+		}
+	}
+}
+
+class Test5
+{
+	/**
+	 * @param int<0, 10> $columnIndex
+	 */
+	public function integerRangeOnlyGreater(int $rows, int $columns, int $columnIndex): void
+	{
+		if ($rows < 1 || $columns < 1) return;
+		$size = $rows * $columns;
+
+		for ($i = 0; $i < $size; $i++) {
+			assertType('int<0, max>', $columnIndex);
+			if ($columnIndex < $columns) {
+				$columnIndex++;
+			} else {
+				$columnIndex = 5;
+			}
+		}
+	}
+}
+
+class Test6
+{
+	/**
+	 * @param int<5, 10> $value
+	 */
+	public function integerRangeGrowsBothDirections(int $value): void
+	{
+		for ($i = 0; $i < 10; $i++) {
+			assertType('int<min, 10>', $value);
+			if ($value > 0) {
+				$value = $value - 2;
+			} else {
+				$value = $value + 3;
+			}
+		}
+	}
+}
+
 class Bug12163
 {
 	/**

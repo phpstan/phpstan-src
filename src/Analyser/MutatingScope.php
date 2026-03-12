@@ -4160,8 +4160,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						$max = $rangeMax;
 					}
 
-					$gotGreater = false;
-					$gotSmaller = false;
+					$newMin = $min;
+					$newMax = $max;
 					foreach ($integerRanges['b'] as $range) {
 						if ($range->getMin() === null) {
 							$rangeMin = PHP_INT_MIN;
@@ -4174,15 +4174,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 							$rangeMax = $range->getMax();
 						}
 
-						if ($rangeMax > $max) {
-							$gotGreater = true;
+						if ($rangeMax > $newMax) {
+							$newMax = $rangeMax;
 						}
-						if ($rangeMin >= $min) {
+						if ($rangeMin >= $newMin) {
 							continue;
 						}
 
-						$gotSmaller = true;
+						$newMin = $rangeMin;
 					}
+
+					$gotGreater = $newMax > $max;
+					$gotSmaller = $newMin < $min;
 
 					if ($min === PHP_INT_MIN) {
 						$min = null;
@@ -4190,9 +4193,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					if ($max === PHP_INT_MAX) {
 						$max = null;
 					}
+					if ($newMin === PHP_INT_MIN) {
+						$newMin = null;
+					}
+					if ($newMax === PHP_INT_MAX) {
+						$newMax = null;
+					}
 
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = new IntegerType();
+						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
 					} elseif ($gotGreater) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
 					} elseif ($gotSmaller) {

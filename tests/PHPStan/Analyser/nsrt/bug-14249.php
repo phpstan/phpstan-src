@@ -70,3 +70,14 @@ function doTemplated(): void {
 }
 
 function getMixed(): mixed {}
+
+function maybeCallable() {
+	$f2 = 'Bug14249\assertIfTemplated';
+	if (rand(0,1)) {
+		$f2 = 'notCallable';
+	}
+
+	$v = getMixed();
+	$f2($v, false);
+	assertType('mixed', $v);
+}

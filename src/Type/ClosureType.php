@@ -13,6 +13,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
@@ -84,6 +85,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private TrinaryLogic $mustUseReturnValue;
 
+	private Assertions $assertions;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -107,6 +110,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		private array $usedVariables = [],
 		?TrinaryLogic $acceptsNamedArguments = null,
 		?TrinaryLogic $mustUseReturnValue = null,
+		?Assertions $assertions = null,
 	)
 	{
 		if ($acceptsNamedArguments === null) {
@@ -126,6 +130,12 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->callSiteVarianceMap = $callSiteVarianceMap ?? TemplateTypeVarianceMap::createEmpty();
 		$this->impurePoints = $impurePoints ?? [new SimpleImpurePoint('functionCall', 'call to an unknown Closure', false)];
+		$this->assertions = $assertions ?? Assertions::createEmpty();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions;
 	}
 
 	/**
@@ -664,6 +674,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
 			$this->mustUseReturnValue,
+			$this->assertions,
 		);
 	}
 
@@ -715,6 +726,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->usedVariables,
 			$this->acceptsNamedArguments,
 			$this->mustUseReturnValue,
+			$this->assertions,
 		);
 	}
 

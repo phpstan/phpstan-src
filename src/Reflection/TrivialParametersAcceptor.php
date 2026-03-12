@@ -103,4 +103,9 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
+	}
+
 }

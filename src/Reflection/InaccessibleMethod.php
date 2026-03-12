@@ -93,4 +93,9 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
+	}
+
 }

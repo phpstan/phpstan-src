@@ -37,6 +37,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 		private array $usedVariables,
 		private TrinaryLogic $acceptsNamedArguments,
 		private TrinaryLogic $mustUseReturnValue,
+		private ?Assertions $assertions = null,
 	)
 	{
 		parent::__construct(
@@ -84,6 +85,11 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->mustUseReturnValue;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions ?? Assertions::createEmpty();
 	}
 
 }

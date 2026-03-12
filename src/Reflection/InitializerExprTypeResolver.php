@@ -958,6 +958,7 @@ final class InitializerExprTypeResolver
 			}
 
 			$parameters = $variant->getParameters();
+			$assertions = $function !== null ? $function->getAsserts() : Assertions::createEmpty();
 			$closureTypes[] = new ClosureType(
 				$parameters,
 				$returnType,
@@ -970,6 +971,7 @@ final class InitializerExprTypeResolver
 				$impurePoints,
 				acceptsNamedArguments: $acceptsNamedArguments,
 				mustUseReturnValue: $mustUseReturnValue,
+				assertions: $assertions,
 			);
 		}
 

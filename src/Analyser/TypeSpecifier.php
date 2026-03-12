@@ -26,6 +26,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1783,7 +1784,6 @@ final class TypeSpecifier
 		$assertions = null;
 		$parametersAcceptor = null;
 
-		// Check for CallableParametersAcceptor with assertions (from first-class callables)
 		if ($calleeType->isCallable()->yes()) {
 			foreach ($calleeType->getCallableParametersAcceptors($scope) as $variant) {
 				$variantAssertions = $variant->getAsserts();
@@ -1793,31 +1793,6 @@ final class TypeSpecifier
 
 				$assertions = $variantAssertions;
 				$parametersAcceptor = $variant;
-				break;
-			}
-		}
-
-		// Check for constant string callables (e.g. $f = 'is_positive_int'; $f($v))
-		if ($assertions === null) {
-			foreach ($calleeType->getConstantStrings() as $constantString) {
-				if ($constantString->getValue() === '') {
-					continue;
-				}
-				$functionName = new Name($constantString->getValue());
-				if (!$this->reflectionProvider->hasFunction($functionName, $scope)) {
-					continue;
-				}
-
-				$functionReflection = $this->reflectionProvider->getFunction($functionName, $scope);
-				$functionAssertions = $functionReflection->getAsserts();
-				if ($functionAssertions->getAll() === []) {
-					continue;
-				}
-
-				$assertions = $functionAssertions;
-				if (count($args) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants(), $functionReflection->getNamedArgumentsVariants());
-				}
 				break;
 			}
 		}

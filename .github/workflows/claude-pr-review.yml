@@ -111,8 +111,7 @@ jobs:
                 issue_num=$(echo "$ref" | tr -d '#')
               fi
 
-              issue_json=$(gh api "repos/$issue_repo/issues/$issue_num" 2>/dev/null || echo "")
-              if [ -n "$issue_json" ]; then
+              if issue_json=$(gh api "repos/$issue_repo/issues/$issue_num" 2>/dev/null); then
                 issues_array=$(echo "$issues_array" | jq --argjson item "$issue_json" '. + [$item]')
               fi
             done
@@ -182,7 +181,7 @@ jobs:
               issue_title=$(jq -r ".[$i].title" /tmp/linked-issues.json)
               issue_number=$(jq -r ".[$i].number" /tmp/linked-issues.json)
               issue_body=$(jq -r ".[$i].body // \"\"" /tmp/linked-issues.json)
-              issue_repo=$(jq -r ".[$i].repository_url" /tmp/linked-issues.json | grep -oE '[^/]+/[^/]+$')
+              issue_repo=$(jq -r ".[$i].repository_url // \"\"" /tmp/linked-issues.json | grep -oE '[^/]+/[^/]+$' || echo "unknown")
               issue_state=$(jq -r ".[$i].state" /tmp/linked-issues.json)
 
               prompt+=$'\n'

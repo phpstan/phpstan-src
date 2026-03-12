@@ -39,7 +39,7 @@ class HelloWorld
 			foreach ($filterValues as $type => $value) {
 				$this->listingAddWhereFilterAtableDefault($whereFilter, 'xxxxx', $filters[$type], $value);
 			}
-			assertType('array<string>', $whereFilter); // could be string[]
+			assertType('array<string>', $whereFilter);
 		}
 	}
 }

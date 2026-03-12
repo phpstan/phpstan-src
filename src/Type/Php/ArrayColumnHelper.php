@@ -53,6 +53,9 @@ final class ArrayColumnHelper
 			$iterableValueType = $arrayType->getIterableValueType();
 
 			[$type, $certainty] = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope);
+			if ($type instanceof NeverType) {
+				return new IntegerType();
+			}
 			if ($certainty->yes()) {
 				return $type;
 			}
@@ -98,7 +101,9 @@ final class ArrayColumnHelper
 
 			if (!$indexType->isNull()->yes()) {
 				[$type, $certainty] = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope);
-				if ($certainty->yes()) {
+				if ($type instanceof NeverType) {
+					$keyType = null;
+				} elseif ($certainty->yes()) {
 					$keyType = $type;
 				} else {
 					$keyType = TypeCombinator::union($type, new IntegerType());
@@ -147,7 +152,25 @@ final class ArrayColumnHelper
 					continue;
 				}
 
-				$returnTypes[] = $type->getInstanceProperty($propertyName, $scope)->getReadableType();
+				$property = $type->getInstanceProperty($propertyName, $scope);
+				if (!$scope->canReadProperty($property)) {
+					foreach ($type->getObjectClassReflections() as $classReflection) {
+						if ($classReflection->hasMethod('__isset') && $classReflection->hasMethod('__get')) {
+							return [new MixedType(), TrinaryLogic::createMaybe()];
+						}
+
+						if (!$classReflection->isFinal()) {
+							if ($property->isPrivate()) {
+								return [new MixedType(), TrinaryLogic::createMaybe()];
+							}
+
+							return [$property->getReadableType(), TrinaryLogic::createMaybe()];
+						}
+					}
+					continue;
+				}
+
+				$returnTypes[] = $property->getReadableType();
 			}
 		}
 

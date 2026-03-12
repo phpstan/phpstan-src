@@ -23,6 +23,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -52,6 +53,21 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 	{
 		return in_array($functionReflection->getName(), ['array_key_exists', 'key_exists'], true)
 			&& !$context->null();
+	}
+
+	private function shouldStoreArrayDimFetchType(Type $arrayType): bool
+	{
+		if (!$arrayType->isConstantArray()->yes()) {
+			return true;
+		}
+
+		foreach ($arrayType->getConstantArrays() as $constantArray) {
+			if (count($constantArray->getOptionalKeys()) > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function specifyTypes(
@@ -108,6 +124,10 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 					$array,
 					$key,
 				);
+
+				if (!$this->shouldStoreArrayDimFetchType($arrayType)) {
+					return $specifiedTypes->setRootExpr(new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
+				}
 
 				return $specifiedTypes->unionWith($this->typeSpecifier->create(
 					$arrayDimFetch,

@@ -1043,24 +1043,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			&& !$node instanceof Expr\ArrowFunction
 			&& $this->hasExpressionType($node)->yes()
 		) {
-			$type = $this->expressionTypes[$exprString]->getType();
-
-			if ($node instanceof Expr\ArrayDimFetch && $node->dim !== null) {
-				$dimType = $this->getType($node->dim);
-				if ($dimType->isConstantScalarValue()->yes()) {
-					$arrayType = $this->getType($node->var);
-					$offsetValueType = $arrayType->getOffsetValueType($dimType);
-					if (
-						!$offsetValueType instanceof ErrorType
-						&& $type->isSuperTypeOf($offsetValueType)->yes()
-						&& !$offsetValueType->isSuperTypeOf($type)->yes()
-					) {
-						$type = $offsetValueType;
-					}
-				}
-			}
-
-			return $type;
+			return $this->expressionTypes[$exprString]->getType();
 		}
 
 		/** @var ExprHandler<Expr> $exprHandler */

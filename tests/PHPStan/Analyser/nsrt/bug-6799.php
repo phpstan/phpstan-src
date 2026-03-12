@@ -32,7 +32,43 @@ class HelloWorld
 			foreach ($filterValues as $type => $value) {
 				call_user_func_array(array($this, 'listingAddWhereFilterAtableDefault'), array(&$whereFilter, 'xxxx', $filters[$type], $value));
 			}
-			assertType('mixed', $whereFilter); // could be array<string>
+			assertType('mixed', $whereFilter);
 		}
 	}
+}
+
+/**
+ * @param mixed $foo
+ */
+function foo($foo): void {}
+
+function testByRefInArray(): void
+{
+	$a = [];
+	assertType('array{}', $a);
+
+	$b = [&$a];
+	assertType('mixed', $a);
+
+	foo($b);
+	assertType('mixed', $a);
+}
+
+function testByRefInArrayWithKey(): void
+{
+	$a = 'hello';
+	assertType("'hello'", $a);
+
+	$b = ['key' => &$a];
+	assertType('mixed', $a);
+}
+
+function testMultipleByRefInArray(): void
+{
+	$a = 1;
+	$c = 'test';
+
+	$b = [&$a, 'normal', &$c];
+	assertType('mixed', $a);
+	assertType('mixed', $c);
 }

@@ -26,6 +26,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -1783,15 +1784,24 @@ final class TypeSpecifier
 		$parametersAcceptor = null;
 
 		if ($calleeType->isCallable()->yes()) {
-			foreach ($calleeType->getCallableParametersAcceptors($scope) as $variant) {
+			$variants = $calleeType->getCallableParametersAcceptors($scope);
+			$hasAssertions = false;
+			foreach ($variants as $variant) {
 				$variantAssertions = $variant->getAsserts();
 				if ($variantAssertions->getAll() === []) {
 					continue;
 				}
 
-				$assertions = $variantAssertions;
-				$parametersAcceptor = $variant;
+				$hasAssertions = true;
 				break;
+			}
+
+			if ($hasAssertions) {
+				$resolvedAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
+				$parametersAcceptor = $resolvedAcceptor;
+				if ($resolvedAcceptor instanceof CallableParametersAcceptor) {
+					$assertions = $resolvedAcceptor->getAsserts();
+				}
 			}
 		}
 

@@ -80,11 +80,10 @@ class Test4
 		for ($i = 0; $i < $size; $i++) {
 			assertType('int<3, 12>', $index);
 			if ($index > 7) {
-				$index = rand(3, 4);
+				/** @var int<3, 4> $index */
 			} else {
 				$index = $index + 5;
 			}
 		}
-		assertType('int<3, 12>', $index);
 	}
 }

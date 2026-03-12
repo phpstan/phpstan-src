@@ -13,6 +13,7 @@ use PHPStan\Type\Traverser\LateResolvableTraverser;
 use function array_filter;
 use function array_map;
 use function array_merge;
+use function count;
 use function iterator_to_array;
 
 /**
@@ -146,7 +147,7 @@ final class TypeUtils
 		}
 
 		$constantArrays = $type->getConstantArrays();
-		if ($constantArrays !== []) {
+		if ($constantArrays !== [] && count($constantArrays) === 1 && $constantArrays[0] === $type) {
 			$newTypes = [];
 			foreach ($constantArrays as $constantArray) {
 				$newTypes[] = $constantArray->getAllArrays();

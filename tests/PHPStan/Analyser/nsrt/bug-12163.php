@@ -69,21 +69,3 @@ class Test3
 		}
 	}
 }
-
-class Test4
-{
-	/**
-	 * @param int<5, 10> $index
-	 */
-	public function integerRangeGrowsBothDirections(int $size, int $index): void
-	{
-		for ($i = 0; $i < $size; $i++) {
-			assertType('int<3, 12>', $index);
-			if ($index > 7) {
-				/** @var int<3, 4> $index */
-			} else {
-				$index = $index + 5;
-			}
-		}
-	}
-}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Callables;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -171,6 +172,11 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->function->mustUseReturnValue();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->function->getAsserts();
 	}
 
 }

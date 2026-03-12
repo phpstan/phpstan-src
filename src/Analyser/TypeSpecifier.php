@@ -26,6 +26,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -568,6 +569,13 @@ final class TypeSpecifier
 						return $specifiedTypes;
 					}
 				}
+			}
+
+			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
+		} elseif ($expr instanceof FuncCall && !($expr->name instanceof Name)) {
+			$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $scope);
+			if ($specifiedTypes !== null) {
+				return $specifiedTypes;
 			}
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
@@ -1762,6 +1770,38 @@ final class TypeSpecifier
 		}
 
 		return $types;
+	}
+
+	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, Scope $scope): ?SpecifiedTypes
+	{
+		if (!$call->name instanceof Expr) {
+			return null;
+		}
+
+		$calleeType = $scope->getType($call->name);
+
+		$assertions = null;
+		$parametersAcceptor = null;
+		if ($calleeType->isCallable()->yes()) {
+			$variants = $calleeType->getCallableParametersAcceptors($scope);
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
+			if ($parametersAcceptor instanceof CallableParametersAcceptor) {
+				$assertions = $parametersAcceptor->getAsserts();
+			}
+		}
+
+		if ($assertions === null || $assertions->getAll() === [] || $parametersAcceptor === null) {
+			return null;
+		}
+
+		$asserts = $assertions->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(
+			$type,
+			$parametersAcceptor->getResolvedTemplateTypeMap(),
+			$parametersAcceptor instanceof ExtendedParametersAcceptor ? $parametersAcceptor->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
+		));
+
+		return $this->specifyTypesFromAsserts($context, $call, $asserts, $parametersAcceptor, $scope);
 	}
 
 	/**

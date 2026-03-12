@@ -12,6 +12,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
@@ -396,6 +397,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 	public function toNumber(): Type

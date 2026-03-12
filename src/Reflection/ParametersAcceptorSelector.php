@@ -897,6 +897,7 @@ final class ParametersAcceptorSelector
 				$acceptor->getUsedVariables(),
 				$acceptor->acceptsNamedArguments(),
 				$acceptor->mustUseReturnValue(),
+				$acceptor->getAsserts(),
 			);
 		}
 

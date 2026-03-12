@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\Assertions;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -91,6 +92,11 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

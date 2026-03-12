@@ -45,7 +45,6 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -1784,13 +1783,9 @@ final class TypeSpecifier
 		$assertions = null;
 		$parametersAcceptor = null;
 
-		// Check for ClosureType with assertions (from first-class callables)
+		// Check for CallableParametersAcceptor with assertions (from first-class callables)
 		if ($calleeType->isCallable()->yes()) {
 			foreach ($calleeType->getCallableParametersAcceptors($scope) as $variant) {
-				if (!$variant instanceof ClosureType) {
-					continue;
-				}
-
 				$variantAssertions = $variant->getAsserts();
 				if ($variantAssertions->getAll() === []) {
 					continue;

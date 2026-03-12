@@ -6,6 +6,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
+use PHPStan\Reflection\Assertions;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -37,6 +38,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 		private array $usedVariables,
 		private TrinaryLogic $acceptsNamedArguments,
 		private TrinaryLogic $mustUseReturnValue,
+		private ?Assertions $assertions = null,
 	)
 	{
 		parent::__construct(
@@ -84,6 +86,11 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 	public function mustUseReturnValue(): TrinaryLogic
 	{
 		return $this->mustUseReturnValue;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions ?? Assertions::createEmpty();
 	}
 
 }

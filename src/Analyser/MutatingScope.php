@@ -4100,30 +4100,24 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 					$gotGreater = false;
 					$gotSmaller = false;
+					$newMin = $min;
+					$newMax = $max;
 					foreach ($constantIntegers['b'] as $int) {
 						if ($int->getValue() > $max) {
 							$gotGreater = true;
 						}
-						if ($int->getValue() >= $min) {
-							continue;
+						if ($int->getValue() < $min) {
+							$gotSmaller = true;
 						}
-
-						$gotSmaller = true;
+						if ($int->getValue() < $newMin) {
+							$newMin = $int->getValue();
+						}
+						if ($int->getValue() > $newMax) {
+							$newMax = $int->getValue();
+						}
 					}
 
 					if ($gotGreater && $gotSmaller) {
-						$newMin = $min;
-						$newMax = $max;
-						foreach ($constantIntegers['b'] as $int) {
-							if ($int->getValue() < $newMin) {
-								$newMin = $int->getValue();
-							}
-							if ($int->getValue() <= $newMax) {
-								continue;
-							}
-
-							$newMax = $int->getValue();
-						}
 						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
 					} elseif ($gotGreater) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
@@ -4174,6 +4168,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 					$gotGreater = false;
 					$gotSmaller = false;
+					$newMin = $min;
+					$newMax = $max;
 					foreach ($integerRanges['b'] as $range) {
 						if ($range->getMin() === null) {
 							$rangeMin = PHP_INT_MIN;
@@ -4189,11 +4185,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						if ($rangeMax > $max) {
 							$gotGreater = true;
 						}
-						if ($rangeMin >= $min) {
-							continue;
+						if ($rangeMin < $min) {
+							$gotSmaller = true;
 						}
-
-						$gotSmaller = true;
+						if ($rangeMin < $newMin) {
+							$newMin = $rangeMin;
+						}
+						if ($rangeMax > $newMax) {
+							$newMax = $rangeMax;
+						}
 					}
 
 					if ($min === PHP_INT_MIN) {
@@ -4202,9 +4202,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					if ($max === PHP_INT_MAX) {
 						$max = null;
 					}
+					if ($newMin === PHP_INT_MIN) {
+						$newMin = null;
+					}
+					if ($newMax === PHP_INT_MAX) {
+						$newMax = null;
+					}
 
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = new IntegerType();
+						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
 					} elseif ($gotGreater) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
 					} elseif ($gotSmaller) {

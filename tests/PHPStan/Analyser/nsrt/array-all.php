@@ -176,4 +176,16 @@ class Foo {
 		}
 		assertType("array<mixed>", $array);
 	}
+
+	/**
+	 * @param array<mixed> $array
+	 */
+	public function test15($array) {
+		if (array_all($array, fn ($value) => is_int($value)) === true) {
+			assertType("array<int>", $array);
+		} else {
+			assertType("array<mixed>", $array);
+		}
+		assertType("array<mixed>", $array);
+	}
 }

@@ -1,28 +1,29 @@
 <?php // lint >= 8.0
 
+declare(strict_types=1);
+
 namespace Bug12373;
 
-function test(): void
+class HelloWorld
 {
-	$foo = [];
+	public function sayHello(int $id): void
+	{
+		$foo = [];
 
-	[$always_a, $always_b, $always_c] = [rand(0, 1), rand(0, 1), rand(0, 1)];
-	if (rand(0, 1)) {
-		[$maybe_a, $maybe_b, $maybe_c] = [rand(0, 1), rand(0, 1), rand(0, 1)];
-		$flag = true;
-	} else {
-		$flag = false;
-	}
+		if ($id)
+		{
+			$foo = 'foo';
+		}
+		else
+		{
+			$value = 'my value';
+		}
 
-	if ($flag && $always_a !== $maybe_a) {
-		$foo[] = 'first';
-	}
+		$foo = "foo";
 
-	if (($always_a && !$always_b) || ($flag && $maybe_a && !$maybe_b)) {
-		$foo[] = 'second';
-	}
-
-	if (($always_a && !$always_c) || ($flag && $maybe_a && !$maybe_c)) {
-		$foo[] = 'third';
+		if (!$id)
+		{
+			echo 'value: ' . $value;
+		}
 	}
 }

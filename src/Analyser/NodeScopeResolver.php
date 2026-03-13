@@ -2027,7 +2027,7 @@ class NodeScopeResolver
 				$impurePoints = array_merge($impurePoints, $finallyResult->getImpurePoints());
 				$finallyScope = $finallyResult->getScope();
 				$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
-				if (count($finallyResult->getExitPoints()) > 0) {
+				if (count($finallyResult->getExitPoints()) > 0 && $finallyResult->isAlwaysTerminating()) {
 					$this->callNodeCallback($nodeCallback, new FinallyExitPointsNode(
 						$finallyResult->toPublic()->getExitPoints(),
 						$finallyExitPoints,

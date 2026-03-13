@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug6799;
+namespace Bug6799b;
 
 use function PHPStan\Testing\assertType;
 

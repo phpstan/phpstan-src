@@ -1524,8 +1524,8 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6799c.php'], [
 			[
 				'Variable $x might not be defined.',
-				9
-			]
+				9,
+			],
 		]);
 	}
 

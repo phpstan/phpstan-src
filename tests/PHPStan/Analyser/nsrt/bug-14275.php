@@ -25,3 +25,12 @@ $f = &$e;
 $f = 42;
 assertType('42', $e);
 assertType('42', $f);
+
+// Subsequent assignments should continue propagating
+$e = 22;
+assertType('22', $e);
+assertType('22', $f);
+
+$f = 33;
+assertType('33', $e);
+assertType('33', $f);

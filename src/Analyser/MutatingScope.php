@@ -2579,6 +2579,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
+		$processedIntertwinedEntries = [];
 		foreach ($scope->expressionTypes as $expressionType) {
 			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
 				continue;
@@ -2596,6 +2597,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				&& is_string($expressionType->getExpr()->getExpr()->name)
 				&& !$has->no()
 			) {
+				$processedIntertwinedEntries[] = $expressionType->getExpr();
 				$scope = $scope->assignVariable(
 					$expressionType->getExpr()->getExpr()->name,
 					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
@@ -2610,6 +2612,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				);
 			}
 
+		}
+
+		// Re-register intertwined entries (and their reverse) that were
+		// invalidated during propagation so that subsequent assignments
+		// to either variable continue to propagate correctly.
+		foreach ($processedIntertwinedEntries as $intertwinedExpr) {
+			$currentType = $scope->getType($intertwinedExpr->getAssignedExpr());
+			$currentNativeType = $scope->getNativeType($intertwinedExpr->getAssignedExpr());
+
+			// Re-register this direction
+			$scope = $scope->assignExpression($intertwinedExpr, $currentType, $currentNativeType);
+
+			// Re-register the reverse direction
+			if (
+				$intertwinedExpr->getExpr() instanceof Variable
+				&& is_string($intertwinedExpr->getExpr()->name)
+			) {
+				$linkedVarName = $intertwinedExpr->getExpr()->name;
+				$reverseExpr = new IntertwinedVariableByReferenceWithExpr(
+					$linkedVarName,
+					new Variable($variableName),
+					new Variable($linkedVarName),
+				);
+				$scope = $scope->assignExpression($reverseExpr, $currentType, $currentNativeType);
+			}
 		}
 
 		return $scope;

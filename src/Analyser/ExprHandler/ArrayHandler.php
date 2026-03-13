@@ -61,6 +61,10 @@ final class ArrayHandler implements ExprHandler
 				$scope = $keyResult->getScope();
 			}
 
+			if ($arrayItem->byRef) {
+				$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $arrayItem->value);
+			}
+
 			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
@@ -71,6 +75,7 @@ final class ArrayHandler implements ExprHandler
 				continue;
 			}
 
+			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $arrayItem->value);
 			$scope = $scope->assignExpression($arrayItem->value, new MixedType(), new MixedType());
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);

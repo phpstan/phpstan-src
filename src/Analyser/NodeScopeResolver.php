@@ -4546,12 +4546,11 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $lastCondExpr->right->getArgs()[0]->value;
 				$arrayType = $bodyScope->getType($arrayArg);
-				$arrayNativeType = $bodyScope->getNativeType($arrayArg);
-				if ($arrayType->isList()->yes() || $arrayNativeType->isList()->yes()) {
+				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
 						$arrayType->getIterableValueType(),
-						$arrayNativeType->getIterableValueType(),
+						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
 					);
 				}
 			}
@@ -4571,12 +4570,11 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $lastCondExpr->left->getArgs()[0]->value;
 				$arrayType = $bodyScope->getType($arrayArg);
-				$arrayNativeType = $bodyScope->getNativeType($arrayArg);
-				if ($arrayType->isList()->yes() || $arrayNativeType->isList()->yes()) {
+				if ($arrayType->isList()->yes()) {
 					$bodyScope = $bodyScope->assignExpression(
 						new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
 						$arrayType->getIterableValueType(),
-						$arrayNativeType->getIterableValueType(),
+						$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
 					);
 				}
 			}

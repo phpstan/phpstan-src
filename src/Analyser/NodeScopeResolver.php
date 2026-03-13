@@ -73,7 +73,6 @@ use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
-use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
@@ -2511,14 +2510,6 @@ class NodeScopeResolver
 		if ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
 			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
-		} elseif ($expr instanceof AlwaysRememberedExpr) {
-			$result = $this->processExprNode($stmt, $expr->getExpr(), $scope, $storage, $nodeCallback, $context);
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-			$expr = $expr->getExpr();
 		} elseif ($expr instanceof FunctionCallableNode) {
 			$throwPoints = [];
 			$impurePoints = [];

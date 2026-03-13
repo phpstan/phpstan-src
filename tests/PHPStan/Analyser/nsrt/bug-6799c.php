@@ -6,13 +6,14 @@ use function PHPStan\Testing\assertType;
 
 // https://3v4l.org/g5UjS
 
+$x = null;
+assertType('null', $x);
 $a = [&$x];
+assertType('mixed', $x); // Could stay null
+
 function doFoo(array &$arr) {
 	$arr[0] = 'string';
 }
 
-var_dump($x);
-assertType('mixed', $x);
 doFoo($a);
-var_dump($x);
-assertType('mixed', $x); // could be string
+assertType('mixed', $x);

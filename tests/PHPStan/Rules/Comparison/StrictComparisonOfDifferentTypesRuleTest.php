@@ -566,7 +566,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/bug-3633.php'], [
 			[
-				'Strict comparison using === between class-string<Bug3633\HelloWorld> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				'Strict comparison using === between class-string<$this(Bug3633\HelloWorld)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				37,
 				$tipText,
 			],
@@ -580,7 +580,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				44,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\OtherClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				'Strict comparison using === between class-string<$this(Bug3633\OtherClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				64,
 				$tipText,
 			],
@@ -595,12 +595,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
 				93,
 				$tipText,
 			],
 			[
-				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				'Strict comparison using === between class-string<$this(Bug3633\FinalClass)> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
 				96,
 				$tipText,
 			],

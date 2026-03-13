@@ -1055,10 +1055,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $exprHandler->resolveType($this, $node);
 		}
 
-		if ($node instanceof AlwaysRememberedExpr) {
-			return $this->nativeTypesPromoted ? $node->getNativeExprType() : $node->getExprType();
-		}
-
 		return new MixedType();
 	}
 

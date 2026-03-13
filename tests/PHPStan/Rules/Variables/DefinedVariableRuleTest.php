@@ -1514,4 +1514,19 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6799c(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6799c.php'], [
+			[
+				'Variable $x might not be defined.',
+				9
+			]
+		]);
+	}
+
 }

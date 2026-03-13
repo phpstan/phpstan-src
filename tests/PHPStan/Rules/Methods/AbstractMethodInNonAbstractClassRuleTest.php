@@ -65,8 +65,8 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4244.php'], [
 			[
-				'Non-abstract method HelloWorld::sayHello() must contain a body.',
-				5,
+				'Non-abstract method Bug4244\HelloWorld::sayHello() must contain a body.',
+				7,
 			],
 		]);
 	}

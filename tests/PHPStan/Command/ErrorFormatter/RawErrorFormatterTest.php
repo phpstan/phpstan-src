@@ -2,12 +2,36 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Override;
+use PHPStan\Internal\AgentDetector;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function getenv;
+use function putenv;
 use function sprintf;
 
 class RawErrorFormatterTest extends ErrorFormatterTestCase
 {
+
+	/** @var array<string, string|false> */
+	private array $originalEnvVars = [];
+
+	#[Override]
+	protected function setUp(): void
+	{
+		foreach (AgentDetector::ENV_VARS as $var) {
+			$this->originalEnvVars[$var] = getenv($var);
+			putenv($var);
+		}
+	}
+
+	#[Override]
+	protected function tearDown(): void
+	{
+		foreach (AgentDetector::ENV_VARS as $var) {
+			putenv($var . ($this->originalEnvVars[$var] !== false ? '=' . $this->originalEnvVars[$var] : ''));
+		}
+	}
 
 	public static function dataFormatterOutputProvider(): iterable
 	{
@@ -123,6 +147,23 @@ Bar2
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame($expected, $this->getOutputContent(false, $verbose), sprintf('%s: output do not match', $message));
+	}
+
+	public function testFormatErrorsInAgent(): void
+	{
+		putenv('AI_AGENT=1');
+
+		$formatter = new RawErrorFormatter();
+
+		$this->assertSame(1, $formatter->formatErrors(
+			$this->getAnalysisResult([5, 1], 0),
+			$this->getOutput(false, false),
+		));
+
+		$this->assertSame(
+			'/data/folder/with space/and unicode 😃/project/foo.php:5:Foobar\Buz [identifier=foobar.buz]' . "\n",
+			$this->getOutputContent(false, false),
+		);
 	}
 
 }

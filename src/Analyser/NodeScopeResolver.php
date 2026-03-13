@@ -4545,11 +4545,15 @@ class NodeScopeResolver
 				&& $stmt->init[0]->var->name === $lastCondExpr->left->name
 			) {
 				$arrayArg = $lastCondExpr->right->getArgs()[0]->value;
-				$bodyScope = $bodyScope->assignExpression(
-					new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
-					$bodyScope->getType($arrayArg)->getIterableValueType(),
-					$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
-				);
+				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayNativeType = $bodyScope->getNativeType($arrayArg);
+				if ($arrayType->isList()->yes() || $arrayNativeType->isList()->yes()) {
+					$bodyScope = $bodyScope->assignExpression(
+						new ArrayDimFetch($lastCondExpr->right->getArgs()[0]->value, $lastCondExpr->left),
+						$arrayType->getIterableValueType(),
+						$arrayNativeType->getIterableValueType(),
+					);
+				}
 			}
 
 			// count($items) > $i
@@ -4566,11 +4570,15 @@ class NodeScopeResolver
 				&& $stmt->init[0]->var->name === $lastCondExpr->right->name
 			) {
 				$arrayArg = $lastCondExpr->left->getArgs()[0]->value;
-				$bodyScope = $bodyScope->assignExpression(
-					new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
-					$bodyScope->getType($arrayArg)->getIterableValueType(),
-					$bodyScope->getNativeType($arrayArg)->getIterableValueType(),
-				);
+				$arrayType = $bodyScope->getType($arrayArg);
+				$arrayNativeType = $bodyScope->getNativeType($arrayArg);
+				if ($arrayType->isList()->yes() || $arrayNativeType->isList()->yes()) {
+					$bodyScope = $bodyScope->assignExpression(
+						new ArrayDimFetch($lastCondExpr->left->getArgs()[0]->value, $lastCondExpr->right),
+						$arrayType->getIterableValueType(),
+						$arrayNativeType->getIterableValueType(),
+					);
+				}
 			}
 		}
 

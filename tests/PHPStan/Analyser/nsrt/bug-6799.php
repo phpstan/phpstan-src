@@ -33,6 +33,9 @@ class HelloWorld
 				call_user_func_array(array($this, 'listingAddWhereFilterAtableDefault'), array(&$whereFilter, 'xxxx', $filters[$type], $value));
 			}
 			assertType('mixed', $whereFilter);
+			if (count($whereFilter) > 0) {
+				$where[] = "(" . implode(" AND ", $whereFilter) . ")";
+			}
 		}
 	}
 }

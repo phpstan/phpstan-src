@@ -298,4 +298,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6799(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-6799.php'], []);
+	}
+
 }

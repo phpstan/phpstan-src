@@ -11,7 +11,7 @@ class Foo
 	{
 		assertType('false', get_parent_class());
 		assertType('false', get_parent_class($this));
-		assertType('class-string<ParentClass\Foo>', get_class($this));
+		assertType('class-string<$this(ParentClass\Foo)>', get_class($this));
 		assertType('\'ParentClass\\\\Foo\'', get_class());
 	}
 

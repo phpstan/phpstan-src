@@ -2579,8 +2579,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
+		// Use $this->expressionTypes (pre-invalidation) to find intertwined entries.
+		// assignExpression() calls invalidateExpression() which removes entries whose
+		// sub-nodes contain the variable being assigned. For bidirectional reference
+		// links ($b = &$a), this incorrectly removes the reverse entry.
 		$processedIntertwinedEntries = [];
-		foreach ($scope->expressionTypes as $expressionType) {
+		foreach ($this->expressionTypes as $expressionType) {
 			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
 				continue;
 			}

@@ -2893,16 +2893,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$invalidated = true;
 				continue;
 			}
-			foreach ($holders as $holder) {
+			$filteredHolders = [];
+			foreach ($holders as $key => $holder) {
+				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
 					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, false, $invalidatingClass)) {
 						$invalidated = true;
-						continue 3;
+						$shouldKeep = false;
+						break;
 					}
 				}
+				if (!$shouldKeep) {
+					continue;
+				}
+
+				$filteredHolders[$key] = $holder;
 			}
-			$newConditionalExpressions[$conditionalExprString] = $holders;
+			if (count($filteredHolders) <= 0) {
+				continue;
+			}
+
+			$newConditionalExpressions[$conditionalExprString] = $filteredHolders;
 		}
 
 		if (!$invalidated) {

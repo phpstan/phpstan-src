@@ -154,7 +154,7 @@ For **false-positive** fixes the expected-errors array is usually empty `[]`, me
 
 ## Step 3 — Write the test
 
-- Use the reproducing code from the playground sample as the basis for the test file.
+- Use the reproducing code from the playground sample for the test file. Keep it as close as possible to the original.
 - Put it in the correct `namespace Bug<number>;`.
 - Add `use function PHPStan\Testing\assertType;` for NSRT tests.
 - If the playground code requires a minimum PHP version, add `// lint >= 8.0` (or whichever version) on the first line.

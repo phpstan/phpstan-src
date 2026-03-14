@@ -187,7 +187,6 @@ class NodeScopeResolver
 
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
-	private const FOREACH_UNROLL_LIMIT = 8;
 
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -1382,106 +1381,6 @@ class NodeScopeResolver
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
 				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
 				// get types from finalScope, but don't create new variables
-			}
-
-			if (
-				$context->isTopLevel()
-				&& $isIterableAtLeastOnce->yes()
-				&& count($breakExitPoints) === 0
-				&& !$stmt->byRef
-				&& $exprType->isConstantArray()->yes()
-				&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
-				&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
-			) {
-				$constantArraysForUnroll = $exprType->getConstantArrays();
-				if (
-					count($constantArraysForUnroll) === 1
-					&& count($constantArraysForUnroll[0]->getOptionalKeys()) === 0
-					&& ($unrollKeyCount = count($constantArraysForUnroll[0]->getKeyTypes())) > 0
-					&& $unrollKeyCount <= self::FOREACH_UNROLL_LIMIT
-				) {
-					$unrolledScope = $scope;
-					$unrollSucceeded = true;
-					foreach ($constantArraysForUnroll[0]->getKeyTypes() as $i => $keyType) {
-						$valueType = $constantArraysForUnroll[0]->getValueTypes()[$i];
-
-						$iterScope = $unrolledScope->assignVariable(
-							$stmt->valueVar->name,
-							$valueType,
-							$valueType,
-							TrinaryLogic::createYes(),
-						);
-						if ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
-							$iterScope = $iterScope->assignVariable(
-								$stmt->keyVar->name,
-								$keyType,
-								$keyType,
-								TrinaryLogic::createYes(),
-							);
-						}
-
-						$iterStorage = $storage->duplicate();
-						$iterResult = $this->processStmtNodesInternal(
-							$stmt, $stmt->stmts, $iterScope, $iterStorage,
-							new NoopNodeCallback(), $context->enterDeep(),
-						)->filterOutLoopExitPoints();
-
-						$unrolledScope = $iterResult->getScope();
-						foreach ($iterResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-							$unrolledScope = $unrolledScope->mergeWith($continueExitPoint->getScope());
-						}
-
-						if (
-							count($iterResult->getExitPointsByType(Break_::class)) > 0
-							|| $iterResult->isAlwaysTerminating()
-						) {
-							$unrollSucceeded = false;
-							break;
-						}
-					}
-
-					if ($unrollSucceeded) {
-						foreach ($unrolledScope->expressionTypes as $exprString => $holder) {
-							if (!str_starts_with($exprString, '$') || str_contains($exprString, '[') || str_contains($exprString, '>')) {
-								continue;
-							}
-							if (!$holder->getCertainty()->yes()) {
-								continue;
-							}
-							$unrolledType = $holder->getType();
-							if (!$unrolledType->isConstantArray()->yes()) {
-								continue;
-							}
-							if (!isset($finalScope->expressionTypes[$exprString])) {
-								continue;
-							}
-							$finalHolder = $finalScope->expressionTypes[$exprString];
-							$finalType = $finalHolder->getType();
-							if (!$finalType->isConstantArray()->yes()) {
-								continue;
-							}
-
-							$unrolledArrays = $unrolledType->getConstantArrays();
-							$finalArrays = $finalType->getConstantArrays();
-							if (
-								count($unrolledArrays) === 1
-								&& count($finalArrays) === 1
-								&& count($unrolledArrays[0]->getOptionalKeys()) < count($finalArrays[0]->getOptionalKeys())
-								&& count($unrolledArrays[0]->getKeyTypes()) === count($finalArrays[0]->getKeyTypes())
-							) {
-								$varName = substr($exprString, 1);
-								$varExpr = $holder->getExpr();
-								$nativeType = $unrolledScope->getNativeType($varExpr);
-								$finalScope = $finalScope->assignVariable(
-									$varName,
-									$unrolledType,
-									$nativeType,
-									TrinaryLogic::createYes(),
-								);
-							}
-						}
-					}
-				}
 			}
 
 			if (!$isIterableAtLeastOnce->no()) {

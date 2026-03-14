@@ -13,7 +13,7 @@ class Broken
 		foreach (['b', 'c'] as $letter) {
 			$array[$letter] = $i;
 		}
-		assertType('array{a: string, b: int, c: int}', $array);
+		assertType('array{a: string, b?: int, c?: int}', $array);
 		return $array;
 	}
 }

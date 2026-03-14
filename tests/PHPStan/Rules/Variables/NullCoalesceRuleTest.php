@@ -372,4 +372,22 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13623(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13623.php'], [
+			[
+				'Offset \'new_invoice\' on array{balance_forward: 0, new_invoice: 0, payments: 0, balance: float} on left side of ??= always exists and is not nullable.',
+				18,
+			],
+			[
+				'Offset \'payments\' on array{balance_forward: 0, new_invoice: 0, payments: 0, balance: float} on left side of ??= always exists and is not nullable.',
+				19,
+			],
+			[
+				'Offset \'balance\' on array{balance_forward: 0, new_invoice: 0, payments: 0, balance: float} on left side of ??= always exists and is not nullable.',
+				20,
+			],
+		]);
+	}
+
 }

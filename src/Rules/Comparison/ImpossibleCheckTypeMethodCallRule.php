@@ -45,7 +45,7 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 			return [];
 		}
 
-		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
+		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node, true);
 		if ($isAlways === null) {
 			return [];
 		}
@@ -55,7 +55,7 @@ final class ImpossibleCheckTypeMethodCallRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node, true);
 			if ($isAlways !== null) {
 				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}

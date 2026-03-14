@@ -16,6 +16,7 @@ trait HasColors
             $color = is_subclass_of($case, Colorable::class) ? $case->color() : 'gray';
 
             $colors[$key] = $color;
+            $colors[$color] = $color;
             return $colors;
         }, []);
     }

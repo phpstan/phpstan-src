@@ -61,6 +61,7 @@ final class ImpossibleCheckTypeHelper
 	public function findSpecifiedType(
 		Scope $scope,
 		Expr $node,
+		bool $ignoreTraitContext,
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
@@ -199,7 +200,10 @@ final class ImpossibleCheckTypeHelper
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectArg = $args[0]->value;
 
-					if ($this->isExpressionDependentOnTraitContext($scope, $objectArg)) {
+					if (
+						$ignoreTraitContext
+						&& $this->isExpressionDependentOnTraitContext($scope, $objectArg)
+					) {
 						$traitReflection = $scope->getTraitReflection();
 						if ($traitReflection === null) {
 							return null;
@@ -328,7 +332,10 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($this->isExpressionDependentOnTraitContext($scope, $sureType[0])) {
+			if (
+				$ignoreTraitContext
+				&& $this->isExpressionDependentOnTraitContext($scope, $sureType[0])
+			) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -359,7 +366,10 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($this->isExpressionDependentOnTraitContext($scope, $sureNotType[0])) {
+			if (
+				$ignoreTraitContext
+				&& $this->isExpressionDependentOnTraitContext($scope, $sureNotType[0])
+			) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}

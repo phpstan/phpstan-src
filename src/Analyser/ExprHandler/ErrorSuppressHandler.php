@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\ErrorSuppress;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -21,6 +22,12 @@ use PHPStan\Type\Type;
 final class ErrorSuppressHandler implements ExprHandler
 {
 
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof ErrorSuppress;
@@ -30,7 +37,7 @@ final class ErrorSuppressHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context);
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$exprResult->getScope(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

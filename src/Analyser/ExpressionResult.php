@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\DependencyInjection\GenerateFactory;
+
+#[GenerateFactory(interface: ExpressionResultFactory::class)]
 final class ExpressionResult
 {
 

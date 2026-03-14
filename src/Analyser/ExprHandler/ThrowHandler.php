@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -24,6 +25,12 @@ use function array_merge;
 final class ThrowHandler implements ExprHandler
 {
 
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+	)
+	{
+	}
+
 	public function supports(Expr $expr): bool
 	{
 		return $expr instanceof Throw_;
@@ -33,7 +40,7 @@ final class ThrowHandler implements ExprHandler
 	{
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

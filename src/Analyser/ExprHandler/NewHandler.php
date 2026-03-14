@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
@@ -63,6 +64,7 @@ final class NewHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
@@ -202,7 +204,7 @@ final class NewHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

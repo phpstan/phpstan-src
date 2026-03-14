@@ -8,6 +8,7 @@ use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -25,6 +26,7 @@ final class ScalarHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
@@ -37,7 +39,7 @@ final class ScalarHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

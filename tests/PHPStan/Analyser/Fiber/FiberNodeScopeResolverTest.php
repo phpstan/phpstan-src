@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Fiber;
 
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
 use PHPStan\DependencyInjection\Type\ParameterClosureTypeExtensionProvider;
@@ -62,6 +63,7 @@ class FiberNodeScopeResolverTest extends TypeInferenceTestCase
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getByType(DeepNodeCloner::class),
+			self::getContainer()->getByType(ExpressionResultFactory::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('polluteScopeWithBlock'),

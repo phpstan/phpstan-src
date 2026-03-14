@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NullsafeShortCircuitingHelper;
@@ -35,6 +36,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
@@ -76,7 +78,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$scope = $nameResult->getScope();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

@@ -9,6 +9,7 @@ use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -36,6 +37,12 @@ use function str_increment;
 #[AutowiredService]
 final class PreIncHandler implements ExprHandler
 {
+
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -104,7 +111,7 @@ final class PreIncHandler implements ExprHandler
 			$nodeCallback,
 		)->getScope();
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),

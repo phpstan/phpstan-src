@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Fiber;
 
 use PhpParser\Node;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\ParameterClosureThisExtensionProvider;
@@ -129,6 +130,7 @@ class FiberNodeScopeResolverRuleTest extends RuleTestCase
 			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
+			self::getContainer()->getByType(ExpressionResultFactory::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 			self::getContainer()->getParameter('polluteScopeWithBlock'),

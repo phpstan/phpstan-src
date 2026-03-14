@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
@@ -26,6 +27,12 @@ use function array_merge;
 #[AutowiredService]
 final class YieldHandler implements ExprHandler
 {
+
+	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -78,7 +85,7 @@ final class YieldHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $valueResult->isAlwaysTerminating();
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,

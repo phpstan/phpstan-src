@@ -15,6 +15,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\VoidToNullTypeTransformer;
@@ -79,6 +80,7 @@ final class FuncCallHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private ReflectionProvider $reflectionProvider,
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
@@ -470,7 +472,7 @@ final class FuncCallHandler implements ExprHandler
 			$scope = $scope->afterOpenSslCall($functionReflection->getName());
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

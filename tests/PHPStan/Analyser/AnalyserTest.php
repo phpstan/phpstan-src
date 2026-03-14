@@ -825,6 +825,7 @@ class AnalyserTest extends PHPStanTestCase
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			$container->getByType(DeepNodeCloner::class),
+			$container->getByType(ExpressionResultFactory::class),
 			false,
 			true,
 			true,

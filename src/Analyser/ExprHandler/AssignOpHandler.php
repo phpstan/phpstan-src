@@ -11,6 +11,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\InternalThrowPoint;
@@ -33,6 +34,7 @@ final class AssignOpHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private AssignHandler $assignHandler,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
@@ -55,7 +57,7 @@ final class AssignOpHandler implements ExprHandler
 			$expr,
 			$nodeCallback,
 			$context,
-			static function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
+			function (MutatingScope $scope) use ($stmt, $expr, $nodeCallback, $context, $storage, $nodeScopeResolver): ExpressionResult {
 				$originalScope = $scope;
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$scope = $scope->filterByFalseyValue(
@@ -66,7 +68,7 @@ final class AssignOpHandler implements ExprHandler
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
-					return new ExpressionResult(
+					return $this->expressionResultFactory->create(
 						$exprResult->getScope()->mergeWith($originalScope),
 						$exprResult->hasYield(),
 						$exprResult->isAlwaysTerminating(),
@@ -91,7 +93,7 @@ final class AssignOpHandler implements ExprHandler
 			$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$scope,
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),

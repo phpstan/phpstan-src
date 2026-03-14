@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -26,6 +27,7 @@ final class TernaryHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private NodeScopeResolver $nodeScopeResolver,
 	)
 	{
@@ -117,7 +119,7 @@ final class TernaryHandler implements ExprHandler
 			}
 		}
 
-		return new ExpressionResult(
+		return $this->expressionResultFactory->create(
 			$finalScope,
 			hasYield: $ternaryCondResult->hasYield(),
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),

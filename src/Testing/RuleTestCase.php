@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\IgnoreErrorExtensionProvider;
@@ -109,6 +110,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::getContainer()->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
+			self::getContainer()->getByType(ExpressionResultFactory::class),
 			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 			self::getContainer()->getParameter('polluteScopeWithBlock'),

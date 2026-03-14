@@ -6,6 +6,7 @@ use LogicException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\Fiber\FiberNodeScopeResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -84,6 +85,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$container->getByType(ParameterClosureTypeExtensionProvider::class),
 			self::createScopeFactory($reflectionProvider, $typeSpecifier),
 			self::getContainer()->getByType(DeepNodeCloner::class),
+			self::getContainer()->getByType(ExpressionResultFactory::class),
 			$container->getParameter('polluteScopeWithLoopInitialAssignments'),
 			$container->getParameter('polluteScopeWithAlwaysIterableForeach'),
 			$container->getParameter('polluteScopeWithBlock'),

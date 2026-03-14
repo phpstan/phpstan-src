@@ -40,8 +40,6 @@ final class ThrowHandler implements ExprHandler
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $result->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

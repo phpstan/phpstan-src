@@ -45,8 +45,6 @@ final class PrintHandler implements ExprHandler
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: $result->getThrowPoints(),
 			impurePoints: array_merge($result->getImpurePoints(), [new ImpurePoint($scope, $expr, 'print', 'print', true)]),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

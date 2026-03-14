@@ -46,8 +46,6 @@ final class EvalHandler implements ExprHandler
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: array_merge($result->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
 			impurePoints: array_merge($result->getImpurePoints(), [new ImpurePoint($scope, $expr, 'eval', 'eval', true)]),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

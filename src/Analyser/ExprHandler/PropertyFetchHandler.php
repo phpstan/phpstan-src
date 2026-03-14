@@ -48,19 +48,19 @@ final class PropertyFetchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$scopeBeforeVar = $scope;
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$hasYield = $result->hasYield();
-		$throwPoints = $result->getThrowPoints();
-		$impurePoints = $result->getImpurePoints();
-		$isAlwaysTerminating = $result->isAlwaysTerminating();
-		$scope = $result->getScope();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$hasYield = $varResult->hasYield();
+		$throwPoints = $varResult->getThrowPoints();
+		$impurePoints = $varResult->getImpurePoints();
+		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
+		$scope = $varResult->getScope();
 		if ($expr->name instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			$scope = $result->getScope();
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $nameResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
+			$scope = $nameResult->getScope();
 			if ($this->phpVersion->supportsPropertyHooks()) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}

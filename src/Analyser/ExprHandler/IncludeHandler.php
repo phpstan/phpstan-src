@@ -38,16 +38,16 @@ final class IncludeHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$identifier = in_array($expr->type, [Include_::TYPE_INCLUDE, Include_::TYPE_INCLUDE_ONCE], true) ? 'include' : 'require';
-		$scope = $result->getScope()->afterExtractCall();
+		$scope = $exprResult->getScope()->afterExtractCall();
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: array_merge($result->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
-			impurePoints: array_merge($result->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
+			hasYield: $exprResult->hasYield(),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
+			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
 		);
 	}
 

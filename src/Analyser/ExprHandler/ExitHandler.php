@@ -40,11 +40,11 @@ final class ExitHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		if ($expr->expr !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$scope = $result->getScope();
+			$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $exprResult->hasYield();
+			$throwPoints = $exprResult->getThrowPoints();
+			$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
+			$scope = $exprResult->getScope();
 		}
 
 		return new ExpressionResult(

@@ -80,20 +80,20 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		if ($expr->dim !== null) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
+			$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $dimResult->hasYield();
+			$throwPoints = $dimResult->getThrowPoints();
+			$impurePoints = $dimResult->getImpurePoints();
+			$isAlwaysTerminating = $dimResult->isAlwaysTerminating();
+			$scope = $dimResult->getScope();
 		}
 
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$hasYield = $hasYield || $result->hasYield();
-		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-		$scope = $result->getScope();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$hasYield = $hasYield || $varResult->hasYield();
+		$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
+		$isAlwaysTerminating = $isAlwaysTerminating || $varResult->isAlwaysTerminating();
+		$scope = $varResult->getScope();
 
 		$varType = $scope->getType($expr->var);
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {

@@ -37,8 +37,8 @@ final class CastStringHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$impurePoints = $result->getImpurePoints();
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$impurePoints = $exprResult->getImpurePoints();
 
 		$exprType = $scope->getType($expr->expr);
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
@@ -54,13 +54,13 @@ final class CastStringHandler implements ExprHandler
 			}
 		}
 
-		$scope = $result->getScope();
+		$scope = $exprResult->getScope();
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $result->getThrowPoints(),
+			hasYield: $exprResult->hasYield(),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),

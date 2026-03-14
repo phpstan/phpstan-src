@@ -32,15 +32,14 @@ final class CloneHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$scope = $result->getScope();
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 
 		return new ExpressionResult(
-			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $result->getThrowPoints(),
-			impurePoints: $result->getImpurePoints(),
+			$exprResult->getScope(),
+			hasYield: $exprResult->hasYield(),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: $exprResult->getThrowPoints(),
+			impurePoints: $exprResult->getImpurePoints(),
 		);
 	}
 

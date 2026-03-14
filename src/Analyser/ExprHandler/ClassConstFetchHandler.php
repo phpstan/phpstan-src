@@ -58,23 +58,23 @@ final class ClassConstFetchHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 
 		if ($expr->class instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $classResult->getScope();
+			$hasYield = $classResult->hasYield();
+			$throwPoints = $classResult->getThrowPoints();
+			$impurePoints = $classResult->getImpurePoints();
+			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
 		}
 
 		if ($expr->name instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $nameResult->getScope();
+			$hasYield = $hasYield || $nameResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		}

@@ -78,15 +78,14 @@ final class PipeHandler implements ExprHandler
 			], $rightAttributes);
 		}
 
-		$exprResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
-		$scope = $exprResult->getScope();
+		$callResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
 
 		return new ExpressionResult(
-			$scope,
-			hasYield: $exprResult->hasYield(),
-			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: $exprResult->getThrowPoints(),
-			impurePoints: $exprResult->getImpurePoints(),
+			$callResult->getScope(),
+			hasYield: $callResult->hasYield(),
+			isAlwaysTerminating: $callResult->isAlwaysTerminating(),
+			throwPoints: $callResult->getThrowPoints(),
+			impurePoints: $callResult->getImpurePoints(),
 		);
 	}
 

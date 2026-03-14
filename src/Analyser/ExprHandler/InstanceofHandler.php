@@ -40,19 +40,19 @@ final class InstanceofHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$scope = $result->getScope();
-		$hasYield = $result->hasYield();
-		$throwPoints = $result->getThrowPoints();
-		$impurePoints = $result->getImpurePoints();
-		$isAlwaysTerminating = $result->isAlwaysTerminating();
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$hasYield = $exprResult->hasYield();
+		$throwPoints = $exprResult->getThrowPoints();
+		$impurePoints = $exprResult->getImpurePoints();
+		$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
+		$scope = $exprResult->getScope();
 		if ($expr->class instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $classResult->getScope();
+			$hasYield = $hasYield || $classResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $classResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
 		}
 
 		return new ExpressionResult(

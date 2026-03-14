@@ -70,4 +70,9 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/missing-exception-method-throws.php'], $errors);
 	}
 
+	public function testBugArrayOffset(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-array-offset.php'], []);
+	}
+
 }

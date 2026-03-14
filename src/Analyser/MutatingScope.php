@@ -2768,7 +2768,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 					}
 
-					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+					if (($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) && !$type instanceof NeverType) {
 						$varType = TypeCombinator::intersect(
 							$varType,
 							new HasOffsetValueType($dimType, $type),

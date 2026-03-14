@@ -123,7 +123,7 @@ class AssignVsNarrow
 	public function doFoo(array $a)
 	{
 		if (is_int($a['a'])) {
-			assertType('*NEVER*', $a);
+			assertType('array{a: string}', $a);
 		}
 	}
 
@@ -144,7 +144,7 @@ class AssignVsNarrow
 	public function doFoo2(array $a)
 	{
 		if (is_int($a['a'])) {
-			assertType("non-empty-array<string, string>&hasOffsetValue('a', *NEVER*)", $a);
+			assertType("array<string, string>", $a);
 		}
 	}
 

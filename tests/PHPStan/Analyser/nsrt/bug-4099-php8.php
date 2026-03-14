@@ -27,7 +27,7 @@ class Foo
 		assertNativeType('mixed', $arr['key']);
 
 		if (!array_key_exists('inner', $arr['key'])) {
-			assertType('*NEVER*', $arr);
+			assertType('array{key: array{inner: mixed}}', $arr);
 			assertNativeType('non-empty-array&hasOffset(\'key\')', $arr);
 			assertType('*NEVER*', $arr['key']);
 			assertNativeType("array<mixed~'inner', mixed>", $arr['key']);

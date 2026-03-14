@@ -2080,7 +2080,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 			}
 
-			if ($this->shouldNotCarryForwardPropertyFetchInClosure($expr)) {
+			if ($expr instanceof PropertyFetch) {
 				continue;
 			}
 
@@ -2148,11 +2148,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this,
 			$this->nativeTypesPromoted,
 		);
-	}
-
-	private function shouldNotCarryForwardPropertyFetchInClosure(Expr $expr): bool
-	{
-		return $expr instanceof PropertyFetch;
 	}
 
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool

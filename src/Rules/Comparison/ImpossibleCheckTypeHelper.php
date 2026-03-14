@@ -200,7 +200,16 @@ final class ImpossibleCheckTypeHelper
 					$objectArg = $args[0]->value;
 
 					if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($objectArg)) {
-						return null;
+						$traitReflection = $scope->getTraitReflection();
+						$methodArgValue = $args[1]->value;
+						$methodArgType = $this->treatPhpDocTypesAsCertain ? $scope->getType($methodArgValue) : $scope->getNativeType($methodArgValue);
+						$constantMethodNames = $methodArgType->getConstantStrings();
+						if (
+							count($constantMethodNames) !== 1
+							|| !$traitReflection->hasNativeMethod($constantMethodNames[0]->getValue())
+						) {
+							return null;
+						}
 					}
 					$objectType = $this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg);
 

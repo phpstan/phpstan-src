@@ -25,21 +25,13 @@ use PhpParser\NodeFinder;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
-use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
-use PHPStan\Node\Expr\GetIterableValueTypeExpr;
-use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
-use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
-use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
-use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
@@ -900,68 +892,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	/** @api */
 	public function getType(Expr $node): Type
 	{
-		if ($node instanceof GetIterableKeyTypeExpr) {
-			return $this->getIterableKeyType($this->getType($node->getExpr()));
-		}
-		if ($node instanceof GetIterableValueTypeExpr) {
-			return $this->getIterableValueType($this->getType($node->getExpr()));
-		}
-		if ($node instanceof GetOffsetValueTypeExpr) {
-			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
-		}
-		if ($node instanceof ExistingArrayDimFetch) {
-			return $this->getType(new Expr\ArrayDimFetch($node->getVar(), $node->getDim()));
-		}
-		if ($node instanceof UnsetOffsetExpr) {
-			return $this->getType($node->getVar())->unsetOffset($this->getType($node->getDim()));
-		}
-		if ($node instanceof SetOffsetValueTypeExpr) {
-			$varNode = $node->getVar();
-			$varType = $this->getType($varNode);
-			if ($varNode instanceof OriginalPropertyTypeExpr) {
-				$currentPropertyType = $this->getType($varNode->getPropertyFetch());
-				if ($varType instanceof UnionType) {
-					$varType = $varType->filterTypes(static fn (Type $innerType) => !$innerType->isSuperTypeOf($currentPropertyType)->no());
-				}
-			}
-			return $varType->setOffsetValueType(
-				$node->getDim() !== null ? $this->getType($node->getDim()) : null,
-				$this->getType($node->getValue()),
-			);
-		}
-		if ($node instanceof SetExistingOffsetValueTypeExpr) {
-			$varNode = $node->getVar();
-			$varType = $this->getType($varNode);
-			if ($varNode instanceof OriginalPropertyTypeExpr) {
-				$currentPropertyType = $this->getType($varNode->getPropertyFetch());
-				if ($varType instanceof UnionType) {
-					$varType = $varType->filterTypes(static fn (Type $innerType) => !$innerType->isSuperTypeOf($currentPropertyType)->no());
-				}
-			}
-			return $varType->setExistingOffsetValueType(
-				$this->getType($node->getDim()),
-				$this->getType($node->getValue()),
-			);
-		}
-		if ($node instanceof TypeExpr) {
-			return $node->getExprType();
-		}
-		if ($node instanceof NativeTypeExpr) {
-			if ($this->nativeTypesPromoted) {
-				return $node->getNativeType();
-			}
-			return $node->getPhpDocType();
-		}
-
-		if ($node instanceof OriginalPropertyTypeExpr) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->getPropertyFetch(), $this);
-			if ($propertyReflection === null) {
-				return new ErrorType();
-			}
-
-			return $propertyReflection->getReadableType();
-		}
-
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {

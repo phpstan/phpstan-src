@@ -53,6 +53,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

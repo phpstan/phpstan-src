@@ -86,6 +86,7 @@ final class YieldHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,

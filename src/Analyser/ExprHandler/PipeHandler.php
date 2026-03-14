@@ -88,6 +88,7 @@ final class PipeHandler implements ExprHandler
 		$callResult = $nodeScopeResolver->processExprNode($stmt, $callExpr, $scope, $storage, $nodeCallback, $context);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$callResult->getScope(),
 			hasYield: $callResult->hasYield(),
 			isAlwaysTerminating: $callResult->isAlwaysTerminating(),

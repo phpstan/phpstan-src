@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\GenerateFactory;
 
 #[GenerateFactory(interface: ExpressionResultFactory::class)]
@@ -25,6 +26,7 @@ final class ExpressionResult
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback
 	 */
 	public function __construct(
+		private Expr $expr,
 		private MutatingScope $scope,
 		private bool $hasYield,
 		private bool $isAlwaysTerminating,

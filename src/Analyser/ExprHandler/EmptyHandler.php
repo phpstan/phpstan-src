@@ -72,6 +72,7 @@ final class EmptyHandler implements ExprHandler
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

@@ -86,6 +86,7 @@ final class BooleanOrHandler implements ExprHandler
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $leftFalseyScope), $scope, $storage, $context);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$leftMergedWithRightScope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),

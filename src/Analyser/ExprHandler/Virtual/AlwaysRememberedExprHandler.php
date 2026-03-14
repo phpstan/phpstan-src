@@ -48,6 +48,7 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		$scope = $innerResult->getScope();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),

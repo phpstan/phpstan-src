@@ -73,6 +73,7 @@ final class BinaryOpHandler implements ExprHandler
 		$scope = $rightResult->getScope();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),

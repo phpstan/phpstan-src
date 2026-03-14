@@ -41,6 +41,7 @@ final class ThrowHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

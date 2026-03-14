@@ -81,6 +81,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,

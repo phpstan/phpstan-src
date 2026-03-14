@@ -83,6 +83,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$scope = $varResult->getScope();
 
 			return $this->expressionResultFactory->create(
+				$expr,
 				$scope,
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
@@ -112,6 +113,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),

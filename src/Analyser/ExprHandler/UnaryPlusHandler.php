@@ -38,6 +38,7 @@ final class UnaryPlusHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$exprResult->getScope(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

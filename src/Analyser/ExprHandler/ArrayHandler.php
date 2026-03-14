@@ -72,6 +72,7 @@ final class ArrayHandler implements ExprHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

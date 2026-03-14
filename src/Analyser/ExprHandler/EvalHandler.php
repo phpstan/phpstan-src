@@ -48,6 +48,7 @@ final class EvalHandler implements ExprHandler
 		$scope = $exprResult->getScope();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

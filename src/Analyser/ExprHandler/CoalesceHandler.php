@@ -85,6 +85,7 @@ final class CoalesceHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $condResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $condResult->isAlwaysTerminating(),

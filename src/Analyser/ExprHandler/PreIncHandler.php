@@ -112,6 +112,7 @@ final class PreIncHandler implements ExprHandler
 		)->getScope();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),

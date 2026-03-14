@@ -260,6 +260,7 @@ final class StaticCallHandler implements ExprHandler
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,

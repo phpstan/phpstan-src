@@ -41,6 +41,7 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 		// we don't need to process the inner expr
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

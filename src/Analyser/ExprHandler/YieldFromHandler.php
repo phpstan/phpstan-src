@@ -56,6 +56,7 @@ final class YieldFromHandler implements ExprHandler
 		$scope = $exprResult->getScope();
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: true,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

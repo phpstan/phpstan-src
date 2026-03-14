@@ -69,6 +69,7 @@ final class AssignOpHandler implements ExprHandler
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
 					return $this->expressionResultFactory->create(
+						$expr,
 						$exprResult->getScope()->mergeWith($originalScope),
 						$exprResult->hasYield(),
 						$exprResult->isAlwaysTerminating(),
@@ -94,6 +95,7 @@ final class AssignOpHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),

@@ -45,6 +45,7 @@ final class ConstFetchHandler implements ExprHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

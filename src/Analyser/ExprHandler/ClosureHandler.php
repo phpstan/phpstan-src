@@ -41,6 +41,7 @@ final class ClosureHandler implements ExprHandler
 		$scope = $processClosureResult->applyByRefUseScope($processClosureResult->getScope());
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: false,
 			isAlwaysTerminating: false,

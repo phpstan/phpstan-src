@@ -194,6 +194,7 @@ final class MethodCallHandler implements ExprHandler
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		$result = $this->expressionResultFactory->create(
+			$expr,
 			$scope,
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
@@ -222,6 +223,7 @@ final class MethodCallHandler implements ExprHandler
 			if ($calledMethodScope !== null) {
 				$scope = $scope->mergeInitializedProperties($calledMethodScope);
 				return $this->expressionResultFactory->create(
+					$expr,
 					$scope,
 					hasYield: $result->hasYield(),
 					isAlwaysTerminating: $result->isAlwaysTerminating(),

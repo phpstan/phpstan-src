@@ -38,6 +38,7 @@ final class ErrorSuppressHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$exprResult->getScope(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),

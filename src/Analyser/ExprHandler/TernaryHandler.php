@@ -120,6 +120,7 @@ final class TernaryHandler implements ExprHandler
 		}
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$finalScope,
 			hasYield: $ternaryCondResult->hasYield(),
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),

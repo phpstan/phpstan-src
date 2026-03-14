@@ -40,6 +40,7 @@ final class ArrowFunctionHandler implements ExprHandler
 		$result = $nodeScopeResolver->processArrowFunctionNode($stmt, $expr, $scope, $storage, $nodeCallback, null);
 
 		return $this->expressionResultFactory->create(
+			$expr,
 			$result->getScope(),
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: false,

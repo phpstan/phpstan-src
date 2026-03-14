@@ -2510,85 +2510,17 @@ class NodeScopeResolver
 		if ($expr instanceof List_) {
 			// only in assign and foreach, processed elsewhere
 			return new ExpressionResult($scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []);
-		} elseif ($expr instanceof FunctionCallableNode) {
-			$throwPoints = [];
-			$impurePoints = [];
-			$hasYield = false;
-			$isAlwaysTerminating = false;
-			if ($expr->getName() instanceof Expr) {
-				$result = $this->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $result->getScope();
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-			}
-		} elseif ($expr instanceof MethodCallableNode) {
-			$result = $this->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = false;
-			if ($expr->getName() instanceof Expr) {
-				$nameResult = $this->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $nameResult->getScope();
-				$hasYield = $hasYield || $nameResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
-				$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
-			}
-		} elseif ($expr instanceof StaticMethodCallableNode) {
-			$throwPoints = [];
-			$impurePoints = [];
-			$hasYield = false;
-			$isAlwaysTerminating = false;
-			if ($expr->getClass() instanceof Expr) {
-				$classResult = $this->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $classResult->getScope();
-				$hasYield = $classResult->hasYield();
-				$throwPoints = $classResult->getThrowPoints();
-				$impurePoints = $classResult->getImpurePoints();
-				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
-			}
-			if ($expr->getName() instanceof Expr) {
-				$nameResult = $this->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $nameResult->getScope();
-				$hasYield = $hasYield || $nameResult->hasYield();
-				$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
-				$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
-				$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
-			}
-		} elseif ($expr instanceof InstantiationCallableNode) {
-			$throwPoints = [];
-			$impurePoints = [];
-			$hasYield = false;
-			$isAlwaysTerminating = false;
-			if ($expr->getClass() instanceof Expr) {
-				$classResult = $this->processExprNode($stmt, $expr->getClass(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $classResult->getScope();
-				$hasYield = $classResult->hasYield();
-				$throwPoints = $classResult->getThrowPoints();
-				$impurePoints = $classResult->getImpurePoints();
-				$isAlwaysTerminating = $classResult->isAlwaysTerminating();
-			}
-		} else {
-			$hasYield = false;
-			$throwPoints = [];
-			$impurePoints = [];
-			$isAlwaysTerminating = false;
 		}
 
-		$result = new ExpressionResult(
+		return new ExpressionResult(
 			$scope,
-			$hasYield,
-			$isAlwaysTerminating,
-			$throwPoints,
-			$impurePoints,
-			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: [],
+			impurePoints: [],
+			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
-		return $result;
 	}
 
 	/**

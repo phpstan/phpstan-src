@@ -609,4 +609,10 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug11006(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11006.php'], []);
+	}
+
 }

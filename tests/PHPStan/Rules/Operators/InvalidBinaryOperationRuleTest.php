@@ -821,4 +821,9 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10595.php'], []);
 	}
 
+	public function testBug14080(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14080.php'], []);
+	}
+
 }

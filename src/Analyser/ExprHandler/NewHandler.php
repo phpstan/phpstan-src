@@ -547,6 +547,10 @@ final class NewHandler implements ExprHandler
 					continue;
 				}
 
+				if ($type instanceof NeverType) {
+					continue;
+				}
+
 				if (!array_key_exists($ancestorType->getName(), $resolvedTypeMap)) {
 					$resolvedTypeMap[$ancestorType->getName()] = $type;
 					continue;

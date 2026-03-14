@@ -76,7 +76,7 @@ final class BooleanOrHandler implements ExprHandler
 		$leftResult = $nodeScopeResolver->processExprNode($stmt, $expr->left, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$leftFalseyScope = $leftResult->getFalseyScope();
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $leftFalseyScope, $storage, $nodeCallback, $context);
-		$rightExprType = $rightResult->getScope()->getType($expr->right);
+		$rightExprType = $rightResult->getType();
 		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 			$leftMergedWithRightScope = $leftResult->getTruthyScope();
 		} else {
@@ -88,6 +88,23 @@ final class BooleanOrHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$leftMergedWithRightScope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($leftResult, $rightResult): Type {
+				$leftBooleanType = $leftResult->getTypeForScope($scope)->toBoolean();
+				if ($leftBooleanType->isTrue()->yes()) {
+					return new ConstantBooleanType(true);
+				}
+
+				$rightBooleanType = $rightResult->getTypeForScope($scope)->toBoolean();
+				if ($rightBooleanType->isTrue()->yes()) {
+					return new ConstantBooleanType(true);
+				}
+
+				if ($leftBooleanType->isFalse()->yes() && $rightBooleanType->isFalse()->yes()) {
+					return new ConstantBooleanType(false);
+				}
+
+				return new BooleanType();
+			},
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating(),
 			throwPoints: array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),

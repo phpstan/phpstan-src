@@ -37,12 +37,31 @@ final class SetOffsetValueTypeExprHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// because this is a virtual node handler, the caller will only be interested in the type
-		// we don't need to process the inner expr
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, $context->enterDeep());
+		$dimResult = $expr->getDim() !== null ? $nodeScopeResolver->processExprNode($stmt, $expr->getDim(), $varResult->getScope(), $storage, $nodeCallback, $context->enterDeep()) : null;
+		$valueResult = $nodeScopeResolver->processExprNode($stmt, $expr->getValue(), ($dimResult ?? $varResult)->getScope(), $storage, $nodeCallback, $context->enterDeep());
+
+		$propertyFetchResult = $expr->getVar() instanceof OriginalPropertyTypeExpr
+			? $nodeScopeResolver->processExprNode($stmt, $expr->getVar()->getPropertyFetch(), $scope, $storage, $nodeCallback, $context->enterDeep())
+			: null;
 
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($varResult, $dimResult, $valueResult, $propertyFetchResult): Type {
+				$varType = $varResult->getTypeForScope($scope);
+				if ($propertyFetchResult !== null) {
+					$currentPropertyType = $propertyFetchResult->getTypeForScope($scope);
+					if ($varType instanceof UnionType) {
+						$varType = $varType->filterTypes(static fn (Type $innerType) => !$innerType->isSuperTypeOf($currentPropertyType)->no());
+					}
+				}
+
+				return $varType->setOffsetValueType(
+					$dimResult !== null ? $dimResult->getTypeForScope($scope) : null,
+					$valueResult->getTypeForScope($scope),
+				);
+			},
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

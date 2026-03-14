@@ -52,6 +52,7 @@ final class IncludeHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn () => new MixedType(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),

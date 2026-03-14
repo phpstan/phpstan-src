@@ -14,6 +14,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\BenevolentUnionType;
@@ -101,6 +102,8 @@ final class PreDecHandler implements ExprHandler
 	{
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
+		$minusResult = $nodeScopeResolver->processExprNode($stmt, new Minus($expr->var, new Int_(1)), $varResult->getScope(), new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+
 		$scope = $nodeScopeResolver->processVirtualAssign(
 			$varResult->getScope(),
 			$storage,
@@ -113,6 +116,54 @@ final class PreDecHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($varResult, $minusResult): Type {
+				$varType = $varResult->getTypeForScope($scope);
+				$varScalars = $varType->getConstantScalarValues();
+
+				if (count($varScalars) > 0) {
+					$newTypes = [];
+					foreach ($varScalars as $varValue) {
+						if ($varValue === '') {
+							$varValue = -1;
+						} elseif (is_string($varValue) && !is_numeric($varValue)) {
+							try {
+								$varValue = str_decrement($varValue);
+							} catch (ValueError) {
+								return new NeverType();
+							}
+						} elseif (is_numeric($varValue)) {
+							--$varValue;
+						}
+
+						$newTypes[] = $scope->getTypeFromValue($varValue);
+					}
+					return TypeCombinator::union(...$newTypes);
+				}
+
+				if ($varType->isString()->yes()) {
+					if ($varType->isLiteralString()->yes()) {
+						return new IntersectionType([
+							new StringType(),
+							new AccessoryLiteralStringType(),
+						]);
+					}
+
+					if ($varType->isNumericString()->yes()) {
+						return new BenevolentUnionType([
+							new IntegerType(),
+							new FloatType(),
+						]);
+					}
+
+					return new BenevolentUnionType([
+						new StringType(),
+						new IntegerType(),
+						new FloatType(),
+					]);
+				}
+
+				return $minusResult->getTypeForScope($scope);
+			},
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

@@ -44,9 +44,47 @@ final class ConstFetchHandler implements ExprHandler
 	{
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 
+		$constName = (string) $expr->name;
+		$loweredConstName = strtolower($constName);
+		if ($loweredConstName === 'true') {
+			$constType = new ConstantBooleanType(true);
+		} elseif ($loweredConstName === 'false') {
+			$constType = new ConstantBooleanType(false);
+		} elseif ($loweredConstName === 'null') {
+			$constType = new NullType();
+		} else {
+			$namespacedName = null;
+			if (!$expr->name->isFullyQualified() && $scope->getNamespace() !== null) {
+				$namespacedName = new FullyQualified([$scope->getNamespace(), $expr->name->toString()]);
+			}
+			$globalName = new FullyQualified($expr->name->toString());
+
+			$constType = $this->constantResolver->resolveConstant($expr->name, $scope) ?? new ErrorType();
+
+			$names = [$namespacedName, $globalName];
+		}
+
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($constType, $names) {
+				if ($names !== null) {
+					foreach ($names as $name) {
+						if ($name === null) {
+							continue;
+						}
+						$constFetch = new ConstFetch($name);
+						if ($scope->hasExpressionType($constFetch)->yes()) {
+							return $this->constantResolver->resolveConstantType(
+								$name->toString(),
+								$scope->expressionTypes[$scope->getNodeKey($constFetch)]->getType(),
+							);
+						}
+					}
+				}
+
+				return $constType;
+			},
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

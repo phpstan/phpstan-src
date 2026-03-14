@@ -43,6 +43,7 @@ final class ThrowHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn () => new NonAcceptingNeverType(),
 			hasYield: false,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),

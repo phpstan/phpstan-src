@@ -201,6 +201,8 @@ final class MatchHandler implements ExprHandler
 		$arms = $expr->arms;
 		$armCondsToSkip = [];
 		$armBodyScopes = [];
+		/** @var ExpressionResult[] */
+		$armBodyResults = [];
 		if ($condType->isEnum()->yes()) {
 			// enum match analysis would work even without this if branch
 			// but would be much slower
@@ -336,6 +338,7 @@ final class MatchHandler implements ExprHandler
 						$nodeCallback,
 						ExpressionContext::createTopLevel(),
 					);
+					$armBodyResults[] = $armResult;
 					$armScope = $armResult->getScope();
 					$armBodyScopes[] = $armScope;
 					$hasYield = $hasYield || $armResult->hasYield();
@@ -370,6 +373,7 @@ final class MatchHandler implements ExprHandler
 				$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
 				$armNodes[$i] = new MatchExpressionArm($matchArmBody, [], $arm->getStartLine());
 				$armResult = $nodeScopeResolver->processExprNode($stmt, $arm->body, $matchScope, $storage, $nodeCallback, ExpressionContext::createTopLevel());
+				$armBodyResults[] = $armResult;
 				$matchScope = $armResult->getScope();
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
@@ -424,6 +428,7 @@ final class MatchHandler implements ExprHandler
 				$nodeCallback,
 				ExpressionContext::createTopLevel(),
 			);
+			$armBodyResults[] = $armResult;
 			$armScope = $armResult->getScope();
 			$armBodyScopes[] = $armScope;
 			$hasYield = $hasYield || $armResult->hasYield();
@@ -477,6 +482,14 @@ final class MatchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($armBodyResults): Type {
+				$types = [];
+				foreach ($armBodyResults as $armBodyResult) {
+					$types[] = $armBodyResult->getTypeForScope($scope);
+				}
+
+				return TypeCombinator::union(...$types);
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

@@ -50,6 +50,7 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $scope->nativeTypesPromoted ? $expr->getNativeExprType() : $expr->getExprType(),
 			hasYield: $innerResult->hasYield(),
 			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
 			throwPoints: $innerResult->getThrowPoints(),

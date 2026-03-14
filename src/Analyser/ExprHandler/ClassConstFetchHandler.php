@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\MixedType;
@@ -59,6 +60,7 @@ final class ClassConstFetchHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $classResult->getScope();
@@ -84,6 +86,24 @@ final class ClassConstFetchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($classResult, $nodeScopeResolver, $stmt): Type {
+				if (!$expr->name instanceof Identifier) {
+					return new MixedType();
+				}
+
+				return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
+					$expr->class,
+					$expr->name->name,
+					$scope->isInClass() ? $scope->getClassReflection() : null,
+					static function (Expr $e) use ($expr, $classResult, $scope, $nodeScopeResolver, $stmt): Type {
+						if ($classResult !== null && $e === $expr->class) {
+							return $classResult->getTypeForScope($scope);
+						}
+
+						return $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+					},
+				);
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

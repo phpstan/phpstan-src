@@ -53,7 +53,19 @@ final class InstanceofHandler implements ExprHandler
 		$impurePoints = $exprResult->getImpurePoints();
 		$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
 		$scope = $exprResult->getScope();
-		if (!$expr->class instanceof Name) {
+		$classTypeFromName = null;
+		$classResult = null;
+		if ($expr->class instanceof Name) {
+			$unresolvedClassName = $expr->class->toString();
+			if (
+				strtolower($unresolvedClassName) === 'static'
+				&& $scope->isInClass()
+			) {
+				$classTypeFromName = new StaticType($scope->getClassReflection());
+			} else {
+				$classTypeFromName = new ObjectType($scope->resolveName($expr->class));
+			}
+		} else {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $classResult->getScope();
 			$hasYield = $hasYield || $classResult->hasYield();
@@ -65,6 +77,41 @@ final class InstanceofHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($exprResult, $classResult, $classTypeFromName): Type {
+				$expressionType = $exprResult->getTypeForScope($scope);
+				if (
+					$scope->isInTrait()
+					&& TypeUtils::findThisType($expressionType) !== null
+				) {
+					return new BooleanType();
+				}
+				if ($expressionType instanceof NeverType) {
+					return new ConstantBooleanType(false);
+				}
+
+				$uncertainty = false;
+				if ($classTypeFromName !== null) {
+					$classType = $classTypeFromName;
+				} else {
+					$classType = $classResult->getTypeForScope($scope);
+					$traverser = new InstanceOfClassTypeTraverser();
+					$classType = TypeTraverser::map($classType, $traverser);
+					$uncertainty = $traverser->getUncertainty();
+				}
+
+				if ($classType->isSuperTypeOf(new MixedType())->yes()) {
+					return new BooleanType();
+				}
+
+				$isSuperType = $classType->isSuperTypeOf($expressionType);
+				if ($isSuperType->no()) {
+					return new ConstantBooleanType(false);
+				} elseif ($isSuperType->yes() && !$uncertainty) {
+					return new ConstantBooleanType(true);
+				}
+
+				return new BooleanType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

@@ -40,6 +40,7 @@ final class UnaryPlusHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$exprResult->getScope(),
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $exprResult->getTypeForScope($scope)->toNumber(),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

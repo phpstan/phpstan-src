@@ -44,6 +44,7 @@ final class CloneHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$exprResult->getScope(),
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => TypeTraverser::map(TypeCombinator::intersect($exprResult->getTypeForScope($scope), new ObjectWithoutClassType()), new CloneTypeTraverser()),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

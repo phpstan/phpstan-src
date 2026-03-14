@@ -88,6 +88,20 @@ final class YieldHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope): Type {
+				$functionReflection = $scope->getFunction();
+				if ($functionReflection === null) {
+					return new MixedType();
+				}
+
+				$returnType = $functionReflection->getReturnType();
+				$generatorSendType = $returnType->getTemplateType(Generator::class, 'TSend');
+				if ($generatorSendType instanceof ErrorType) {
+					return new MixedType();
+				}
+
+				return $generatorSendType;
+			},
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

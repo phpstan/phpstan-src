@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
@@ -61,6 +62,13 @@ final class CastStringHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: fn (Expr $uninteresting, MutatingScope $scope) => $this->initializerExprTypeResolver->getCastType($expr, static function (Expr $e) use ($expr, $exprResult, $nodeScopeResolver, $stmt, $scope): Type {
+				if ($e === $expr->expr) {
+					return $exprResult->getTypeForScope($scope);
+				}
+
+				return $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+			}),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

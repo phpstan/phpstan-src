@@ -81,6 +81,7 @@ final class VariableHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$nameResult = null;
 		if (is_string($expr->name)) {
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
@@ -96,12 +97,25 @@ final class VariableHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
-			$hasYield,
-			$isAlwaysTerminating,
-			$throwPoints,
-			$impurePoints,
-			static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			typeCallback: static function (Expr $expr, MutatingScope $scope): Type {
+				if (is_string($expr->name)) {
+					if ($scope->hasVariableType($expr->name)->no()) {
+						return new ErrorType();
+					}
+
+					return $scope->getVariableType($expr->name);
+				}
+
+				// TODO: handle dynamic variable names with constant strings
+				// needs a different approach for filterByTruthyValue
+				return new MixedType();
+			},
+			hasYield: $hasYield,
+			isAlwaysTerminating: $isAlwaysTerminating,
+			throwPoints: $throwPoints,
+			impurePoints: $impurePoints,
+			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);
 	}
 

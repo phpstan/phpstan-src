@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler\Virtual;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -38,12 +39,34 @@ final class OriginalPropertyTypeExprHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// because this is a virtual node handler, the caller will only be interested in the type
-		// we don't need to process the inner expr
+		$propertyFetch = $expr->getPropertyFetch();
+		if ($propertyFetch instanceof Expr\PropertyFetch) {
+			$holderResult = $nodeScopeResolver->processExprNode($stmt, $propertyFetch->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+		} else {
+			$holderResult = $propertyFetch->class instanceof Expr
+				? $nodeScopeResolver->processExprNode($stmt, $propertyFetch->class, $scope, $storage, $nodeCallback, $context->enterDeep())
+				: null;
+		}
 
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($propertyFetch, $holderResult): Type {
+				if ($holderResult !== null) {
+					$holderType = $holderResult->getTypeForScope($scope);
+				} elseif ($propertyFetch instanceof Expr\StaticPropertyFetch && $propertyFetch->class instanceof Name) {
+					$holderType = $scope->resolveTypeByName($propertyFetch->class);
+				} else {
+					return new ErrorType();
+				}
+
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNodeWithTypes($propertyFetch, $scope, $holderType, null);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+
+				return $propertyReflection->getReadableType();
+			},
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

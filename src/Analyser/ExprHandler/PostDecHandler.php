@@ -50,6 +50,7 @@ final class PostDecHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $varResult->getTypeForScope($scope),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),

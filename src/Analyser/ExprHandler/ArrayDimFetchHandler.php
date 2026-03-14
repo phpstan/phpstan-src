@@ -85,6 +85,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			return $this->expressionResultFactory->create(
 				$expr,
 				$scope,
+				typeCallback: static fn () => new NeverType(),
 				hasYield: $varResult->hasYield(),
 				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 				throwPoints: $varResult->getThrowPoints(),
@@ -100,21 +101,38 @@ final class ArrayDimFetchHandler implements ExprHandler
 		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
 		$scope = $varResult->getScope();
 
+		$offsetGetResult = $nodeScopeResolver->processExprNode(
+			$stmt,
+			new MethodCall($expr->var, new Identifier('offsetGet'), [new Arg($expr->dim)]),
+			$scope,
+			new ExpressionResultStorage(),
+			new NoopNodeCallback(),
+			$context->enterDeep(),
+		);
+
 		$varType = $scope->getType($expr->var);
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
-			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
-				$stmt,
-				new MethodCall($expr->var, 'offsetGet'),
-				$scope,
-				$storage,
-				new NoopNodeCallback(),
-				$context,
-			)->getThrowPoints());
+			$throwPoints = array_merge($throwPoints, $offsetGetResult->getThrowPoints());
 		}
 
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($varResult, $dimResult, $offsetGetResult): Type {
+				$varType = $varResult->getTypeForScope($scope);
+				if ($varType instanceof NeverType) {
+					return $varType;
+				}
+
+				if (
+					!$varType->isArray()->yes()
+					&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()
+				) {
+					return $offsetGetResult->getTypeForScope($scope);
+				}
+
+				return $varType->getOffsetValueType($dimResult->getTypeForScope($scope));
+			},
 			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
 			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

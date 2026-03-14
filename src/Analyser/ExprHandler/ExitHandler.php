@@ -57,6 +57,7 @@ final class ExitHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn () => new NonAcceptingNeverType(),
 			hasYield: $hasYield,
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,

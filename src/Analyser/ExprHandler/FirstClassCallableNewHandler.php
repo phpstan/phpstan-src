@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
@@ -15,7 +16,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /**
@@ -26,6 +26,7 @@ final class FirstClassCallableNewHandler implements ExprHandler
 {
 
 	public function __construct(
+		private ExpressionResultFactory $expressionResultFactory,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
@@ -46,8 +47,24 @@ final class FirstClassCallableNewHandler implements ExprHandler
 		ExpressionContext $context,
 	): ExpressionResult
 	{
-		// handled in NodeScopeResolver before ExprHandlers are called
-		throw new ShouldNotHappenException();
+		$throwPoints = [];
+		$impurePoints = [];
+		if ($expr->class instanceof Expr) {
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$scope = $classResult->getScope();
+			$throwPoints = $classResult->getThrowPoints();
+			$impurePoints = $classResult->getImpurePoints();
+		}
+
+		return $this->expressionResultFactory->create(
+			$expr,
+			$scope,
+			typeCallback: fn (Expr $expr, MutatingScope $scope) => $this->initializerExprTypeResolver->getFirstClassCallableType($expr, InitializerExprContext::fromScope($scope), $scope->nativeTypesPromoted),
+			hasYield: false,
+			isAlwaysTerminating: false,
+			throwPoints: $throwPoints,
+			impurePoints: $impurePoints,
+		);
 	}
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type

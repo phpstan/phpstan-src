@@ -42,6 +42,7 @@ final class ArrowFunctionHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$result->getScope(),
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $result->getTypeForScope($scope),
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: [],

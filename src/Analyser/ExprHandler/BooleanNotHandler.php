@@ -43,6 +43,14 @@ final class BooleanNotHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($exprResult): Type {
+				$exprBooleanType = $exprResult->getTypeForScope($scope)->toBoolean();
+				if ($exprBooleanType instanceof ConstantBooleanType) {
+					return new ConstantBooleanType(!$exprBooleanType->getValue());
+				}
+
+				return new BooleanType();
+			},
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

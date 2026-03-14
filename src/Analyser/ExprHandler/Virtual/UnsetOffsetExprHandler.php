@@ -35,12 +35,13 @@ final class UnsetOffsetExprHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// because this is a virtual node handler, the caller will only be interested in the type
-		// we don't need to process the inner expr
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, $context->enterDeep());
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->getDim(), $varResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
 
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $varResult->getTypeForScope($scope)->unsetOffset($dimResult->getTypeForScope($scope)),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

@@ -40,6 +40,7 @@ final class ErrorSuppressHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$exprResult->getScope(),
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $exprResult->getTypeForScope($scope),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

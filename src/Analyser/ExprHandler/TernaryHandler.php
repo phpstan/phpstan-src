@@ -80,19 +80,17 @@ final class TernaryHandler implements ExprHandler
 		$impurePoints = $ternaryCondResult->getImpurePoints();
 		$ifTrueScope = $ternaryCondResult->getTruthyScope();
 		$ifFalseScope = $ternaryCondResult->getFalseyScope();
-		$ifTrueType = null;
-
 		if ($expr->if === null) {
 			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
 			$ifFalseScope = $elseResult->getScope();
+			$ifResult = null;
 		} else {
 			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
 			$ifTrueScope = $ifResult->getScope();
-			$ifTrueType = $ifTrueScope->getType($expr->if);
 
 			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
@@ -100,28 +98,55 @@ final class TernaryHandler implements ExprHandler
 			$ifFalseScope = $elseResult->getScope();
 		}
 
-		$condType = $scope->getType($expr->cond);
-		if ($condType->isTrue()->yes()) {
+		$ifTrueType = $ifResult !== null ? $ifResult->getType() : null;
+		$ifFalseType = $elseResult->getType();
+
+		if ($ternaryCondResult->getType()->toBoolean()->isTrue()->yes()) {
 			$finalScope = $ifTrueScope;
-		} elseif ($condType->isFalse()->yes()) {
+		} elseif ($ternaryCondResult->getType()->toBoolean()->isFalse()->yes()) {
 			$finalScope = $ifFalseScope;
 		} else {
 			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
 				$finalScope = $ifFalseScope;
+			} elseif ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+				$finalScope = $ifTrueScope;
 			} else {
-				$ifFalseType = $ifFalseScope->getType($expr->else);
-
-				if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
-					$finalScope = $ifTrueScope;
-				} else {
-					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
-				}
+				$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
 			}
 		}
 
 		return $this->expressionResultFactory->create(
 			$expr,
 			$finalScope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($expr, $ternaryCondResult, $ifResult, $elseResult): Type {
+				$booleanCondType = $ternaryCondResult->getTypeForScope($scope)->toBoolean();
+
+				if ($expr->if === null) {
+					if ($booleanCondType->isTrue()->yes()) {
+						return $ternaryCondResult->getTypeForScope($scope);
+					}
+					if ($booleanCondType->isFalse()->yes()) {
+						return $elseResult->getTypeForScope($scope);
+					}
+
+					return TypeCombinator::union(
+						TypeCombinator::removeFalsey($ternaryCondResult->getTypeForScope($scope)),
+						$elseResult->getTypeForScope($scope),
+					);
+				}
+
+				if ($booleanCondType->isTrue()->yes()) {
+					return $ifResult->getTypeForScope($scope);
+				}
+				if ($booleanCondType->isFalse()->yes()) {
+					return $elseResult->getTypeForScope($scope);
+				}
+
+				return TypeCombinator::union(
+					$ifResult->getTypeForScope($scope),
+					$elseResult->getTypeForScope($scope),
+				);
+			},
 			hasYield: $ternaryCondResult->hasYield(),
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

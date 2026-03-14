@@ -42,6 +42,7 @@ final class ScalarHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: fn (Expr $expr, MutatingScope $scope) => $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope)),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

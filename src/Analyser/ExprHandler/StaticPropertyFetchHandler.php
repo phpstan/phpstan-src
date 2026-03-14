@@ -61,6 +61,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			),
 		];
 		$isAlwaysTerminating = false;
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -81,6 +82,34 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($classResult): Type {
+				if ($expr->name instanceof VarLikeIdentifier) {
+					if ($expr->class instanceof Name) {
+						$holderType = $scope->resolveTypeByName($expr->class);
+					} else {
+						$holderType = TypeCombinator::removeNull($classResult->getTypeForScope($scope))->getObjectTypeOrClassStringObjectType();
+					}
+
+					if ($scope->nativeTypesPromoted) {
+						$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNodeWithTypes($expr, $scope, $holderType, null);
+						if ($propertyReflection === null) {
+							return new ErrorType();
+						}
+						if (!$propertyReflection->hasNativeType()) {
+							return new MixedType();
+						}
+
+						return $propertyReflection->getNativeType();
+					}
+
+					$fetchType = $this->propertyFetchType($scope, $holderType, $expr->name->toString(), $expr);
+
+					return $fetchType ?? new ErrorType();
+				}
+
+				// TODO: handle dynamic property names
+				return new MixedType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

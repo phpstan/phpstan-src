@@ -41,6 +41,7 @@ final class TypeExprHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn () => $expr->getExprType(),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

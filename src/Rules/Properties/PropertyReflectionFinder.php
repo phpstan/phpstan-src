@@ -90,14 +90,39 @@ final class PropertyReflectionFinder
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			$propertyHolderType = $scope->getType($propertyFetch->var);
+			$nameType = $propertyFetch->name instanceof Expr ? $scope->getType($propertyFetch->name) : null;
+
+			return $this->findPropertyReflectionFromNodeWithTypes($propertyFetch, $scope, $propertyHolderType, $nameType);
+		}
+
+		if ($propertyFetch->class instanceof Node\Name) {
+			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
+		} else {
+			$propertyHolderType = $scope->getType($propertyFetch->class);
+		}
+
+		$nameType = $propertyFetch->name instanceof Expr ? $scope->getType($propertyFetch->name) : null;
+
+		return $this->findPropertyReflectionFromNodeWithTypes($propertyFetch, $scope, $propertyHolderType, $nameType);
+	}
+
+	/**
+	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
+	 */
+	public function findPropertyReflectionFromNodeWithTypes($propertyFetch, Scope $scope, Type $holderType, ?Type $nameType): ?FoundPropertyReflection
+	{
+		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			if ($propertyFetch->name instanceof Node\Identifier) {
-				return $this->findInstancePropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+				return $this->findInstancePropertyReflection($holderType, $propertyFetch->name->name, $scope);
 			}
 
-			$nameType = $scope->getType($propertyFetch->name);
+			if ($nameType === null) {
+				return null;
+			}
+
 			$nameTypeConstantStrings = $nameType->getConstantStrings();
 			if (count($nameTypeConstantStrings) === 1) {
-				return $this->findInstancePropertyReflection($propertyHolderType, $nameTypeConstantStrings[0]->getValue(), $scope);
+				return $this->findInstancePropertyReflection($holderType, $nameTypeConstantStrings[0]->getValue(), $scope);
 			}
 
 			return null;
@@ -107,13 +132,7 @@ final class PropertyReflectionFinder
 			return null;
 		}
 
-		if ($propertyFetch->class instanceof Node\Name) {
-			$propertyHolderType = $scope->resolveTypeByName($propertyFetch->class);
-		} else {
-			$propertyHolderType = $scope->getType($propertyFetch->class);
-		}
-
-		return $this->findStaticPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+		return $this->findStaticPropertyReflection($holderType, $propertyFetch->name->name, $scope);
 	}
 
 	private function findInstancePropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope): ?FoundPropertyReflection

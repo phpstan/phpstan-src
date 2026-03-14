@@ -87,6 +87,23 @@ final class CoalesceHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($condResult, $rightResult): Type {
+				$leftType = $condResult->getTypeForScope($scope);
+				$rightType = $rightResult->getTypeForScope($scope);
+
+				if ($leftType->isNull()->yes()) {
+					return $rightType;
+				}
+
+				if (!TypeCombinator::containsNull($leftType)) {
+					return $leftType;
+				}
+
+				return TypeCombinator::union(
+					TypeCombinator::removeNull($leftType),
+					$rightType,
+				);
+			},
 			hasYield: $condResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $condResult->isAlwaysTerminating(),
 			throwPoints: array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints()),

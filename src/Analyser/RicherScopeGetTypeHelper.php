@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeResult;
 use function is_string;
 
@@ -29,6 +30,14 @@ final class RicherScopeGetTypeHelper
 	 */
 	public function getIdenticalResult(Scope $scope, Identical $expr): TypeResult
 	{
+		return $this->getIdenticalResultWithTypes($scope, $expr, $scope->getType($expr->left), $scope->getType($expr->right));
+	}
+
+	/**
+	 * @return TypeResult<BooleanType>
+	 */
+	public function getIdenticalResultWithTypes(Scope $scope, Identical $expr, Type $leftType, Type $rightType): TypeResult
+	{
 		if (
 			$expr->left instanceof Variable
 			&& is_string($expr->left->name)
@@ -38,9 +47,6 @@ final class RicherScopeGetTypeHelper
 		) {
 			return new TypeResult(new ConstantBooleanType(true), []);
 		}
-
-		$leftType = $scope->getType($expr->left);
-		$rightType = $scope->getType($expr->right);
 
 		if (
 			(
@@ -80,7 +86,15 @@ final class RicherScopeGetTypeHelper
 	 */
 	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr): TypeResult
 	{
-		$identicalResult = $this->getIdenticalResult($scope, new Identical($expr->left, $expr->right));
+		return $this->getNotIdenticalResultWithTypes($scope, $expr, $scope->getType($expr->left), $scope->getType($expr->right));
+	}
+
+	/**
+	 * @return TypeResult<BooleanType>
+	 */
+	public function getNotIdenticalResultWithTypes(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr, Type $leftType, Type $rightType): TypeResult
+	{
+		$identicalResult = $this->getIdenticalResultWithTypes($scope, new Identical($expr->left, $expr->right), $leftType, $rightType);
 		$identicalType = $identicalResult->type;
 		if ($identicalType instanceof ConstantBooleanType) {
 			return new TypeResult(new ConstantBooleanType(!$identicalType->getValue()), $identicalResult->reasons);

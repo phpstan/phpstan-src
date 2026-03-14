@@ -12,12 +12,14 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 use function array_merge;
+use function spl_object_id;
 
 /**
  * @implements ExprHandler<Array_>
@@ -50,11 +52,14 @@ final class ArrayHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		/** @var array<int, ExpressionResult> */
+		$itemResults = [];
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $scope, $storage);
 			if ($arrayItem->key !== null) {
 				$keyResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->key, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$itemResults[spl_object_id($arrayItem->key)] = $keyResult;
 				$hasYield = $hasYield || $keyResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $keyResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $keyResult->getImpurePoints());
@@ -63,6 +68,7 @@ final class ArrayHandler implements ExprHandler
 			}
 
 			$valueResult = $nodeScopeResolver->processExprNode($stmt, $arrayItem->value, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$itemResults[spl_object_id($arrayItem->value)] = $valueResult;
 			$hasYield = $hasYield || $valueResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $valueResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $valueResult->getImpurePoints());
@@ -74,6 +80,14 @@ final class ArrayHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: fn (Expr $expr, MutatingScope $scope) => $this->initializerExprTypeResolver->getArrayType($expr, static function (Expr $e) use ($itemResults, $scope, $nodeScopeResolver, $stmt): Type {
+				$id = spl_object_id($e);
+				if (isset($itemResults[$id])) {
+					return $itemResults[$id]->getTypeForScope($scope);
+				}
+
+				return $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+			}),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

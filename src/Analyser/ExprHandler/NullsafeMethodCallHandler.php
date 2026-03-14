@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Type\NullType;
@@ -62,6 +63,8 @@ final class NullsafeMethodCallHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureShallowNonNullability($scope, $scope, $expr->var);
 		$attributes = array_merge($expr->getAttributes(), ['virtualNullsafeMethodCall' => true]);
 		unset($attributes[ExprPrinter::ATTRIBUTE_CACHE_KEY]);
@@ -83,6 +86,20 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($varResult, $exprResult): Type {
+				$varType = $varResult->getTypeForScope($scope);
+				if ($varType->isNull()->yes()) {
+					return new NullType();
+				}
+				if (!TypeCombinator::containsNull($varType)) {
+					return $exprResult->getTypeForScope($scope);
+				}
+
+				return TypeCombinator::union(
+					$exprResult->getTypeForScope($scope),
+					new NullType(),
+				);
+			},
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: false,
 			throwPoints: $exprResult->getThrowPoints(),

@@ -1176,7 +1176,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->getType($clonedNode);
 	}
 
-	public function doNotTreatPhpDocTypesAsCertain(): Scope
+	public function doNotTreatPhpDocTypesAsCertain(): self
 	{
 		return $this->promoteNativeTypes();
 	}

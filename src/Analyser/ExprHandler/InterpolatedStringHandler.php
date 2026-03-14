@@ -44,11 +44,14 @@ final class InterpolatedStringHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
-		foreach ($expr->parts as $part) {
-			if (!$part instanceof Expr) {
+		$partResults = [];
+		foreach ($expr->parts as $i => $part) {
+			if (!($part instanceof Expr)) {
 				continue;
 			}
+
 			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$partResults[$i] = $partResult;
 			$hasYield = $hasYield || $partResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
@@ -59,6 +62,24 @@ final class InterpolatedStringHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $uninteresting, MutatingScope $scope) use ($expr, $partResults): Type {
+				$resultType = null;
+				foreach ($expr->parts as $i => $part) {
+					if ($part instanceof InterpolatedStringPart) {
+						$partType = new ConstantStringType($part->value);
+					} else {
+						$partType = $partResults[$i]->getTypeForScope($scope)->toString();
+					}
+					if ($resultType === null) {
+						$resultType = $partType;
+						continue;
+					}
+
+					$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
+				}
+
+				return $resultType ?? new ConstantStringType('');
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

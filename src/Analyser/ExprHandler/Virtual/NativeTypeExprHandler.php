@@ -41,6 +41,7 @@ final class NativeTypeExprHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $scope->nativeTypesPromoted ? $expr->getNativeType() : $expr->getPhpDocType(),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

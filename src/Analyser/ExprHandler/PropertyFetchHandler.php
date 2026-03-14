@@ -82,6 +82,31 @@ final class PropertyFetchHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($varResult): Type {
+				if ($expr->name instanceof Identifier) {
+					$holderType = $varResult->getTypeForScope($scope);
+
+					if ($scope->nativeTypesPromoted) {
+						$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNodeWithTypes($expr, $scope, $holderType, null);
+						if ($propertyReflection === null) {
+							return new ErrorType();
+						}
+
+						if (!$propertyReflection->hasNativeType()) {
+							return new MixedType();
+						}
+
+						return $propertyReflection->getNativeType();
+					}
+
+					$returnType = $this->propertyFetchType($scope, $holderType, $expr->name->name, $expr);
+
+					return $returnType ?? new ErrorType();
+				}
+
+				// TODO: handle dynamic property names
+				return new MixedType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

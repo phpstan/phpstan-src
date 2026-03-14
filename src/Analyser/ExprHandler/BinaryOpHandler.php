@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
@@ -75,6 +76,137 @@ final class BinaryOpHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($leftResult, $rightResult, $nodeScopeResolver, $stmt): Type {
+				$leftType = $leftResult->getTypeForScope($scope);
+				$rightType = $rightResult->getTypeForScope($scope);
+				$getType = static function (Expr $e) use ($expr, $leftResult, $rightResult, $scope, $nodeScopeResolver, $stmt): Type {
+					if ($e === $expr->left) {
+						return $leftResult->getTypeForScope($scope);
+					}
+					if ($e === $expr->right) {
+						return $rightResult->getTypeForScope($scope);
+					}
+
+					return $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+				};
+
+				if ($expr instanceof BinaryOp\Smaller) {
+					return $leftType->isSmallerThan($rightType, $this->phpVersion)->toBooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\SmallerOrEqual) {
+					return $leftType->isSmallerThanOrEqual($rightType, $this->phpVersion)->toBooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\Greater) {
+					return $rightType->isSmallerThan($leftType, $this->phpVersion)->toBooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\GreaterOrEqual) {
+					return $rightType->isSmallerThanOrEqual($leftType, $this->phpVersion)->toBooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\Equal) {
+					if (
+						$expr->left instanceof Variable
+						&& is_string($expr->left->name)
+						&& $expr->right instanceof Variable
+						&& is_string($expr->right->name)
+						&& $expr->left->name === $expr->right->name
+					) {
+						return new ConstantBooleanType(true);
+					}
+
+					return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
+				}
+
+				if ($expr instanceof BinaryOp\NotEqual) {
+					$equalType = $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
+					if ($equalType instanceof ConstantBooleanType) {
+						return new ConstantBooleanType(!$equalType->getValue());
+					}
+
+					return new BooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\Identical) {
+					return $this->richerScopeGetTypeHelper->getIdenticalResultWithTypes($scope, $expr, $leftType, $rightType)->type;
+				}
+
+				if ($expr instanceof BinaryOp\NotIdentical) {
+					return $this->richerScopeGetTypeHelper->getNotIdenticalResultWithTypes($scope, $expr, $leftType, $rightType)->type;
+				}
+
+				if ($expr instanceof BinaryOp\LogicalXor) {
+					$leftBooleanType = $leftType->toBoolean();
+					$rightBooleanType = $rightType->toBoolean();
+
+					if (
+						$leftBooleanType instanceof ConstantBooleanType
+						&& $rightBooleanType instanceof ConstantBooleanType
+					) {
+						return new ConstantBooleanType(
+							$leftBooleanType->getValue() xor $rightBooleanType->getValue(),
+						);
+					}
+
+					return new BooleanType();
+				}
+
+				if ($expr instanceof BinaryOp\Spaceship) {
+					return $this->initializerExprTypeResolver->getSpaceshipType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Concat) {
+					return $this->initializerExprTypeResolver->getConcatType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\BitwiseAnd) {
+					return $this->initializerExprTypeResolver->getBitwiseAndType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\BitwiseOr) {
+					return $this->initializerExprTypeResolver->getBitwiseOrType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\BitwiseXor) {
+					return $this->initializerExprTypeResolver->getBitwiseXorType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Div) {
+					return $this->initializerExprTypeResolver->getDivType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Mod) {
+					return $this->initializerExprTypeResolver->getModType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Plus) {
+					return $this->initializerExprTypeResolver->getPlusType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Minus) {
+					return $this->initializerExprTypeResolver->getMinusType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Mul) {
+					return $this->initializerExprTypeResolver->getMulType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\Pow) {
+					return $this->initializerExprTypeResolver->getPowType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\ShiftLeft) {
+					return $this->initializerExprTypeResolver->getShiftLeftType($expr->left, $expr->right, $getType);
+				}
+
+				if ($expr instanceof BinaryOp\ShiftRight) {
+					return $this->initializerExprTypeResolver->getShiftRightType($expr->left, $expr->right, $getType);
+				}
+
+				throw new ShouldNotHappenException(sprintf('Unhandled %s', get_class($expr)));
+			},
 			hasYield: $leftResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $leftResult->isAlwaysTerminating() || $rightResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

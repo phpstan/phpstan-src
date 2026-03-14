@@ -58,6 +58,14 @@ final class YieldFromHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($exprResult): Type {
+				$generatorReturnType = $exprResult->getTypeForScope($scope)->getTemplateType(Generator::class, 'TReturn');
+				if ($generatorReturnType instanceof ErrorType) {
+					return new MixedType();
+				}
+
+				return $generatorReturnType;
+			},
 			hasYield: true,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),

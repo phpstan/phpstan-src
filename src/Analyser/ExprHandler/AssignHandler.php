@@ -147,7 +147,7 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->exitExpressionAssign($expr->expr);
 				}
 
-				return $this->expressionResultFactory->create($expr->expr, $scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+				return $this->expressionResultFactory->create($expr->expr, $scope, typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $result->getTypeForScope($scope), hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, throwPoints: $throwPoints, impurePoints: $impurePoints);
 			},
 			true,
 		);
@@ -164,6 +164,7 @@ final class AssignHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr->expr,
 			$scope,
+			typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $result->getTypeForScope($scope),
 			hasYield: $result->hasYield(),
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: $result->getThrowPoints(),
@@ -195,10 +196,12 @@ final class AssignHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$exprCallbackResult = null;
 		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable) {
 			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$impurePoints = $result->getImpurePoints();
@@ -385,6 +388,7 @@ final class AssignHandler implements ExprHandler
 
 			// 3. eval assigned expr
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -511,6 +515,7 @@ final class AssignHandler implements ExprHandler
 
 			$scopeBeforeAssignEval = $scope;
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -624,6 +629,7 @@ final class AssignHandler implements ExprHandler
 
 			$scopeBeforeAssignEval = $scope;
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -670,6 +676,7 @@ final class AssignHandler implements ExprHandler
 		} elseif ($var instanceof List_) {
 			$nodeScopeResolver->storeBeforeScope($storage, $var, $scope);
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -709,7 +716,7 @@ final class AssignHandler implements ExprHandler
 					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
-					fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($arrayItem->value, $scope, hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
+					fn (MutatingScope $scope): ExpressionResult => $this->expressionResultFactory->create($arrayItem->value, $scope, typeCallback: static fn () => new MixedType(), hasYield: false, isAlwaysTerminating: false, throwPoints: [], impurePoints: []),
 					$enterExpressionAssign,
 				);
 				$scope = $result->getScope();
@@ -793,6 +800,7 @@ final class AssignHandler implements ExprHandler
 			$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 			$scope = $varResult->getScope();
 			$result = $processExprCallback($scope);
+			$exprCallbackResult = $result;
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
@@ -801,7 +809,7 @@ final class AssignHandler implements ExprHandler
 		}
 
 		// stored where processAssignVar is called
-		return $this->expressionResultFactory->create($assignedExpr, $scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+		return $this->expressionResultFactory->create($assignedExpr, $scope, typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $exprCallbackResult->getTypeForScope($scope), hasYield: $hasYield, isAlwaysTerminating: $isAlwaysTerminating, throwPoints: $throwPoints, impurePoints: $impurePoints);
 	}
 
 	private function unwrapAssign(Expr $expr): Expr

@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Type\Type;
 
 interface ExpressionResultFactory
 {
@@ -10,6 +11,7 @@ interface ExpressionResultFactory
 	/**
 	 * @param InternalThrowPoint[] $throwPoints
 	 * @param ImpurePoint[] $impurePoints
+	 * @param callable(Expr, MutatingScope): Type $typeCallback
 	 * @param (callable(): MutatingScope)|null $truthyScopeCallback
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback
 	 */
@@ -20,6 +22,7 @@ interface ExpressionResultFactory
 		bool $isAlwaysTerminating,
 		array $throwPoints,
 		array $impurePoints,
+		callable $typeCallback,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	): ExpressionResult;

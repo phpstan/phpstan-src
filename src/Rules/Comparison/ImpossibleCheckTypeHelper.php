@@ -198,6 +198,10 @@ final class ImpossibleCheckTypeHelper
 					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectArg = $args[0]->value;
+
+					if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($objectArg)) {
+						return null;
+					}
 					$objectType = $this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg);
 
 					if ($objectType instanceof ConstantStringType
@@ -310,7 +314,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && self::isExpressionDependentOnThis($sureType[0])) {
+			if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -341,7 +345,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && self::isExpressionDependentOnThis($sureNotType[0])) {
+			if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($sureNotType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -389,32 +393,6 @@ final class ImpossibleCheckTypeHelper
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
 		) && $scope->hasExpressionType($expr)->yes();
-	}
-
-	public static function isExpressionDependentOnThis(Expr $expr): bool
-	{
-		if ($expr instanceof Expr\Variable && $expr->name === 'this') {
-			return true;
-		}
-
-		if ($expr instanceof Expr\PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
-			return self::isExpressionDependentOnThis($expr->var);
-		}
-
-		if ($expr instanceof Expr\MethodCall || $expr instanceof Expr\NullsafeMethodCall) {
-			return self::isExpressionDependentOnThis($expr->var);
-		}
-
-		if ($expr instanceof Expr\StaticPropertyFetch || $expr instanceof Expr\StaticCall) {
-			if ($expr->class instanceof Expr) {
-				return self::isExpressionDependentOnThis($expr->class);
-			}
-
-			$className = $expr->class->toString();
-			return in_array($className, ['self', 'static', 'parent'], true);
-		}
-
-		return false;
 	}
 
 	/**

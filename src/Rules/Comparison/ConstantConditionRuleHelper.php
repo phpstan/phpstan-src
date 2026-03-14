@@ -64,7 +64,7 @@ final class ConstantConditionRuleHelper
 
 			if ($scope->isInTrait()) {
 				foreach ($expr->getArgs() as $arg) {
-					if (ImpossibleCheckTypeHelper::isExpressionDependentOnThis($arg->value)) {
+					if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($arg->value)) {
 						return true;
 					}
 				}

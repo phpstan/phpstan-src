@@ -310,7 +310,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && $sureType[0] instanceof Expr\Variable && $sureType[0]->name === 'this') {
+			if ($scope->isInTrait() && self::isExpressionDependentOnThis($sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -341,7 +341,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && $sureNotType[0] instanceof Expr\Variable && $sureNotType[0]->name === 'this') {
+			if ($scope->isInTrait() && self::isExpressionDependentOnThis($sureNotType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -389,6 +389,23 @@ final class ImpossibleCheckTypeHelper
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
 		) && $scope->hasExpressionType($expr)->yes();
+	}
+
+	private static function isExpressionDependentOnThis(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Variable && $expr->name === 'this') {
+			return true;
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return self::isExpressionDependentOnThis($expr->var);
+		}
+
+		if ($expr instanceof Expr\MethodCall) {
+			return self::isExpressionDependentOnThis($expr->var);
+		}
+
+		return false;
 	}
 
 	/**

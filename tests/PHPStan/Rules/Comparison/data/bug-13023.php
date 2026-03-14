@@ -23,3 +23,30 @@ trait MyTrait
 		return $value;
 	}
 }
+
+class SomeClass3
+{
+	use MyTrait2;
+
+	public string $foo = 'foo';
+}
+
+class SomeClass4
+{
+	use MyTrait2;
+
+	public int $foo = 1;
+}
+
+trait MyTrait2
+{
+	public function getRandom(): int
+	{
+		$value = random_int(1, 100);
+		if (\is_int($this->foo)) {
+			return $value * $value;
+		}
+
+		return $value;
+	}
+}

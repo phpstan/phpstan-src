@@ -184,18 +184,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					635,
 				],
 				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'method\' will always evaluate to true.',
-					650,
-				],
-				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'someAnother\' will always evaluate to true.',
-					653,
-				],
-				[
-					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
-					656,
-				],
-				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
 					659,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
@@ -1211,6 +1199,39 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-13023.php'], []);
+	}
+
+	public function testBug7599(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7599.php'], [
+			[
+				'Call to function method_exists() with Bug7599\SecondEnum::Baz and \'barMethod\' will always evaluate to true.',
+				13,
+			],
+			[
+				'Call to function method_exists() with Bug7599\TestEnum::Bar|Bug7599\TestEnum::Foo and \'barMethod\' will always evaluate to false.',
+				13,
+			],
+		]);
+	}
+
+	public function testBug9095(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-9095.php'], []);
+	}
+
+	public function testBug13474(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13474.php'], []);
+	}
+
+	public function testBug13687(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13687.php'], []);
 	}
 
 }

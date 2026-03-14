@@ -75,24 +75,25 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$hasYield = false;
-		$throwPoints = [];
-		$impurePoints = [];
-		$isAlwaysTerminating = false;
-		if ($expr->dim !== null) {
-			$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $dimResult->hasYield();
-			$throwPoints = $dimResult->getThrowPoints();
-			$impurePoints = $dimResult->getImpurePoints();
-			$isAlwaysTerminating = $dimResult->isAlwaysTerminating();
-			$scope = $dimResult->getScope();
+		if ($expr->dim === null) {
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $varResult->getScope();
+
+			return new ExpressionResult(
+				$scope,
+				hasYield: $varResult->hasYield(),
+				isAlwaysTerminating: $varResult->isAlwaysTerminating(),
+				throwPoints: $varResult->getThrowPoints(),
+				impurePoints: $varResult->getImpurePoints(),
+				truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
+				falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			);
 		}
 
-		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$hasYield = $hasYield || $varResult->hasYield();
-		$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $varResult->isAlwaysTerminating();
+		$dimResult = $nodeScopeResolver->processExprNode($stmt, $expr->dim, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $dimResult->getScope(), $storage, $nodeCallback, $context->enterDeep());
+		$throwPoints = array_merge($dimResult->getThrowPoints(), $varResult->getThrowPoints());
+		$impurePoints = array_merge($dimResult->getImpurePoints(), $varResult->getImpurePoints());
 		$scope = $varResult->getScope();
 
 		$varType = $scope->getType($expr->var);
@@ -109,8 +110,8 @@ final class ArrayDimFetchHandler implements ExprHandler
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $hasYield,
-			isAlwaysTerminating: $isAlwaysTerminating,
+			hasYield: $dimResult->hasYield() || $varResult->hasYield(),
+			isAlwaysTerminating: $dimResult->isAlwaysTerminating() || $varResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),

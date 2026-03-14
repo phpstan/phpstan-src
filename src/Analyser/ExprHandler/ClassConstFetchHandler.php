@@ -68,15 +68,15 @@ final class ClassConstFetchHandler implements ExprHandler
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->class, $scope, $storage);
 		}
 
-		if ($expr->name instanceof Expr) {
+		if ($expr->name instanceof Identifier) {
+			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
+		} else {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $nameResult->getScope();
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
-		} else {
-			$nodeScopeResolver->callNodeCallback($nodeCallback, $expr->name, $scope, $storage);
 		}
 
 		return new ExpressionResult(

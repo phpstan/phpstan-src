@@ -54,17 +54,7 @@ final class PropertyFetchHandler implements ExprHandler
 		$impurePoints = $varResult->getImpurePoints();
 		$isAlwaysTerminating = $varResult->isAlwaysTerminating();
 		$scope = $varResult->getScope();
-		if ($expr->name instanceof Expr) {
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $nameResult->hasYield();
-			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
-			$scope = $nameResult->getScope();
-			if ($this->phpVersion->supportsPropertyHooks()) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			}
-		} else {
+		if ($expr->name instanceof Identifier) {
 			$propertyName = $expr->name->toString();
 			$propertyHolderType = $scopeBeforeVar->getType($expr->var);
 			$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
@@ -74,6 +64,16 @@ final class PropertyFetchHandler implements ExprHandler
 					$nativeProperty = $propertyDeclaringClass->getNativeProperty($propertyName);
 					$throwPoints = array_merge($throwPoints, $nodeScopeResolver->getThrowPointsFromPropertyHook($scopeBeforeVar, $expr, $nativeProperty, 'get'));
 				}
+			}
+		} else {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $nameResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
+			$scope = $nameResult->getScope();
+			if ($this->phpVersion->supportsPropertyHooks()) {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
 		}
 

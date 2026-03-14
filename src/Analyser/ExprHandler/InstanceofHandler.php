@@ -46,7 +46,7 @@ final class InstanceofHandler implements ExprHandler
 		$impurePoints = $exprResult->getImpurePoints();
 		$isAlwaysTerminating = $exprResult->isAlwaysTerminating();
 		$scope = $exprResult->getScope();
-		if ($expr->class instanceof Expr) {
+		if (!$expr->class instanceof Name) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $classResult->getScope();
 			$hasYield = $hasYield || $classResult->hasYield();

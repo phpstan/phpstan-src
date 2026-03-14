@@ -85,78 +85,19 @@ final class NewHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
-		$className = null;
 		$normalizedExpr = $expr;
-		if ($expr->class instanceof Expr || $expr->class instanceof Name) {
-			if ($expr->class instanceof Expr) {
-				$objectClasses = $scope->getType($expr)->getObjectClassNames();
-				if (count($objectClasses) === 1) {
-					$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
-					$className = $objectClasses[0];
-					$additionalThrowPoints = $objectExprResult->getThrowPoints();
-				} else {
-					$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
-				}
+		if ($expr->class instanceof Name) {
+			$className = $scope->resolveName($expr->class);
 
-				$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-				$scope = $result->getScope();
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$impurePoints = $result->getImpurePoints();
-				$isAlwaysTerminating = $result->isAlwaysTerminating();
-				foreach ($additionalThrowPoints as $throwPoint) {
-					$throwPoints[] = $throwPoint;
-				}
-			} else {
-				$className = $scope->resolveName($expr->class);
-			}
-
-			$classReflection = null;
-			if ($className !== null && $this->reflectionProvider->hasClass($className)) {
-				$classReflection = $this->reflectionProvider->getClass($className);
-				if ($classReflection->hasConstructor()) {
-					$constructorReflection = $classReflection->getConstructor();
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-						$scope,
-						$expr->getArgs(),
-						$constructorReflection->getVariants(),
-						$constructorReflection->getNamedArgumentsVariants(),
-					);
-					$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
-					if ($constructorThrowPoint !== null) {
-						$throwPoints[] = $constructorThrowPoint;
-					}
-				}
-			} else {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
-			}
-
-			if ($constructorReflection !== null) {
-				if (!$constructorReflection->hasSideEffects()->no()) {
-					$certain = $constructorReflection->isPure()->no();
-					$impurePoints[] = new ImpurePoint(
-						$scope,
-						$expr,
-						'new',
-						sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
-						$certain,
-					);
-				}
-			} elseif ($classReflection === null) {
-				$impurePoints[] = new ImpurePoint(
-					$scope,
-					$expr,
-					'new',
-					'instantiation of unknown class',
-					false,
-				);
-			}
+			[$constructorReflection, $parametersAcceptor, $constructorThrowPoints, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+			$throwPoints = array_merge($throwPoints, $constructorThrowPoints);
+			$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 
 			if ($parametersAcceptor !== null) {
 				$normalizedExpr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 
-		} else {
+		} elseif ($expr->class instanceof Node\Stmt\Class_) {
 			$classReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
 			if ($classReflection->hasConstructor()) {
 				$constructorReflection = $classReflection->getConstructor();
@@ -215,14 +156,51 @@ final class NewHandler implements ExprHandler
 			} else {
 				$nodeScopeResolver->processStmtNode($expr->class, $scope, $storage, $nodeCallback, StatementContext::createTopLevel());
 			}
+		} else {
+			$objectClasses = $scope->getType($expr)->getObjectClassNames();
+			if (count($objectClasses) === 1) {
+				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0])), $scope, $storage, new NoopNodeCallback(), $context->enterDeep());
+				$className = $objectClasses[0];
+				$additionalThrowPoints = $objectExprResult->getThrowPoints();
+			} else {
+				$className = null;
+				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
+			}
+
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $classResult->getScope();
+			$hasYield = $classResult->hasYield();
+			$throwPoints = $classResult->getThrowPoints();
+			$impurePoints = $classResult->getImpurePoints();
+			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
+			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
+
+			if ($className !== null) {
+				[$constructorReflection, $parametersAcceptor, $constructorThrowPoints, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+				$throwPoints = array_merge($throwPoints, $constructorThrowPoints);
+				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
+			} else {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'new',
+					'instantiation of unknown class',
+					false,
+				);
+			}
+
+			if ($parametersAcceptor !== null) {
+				$normalizedExpr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
+			}
 		}
 
-		$result = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
-		$scope = $result->getScope();
-		$hasYield = $hasYield || $result->hasYield();
-		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $constructorReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$scope = $argsResult->getScope();
+		$hasYield = $hasYield || $argsResult->hasYield();
+		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
+		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		return new ExpressionResult(
 			$scope,
@@ -231,6 +209,60 @@ final class NewHandler implements ExprHandler
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 		);
+	}
+
+	/**
+	 * @return array{?MethodReflection, ?ParametersAcceptor, InternalThrowPoint[], ImpurePoint[]}
+	 */
+	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope): array
+	{
+		$constructorReflection = null;
+		$parametersAcceptor = null;
+		$throwPoints = [];
+		$impurePoints = [];
+
+		$classReflection = null;
+		if ($this->reflectionProvider->hasClass($className)) {
+			$classReflection = $this->reflectionProvider->getClass($className);
+			if ($classReflection->hasConstructor()) {
+				$constructorReflection = $classReflection->getConstructor();
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$expr->getArgs(),
+					$constructorReflection->getVariants(),
+					$constructorReflection->getNamedArgumentsVariants(),
+				);
+				$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
+				if ($constructorThrowPoint !== null) {
+					$throwPoints[] = $constructorThrowPoint;
+				}
+			}
+		} else {
+			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+		}
+
+		if ($constructorReflection !== null) {
+			if (!$constructorReflection->hasSideEffects()->no()) {
+				$certain = $constructorReflection->isPure()->no();
+				$impurePoints[] = new ImpurePoint(
+					$scope,
+					$expr,
+					'new',
+					sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
+					$certain,
+				);
+			}
+		} elseif ($classReflection === null) {
+			$impurePoints[] = new ImpurePoint(
+				$scope,
+				$expr,
+				'new',
+				'instantiation of unknown class',
+				false,
+			);
+		}
+
+		return [$constructorReflection, $parametersAcceptor, $throwPoints, $impurePoints];
 	}
 
 	/**

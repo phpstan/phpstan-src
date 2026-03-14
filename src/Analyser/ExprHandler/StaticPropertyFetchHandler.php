@@ -67,7 +67,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
 			$scope = $classResult->getScope();
 		}
-		if ($expr->name instanceof Expr) {
+		if (!$expr->name instanceof VarLikeIdentifier) {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $hasYield || $nameResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());

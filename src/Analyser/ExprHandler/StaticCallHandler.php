@@ -90,74 +90,76 @@ final class StaticCallHandler implements ExprHandler
 		$parametersAcceptor = null;
 		$methodReflection = null;
 		$closureBindScope = null;
-		if ($expr->name instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$scope = $result->getScope();
-		} elseif ($expr->class instanceof Name) {
-			$classType = $scope->resolveTypeByName($expr->class);
-			$methodName = $expr->name->name;
-			if ($classType->hasMethod($methodName)->yes()) {
-				$methodReflection = $classType->getMethod($methodName, $scope);
-				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-					$scope,
-					$expr->getArgs(),
-					$methodReflection->getVariants(),
-					$methodReflection->getNamedArgumentsVariants(),
-				);
+		if ($expr->name instanceof Identifier) {
+			if ($expr->class instanceof Name) {
+				$classType = $scope->resolveTypeByName($expr->class);
+				$methodName = $expr->name->name;
+				if ($classType->hasMethod($methodName)->yes()) {
+					$methodReflection = $classType->getMethod($methodName, $scope);
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->getArgs(),
+						$methodReflection->getVariants(),
+						$methodReflection->getNamedArgumentsVariants(),
+					);
 
-				$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-				if ($methodThrowPoint !== null) {
-					$throwPoints[] = $methodThrowPoint;
-				}
-
-				$declaringClass = $methodReflection->getDeclaringClass();
-				if (
-					$declaringClass->getName() === 'Closure'
-					&& strtolower($methodName) === 'bind'
-				) {
-					$thisType = null;
-					$nativeThisType = null;
-					if (isset($expr->getArgs()[1])) {
-						$argType = $scope->getType($expr->getArgs()[1]->value);
-						if ($argType->isNull()->yes()) {
-							$thisType = null;
-						} else {
-							$thisType = $argType;
-						}
-
-						$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
-						if ($nativeArgType->isNull()->yes()) {
-							$nativeThisType = null;
-						} else {
-							$nativeThisType = $nativeArgType;
-						}
+					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+					if ($methodThrowPoint !== null) {
+						$throwPoints[] = $methodThrowPoint;
 					}
-					$scopeClasses = ['static'];
-					if (isset($expr->getArgs()[2])) {
-						$argValue = $expr->getArgs()[2]->value;
-						$argValueType = $scope->getType($argValue);
 
-						$directClassNames = $argValueType->getObjectClassNames();
-						if (count($directClassNames) > 0) {
-							$scopeClasses = $directClassNames;
-							$thisTypes = [];
-							foreach ($directClassNames as $directClassName) {
-								$thisTypes[] = new ObjectType($directClassName);
+					$declaringClass = $methodReflection->getDeclaringClass();
+					if (
+						$declaringClass->getName() === 'Closure'
+						&& strtolower($methodName) === 'bind'
+					) {
+						$thisType = null;
+						$nativeThisType = null;
+						if (isset($expr->getArgs()[1])) {
+							$argType = $scope->getType($expr->getArgs()[1]->value);
+							if ($argType->isNull()->yes()) {
+								$thisType = null;
+							} else {
+								$thisType = $argType;
 							}
-							$thisType = TypeCombinator::union(...$thisTypes);
-						} else {
-							$thisType = $argValueType->getClassStringObjectType();
-							$scopeClasses = $thisType->getObjectClassNames();
+
+							$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
+							if ($nativeArgType->isNull()->yes()) {
+								$nativeThisType = null;
+							} else {
+								$nativeThisType = $nativeArgType;
+							}
 						}
+						$scopeClasses = ['static'];
+						if (isset($expr->getArgs()[2])) {
+							$argValue = $expr->getArgs()[2]->value;
+							$argValueType = $scope->getType($argValue);
+
+							$directClassNames = $argValueType->getObjectClassNames();
+							if (count($directClassNames) > 0) {
+								$scopeClasses = $directClassNames;
+								$thisTypes = [];
+								foreach ($directClassNames as $directClassName) {
+									$thisTypes[] = new ObjectType($directClassName);
+								}
+								$thisType = TypeCombinator::union(...$thisTypes);
+							} else {
+								$thisType = $argValueType->getClassStringObjectType();
+								$scopeClasses = $thisType->getObjectClassNames();
+							}
+						}
+						$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
 					}
-					$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClasses);
+				} else {
+					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				}
-			} else {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
+		} else {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $nameResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$scope = $nameResult->getScope();
 		}
 
 		if ($expr->class instanceof Expr) {
@@ -197,8 +199,8 @@ final class StaticCallHandler implements ExprHandler
 			$returnType = $parametersAcceptor->getReturnType();
 			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
 		}
-		$result = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
-		$scope = $result->getScope();
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
+		$scope = $argsResult->getScope();
 		$scopeFunction = $scope->getFunction();
 
 		if (
@@ -250,10 +252,10 @@ final class StaticCallHandler implements ExprHandler
 			}
 		}
 
-		$hasYield = $hasYield || $result->hasYield();
-		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+		$hasYield = $hasYield || $argsResult->hasYield();
+		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
+		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		return new ExpressionResult(
 			$scope,

@@ -79,18 +79,24 @@ final class TernaryHandler implements ExprHandler
 		$ifTrueScope = $ternaryCondResult->getTruthyScope();
 		$ifFalseScope = $ternaryCondResult->getFalseyScope();
 		$ifTrueType = null;
-		if ($expr->if !== null) {
+
+		if ($expr->if === null) {
+			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
+			$ifFalseScope = $elseResult->getScope();
+		} else {
 			$ifResult = $nodeScopeResolver->processExprNode($stmt, $expr->if, $ifTrueScope, $storage, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $ifResult->getImpurePoints());
 			$ifTrueScope = $ifResult->getScope();
 			$ifTrueType = $ifTrueScope->getType($expr->if);
-		}
 
-		$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
-		$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
-		$ifFalseScope = $elseResult->getScope();
+			$elseResult = $nodeScopeResolver->processExprNode($stmt, $expr->else, $ifFalseScope, $storage, $nodeCallback, $context);
+			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $elseResult->getImpurePoints());
+			$ifFalseScope = $elseResult->getScope();
+		}
 
 		$condType = $scope->getType($expr->cond);
 		if ($condType->isTrue()->yes()) {

@@ -201,12 +201,12 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		$result = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
-		$scope = $result->getScope();
-		$hasYield = $result->hasYield();
-		$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-		$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-		$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+		$argsResult = $nodeScopeResolver->processArgs($stmt, $functionReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$scope = $argsResult->getScope();
+		$hasYield = $argsResult->hasYield();
+		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
+		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
+		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		if ($normalizedExpr->name instanceof Expr) {
 			$nameType = $scope->getType($normalizedExpr->name);

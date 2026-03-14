@@ -18,5 +18,28 @@ class Foo
 	{
 		$container->getParameter('shipmonkDeadCode')['debug']['usagesOf'];
 	}
+}
 
+class Foo2
+{
+	public function __construct(Container $container)
+	{
+		isset($container->getParameter('shipmonkDeadCode')['debug']['usagesOf']);
+	}
+}
+
+class Foo3
+{
+	public function __construct(Container $container)
+	{
+		unset($container->getParameter('shipmonkDeadCode')['debug']['usagesOf']);
+	}
+}
+
+class Foo4
+{
+	public function __construct(Container $container)
+	{
+		$container->getParameter('shipmonkDeadCode')['debug']['usagesOf'] = 42;
+	}
 }

@@ -18,6 +18,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -99,7 +100,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 				$stmt,
-				new MethodCall($expr->var, 'offsetGet'),
+				new MethodCall(new TypeExpr($varType), 'offsetGet'),
 				$scope,
 				$storage,
 				new NoopNodeCallback(),

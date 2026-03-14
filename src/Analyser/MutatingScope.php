@@ -2152,24 +2152,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function shouldNotCarryForwardPropertyFetchInClosure(Expr $expr): bool
 	{
-		if (!$expr instanceof PropertyFetch) {
-			return false;
-		}
-
-		if (!$expr->name instanceof Identifier) {
-			return false;
-		}
-
-		$objectType = $this->getType($expr->var);
-		$propertyName = $expr->name->name;
-
-		foreach ($objectType->getObjectClassReflections() as $classReflection) {
-			if ($classReflection->hasNativeProperty($propertyName)) {
-				return false;
-			}
-		}
-
-		return true;
+		return $expr instanceof PropertyFetch;
 	}
 
 	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool

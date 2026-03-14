@@ -13,7 +13,7 @@ class Foo
 	{
 		if ($call->name instanceof Identifier && $bar->name instanceof Identifier) {
 			function () use ($call): void {
-				assertType('PhpParser\Node\Identifier', $call->name);
+				assertType('PhpParser\Node\Expr|PhpParser\Node\Identifier', $call->name);
 				assertType('mixed', $bar->name);
 			};
 
@@ -26,7 +26,7 @@ class Foo
 		if ($call->name instanceof Identifier && $bar->name instanceof Identifier) {
 			$a = 1;
 			function () use ($call, &$a): void {
-				assertType('PhpParser\Node\Identifier', $call->name);
+				assertType('PhpParser\Node\Expr|PhpParser\Node\Identifier', $call->name);
 				assertType('mixed', $bar->name);
 			};
 

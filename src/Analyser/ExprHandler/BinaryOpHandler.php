@@ -67,7 +67,7 @@ final class BinaryOpHandler implements ExprHandler
 		$throwPoints = array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints());
 		if (
 			($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
-			!$leftResult->getScope()->getType($expr->right)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
+			!$rightResult->getType()->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
 		) {
 			$throwPoints[] = InternalThrowPoint::createExplicit($leftResult->getScope(), new ObjectType(DivisionByZeroError::class), $expr, false);
 		}

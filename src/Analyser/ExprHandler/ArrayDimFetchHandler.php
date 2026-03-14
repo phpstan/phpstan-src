@@ -110,7 +110,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			$context->enterDeep(),
 		);
 
-		$varType = $scope->getType($expr->var);
+		$varType = $varResult->getType();
 		if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 			$throwPoints = array_merge($throwPoints, $offsetGetResult->getThrowPoints());
 		}

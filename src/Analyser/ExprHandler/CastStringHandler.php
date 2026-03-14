@@ -43,7 +43,7 @@ final class CastStringHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 		$impurePoints = $exprResult->getImpurePoints();
 
-		$exprType = $scope->getType($expr->expr);
+		$exprType = $exprResult->getType();
 		$toStringMethod = $scope->getMethodReflection($exprType, '__toString');
 		if ($toStringMethod !== null) {
 			if (!$toStringMethod->hasSideEffects()->no()) {

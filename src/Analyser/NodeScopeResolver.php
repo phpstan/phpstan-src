@@ -781,7 +781,7 @@ class NodeScopeResolver
 							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
 							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-							&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
+							&& TypeUtils::findThisType($this->processExprNode(new Node\Stmt\Expression($node->getPropertyFetch()->var), $node->getPropertyFetch()->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getType()) !== null
 						) {
 							return;
 						}
@@ -912,7 +912,6 @@ class NodeScopeResolver
 			if ($stmt->expr instanceof Expr\Throw_) {
 				$scope = $stmtScope;
 			}
-			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $scope);
 			$hasAssign = false;
 			$currentScope = $scope;
 			$result = $this->processExprNode($stmt, $stmt->expr, $scope, $storage, static function (Node $node, Scope $scope) use ($nodeCallback, $currentScope, &$hasAssign): void {
@@ -925,6 +924,7 @@ class NodeScopeResolver
 				}
 				$nodeCallback($node, $scope);
 			}, ExpressionContext::createTopLevel());
+			$earlyTerminationExpr = $this->findEarlyTerminatingExpr($stmt->expr, $result);
 			$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
 			if (
 				count($result->getImpurePoints()) === 0
@@ -1095,9 +1095,9 @@ class NodeScopeResolver
 				$this->callNodeCallback($nodeCallback, $stmt->type, $scope, $storage);
 			}
 		} elseif ($stmt instanceof If_) {
-			$conditionType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
-			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+			$conditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
+			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
 			$impurePoints = $condResult->getImpurePoints();
@@ -1131,8 +1131,8 @@ class NodeScopeResolver
 			$condScope = $scope;
 			foreach ($stmt->elseifs as $elseif) {
 				$this->callNodeCallback($nodeCallback, $elseif, $scope, $storage);
-				$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condScope->getType($elseif->cond) : $scope->getNativeType($elseif->cond))->toBoolean();
 				$condResult = $this->processExprNode($stmt, $elseif->cond, $condScope, $storage, $nodeCallback, ExpressionContext::createDeep());
+				$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $condResult->getImpurePoints());
 				$condScope = $condResult->getScope();
@@ -1298,7 +1298,7 @@ class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			$exprType = $scope->getType($stmt->expr);
+			$exprType = $condResult->getType();
 			$hasExpr = $scope->hasExpressionType($stmt->expr);
 			if (
 				count($breakExitPoints) === 0
@@ -1336,7 +1336,7 @@ class NodeScopeResolver
 
 						return new ArrayType($type->getKeyType(), $arrayDimFetchLoopType);
 					});
-					$newExprNativeType = TypeTraverser::map($scope->getNativeType($stmt->expr), static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType): Type {
+					$newExprNativeType = TypeTraverser::map($condResult->getNativeType(), static function (Type $type, callable $traverse) use ($arrayDimFetchLoopNativeType): Type {
 						if ($type instanceof UnionType || $type instanceof IntersectionType) {
 							return $traverse($type);
 						}
@@ -1387,7 +1387,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $finalScopeResult->getImpurePoints());
 			}
-			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
+			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($condResult->getType())->no()) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $stmt->expr);
 			}
 			if ($context->isTopLevel() && $stmt->byRef) {
@@ -1406,7 +1406,7 @@ class NodeScopeResolver
 			$originalStorage = $storage;
 			$storage = $originalStorage->duplicate();
 			$condResult = $this->processExprNode($stmt, $stmt->cond, $scope, $storage, new NoopNodeCallback(), ExpressionContext::createDeep());
-			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
+			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 			$condScope = $condResult->getFalseyScope();
 			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
 				if (!$this->polluteScopeWithLoopInitialAssignments) {
@@ -2051,7 +2051,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $exprResult->getImpurePoints());
 				if ($var instanceof ArrayDimFetch && $var->dim !== null) {
-					$varType = $scope->getType($var->var);
+					$varType = $this->processExprNode($stmt, $var->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getType();
 					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 						$throwPoints = array_merge($throwPoints, $this->processExprNode(
 							$stmt,
@@ -2197,8 +2197,8 @@ class NodeScopeResolver
 				}
 				$scope = $scope->assignExpression(
 					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
-					$scope->getType($const->value),
-					$scope->getNativeType($const->value),
+					$constResult->getType(),
+					$constResult->getNativeType(),
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\EnumCase) {
@@ -2417,50 +2417,10 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
+	// TODO: move $earlyTerminatingMethodCalls/$earlyTerminatingFunctionCalls config into MethodCallHandler/FuncCallHandler
+	private function findEarlyTerminatingExpr(Expr $expr, ExpressionResult $result): ?Expr
 	{
-		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
-			if (array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
-				if ($expr instanceof MethodCall) {
-					$methodCalledOnType = $scope->getType($expr->var);
-				} else {
-					if ($expr->class instanceof Name) {
-						$methodCalledOnType = $scope->resolveTypeByName($expr->class);
-					} else {
-						$methodCalledOnType = $scope->getType($expr->class);
-					}
-				}
-
-				foreach ($methodCalledOnType->getObjectClassNames() as $referencedClass) {
-					if (!$this->reflectionProvider->hasClass($referencedClass)) {
-						continue;
-					}
-
-					$classReflection = $this->reflectionProvider->getClass($referencedClass);
-					foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
-						if (!isset($this->earlyTerminatingMethodCalls[$className])) {
-							continue;
-						}
-
-						if (in_array((string) $expr->name, $this->earlyTerminatingMethodCalls[$className], true)) {
-							return $expr;
-						}
-					}
-				}
-			}
-		}
-
-		if ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			if (in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
-				return $expr;
-			}
-		}
-
-		if ($expr instanceof Expr\Exit_ || $expr instanceof Expr\Throw_) {
-			return $expr;
-		}
-
-		$exprType = $scope->getType($expr);
+		$exprType = $result->getType();
 		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
 			return $expr;
 		}
@@ -2689,7 +2649,8 @@ class NodeScopeResolver
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideExpr !== null
 				) {
-					$inAssignRightSideType = $scope->getType($inAssignRightSideExpr);
+					$inAssignRightSideResult = $this->processExprNode(new Node\Stmt\Expression($inAssignRightSideExpr), $inAssignRightSideExpr, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+					$inAssignRightSideType = $inAssignRightSideResult->getType();
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -2700,7 +2661,7 @@ class NodeScopeResolver
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $scope->getNativeType($inAssignRightSideExpr);
+					$inAssignRightSideNativeType = $inAssignRightSideResult->getNativeType();
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {

@@ -186,9 +186,9 @@ final class MatchHandler implements ExprHandler
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
 		$deepContext = $context->enterDeep();
-		$condType = $scope->getType($expr->cond);
-		$condNativeType = $scope->getNativeType($expr->cond);
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->cond, $scope, $storage, $nodeCallback, $deepContext);
+		$condType = $condResult->getType();
+		$condNativeType = $condResult->getNativeType();
 		$scope = $condResult->getScope();
 		$hasYield = $condResult->hasYield();
 		$throwPoints = $condResult->getThrowPoints();

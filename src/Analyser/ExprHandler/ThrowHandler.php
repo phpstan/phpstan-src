@@ -46,7 +46,7 @@ final class ThrowHandler implements ExprHandler
 			typeCallback: static fn () => new NonAcceptingNeverType(),
 			hasYield: false,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
-			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $exprResult->getType(), $expr, false)]),
 			impurePoints: $exprResult->getImpurePoints(),
 		);
 	}

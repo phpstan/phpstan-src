@@ -37,8 +37,8 @@ final class ErrorSuppressHandler implements ExprHandler
 			isAlwaysTerminating: $result->isAlwaysTerminating(),
 			throwPoints: $result->getThrowPoints(),
 			impurePoints: $result->getImpurePoints(),
-			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
-			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
+			truthyScopeCallback: static fn (): MutatingScope => $result->getTruthyScope(),
+			falseyScopeCallback: static fn (): MutatingScope => $result->getFalseyScope(),
 		);
 	}
 

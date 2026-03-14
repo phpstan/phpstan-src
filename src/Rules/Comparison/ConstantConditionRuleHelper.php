@@ -57,31 +57,9 @@ final class ConstantConditionRuleHelper
 				|| $expr instanceof Expr\StaticCall
 			) && !$expr->isFirstClassCallable()
 		) {
-			$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $expr, true);
+			$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $expr, false);
 			if ($isAlways !== null) {
 				return true;
-			}
-
-			if (!$scope->isInTrait()) {
-				return false;
-			}
-
-			foreach ($expr->getArgs() as $arg) {
-				if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($arg->value)) {
-					return true;
-				}
-
-				$classReflection = $scope->getClassReflection();
-				if ($classReflection === null) {
-					continue;
-				}
-
-				$argType = $this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value);
-				foreach ($argType->getObjectClassNames() as $className) {
-					if ($className === $classReflection->getName()) {
-						return true;
-					}
-				}
 			}
 		}
 

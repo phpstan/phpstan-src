@@ -397,12 +397,21 @@ final class ImpossibleCheckTypeHelper
 			return true;
 		}
 
-		if ($expr instanceof Expr\PropertyFetch) {
+		if ($expr instanceof Expr\PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			return self::isExpressionDependentOnThis($expr->var);
 		}
 
-		if ($expr instanceof Expr\MethodCall) {
+		if ($expr instanceof Expr\MethodCall || $expr instanceof Expr\NullsafeMethodCall) {
 			return self::isExpressionDependentOnThis($expr->var);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch || $expr instanceof Expr\StaticCall) {
+			if ($expr->class instanceof Expr) {
+				return self::isExpressionDependentOnThis($expr->class);
+			}
+
+			$className = $expr->class->toString();
+			return in_array($className, ['self', 'static', 'parent'], true);
 		}
 
 		return false;

@@ -50,3 +50,63 @@ trait MyTrait2
 		return $value;
 	}
 }
+
+class SomeClass5
+{
+	use MyTrait3;
+
+	public static string $bar = 'bar';
+}
+
+class SomeClass6
+{
+	use MyTrait3;
+
+	public static int $bar = 1;
+}
+
+trait MyTrait3
+{
+	public function getRandom(): int
+	{
+		$value = random_int(1, 100);
+		if (\is_int(self::$bar)) {
+			return $value * $value;
+		}
+		if (\is_int(static::$bar)) {
+			return $value * $value;
+		}
+		if (\is_int($this::$bar)) {
+			return $value * $value;
+		}
+
+		return $value;
+	}
+}
+
+class SomeClass7
+{
+	use MyTrait4;
+
+	public ?string $baz = 'baz';
+}
+
+class SomeClass8
+{
+	use MyTrait4;
+
+	public ?int $baz = 1;
+}
+
+trait MyTrait4
+{
+	public function getRandom(): int
+	{
+		$value = random_int(1, 100);
+		if (\is_int($this?->baz)) {
+			return $value * $value;
+		}
+
+		return $value;
+	}
+}

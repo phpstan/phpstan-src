@@ -1,19 +1,14 @@
-<?php declare(strict_types = 1);
+<?php // lint >= 8.0
+
+declare(strict_types = 1);
 
 namespace Bug11006;
 
-class StringOrNullAttributeDto
+class ProductParentPayloadDto
 {
+	/** @param null|'size_uk'|'size_us' $SizeAttributeCode */
 	public function __construct(
-		public ?string $data,
-	) {
-	}
-}
-
-class StringAttributeDto
-{
-	public function __construct(
-		public string $data,
+		public ?string $SizeAttributeCode,
 	) {
 	}
 }
@@ -34,33 +29,46 @@ class AkeneoUpdateProductDto
 	}
 }
 
-class ProductParentPayloadDto
+class StringOrNullAttributeDto
 {
-	/**
-	 * @param 'size_uk'|'size_us' $SizeAttributeCode
-	 */
 	public function __construct(
-		public string $SizeAttributeCode,
+		public ?string $data,
 	) {
 	}
 }
 
+class StringAttributeDto
+{
+	public function __construct(
+		public string $data,
+	) {
+	}
+}
+
+
 class PhpStanProblem
 {
-	public function example(ProductParentPayloadDto $parentPayload): void
+	public function example(ProductParentPayloadDto $productParentPayloadDto): void
 	{
+		if (null === $productParentPayloadDto->SizeAttributeCode) {
+			return;
+		}
+
 		$values = [
 			'ean' => [
 				new StringOrNullAttributeDto(''),
 			],
-			$parentPayload->SizeAttributeCode => [
+			$productParentPayloadDto->SizeAttributeCode => [
 				new StringOrNullAttributeDto(''),
 			],
+			// This part goes wrong
 			'osa_sizes' => [
 				new StringAttributeDto(''),
 			],
 		];
 
-		new AkeneoUpdateProductDto($values);
+		$productData = new AkeneoUpdateProductDto(
+			values: $values,
+		);
 	}
 }

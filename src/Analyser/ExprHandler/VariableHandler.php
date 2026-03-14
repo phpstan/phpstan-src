@@ -74,15 +74,17 @@ final class VariableHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
-		if ($expr->name instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
-		} elseif (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
-			$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
+		if (is_string($expr->name)) {
+			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
+				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
+			}
+		} else {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $nameResult->hasYield();
+			$throwPoints = $nameResult->getThrowPoints();
+			$impurePoints = $nameResult->getImpurePoints();
+			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
+			$scope = $nameResult->getScope();
 		}
 		return new ExpressionResult(
 			$scope,

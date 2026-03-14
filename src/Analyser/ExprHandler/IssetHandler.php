@@ -82,12 +82,12 @@ final class IssetHandler implements ExprHandler
 		foreach ($expr->vars as $var) {
 			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-			$result = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope();
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$scope = $varResult->getScope();
+			$hasYield = $hasYield || $varResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $varResult->isAlwaysTerminating();
 			$nonNullabilityResults[] = $nonNullabilityResult;
 
 			if (!($var instanceof ArrayDimFetch)) {

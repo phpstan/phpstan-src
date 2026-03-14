@@ -46,7 +46,7 @@ final class AssignOpHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $this->assignHandler->processAssignVar(
+		$assignResult = $this->assignHandler->processAssignVar(
 			$nodeScopeResolver,
 			$scope,
 			$storage,
@@ -63,27 +63,27 @@ final class AssignOpHandler implements ExprHandler
 					);
 				}
 
-				$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
 					return new ExpressionResult(
-						$result->getScope()->mergeWith($originalScope),
-						$result->hasYield(),
-						$result->isAlwaysTerminating(),
-						$result->getThrowPoints(),
-						$result->getImpurePoints(),
+						$exprResult->getScope()->mergeWith($originalScope),
+						$exprResult->hasYield(),
+						$exprResult->isAlwaysTerminating(),
+						$exprResult->getThrowPoints(),
+						$exprResult->getImpurePoints(),
 					);
 				}
 
-				return $result;
+				return $exprResult;
 			},
 			$expr instanceof Expr\AssignOp\Coalesce,
 		);
 		if (!$expr instanceof Expr\AssignOp\Coalesce) {
 			$nodeScopeResolver->storeBeforeScope($storage, $expr, $scope);
 		}
-		$scope = $result->getScope();
-		$throwPoints = $result->getThrowPoints();
+		$scope = $assignResult->getScope();
+		$throwPoints = $assignResult->getThrowPoints();
 		if (
 			($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
 			!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
@@ -93,10 +93,10 @@ final class AssignOpHandler implements ExprHandler
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
+			hasYield: $assignResult->hasYield(),
+			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
-			impurePoints: $result->getImpurePoints(),
+			impurePoints: $assignResult->getImpurePoints(),
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);

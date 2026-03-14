@@ -60,20 +60,20 @@ final class StaticPropertyFetchHandler implements ExprHandler
 		];
 		$isAlwaysTerminating = false;
 		if ($expr->class instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$isAlwaysTerminating = $result->isAlwaysTerminating();
-			$scope = $result->getScope();
+			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $classResult->hasYield();
+			$throwPoints = $classResult->getThrowPoints();
+			$impurePoints = $classResult->getImpurePoints();
+			$isAlwaysTerminating = $classResult->isAlwaysTerminating();
+			$scope = $classResult->getScope();
 		}
-		if ($expr->name instanceof Expr) {
-			$result = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			$scope = $result->getScope();
+		if (!$expr->name instanceof VarLikeIdentifier) {
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $nameResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $nameResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $nameResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
+			$scope = $nameResult->getScope();
 		}
 
 		return new ExpressionResult(

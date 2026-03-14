@@ -29,11 +29,10 @@ final class PostIncHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$scope = $result->getScope();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $context->enterDeep());
 
 		$scope = $nodeScopeResolver->processVirtualAssign(
-			$scope,
+			$varResult->getScope(),
 			$storage,
 			$stmt,
 			$expr->var,
@@ -43,10 +42,10 @@ final class PostIncHandler implements ExprHandler
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $result->getThrowPoints(),
-			impurePoints: $result->getImpurePoints(),
+			hasYield: $varResult->hasYield(),
+			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
+			throwPoints: $varResult->getThrowPoints(),
+			impurePoints: $varResult->getImpurePoints(),
 		);
 	}
 

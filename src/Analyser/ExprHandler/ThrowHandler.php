@@ -15,6 +15,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
+use function array_merge;
 
 /**
  * @implements ExprHandler<Throw_>
@@ -30,16 +31,14 @@ final class ThrowHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-		$throwPoints = $result->getThrowPoints();
-		$throwPoints[] = InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false);
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
 
 		return new ExpressionResult(
 			$scope,
 			hasYield: false,
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $throwPoints,
-			impurePoints: $result->getImpurePoints(),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),
+			impurePoints: $exprResult->getImpurePoints(),
 		);
 	}
 

@@ -46,12 +46,12 @@ final class InterpolatedStringHandler implements ExprHandler
 			if (!$part instanceof Expr) {
 				continue;
 			}
-			$result = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
-			$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
-			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-			$scope = $result->getScope();
+			$partResult = $nodeScopeResolver->processExprNode($stmt, $part, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$hasYield = $hasYield || $partResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $partResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $partResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $partResult->isAlwaysTerminating();
+			$scope = $partResult->getScope();
 		}
 
 		return new ExpressionResult(

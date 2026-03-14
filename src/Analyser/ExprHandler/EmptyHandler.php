@@ -64,17 +64,17 @@ final class EmptyHandler implements ExprHandler
 	{
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->expr);
 		$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$scope = $result->getScope();
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$scope = $exprResult->getScope();
 		$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->expr);
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $result->getThrowPoints(),
-			impurePoints: $result->getImpurePoints(),
+			hasYield: $exprResult->hasYield(),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: $exprResult->getThrowPoints(),
+			impurePoints: $exprResult->getImpurePoints(),
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($expr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($expr),
 		);

@@ -30,11 +30,11 @@ final class MethodCallableNodeHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
-		$scope = $result->getScope();
-		$hasYield = $result->hasYield();
-		$throwPoints = $result->getThrowPoints();
-		$impurePoints = $result->getImpurePoints();
+		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->getVar(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());
+		$scope = $varResult->getScope();
+		$hasYield = $varResult->hasYield();
+		$throwPoints = $varResult->getThrowPoints();
+		$impurePoints = $varResult->getImpurePoints();
 		$isAlwaysTerminating = false;
 		if ($expr->getName() instanceof Expr) {
 			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->getName(), $scope, $storage, $nodeCallback, ExpressionContext::createDeep());

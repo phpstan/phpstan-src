@@ -45,15 +45,15 @@ final class YieldFromHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$result = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
-		$scope = $result->getScope();
+		$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
+		$scope = $exprResult->getScope();
 
 		return new ExpressionResult(
 			$scope,
 			hasYield: true,
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: array_merge($result->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
-			impurePoints: array_merge($result->getImpurePoints(), [new ImpurePoint($scope, $expr, 'yieldFrom', 'yield from', true)]),
+			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createImplicit($scope, $expr)]),
+			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, 'yieldFrom', 'yield from', true)]),
 		);
 	}
 

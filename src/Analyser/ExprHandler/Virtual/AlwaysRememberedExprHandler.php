@@ -37,15 +37,15 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 	): ExpressionResult
 	{
 		$innerExpr = $expr->getExpr();
-		$result = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context);
-		$scope = $result->getScope();
+		$innerResult = $nodeScopeResolver->processExprNode($stmt, $innerExpr, $scope, $storage, $nodeCallback, $context);
+		$scope = $innerResult->getScope();
 
 		return new ExpressionResult(
 			$scope,
-			hasYield: $result->hasYield(),
-			isAlwaysTerminating: $result->isAlwaysTerminating(),
-			throwPoints: $result->getThrowPoints(),
-			impurePoints: $result->getImpurePoints(),
+			hasYield: $innerResult->hasYield(),
+			isAlwaysTerminating: $innerResult->isAlwaysTerminating(),
+			throwPoints: $innerResult->getThrowPoints(),
+			impurePoints: $innerResult->getImpurePoints(),
 			truthyScopeCallback: static fn (): MutatingScope => $scope->filterByTruthyValue($innerExpr),
 			falseyScopeCallback: static fn (): MutatingScope => $scope->filterByFalseyValue($innerExpr),
 		);

@@ -478,7 +478,7 @@ final class AssignHandler implements ExprHandler
 			) {
 				$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 					$stmt,
-					new MethodCall($originalVar->var, 'offsetSet'),
+					new MethodCall(new TypeExpr($setVarType), 'offsetSet'),
 					$scope,
 					$storage,
 					new NoopNodeCallback(),

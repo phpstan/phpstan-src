@@ -61,6 +61,14 @@ final class ConstantConditionRuleHelper
 			if ($isAlways !== null) {
 				return true;
 			}
+
+			if ($scope->isInTrait()) {
+				foreach ($expr->getArgs() as $arg) {
+					if (ImpossibleCheckTypeHelper::isExpressionDependentOnThis($arg->value)) {
+						return true;
+					}
+				}
+			}
 		}
 
 		return false;

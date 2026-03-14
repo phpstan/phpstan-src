@@ -110,3 +110,59 @@ trait MyTrait4
 		return $value;
 	}
 }
+
+class HelloWorld
+{
+	use SomeTrait;
+
+	public string $message = 'Hello';
+
+	public function foo(): void
+	{
+		$this->bar();
+	}
+}
+
+class EmptyClass {
+	use SomeTrait;
+}
+
+trait SomeTrait {
+	public function bar(): void
+	{
+		if (property_exists($this, 'message')) {
+			if (! is_string($this->message)) {
+				return;
+			}
+
+			echo $this->message . "\n";
+		}
+	}
+}
+
+class SomeClass9
+{
+	use MyTrait5;
+
+	public string $prop = 'foo';
+}
+
+class SomeClass10
+{
+	use MyTrait5;
+
+	public int $prop = 1;
+}
+
+trait MyTrait5
+{
+	public function getRandom(): int
+	{
+		$value = random_int(1, 100);
+		if (!\is_int($this->prop)) {
+			return $value;
+		}
+
+		return $value * $value;
+	}
+}

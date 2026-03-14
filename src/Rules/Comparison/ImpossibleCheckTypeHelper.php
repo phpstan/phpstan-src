@@ -391,7 +391,7 @@ final class ImpossibleCheckTypeHelper
 		) && $scope->hasExpressionType($expr)->yes();
 	}
 
-	private static function isExpressionDependentOnThis(Expr $expr): bool
+	public static function isExpressionDependentOnThis(Expr $expr): bool
 	{
 		if ($expr instanceof Expr\Variable && $expr->name === 'this') {
 			return true;

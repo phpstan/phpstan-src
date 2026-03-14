@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node\Expr;
+use function in_array;
 
 final class ExpressionDependsOnThisHelper
 {
@@ -27,7 +28,7 @@ final class ExpressionDependsOnThisHelper
 			}
 
 			$className = $expr->class->toString();
-			return \in_array($className, ['self', 'static', 'parent'], true);
+			return in_array($className, ['self', 'static', 'parent'], true);
 		}
 
 		return false;

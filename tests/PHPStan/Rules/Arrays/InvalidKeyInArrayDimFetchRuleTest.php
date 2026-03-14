@@ -144,6 +144,11 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug12798(): void
+	{
+		$this->analyse([__DIR__ . '/../Comparison/data/bug-12798.php'], []);
+	}
+
 	public function testBug12981(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12981.php'], [

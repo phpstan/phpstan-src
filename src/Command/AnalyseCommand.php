@@ -586,7 +586,7 @@ final class AnalyseCommand extends Command
 				$errorOutput->writeLineFormatted('Each error has an associated identifier, like `argument.type`');
 				$errorOutput->writeLineFormatted('or `return.missing`.');
 				$errorOutput->writeLineFormatted('');
-				$errorOutput->writeLineFormatted('Each error identifier has documentation at URL https://phpstan.org/error-identifiers/<identifier>.');
+				$errorOutput->writeLineFormatted('Each error identifier has documentation at URL https://phpstan.org/error-identifiers/<identifier>');
 				$errorOutput->writeLineFormatted('This page contains code example, explanation why is this an error');
 				$errorOutput->writeLineFormatted('and instruction how to fix it.');
 				$errorOutput->writeLineFormatted('Before fixing the error, fetch the documentation page for its identifier.');

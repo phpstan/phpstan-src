@@ -30,3 +30,32 @@ $func2 = function() use ($container2): int {
 $container2->items[] = '1';
 
 $a2 = $func2();
+
+class Bar {
+	/** @var list<string> */
+	private array $items = [];
+
+	/** @return list<string> */
+	public function getItems(): array
+	{
+		return $this->items;
+	}
+
+	/** @param list<string> $items */
+	public function setItems(array $items): void
+	{
+		$this->items = $items;
+	}
+}
+
+$container3 = new Bar();
+if ($container3->getItems() === []) {
+	$func3 = function() use ($container3): int {
+		foreach ($container3->getItems() as $item) {}
+		return 1;
+	};
+
+	$container3->setItems(['foo']);
+
+	$a3 = $func3();
+}

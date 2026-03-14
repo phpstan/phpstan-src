@@ -17,6 +17,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
@@ -101,7 +102,7 @@ final class IssetHandler implements ExprHandler
 
 			$throwPoints = array_merge($throwPoints, $nodeScopeResolver->processExprNode(
 				$stmt,
-				new MethodCall($var->var, 'offsetExists'),
+				new MethodCall(new TypeExpr($varType), 'offsetExists'),
 				$scope,
 				$storage,
 				new NoopNodeCallback(),

@@ -2054,7 +2054,7 @@ class NodeScopeResolver
 					if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 						$throwPoints = array_merge($throwPoints, $this->processExprNode(
 							$stmt,
-							new MethodCall($var->var, 'offsetUnset'),
+							new MethodCall(new TypeExpr($varType), 'offsetUnset'),
 							$scope,
 							$storage,
 							new NoopNodeCallback(),

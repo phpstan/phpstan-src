@@ -70,4 +70,26 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/missing-exception-method-throws.php'], $errors);
 	}
 
+	public function testBugArrayOffset(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-array-offset.php'], [
+			[
+				"Method BugArrayOffset\Foo::__construct() throws checked exception BugArrayOffset\ParameterNotFoundException but it's missing from the PHPDoc @throws tag.",
+				19,
+			],
+			[
+				"Method BugArrayOffset\Foo2::__construct() throws checked exception BugArrayOffset\ParameterNotFoundException but it's missing from the PHPDoc @throws tag.",
+				27,
+			],
+			[
+				"Method BugArrayOffset\Foo3::__construct() throws checked exception BugArrayOffset\ParameterNotFoundException but it's missing from the PHPDoc @throws tag.",
+				35,
+			],
+			[
+				"Method BugArrayOffset\Foo4::__construct() throws checked exception BugArrayOffset\ParameterNotFoundException but it's missing from the PHPDoc @throws tag.",
+				43,
+			],
+		]);
+	}
+
 }

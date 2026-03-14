@@ -59,3 +59,58 @@ if ($container3->getItems() === []) {
 
 	$a3 = $func3();
 }
+
+// Nullsafe property fetch
+$container4 = new Foo();
+$container4->items = [];
+
+$func4 = function() use ($container4): int {
+	foreach ($container4?->items as $item) {}
+	return 1;
+};
+
+$container4->items[] = '1';
+
+$a4 = $func4();
+
+// Static property access
+class Baz {
+	/** @var list<string> */
+	public static array $items = [];
+
+	/** @return list<string> */
+	public static function getItems(): array
+	{
+		return self::$items;
+	}
+
+	/** @param list<string> $items */
+	public static function setItems(array $items): void
+	{
+		self::$items = $items;
+	}
+}
+
+Baz::$items = [];
+
+$func5 = function(): int {
+	foreach (Baz::$items as $item) {}
+	return 1;
+};
+
+Baz::$items[] = '1';
+
+$a5 = $func5();
+
+// Static method call
+Baz::setItems([]);
+if (Baz::getItems() === []) {
+	$func6 = function(): int {
+		foreach (Baz::getItems() as $item) {}
+		return 1;
+	};
+
+	Baz::setItems(['foo']);
+
+	$a6 = $func6();
+}

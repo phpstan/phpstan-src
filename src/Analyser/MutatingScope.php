@@ -2080,7 +2080,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				}
 			}
 
-			if ($expr instanceof PropertyFetch || $expr instanceof MethodCall) {
+			if (
+				$expr instanceof PropertyFetch
+				|| $expr instanceof MethodCall
+				|| $expr instanceof Expr\NullsafePropertyFetch
+				|| $expr instanceof Expr\NullsafeMethodCall
+				|| $expr instanceof Expr\StaticPropertyFetch
+				|| $expr instanceof Expr\StaticCall
+			) {
 				continue;
 			}
 

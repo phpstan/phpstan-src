@@ -199,16 +199,21 @@ final class ImpossibleCheckTypeHelper
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectArg = $args[0]->value;
 
-					if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($objectArg)) {
+					if ($this->isExpressionDependentOnTraitContext($scope, $objectArg)) {
 						$traitReflection = $scope->getTraitReflection();
+						if ($traitReflection === null) {
+							return null;
+						}
 						$methodArgValue = $args[1]->value;
 						$methodArgType = $this->treatPhpDocTypesAsCertain ? $scope->getType($methodArgValue) : $scope->getNativeType($methodArgValue);
 						$constantMethodNames = $methodArgType->getConstantStrings();
-						if (
-							count($constantMethodNames) !== 1
-							|| !$traitReflection->hasNativeMethod($constantMethodNames[0]->getValue())
-						) {
+						if (count($constantMethodNames) === 0) {
 							return null;
+						}
+						foreach ($constantMethodNames as $constantMethodName) {
+							if (!$traitReflection->hasNativeMethod($constantMethodName->getValue())) {
+								return null;
+							}
 						}
 					}
 					$objectType = $this->treatPhpDocTypesAsCertain ? $scope->getType($objectArg) : $scope->getNativeType($objectArg);
@@ -323,7 +328,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($sureType[0])) {
+			if ($this->isExpressionDependentOnTraitContext($scope, $sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -354,7 +359,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($scope->isInTrait() && ExpressionDependsOnThisHelper::isExpressionDependentOnThis($sureNotType[0])) {
+			if ($this->isExpressionDependentOnTraitContext($scope, $sureNotType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -377,6 +382,31 @@ final class ImpossibleCheckTypeHelper
 
 		$result = TrinaryLogic::createYes()->and(...$results);
 		return $result->maybe() ? null : $result->yes();
+	}
+
+	private function isExpressionDependentOnTraitContext(Scope $scope, Expr $expr): bool
+	{
+		if (!$scope->isInTrait()) {
+			return false;
+		}
+
+		if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($expr)) {
+			return true;
+		}
+
+		$classReflection = $scope->getClassReflection();
+		if ($classReflection === null) {
+			return false;
+		}
+
+		$type = $this->treatPhpDocTypesAsCertain ? $scope->getType($expr) : $scope->getNativeType($expr);
+		foreach ($type->getObjectClassNames() as $className) {
+			if ($className === $classReflection->getName()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

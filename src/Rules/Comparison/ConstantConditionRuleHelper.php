@@ -67,6 +67,16 @@ final class ConstantConditionRuleHelper
 					if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($arg->value)) {
 						return true;
 					}
+
+					$classReflection = $scope->getClassReflection();
+					if ($classReflection !== null) {
+						$argType = $this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value);
+						foreach ($argType->getObjectClassNames() as $className) {
+							if ($className === $classReflection->getName()) {
+								return true;
+							}
+						}
+					}
 				}
 			}
 		}

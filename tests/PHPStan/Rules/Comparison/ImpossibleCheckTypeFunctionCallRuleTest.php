@@ -1208,16 +1208,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	public function testBug7599(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-7599.php'], [
-			[
-				'Call to function method_exists() with Bug7599\SecondEnum::Baz and \'barMethod\' will always evaluate to true.',
-				13,
-			],
-			[
-				'Call to function method_exists() with Bug7599\TestEnum::Bar|Bug7599\TestEnum::Foo and \'barMethod\' will always evaluate to false.',
-				13,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-7599.php'], []);
 	}
 
 	public function testBug9095(): void

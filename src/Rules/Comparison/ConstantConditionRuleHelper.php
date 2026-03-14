@@ -62,20 +62,24 @@ final class ConstantConditionRuleHelper
 				return true;
 			}
 
-			if ($scope->isInTrait()) {
-				foreach ($expr->getArgs() as $arg) {
-					if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($arg->value)) {
-						return true;
-					}
+			if (!$scope->isInTrait()) {
+				return false;
+			}
 
-					$classReflection = $scope->getClassReflection();
-					if ($classReflection !== null) {
-						$argType = $this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value);
-						foreach ($argType->getObjectClassNames() as $className) {
-							if ($className === $classReflection->getName()) {
-								return true;
-							}
-						}
+			foreach ($expr->getArgs() as $arg) {
+				if (ExpressionDependsOnThisHelper::isExpressionDependentOnThis($arg->value)) {
+					return true;
+				}
+
+				$classReflection = $scope->getClassReflection();
+				if ($classReflection === null) {
+					continue;
+				}
+
+				$argType = $this->treatPhpDocTypesAsCertain ? $scope->getType($arg->value) : $scope->getNativeType($arg->value);
+				foreach ($argType->getObjectClassNames() as $className) {
+					if ($className === $classReflection->getName()) {
+						return true;
 					}
 				}
 			}

@@ -27,7 +27,7 @@ final class ExpressionDependsOnThisHelper
 			}
 
 			$className = $expr->class->toString();
-			return in_array($className, ['self', 'static', 'parent'], true);
+			return \in_array($className, ['self', 'static', 'parent'], true);
 		}
 
 		return false;

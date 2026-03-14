@@ -144,6 +144,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug12798(): void
 	{
 		$this->analyse([__DIR__ . '/../Comparison/data/bug-12798.php'], []);

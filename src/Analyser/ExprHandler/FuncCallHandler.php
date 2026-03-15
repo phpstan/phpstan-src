@@ -88,6 +88,8 @@ final class FuncCallHandler implements ExprHandler
 		private bool $implicitThrows,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
+		#[AutowiredParameter]
+		private array $earlyTerminatingFunctionCalls,
 	)
 	{
 	}
@@ -164,6 +166,9 @@ final class FuncCallHandler implements ExprHandler
 			$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
 			$isAlwaysTerminating = $isAlwaysTerminating || $returnType instanceof NeverType && $returnType->isExplicit();
+		}
+		if (!$isAlwaysTerminating && $expr->name instanceof Name && in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
+			$isAlwaysTerminating = true;
 		}
 
 		if (

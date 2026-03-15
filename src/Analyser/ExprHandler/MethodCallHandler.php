@@ -26,6 +26,7 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -65,9 +66,22 @@ final class MethodCallHandler implements ExprHandler
 		private bool $implicitThrows,
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
+		#[AutowiredParameter]
+		private array $earlyTerminatingMethodCalls,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
+		$earlyTerminatingMethodNames = [];
+		foreach ($this->earlyTerminatingMethodCalls as $methodNames) {
+			foreach ($methodNames as $methodName) {
+				$earlyTerminatingMethodNames[strtolower($methodName)] = true;
+			}
+		}
+		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
 	}
+
+	/** @var array<string, true> */
+	private array $earlyTerminatingMethodNames;
 
 	public function supports(Expr $expr): bool
 	{
@@ -143,6 +157,25 @@ final class MethodCallHandler implements ExprHandler
 			$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
 			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+		}
+		if (!$isAlwaysTerminating && $expr->name instanceof Identifier && array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
+			foreach ($calledOnType->getObjectClassNames() as $referencedClass) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					continue;
+				}
+
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
+				foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
+					if (!isset($this->earlyTerminatingMethodCalls[$className])) {
+						continue;
+					}
+
+					if (in_array($expr->name->name, $this->earlyTerminatingMethodCalls[$className], true)) {
+						$isAlwaysTerminating = true;
+						break 2;
+					}
+				}
+			}
 		}
 
 		$argsResult = $nodeScopeResolver->processArgs(

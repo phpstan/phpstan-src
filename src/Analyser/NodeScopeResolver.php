@@ -2417,7 +2417,6 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	// TODO: move $earlyTerminatingMethodCalls/$earlyTerminatingFunctionCalls config into MethodCallHandler/FuncCallHandler
 	private function findEarlyTerminatingExpr(Expr $expr, ExpressionResult $result): ?Expr
 	{
 		$exprType = $result->getType();

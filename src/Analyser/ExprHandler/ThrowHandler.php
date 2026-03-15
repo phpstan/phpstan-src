@@ -36,7 +36,7 @@ final class ThrowHandler implements ExprHandler
 		return new ExpressionResult(
 			$scope,
 			hasYield: false,
-			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+			isAlwaysTerminating: true,
 			throwPoints: array_merge($exprResult->getThrowPoints(), [InternalThrowPoint::createExplicit($scope, $scope->getType($expr->expr), $expr, false)]),
 			impurePoints: $exprResult->getImpurePoints(),
 		);

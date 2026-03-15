@@ -42,6 +42,10 @@ final class ConstantLooseComparisonRule implements Rule
 			return [];
 		}
 
+		if (TraitContextHelper::isBinaryOpDependentOnTraitContext($scope, $node->left, $node->right)) {
+			return [];
+		}
+
 		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$nodeType->isTrue()->yes() && !$nodeType->isFalse()->yes()) {
 			return [];

@@ -51,6 +51,10 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 			return [];
 		}
 
+		if (TraitContextHelper::isBinaryOpDependentOnTraitContext($scope, $node->left, $node->right)) {
+			return [];
+		}
+
 		$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if ($exprType instanceof ConstantBooleanType) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {

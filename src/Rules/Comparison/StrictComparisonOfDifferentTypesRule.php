@@ -57,6 +57,10 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 			return [];
 		}
 
+		if (TraitContextHelper::isBinaryOpDependentOnTraitContext($scope, $node->left, $node->right)) {
+			return [];
+		}
+
 		$nodeType = $nodeTypeResult->type;
 		if (!$nodeType instanceof ConstantBooleanType) {
 			return [];

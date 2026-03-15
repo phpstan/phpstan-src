@@ -986,6 +986,12 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseAnd($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
 		return $this->getBitwiseAndTypeFromTypes($leftType, $rightType);
 	}
 
@@ -1044,6 +1050,12 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseOr($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
 		return $this->getBitwiseOrTypeFromTypes($leftType, $rightType);
 	}
 
@@ -1091,6 +1103,12 @@ final class InitializerExprTypeResolver
 	{
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
+
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\BitwiseXor($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
 
 		return $this->getBitwiseXorTypeFromTypes($leftType, $rightType);
 	}
@@ -2034,6 +2052,12 @@ final class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
 		$types = TypeCombinator::union($leftType, $rightType);
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
@@ -2071,12 +2095,6 @@ final class InitializerExprTypeResolver
 
 				return $union->toNumber();
 			}
-		}
-
-		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
-			->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
-		if ($specifiedTypes !== null) {
-			return $specifiedTypes;
 		}
 
 		if (

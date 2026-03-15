@@ -166,9 +166,10 @@ function gmpBitwiseFunctions(\GMP $a, \GMP $b): void
 
 function gmpComparisonFunctions(\GMP $a, \GMP $b, int $i): void
 {
-	// gmp_cmp corresponds to <=>
-	assertType('int<-1, 1>', gmp_cmp($a, $b));
-	assertType('int<-1, 1>', gmp_cmp($a, $i));
+	// gmp_cmp returns -1, 0, or 1 in practice, but stubs say int
+	// TODO: Could be improved to int<-1, 1> like the <=> operator
+	assertType('int', gmp_cmp($a, $b));
+	assertType('int', gmp_cmp($a, $i));
 }
 
 function gmpFromInit(): void

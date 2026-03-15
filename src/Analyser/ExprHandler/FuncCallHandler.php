@@ -104,8 +104,10 @@ final class FuncCallHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$nameResult = null;
 		if ($expr->name instanceof Expr) {
-			$nameType = $scope->getType($expr->name);
+			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$nameType = $nameResult->getType();
 			if (!$nameType->isCallable()->no()) {
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 					$scope,
@@ -115,7 +117,6 @@ final class FuncCallHandler implements ExprHandler
 				);
 			}
 
-			$nameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$scope = $nameResult->getScope();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -475,6 +476,105 @@ final class FuncCallHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($nameResult, $nodeScopeResolver, $stmt): Type {
+				if ($expr->name instanceof Expr) {
+					$calledOnType = $nameResult->getTypeForScope($scope);
+					if ($calledOnType->isCallable()->no()) {
+						return new ErrorType();
+					}
+
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$expr->getArgs(),
+						$calledOnType->getCallableParametersAcceptors($scope),
+						null,
+					);
+
+					$functionName = null;
+					if ($expr->name instanceof String_) {
+						/** @var non-empty-string $name */
+						$name = $expr->name->value;
+						$functionName = new Name($name);
+					} elseif (
+						$expr->name instanceof FuncCall
+						&& $expr->name->name instanceof Name
+						&& $expr->name->isFirstClassCallable()
+					) {
+						$functionName = $expr->name->name;
+					}
+
+					$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr);
+					if ($normalizedNode !== null && $functionName !== null && $this->reflectionProvider->hasFunction($functionName, $scope)) {
+						$functionReflection = $this->reflectionProvider->getFunction($functionName, $scope);
+						$resolvedType = $this->getDynamicFunctionReturnType($scope, $normalizedNode, $functionReflection);
+						if ($resolvedType !== null) {
+							return $resolvedType;
+						}
+					}
+
+					return $parametersAcceptor->getReturnType();
+				}
+
+				if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
+					return new ErrorType();
+				}
+
+				$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
+				if ($scope->nativeTypesPromoted) {
+					return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
+				}
+
+				if ($functionReflection->getName() === 'call_user_func') {
+					$result = ArgumentsNormalizer::reorderCallUserFuncArguments($expr, $scope);
+					if ($result !== null) {
+						[, $innerFuncCall] = $result;
+
+						return $nodeScopeResolver->processExprNode($stmt, $innerFuncCall, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+					}
+				}
+
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$expr->getArgs(),
+					$functionReflection->getVariants(),
+					$functionReflection->getNamedArgumentsVariants(),
+				);
+				$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr);
+				if ($normalizedNode !== null) {
+					if ($functionReflection->getName() === 'clone' && count($normalizedNode->getArgs()) > 0) {
+						$cloneResult = $nodeScopeResolver->processExprNode($stmt, new Expr\Clone_($normalizedNode->getArgs()[0]->value), $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+						$cloneType = $cloneResult->getTypeForScope($scope);
+						if (count($normalizedNode->getArgs()) === 2) {
+							$propertiesResult = $nodeScopeResolver->processExprNode($stmt, $normalizedNode->getArgs()[1]->value, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep());
+							$propertiesType = $propertiesResult->getTypeForScope($scope);
+							if ($propertiesType->isConstantArray()->yes()) {
+								$constantArrays = $propertiesType->getConstantArrays();
+								if (count($constantArrays) === 1) {
+									$accessories = [];
+									foreach ($constantArrays[0]->getKeyTypes() as $keyType) {
+										$constantKeyTypes = $keyType->getConstantScalarValues();
+										if (count($constantKeyTypes) !== 1) {
+											return $cloneType;
+										}
+										$accessories[] = new HasPropertyType((string) $constantKeyTypes[0]);
+									}
+									if (count($accessories) > 0 && count($accessories) <= 16) {
+										return TypeCombinator::intersect($cloneType, ...$accessories);
+									}
+								}
+							}
+						}
+
+						return $cloneType;
+					}
+					$resolvedType = $this->getDynamicFunctionReturnType($scope, $normalizedNode, $functionReflection);
+					if ($resolvedType !== null) {
+						return $resolvedType;
+					}
+				}
+
+				return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

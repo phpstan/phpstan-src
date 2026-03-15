@@ -196,6 +196,35 @@ final class MethodCallHandler implements ExprHandler
 		$result = $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($varResult): Type {
+				if ($expr->name instanceof Identifier) {
+					$varType = $varResult->getTypeForScope($scope);
+
+					if ($scope->nativeTypesPromoted) {
+						$methodReflection = $scope->getMethodReflection(
+							$varType,
+							$expr->name->name,
+						);
+						if ($methodReflection === null) {
+							return new ErrorType();
+						}
+
+						return ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+					}
+
+					$returnType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+						$scope,
+						$varType,
+						$expr->name->name,
+						$expr,
+					);
+
+					return $returnType ?? new ErrorType();
+				}
+
+				// TODO: handle dynamic method names
+				return new MixedType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

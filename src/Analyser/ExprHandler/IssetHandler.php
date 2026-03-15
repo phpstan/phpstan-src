@@ -96,7 +96,7 @@ final class IssetHandler implements ExprHandler
 				continue;
 			}
 
-			$varType = $scope->getType($var->var);
+			$varType = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), $context->enterDeep())->getType();
 			if ($varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 				continue;
 			}
@@ -120,6 +120,36 @@ final class IssetHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $expr, MutatingScope $scope) use ($nodeScopeResolver, $stmt): Type {
+				$typeResolver = static fn (Expr $e): Type => $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+
+				$issetResult = true;
+				foreach ($expr->vars as $var) {
+					$result = $scope->issetCheckWithResolver($var, static function (Type $type): ?bool {
+						$isNull = $type->isNull();
+						if ($isNull->maybe()) {
+							return null;
+						}
+
+						return !$isNull->yes();
+					}, $typeResolver);
+					if ($result !== null) {
+						if (!$result) {
+							return new ConstantBooleanType($result);
+						}
+
+						continue;
+					}
+
+					$issetResult = $result;
+				}
+
+				if ($issetResult === null) {
+					return new BooleanType();
+				}
+
+				return new ConstantBooleanType($issetResult);
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

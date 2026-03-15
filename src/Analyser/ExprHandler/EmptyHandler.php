@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -74,6 +75,31 @@ final class EmptyHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: static function (Expr $expr, MutatingScope $scope) use ($nodeScopeResolver, $stmt): Type {
+				$typeResolver = static fn (Expr $e): Type => $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+
+				$result = $scope->issetCheckWithResolver($expr->expr, static function (Type $type): ?bool {
+					$isNull = $type->isNull();
+					$isFalsey = $type->toBoolean()->isFalse();
+					if ($isNull->maybe()) {
+						return null;
+					}
+					if ($isFalsey->maybe()) {
+						return null;
+					}
+
+					if ($isNull->yes()) {
+						return $isFalsey->no();
+					}
+
+					return !$isFalsey->yes();
+				}, $typeResolver);
+				if ($result === null) {
+					return new BooleanType();
+				}
+
+				return new ConstantBooleanType(!$result);
+			},
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: $exprResult->getThrowPoints(),

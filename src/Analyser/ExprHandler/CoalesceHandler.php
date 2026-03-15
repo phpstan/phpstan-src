@@ -13,6 +13,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -87,22 +88,33 @@ final class CoalesceHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
-			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($condResult, $rightResult): Type {
+			typeCallback: static function (Expr $uninteresting, MutatingScope $scope) use ($expr, $condResult, $rightResult, $nodeScopeResolver, $stmt): Type {
+				$typeResolver = static fn (Expr $e): Type => $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+
+				$issetResult = $scope->issetCheckWithResolver($expr->left, static function (Type $type): ?bool {
+					$isNull = $type->isNull();
+					if ($isNull->maybe()) {
+						return null;
+					}
+
+					return !$isNull->yes();
+				}, $typeResolver);
+
 				$leftType = $condResult->getTypeForScope($scope);
 				$rightType = $rightResult->getTypeForScope($scope);
 
-				if ($leftType->isNull()->yes()) {
-					return $rightType;
+				if ($issetResult !== null && $issetResult !== false) {
+					return TypeCombinator::removeNull($leftType);
 				}
 
-				if (!TypeCombinator::containsNull($leftType)) {
-					return $leftType;
+				if ($issetResult === null) {
+					return TypeCombinator::union(
+						TypeCombinator::removeNull($leftType),
+						$rightType,
+					);
 				}
 
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($leftType),
-					$rightType,
-				);
+				return $rightType;
 			},
 			hasYield: $condResult->hasYield() || $rightResult->hasYield(),
 			isAlwaysTerminating: $condResult->isAlwaysTerminating(),

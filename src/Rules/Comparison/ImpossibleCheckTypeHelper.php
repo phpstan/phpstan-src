@@ -419,7 +419,7 @@ final class ImpossibleCheckTypeHelper
 		return false;
 	}
 
-	public static function isExpressionDependentOnThis(Expr $expr): bool
+	private static function isExpressionDependentOnThis(Expr $expr): bool
 	{
 		if ($expr instanceof Expr\Variable && $expr->name === 'this') {
 			return true;

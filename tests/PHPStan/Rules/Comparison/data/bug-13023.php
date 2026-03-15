@@ -170,18 +170,36 @@ trait MyTrait5
 class SomeClass11
 {
 	use MyTrait6;
+
+	/** @return non-empty-array */
+	public function getBar(): array
+	{
+		return ['foo'];
+	}
 }
 
-trait MyTrait6
+class SomeClass12
 {
+	use MyTrait6;
+
+	/** @return array{} */
 	public function getBar(): array
 	{
 		return [];
 	}
+}
+
+trait MyTrait6
+{
+	abstract public function getBar(): array;
 
 	public function getRandom(): int
 	{
 		if (!\is_int(count($this->getBar()))) {
+			return 1;
+		}
+
+		if (count($this->getBar()) > 0) {
 			return 1;
 		}
 

@@ -1202,7 +1202,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	public function testBug13023(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-13023.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13023.php'], [
+			[
+				'Call to function is_int() with 0 will always evaluate to true.',
+				198,
+			],
+			[
+				'Call to function is_int() with int<1, max> will always evaluate to true.',
+				198,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.1')]

@@ -22,3 +22,6 @@ class Foo {
 
 $foo = new Foo();
 $foo->bar($array[]);
+
+// Nested array dim fetch with by-ref parameter
+set($array[1][]);

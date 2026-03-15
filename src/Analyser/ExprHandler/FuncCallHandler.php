@@ -822,6 +822,10 @@ final class FuncCallHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		if ($expr->name instanceof Name && in_array((string) $expr->name, $this->earlyTerminatingFunctionCalls, true)) {
+			return new NeverType(true);
+		}
+
 		if ($expr->name instanceof Expr) {
 			$calledOnType = $scope->getType($expr->name);
 			if ($calledOnType->isCallable()->no()) {

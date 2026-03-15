@@ -349,6 +349,26 @@ final class MethodCallHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
+		if ($expr->name instanceof Identifier && array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
+			$calledOnType = $scope->getType($expr->var);
+			foreach ($calledOnType->getObjectClassNames() as $referencedClass) {
+				if (!$this->reflectionProvider->hasClass($referencedClass)) {
+					continue;
+				}
+
+				$classReflection = $this->reflectionProvider->getClass($referencedClass);
+				foreach (array_merge([$referencedClass], $classReflection->getParentClassesNames(), $classReflection->getNativeReflection()->getInterfaceNames()) as $className) {
+					if (!isset($this->earlyTerminatingMethodCalls[$className])) {
+						continue;
+					}
+
+					if (in_array($expr->name->name, $this->earlyTerminatingMethodCalls[$className], true)) {
+						return new NeverType(true);
+					}
+				}
+			}
+		}
+
 		if ($expr->name instanceof Identifier) {
 			if ($scope->nativeTypesPromoted) {
 				$methodReflection = $scope->getMethodReflection(

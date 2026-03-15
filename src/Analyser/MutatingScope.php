@@ -994,6 +994,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
 	{
 		// mirrored in PHPStan\Rules\IssetCheck
+		return $this->issetCheckWithResolver($expr, $typeCallback, fn (Expr $expr): Type => $this->getType($expr), $result);
+	}
+
+	/**
+	 * @param callable(Type): ?bool $typeCallback
+	 * @param callable(Expr): Type $typeResolver
+	 */
+	public function issetCheckWithResolver(Expr $expr, callable $typeCallback, callable $typeResolver, ?bool $result = null): ?bool
+	{
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			$hasVariable = $this->hasVariableType($expr->name);
 			if ($hasVariable->maybe()) {
@@ -1014,41 +1023,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			return $result;
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->getType($expr->var);
+			$type = $typeResolver($expr->var);
 			if (!$type->isOffsetAccessible()->yes()) {
-				return $result ?? $this->issetCheckUndefined($expr->var);
+				return $result ?? $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 			}
 
-			$dimType = $this->getType($expr->dim);
+			$dimType = $typeResolver($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if ($hasOffsetValue->no()) {
 				return false;
 			}
 
-			// If offset cannot be null, store this error message and see if one of the earlier offsets is.
-			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes()) {
 				$result = $typeCallback($type->getOffsetValueType($dimType));
 
 				if ($result !== null) {
-					return $this->issetCheck($expr->var, $typeCallback, $result);
+					return $this->issetCheckWithResolver($expr->var, $typeCallback, $typeResolver, $result);
 				}
 			}
 
-			// Has offset, it is nullable
 			return null;
 
 		} elseif ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\StaticPropertyFetch) {
 
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($expr instanceof Node\Expr\PropertyFetch) {
+				$holderType = $typeResolver($expr->var);
+			} elseif ($expr->class instanceof Name) {
+				$holderType = $this->resolveTypeByName($expr->class);
+			} else {
+				$holderType = $typeResolver($expr->class);
+			}
+
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNodeWithTypes($expr, $this, $holderType, null);
 
 			if ($propertyReflection === null) {
 				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheckUndefined($expr->var);
+					return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 				}
 
 				if ($expr->class instanceof Expr) {
-					return $this->issetCheckUndefined($expr->class);
+					return $this->issetCheckUndefinedWithResolver($expr->class, $typeResolver);
 				}
 
 				return null;
@@ -1056,11 +1070,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 			if (!$propertyReflection->isNative()) {
 				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheckUndefined($expr->var);
+					return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 				}
 
 				if ($expr->class instanceof Expr) {
-					return $this->issetCheckUndefined($expr->class);
+					return $this->issetCheckUndefinedWithResolver($expr->class, $typeResolver);
 				}
 
 				return null;
@@ -1069,11 +1083,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			if ($propertyReflection->hasNativeType() && !$propertyReflection->isVirtual()->yes()) {
 				if (!$this->hasExpressionType($expr)->yes()) {
 					if ($expr instanceof Node\Expr\PropertyFetch) {
-						return $this->issetCheckUndefined($expr->var);
+						return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 					}
 
 					if ($expr->class instanceof Expr) {
-						return $this->issetCheckUndefined($expr->class);
+						return $this->issetCheckUndefinedWithResolver($expr->class, $typeResolver);
 					}
 
 					return null;
@@ -1087,11 +1101,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$result = $typeCallback($propertyReflection->getWritableType());
 			if ($result !== null) {
 				if ($expr instanceof Node\Expr\PropertyFetch) {
-					return $this->issetCheck($expr->var, $typeCallback, $result);
+					return $this->issetCheckWithResolver($expr->var, $typeCallback, $typeResolver, $result);
 				}
 
 				if ($expr->class instanceof Expr) {
-					return $this->issetCheck($expr->class, $typeCallback, $result);
+					return $this->issetCheckWithResolver($expr->class, $typeCallback, $typeResolver, $result);
 				}
 			}
 
@@ -1102,10 +1116,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return $result;
 		}
 
-		return $typeCallback($this->getType($expr));
+		return $typeCallback($typeResolver($expr));
 	}
 
-	private function issetCheckUndefined(Expr $expr): ?bool
+	/**
+	 * @param callable(Expr): Type $typeResolver
+	 */
+	private function issetCheckUndefinedWithResolver(Expr $expr, callable $typeResolver): ?bool
 	{
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			$hasVariable = $this->hasVariableType($expr->name);
@@ -1117,30 +1134,35 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->getType($expr->var);
+			$type = $typeResolver($expr->var);
 			if (!$type->isOffsetAccessible()->yes()) {
-				return $this->issetCheckUndefined($expr->var);
+				return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 			}
 
-			$dimType = $this->getType($expr->dim);
+			$dimType = $typeResolver($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 
 			if (!$hasOffsetValue->no()) {
-				return $this->issetCheckUndefined($expr->var);
+				return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 			}
 
 			return false;
 		}
 
 		if ($expr instanceof Expr\PropertyFetch) {
-			return $this->issetCheckUndefined($expr->var);
+			return $this->issetCheckUndefinedWithResolver($expr->var, $typeResolver);
 		}
 
 		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
-			return $this->issetCheckUndefined($expr->class);
+			return $this->issetCheckUndefinedWithResolver($expr->class, $typeResolver);
 		}
 
 		return null;
+	}
+
+	private function issetCheckUndefined(Expr $expr): ?bool
+	{
+		return $this->issetCheckUndefinedWithResolver($expr, fn (Expr $expr): Type => $this->getType($expr));
 	}
 
 	/** @api */

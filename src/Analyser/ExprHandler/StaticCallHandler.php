@@ -79,6 +79,7 @@ final class StaticCallHandler implements ExprHandler
 		$throwPoints = [];
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
+		$classResult = null;
 		if ($expr->class instanceof Expr) {
 			$classResult = $nodeScopeResolver->processExprNode($stmt, $expr->class, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$hasYield = $classResult->hasYield();
@@ -262,6 +263,45 @@ final class StaticCallHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($classResult): Type {
+				if ($expr->name instanceof Identifier) {
+					if ($expr->class instanceof Name) {
+						$staticMethodCalledOnType = $this->resolveTypeByNameWithLateStaticBinding($scope, $expr->class, $expr->name);
+					} elseif ($classResult !== null) {
+						if ($scope->nativeTypesPromoted) {
+							$staticMethodCalledOnType = $classResult->getTypeForScope($scope);
+						} else {
+							$staticMethodCalledOnType = TypeCombinator::removeNull($classResult->getTypeForScope($scope))->getObjectTypeOrClassStringObjectType();
+						}
+					} else {
+						return new ErrorType();
+					}
+
+					if ($scope->nativeTypesPromoted) {
+						$methodReflection = $scope->getMethodReflection(
+							$staticMethodCalledOnType,
+							$expr->name->name,
+						);
+						if ($methodReflection === null) {
+							return new ErrorType();
+						}
+
+						return ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+					}
+
+					$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
+						$scope,
+						$staticMethodCalledOnType,
+						$expr->name->toString(),
+						$expr,
+					);
+
+					return $callType ?? new ErrorType();
+				}
+
+				// TODO: handle dynamic method names
+				return new MixedType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

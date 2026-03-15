@@ -88,6 +88,7 @@ final class NewHandler implements ExprHandler
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		$normalizedExpr = $expr;
+		$classResult = null;
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
@@ -207,6 +208,17 @@ final class NewHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($classResult): Type {
+				if ($expr->class instanceof Name) {
+					return $this->exactInstantiation($scope, $expr, $expr->class);
+				}
+				if ($expr->class instanceof Node\Stmt\Class_) {
+					$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope);
+					return new ObjectType($anonymousClassReflection->getName());
+				}
+
+				return $classResult->getTypeForScope($scope)->getObjectTypeOrClassStringObjectType();
+			},
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

@@ -166,3 +166,25 @@ trait MyTrait5
 		return $value * $value;
 	}
 }
+
+class SomeClass11
+{
+	use MyTrait6;
+}
+
+trait MyTrait6
+{
+	public function getBar(): array
+	{
+		return [];
+	}
+
+	public function getRandom(): int
+	{
+		if (!\is_int(count($this->getBar()))) {
+			return 1;
+		}
+
+		return 0;
+	}
+}

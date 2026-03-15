@@ -4,7 +4,9 @@ namespace PHPStan\Node\Expr;
 
 use Override;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
 use PHPStan\Node\VirtualNode;
+use function is_string;
 
 final class IntertwinedVariableByReferenceWithExpr extends Expr implements VirtualNode
 {
@@ -31,9 +33,9 @@ final class IntertwinedVariableByReferenceWithExpr extends Expr implements Virtu
 
 	public function isSimpleVariableReference(): bool
 	{
-		return $this->expr instanceof \PhpParser\Node\Expr\Variable
+		return $this->expr instanceof Variable
 			&& is_string($this->expr->name)
-			&& $this->assignedExpr instanceof \PhpParser\Node\Expr\Variable
+			&& $this->assignedExpr instanceof Variable
 			&& is_string($this->assignedExpr->name);
 	}
 

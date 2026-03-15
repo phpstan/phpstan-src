@@ -17,6 +17,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
@@ -71,10 +72,11 @@ final class AssignOpHandler implements ExprHandler
 					return $this->expressionResultFactory->create(
 						$expr,
 						$exprResult->getScope()->mergeWith($originalScope),
-						$exprResult->hasYield(),
-						$exprResult->isAlwaysTerminating(),
-						$exprResult->getThrowPoints(),
-						$exprResult->getImpurePoints(),
+						typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $exprResult->getTypeForScope($scope),
+						hasYield: $exprResult->hasYield(),
+						isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
+						throwPoints: $exprResult->getThrowPoints(),
+						impurePoints: $exprResult->getImpurePoints(),
 					);
 				}
 
@@ -97,6 +99,64 @@ final class AssignOpHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			typeCallback: function (Expr $expr, MutatingScope $scope) use ($assignResult, $nodeScopeResolver, $stmt): Type {
+				if ($expr instanceof Expr\AssignOp\Coalesce) {
+					// Coalesce assignop type is handled by BinaryOp\Coalesce
+					return $nodeScopeResolver->processExprNode($stmt, new BinaryOp\Coalesce($expr->var, $expr->expr, $expr->getAttributes()), $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+				}
+
+				$varType = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+				$exprType = $assignResult->getTypeForScope($scope);
+				$getType = static function (Expr $e) use ($expr, $varType, $exprType, $scope, $nodeScopeResolver, $stmt): Type {
+					if ($e === $expr->var) {
+						return $varType;
+					}
+					if ($e === $expr->expr) {
+						return $exprType;
+					}
+
+					return $nodeScopeResolver->processExprNode($stmt, $e, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getTypeForScope($scope);
+				};
+
+				if ($expr instanceof Expr\AssignOp\Concat) {
+					return $this->initializerExprTypeResolver->getConcatType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\BitwiseAnd) {
+					return $this->initializerExprTypeResolver->getBitwiseAndType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\BitwiseOr) {
+					return $this->initializerExprTypeResolver->getBitwiseOrType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\BitwiseXor) {
+					return $this->initializerExprTypeResolver->getBitwiseXorType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Div) {
+					return $this->initializerExprTypeResolver->getDivType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Mod) {
+					return $this->initializerExprTypeResolver->getModType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Plus) {
+					return $this->initializerExprTypeResolver->getPlusType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Minus) {
+					return $this->initializerExprTypeResolver->getMinusType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Mul) {
+					return $this->initializerExprTypeResolver->getMulType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\Pow) {
+					return $this->initializerExprTypeResolver->getPowType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\ShiftLeft) {
+					return $this->initializerExprTypeResolver->getShiftLeftType($expr->var, $expr->expr, $getType);
+				}
+				if ($expr instanceof Expr\AssignOp\ShiftRight) {
+					return $this->initializerExprTypeResolver->getShiftRightType($expr->var, $expr->expr, $getType);
+				}
+
+				throw new ShouldNotHappenException(sprintf('Unhandled %s', get_class($expr)));
+			},
 			hasYield: $assignResult->hasYield(),
 			isAlwaysTerminating: $assignResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,

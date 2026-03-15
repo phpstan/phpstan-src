@@ -287,6 +287,7 @@ final class MethodCallHandler implements ExprHandler
 				return $this->expressionResultFactory->create(
 					$expr,
 					$scope,
+					typeCallback: static fn (Expr $uninteresting, MutatingScope $scope) => $result->getTypeForScope($scope),
 					hasYield: $result->hasYield(),
 					isAlwaysTerminating: $result->isAlwaysTerminating(),
 					throwPoints: $result->getThrowPoints(),

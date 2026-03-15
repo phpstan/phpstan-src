@@ -43,6 +43,8 @@ final class ClosureHandler implements ExprHandler
 		return $this->expressionResultFactory->create(
 			$expr,
 			$scope,
+			// TODO: replace with proper typeCallback that doesn't use $scope->getType()
+			typeCallback: fn (Expr $expr, MutatingScope $scope) => $this->closureTypeResolver->getClosureType($scope, $expr),
 			hasYield: false,
 			isAlwaysTerminating: false,
 			throwPoints: [],

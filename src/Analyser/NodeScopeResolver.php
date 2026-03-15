@@ -781,7 +781,7 @@ class NodeScopeResolver
 							&& $scope->getFunction() instanceof PhpMethodFromParserNodeReflection
 							&& $scope->getFunction()->getDeclaringClass()->hasConstructor()
 							&& $scope->getFunction()->getDeclaringClass()->getConstructor()->getName() === $scope->getFunction()->getName()
-							&& TypeUtils::findThisType($this->processExprNode(new Node\Stmt\Expression($node->getPropertyFetch()->var), $node->getPropertyFetch()->var, $scope, new ExpressionResultStorage(), new NoopNodeCallback(), ExpressionContext::createDeep())->getType()) !== null
+							&& TypeUtils::findThisType($scope->getType($node->getPropertyFetch()->var)) !== null
 						) {
 							return;
 						}

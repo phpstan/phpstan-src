@@ -46,6 +46,7 @@ final class ConstFetchHandler implements ExprHandler
 
 		$constName = (string) $expr->name;
 		$loweredConstName = strtolower($constName);
+		$names = null;
 		if ($loweredConstName === 'true') {
 			$constType = new ConstantBooleanType(true);
 		} elseif ($loweredConstName === 'false') {

@@ -303,8 +303,13 @@ jobs:
               cd e2e/report-ignores-without-comments
               OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'test.php:4:Ignore with identifier variable.undefined has no comment' "$OUTPUT"
+              ../bashunit -a contains 'test.php:4:Ignore with identifier variable.undefined has no comment.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:4:Variable $undefined might not be defined.' "$OUTPUT"
               ../bashunit -a not_contains 'test.php:7' "$OUTPUT"
+              ../bashunit -a contains 'test.php:10:Ignoring all errors on a line is not allowed.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:10:Variable $yetAnotherUndefined might not be defined.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:12:Ignoring all errors on a line is not allowed.' "$OUTPUT"
+              ../bashunit -a contains 'test.php:12:Variable $yetYetAnotherUndefined might not be defined.' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

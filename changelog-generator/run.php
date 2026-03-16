@@ -29,6 +29,7 @@ use function escapeshellarg;
 use function exec;
 use function explode;
 use function implode;
+use function preg_replace;
 use function sprintf;
 
 (function (): void {
@@ -201,7 +202,8 @@ use function sprintf;
 					$thanksText = '';
 				}
 
-				$output->writeln(sprintf('* %s (%s)%s%s', $commit['message'], $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanksText));
+				$message = preg_replace('/\s*\(#\d+\)$/', '', $commit['message']);
+			$output->writeln(sprintf('* %s (%s)%s%s', $message, $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanksText));
 			}
 
 			return 0;

@@ -2586,6 +2586,11 @@ final class TypeSpecifier
 
 			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
 			if ($specifiedTypes !== null) {
+				if ($leftExpr instanceof AlwaysRememberedExpr) {
+					$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr)
+						->unionWith($this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr));
+					return $specifiedTypes->unionWith($funcTypes);
+				}
 				return $specifiedTypes;
 			}
 

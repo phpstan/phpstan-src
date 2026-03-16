@@ -454,6 +454,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0')]
+	public function testBug12790(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12790.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
 	public function testBug11310(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11310.php'], [

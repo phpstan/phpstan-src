@@ -52,7 +52,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
@@ -160,7 +159,7 @@ final class FuncCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
-			$isAlwaysTerminating = $isAlwaysTerminating || $returnType instanceof NeverType && $returnType->isExplicit();
+			$isAlwaysTerminating = $isAlwaysTerminating || $returnType->isExplicitNever()->yes();
 		}
 
 		if (
@@ -511,7 +510,7 @@ final class FuncCallHandler implements ExprHandler
 		$throwType = $functionReflection->getThrowType();
 		if ($throwType === null && $parametersAcceptor !== null) {
 			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			if ($returnType->isExplicitNever()->yes()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
 		}

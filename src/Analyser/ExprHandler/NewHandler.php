@@ -41,7 +41,6 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
@@ -394,7 +393,7 @@ final class NewHandler implements ExprHandler
 		}
 
 		$methodResult = $scope->getType($methodCall);
-		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
+		if ($methodResult->isExplicitNever()->yes()) {
 			return $methodResult;
 		}
 

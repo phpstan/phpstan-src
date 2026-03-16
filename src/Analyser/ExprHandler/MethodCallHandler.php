@@ -34,7 +34,6 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -140,7 +139,7 @@ final class MethodCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
-			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+			$isAlwaysTerminating = $returnType->isExplicitNever()->yes();
 		}
 
 		$argsResult = $nodeScopeResolver->processArgs(
@@ -262,7 +261,7 @@ final class MethodCallHandler implements ExprHandler
 		$throwType = $methodReflection->getThrowType();
 		if ($throwType === null) {
 			$returnType = $parametersAcceptor->getReturnType();
-			if ($returnType instanceof NeverType && $returnType->isExplicit()) {
+			if ($returnType->isExplicitNever()->yes()) {
 				$throwType = new ObjectType(Throwable::class);
 			}
 		}

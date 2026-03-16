@@ -17,7 +17,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -75,7 +74,7 @@ final class InstanceofHandler implements ExprHandler
 		) {
 			return new BooleanType();
 		}
-		if ($expressionType instanceof NeverType) {
+		if ($expressionType->isNever()->yes()) {
 			return new ConstantBooleanType(false);
 		}
 

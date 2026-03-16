@@ -17,7 +17,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanOrNode;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -75,7 +74,7 @@ final class BooleanOrHandler implements ExprHandler
 		$leftFalseyScope = $leftResult->getFalseyScope();
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $leftFalseyScope, $storage, $nodeCallback, $context);
 		$rightExprType = $rightResult->getScope()->getType($expr->right);
-		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+		if ($rightExprType->isExplicitNever()->yes()) {
 			$leftMergedWithRightScope = $leftResult->getTruthyScope();
 		} else {
 			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());

@@ -13,7 +13,6 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
@@ -104,12 +103,12 @@ final class TernaryHandler implements ExprHandler
 		} elseif ($condType->isFalse()->yes()) {
 			$finalScope = $ifFalseScope;
 		} else {
-			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+			if ($ifTrueType !== null && $ifTrueType->isExplicitNever()->yes()) {
 				$finalScope = $ifFalseScope;
 			} else {
 				$ifFalseType = $ifFalseScope->getType($expr->else);
 
-				if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+				if ($ifFalseType->isExplicitNever()->yes()) {
 					$finalScope = $ifTrueScope;
 				} else {
 					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);

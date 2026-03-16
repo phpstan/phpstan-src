@@ -13,7 +13,6 @@ use PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
@@ -76,7 +75,7 @@ final class CoalesceHandler implements ExprHandler
 		$rightScope = $scope->filterByFalseyValue($expr);
 		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeep());
 		$rightExprType = $scope->getType($expr->right);
-		if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+		if ($rightExprType->isExplicitNever()->yes()) {
 			$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
 		} else {
 			$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());

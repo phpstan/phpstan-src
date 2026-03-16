@@ -33,7 +33,6 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -197,7 +196,7 @@ final class StaticCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
-			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+			$isAlwaysTerminating = $returnType->isExplicitNever()->yes();
 		}
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
 		$scope = $argsResult->getScope();

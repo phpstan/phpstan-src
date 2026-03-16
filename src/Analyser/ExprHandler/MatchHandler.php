@@ -442,7 +442,7 @@ final class MatchHandler implements ExprHandler
 		$isExhaustive = $hasDefaultCond || $hasAlwaysTrueCond;
 		if (!$isExhaustive) {
 			$remainingType = $matchScope->getType($expr->cond);
-			if ($remainingType instanceof NeverType) {
+			if ($remainingType->isNever()->yes()) {
 				$isExhaustive = true;
 			}
 		}
@@ -548,7 +548,7 @@ final class MatchHandler implements ExprHandler
 	{
 		foreach ($varNames as $varName) {
 			$type = $scope->getVariableType($varName);
-			if ($type instanceof NeverType) {
+			if ($type->isNever()->yes()) {
 				return true;
 			}
 		}

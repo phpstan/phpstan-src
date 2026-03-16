@@ -157,7 +157,7 @@ final class TypeUtils
 					static fn (array $types): Type => TypeCombinator::intersect(...$types),
 					iterator_to_array(CombinationsHelper::combinations($newTypes)),
 				),
-				static fn (Type $type): bool => !$type instanceof NeverType,
+				static fn (Type $type): bool => $type->isNever()->no(),
 			);
 		}
 

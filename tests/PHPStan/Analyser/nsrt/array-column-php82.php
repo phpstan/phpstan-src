@@ -301,6 +301,19 @@ class ArrayColumnVisibilityFinalTest
 
 }
 
+class ArrayColumnVisibilityImplicitFinalTest
+{
+
+	public function testNewExpression(): void
+	{
+		$objects = [new NonFinalObjectWithVisibility()];
+		assertType('array{int}', array_column($objects, 'pub'));
+		assertType('array{}', array_column($objects, 'prot'));
+		assertType('array{}', array_column($objects, 'priv'));
+	}
+
+}
+
 class ArrayColumnVisibilityFromInsideTest
 {
 

@@ -5,8 +5,8 @@ namespace Bug14305;
 define('BUG14305_XDOC_GMETA_EMTY', 0);
 define('BUG14305_XDOC_GMETA_NUPATH', 7);
 define('BUG14305_XDOC_GMETAS', [
-    'empty'         => 0,
-    'nupath'        => 7,
+	'empty'         => 0,
+	'nupath'        => 7,
 ]);
 
 $row = ['id' => 0];

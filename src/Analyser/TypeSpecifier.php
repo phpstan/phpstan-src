@@ -1279,6 +1279,23 @@ final class TypeSpecifier
 			return null;
 		}
 
+		if ($context->falsey() && $isConstantArray->yes()) {
+			$remainingSize = TypeCombinator::remove($type->getArraySize(), $sizeType);
+			if (!$remainingSize instanceof NeverType) {
+				$result = $this->specifyTypesForCountFuncCall(
+					$countFuncCall,
+					$type,
+					$remainingSize,
+					$context->negate(),
+					$scope,
+					$rootExpr,
+				);
+				if ($result !== null) {
+					return $result;
+				}
+			}
+		}
+
 		$resultTypes = [];
 		foreach ($type->getArrays() as $arrayType) {
 			$isSizeSuperTypeOfArraySize = $sizeType->isSuperTypeOf($arrayType->getArraySize());
@@ -1372,7 +1389,14 @@ final class TypeSpecifier
 					$builder->setOffsetValueType($offsetType, $valueType, $optional);
 				}
 
-				$resultTypes[] = $builder->getArray();
+				$builtArray = $builder->getArray();
+				if ($isList->yes() && !$builder->isList()) {
+					$constantArrays = $builtArray->getConstantArrays();
+					if (count($constantArrays) === 1) {
+						$builtArray = $constantArrays[0]->makeList();
+					}
+				}
+				$resultTypes[] = $builtArray;
 				continue;
 			}
 

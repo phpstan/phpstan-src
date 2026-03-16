@@ -233,13 +233,13 @@ class CountWithOptionalKeys
 		if (count($row) === 1) {
 			assertType('array{mixed}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{mixed, string|null}', $row);
 		}
 
 		if (count($row) === 2) {
 			assertType('array{mixed, string|null}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{mixed}', $row);
 		}
 
 		if (count($row) === 3) {
@@ -263,13 +263,13 @@ class CountWithOptionalKeys
 		if (count($row) === 1) {
 			assertType('array{mixed}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{mixed, string|null}', $row);
 		}
 
 		if (count($row) === 2) {
 			assertType('array{mixed, string|null}', $row);
 		} else {
-			assertType('array{0: mixed, 1?: string|null}', $row);
+			assertType('array{mixed}', $row);
 		}
 
 		if (count($row) === 3) {
@@ -293,7 +293,7 @@ class CountWithOptionalKeys
 		if (count($row) === 1) {
 			assertType('array{0: int, 1?: string|null}|array{string}', $row);
 		} else {
-			assertType('array{0: int, 1?: string|null}', $row);
+			assertType('array{int, string|null}', $row);
 		}
 
 		if (count($row) === 2) {

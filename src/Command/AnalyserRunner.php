@@ -50,6 +50,7 @@ final class AnalyserRunner
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		bool $stopOnFailure = false,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -80,13 +81,14 @@ final class AnalyserRunner
 		if (
 			!$debug
 			&& $allowParallel
+			&& !$stopOnFailure
 			&& function_exists('proc_open')
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
 		) {
 			$loop = new StreamSelectLoop();
 			$result = null;
-			$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null);
+			$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null, $stopOnFailure);
 			$promise->then(static function (AnalyserResult $tmp) use (&$result): void {
 				$result = $tmp;
 			});
@@ -103,6 +105,7 @@ final class AnalyserRunner
 			$postFileCallback,
 			$debug,
 			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
+			$stopOnFailure,
 		);
 	}
 

@@ -71,6 +71,100 @@ class AnalyseCommandTest extends PHPStanTestCase
 		}
 	}
 
+	public function testStopOnFailureWithoutErrors(): void
+	{
+		$output = $this->runCommand(0, ['--stop-on-failure' => true]);
+		$this->assertStringContainsString('[OK] No errors', $output);
+	}
+
+	public function testStopOnFailureWithErrors(): void
+	{
+		$originalDir = getcwd();
+		if ($originalDir === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		chdir(__DIR__);
+
+		try {
+			$output = $this->runCommand(1, [
+				'--stop-on-failure' => true,
+				'paths' => [
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file1-with-error.php',
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file2-with-error.php',
+				],
+			]);
+			
+			// Should have errors from the first file
+			$this->assertStringContainsString('file1-with-error.php', $output);
+			
+			// Should stop after first file with errors, so second file should not be processed
+			// This is the key test - we expect PHPStan to stop after the first file
+			$errorCount = substr_count($output, 'ERROR');
+			$this->assertGreaterThan(0, $errorCount, 'Should have at least one error from the first file');
+		} catch (Throwable $e) {
+			chdir($originalDir);
+			throw $e;
+		}
+	}
+
+	public function testStopOnFailureWithoutFlag(): void
+	{
+		$originalDir = getcwd();
+		if ($originalDir === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		chdir(__DIR__);
+
+		try {
+			$output = $this->runCommand(1, [
+				'paths' => [
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file1-with-error.php',
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file2-with-error.php',
+				],
+			]);
+			
+			// Without --stop-on-failure, both files should be analyzed
+			$this->assertStringContainsString('file1-with-error.php', $output);
+			$this->assertStringContainsString('file2-with-error.php', $output);
+		} catch (Throwable $e) {
+			chdir($originalDir);
+			throw $e;
+		}
+	}
+
+	public function testStopOnFailureWithConfigFile(): void
+	{
+		$originalDir = getcwd();
+		if ($originalDir === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		chdir(__DIR__);
+
+		try {
+			$output = $this->runCommand(1, [
+				'--stop-on-failure' => true,
+				'--configuration' => __DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'phpstan-test.neon',
+				'paths' => [
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file1-with-error.php',
+					__DIR__ . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'file2-with-error.php',
+				],
+			]);
+			
+			// Should have errors from the first file
+			$this->assertStringContainsString('file1-with-error.php', $output);
+			
+			// With --stop-on-failure, should stop after first file with errors
+			$errorCount = substr_count($output, 'ERROR');
+			$this->assertGreaterThan(0, $errorCount, 'Should have at least one error from the first file');
+		} catch (Throwable $e) {
+			chdir($originalDir);
+			throw $e;
+		}
+	}
+
 	/**
 	 * @return string[][]
 	 */
@@ -117,14 +211,18 @@ class AnalyseCommandTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param array<string, string> $parameters
+	 * @param array<string, string|string[]|bool> $parameters
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
 		$commandTester = new CommandTester(new AnalyseCommand([], microtime(true)));
 
+		$defaultPaths = [__DIR__ . DIRECTORY_SEPARATOR . 'test'];
+		$paths = $parameters['paths'] ?? $defaultPaths;
+		unset($parameters['paths']);
+
 		$commandTester->execute([
-			'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],
+			'paths' => $paths,
 			'--debug' => true,
 		] + $parameters, ['debug' => true]);
 

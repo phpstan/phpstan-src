@@ -72,6 +72,7 @@ final class ParallelAnalyser
 		?string $insteadOfFile,
 		InputInterface $input,
 		?callable $onFileAnalysisHandler,
+		bool $stopOnFailure = false,
 	): PromiseInterface
 	{
 		$jobs = array_reverse($schedule->getJobs());

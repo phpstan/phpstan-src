@@ -2568,7 +2568,7 @@ final class TypeSpecifier
 			$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 			$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($rightType);
 			if ($isZero->yes()) {
-				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
 
 				if ($context->truthy() && !$argType->isArray()->yes()) {
 					$newArgType = new UnionType([
@@ -2586,11 +2586,15 @@ final class TypeSpecifier
 
 			$specifiedTypes = $this->specifyTypesForCountFuncCall($unwrappedLeftExpr, $argType, $rightType, $context, $scope, $expr);
 			if ($specifiedTypes !== null) {
+				if ($leftExpr !== $unwrappedLeftExpr) {
+					$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+					return $specifiedTypes->unionWith($funcTypes);
+				}
 				return $specifiedTypes;
 			}
 
 			if ($context->truthy() && $argType->isArray()->yes()) {
-				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
 				if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
 					return $funcTypes->unionWith(
 						$this->create($unwrappedLeftExpr->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope)->setRootExpr($expr),
@@ -2616,7 +2620,7 @@ final class TypeSpecifier
 
 			$isZero = (new ConstantIntegerType(0))->isSuperTypeOf($rightType);
 			if ($isZero->yes()) {
-				$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+				$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
 				return $funcTypes->unionWith(
 					$this->create($unwrappedLeftExpr->getArgs()[0]->value, new ConstantStringType(''), $context, $scope)->setRootExpr($expr),
 				);
@@ -2625,7 +2629,7 @@ final class TypeSpecifier
 			if ($context->truthy() && IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($rightType)->yes()) {
 				$argType = $scope->getType($unwrappedLeftExpr->getArgs()[0]->value);
 				if ($argType->isString()->yes()) {
-					$funcTypes = $this->create($unwrappedLeftExpr, $rightType, $context, $scope)->setRootExpr($expr);
+					$funcTypes = $this->create($leftExpr, $rightType, $context, $scope)->setRootExpr($expr);
 
 					$accessory = new AccessoryNonEmptyStringType();
 					if (IntegerRangeType::fromInterval(2, null)->isSuperTypeOf($rightType)->yes()) {

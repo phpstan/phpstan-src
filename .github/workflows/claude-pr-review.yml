@@ -60,7 +60,7 @@ jobs:
     needs: check-reviewer
     if: needs.check-reviewer.outputs.skip != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     permissions:
       contents: write
       pull-requests: write

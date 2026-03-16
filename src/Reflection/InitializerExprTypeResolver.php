@@ -1900,7 +1900,7 @@ final class InitializerExprTypeResolver
 			return $types[0];
 		}
 
-		return new UnionType(array_values($types));
+		return new UnionType($types);
 	}
 
 	/**

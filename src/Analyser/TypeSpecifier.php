@@ -1389,7 +1389,14 @@ final class TypeSpecifier
 					$builder->setOffsetValueType($offsetType, $valueType, $optional);
 				}
 
-				$resultTypes[] = $builder->getArray();
+				$builtArray = $builder->getArray();
+				if ($isList->yes() && !$builder->isList()) {
+					$constantArrays = $builtArray->getConstantArrays();
+					if (count($constantArrays) === 1) {
+						$builtArray = $constantArrays[0]->makeList();
+					}
+				}
+				$resultTypes[] = $builtArray;
 				continue;
 			}
 

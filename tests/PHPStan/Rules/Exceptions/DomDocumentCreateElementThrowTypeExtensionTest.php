@@ -38,7 +38,7 @@ class DomDocumentCreateElementThrowTypeExtensionTest extends RuleTestCase
 			],
 			[
 				'Method Bug13792\Foo::unions() throws checked exception DOMException but it\'s missing from the PHPDoc @throws tag.',
-				36,
+				35,
 			],
 		]);
 	}

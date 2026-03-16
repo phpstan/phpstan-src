@@ -1403,6 +1403,45 @@ final class TypeSpecifier
 			$resultTypes[] = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 
+		if ($context->truthy() && $isConstantArray->yes() && $isList->yes()) {
+			$hasOptionalKeys = false;
+			foreach ($type->getConstantArrays() as $arrayType) {
+				if ($arrayType->getOptionalKeys() !== []) {
+					$hasOptionalKeys = true;
+					break;
+				}
+			}
+
+			if (!$hasOptionalKeys) {
+				$argExpr = $countFuncCall->getArgs()[0]->value;
+				$argExprString = $this->exprPrinter->printExpr($argExpr);
+
+				$sizeMin = null;
+				$sizeMax = null;
+				if ($sizeType instanceof ConstantIntegerType) {
+					$sizeMin = $sizeType->getValue();
+					$sizeMax = $sizeType->getValue();
+				} elseif ($sizeType instanceof IntegerRangeType) {
+					$sizeMin = $sizeType->getMin();
+					$sizeMax = $sizeType->getMax();
+				}
+
+				$sureTypes = [];
+				$sureNotTypes = [];
+
+				if ($sizeMin !== null && $sizeMin >= 1) {
+					$sureTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMin - 1), new MixedType())];
+				}
+				if ($sizeMax !== null) {
+					$sureNotTypes[$argExprString] = [$argExpr, new HasOffsetValueType(new ConstantIntegerType($sizeMax), new MixedType())];
+				}
+
+				if ($sureTypes !== [] || $sureNotTypes !== []) {
+					return (new SpecifiedTypes($sureTypes, $sureNotTypes))->setRootExpr($rootExpr);
+				}
+			}
+		}
+
 		return $this->create($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);
 	}
 

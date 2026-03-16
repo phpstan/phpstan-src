@@ -203,7 +203,7 @@ use function sprintf;
 				}
 
 				$message = preg_replace('/\s*\(#\d+\)$/', '', $commit['message']);
-			$output->writeln(sprintf('* %s (%s)%s%s', $message, $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanksText));
+				$output->writeln(sprintf('* %s (%s)%s%s', $message, $parenthesis, count($issuesToReference) > 0 ? ', ' . implode(', ', $issuesToReference) : '', $thanksText));
 			}
 
 			return 0;

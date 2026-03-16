@@ -25,6 +25,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_map;
+use function array_values;
 use function count;
 use function strtolower;
 use function strtoupper;
@@ -130,7 +131,7 @@ final class ArrayChangeKeyCaseFunctionReturnTypeExtension implements DynamicFunc
 					if (count($types) === 1) {
 						return $types[0];
 					}
-					return new IntersectionType($types);
+					return new IntersectionType(array_values($types));
 				}
 
 				return $type;

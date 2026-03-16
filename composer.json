@@ -128,9 +128,6 @@
 				"patches/DependencyChecker.patch",
 				"patches/Resolver.patch"
 			],
-			"ralouphie/getallheaders": [
-				"patches/getallheaders.patch"
-			],
 			"symfony/console": [
 				"patches/OutputFormatter.patch"
 			]

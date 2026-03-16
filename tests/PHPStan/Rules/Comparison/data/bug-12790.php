@@ -14,3 +14,11 @@ echo match (count($r)) {
 	1 => 'one',
 	2 => 'two',
 };
+
+/** @param 'a'|'ab' $s */
+function matchStrlen(string $s): string {
+	return match (strlen($s)) {
+		1 => 'one',
+		2 => 'two',
+	};
+}

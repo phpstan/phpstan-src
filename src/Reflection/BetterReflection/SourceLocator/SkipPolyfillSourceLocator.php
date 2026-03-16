@@ -34,9 +34,6 @@ final class SkipPolyfillSourceLocator implements SourceLocator
 			$fileName = $reflection->getFileName();
 			if ($fileName !== null) {
 				$normalized = str_replace('\\', '/', $fileName);
-				if (str_contains($normalized, '/ralouphie/getallheaders/src/getallheaders.php')) {
-					return null;
-				}
 				if (str_contains($normalized, '/symfony/polyfill-php80/') && $this->phpVersion->getVersionId() >= 80000) {
 					return null;
 				}

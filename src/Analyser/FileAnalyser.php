@@ -135,6 +135,17 @@ final class FileAnalyser
 					foreach ($linesToIgnore as $ignoredFile => $lines) {
 						foreach ($lines as $line => $identifiers) {
 							if ($identifiers === null) {
+								$fileErrors[] = (new Error(
+									'Ignoring all errors on a line is not allowed.',
+									$ignoredFile,
+									$line,
+									false,
+									$ignoredFile,
+									null,
+									'Use @phpstan-ignore with an identifier and a comment (in parentheses).',
+								))->withIdentifier('ignore.allLineErrors');
+								unset($linesToIgnore[$ignoredFile][$line]);
+								unset($unmatchedLineIgnores[$ignoredFile][$line]);
 								continue;
 							}
 
@@ -152,6 +163,8 @@ final class FileAnalyser
 									null,
 									'Explain why this ignore is necessary in parentheses after the identifier.',
 								))->withIdentifier('ignore.noComment');
+								unset($linesToIgnore[$ignoredFile][$line]);
+								unset($unmatchedLineIgnores[$ignoredFile][$line]);
 							}
 						}
 					}

@@ -159,7 +159,7 @@ final class ArrayColumnHelper
 							return [new MixedType(), TrinaryLogic::createMaybe()];
 						}
 
-						if (!$classReflection->isFinal()) {
+						if (!$classReflection->isFinalByKeyword()) {
 							if ($property->isPrivate()) {
 								return [new MixedType(), TrinaryLogic::createMaybe()];
 							}

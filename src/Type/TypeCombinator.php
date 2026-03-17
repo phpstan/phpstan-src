@@ -1349,9 +1349,9 @@ final class TypeCombinator
 
 					if (
 						$types[$i] instanceof ConstantArrayType
+						&& $types[$j] instanceof NonEmptyArrayType
 						&& (count($types[$i]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$i]->isOptionalKey(0)
-						&& $types[$j] instanceof NonEmptyArrayType
 					) {
 						$types[$i] = $types[$i]->makeOffsetRequired($types[$i]->getKeyTypes()[0]);
 						array_splice($types, $j--, 1);
@@ -1361,9 +1361,9 @@ final class TypeCombinator
 
 					if (
 						$types[$j] instanceof ConstantArrayType
+						&& $types[$i] instanceof NonEmptyArrayType
 						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$j]->isOptionalKey(0)
-						&& $types[$i] instanceof NonEmptyArrayType
 					) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$j]->getKeyTypes()[0]);
 						array_splice($types, $i--, 1);

@@ -404,14 +404,6 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			'list{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 
-		yield [
-			new IntersectionType([
-				$listArrayWithAllOptionalKeys,
-				new NonEmptyArrayType(),
-			]),
-			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
-		];
-
 		$constantArrayWithAllOptionalKeys = new ConstantArrayType([
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),
@@ -448,6 +440,24 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 	public static function dataToPhpDocNodeWithoutCheckingEquals(): iterable
 	{
+		yield [
+			new IntersectionType([
+				new ConstantArrayType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+					new ConstantIntegerType(3),
+				], [
+					new StringType(),
+					new StringType(),
+					new StringType(),
+					new StringType(),
+				], [3], [0, 1, 2, 3], TrinaryLogic::createYes()),
+				new NonEmptyArrayType(),
+			]),
+			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
+		];
+
 		yield [
 			new ConstantStringType("foo\nbar\nbaz"),
 			'(literal-string & lowercase-string & non-falsy-string)',

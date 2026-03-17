@@ -23,7 +23,7 @@ class Foo
 	): void
 	{
 		assertType('list{0: string, 1: int, 2?: string, 3?: string}', $valid1);
-		assertType('non-empty-list{0?: string, 1?: int, 2?: string, 3?: string}', $valid2);
+		assertType('list{0: string, 1?: int, 2?: string, 3?: string}', $valid2);
 		assertType('non-empty-array{0?: string, 1?: int, 2?: string, 3?: string}', $valid3);
 		assertType('*NEVER*', $invalid1);
 		assertType('*NEVER*', $invalid2);

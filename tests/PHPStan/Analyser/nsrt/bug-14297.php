@@ -15,7 +15,7 @@ function (): void {
 		return;
 	}
 
-	assertType("non-empty-list{0?: 'a'|'b', 1?: 'b'}", $a);
+	assertType("array{0: 'a'|'b', 1?: 'b'}", $a);
 	assertType("int<1, 2>", count($a));
 
 	if (count($a) === 2) {

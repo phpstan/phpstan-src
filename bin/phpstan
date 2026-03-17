@@ -33,7 +33,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	if ($composer !== null) {
 		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($cwd, $composer);
 	} else {
-		$vendorDirectory = $cwd() . '/vendor';
+		$vendorDirectory = $cwd . '/vendor';
 	}
 	$devOrPharLoader->unregister();
 

@@ -92,4 +92,22 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug13792(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13792.php'], [
+			[
+				'Method Bug13792\Foo::dynamicName() throws checked exception DOMException but it\'s missing from the PHPDoc @throws tag.',
+				20,
+			],
+			[
+				'Method Bug13792\Foo::invalidConstantName() throws checked exception DOMException but it\'s missing from the PHPDoc @throws tag.',
+				25,
+			],
+			[
+				'Method Bug13792\Foo::unions() throws checked exception DOMException but it\'s missing from the PHPDoc @throws tag.',
+				35,
+			],
+		]);
+	}
+
 }

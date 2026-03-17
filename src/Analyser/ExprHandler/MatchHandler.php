@@ -335,7 +335,9 @@ final class MatchHandler implements ExprHandler
 						ExpressionContext::createTopLevel(),
 					);
 					$armScope = $armResult->getScope();
-					$armBodyScopes[] = $armScope;
+					if (!$armResult->isAlwaysTerminating()) {
+						$armBodyScopes[] = $armScope;
+					}
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
@@ -372,7 +374,9 @@ final class MatchHandler implements ExprHandler
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());
-				$armBodyScopes[] = $matchScope;
+				if (!$armResult->isAlwaysTerminating()) {
+					$armBodyScopes[] = $matchScope;
+				}
 				continue;
 			}
 
@@ -423,7 +427,9 @@ final class MatchHandler implements ExprHandler
 				ExpressionContext::createTopLevel(),
 			);
 			$armScope = $armResult->getScope();
-			$armBodyScopes[] = $armScope;
+			if (!$armResult->isAlwaysTerminating()) {
+				$armBodyScopes[] = $armScope;
+			}
 			$hasYield = $hasYield || $armResult->hasYield();
 			$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $armResult->getImpurePoints());

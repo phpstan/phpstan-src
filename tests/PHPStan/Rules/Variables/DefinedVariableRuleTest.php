@@ -1415,6 +1415,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 				'Variable $sql might not be defined.',
 				19,
 			],
+			[
+				'Variable $sql might not be defined.',
+				78,
+			],
 		]);
 	}
 

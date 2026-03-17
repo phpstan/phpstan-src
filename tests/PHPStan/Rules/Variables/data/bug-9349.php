@@ -60,3 +60,35 @@ class HelloWorld2
 		}
 	}
 }
+
+class HelloWorld3
+{
+	public function test3(): void
+	{
+		global $pdo;
+
+		try {
+			$this->maybeThrows3();
+			$sql = "SELECT * FROM foo";
+			$rs = $pdo->query($sql);
+			if ($result = $rs->fetch(\PDO::FETCH_ASSOC)) {
+				// do something
+			}
+		} catch (\PDOException $e) {
+			var_dump($sql);
+		}
+	}
+
+	/**
+	 * @throws \LogicException|\RuntimeException
+	 */
+	public function maybeThrows3(): void
+	{
+		if (random_int(0, 1) === 1) {
+			throw new \RuntimeException();
+		}
+		if (random_int(0, 1) === 1) {
+			throw new \LogicException();
+		}
+	}
+}

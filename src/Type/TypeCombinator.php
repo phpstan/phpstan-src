@@ -1349,7 +1349,7 @@ final class TypeCombinator
 
 					if (
 						$types[$i] instanceof ConstantArrayType
-						&& count($types[$i]->getKeyTypes()) === 1
+						&& (count($types[$i]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$i]->isOptionalKey(0)
 						&& $types[$j] instanceof NonEmptyArrayType
 					) {
@@ -1361,7 +1361,7 @@ final class TypeCombinator
 
 					if (
 						$types[$j] instanceof ConstantArrayType
-						&& count($types[$j]->getKeyTypes()) === 1
+						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
 						&& $types[$j]->isOptionalKey(0)
 						&& $types[$i] instanceof NonEmptyArrayType
 					) {

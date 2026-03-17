@@ -3,6 +3,7 @@
 namespace Bug14308;
 
 use RuntimeException;
+use function PHPStan\Testing\assertType;
 
 function getUi(string $s1, string $s2, string $s3): string
 {
@@ -15,6 +16,8 @@ function getUi(string $s1, string $s2, string $s3): string
 	if ([] === $available) {
 		throw new RuntimeException('No documentation UI is enabled.');
 	}
+
+	assertType("list{0: 'redoc'|'scalar'|'swagger', 1?: 'redoc'|'scalar', 2?: 'scalar'}", $available);
 
 	return $available[0];
 }

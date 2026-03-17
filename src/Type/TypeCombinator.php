@@ -1362,7 +1362,7 @@ final class TypeCombinator
 					if (
 						$types[$j] instanceof ConstantArrayType
 						&& $types[$i] instanceof NonEmptyArrayType
-						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
+						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$j]->isList()->yes())
 						&& $types[$j]->isOptionalKey(0)
 					) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$j]->getKeyTypes()[0]);

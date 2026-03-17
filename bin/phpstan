@@ -26,13 +26,14 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
 	require_once __DIR__ . '/../preload.php';
-	$composerJsonPath = ComposerHelper::getComposerJsonPath(getcwd());
-	$composer = ComposerHelper::getComposerConfig(getcwd());
+	$cwd = getcwd();
+	$composerJsonPath = ComposerHelper::getComposerJsonPath($cwd);
+	$composer = ComposerHelper::getComposerConfig($cwd);
 
 	if ($composer !== null) {
-		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig(getcwd(), $composer);
+		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($cwd, $composer);
 	} else {
-		$vendorDirectory = getcwd() . '/vendor';
+		$vendorDirectory = $cwd() . '/vendor';
 	}
 	$devOrPharLoader->unregister();
 

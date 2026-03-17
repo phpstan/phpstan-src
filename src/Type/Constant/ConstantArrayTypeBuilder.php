@@ -291,6 +291,23 @@ final class ConstantArrayTypeBuilder
 						$this->keyTypes[] = $scalarType;
 						$this->valueTypes[] = $valueType;
 						$this->optionalKeys[] = count($this->keyTypes) - 1;
+
+						if (!($scalarType instanceof ConstantIntegerType)) {
+							continue;
+						}
+
+						$max = max($this->nextAutoIndexes);
+						$offsetValue = $scalarType->getValue();
+						if ($offsetValue < $max) {
+							continue;
+						}
+
+						/** @var int|float $newAutoIndex */
+						$newAutoIndex = $offsetValue + 1;
+						if (is_float($newAutoIndex)) {
+							$newAutoIndex = $max;
+						}
+						$this->nextAutoIndexes[] = $newAutoIndex;
 					}
 
 					$this->isList = TrinaryLogic::createNo();

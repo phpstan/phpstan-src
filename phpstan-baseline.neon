@@ -966,7 +966,7 @@ parameters:
 		-
 			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
 			identifier: varTag.nativeType
-			count: 2
+			count: 3
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
 		-

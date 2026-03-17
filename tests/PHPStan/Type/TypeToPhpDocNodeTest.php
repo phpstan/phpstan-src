@@ -404,14 +404,6 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 			'list{0?: string, 1?: string, 2?: string, 3?: string}',
 		];
 
-		yield [
-			new IntersectionType([
-				$listArrayWithAllOptionalKeys,
-				new NonEmptyArrayType(),
-			]),
-			'list{0: string, 1?: string, 2?: string, 3?: string}',
-		];
-
 		$constantArrayWithAllOptionalKeys = new ConstantArrayType([
 			new ConstantIntegerType(0),
 			new ConstantIntegerType(1),

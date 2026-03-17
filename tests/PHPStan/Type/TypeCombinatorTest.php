@@ -3487,6 +3487,20 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					], [
+						new StringType(),
+						new StringType(),
+					], optionalKeys: [0, 1], isList: TrinaryLogic::createYes()),
+					new NonEmptyArrayType(),
+				],
+				ConstantArrayType::class,
+				'array{0: string, 1?: string}',
+			],
+			[
+				[
 					new ConstantArrayType([], []),
 					new NonEmptyArrayType(),
 				],

@@ -409,7 +409,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				$listArrayWithAllOptionalKeys,
 				new NonEmptyArrayType(),
 			]),
-			'non-empty-list{0?: string, 1?: string, 2?: string, 3?: string}',
+			'list{0: string, 1?: string, 2?: string, 3?: string}',
 		];
 
 		$constantArrayWithAllOptionalKeys = new ConstantArrayType([

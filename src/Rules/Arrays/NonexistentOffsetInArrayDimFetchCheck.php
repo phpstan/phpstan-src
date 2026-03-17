@@ -62,6 +62,10 @@ final class NonexistentOffsetInArrayDimFetchCheck
 			return [];
 		}
 
+		if ($type->hasOffsetValueType($dimType)->yes()) {
+			return [];
+		}
+
 		if ($type->hasOffsetValueType($dimType)->no()) {
 			if ($type->isArray()->yes()) {
 				$validArrayDimType = TypeCombinator::intersect(AllowedArrayKeysTypes::getType(), $dimType);

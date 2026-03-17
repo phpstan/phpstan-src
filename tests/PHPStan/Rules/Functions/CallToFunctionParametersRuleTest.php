@@ -2751,4 +2751,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14312.php'], []);
 	}
 
+	public function testBug14312b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);
+	}
+
 }

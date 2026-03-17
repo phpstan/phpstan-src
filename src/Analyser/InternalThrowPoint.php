@@ -50,11 +50,13 @@ final class InternalThrowPoint
 		return new self($scope, new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
 	}
 
-	public static function createFromPublic(ThrowPoint $throwPoint): self
+	public static function createFromPublic(ThrowPoint $throwPoint, ?MutatingScope $scope = null): self
 	{
-		$scope = $throwPoint->getScope();
-		if (!$scope instanceof MutatingScope) {
-			throw new ShouldNotHappenException();
+		if ($scope === null) {
+			$scope = $throwPoint->getScope();
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
 		}
 
 		return new self($scope, $throwPoint->getType(), $throwPoint->getNode(), $throwPoint->isExplicit(), $throwPoint->canContainAnyThrowable());
@@ -86,11 +88,6 @@ final class InternalThrowPoint
 	public function canContainAnyThrowable(): bool
 	{
 		return $this->canContainAnyThrowable;
-	}
-
-	public function replaceScope(MutatingScope $scope): self
-	{
-		return new self($scope, $this->type, $this->node, $this->explicit, $this->canContainAnyThrowable);
 	}
 
 	public function subtractCatchType(Type $catchType): self

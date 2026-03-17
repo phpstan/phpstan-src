@@ -103,11 +103,6 @@ final class StaticCallHandler implements ExprHandler
 						$methodReflection->getNamedArgumentsVariants(),
 					);
 
-					$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-					if ($methodThrowPoint !== null) {
-						$throwPoints[] = $methodThrowPoint;
-					}
-
 					$declaringClass = $methodReflection->getDeclaringClass();
 					if (
 						$declaringClass->getName() === 'Closure'
@@ -202,6 +197,13 @@ final class StaticCallHandler implements ExprHandler
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
 		$scope = $argsResult->getScope();
 		$scopeFunction = $scope->getFunction();
+
+		if ($methodReflection !== null && $parametersAcceptor !== null) {
+			$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+			if ($methodThrowPoint !== null) {
+				$throwPoints[] = $methodThrowPoint;
+			}
+		}
 
 		if (
 			$methodReflection !== null

@@ -3330,7 +3330,11 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
-				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
+				$closureScopeToPass = $scopeToPass;
+				foreach ($deferredByRefClosureResults as $deferredClosureResult) {
+					$closureScopeToPass = $deferredClosureResult->applyByRefUseScope($closureScopeToPass);
+				}
+				$closureResult = $this->processClosureNode($stmt, $arg->value, $closureScopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
@@ -3348,7 +3352,7 @@ class NodeScopeResolver
 					$uses[] = $use->var->name;
 				}
 
-				$scope = $closureResult->getScope();
+				$scope = $scopeToPass;
 				$deferredByRefClosureResults[] = $closureResult;
 				$invalidateExpressions = $closureResult->getInvalidateExpressions();
 				if ($restoreThisScope !== null) {

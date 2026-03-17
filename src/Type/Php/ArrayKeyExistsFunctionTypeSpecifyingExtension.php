@@ -78,9 +78,12 @@ final class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 				$specifiedTypes = new SpecifiedTypes();
 
 				if (count($keyType->getConstantScalarTypes()) <= 1) {
+					$nonEmptyType = $arrayType->isArray()->yes()
+						? new NonEmptyArrayType()
+						: TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType());
 					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 						$array,
-						new NonEmptyArrayType(),
+						$nonEmptyType,
 						$context,
 						$scope,
 					));

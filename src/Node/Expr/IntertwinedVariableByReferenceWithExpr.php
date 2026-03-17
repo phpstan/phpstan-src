@@ -31,7 +31,7 @@ final class IntertwinedVariableByReferenceWithExpr extends Expr implements Virtu
 		return $this->assignedExpr;
 	}
 
-	public function isSimpleVariableReference(): bool
+	public function isVariableToVariableReference(): bool
 	{
 		return $this->expr instanceof Variable
 			&& is_string($this->expr->name)

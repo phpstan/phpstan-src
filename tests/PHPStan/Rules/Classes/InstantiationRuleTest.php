@@ -508,6 +508,18 @@ class InstantiationRuleTest extends RuleTestCase
 				67,
 			],
 			[
+				'Parameter #1 $i of class ClassString\B constructor expects int, string given.',
+				70,
+			],
+			[
+				'Parameter #1 $i of class ClassString\B constructor expects int, string given.',
+				71,
+			],
+			[
+				'Parameter #1 $i of class ClassString\B constructor expects int, string given.',
+				72,
+			],
+			[
 				'Parameter #1 $i of class ClassString\C constructor expects int, string given.',
 				75,
 			],
@@ -530,6 +542,16 @@ class InstantiationRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $i of class ClassString\A constructor expects int, string given.',
 				87,
+			],
+		]);
+	}
+
+	public function testBug14102(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14102.php'], [
+			[
+				'Class Bug14102\HelloWorld constructor invoked with 0 parameters, 2 required.',
+				24,
 			],
 		]);
 	}

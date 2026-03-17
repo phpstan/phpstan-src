@@ -61,8 +61,8 @@ final class InstantiationRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$errors = [];
-		foreach ($this->getClassNames($node, $scope) as [$class, $isName]) {
-			$errors = array_merge($errors, $this->checkClassName($class, $isName, $node, $scope));
+		foreach ($this->getClassNames($node, $scope) as [$class, $isName, $isFromClassString]) {
+			$errors = array_merge($errors, $this->checkClassName($class, $isName, $isFromClassString, $node, $scope));
 		}
 		return $errors;
 	}
@@ -71,7 +71,7 @@ final class InstantiationRule implements Rule
 	 * @param Node\Expr\New_ $node
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
+	private function checkClassName(string $class, bool $isName, bool $isFromClassString, Node $node, Scope $scope): array
 	{
 		$lowercasedClass = strtolower($class);
 		$messages = [];
@@ -180,7 +180,7 @@ final class InstantiationRule implements Rule
 			];
 		}
 
-		if (!$isStatic && $classReflection->isAbstract() && $isName) {
+		if (!$isStatic && $classReflection->isAbstract() && $isName && !$isFromClassString) {
 			return [
 				RuleErrorBuilder::message(
 					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName()),
@@ -274,12 +274,12 @@ final class InstantiationRule implements Rule
 
 	/**
 	 * @param Node\Expr\New_ $node
-	 * @return array<int, array{string, bool}>
+	 * @return array<int, array{string, bool, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array
 	{
 		if ($node->class instanceof Node\Name) {
-			return [[(string) $node->class, true]];
+			return [[(string) $node->class, true, false]];
 		}
 
 		if ($node->class instanceof Node\Stmt\Class_) {
@@ -289,22 +289,22 @@ final class InstantiationRule implements Rule
 			}
 
 			return array_map(
-				static fn (string $className) => [$className, true],
+				static fn (string $className) => [$className, true, false],
 				$classNames,
 			);
 		}
 
 		$type = $scope->getType($node->class);
 
-		if ($type->isClassString()->yes()) {
+		if ($type->isClassString()->yes() && count($type->getConstantStrings()) === 0) {
 			$concretes = array_filter(
 				$type->getClassStringObjectType()->getObjectClassReflections(),
-				static fn (ClassReflection $classReflection): bool => !$classReflection->isAbstract() && !$classReflection->isInterface(),
+				static fn (ClassReflection $classReflection): bool => !$classReflection->isInterface(),
 			);
 
 			if (count($concretes) > 0) {
 				return array_map(
-					static fn (ClassReflection $classReflection): array => [$classReflection->getName(), true],
+					static fn (ClassReflection $classReflection): array => [$classReflection->getName(), true, true],
 					$concretes,
 				);
 			}
@@ -312,11 +312,11 @@ final class InstantiationRule implements Rule
 
 		return array_merge(
 			array_map(
-				static fn (ConstantStringType $type): array => [$type->getValue(), true],
+				static fn (ConstantStringType $type): array => [$type->getValue(), true, false],
 				$type->getConstantStrings(),
 			),
 			array_map(
-				static fn (string $name): array => [$name, false],
+				static fn (string $name): array => [$name, false, false],
 				$type->getObjectClassNames(),
 			),
 		);

@@ -26,7 +26,7 @@ jobs:
           token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
       - name: "Merge branch"
         run: |
-          git config user.name "phpstan-bot"
-          git config user.email "bot@phpstan.org"
+          git config --global user.name "phpstan-bot"
+          git config --global user.email "ondrej+phpstanbot@mirtes.cz"
           git merge --strategy=ort origin/${{ github.ref_name }} -m "Merge branch ${{ github.ref_name }} into 2.2.x"
           git push

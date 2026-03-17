@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -50,13 +49,8 @@ final class InternalThrowPoint
 		return new self($scope, new ObjectType(Throwable::class), $node, explicit: false, canContainAnyThrowable: true);
 	}
 
-	public static function createFromPublic(ThrowPoint $throwPoint): self
+	public static function createFromPublic(ThrowPoint $throwPoint, MutatingScope $scope): self
 	{
-		$scope = $throwPoint->getScope();
-		if (!$scope instanceof MutatingScope) {
-			throw new ShouldNotHappenException();
-		}
-
 		return new self($scope, $throwPoint->getType(), $throwPoint->getNode(), $throwPoint->isExplicit(), $throwPoint->canContainAnyThrowable());
 	}
 

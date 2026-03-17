@@ -131,7 +131,7 @@ final class NewHandler implements ExprHandler
 						$constructorResult = $node;
 					}, StatementContext::createTopLevel());
 					if ($constructorResult !== null) {
-						$throwPoints = array_map(static fn (ThrowPoint $point) => InternalThrowPoint::createFromPublic($point), $constructorResult->getStatementResult()->getThrowPoints());
+						$throwPoints = array_map(static fn (ThrowPoint $point): InternalThrowPoint => InternalThrowPoint::createFromPublic($point, $scope), $constructorResult->getStatementResult()->getThrowPoints());
 						$impurePoints = $constructorResult->getImpurePoints();
 					}
 				} else {

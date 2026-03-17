@@ -3501,6 +3501,20 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new ConstantArrayType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					], [
+						new StringType(),
+						new StringType(),
+					], optionalKeys: [0, 1]),
+					new NonEmptyArrayType(),
+				],
+				IntersectionType::class,
+				'non-empty-array{0?: string, 1?: string}',
+			],
+			[
+				[
 					new ConstantArrayType([], []),
 					new NonEmptyArrayType(),
 				],

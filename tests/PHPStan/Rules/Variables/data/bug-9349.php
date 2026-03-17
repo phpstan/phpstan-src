@@ -30,6 +30,10 @@ class HelloWorld
 		}
 	}
 
+}
+
+class HelloWorld2
+{
 	public function test2(): void
 	{
 		global $pdo;

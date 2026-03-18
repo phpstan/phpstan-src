@@ -15,7 +15,7 @@ $array[][];
 
 $firstElement = &$array[];
 (function ($ref) {})($array[]);
-//(function (&$ref) {})($array[]); // Should work but doesn't
+(function (&$ref) {})($array[]);
 
 // Technically works but makes no sense
 $array[] += 20;

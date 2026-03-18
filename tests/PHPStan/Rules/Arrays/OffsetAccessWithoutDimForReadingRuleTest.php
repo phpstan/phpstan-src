@@ -16,6 +16,11 @@ class OffsetAccessWithoutDimForReadingRuleTest extends RuleTestCase
 		return new OffsetAccessWithoutDimForReadingRule();
 	}
 
+	public function testBug5290(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5290.php'], []);
+	}
+
 	public function testOffsetAccessWithoutDimForReading(): void
 	{
 		$this->analyse(

@@ -86,6 +86,8 @@ class IntersectionType implements CompoundType
 
 	private ?TrinaryLogic $isOversizedArray = null;
 
+	private ?TrinaryLogic $isOffsetAccessible = null;
+
 	private ?TrinaryLogic $isIterableAtLeastOnce = null;
 
 	private ?TrinaryLogic $isConstantScalarValue = null;
@@ -862,7 +864,7 @@ class IntersectionType implements CompoundType
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessible());
+		return $this->isOffsetAccessible ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessible());
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic

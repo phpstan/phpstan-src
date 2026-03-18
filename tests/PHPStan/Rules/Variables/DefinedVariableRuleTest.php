@@ -1442,15 +1442,15 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14323.php'], [
 			[
 				'Variable $command might not be defined.',
-				40,
+				24,
 			],
 			[
 				'Variable $command might not be defined.',
-				66,
+				50,
 			],
 			[
 				'Variable $command might not be defined.',
-				118,
+				119,
 			],
 		]);
 	}

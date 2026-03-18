@@ -1432,6 +1432,29 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14318.php'], []);
 	}
 
+	public function testBug14323(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14323.php'], [
+			[
+				'Variable $command might not be defined.',
+				24,
+			],
+			[
+				'Variable $command might not be defined.',
+				50,
+			],
+			[
+				'Variable $command might not be defined.',
+				119,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0')]
 	public function testBug14274(): void
 	{

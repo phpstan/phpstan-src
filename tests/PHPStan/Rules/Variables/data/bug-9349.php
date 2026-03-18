@@ -6,7 +6,7 @@ class HelloWorld
 {
 	public function test(): void
 	{
-		global $pdo;
+		$pdo = new \PDO('123');
 
 		try {
 			$this->maybeThrows();
@@ -36,7 +36,7 @@ class HelloWorld2
 {
 	public function test2(): void
 	{
-		global $pdo;
+		$pdo = new \PDO('123');
 
 		try {
 			$this->maybeThrows2();
@@ -65,7 +65,7 @@ class HelloWorld3
 {
 	public function test3(): void
 	{
-		global $pdo;
+		$pdo = new \PDO('123');
 
 		try {
 			$this->maybeThrows3();

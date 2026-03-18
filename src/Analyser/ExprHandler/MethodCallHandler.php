@@ -110,10 +110,6 @@ final class MethodCallHandler implements ExprHandler
 					$methodReflection->getNamedArgumentsVariants(),
 				);
 
-				$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
-				if ($methodThrowPoint !== null) {
-					$throwPoints[] = $methodThrowPoint;
-				}
 			}
 		} else {
 			$methodNameResult = $nodeScopeResolver->processExprNode($stmt, $expr->name, $scope, $storage, $nodeCallback, $context->enterDeep());
@@ -157,6 +153,13 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 
 		if ($methodReflection !== null) {
+			if ($parametersAcceptor !== null) {
+				$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
+				if ($methodThrowPoint !== null) {
+					$throwPoints[] = $methodThrowPoint;
+				}
+			}
+
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass());

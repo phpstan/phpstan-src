@@ -2691,6 +2691,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$exprVarType = $scope->getType($expr->var);
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
+					$tooComplex = false;
+
 					$varType = $exprVarType;
 					if (!$isArray->yes()) {
 						if ($dimType->isInteger()->yes()) {
@@ -2698,26 +2700,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						} else {
 							$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::generalOffsetAccessibleType());
 						}
-					}
 
-					$tooComplex = false;
-					if ($exprVarType instanceof UnionType) {
-						$hasOffsetAccessoryCount = 0;
-						foreach ($exprVarType->getTypes() as $innerType) {
-							foreach (TypeUtils::getAccessoryTypes($innerType) as $accessoryType) {
-								if (!($accessoryType instanceof HasOffsetValueType)) {
-									continue;
-								}
+						if ($exprVarType instanceof UnionType) {
+							$hasOffsetAccessoryCount = 0;
+							foreach ($exprVarType->getTypes() as $innerType) {
+								foreach (TypeUtils::getAccessoryTypes($innerType) as $accessoryType) {
+									if (!($accessoryType instanceof HasOffsetValueType)) {
+										continue;
+									}
 
-								$hasOffsetAccessoryCount++;
+									$hasOffsetAccessoryCount++;
 
-								if ($hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT) {
-									$tooComplex = true;
-									break 2;
+									if ($hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT) {
+										$tooComplex = true;
+										break 2;
+									}
 								}
 							}
 						}
 					}
+
 					if (
 						!$tooComplex
 						&& ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)

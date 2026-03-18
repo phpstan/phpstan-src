@@ -25,6 +25,16 @@ function testBitwiseXor(TestBitwiseOperand $a, TestBitwiseOperand $b): void
 	assertType('PHPStan\Fixture\TestBitwiseOperand', $a ^ $b);
 }
 
+function testShiftLeft(TestBitwiseOperand $a, TestBitwiseOperand $b): void
+{
+	assertType('PHPStan\Fixture\TestBitwiseOperand', $a << $b);
+}
+
+function testShiftRight(TestBitwiseOperand $a, TestBitwiseOperand $b): void
+{
+	assertType('PHPStan\Fixture\TestBitwiseOperand', $a >> $b);
+}
+
 // =============================================================================
 // Arithmetic operator extension tests (via TestDecimal)
 // =============================================================================

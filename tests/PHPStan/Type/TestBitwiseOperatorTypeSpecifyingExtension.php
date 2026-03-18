@@ -15,7 +15,7 @@ final class TestBitwiseOperatorTypeSpecifyingExtension implements OperatorTypeSp
 	{
 		$testType = new ObjectType(TestBitwiseOperand::class);
 
-		return in_array($operatorSigil, ['&', '|', '^'], true)
+		return in_array($operatorSigil, ['&', '|', '^', '<<', '>>'], true)
 			&& $testType->isSuperTypeOf($leftSide)->yes()
 			&& $testType->isSuperTypeOf($rightSide)->yes();
 	}

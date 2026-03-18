@@ -1774,6 +1774,12 @@ final class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftLeft($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
 		return $this->getShiftLeftTypeFromTypes($left, $right, $leftType, $rightType);
 	}
 
@@ -1837,6 +1843,12 @@ final class InitializerExprTypeResolver
 	{
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
+
+		$specifiedTypes = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callOperatorTypeSpecifyingExtensions(new BinaryOp\ShiftRight($left, $right), $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
 
 		return $this->getShiftRightTypeFromTypes($left, $right, $leftType, $rightType);
 	}

@@ -173,6 +173,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * (they should already be fully qualified by the PHP parser's name resolver).
 	 *
 	 * Inside a Closure::bind() context, `self`/`static` resolve to the bound class.
+	 *
+	 * @return non-empty-string
 	 */
 	public function resolveName(Name $name): string;
 

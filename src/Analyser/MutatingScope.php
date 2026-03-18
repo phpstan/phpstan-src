@@ -164,7 +164,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param list<string> $inClosureBindScopeClasses
+	 * @param list<non-empty-string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
@@ -1822,7 +1822,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	}
 
 	/**
-	 * @param list<string> $scopeClasses
+	 * @param list<non-empty-string> $scopeClasses
 	 */
 	public function enterClosureBind(?Type $thisType, ?Type $nativeThisType, array $scopeClasses): self
 	{

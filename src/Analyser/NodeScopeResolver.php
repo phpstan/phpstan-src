@@ -1878,7 +1878,6 @@ class NodeScopeResolver
 
 				// explicit only
 				$onlyExplicitIsThrow = true;
-				$hasDirectExplicitNonThrowMatch = false;
 				if (count($matchingThrowPoints) === 0) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						foreach ($catchTypes as $catchTypeIndex => $catchTypeItem) {
@@ -1896,17 +1895,15 @@ class NodeScopeResolver
 								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
 							) {
 								$onlyExplicitIsThrow = false;
-								if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->yes()) {
-									$hasDirectExplicitNonThrowMatch = true;
-								}
 							}
+
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;
 						}
 					}
 				}
 
 				// implicit only
-				if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow || !$hasDirectExplicitNonThrowMatch) {
+				if (count($matchingThrowPoints) === 0 || $onlyExplicitIsThrow) {
 					foreach ($throwPoints as $throwPointIndex => $throwPoint) {
 						if ($throwPoint->isExplicit()) {
 							continue;

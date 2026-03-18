@@ -2691,7 +2691,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$exprVarType = $scope->getType($expr->var);
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
-					$tooComplex = false;
+					$tooManyHasOffsetValueTypes = false;
 
 					$varType = $exprVarType;
 					if (!$isArray->yes()) {
@@ -2712,7 +2712,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 									$hasOffsetAccessoryCount++;
 
 									if ($hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT) {
-										$tooComplex = true;
+										$tooManyHasOffsetValueTypes = true;
 										break 2;
 									}
 								}
@@ -2721,7 +2721,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					}
 
 					if (
-						!$tooComplex
+						!$tooManyHasOffsetValueTypes
 						&& ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)
 					) {
 						$varType = TypeCombinator::intersect(

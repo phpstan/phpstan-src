@@ -58,7 +58,7 @@ class HelloWorld6
 	}
 }
 
-class HelloWorld7
+class HelloWorld7Static
 {
 	public function test7(): void
 	{
@@ -86,7 +86,7 @@ class HelloWorld7
 	}
 }
 
-class HelloWorld8
+class HelloWorld8Static
 {
 	public function test8(): void
 	{

@@ -1896,8 +1896,13 @@ class NodeScopeResolver
 								&& !($throwNode instanceof Node\Stmt\Expression && $throwNode->expr instanceof Expr\Throw_)
 							) {
 								$onlyExplicitIsThrow = false;
-								if ($catchTypeItem->isSuperTypeOf($throwPoint->getType())->yes()) {
-									$hasDirectExplicitNonThrowMatch = true;
+								$throwType = $throwPoint->getType();
+								$innerTypes = $throwType instanceof UnionType ? $throwType->getTypes() : [$throwType];
+								foreach ($innerTypes as $innerThrowType) {
+									if ($catchTypeItem->isSuperTypeOf($innerThrowType)->yes()) {
+										$hasDirectExplicitNonThrowMatch = true;
+										break;
+									}
 								}
 							}
 							$matchingThrowPoints[$throwPointIndex] = $throwPoint;

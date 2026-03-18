@@ -45,6 +45,49 @@ function fourLevelsDeep() : array {
 }
 
 /**
+* @return array<int, array<int, array<int, array<int, array<int, array{abc: int, def: int, ghi: int}>>>>>
+*/
+function fiveLevelsDeep() : array {
+	$final = [];
+
+	for ($i = 0; $i < 5; $i++) {
+		$j = $i * 2;
+		$k = $j + 1;
+		$l = $i * 3;
+		$m = $i + 10;
+		$final[$i][$j][$k][$l][$m]['abc'] = $i;
+		$final[$i][$j][$k][$l][$m]['def'] = $i;
+		$final[$i][$j][$k][$l][$m]['ghi'] = $i;
+
+		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l][$m]);
+	}
+
+	return $final;
+}
+
+/**
+* @return array<int, array<int, array<int, array<int, array<int, array<int, array{abc: int, def: int, ghi: int}>>>>>>
+*/
+function sixLevelsDeep() : array {
+	$final = [];
+
+	for ($i = 0; $i < 5; $i++) {
+		$j = $i * 2;
+		$k = $j + 1;
+		$l = $i * 3;
+		$m = $i + 10;
+		$n = $i + 20;
+		$final[$i][$j][$k][$l][$m][$n]['abc'] = $i;
+		$final[$i][$j][$k][$l][$m][$n]['def'] = $i;
+		$final[$i][$j][$k][$l][$m][$n]['ghi'] = $i;
+
+		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l][$m][$n]);
+	}
+
+	return $final;
+}
+
+/**
 * @return array<int, array<int, array{abc: int, def: int, ghi: int}>>
 */
 function thisWorks() : array {

@@ -139,6 +139,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
+	private const ARRAY_DIM_FETCH_UNION_TYPE_LIMIT = 8;
+
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
@@ -2690,7 +2692,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$isArray = $exprVarType->isArray();
 				if (!$exprVarType instanceof MixedType && !$isArray->no()) {
 					$varType = $exprVarType;
-					if (!$isArray->yes()) {
+					$tooComplex = $exprVarType instanceof UnionType && count($exprVarType->getTypes()) > self::ARRAY_DIM_FETCH_UNION_TYPE_LIMIT;
+					if (!$tooComplex && !$isArray->yes()) {
 						if ($dimType->isInteger()->yes()) {
 							$varType = TypeCombinator::intersect($exprVarType, StaticTypeFactory::intOffsetAccessibleType());
 						} else {
@@ -2698,19 +2701,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 					}
 
-					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+					if (!$tooComplex && ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)) {
 						$varType = TypeCombinator::intersect(
 							$varType,
 							new HasOffsetValueType($dimType, $type),
 						);
 					}
 
-					$scope = $scope->specifyExpressionType(
-						$expr->var,
-						$varType,
-						$scope->getNativeType($expr->var),
-						$certainty,
-					);
+					if (!$tooComplex) {
+						$scope = $scope->specifyExpressionType(
+							$expr->var,
+							$varType,
+							$scope->getNativeType($expr->var),
+							$certainty,
+						);
+					}
 				}
 			}
 		}

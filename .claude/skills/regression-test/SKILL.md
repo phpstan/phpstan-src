@@ -189,7 +189,7 @@ If the test passes even with the fix reverted, the test is not correctly coverin
 
 ## Step 6 — Commit
 
-Stage the new/modified test files and commit. The commit message must include `Closes https://github.com/phpstan/phpstan/issues/<number>` so the upstream issue is closed automatically.
+Stage the new/modified test files and commit.
 
 ```bash
 git add tests/
@@ -197,3 +197,7 @@ git commit -m "Add regression test for #<number>
 
 Closes https://github.com/phpstan/phpstan/issues/<number>"
 ```
+
+## Step 7 - Adjust pull request description
+
+If you are submitting a pull request, append the PR description with a link to the issue with `Closes https://github.com/phpstan/phpstan/issues/<number>` so the upstream issue is closed automatically.

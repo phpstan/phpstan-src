@@ -81,17 +81,18 @@ final class NewHandler implements ExprHandler
 	{
 		$parametersAcceptor = null;
 		$constructorReflection = null;
+		$className = null;
+		$classReflection = null;
 		$hasYield = false;
 		$throwPoints = [];
+		$deferConstructorThrowPoints = false;
 		$impurePoints = [];
 		$isAlwaysTerminating = false;
 		$normalizedExpr = $expr;
-		$className = null;
-		$deferConstructorThrowPoints = false;
 		if ($expr->class instanceof Name) {
 			$className = $scope->resolveName($expr->class);
 
-			[$constructorReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+			[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
 			$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 			$deferConstructorThrowPoints = true;
 
@@ -178,7 +179,7 @@ final class NewHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
 
 			if ($className !== null) {
-				[$constructorReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
+				[$constructorReflection, $classReflection, $parametersAcceptor, $constructorImpurePoints] = $this->processConstructorReflection($className, $expr, $scope);
 				$impurePoints = array_merge($impurePoints, $constructorImpurePoints);
 				$deferConstructorThrowPoints = true;
 			} else {
@@ -205,13 +206,12 @@ final class NewHandler implements ExprHandler
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
 		if ($deferConstructorThrowPoints && $className !== null) {
-			if ($constructorReflection !== null && $parametersAcceptor !== null && $this->reflectionProvider->hasClass($className)) {
-				$classReflection = $this->reflectionProvider->getClass($className);
+			if ($constructorReflection !== null && $parametersAcceptor !== null && $classReflection !== null) {
 				$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
 				if ($constructorThrowPoint !== null) {
 					$throwPoints[] = $constructorThrowPoint;
 				}
-			} elseif (!$this->reflectionProvider->hasClass($className)) {
+			} elseif ($classReflection === null) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
 		}
@@ -226,7 +226,7 @@ final class NewHandler implements ExprHandler
 	}
 
 	/**
-	 * @return array{?MethodReflection, ?ParametersAcceptor, ImpurePoint[]}
+	 * @return array{?MethodReflection, ?ClassReflection, ?ParametersAcceptor, ImpurePoint[]}
 	 */
 	private function processConstructorReflection(string $className, New_ $expr, MutatingScope $scope): array
 	{
@@ -269,7 +269,7 @@ final class NewHandler implements ExprHandler
 			);
 		}
 
-		return [$constructorReflection, $parametersAcceptor, $impurePoints];
+		return [$constructorReflection, $classReflection, $parametersAcceptor, $impurePoints];
 	}
 
 	/**

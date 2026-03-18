@@ -2700,7 +2700,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 						}
 					}
 
-					$tooComplex = $exprVarType instanceof UnionType && count($exprVarType->getTypes()) > self::ARRAY_DIM_FETCH_UNION_TYPE_LIMIT;
+					$hasOffsetAccessoryCount = 0;
+					if ($exprVarType instanceof UnionType) {
+						foreach ($exprVarType->getTypes() as $innerType) {
+							foreach (TypeUtils::getAccessoryTypes($innerType) as $accessoryType) {
+								if ($accessoryType instanceof HasOffsetValueType) {
+									$hasOffsetAccessoryCount++;
+									break;
+								}
+							}
+						}
+					}
+					$tooComplex = $hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_TYPE_LIMIT;
 					if (!$tooComplex && ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType)) {
 						$varType = TypeCombinator::intersect(
 							$varType,

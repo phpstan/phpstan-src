@@ -139,7 +139,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
 	private const CONTAINS_SUPER_GLOBAL_ATTRIBUTE_NAME = 'containsSuperGlobal';
 
-	private const ARRAY_DIM_FETCH_UNION_TYPE_LIMIT = 16;
+	private const ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT = 16;
 
 	/** @var Type[] */
 	private array $resolvedTypes = [];
@@ -2711,7 +2711,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 								$hasOffsetAccessoryCount++;
 
-								if ($hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_TYPE_LIMIT) {
+								if ($hasOffsetAccessoryCount > self::ARRAY_DIM_FETCH_UNION_HAS_OFFSET_VALUE_TYPE_LIMIT) {
 									$tooComplex = true;
 									break 2;
 								}

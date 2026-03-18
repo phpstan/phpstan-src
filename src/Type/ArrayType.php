@@ -412,9 +412,11 @@ class ArrayType implements Type
 
 		if (
 			$this->itemType->isArray()->yes()
+			&& !$this->itemType->isConstantArray()->yes()
 			&& $valueType->isArray()->yes()
-			&& $this->itemType->getIterableValueType()->isConstantArray()->yes()
-			&& $valueType->getIterableValueType()->isConstantArray()->yes()
+			&& !$valueType->isConstantArray()->yes()
+			&& $this->itemType->getIterableValueType()->isArray()->yes()
+			&& $valueType->getIterableValueType()->isArray()->yes()
 		) {
 			$newItemType = $this->itemType->setExistingOffsetValueType(
 				$valueType->getIterableKeyType(),

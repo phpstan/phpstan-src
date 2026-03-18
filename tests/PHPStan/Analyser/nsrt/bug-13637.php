@@ -25,6 +25,26 @@ function doesNotWork() : array {
 }
 
 /**
+* @return array<int, array<int, array<int, array<int, array{abc: int, def: int, ghi: int}>>>>
+*/
+function fourLevelsDeep() : array {
+	$final = [];
+
+	for ($i = 0; $i < 5; $i++) {
+		$j = $i * 2;
+		$k = $j + 1;
+		$l = $i * 3;
+		$final[$i][$j][$k][$l]['abc'] = $i;
+		$final[$i][$j][$k][$l]['def'] = $i;
+		$final[$i][$j][$k][$l]['ghi'] = $i;
+
+		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l]);
+	}
+
+	return $final;
+}
+
+/**
 * @return array<int, array<int, array{abc: int, def: int, ghi: int}>>
 */
 function thisWorks() : array {

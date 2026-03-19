@@ -189,3 +189,9 @@ infection:
 		--skip-initial-tests \
 		--ignore-msi-with-no-mutations \
 		--logger-text=php://stdout
+
+.PHONY: phpbench
+phpbench:
+	composer require --dev phpbench/phpbench:^1.2.15
+	XDEBUG_MODE=off tests/vendor/bin/phpbench run
+	composer remove phpbench/phpbench

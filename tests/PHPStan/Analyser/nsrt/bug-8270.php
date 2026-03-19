@@ -20,6 +20,18 @@ function () {
 	}
 };
 
+// Optional offset: the composed value has the optional key absent,
+// shouldUnionExistingItemType should handle this gracefully.
+function () {
+	/** @var non-empty-list<array{test: false, extra?: string}> $list */
+	$list = [];
+	$list[0]['test'] = true;
+
+	foreach ($list as $item) {
+		assertType('array{test: bool, extra?: string}', $item);
+	}
+};
+
 function () {
 	$list = [];
 

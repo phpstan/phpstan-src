@@ -19,8 +19,10 @@ function doesNotWork() : array {
 		$final[$i][$j][$k]['ghi'] = $i;
 
 		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k]);
+		assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>", $final);
 	}
 
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>", $final);
 	return $final;
 }
 
@@ -39,8 +41,10 @@ function fourLevelsDeep() : array {
 		$final[$i][$j][$k][$l]['ghi'] = $i;
 
 		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l]);
+		assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>", $final);
 	}
 
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>", $final);
 	return $final;
 }
 
@@ -60,8 +64,10 @@ function fiveLevelsDeep() : array {
 		$final[$i][$j][$k][$l][$m]['ghi'] = $i;
 
 		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l][$m]);
+		assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, non-empty-array<int<10, 14>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>>", $final);
 	}
 
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, non-empty-array<int<10, 14>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>>", $final);
 	return $final;
 }
 
@@ -82,8 +88,10 @@ function sixLevelsDeep() : array {
 		$final[$i][$j][$k][$l][$m][$n]['ghi'] = $i;
 
 		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j][$k][$l][$m][$n]);
+		assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, non-empty-array<int<10, 14>, non-empty-array<int<20, 24>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>>>", $final);
 	}
 
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, non-empty-array<int<0, 12>, non-empty-array<int<10, 14>, non-empty-array<int<20, 24>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>>>>>", $final);
 	return $final;
 }
 
@@ -102,7 +110,9 @@ function thisWorks() : array {
 		$final[$i][$j]['ghi'] = $i;
 
 		assertType("array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}", $final[$i][$j]);
+		assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>", $final);
 	}
 
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, array{abc: int<0, 4>, def: int<0, 4>, ghi: int<0, 4>}>>", $final);
 	return $final;
 }

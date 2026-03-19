@@ -1,4 +1,5 @@
 rules:
+	- PHPStan\Rules\Playground\ArrayDimCastRule
 	- PHPStan\Rules\Playground\FunctionNeverRule
 	- PHPStan\Rules\Playground\LiteralArrayKeyCastRule
 	- PHPStan\Rules\Playground\MethodNeverRule

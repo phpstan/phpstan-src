@@ -48,6 +48,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -60,6 +61,7 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use TypeError;
 use function array_key_last;
 use function array_merge;
@@ -280,6 +282,13 @@ final class AssignHandler implements ExprHandler
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType);
 				}
+
+				$conditionalExpressions = $this->processArrayValueExtractionForConditionalExpressions(
+					$scope,
+					$var->name,
+					$conditionalExpressions,
+					$assignedExpr,
+				);
 
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr), TrinaryLogic::createYes());
@@ -1074,6 +1083,71 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processArrayValueExtractionForConditionalExpressions(
+		Scope $scope,
+		string $variableName,
+		array $conditionalExpressions,
+		Expr $assignedExpr,
+	): array
+	{
+		if (
+			!$assignedExpr instanceof Expr\FuncCall
+			|| !$assignedExpr->name instanceof Name
+			|| !in_array($assignedExpr->name->toLowerString(), ['reset', 'current', 'end'], true)
+			|| count($assignedExpr->getArgs()) < 1
+		) {
+			return $conditionalExpressions;
+		}
+
+		$arrayArg = $assignedExpr->getArgs()[0]->value;
+		if (!$arrayArg instanceof Variable || !is_string($arrayArg->name)) {
+			return $conditionalExpressions;
+		}
+
+		$arrayArgType = $scope->getType($arrayArg);
+		if (!$arrayArgType->isArray()->yes()) {
+			return $conditionalExpressions;
+		}
+
+		$valueType = $arrayArgType->getIterableValueType();
+		if (!$valueType instanceof UnionType) {
+			return $conditionalExpressions;
+		}
+
+		$valueTypeMembers = $valueType->getTypes();
+		if (count($valueTypeMembers) < 2) {
+			return $conditionalExpressions;
+		}
+
+		$arrayExprString = '$' . $arrayArg->name;
+		$keyType = $arrayArgType->getIterableKeyType();
+
+		foreach ($valueTypeMembers as $memberType) {
+			$narrowedArrayType = TypeCombinator::intersect(
+				$arrayArgType,
+				new ArrayType($keyType, $memberType),
+			);
+
+			$holder = new ConditionalExpressionHolder(
+				['$' . $variableName => ExpressionTypeHolder::createYes(
+					new Variable($variableName),
+					$memberType,
+				)],
+				ExpressionTypeHolder::createYes(
+					$arrayArg,
+					$narrowedArrayType,
+				),
+			);
+			$conditionalExpressions[$arrayExprString][$holder->getKey()] = $holder;
+		}
+
+		return $conditionalExpressions;
 	}
 
 }

@@ -55,6 +55,14 @@ class InvalidIgnoredErrorExceptionTest extends PHPStanTestCase
 			__DIR__ . '/invalidIgnoreErrors/count-without-path.neon',
 			'An ignoreErrors entry with count field must also contain path field.',
 		];
+		yield [
+			__DIR__ . '/invalidIgnoreErrors/path-with-array-value.neon',
+			"Key 'path' of ignoreErrors expects a string, array given. Did you mean 'paths'?",
+		];
+		yield [
+			__DIR__ . '/invalidIgnoreErrors/paths-with-string-value.neon',
+			"Key 'paths' of ignoreErrors expects an array, string given. Did you mean 'path'?",
+		];
 	}
 
 	#[DataProvider('dataValidateIgnoreErrors')]

@@ -195,10 +195,10 @@ phpbench:
 	@find tests/bench/storage/local-baseline.xml -mtime -60m | grep . || (echo "PHPBench baseline file does not exist or is too old. Regenerate it using 'make phpbench-baseline'." && exit 1)
 	composer require --dev phpbench/phpbench:^1.2.15
 	XDEBUG_MODE=off tests/vendor/bin/phpbench run --file=tests/bench/storage/local-baseline.xml --report=aggregate
-	composer remove --dev phpbench/phpbench --no-interaction
+	composer remove --dev phpbench/phpbench --no-interaction -q
 
 .PHONY: phpbench-baseline
 phpbench-baseline:
 	composer require --dev phpbench/phpbench:^1.2.15
 	XDEBUG_MODE=off tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/local-baseline.xml
-	composer remove --dev phpbench/phpbench --no-interaction
+	composer remove --dev phpbench/phpbench --no-interaction -q

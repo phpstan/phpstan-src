@@ -8,6 +8,10 @@ class Foo {
 	public function returnThis(mixed $value): self {
 		return $this;
 	}
+
+	public static function staticReturnSelf(mixed $value): self {
+		return new self();
+	}
 }
 
 class Bar {
@@ -25,4 +29,10 @@ function testStaticCall(): void {
 	$callback = fn (): never => throw new \Exception();
 	Bar::doSomething($callback());
 	$b = 'this will never run';
+}
+
+function testStaticCallChained(): void {
+	$callback = fn (): never => throw new \Exception();
+	$a = Foo::staticReturnSelf($callback())->returnThis('x');
+	$b = 'this will never run either';
 }

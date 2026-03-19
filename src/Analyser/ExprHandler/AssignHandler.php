@@ -983,6 +983,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
+				// we iterate the offset-types in reversed order.
 				$isLastDimFetchInChain = $i === 0;
 				$isFirstDimFetchInChain = $i === $lastOffsetIndex;
 

@@ -2716,7 +2716,16 @@ class NodeScopeResolver
 			$this->callNodeCallback($nodeCallback, $expr->returnType, $scope, $storage);
 		}
 
+		$phpDocParameterTypes = $this->resolveClosurePhpDocParameterTypes($stmt, $scope, $expr);
+
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
+		foreach ($phpDocParameterTypes as $paramName => $paramType) {
+			if (!$closureScope->hasVariableType($paramName)->yes()) {
+				continue;
+			}
+
+			$closureScope = $closureScope->assignVariable($paramName, $paramType, $closureScope->getNativeType(new Variable($paramName)), TrinaryLogic::createYes());
+		}
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
@@ -4173,6 +4182,43 @@ class NodeScopeResolver
 				$this->processNodesForCalledMethod($subNode, $storage, $fileName, $methodReflection, $nodeCallback);
 			}
 		}
+	}
+
+	/**
+	 * @return array<string, Type>
+	 */
+	private function resolveClosurePhpDocParameterTypes(Node\Stmt $stmt, MutatingScope $scope, Expr\Closure $closure): array
+	{
+		$phpDocParameterTypes = [];
+
+		foreach ($stmt->getComments() as $comment) {
+			if (!$comment instanceof Doc) {
+				continue;
+			}
+
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$scope->getFile(),
+				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+				$scope->getFunction() !== null ? $scope->getFunction()->getName() : null,
+				$comment->getText(),
+			);
+
+			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+				foreach ($closure->params as $param) {
+					if (
+						$param->var instanceof Variable
+						&& is_string($param->var->name)
+						&& $param->var->name === $paramName
+					) {
+						$phpDocParameterTypes[$paramName] = $paramTag->getType();
+						break;
+					}
+				}
+			}
+		}
+
+		return $phpDocParameterTypes;
 	}
 
 	/**

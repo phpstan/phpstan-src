@@ -104,11 +104,11 @@ class Foo
  */
 function(\ArrayObject $obj): void {
 	if (count($obj) === 0) {
-		assertType('ArrayObject', $obj);
+		assertType('ArrayObject<int, mixed>', $obj);
 		return;
 	}
 
-	assertType('ArrayObject', $obj);
+	assertType('ArrayObject<int, mixed>', $obj);
 };
 
 function($mixed): void {

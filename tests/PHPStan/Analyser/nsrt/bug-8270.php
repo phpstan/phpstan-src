@@ -44,4 +44,4 @@ function doBar() {
 			echo $item['value'];
 		}
 	}
-};
+}

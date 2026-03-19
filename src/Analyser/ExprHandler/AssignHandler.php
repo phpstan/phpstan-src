@@ -983,8 +983,15 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				$unionValues = $i === 0;
-				if (!$unionValues && $i === $lastOffsetIndex && $offsetType !== null) {
+				$isLastDimFetchInChain = $i === 0;
+				$isFirstDimFetchInChain = $i === $lastOffsetIndex;
+
+				$unionValues = $isLastDimFetchInChain;
+				if (
+					!$isLastDimFetchInChain
+					&& $isFirstDimFetchInChain
+					&& $offsetType !== null
+				) {
 					$unionValues = $this->shouldUnionExistingItemType($offsetValueType, $valueToWrite);
 				}
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);

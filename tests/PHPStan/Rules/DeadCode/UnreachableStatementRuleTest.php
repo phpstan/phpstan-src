@@ -380,19 +380,19 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14328.php'], [
 			[
 				'Unreachable statement - code above always terminates.',
-				25,
+				20,
 			],
 			[
 				'Unreachable statement - code above always terminates.',
-				31,
+				26,
 			],
 			[
 				'Unreachable statement - code above always terminates.',
-				37,
+				32,
 			],
 			[
 				'Unreachable statement - code above always terminates.',
-				43,
+				38,
 			],
 		]);
 	}

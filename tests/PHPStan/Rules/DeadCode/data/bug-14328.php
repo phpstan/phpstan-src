@@ -9,36 +9,31 @@ class Foo {
 		return $this;
 	}
 
-	public static function staticReturnSelf(mixed $value): self {
+	public static function returnSelf(mixed $value): self {
 		return new self();
 	}
 }
 
-class Bar {
-	public static function doSomething(mixed $value): void {
-	}
-}
-
-function testMethodCall(): void {
+function testMethodCallChainedWithMethodCall(): void {
 	$callback = fn (): never => throw new \Exception();
 	$x = (new Foo())->returnThis($callback())->returnThis('x');
 	$y = 'this will never run';
 }
 
-function testStaticCall(): void {
+function testMethodCallChainedWithStaticCall(): void {
 	$callback = fn (): never => throw new \Exception();
-	Bar::doSomething($callback());
-	$b = 'this will never run';
+	$x = (new Foo())->returnThis($callback())::returnSelf('x');
+	$y = 'this will never run';
 }
 
 function testStaticCallChainedWithMethodCall(): void {
 	$callback = fn (): never => throw new \Exception();
-	$a = Foo::staticReturnSelf($callback())->returnThis('x');
+	$a = Foo::returnSelf($callback())->returnThis('x');
 	$b = 'this will never run either';
 }
 
 function testStaticCallChainedWithStaticCall(): void {
 	$callback = fn (): never => throw new \Exception();
-	$a = Foo::staticReturnSelf($callback())::staticReturnSelf('x');
+	$a = Foo::returnSelf($callback())::returnSelf('x');
 	$b = 'this will never run either';
 }

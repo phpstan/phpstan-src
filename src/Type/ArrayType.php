@@ -408,9 +408,7 @@ class ArrayType implements Type
 					$newItemType,
 				);
 			}
-		}
-
-		if (
+		} elseif (
 			$this->itemType->isArray()->yes()
 			&& !$this->itemType->isConstantArray()->yes()
 			&& $valueType->isArray()->yes()

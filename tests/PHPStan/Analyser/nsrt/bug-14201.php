@@ -54,4 +54,48 @@ class HelloWorld
 			}, $items);
 		}
 	}
+
+	/**
+	 * @param array<Foo|Bar> $items
+	 */
+	public function doitMatchArrayUnion(array $items): void
+	{
+		if ([] === $items) {return; }
+
+		$first = reset($items);
+		match (true) {
+			$first instanceOf Foo => array_map(function ($i) {
+				assertType('Bug14201\Foo', $i);
+				return $i->fooName;
+			}, $items),
+			$first instanceOf Bar => array_map(function ($i) {
+				assertType('Bug14201\Bar', $i);
+				return $i->barName;
+			}, $items),
+			default => throw new \RuntimeException('None of Foo nor Bar')
+		};
+	}
+
+	/**
+	 * @param array<Foo|Bar> $items
+	 */
+	public function doitIfArrayUnion(array $items): void
+	{
+		if ([] === $items) {return; }
+
+		$first = reset($items);
+		if ($first instanceof Foo) {
+			assertType('non-empty-array<Bug14201\Foo>', $items);
+			array_map(function ($i) {
+				assertType('Bug14201\Foo', $i);
+				return $i->fooName;
+			}, $items);
+		} elseif ($first instanceof Bar) {
+			assertType('non-empty-array<Bug14201\Bar>', $items);
+			array_map(function ($i) {
+				assertType('Bug14201\Bar', $i);
+				return $i->barName;
+			}, $items);
+		}
+	}
 }

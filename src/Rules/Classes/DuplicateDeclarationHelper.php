@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\EnumCase;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
@@ -17,7 +18,7 @@ final class DuplicateDeclarationHelper
 {
 
 	/**
-	 * @return list<\PHPStan\Rules\IdentifierRuleError>
+	 * @return list<IdentifierRuleError>
 	 */
 	public static function checkClassLike(ClassLike $classLike, string $displayName, string $identifierType): array
 	{

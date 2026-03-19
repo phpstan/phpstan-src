@@ -12,7 +12,7 @@ use function PHPStan\Testing\assertType;
 function test(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
 	// only one element was set to 'foo', not all of them.
-	assertType("non-empty-array<int, array{state: 'foo'}>", $array);
+	assertType("non-empty-array<int, array{state: string}>", $array);
 }
 
 /**
@@ -21,7 +21,7 @@ function test(array $array, int $id): void {
 function testMaybe(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
 	// only one element was set to 'foo', not all of them.
-	assertType("non-empty-array<int, array{state: 'foo'}>", $array);
+	assertType("non-empty-array<int, array{state?: string}>", $array);
 }
 
 /**
@@ -30,7 +30,7 @@ function testMaybe(array $array, int $id): void {
 function testUnionValue(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
 	// only one element was set to 'foo', not all of them.
-	assertType("non-empty-array<int, array{state: 'foo'}>", $array);
+	assertType("non-empty-array<int, array{state: bool|string}>", $array);
 }
 
 /**
@@ -39,7 +39,7 @@ function testUnionValue(array $array, int $id): void {
 function testUnionArray(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
 	// only one element was set to 'foo', not all of them.
-	assertType("non-empty-array<int, array{foo?: int, state: 'foo'}>", $array);
+	assertType("non-empty-array<int, non-empty-array{foo?: int, state?: string}>", $array);
 }
 
 /**

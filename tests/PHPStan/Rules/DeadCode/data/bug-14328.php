@@ -12,5 +12,5 @@ class Foo {
 	}
 }
 
-$x = new Foo()->returnThis($callback())->returnThis('x');
+$x = (new Foo())->returnThis($callback())->returnThis('x');
 $y = 'this will never run';

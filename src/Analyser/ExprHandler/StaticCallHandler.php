@@ -192,7 +192,7 @@ final class StaticCallHandler implements ExprHandler
 		if ($parametersAcceptor !== null) {
 			$normalizedExpr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			$returnType = $parametersAcceptor->getReturnType();
-			$isAlwaysTerminating = $returnType instanceof NeverType && $returnType->isExplicit();
+			$isAlwaysTerminating = $isAlwaysTerminating || ($returnType instanceof NeverType && $returnType->isExplicit());
 		}
 		$argsResult = $nodeScopeResolver->processArgs($stmt, $methodReflection, null, $parametersAcceptor, $normalizedExpr, $scope, $storage, $nodeCallback, $context, $closureBindScope);
 		$scope = $argsResult->getScope();

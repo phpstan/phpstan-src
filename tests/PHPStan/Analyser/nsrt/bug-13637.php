@@ -95,6 +95,24 @@ function sixLevelsDeep() : array {
 	return $final;
 }
 
+/** Tests that maybe-array item type (union with non-array) skips the recursive path */
+function maybeArrayItemType(bool $flag): void {
+	$final = [];
+
+	for ($i = 0; $i < 5; $i++) {
+		$j = $i * 2;
+		$k = $j + 1;
+		if ($flag) {
+			$final[$i][$j][$k]['abc'] = $i;
+			$final[$i][$j][$k]['def'] = $i;
+		} else {
+			$final[$i] = $i;
+		}
+	}
+
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array<int<1, 9>, array{abc: int<0, 4>, def: int<0, 4>}>>|int<0, 4>>", $final);
+}
+
 /**
 * @return array<int, array<int, array{abc: int, def: int, ghi: int}>>
 */

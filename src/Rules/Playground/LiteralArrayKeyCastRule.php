@@ -49,6 +49,7 @@ final class LiteralArrayKeyCastRule implements Rule
 					$arrayKeyType->describe(VerbosityLevel::value()),
 					$arrayKeyType->describe(VerbosityLevel::typeOnly()),
 				))->identifier('phpstanPlayground.arrayKeyCast')
+					->tip('Learn more: <fg=cyan>https://phpstan.org/blog/why-array-string-keys-are-not-type-safe</>')
 					->line($item->getStartLine())
 					->build();
 			}

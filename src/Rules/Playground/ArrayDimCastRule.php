@@ -53,6 +53,7 @@ final class ArrayDimCastRule implements Rule
 				$arrayKeyType->describe(VerbosityLevel::value()),
 				$arrayKeyType->describe(VerbosityLevel::typeOnly()),
 			))->identifier('phpstanPlayground.arrayDimFetchCast')
+				->tip('Learn more: <fg=cyan>https://phpstan.org/blog/why-array-string-keys-are-not-type-safe</>')
 				->build();
 		}
 

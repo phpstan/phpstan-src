@@ -379,7 +379,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug13623(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-13623.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13623.php'], []);
 	}
 
 }

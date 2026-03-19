@@ -6,7 +6,7 @@ namespace Bug8270;
 
 use function PHPStan\Testing\assertType;
 
-function () {
+function doFoo() {
 	/** @var non-empty-list<array{test: false, value: int}> $list */
 	$list = [];
 	$list[0]['test'] = true;
@@ -18,9 +18,9 @@ function () {
 			echo $item['value'];
 		}
 	}
-};
+}
 
-function () {
+function doBar() {
 	$list = [];
 
 	for ($i = 0; $i < 10; $i++) {

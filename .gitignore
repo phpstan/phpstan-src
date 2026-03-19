@@ -11,6 +11,7 @@
 /tests/tmp
 /tests/.phpunit.result.cache
 /tests/PHPStan/Reflection/data/golden/
+/tests/bench/storage/baseline.xml
 tmp/.memory_limit
 e2e/bashunit
 /.phpbench

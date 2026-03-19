@@ -252,6 +252,11 @@ final class IssetCheck
 		}
 
 		if ($expr instanceof Expr\NullsafePropertyFetch) {
+			$calledOnType = $this->treatPhpDocTypesAsCertain ? $scope->getScopeType($expr->var) : $scope->getScopeNativeType($expr->var);
+			if (!$calledOnType->isNull()->no()) {
+				return null;
+			}
+
 			if ($expr->name instanceof Node\Identifier) {
 				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription))
 					->identifier('nullsafe.neverNull')

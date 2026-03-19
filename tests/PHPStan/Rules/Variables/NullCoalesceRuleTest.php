@@ -254,20 +254,8 @@ class NullCoalesceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
-				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
-				17,
-			],
-			[
-				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
-				28,
-			],
-			[
 				'Expression on left side of ?? is not nullable.',
 				40,
-			],
-			[
-				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
-				66,
 			],
 			[
 				'Expression on left side of ?? is not nullable.',
@@ -375,6 +363,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 				19,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14311(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14311.php'], []);
 	}
 
 }

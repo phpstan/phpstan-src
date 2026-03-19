@@ -241,6 +241,7 @@ class ConstantArrayType implements Type
 			}
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->disableArrayDegradation();
 			foreach ($keys as $i) {
 				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);
 			}

@@ -49,3 +49,19 @@ function testUnionArrayDifferentType(array $array, int $id): void {
 	$array[$id]['state'] = true;
 	assertType("non-empty-array<int, array{state: string}|non-empty-array{foo?: int, state?: true}>", $array);
 }
+
+/**
+ * @param array<int, array{state: 'foo'}> $array
+ */
+function testConstantArray(array $array, int $id): void {
+	$array[$id]['state'] = 'bar';
+	assertType("non-empty-array<int, array{state: 'bar'}|array{state: 'foo'}>", $array);
+}
+
+/**
+ * @param array<int, array{state: 'foo'}> $array
+ */
+function testConstantArrayNonScalarAssign(array $array, int $id, bool $b): void {
+	$array[$id]['state'] = $b;
+	assertType("non-empty-array<int, array{state: 'foo'}|array{state: bool}>", $array);
+}

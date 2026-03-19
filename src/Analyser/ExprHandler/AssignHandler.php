@@ -1106,10 +1106,10 @@ final class AssignHandler implements ExprHandler
 
 		foreach ($existingItemType->getConstantArrays() as $existingArray) {
 			foreach ($existingArray->getKeyTypes() as $i => $keyType) {
-				$existingValue = $existingArray->getValueTypes()[$i];
 				if ($composedValue->hasOffsetValueType($keyType)->no()) {
 					continue;
 				}
+				$existingValue = $existingArray->getValueTypes()[$i];
 				$newValue = $composedValue->getOffsetValueType($keyType);
 				if (!$newValue->isSuperTypeOf($existingValue)->yes()) {
 					return true;

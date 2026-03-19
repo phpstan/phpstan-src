@@ -14,3 +14,30 @@ function test(array $array, int $id): void {
 	// only one element was set to 'foo', not all of them.
 	assertType("non-empty-array<int, array{state: string}>", $array);
 }
+
+/**
+ * @param array<int, array{state?: string}> $array
+ */
+function testMaybe(array $array, int $id): void {
+	$array[$id]['state'] = 'foo';
+	// only one element was set to 'foo', not all of them.
+	assertType("non-empty-array<int, array{state?: string}>", $array);
+}
+
+/**
+ * @param array<int, array{state: string|bool}> $array
+ */
+function testUnionValue(array $array, int $id): void {
+	$array[$id]['state'] = 'foo';
+	// only one element was set to 'foo', not all of them.
+	assertType("non-empty-array<int, array{state: bool|string}>", $array);
+}
+
+/**
+ * @param array<int, array{state: string}|array{foo: int}> $array
+ */
+function testUnionArray(array $array, int $id): void {
+	$array[$id]['state'] = 'foo';
+	// only one element was set to 'foo', not all of them.
+	assertType("non-empty-array<int, non-empty-array{foo?: int, state?: string}>", $array);
+}

@@ -31,8 +31,14 @@ function testStaticCall(): void {
 	$b = 'this will never run';
 }
 
-function testStaticCallChained(): void {
+function testStaticCallChainedWithMethodCall(): void {
 	$callback = fn (): never => throw new \Exception();
 	$a = Foo::staticReturnSelf($callback())->returnThis('x');
+	$b = 'this will never run either';
+}
+
+function testStaticCallChainedWithStaticCall(): void {
+	$callback = fn (): never => throw new \Exception();
+	$a = Foo::staticReturnSelf($callback())::staticReturnSelf('x');
 	$b = 'this will never run either';
 }

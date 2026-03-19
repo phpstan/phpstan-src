@@ -11,5 +11,6 @@ use function PHPStan\Testing\assertType;
  */
 function test(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
+	// only one element was set to 'foo', not all of them.
 	assertType("non-empty-array<int, array{state: string}>", $array);
 }

@@ -1,0 +1,9 @@
+services:
+	-
+		class: PHPStan\Type\TestBitwiseOperatorTypeSpecifyingExtension
+		tags:
+			- phpstan.broker.operatorTypeSpecifyingExtension
+	-
+		class: PHPStan\Type\TestDecimalOperatorTypeSpecifyingExtension
+		tags:
+			- phpstan.broker.operatorTypeSpecifyingExtension

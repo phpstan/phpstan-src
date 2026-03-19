@@ -20,5 +20,5 @@ function (array $results): void {
 		$customers[$row['customer_id']]['orders'][$row['order_id']]['balance'] ??= $row['order_total'];
 	}
 
-	assertType("array<array{orders: array<array{}|array{balance_forward?: 0, new_invoice?: 0, payments?: 0, balance?: mixed}>}>", $customers);
+	assertType("array<array{orders: non-empty-array<array{balance_forward: 0, new_invoice: 0, payments: 0, balance: mixed}>}>", $customers);
 };

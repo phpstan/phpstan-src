@@ -941,7 +941,6 @@ final class AssignHandler implements ExprHandler
 		}
 
 		$reversedOffsetTypes = array_reverse($offsetTypes);
-		$lastOffsetIndex = count($reversedOffsetTypes) - 1;
 		foreach ($reversedOffsetTypes as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
@@ -985,7 +984,7 @@ final class AssignHandler implements ExprHandler
 			} else {
 				// we iterate the offset-types in reversed order.
 				$isLastDimFetchInChain = $i === 0;
-				$isFirstDimFetchInChain = $i === $lastOffsetIndex;
+				$isFirstDimFetchInChain = $i === count($reversedOffsetTypes) - 1;
 
 				$unionValues = $isLastDimFetchInChain;
 				if (
@@ -1092,9 +1091,11 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * When modifying a nested array dimension with a non-constant key,
-	 * check if the composed value changes any existing constant-array
-	 * key values. If it does, the existing item type should be unioned
-	 * because unmodified elements still have their original types.
+	 * check if the composed value has genuinely incompatible key values
+	 * compared to the existing item type. Only union when the old and
+	 * new values for a shared key are incompatible (neither is a supertype
+	 * of the other), which means unmodified elements still have their
+	 * original types that cannot be represented by the composed value alone.
 	 */
 	private function shouldUnionExistingItemType(Type $offsetValueType, Type $composedValue): bool
 	{
@@ -1111,9 +1112,15 @@ final class AssignHandler implements ExprHandler
 				}
 				$existingValue = $existingArray->getValueTypes()[$i];
 				$newValue = $composedValue->getOffsetValueType($keyType);
-				if (!$newValue->isSuperTypeOf($existingValue)->yes()) {
-					return true;
+
+				if ($existingValue->isSuperTypeOf($newValue)->yes()) {
+					continue;
 				}
+				if ($newValue->isSuperTypeOf($existingValue)->yes()) {
+					continue;
+				}
+
+				return true;
 			}
 		}
 

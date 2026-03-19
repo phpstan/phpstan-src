@@ -18,6 +18,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
@@ -70,6 +71,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private ReflectionMethod $reflection,
 		private ReflectionProvider $reflectionProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
@@ -226,6 +228,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->immediatelyInvokedCallableParameters[$reflection->getName()] ?? TrinaryLogic::createMaybe(),
 			$this->phpDocClosureThisTypeParameters[$reflection->getName()] ?? null,
 			$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
+			$this->allowedConstantsMapProvider->getForMethodParameter($this->declaringClass->getName(), $this->reflection->getName(), $reflection->getName()),
 		), $this->reflection->getParameters());
 	}
 
@@ -411,6 +414,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->reflection,
 			$this->reflectionProvider,
 			$this->attributeReflectionFactory,
+			$this->allowedConstantsMapProvider,
 			$this->templateTypeMap,
 			$this->phpDocParameterTypes,
 			$phpDocType,
@@ -444,6 +448,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->reflection,
 			$this->reflectionProvider,
 			$this->attributeReflectionFactory,
+			$this->allowedConstantsMapProvider,
 			$this->templateTypeMap,
 			$phpDocParameterTypes,
 			$this->phpDocReturnType,

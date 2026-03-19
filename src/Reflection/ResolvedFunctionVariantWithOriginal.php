@@ -121,6 +121,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 						$param->isImmediatelyInvokedCallable(),
 						$closureThisType,
 						$param->getAttributes(),
+						$param->getAllowedConstants(),
 					);
 				},
 				$this->parametersAcceptor->getParameters(),

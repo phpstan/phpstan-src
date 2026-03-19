@@ -771,6 +771,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureThisType() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAttributes() : [],
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
 					);
 					continue;
 				}

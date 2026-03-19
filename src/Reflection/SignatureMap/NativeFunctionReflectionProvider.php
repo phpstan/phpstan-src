@@ -16,6 +16,7 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
+use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -41,6 +42,7 @@ final class NativeFunctionReflectionProvider
 		private FileTypeMapper $fileTypeMapper,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 	)
 	{
 	}
@@ -107,13 +109,14 @@ final class NativeFunctionReflectionProvider
 			$acceptsNamedArguments = $phpDoc->acceptsNamedArguments();
 		}
 
+		$allowedConstantsMapProvider = $this->allowedConstantsMapProvider;
 		$variantsByType = ['positional' => []];
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
 			foreach ($functionSignatures ?? [] as $functionSignature) {
 				$variantsByType[$signatureType][] = new ExtendedFunctionVariant(
 					TemplateTypeMap::createEmpty(),
 					null,
-					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc): ExtendedNativeParameterReflection {
+					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider): ExtendedNativeParameterReflection {
 						$type = $parameterSignature->getType();
 
 						$phpDocType = null;
@@ -144,6 +147,7 @@ final class NativeFunctionReflectionProvider
 							$immediatelyInvokedCallable,
 							$closureThisType,
 							[],
+							$allowedConstantsMapProvider->getForFunctionParameter($lowerCasedFunctionName, $parameterSignature->getName()),
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),

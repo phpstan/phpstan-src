@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\PassedByReference;
@@ -111,6 +112,16 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 	public function getAttributes(): array
 	{
 		return $this->attributes;
+	}
+
+	public function getAllowedConstants(): ?ParameterAllowedConstants
+	{
+		return null;
+	}
+
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult
+	{
+		return new AllowedConstantsResult([], []);
 	}
 
 }

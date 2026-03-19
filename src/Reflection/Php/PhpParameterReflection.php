@@ -3,11 +3,13 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -34,6 +36,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
+		private ?ParameterAllowedConstants $allowedConstants = null,
 	)
 	{
 	}
@@ -141,6 +144,20 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 	public function getAttributes(): array
 	{
 		return $this->attributes;
+	}
+
+	public function getAllowedConstants(): ?ParameterAllowedConstants
+	{
+		return $this->allowedConstants;
+	}
+
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult
+	{
+		if ($this->allowedConstants === null) {
+			return new AllowedConstantsResult([], []);
+		}
+
+		return $this->allowedConstants->check($constants);
 	}
 
 }

@@ -16,6 +16,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -44,6 +45,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionFunction $reflection,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private TemplateTypeMap $templateTypeMap,
 		private array $phpDocParameterTypes,
 		private ?Type $phpDocReturnType,
@@ -127,6 +129,7 @@ final class PhpFunctionReflection implements FunctionReflection
 				$immediatelyInvokedCallable,
 				$this->phpDocParameterClosureThisTypes[$reflection->getName()] ?? null,
 				$this->attributeReflectionFactory->fromNativeReflection($reflection->getAttributes(), InitializerExprContext::fromReflectionParameter($reflection)),
+				$this->allowedConstantsMapProvider->getForFunctionParameter(strtolower($this->reflection->getName()), $reflection->getName()),
 			);
 		}, $this->reflection->getParameters());
 	}

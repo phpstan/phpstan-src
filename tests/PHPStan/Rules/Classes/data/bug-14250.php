@@ -73,3 +73,22 @@ class Qux
 {
 	use TraitWithDuplicateMethods;
 }
+
+trait MyTrait1
+{
+	public function doSomething(): void
+	{
+	}
+}
+
+trait MyTrait2
+{
+	public function doSomething(): void
+	{
+	}
+}
+
+class FooWithMultipleConflictingTraits
+{
+	use MyTrait1, MyTrait2;
+}

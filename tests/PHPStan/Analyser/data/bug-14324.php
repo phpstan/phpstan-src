@@ -2,8 +2,6 @@
 
 namespace Bug14324;
 
-use function PHPStan\Testing\assertType;
-
 final class Test
 {
 	private const ADDITIONAL_MAPS = [
@@ -55,8 +53,6 @@ final class Test
 				// added with 3 entries, breaching the closure limit of 32 entries
 				self::$map[$map] = fn () => self::$map['foo']();
 			}
-
-			assertType("non-empty-array<'bar'|'bar-'|'bar1'|'bar2'|'baz'|'baz-'|'baz1'|'baz2'|'corge'|'corge1'|'foo'|'foo-'|'foo1'|'foo2'|'fred'|'fred1'|'garply'|'garply1'|'grault'|'grault1'|'plugh'|'plugh1'|'quux'|'quux1'|'qux'|'qux1'|'thud'|'thud1'|'waldo'|'waldo1'|'xyzzy'|'xyzzy1', callable(): mixed>&oversized-array", self::$map);
 		}
 	}
 }

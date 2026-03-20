@@ -67,3 +67,16 @@ function testNested(): void
 
 	assertType('2', $a);
 }
+
+function foo(array &$a): void {}
+
+function testFunctionCall() {
+	$b = 1;
+
+	$c = [&$b];
+	assertType('array{1}', $c);
+
+	foo($c);
+	assertType('array', $c);
+	assertType('mixed', $b);
+}

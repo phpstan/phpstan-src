@@ -32,3 +32,23 @@ function testMultipleByRefInArray(): void
 	assertType('2', $a);
 	assertType("'bar'", $c);
 }
+
+function testNested(): void
+{
+	$a = 1;
+
+	$b = [[&$a]];
+	assertType('1', $a);
+
+	$b[0][0] = 2;
+
+	assertType('1', $a); // Should be 2 in real PHP, but nested array reference tracking is not implemented
+
+	$b[0] = [];
+
+	assertType('1', $a);
+
+	$b[0][0] = 3;
+
+	assertType('1', $a);
+}

@@ -5,6 +5,19 @@ namespace PHPStan\Reflection;
 use function count;
 use function in_array;
 
+/**
+ * Describes which constants a function/method parameter accepts.
+ *
+ * Parameters are either 'single' (exactly one constant, e.g. `array_unique($flags)`)
+ * or 'bitmask' (constants combinable with `|`, e.g. `json_encode($flags)`).
+ * Bitmask parameters may have exclusive groups — subsets of constants
+ * that are mutually exclusive even within a bitmask.
+ *
+ * Populated from resources/constantToFunctionParameterMap.php and
+ * available via ExtendedParameterReflection::getAllowedConstants().
+ *
+ * @api
+ */
 final class ParameterAllowedConstants
 {
 

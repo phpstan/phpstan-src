@@ -2,6 +2,15 @@
 
 namespace PHPStan\Reflection;
 
+/**
+ * Result of checking constants passed to a parameter against its allowed set.
+ *
+ * Returned by ExtendedParameterReflection::checkAllowedConstants(). Reports
+ * three kinds of problems: constants not in the allowed list, mutually exclusive
+ * constants combined in a bitmask, and bitmask usage on a single-value parameter.
+ *
+ * @api
+ */
 final class AllowedConstantsResult
 {
 

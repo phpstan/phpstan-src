@@ -2621,6 +2621,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					array_merge($intertwinedPropagatedFrom, [$variableName]),
 				);
 			} else {
+				$targetRootVar = $this->getIntertwinedRefRootVariableName($expressionType->getExpr()->getExpr());
+				if ($targetRootVar !== null && in_array($targetRootVar, $intertwinedPropagatedFrom, true)) {
+					continue;
+				}
 				$scope = $scope->assignExpression(
 					$expressionType->getExpr()->getExpr(),
 					$scope->getType($expressionType->getExpr()->getAssignedExpr()),

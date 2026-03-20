@@ -615,6 +615,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11006.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConstantParameterCheckInstantiation(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check-instantiation.php'], [

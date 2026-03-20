@@ -415,6 +415,7 @@ final class FunctionCallParametersCheck
 				if (
 					$parameter instanceof ExtendedParameterReflection
 					&& $parameter->getAllowedConstants() !== null
+					&& $scope->getPhpVersion()->supportsNamedArguments()->yes()
 				) {
 					$constantReflections = $this->resolveConstantReflections($argumentValue, $scope);
 					if ($constantReflections !== null) {

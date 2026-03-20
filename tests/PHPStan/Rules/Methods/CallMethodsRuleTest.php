@@ -3921,6 +3921,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConstantParameterCheckMethods(): void
 	{
 		$this->checkThisOnly = false;

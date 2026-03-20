@@ -2770,6 +2770,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConstantParameterCheck(): void
 	{
 		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [

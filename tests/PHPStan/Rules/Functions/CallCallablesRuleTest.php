@@ -355,6 +355,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testConstantParameterCheckCallables(): void
 	{
 		$this->checkExplicitMixed = false;

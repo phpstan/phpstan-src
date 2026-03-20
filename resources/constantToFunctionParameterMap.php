@@ -58,7 +58,6 @@ return [
 			'type' => 'bitmask',
 			'constants' => [
 				'JSON_INVALID_UTF8_IGNORE',
-				'JSON_THROW_ON_ERROR',
 			],
 		],
 	],
@@ -1021,6 +1020,7 @@ return [
 				'LOG_CONS',
 				'LOG_NDELAY',
 				'LOG_ODELAY',
+				'LOG_NOWAIT',
 				'LOG_PERROR',
 				'LOG_PID',
 			],

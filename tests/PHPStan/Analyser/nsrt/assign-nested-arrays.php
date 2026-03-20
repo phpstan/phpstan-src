@@ -12,8 +12,9 @@ class Foo
 		$array = [];
 
 		$array[$i]['bar'] = 1;
-		$array[$i]['baz'] = 2;
+		assertType('non-empty-array<int, array{bar: 1}>', $array);
 
+		$array[$i]['baz'] = 2;
 		assertType('non-empty-array<int, array{bar: 1, baz: 2}>', $array);
 	}
 

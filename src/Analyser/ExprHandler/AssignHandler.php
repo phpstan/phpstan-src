@@ -947,10 +947,11 @@ final class AssignHandler implements ExprHandler
 		$originalValueToWrite = $valueToWrite;
 
 		$offsetValueTypeStack = [$offsetValueType];
+		$overwrites = true;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
-
+				$overwrites = false;
 			} else {
 				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				if ($has->yes()) {
@@ -959,9 +960,11 @@ final class AssignHandler implements ExprHandler
 					if (!$scope->hasExpressionType($dimFetch)->yes()) {
 						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					} else {
+						$overwrites = false;
 						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 					}
 				} else {
+					$overwrites = false;
 					$offsetValueType = new ConstantArrayType([], []);
 				}
 			}
@@ -1010,7 +1013,14 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				$unionValues = false;
+				if ($i === 0) {
+					$unionValues = true;
+				} elseif ($overwrites === true && $i === count($offsetTypes) - 1) {
+					$unionValues = true;
+				}
+
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {

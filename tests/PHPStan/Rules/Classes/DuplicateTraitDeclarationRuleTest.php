@@ -13,7 +13,7 @@ class DuplicateTraitDeclarationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DuplicateTraitDeclarationRule();
+		return new DuplicateTraitDeclarationRule(new DuplicateDeclarationHelper());
 	}
 
 	public function testBug14250(): void

@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\EnumCase;
+use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -14,13 +15,14 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
+#[AutowiredService]
 final class DuplicateDeclarationHelper
 {
 
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public static function checkClassLike(ClassLike $classLike, string $displayName, string $identifierType): array
+	public function checkClassLike(ClassLike $classLike, string $displayName, string $identifierType): array
 	{
 		$errors = [];
 

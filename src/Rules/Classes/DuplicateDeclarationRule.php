@@ -16,6 +16,10 @@ use function strtolower;
 final class DuplicateDeclarationRule implements Rule
 {
 
+	public function __construct(private DuplicateDeclarationHelper $helper)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return InClassNode::class;
@@ -25,7 +29,7 @@ final class DuplicateDeclarationRule implements Rule
 	{
 		$classReflection = $node->getClassReflection();
 
-		return DuplicateDeclarationHelper::checkClassLike(
+		return $this->helper->checkClassLike(
 			$node->getOriginalNode(),
 			$classReflection->getDisplayName(),
 			strtolower($classReflection->getClassTypeDescription()),

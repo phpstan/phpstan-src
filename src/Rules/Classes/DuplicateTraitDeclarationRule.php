@@ -15,6 +15,10 @@ use PHPStan\Rules\Rule;
 final class DuplicateTraitDeclarationRule implements Rule
 {
 
+	public function __construct(private DuplicateDeclarationHelper $helper)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return InTraitNode::class;
@@ -22,7 +26,7 @@ final class DuplicateTraitDeclarationRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		return DuplicateDeclarationHelper::checkClassLike(
+		return $this->helper->checkClassLike(
 			$node->getOriginalNode(),
 			$node->getTraitReflection()->getDisplayName(),
 			'trait',

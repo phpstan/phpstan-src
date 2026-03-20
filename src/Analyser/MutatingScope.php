@@ -2866,18 +2866,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (
-				$exprExpr instanceof IntertwinedVariableByReferenceWithExpr
-				&& $expressionToInvalidate instanceof Variable
-				&& is_string($expressionToInvalidate->name)
-				&& (
-					$exprExpr->getVariableName() === $expressionToInvalidate->name
-					|| $this->getIntertwinedRefRootVariableName($exprExpr->getExpr()) === $expressionToInvalidate->name
-					|| $this->getIntertwinedRefRootVariableName($exprExpr->getAssignedExpr()) === $expressionToInvalidate->name
-				)
-			) {
-				continue;
-			}
 			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}
@@ -2958,6 +2946,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
 	{
+		if (
+			$expr instanceof IntertwinedVariableByReferenceWithExpr
+			&& $exprToInvalidate instanceof Variable
+			&& is_string($exprToInvalidate->name)
+			&& (
+				$expr->getVariableName() === $exprToInvalidate->name
+				|| $this->getIntertwinedRefRootVariableName($expr->getExpr()) === $exprToInvalidate->name
+				|| $this->getIntertwinedRefRootVariableName($expr->getAssignedExpr()) === $exprToInvalidate->name
+			)
+		) {
+			return false;
+		}
+
 		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
 			return false;
 		}

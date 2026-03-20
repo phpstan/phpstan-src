@@ -2582,7 +2582,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
-		$invalidatedIntertwinedRefs = [];
 		foreach ($scope->expressionTypes as $exprString => $expressionType) {
 			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
 				continue;

@@ -9,6 +9,7 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use function sprintf;
 
 final class RealClassClassConstantReflection implements ClassConstantReflection
 {
@@ -37,6 +38,16 @@ final class RealClassClassConstantReflection implements ClassConstantReflection
 	public function getName(): string
 	{
 		return $this->reflection->getName();
+	}
+
+	public function describe(): string
+	{
+		return sprintf('%s::%s', $this->declaringClass->getDisplayName(), $this->getName());
+	}
+
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->declaringClass->isBuiltin());
 	}
 
 	public function getFileName(): ?string

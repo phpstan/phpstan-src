@@ -12,6 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use stdClass;
+use function sprintf;
 
 final class DummyClassConstantReflection implements ClassConstantReflection
 {
@@ -60,6 +61,16 @@ final class DummyClassConstantReflection implements ClassConstantReflection
 	public function getName(): string
 	{
 		return $this->name;
+	}
+
+	public function describe(): string
+	{
+		return sprintf('%s::%s', $this->getDeclaringClass()->getDisplayName(), $this->name);
+	}
+
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getDeclaringClass()->isBuiltin());
 	}
 
 	public function getValueType(): Type

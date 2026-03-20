@@ -424,7 +424,7 @@ final class FunctionCallParametersCheck
 						foreach ($result->getDisallowedConstants() as $disallowedConstant) {
 							$errors[] = RuleErrorBuilder::message(sprintf(
 								$invalidConstantMessage,
-								$disallowedConstant->getName(),
+								$disallowedConstant->describe(),
 								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
 							))
 								->identifier('argument.invalidConstant')

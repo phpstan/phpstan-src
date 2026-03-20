@@ -80,3 +80,18 @@ filter_var('foo', FILTER_VALIDATE_EMAIL | FILTER_VALIDATE_URL);
 
 // round: single-value parameter - correct
 round(1.5, 0, PHP_ROUND_HALF_UP);
+
+class Foo
+{
+	private const PASSWORD_ALGORITHM = PASSWORD_ARGON2ID;
+
+	// user-defined class constant wrapping a valid constant - should not report
+	public function hashPassword(string $password): string
+	{
+		return password_hash($password, self::PASSWORD_ALGORITHM);
+	}
+}
+
+// user-defined global constant wrapping a valid constant - should not report
+define('MY_JSON_FLAGS', JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+json_encode([], MY_JSON_FLAGS);

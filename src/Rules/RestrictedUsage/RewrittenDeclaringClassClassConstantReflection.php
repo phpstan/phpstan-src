@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
+use function sprintf;
 
 final class RewrittenDeclaringClassClassConstantReflection implements ClassConstantReflection
 {
@@ -87,6 +88,16 @@ final class RewrittenDeclaringClassClassConstantReflection implements ClassConst
 	public function getName(): string
 	{
 		return $this->constantReflection->getName();
+	}
+
+	public function describe(): string
+	{
+		return sprintf('%s::%s', $this->getDeclaringClass()->getDisplayName(), $this->getName());
+	}
+
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getDeclaringClass()->isBuiltin());
 	}
 
 	public function getValueType(): Type

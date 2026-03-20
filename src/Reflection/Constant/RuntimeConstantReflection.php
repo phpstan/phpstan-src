@@ -20,6 +20,7 @@ final class RuntimeConstantReflection implements ConstantReflection
 		private TrinaryLogic $isDeprecated,
 		private ?string $deprecatedDescription,
 		private array $attributes,
+		private bool $internal,
 	)
 	{
 	}
@@ -27,6 +28,16 @@ final class RuntimeConstantReflection implements ConstantReflection
 	public function getName(): string
 	{
 		return $this->name;
+	}
+
+	public function describe(): string
+	{
+		return $this->name;
+	}
+
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->internal);
 	}
 
 	public function getValueType(): Type

@@ -20,6 +20,10 @@ interface ConstantReflection
 
 	public function getName(): string;
 
+	public function describe(): string;
+
+	public function isBuiltin(): TrinaryLogic;
+
 	public function getValueType(): Type;
 
 	public function isDeprecated(): TrinaryLogic;

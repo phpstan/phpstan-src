@@ -47,15 +47,6 @@ final class ParameterAllowedConstants
 		return $this->exclusiveGroups;
 	}
 
-	private function resolveConstantName(ConstantReflection $constant): string
-	{
-		if ($constant instanceof ClassConstantReflection) {
-			return $constant->getDeclaringClass()->getName() . '::' . $constant->getName();
-		}
-
-		return $constant->getName();
-	}
-
 	/**
 	 * @param list<ConstantReflection> $constants
 	 */
@@ -67,7 +58,11 @@ final class ParameterAllowedConstants
 		$names = [];
 
 		foreach ($constants as $constant) {
-			$name = $this->resolveConstantName($constant);
+			if ($constant->isBuiltin()->no()) {
+				continue;
+			}
+
+			$name = $constant->describe();
 			$names[] = $name;
 
 			if (in_array($name, $this->constants, true)) {

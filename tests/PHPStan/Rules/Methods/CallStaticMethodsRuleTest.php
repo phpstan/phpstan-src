@@ -1003,11 +1003,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/constant-parameter-check-static.php'], [
 			[
-				'Constant GREGORIAN is not allowed for parameter #2 $dateType of static method IntlDateFormatter::create().',
+				'Constant IntlDateFormatter::GREGORIAN is not allowed for parameter #2 $dateType of static method IntlDateFormatter::create().',
 				9,
 			],
 			[
-				'Constant TYPE_INT32 is not allowed for parameter #2 $style of static method NumberFormatter::create().',
+				'Constant NumberFormatter::TYPE_INT32 is not allowed for parameter #2 $style of static method NumberFormatter::create().',
 				15,
 			],
 		]);

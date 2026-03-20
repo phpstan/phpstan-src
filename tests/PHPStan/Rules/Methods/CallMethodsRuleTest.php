@@ -3933,11 +3933,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Constant ATTR_ERRMODE is not allowed for parameter #1 $mode of method PDOStatement::fetch().',
+				'Constant PDO::ATTR_ERRMODE is not allowed for parameter #1 $mode of method PDOStatement::fetch().',
 				17,
 			],
 			[
-				'Constant FRENCH_COLLATION is not allowed for parameter #2 $flags of method Collator::sort().',
+				'Constant Collator::FRENCH_COLLATION is not allowed for parameter #2 $flags of method Collator::sort().',
 				25,
 			],
 		]);

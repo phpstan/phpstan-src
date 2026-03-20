@@ -444,6 +444,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 				array_map(static fn (BetterReflectionAttribute $betterReflectionAttribute) => ReflectionAttributeFactory::create($betterReflectionAttribute), $constantReflection->getAttributes()),
 				InitializerExprContext::fromGlobalConstant($constantReflection),
 			),
+			$constantReflection->isInternal(),
 		);
 	}
 

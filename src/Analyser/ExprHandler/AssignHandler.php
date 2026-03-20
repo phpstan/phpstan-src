@@ -1014,7 +1014,7 @@ final class AssignHandler implements ExprHandler
 
 			} else {
 				// when $unionValues=false the array item-type will be replaced with $valueToWrite
-				// when $unionValues=true the existing array item-type will be union with $valueToWrite
+				// when $unionValues=true the existing array item-type will be union'ed with $valueToWrite -> type gets wider
 				$unionValues = false;
 				if ($i === 0) {
 					$unionValues = true;

@@ -2597,8 +2597,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$assignedExpr = $expressionType->getExpr()->getAssignedExpr();
 			if (
 				$assignedExpr instanceof Expr\ArrayDimFetch
-				&& $assignedExpr->var instanceof Expr\ArrayDimFetch
-				&& !$this->isNestedDimFetchPathValid($scope, $assignedExpr)
+				&& !$this->isDimFetchPathReachable($scope, $assignedExpr)
 			) {
 				unset($scope->expressionTypes[$exprString]);
 				unset($scope->nativeExpressionTypes[$exprString]);
@@ -2634,11 +2633,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $scope;
 	}
 
-	private function isNestedDimFetchPathValid(self $scope, Expr\ArrayDimFetch $dimFetch): bool
+	private function isDimFetchPathReachable(self $scope, Expr\ArrayDimFetch $dimFetch): bool
 	{
-		// Check that each intermediate ArrayDimFetch in the chain has the expected offset
 		if ($dimFetch->dim === null) {
 			return false;
+		}
+
+		if (!$dimFetch->var instanceof Expr\ArrayDimFetch) {
+			return true;
 		}
 
 		$varType = $scope->getType($dimFetch->var);
@@ -2648,11 +2650,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			return false;
 		}
 
-		if ($dimFetch->var instanceof Expr\ArrayDimFetch) {
-			return $this->isNestedDimFetchPathValid($scope, $dimFetch->var);
-		}
-
-		return true;
+		return $this->isDimFetchPathReachable($scope, $dimFetch->var);
 	}
 
 	private function unsetExpression(Expr $expr): self

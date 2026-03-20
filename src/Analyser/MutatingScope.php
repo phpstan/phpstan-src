@@ -2595,8 +2595,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			}
 
 			$assignedExpr = $expressionType->getExpr()->getAssignedExpr();
-			if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->var instanceof Expr\ArrayDimFetch && !$this->isNestedDimFetchPathValid($scope, $assignedExpr)) {
-				$invalidatedIntertwinedRefs[] = $exprString;
+			if (
+				$assignedExpr instanceof Expr\ArrayDimFetch
+				&& $assignedExpr->var instanceof Expr\ArrayDimFetch
+				&& !$this->isNestedDimFetchPathValid($scope, $assignedExpr)
+			) {
+				unset($scope->expressionTypes[$exprString]);
+				unset($scope->nativeExpressionTypes[$exprString]);
 				continue;
 			}
 
@@ -2624,12 +2629,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
 				);
 			}
-
-		}
-
-		foreach ($invalidatedIntertwinedRefs as $exprString) {
-			unset($scope->expressionTypes[$exprString]);
-			unset($scope->nativeExpressionTypes[$exprString]);
 		}
 
 		return $scope;

@@ -1016,7 +1016,15 @@ final class AssignHandler implements ExprHandler
 				$unionValues = false;
 				if ($i === 0) {
 					$unionValues = true;
-				} elseif ($overwrites === true && $i === count($offsetTypes) - 1) {
+				} elseif (
+					$overwrites === true
+					&& $i === count($offsetTypes) - 1
+					&&
+						(
+							$originalValueToWrite->isConstantScalarValue()->yes()
+							|| !$offsetValueType->getIterableValueType()->isSuperTypeOf($valueToWrite)->yes()
+						)
+				) {
 					$unionValues = true;
 				}
 

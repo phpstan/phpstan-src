@@ -89,4 +89,9 @@ class ArrayValuesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_values_list.php'], $expectedErrors);
 	}
 
+	public function testBug13629(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13629.php'], []);
+	}
+
 }

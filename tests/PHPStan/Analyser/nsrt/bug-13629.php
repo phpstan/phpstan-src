@@ -1,0 +1,33 @@
+<?php declare(strict_types = 1);
+
+namespace Bug13629;
+
+use function PHPStan\Testing\assertType;
+
+/**
+ * @param array<string, list<array{xmlNamespace: string, namespace: string, name: string}>> $xsdFiles
+ * @param array<string, list<array{xmlNamespace: string, namespace: string, name: string}>> $groupedByNamespace
+ * @param array<string, list<string>> $extraNamespaces
+ */
+function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces): void {
+	foreach ($extraNamespaces as $mergedNamespace) {
+		if (count($mergedNamespace) < 2) {
+			continue;
+		}
+
+		$targetNamespace = end($mergedNamespace);
+		if (!isset($groupedByNamespace[$targetNamespace])) {
+			continue;
+		}
+		$xmlNamespace = $groupedByNamespace[$targetNamespace][0]['xmlNamespace'];
+
+		$xsdFiles[$xmlNamespace] = [];
+		foreach ($mergedNamespace as $namespace) {
+			foreach ($groupedByNamespace[$namespace] ?? [] as $viewHelper) {
+				$xsdFiles[$xmlNamespace][$viewHelper['name']] = $viewHelper;
+			}
+		}
+		// After assigning with string keys ($viewHelper['name']), $xsdFiles[$xmlNamespace] should NOT be a list
+		assertType('array<int<0, max>, array{xmlNamespace: string, namespace: string, name: string}>', $xsdFiles[$xmlNamespace]);
+	}
+}

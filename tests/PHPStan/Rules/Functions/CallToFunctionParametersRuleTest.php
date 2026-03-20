@@ -2817,4 +2817,15 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug12850(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12850.php'], [
+			[
+				'Constants LOCK_EX, LOCK_SH cannot be combined for parameter #2 $operation of function flock.',
+				9,
+			],
+		]);
+	}
+
 }

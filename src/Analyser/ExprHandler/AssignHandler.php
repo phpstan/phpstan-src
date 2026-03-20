@@ -55,6 +55,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
@@ -969,6 +970,7 @@ final class AssignHandler implements ExprHandler
 			$offsetValueTypeStack[] = $offsetValueType;
 		}
 
+		$previousIterationUsedExistingBranch = false;
 		foreach (array_reverse($offsetTypes) as $i => [$offsetType]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
@@ -1009,8 +1011,31 @@ final class AssignHandler implements ExprHandler
 					}
 				}
 
+				$previousIterationUsedExistingBranch = true;
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				$innerValueToWrite = $valueToWrite;
+				if (
+					$i > 0
+					&& !$previousIterationUsedExistingBranch
+					&& $offsetType !== null
+					&& $offsetType->getConstantScalarValues() === []
+					&& $innerValueToWrite instanceof IntersectionType // @phpstan-ignore phpstanApi.instanceofType
+				) {
+					$filteredTypes = [];
+					$hasRemovedOffsetValue = false;
+					foreach ($innerValueToWrite->getTypes() as $innerType) {
+						if ($innerType instanceof HasOffsetValueType) {
+							$hasRemovedOffsetValue = true;
+							continue;
+						}
+						$filteredTypes[] = $innerType;
+					}
+					if ($hasRemovedOffsetValue && $filteredTypes !== []) {
+						$innerValueToWrite = TypeCombinator::intersect(...$filteredTypes);
+					}
+				}
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $innerValueToWrite, $i === 0);
+				$previousIterationUsedExistingBranch = false;
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {

@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\DirectRegistry;
@@ -43,7 +44,7 @@ final class DelayedRule implements Rule
 		return $this->errors;
 	}
 
-	public function processNode(Node $node, Scope&NodeCallbackInvoker $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$nodeType = get_class($node);
 		foreach ($this->registry->getRules($nodeType) as $rule) {

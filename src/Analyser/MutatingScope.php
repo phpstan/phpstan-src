@@ -23,7 +23,9 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\Traverser\TransformStaticTypeTraverser;
+use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -133,7 +135,7 @@ use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
 
-class MutatingScope implements Scope, NodeCallbackInvoker
+class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 {
 
 	public const KEEP_VOID_ATTRIBUTE_NAME = 'keepVoid';
@@ -4622,6 +4624,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		$nodeCallback($node, $this);
+	}
+
+	/**
+	 * @template TNodeType of Node
+	 * @template TValue
+	 * @param class-string<Collector<TNodeType, TValue>> $collectorType
+	 * @param TValue $data
+	 */
+	public function emitCollectedData(string $collectorType, mixed $data): void
+	{
+		$nodeCallback = $this->nodeCallback;
+		if ($nodeCallback === null) {
+			throw new ShouldNotHappenException('Node callback is not present in this scope');
+		}
+
+		$nodeCallback(new EmitCollectedDataNode($collectorType, $data), $this);
 	}
 
 }

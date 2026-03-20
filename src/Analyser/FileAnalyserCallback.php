@@ -11,6 +11,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\RootExportedNode;
+use PHPStan\Node\EmitCollectedDataNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Parser\Parser;
@@ -77,9 +78,14 @@ final class FileAnalyserCallback
 
 	public function __invoke(Node $node, Scope $scope): void
 	{
+		if ($node instanceof EmitCollectedDataNode) {
+			$this->fileCollectedData[$scope->getFile()][$node->getCollectorType()][] = $node->getData();
+			return;
+		}
+
 		$parserNodes = $this->parserNodes;
 
-		/** @var Scope&NodeCallbackInvoker $scope */
+		/** @var Scope&NodeCallbackInvoker&CollectedDataEmitter $scope */
 		if ($node instanceof Node\Stmt\Trait_) {
 			foreach (array_keys($this->linesToIgnore[$this->file] ?? []) as $lineToIgnore) {
 				if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {

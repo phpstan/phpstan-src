@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PhpParser\Node\Attribute;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -49,7 +50,7 @@ final class OverridingMethodRule implements Rule
 		return InClassMethodNode::class;
 	}
 
-	public function processNode(Node $node, Scope&NodeCallbackInvoker $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$method = $node->getMethodReflection();
 		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName());
@@ -329,7 +330,7 @@ final class OverridingMethodRule implements Rule
 	private function addErrors(
 		array $errors,
 		InClassMethodNode $classMethod,
-		Scope&NodeCallbackInvoker $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		if (count($errors) > 0) {

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Playground;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Container;
@@ -88,7 +89,7 @@ final class PromoteParameterRule implements Rule
 		return $this->originalRule = $originalRule;
 	}
 
-	public function processNode(Node $node, Scope&NodeCallbackInvoker $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if ($this->parameterValue) {
 			return [];

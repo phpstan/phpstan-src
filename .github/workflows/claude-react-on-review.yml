@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       github.event.pull_request.user.login == 'phpstan-bot'
+      && github.event.pull_request.state == 'open'
       && github.event.review.user.login != 'phpstan-bot'
+      && github.event.review.state != 'approved'
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2

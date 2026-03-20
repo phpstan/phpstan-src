@@ -4,7 +4,9 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
+#[RequiresPhp('>= 8.0')]
 class ParameterAllowedConstantsTest extends PHPStanTestCase
 {
 

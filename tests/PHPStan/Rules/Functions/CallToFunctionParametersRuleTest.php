@@ -1586,6 +1586,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/benevolent-superglobal-keys.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testFileParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/file.php'], [
@@ -1600,6 +1601,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testFlockParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/flock.php'], [

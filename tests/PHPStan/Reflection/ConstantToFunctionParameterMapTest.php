@@ -11,6 +11,7 @@ use function explode;
 use function implode;
 use function sprintf;
 use function str_contains;
+use const PHP_VERSION_ID;
 
 #[RequiresPhp('>= 8.0')]
 class ConstantToFunctionParameterMapTest extends PHPStanTestCase
@@ -105,6 +106,9 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 						);
 					} else {
 						$this->assertNotSame('', $constantName);
+						if ($constantName === 'FILEINFO_APPLE' && PHP_VERSION_ID < 80200) {
+							continue;
+						}
 						// Global constant
 						$constantNameNode = new Name($constantName);
 						$this->assertTrue(

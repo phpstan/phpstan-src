@@ -327,6 +327,8 @@ final class AssignHandler implements ExprHandler
 								if (is_int($keyValue) && $keyValue >= $implicitIndex) {
 									$implicitIndex = $keyValue + 1;
 								}
+							} else {
+								$implicitIndex = null;
 							}
 						}
 

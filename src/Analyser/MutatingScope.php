@@ -2835,7 +2835,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$exprExpr = $exprTypeHolder->getExpr();
 			if (
 				$exprExpr instanceof IntertwinedVariableByReferenceWithExpr
-				&& $exprExpr->isVariableToVariableReference()
+				&& (
+					$exprExpr->isVariableToVariableReference()
+					|| (
+						$expressionToInvalidate instanceof Variable
+						&& is_string($expressionToInvalidate->name)
+						&& (
+							$exprExpr->getVariableName() === $expressionToInvalidate->name
+							|| (
+								$exprExpr->getExpr() instanceof Variable
+								&& is_string($exprExpr->getExpr()->name)
+								&& $exprExpr->getExpr()->name === $expressionToInvalidate->name
+							)
+						)
+					)
+				)
 			) {
 				continue;
 			}

@@ -54,7 +54,7 @@ function testByRefInArray(): void
 	assertType('array{}', $a);
 
 	foo($b);
-	assertType('array{}', $a);
+	assertType('mixed', $a);
 }
 
 function testByRefInArrayWithKey(): void
@@ -66,7 +66,7 @@ function testByRefInArrayWithKey(): void
 	assertType("'hello'", $a);
 
 	$b['key'] = 42;
-	assertType("'hello'", $a);
+	assertType('42', $a);
 }
 
 function testMultipleByRefInArray(): void
@@ -82,6 +82,6 @@ function testMultipleByRefInArray(): void
 	$b[1] = 'foo';
 	$b[2] = 'bar';
 
-	assertType('1', $a);
-	assertType("'test'", $c);
+	assertType('2', $a);
+	assertType("'bar'", $c);
 }

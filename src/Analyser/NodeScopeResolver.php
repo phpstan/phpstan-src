@@ -74,6 +74,7 @@ use PHPStan\Node\DeepNodeCloner;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
+use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
@@ -3551,6 +3552,36 @@ class NodeScopeResolver
 							$storage,
 							$stmt,
 							$item->value,
+							new TypeExpr(new MixedType()),
+							$nodeCallback,
+						)->getScope();
+					}
+				}
+
+				if (
+					!$assignByReference
+					&& $calleeReflection !== null
+					&& !$calleeReflection->hasSideEffects()->no()
+					&& $arg->value instanceof Variable
+					&& is_string($arg->value->name)
+				) {
+					$argVarName = $arg->value->name;
+					foreach ($scope->expressionTypes as $exprTypeHolder) {
+						$exprExpr = $exprTypeHolder->getExpr();
+						if (!$exprExpr instanceof IntertwinedVariableByReferenceWithExpr) {
+							continue;
+						}
+						if ($exprExpr->getVariableName() !== $argVarName) {
+							continue;
+						}
+						if (!($exprExpr->getExpr() instanceof Variable) || !is_string($exprExpr->getExpr()->name)) {
+							continue;
+						}
+						$scope = $this->processVirtualAssign(
+							$scope,
+							$storage,
+							$stmt,
+							$exprExpr->getExpr(),
 							new TypeExpr(new MixedType()),
 							$nodeCallback,
 						)->getScope();

@@ -208,6 +208,17 @@ final class AssignHandler implements ExprHandler
 					$type,
 					$nativeType,
 				);
+
+				// When $targetVar is assigned (e.g. $b[0] = 42), update $refVarName
+				$scope = $scope->assignExpression(
+					new IntertwinedVariableByReferenceWithExpr(
+						$targetVarName,
+						new Variable($refVarName),
+						new ArrayDimFetch(new Variable($targetVarName), $key),
+					),
+					$type,
+					$nativeType,
+				);
 			}
 		}
 

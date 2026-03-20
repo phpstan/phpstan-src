@@ -252,6 +252,7 @@ class ParameterAllowedConstantsTest extends PHPStanTestCase
 		$function = $reflectionProvider->getFunction(new Name('json_encode'), null);
 		$flagsParam = $function->getVariants()[0]->getParameters()[1];
 
+		$this->assertNotNull($flagsParam->getAllowedConstants());
 		$this->assertTrue($flagsParam->getAllowedConstants()->isBitmask());
 
 		$prettyPrint = $reflectionProvider->getConstant(new Name('JSON_PRETTY_PRINT'), null);

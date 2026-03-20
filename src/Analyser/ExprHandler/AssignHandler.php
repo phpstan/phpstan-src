@@ -318,55 +318,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				if ($assignedExpr instanceof Expr\Array_) {
-					$implicitIndex = 0;
-					foreach ($assignedExpr->items as $arrayItem) {
-						if ($arrayItem->key !== null && $implicitIndex !== null) {
-							$keyValues = $scope->getType($arrayItem->key)->getConstantScalarValues();
-							if (count($keyValues) === 1) {
-								$keyValue = $keyValues[0];
-								if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-									$implicitIndex = $keyValue + 1;
-								}
-							} else {
-								$implicitIndex = null;
-							}
-						}
-
-						if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-							if ($arrayItem->key === null && $implicitIndex !== null) {
-								$implicitIndex++;
-							}
-							continue;
-						}
-
-						$refVarName = $arrayItem->value->name;
-						if ($arrayItem->key !== null) {
-							$dimExpr = $arrayItem->key;
-						} elseif ($implicitIndex !== null) {
-							$dimExpr = new Node\Scalar\Int_($implicitIndex);
-							$implicitIndex++;
-						} else {
-							continue;
-						}
-
-						$dimFetchExpr = new ArrayDimFetch(new Variable($var->name), $dimExpr);
-						$refType = $scope->getType(new Variable($refVarName));
-						$refNativeType = $scope->getNativeType(new Variable($refVarName));
-
-						// When $varName's array key changes, update $refVarName
-						$scope = $scope->assignExpression(
-							new IntertwinedVariableByReferenceWithExpr($var->name, new Variable($refVarName), $dimFetchExpr),
-							$refType,
-							$refNativeType,
-						);
-
-						// When $refVarName changes, update $varName's array key
-						$scope = $scope->assignExpression(
-							new IntertwinedVariableByReferenceWithExpr($refVarName, $dimFetchExpr, new Variable($refVarName)),
-							$refType,
-							$refNativeType,
-						);
-					}
+					$scope = $this->processArrayByRefItems($scope, $var->name, $assignedExpr, new Variable($var->name));
 				}
 			} else {
 				$nameExprResult = $nodeScopeResolver->processExprNode($stmt, $var->name, $scope, $storage, $nodeCallback, $context);
@@ -987,6 +939,76 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $scope->hasVariableType($varNode->name)->negate();
+	}
+
+	private function processArrayByRefItems(MutatingScope $scope, string $rootVarName, Expr\Array_ $arrayExpr, Expr $parentExpr): MutatingScope
+	{
+		$implicitIndex = 0;
+		foreach ($arrayExpr->items as $arrayItem) {
+			if ($arrayItem->key !== null && $implicitIndex !== null) {
+				$keyValues = $scope->getType($arrayItem->key)->getConstantScalarValues();
+				if (count($keyValues) === 1) {
+					$keyValue = $keyValues[0];
+					if (is_int($keyValue) && $keyValue >= $implicitIndex) {
+						$implicitIndex = $keyValue + 1;
+					}
+				} else {
+					$implicitIndex = null;
+				}
+			}
+
+			if ($arrayItem->key !== null) {
+				$dimExpr = $arrayItem->key;
+			} elseif ($implicitIndex !== null) {
+				$dimExpr = new Node\Scalar\Int_($implicitIndex);
+			} else {
+				$dimExpr = null;
+			}
+
+			if ($arrayItem->value instanceof Expr\Array_ && $dimExpr !== null) {
+				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
+				$scope = $this->processArrayByRefItems($scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
+			}
+
+			if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+				if ($arrayItem->key === null && $implicitIndex !== null) {
+					$implicitIndex++;
+				}
+				continue;
+			}
+
+			if ($dimExpr === null) {
+				if ($arrayItem->key === null && $implicitIndex !== null) {
+					$implicitIndex++;
+				}
+				continue;
+			}
+
+			$refVarName = $arrayItem->value->name;
+			if ($arrayItem->key === null && $implicitIndex !== null) {
+				$implicitIndex++;
+			}
+
+			$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
+			$refType = $scope->getType(new Variable($refVarName));
+			$refNativeType = $scope->getNativeType(new Variable($refVarName));
+
+			// When $rootVarName's array key changes, update $refVarName
+			$scope = $scope->assignExpression(
+				new IntertwinedVariableByReferenceWithExpr($rootVarName, new Variable($refVarName), $dimFetchExpr),
+				$refType,
+				$refNativeType,
+			);
+
+			// When $refVarName changes, update $rootVarName's array key
+			$scope = $scope->assignExpression(
+				new IntertwinedVariableByReferenceWithExpr($refVarName, $dimFetchExpr, new Variable($refVarName)),
+				$refType,
+				$refNativeType,
+			);
+		}
+
+		return $scope;
 	}
 
 	/**

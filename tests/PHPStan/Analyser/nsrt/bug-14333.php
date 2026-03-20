@@ -57,13 +57,13 @@ function testNested(): void
 
 	$b[0][0] = 2;
 
-	assertType('1', $a); // Should be 2 in real PHP, but nested array reference tracking is not implemented
+	assertType('2', $a);
 
 	$b[0] = [];
 
-	assertType('1', $a);
+	assertType('2', $a);
 
 	$b[0][0] = 3;
 
-	assertType('1', $a);
+	assertType('2', $a);
 }

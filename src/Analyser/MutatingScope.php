@@ -2605,7 +2605,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
-		foreach ($scope->expressionTypes as $expressionType) {
+		$invalidatedIntertwinedRefs = [];
+		foreach ($scope->expressionTypes as $exprString => $expressionType) {
 			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
 				continue;
 			}
@@ -2613,6 +2614,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 			if ($expressionType->getExpr()->getVariableName() !== $variableName) {
+				continue;
+			}
+
+			$assignedExpr = $expressionType->getExpr()->getAssignedExpr();
+			if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->var instanceof Expr\ArrayDimFetch && !$this->isNestedDimFetchPathValid($scope, $assignedExpr)) {
+				$invalidatedIntertwinedRefs[] = $exprString;
 				continue;
 			}
 
@@ -2643,10 +2650,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		}
 
+		foreach ($invalidatedIntertwinedRefs as $exprString) {
+			unset($scope->expressionTypes[$exprString]);
+			unset($scope->nativeExpressionTypes[$exprString]);
+			unset($preservedIntertwinedRefs[$exprString]);
+			unset($preservedNativeIntertwinedRefs[$exprString]);
+		}
+
 		// Re-add intertwined refs that were lost during propagation
 		foreach ($preservedIntertwinedRefs as $exprString => $exprTypeHolder) {
 			if (array_key_exists($exprString, $scope->expressionTypes)) {
 				continue;
+			}
+
+			$intertwinedExpr = $exprTypeHolder->getExpr();
+			if ($intertwinedExpr instanceof IntertwinedVariableByReferenceWithExpr) {
+				$assignedExpr = $intertwinedExpr->getAssignedExpr();
+				if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->var instanceof Expr\ArrayDimFetch && !$this->isNestedDimFetchPathValid($scope, $assignedExpr)) {
+					unset($preservedNativeIntertwinedRefs[$exprString]);
+					continue;
+				}
 			}
 
 			$scope->expressionTypes[$exprString] = $exprTypeHolder;
@@ -2660,6 +2683,27 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		}
 
 		return $scope;
+	}
+
+	private function isNestedDimFetchPathValid(self $scope, Expr\ArrayDimFetch $dimFetch): bool
+	{
+		// Check that each intermediate ArrayDimFetch in the chain has the expected offset
+		if ($dimFetch->dim === null) {
+			return false;
+		}
+
+		$varType = $scope->getType($dimFetch->var);
+		$dimType = $scope->getType($dimFetch->dim);
+
+		if (!$varType->hasOffsetValueType($dimType)->yes()) {
+			return false;
+		}
+
+		if ($dimFetch->var instanceof Expr\ArrayDimFetch) {
+			return $this->isNestedDimFetchPathValid($scope, $dimFetch->var);
+		}
+
+		return true;
 	}
 
 	private function unsetExpression(Expr $expr): self

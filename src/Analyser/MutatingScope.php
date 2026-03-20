@@ -2573,29 +2573,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self
 	{
 		$node = new Variable($variableName);
-
-		// Collect non-variable-to-variable intertwined refs for this variable before invalidation,
-		// as they may be lost during assignExpression and recursive propagation
-		$preservedIntertwinedRefs = [];
-		$preservedNativeIntertwinedRefs = [];
-		foreach ($this->expressionTypes as $exprString => $exprTypeHolder) {
-			$exprExpr = $exprTypeHolder->getExpr();
-			if (
-				!($exprExpr instanceof IntertwinedVariableByReferenceWithExpr)
-				|| $exprExpr->getVariableName() !== $variableName
-				|| $exprExpr->isVariableToVariableReference()
-			) {
-				continue;
-			}
-
-			$preservedIntertwinedRefs[$exprString] = $exprTypeHolder;
-			if (!array_key_exists($exprString, $this->nativeExpressionTypes)) {
-				continue;
-			}
-
-			$preservedNativeIntertwinedRefs[$exprString] = $this->nativeExpressionTypes[$exprString];
-		}
-
 		$scope = $this->assignExpression($node, $type, $nativeType);
 		if ($certainty->no()) {
 			throw new ShouldNotHappenException();
@@ -2653,33 +2630,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		foreach ($invalidatedIntertwinedRefs as $exprString) {
 			unset($scope->expressionTypes[$exprString]);
 			unset($scope->nativeExpressionTypes[$exprString]);
-			unset($preservedIntertwinedRefs[$exprString]);
-			unset($preservedNativeIntertwinedRefs[$exprString]);
-		}
-
-		// Re-add intertwined refs that were lost during propagation
-		foreach ($preservedIntertwinedRefs as $exprString => $exprTypeHolder) {
-			if (array_key_exists($exprString, $scope->expressionTypes)) {
-				continue;
-			}
-
-			$intertwinedExpr = $exprTypeHolder->getExpr();
-			if ($intertwinedExpr instanceof IntertwinedVariableByReferenceWithExpr) {
-				$assignedExpr = $intertwinedExpr->getAssignedExpr();
-				if ($assignedExpr instanceof Expr\ArrayDimFetch && $assignedExpr->var instanceof Expr\ArrayDimFetch && !$this->isNestedDimFetchPathValid($scope, $assignedExpr)) {
-					unset($preservedNativeIntertwinedRefs[$exprString]);
-					continue;
-				}
-			}
-
-			$scope->expressionTypes[$exprString] = $exprTypeHolder;
-		}
-		foreach ($preservedNativeIntertwinedRefs as $exprString => $exprTypeHolder) {
-			if (array_key_exists($exprString, $scope->nativeExpressionTypes)) {
-				continue;
-			}
-
-			$scope->nativeExpressionTypes[$exprString] = $exprTypeHolder;
 		}
 
 		return $scope;
@@ -2918,7 +2868,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$exprExpr = $exprTypeHolder->getExpr();
 			if (
 				$exprExpr instanceof IntertwinedVariableByReferenceWithExpr
-				&& $exprExpr->isVariableToVariableReference()
+				&& $expressionToInvalidate instanceof Variable
+				&& is_string($expressionToInvalidate->name)
+				&& (
+					$exprExpr->getVariableName() === $expressionToInvalidate->name
+					|| $this->getIntertwinedRefRootVariableName($exprExpr->getExpr()) === $expressionToInvalidate->name
+					|| $this->getIntertwinedRefRootVariableName($exprExpr->getAssignedExpr()) === $expressionToInvalidate->name
+				)
 			) {
 				continue;
 			}
@@ -2987,6 +2943,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->parentScope,
 			$this->nativeTypesPromoted,
 		);
+	}
+
+	private function getIntertwinedRefRootVariableName(Expr $expr): ?string
+	{
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			return $expr->name;
+		}
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return $this->getIntertwinedRefRootVariableName($expr->var);
+		}
+		return null;
 	}
 
 	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool

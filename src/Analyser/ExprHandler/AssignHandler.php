@@ -957,11 +957,11 @@ final class AssignHandler implements ExprHandler
 				if ($has->yes()) {
 					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 				} elseif ($has->maybe()) {
-					if (!$scope->hasExpressionType($dimFetch)->yes()) {
-						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
-					} else {
+					if ($scope->hasExpressionType($dimFetch)->yes()) {
 						$generalizeOnWrite = false;
 						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					} else {
+						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					}
 				} else {
 					$generalizeOnWrite = false;

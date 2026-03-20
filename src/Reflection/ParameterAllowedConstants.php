@@ -63,23 +63,29 @@ final class ParameterAllowedConstants
 			$name = $this->resolveConstantName($constant);
 			$names[] = $name;
 
-			if (!in_array($name, $this->constants, true)) {
-				$disallowed[] = $constant;
+			if (in_array($name, $this->constants, true)) {
+				continue;
 			}
+
+			$disallowed[] = $constant;
 		}
 
 		$violated = [];
 		foreach ($this->exclusiveGroups as $group) {
 			$matched = [];
 			foreach ($names as $name) {
-				if (in_array($name, $group, true)) {
-					$matched[] = $name;
+				if (!in_array($name, $group, true)) {
+					continue;
 				}
+
+				$matched[] = $name;
 			}
 
-			if (count($matched) >= 2) {
-				$violated[] = $matched;
+			if (count($matched) < 2) {
+				continue;
 			}
+
+			$violated[] = $matched;
 		}
 
 		return new AllowedConstantsResult($disallowed, $violated);

@@ -8,6 +8,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -36,6 +37,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
+use function lcfirst;
 use function max;
 use function sprintf;
 
@@ -87,6 +89,8 @@ final class FunctionCallParametersCheck
 		string $unresolvableReturnTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $namedArgumentMessage,
+		string $invalidConstantMessage,
+		string $exclusiveConstantsMessage,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -407,6 +411,36 @@ final class FunctionCallParametersCheck
 						->line($argumentLine)
 						->build();
 				}
+
+				if (
+					$parameter instanceof ExtendedParameterReflection
+					&& $parameter->getAllowedConstants() !== null
+				) {
+					$constantReflections = $this->resolveConstantReflections($argumentValue, $scope);
+					if ($constantReflections !== null) {
+						$result = $parameter->checkAllowedConstants($constantReflections);
+						foreach ($result->getDisallowedConstants() as $disallowedConstant) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$invalidConstantMessage,
+								$disallowedConstant->getName(),
+								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+							))
+								->identifier('argument.invalidConstant')
+								->line($argumentLine)
+								->build();
+						}
+						foreach ($result->getViolatedExclusiveGroups() as $group) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$exclusiveConstantsMessage,
+								implode(', ', $group),
+								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+							))
+								->identifier('argument.exclusiveConstants')
+								->line($argumentLine)
+								->build();
+						}
+					}
+				}
 			}
 
 			if (
@@ -700,6 +734,53 @@ final class FunctionCallParametersCheck
 		}
 
 		return implode(' ', $parts);
+	}
+
+	/**
+	 * @return list<ConstantReflection>|null Null when the expression is not a constant or bitmask of constants
+	 */
+	private function resolveConstantReflections(Expr $expr, Scope $scope): ?array
+	{
+		if ($expr instanceof Expr\ConstFetch) {
+			if (!$this->reflectionProvider->hasConstant($expr->name, $scope)) {
+				return null;
+			}
+
+			return [$this->reflectionProvider->getConstant($expr->name, $scope)];
+		}
+
+		if ($expr instanceof Expr\ClassConstFetch) {
+			if (!$expr->class instanceof Node\Name) {
+				return null;
+			}
+			if (!$expr->name instanceof Node\Identifier) {
+				return null;
+			}
+
+			$className = $scope->resolveName($expr->class);
+			if (!$this->reflectionProvider->hasClass($className)) {
+				return null;
+			}
+
+			$classReflection = $this->reflectionProvider->getClass($className);
+			if (!$classReflection->hasConstant($expr->name->name)) {
+				return null;
+			}
+
+			return [$classReflection->getConstant($expr->name->name)];
+		}
+
+		if ($expr instanceof Expr\BinaryOp\BitwiseOr) {
+			$left = $this->resolveConstantReflections($expr->left, $scope);
+			$right = $this->resolveConstantReflections($expr->right, $scope);
+			if ($left === null || $right === null) {
+				return null;
+			}
+
+			return [...$left, ...$right];
+		}
+
+		return null;
 	}
 
 	private function callReturnsByReference(Expr $expr, Scope $scope): bool

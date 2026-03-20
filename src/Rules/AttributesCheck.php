@@ -157,6 +157,8 @@ final class AttributesCheck
 					'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
 					'%s of attribute class ' . $attributeClassName . ' constructor contains unresolvable type.',
 					'Attribute class ' . $attributeClassName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+					'Constant %s is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
+					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 				);
 
 				foreach ($parameterErrors as $error) {

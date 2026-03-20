@@ -269,6 +269,8 @@ final class InstantiationRule implements Rule
 			'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
 			'%s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
 			'Class ' . $classDisplayName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+			'Constant %s is not allowed for %s of class ' . $classDisplayName . ' constructor.',
+			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
 		));
 	}
 

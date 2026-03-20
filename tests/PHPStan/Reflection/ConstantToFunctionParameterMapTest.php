@@ -117,27 +117,29 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 					$this->assertContains($key, $allowedKeys, sprintf('Unknown key "%s" in config for %s($%s).', $key, $entry, $parameterName));
 				}
 
-				if (isset($config['exclusiveGroups'])) {
-					$this->assertSame('bitmask', $config['type'], sprintf('exclusiveGroups only makes sense for bitmask type in %s($%s).', $entry, $parameterName));
-					$this->assertIsArray($config['exclusiveGroups']);
+				if (!isset($config['exclusiveGroups'])) {
+					continue;
+				}
 
-					foreach ($config['exclusiveGroups'] as $groupIndex => $group) {
-						$this->assertIsArray($group, sprintf('Exclusive group #%d for %s($%s) must be an array.', $groupIndex, $entry, $parameterName));
-						$this->assertGreaterThanOrEqual(2, count($group), sprintf('Exclusive group #%d for %s($%s) must have at least 2 constants.', $groupIndex, $entry, $parameterName));
+				$this->assertSame('bitmask', $config['type'], sprintf('exclusiveGroups only makes sense for bitmask type in %s($%s).', $entry, $parameterName));
+				$this->assertIsArray($config['exclusiveGroups']);
 
-						foreach ($group as $constantName) {
-							$this->assertContains(
+				foreach ($config['exclusiveGroups'] as $groupIndex => $group) {
+					$this->assertIsArray($group, sprintf('Exclusive group #%d for %s($%s) must be an array.', $groupIndex, $entry, $parameterName));
+					$this->assertGreaterThanOrEqual(2, count($group), sprintf('Exclusive group #%d for %s($%s) must have at least 2 constants.', $groupIndex, $entry, $parameterName));
+
+					foreach ($group as $constantName) {
+						$this->assertContains(
+							$constantName,
+							$config['constants'],
+							sprintf(
+								'Constant %s in exclusive group #%d for %s($%s) is not in the constants list.',
 								$constantName,
-								$config['constants'],
-								sprintf(
-									'Constant %s in exclusive group #%d for %s($%s) is not in the constants list.',
-									$constantName,
-									$groupIndex,
-									$entry,
-									$parameterName,
-								),
-							);
-						}
+								$groupIndex,
+								$entry,
+								$parameterName,
+							),
+						);
 					}
 				}
 			}

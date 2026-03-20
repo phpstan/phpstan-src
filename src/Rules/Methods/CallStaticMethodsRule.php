@@ -108,6 +108,8 @@ final class CallStaticMethodsRule implements Rule
 			'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
 			'%s of ' . $lowercasedMethodName . ' contains unresolvable type.',
 			$displayMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+			'Constant %s is not allowed for %s of ' . $lowercasedMethodName . '.',
+			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 		));
 
 		return $errors;

@@ -615,4 +615,18 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11006.php'], []);
 	}
 
+	public function testConstantParameterCheckInstantiation(): void
+	{
+		$this->analyse([__DIR__ . '/data/constant-parameter-check-instantiation.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #1 $flags of class finfo constructor.',
+				12,
+			],
+			[
+				'Constant GREGORIAN is not allowed for parameter #2 $dateType of class IntlDateFormatter constructor.',
+				18,
+			],
+		]);
+	}
+
 }

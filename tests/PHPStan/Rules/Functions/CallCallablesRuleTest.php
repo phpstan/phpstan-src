@@ -355,6 +355,17 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConstantParameterCheckCallables(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/constant-parameter-check-callables.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of closure.',
+				10,
+			],
+		]);
+	}
+
 	public function testMaybeNotCallable(): void
 	{
 		$errors = [];

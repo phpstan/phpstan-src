@@ -3921,6 +3921,27 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConstantParameterCheckMethods(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/constant-parameter-check-methods.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of method finfo::file().',
+				10,
+			],
+			[
+				'Constant ATTR_ERRMODE is not allowed for parameter #1 $mode of method PDOStatement::fetch().',
+				17,
+			],
+			[
+				'Constant FRENCH_COLLATION is not allowed for parameter #2 $flags of method Collator::sort().',
+				25,
+			],
+		]);
+	}
+
 	public function testBug11463(): void
 	{
 		$this->checkThisOnly = false;

@@ -139,6 +139,8 @@ final class CallCallablesRule implements Rule
 				'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
 				'%s of ' . $callableDescription . ' contains unresolvable type.',
 				ucfirst($callableDescription) . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+				'Constant %s is not allowed for %s of ' . $callableDescription . '.',
+				'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
 			),
 		);
 	}

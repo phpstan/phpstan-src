@@ -2758,4 +2758,50 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);
 	}
 
+	public function testConstantParameterCheck(): void
+	{
+		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of function json_encode.',
+				12,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of function json_encode.',
+				21,
+			],
+			[
+				'Constants SORT_NUMERIC, SORT_STRING cannot be combined for parameter #2 $flags of function sort.',
+				27,
+			],
+			[
+				'Constants SORT_NUMERIC, SORT_STRING cannot be combined for parameter #2 $flags of function sort.',
+				30,
+			],
+			[
+				'Constants ENT_QUOTES, ENT_NOQUOTES cannot be combined for parameter #2 $flags of function htmlspecialchars.',
+				33,
+			],
+			[
+				'Constants ENT_HTML401, ENT_HTML5 cannot be combined for parameter #2 $flags of function htmlspecialchars.',
+				33,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $filter of function filter_var.',
+				39,
+			],
+			[
+				'Constant JSON_PRETTY_PRINT is not allowed for parameter #4 $flags of function json_decode.',
+				51,
+			],
+			[
+				'Constants LOCK_SH, LOCK_EX cannot be combined for parameter #2 $operation of function flock.',
+				54,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter $flags of function json_encode.',
+				70,
+			],
+		]);
+	}
+
 }

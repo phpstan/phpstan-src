@@ -68,6 +68,8 @@ final class CallToFunctionParametersRule implements Rule
 			'Return type of call to function ' . $functionName . ' contains unresolvable type.',
 			'%s of function ' . $functionName . ' contains unresolvable type.',
 			'Function ' . $functionName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+			'Constant %s is not allowed for %s of function ' . $functionName . '.',
+			'Constants %s cannot be combined for %s of function ' . $functionName . '.',
 		);
 	}
 

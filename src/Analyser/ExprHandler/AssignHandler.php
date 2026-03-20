@@ -947,11 +947,11 @@ final class AssignHandler implements ExprHandler
 		$originalValueToWrite = $valueToWrite;
 
 		$offsetValueTypeStack = [$offsetValueType];
-		$overwritesExistingOffset = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
+		$generalizeOnWrite = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
-				$overwritesExistingOffset = false;
+				$generalizeOnWrite = false;
 			} else {
 				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				if ($has->yes()) {
@@ -960,11 +960,11 @@ final class AssignHandler implements ExprHandler
 					if (!$scope->hasExpressionType($dimFetch)->yes()) {
 						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					} else {
-						$overwritesExistingOffset = false;
+						$generalizeOnWrite = false;
 						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 					}
 				} else {
-					$overwritesExistingOffset = false;
+					$generalizeOnWrite = false;
 					$offsetValueType = new ConstantArrayType([], []);
 				}
 			}
@@ -1017,7 +1017,7 @@ final class AssignHandler implements ExprHandler
 				if ($i === 0) {
 					$unionValues = true;
 				} elseif (
-					$overwritesExistingOffset === true
+					$generalizeOnWrite
 					&& $i === count($offsetTypes) - 1
 					&&
 						(

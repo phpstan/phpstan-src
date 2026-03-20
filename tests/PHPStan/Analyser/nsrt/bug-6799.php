@@ -51,10 +51,10 @@ function testByRefInArray(): void
 	assertType('array{}', $a);
 
 	$b = [&$a];
-	assertType('mixed', $a); // Could stay array{}
+	assertType('array{}', $a);
 
 	foo($b);
-	assertType('mixed', $a);
+	assertType('array{}', $a);
 }
 
 function testByRefInArrayWithKey(): void
@@ -63,10 +63,10 @@ function testByRefInArrayWithKey(): void
 	assertType("'hello'", $a);
 
 	$b = ['key' => &$a];
-	assertType('mixed', $a); // Could stay 'hello'
+	assertType("'hello'", $a);
 
 	$b['key'] = 42;
-	assertType('mixed', $a); // Could be 42
+	assertType("'hello'", $a);
 }
 
 function testMultipleByRefInArray(): void
@@ -75,13 +75,13 @@ function testMultipleByRefInArray(): void
 	$c = 'test';
 
 	$b = [&$a, 'normal', &$c];
-	assertType('mixed', $a); // Could stay 1
-	assertType('mixed', $c); // Could stay 'test'
+	assertType('1', $a);
+	assertType("'test'", $c);
 
 	$b[0] = 2;
 	$b[1] = 'foo';
 	$b[2] = 'bar';
 
-	assertType('mixed', $a); // Could be 2
-	assertType('mixed', $c); // Could be 'bar'
+	assertType('1', $a);
+	assertType("'test'", $c);
 }

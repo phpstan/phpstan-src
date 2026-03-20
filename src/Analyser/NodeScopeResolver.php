@@ -3532,6 +3532,30 @@ class NodeScopeResolver
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				}
+
+				if (
+					!$assignByReference
+					&& $calleeReflection !== null
+					&& !$calleeReflection->hasSideEffects()->no()
+					&& $arg->value instanceof Array_
+				) {
+					foreach ($arg->value->items as $item) {
+						if (!$item->byRef) {
+							continue;
+						}
+						if (!($item->value instanceof Variable) || !is_string($item->value->name)) {
+							continue;
+						}
+						$scope = $this->processVirtualAssign(
+							$scope,
+							$storage,
+							$stmt,
+							$item->value,
+							new TypeExpr(new MixedType()),
+							$nodeCallback,
+						)->getScope();
+					}
+				}
 			}
 		}
 

@@ -12,12 +12,13 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
+use function is_string;
 
 /**
  * @implements ExprHandler<Array_>
@@ -76,7 +77,20 @@ final class ArrayHandler implements ExprHandler
 			}
 
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $arrayItem->value);
-			$scope = $scope->assignExpression($arrayItem->value, new MixedType(), new MixedType());
+
+			if ($arrayItem->value instanceof Expr\Variable && is_string($arrayItem->value->name)) {
+				$varName = $arrayItem->value->name;
+				$type = $scope->getType($arrayItem->value);
+				$nativeType = $scope->getNativeType($arrayItem->value);
+				// Ensure the variable is defined (PHP creates it if undefined when used by-ref)
+				$scope = $scope->assignExpression($arrayItem->value, $type, $nativeType);
+				// Register intertwined relationship
+				$scope = $scope->assignExpression(
+					new IntertwinedVariableByReferenceWithExpr($varName, $expr, new Expr\Variable($varName)),
+					$type,
+					$nativeType,
+				);
+			}
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 

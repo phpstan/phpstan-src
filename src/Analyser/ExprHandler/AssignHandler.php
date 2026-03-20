@@ -179,6 +179,38 @@ final class AssignHandler implements ExprHandler
 			);
 		}
 
+		if (
+			$expr instanceof Assign
+			&& $expr->var instanceof Variable
+			&& is_string($expr->var->name)
+			&& $expr->expr instanceof Expr\Array_
+		) {
+			$targetVarName = $expr->var->name;
+			foreach ($expr->expr->items as $i => $item) {
+				if (!$item->byRef) {
+					continue;
+				}
+				if (!($item->value instanceof Variable) || !is_string($item->value->name)) {
+					continue;
+				}
+				$refVarName = $item->value->name;
+				$key = $item->key ?? new Node\Scalar\Int_($i);
+				$type = $scope->getType($item->value);
+				$nativeType = $scope->getNativeType($item->value);
+
+				// When $refVarName is assigned, update $targetVar[$key]
+				$scope = $scope->assignExpression(
+					new IntertwinedVariableByReferenceWithExpr(
+						$refVarName,
+						new ArrayDimFetch(new Variable($targetVarName), $key),
+						new Variable($refVarName),
+					),
+					$type,
+					$nativeType,
+				);
+			}
+		}
+
 		$vars = $nodeScopeResolver->getAssignedVariables($expr->var);
 		if (count($vars) > 0) {
 			$varChangedScope = false;

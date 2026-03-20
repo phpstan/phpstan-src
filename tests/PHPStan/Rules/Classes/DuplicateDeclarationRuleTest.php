@@ -14,7 +14,7 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DuplicateDeclarationRule();
+		return new DuplicateDeclarationRule(new DuplicateDeclarationHelper());
 	}
 
 	public function testDuplicateDeclarations(): void

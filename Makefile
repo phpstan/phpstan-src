@@ -128,6 +128,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/property-override-attr-missing.php \
 		--exclude tests/PHPStan/Rules/Properties/data/override-attr-on-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/property-override-attr.php \
+		--exclude tests/PHPStan/Rules/Classes/data/bug-14250.php \
+		--exclude tests/PHPStan/Rules/Classes/data/bug-14250-promoted-properties.php \
 		--exclude tests/PHPStan/Rules/Operators/data/bug-3585.php \
 		src tests
 

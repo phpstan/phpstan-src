@@ -2573,6 +2573,29 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self
 	{
 		$node = new Variable($variableName);
+
+		// Collect non-variable-to-variable intertwined refs for this variable before invalidation,
+		// as they may be lost during assignExpression and recursive propagation
+		$preservedIntertwinedRefs = [];
+		$preservedNativeIntertwinedRefs = [];
+		foreach ($this->expressionTypes as $exprString => $exprTypeHolder) {
+			$exprExpr = $exprTypeHolder->getExpr();
+			if (
+				!($exprExpr instanceof IntertwinedVariableByReferenceWithExpr)
+				|| $exprExpr->getVariableName() !== $variableName
+				|| $exprExpr->isVariableToVariableReference()
+			) {
+				continue;
+			}
+
+			$preservedIntertwinedRefs[$exprString] = $exprTypeHolder;
+			if (!array_key_exists($exprString, $this->nativeExpressionTypes)) {
+				continue;
+			}
+
+			$preservedNativeIntertwinedRefs[$exprString] = $this->nativeExpressionTypes[$exprString];
+		}
+
 		$scope = $this->assignExpression($node, $type, $nativeType);
 		if ($certainty->no()) {
 			throw new ShouldNotHappenException();
@@ -2618,6 +2641,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				);
 			}
 
+		}
+
+		// Re-add intertwined refs that were lost during propagation
+		foreach ($preservedIntertwinedRefs as $exprString => $exprTypeHolder) {
+			if (array_key_exists($exprString, $scope->expressionTypes)) {
+				continue;
+			}
+
+			$scope->expressionTypes[$exprString] = $exprTypeHolder;
+		}
+		foreach ($preservedNativeIntertwinedRefs as $exprString => $exprTypeHolder) {
+			if (array_key_exists($exprString, $scope->nativeExpressionTypes)) {
+				continue;
+			}
+
+			$scope->nativeExpressionTypes[$exprString] = $exprTypeHolder;
 		}
 
 		return $scope;

@@ -961,34 +961,21 @@ final class AssignHandler implements ExprHandler
 				$dimExpr = $arrayItem->key;
 			} elseif ($implicitIndex !== null) {
 				$dimExpr = new Node\Scalar\Int_($implicitIndex);
+				$implicitIndex++;
 			} else {
-				$dimExpr = null;
+				continue;
 			}
 
-			if ($arrayItem->value instanceof Expr\Array_ && $dimExpr !== null) {
+			if ($arrayItem->value instanceof Expr\Array_) {
 				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
 				$scope = $this->processArrayByRefItems($scope, $rootVarName, $arrayItem->value, $dimFetchExpr);
 			}
 
 			if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-				if ($arrayItem->key === null && $implicitIndex !== null) {
-					$implicitIndex++;
-				}
-				continue;
-			}
-
-			if ($dimExpr === null) {
-				if ($arrayItem->key === null && $implicitIndex !== null) {
-					$implicitIndex++;
-				}
 				continue;
 			}
 
 			$refVarName = $arrayItem->value->name;
-			if ($arrayItem->key === null && $implicitIndex !== null) {
-				$implicitIndex++;
-			}
-
 			$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
 			$refType = $scope->getType(new Variable($refVarName));
 			$refNativeType = $scope->getNativeType(new Variable($refVarName));

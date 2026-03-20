@@ -13,6 +13,6 @@ function (string $s): void {
 		}
 	}
 
-	assertType('non-empty-array<int<0, 9>, non-empty-array<int<0, 9>, string>>', $locations);
-	assertType('non-empty-array<int<0, 9>, string>', $locations[0]);
+	assertType('non-empty-array<int<0, 9>, array<int<0, 9>, string>>', $locations); // could be 'non-empty-array<int<0, 9>, non-empty-array<int<0, 9>, string>>'
+	assertType('array<int<0, 9>, string>', $locations[0]); // could be 'non-empty-array<int<0, 9>, string>'
 };

@@ -1586,9 +1586,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/benevolent-superglobal-keys.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testFileParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/file.php'], [
+			[
+				'Constant FILE_APPEND is not allowed for parameter #2 $flags of function file.',
+				16,
+			],
 			[
 				'Parameter #2 $flags of function file expects 0|1|2|3|4|5|6|7|16|17|18|19|20|21|22|23, 8 given.',
 				16,
@@ -1596,9 +1601,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testFlockParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/flock.php'], [
+			[
+				'Constant FILE_APPEND is not allowed for parameter #2 $operation of function flock.',
+				45,
+			],
 			[
 				'Parameter #2 $operation of function flock expects int<0, 7>, 8 given.',
 				45,
@@ -1613,6 +1623,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $depth of function json_validate expects int<1, max>, 0 given.',
 				6,
+			],
+			[
+				'Constant JSON_BIGINT_AS_STRING is not allowed for parameter #3 $flags of function json_validate.',
+				7,
 			],
 			[
 				'Parameter #3 $flags of function json_validate expects 0|1048576, 2 given.',
@@ -2756,6 +2770,72 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug14312b(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14312b.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testConstantParameterCheck(): void
+	{
+		$this->analyse([__DIR__ . '/data/constant-parameter-check.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of function json_encode.',
+				12,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of function json_encode.',
+				21,
+			],
+			[
+				'Constants SORT_NUMERIC, SORT_STRING cannot be combined for parameter #2 $flags of function sort.',
+				27,
+			],
+			[
+				'Constants SORT_NUMERIC, SORT_STRING cannot be combined for parameter #2 $flags of function sort.',
+				30,
+			],
+			[
+				'Constants ENT_QUOTES, ENT_NOQUOTES cannot be combined for parameter #2 $flags of function htmlspecialchars.',
+				33,
+			],
+			[
+				'Constants ENT_HTML401, ENT_HTML5 cannot be combined for parameter #2 $flags of function htmlspecialchars.',
+				33,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $filter of function filter_var.',
+				39,
+			],
+			[
+				'Constant JSON_PRETTY_PRINT is not allowed for parameter #4 $flags of function json_decode.',
+				51,
+			],
+			[
+				'Constants LOCK_SH, LOCK_EX cannot be combined for parameter #2 $operation of function flock.',
+				54,
+			],
+			[
+				'Constant SORT_REGULAR is not allowed for parameter $flags of function json_encode.',
+				70,
+			],
+			[
+				'Combining constants with | is not allowed for parameter #2 $flags of function array_unique.',
+				76,
+			],
+			[
+				'Combining constants with | is not allowed for parameter #2 $filter of function filter_var.',
+				79,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug12850(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12850.php'], [
+			[
+				'Constants LOCK_EX, LOCK_SH cannot be combined for parameter #2 $operation of function flock.',
+				9,
+			],
+		]);
 	}
 
 }

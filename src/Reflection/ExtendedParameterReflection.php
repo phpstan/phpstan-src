@@ -29,4 +29,11 @@ interface ExtendedParameterReflection extends ParameterReflection
 	 */
 	public function getAttributes(): array;
 
+	public function getAllowedConstants(): ?ParameterAllowedConstants;
+
+	/**
+	 * @param list<ConstantReflection> $constants Global and/or class constant reflections
+	 */
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult;
+
 }

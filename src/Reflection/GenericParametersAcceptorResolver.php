@@ -105,6 +105,7 @@ final class GenericParametersAcceptorResolver
 					TrinaryLogic::createMaybe(),
 					null,
 					[],
+					null,
 				), $parameters),
 				$parametersAcceptor->isVariadic(),
 				$returnType,

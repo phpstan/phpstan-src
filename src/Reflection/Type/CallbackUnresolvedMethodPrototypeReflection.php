@@ -118,6 +118,7 @@ final class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMet
 							$parameter->isImmediatelyInvokedCallable(),
 							$parameter->getClosureThisType() !== null ? $this->transformStaticType($parameter->getClosureThisType()) : null,
 							$parameter->getAttributes(),
+							$parameter->getAllowedConstants(),
 						);
 					},
 					$acceptor->getParameters(),

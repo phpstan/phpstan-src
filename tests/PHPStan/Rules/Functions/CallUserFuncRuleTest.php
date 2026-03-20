@@ -102,4 +102,15 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testConstantParameterCheckCallUserFunc(): void
+	{
+		$this->analyse([__DIR__ . '/data/constant-parameter-check-call-user-func.php'], [
+			[
+				'Constant SORT_REGULAR is not allowed for parameter #2 $flags of callable passed to call_user_func().',
+				9,
+			],
+		]);
+	}
+
 }

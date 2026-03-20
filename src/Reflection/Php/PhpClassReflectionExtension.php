@@ -31,6 +31,7 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
+use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
@@ -100,6 +101,7 @@ final class PhpClassReflectionExtension
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private FileTypeMapper $fileTypeMapper,
 		private AttributeReflectionFactory $attributeReflectionFactory,
+		private ParameterAllowedConstantsMapProvider $allowedConstantsMapProvider,
 		private bool $inferPrivatePropertyTypeFromConstructor,
 	)
 	{
@@ -723,7 +725,7 @@ final class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($declaringClassName, $methodReflection->getName(), $methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
 				}
 			}
 
@@ -971,6 +973,8 @@ final class PhpClassReflectionExtension
 	 * @param array<string, Type> $closureThisParameters
 	 */
 	private function createNativeMethodVariant(
+		string $declaringClassName,
+		string $methodName,
 		FunctionSignature $methodSignature,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
@@ -1025,6 +1029,7 @@ final class PhpClassReflectionExtension
 				$immediatelyInvoked,
 				$closureThisType,
 				[],
+				$this->allowedConstantsMapProvider->getForMethodParameter($declaringClassName, $methodName, $parameterSignature->getName()),
 			);
 		}
 

@@ -99,6 +99,9 @@ final class CallMethodsRule implements Rule
 			'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
 			'%s of method ' . $messagesMethodName . ' contains unresolvable type.',
 			'Method ' . $messagesMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
+			'Constant %s is not allowed for %s of method ' . $messagesMethodName . '.',
+			'Constants %s cannot be combined for %s of method ' . $messagesMethodName . '.',
+			'Combining constants with | is not allowed for %s of method ' . $messagesMethodName . '.',
 		));
 	}
 

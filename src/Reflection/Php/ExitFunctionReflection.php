@@ -59,6 +59,7 @@ final class ExitFunctionReflection implements FunctionReflection
 						TrinaryLogic::createNo(),
 						null,
 						[],
+						null,
 					),
 				],
 				false,

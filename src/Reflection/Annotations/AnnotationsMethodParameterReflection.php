@@ -2,7 +2,9 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -78,6 +80,16 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 	public function getAttributes(): array
 	{
 		return [];
+	}
+
+	public function getAllowedConstants(): ?ParameterAllowedConstants
+	{
+		return null;
+	}
+
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult
+	{
+		return new AllowedConstantsResult([], [], false);
 	}
 
 }

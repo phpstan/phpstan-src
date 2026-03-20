@@ -771,6 +771,7 @@ final class ParametersAcceptorSelector
 						$parameter instanceof ExtendedParameterReflection ? $parameter->isImmediatelyInvokedCallable() : TrinaryLogic::createMaybe(),
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getClosureThisType() : null,
 						$parameter instanceof ExtendedParameterReflection ? $parameter->getAttributes() : [],
+						$parameter instanceof ExtendedParameterReflection ? $parameter->getAllowedConstants() : null,
 					);
 					continue;
 				}
@@ -830,6 +831,7 @@ final class ParametersAcceptorSelector
 					$immediatelyInvokedCallable,
 					$closureThisType,
 					$attributes,
+					null,
 				);
 
 				if ($isVariadic) {
@@ -928,6 +930,7 @@ final class ParametersAcceptorSelector
 			TrinaryLogic::createMaybe(),
 			null,
 			[],
+			null,
 		);
 	}
 

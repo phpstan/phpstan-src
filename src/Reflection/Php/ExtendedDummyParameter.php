@@ -2,8 +2,10 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -28,6 +30,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
+		private ?ParameterAllowedConstants $allowedConstants,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -66,6 +69,20 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 	public function getAttributes(): array
 	{
 		return $this->attributes;
+	}
+
+	public function getAllowedConstants(): ?ParameterAllowedConstants
+	{
+		return $this->allowedConstants;
+	}
+
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult
+	{
+		if ($this->allowedConstants === null) {
+			return new AllowedConstantsResult([], [], false);
+		}
+
+		return $this->allowedConstants->check($constants);
 	}
 
 }

@@ -2,8 +2,10 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
@@ -28,6 +30,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
+		private ?ParameterAllowedConstants $allowedConstants,
 	)
 	{
 	}
@@ -95,6 +98,20 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function getAttributes(): array
 	{
 		return $this->attributes;
+	}
+
+	public function getAllowedConstants(): ?ParameterAllowedConstants
+	{
+		return $this->allowedConstants;
+	}
+
+	public function checkAllowedConstants(array $constants): AllowedConstantsResult
+	{
+		if ($this->allowedConstants === null) {
+			return new AllowedConstantsResult([], [], false);
+		}
+
+		return $this->allowedConstants->check($constants);
 	}
 
 }

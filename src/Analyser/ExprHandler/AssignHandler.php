@@ -953,6 +953,8 @@ final class AssignHandler implements ExprHandler
 						$implicitIndex = $keyValue + 1;
 					}
 				} else {
+					// Non-constant key makes subsequent implicit indices unpredictable,
+					// so we stop tracking implicit indices for the rest of the array
 					$implicitIndex = null;
 				}
 			}

@@ -938,7 +938,7 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * @param list<ArrayDimFetch> $dimFetchStack
-	 * @param list<array{Type|null, ArrayDimFetch}> $offsetTypes
+	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
 	 *
 	 * @return array{Type, list<array{Expr, Type}>}
 	 */
@@ -947,10 +947,11 @@ final class AssignHandler implements ExprHandler
 		$originalValueToWrite = $valueToWrite;
 
 		$offsetValueTypeStack = [$offsetValueType];
+		$generalizeOnWrite = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
-
+				$generalizeOnWrite = false;
 			} else {
 				$has = $offsetValueType->hasOffsetValueType($offsetType);
 				if ($has->yes()) {
@@ -959,9 +960,11 @@ final class AssignHandler implements ExprHandler
 					if (!$scope->hasExpressionType($dimFetch)->yes()) {
 						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					} else {
+						$generalizeOnWrite = false;
 						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
 					}
 				} else {
+					$generalizeOnWrite = false;
 					$offsetValueType = new ConstantArrayType([], []);
 				}
 			}
@@ -1010,7 +1013,24 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+				// when $unionValues=false the array item-type will be replaced with $valueToWrite
+				// when $unionValues=true the existing array item-type will be union'ed with $valueToWrite -> type gets wider
+				$unionValues = false;
+				if ($i === 0) {
+					$unionValues = true;
+				} elseif (
+					$generalizeOnWrite
+					&& $i === count($offsetTypes) - 1
+					&&
+						(
+							$originalValueToWrite->isConstantScalarValue()->yes()
+							|| !$offsetValueType->getIterableValueType()->isSuperTypeOf($valueToWrite)->yes()
+						)
+				) {
+					$unionValues = true;
+				}
+
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
 			if ($arrayDimFetch === null || !$offsetValueType->isList()->yes()) {

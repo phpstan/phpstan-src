@@ -947,7 +947,7 @@ final class AssignHandler implements ExprHandler
 		$originalValueToWrite = $valueToWrite;
 
 		$offsetValueTypeStack = [$offsetValueType];
-		$overwrites = true;
+		$overwrites = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);

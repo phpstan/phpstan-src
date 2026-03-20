@@ -18,6 +18,7 @@ use PHPStan\Reflection\PhpVersionStaticAccessor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\Classes\DuplicateClassDeclarationRule;
+use PHPStan\Rules\Classes\DuplicateDeclarationHelper;
 use PHPStan\Rules\Classes\DuplicateDeclarationRule;
 use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
@@ -228,7 +229,7 @@ final class StubValidator
 				new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
 				$container->getParameter('checkMissingOverrideMethodAttribute'),
 			),
-			new DuplicateDeclarationRule(),
+			new DuplicateDeclarationRule(new DuplicateDeclarationHelper()),
 			new LocalTypeAliasesRule($localTypeAliasesCheck),
 			new LocalTypeTraitAliasesRule($localTypeAliasesCheck, $reflectionProvider),
 			new LocalTypeTraitUseAliasesRule($localTypeAliasesCheck),

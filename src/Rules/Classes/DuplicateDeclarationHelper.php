@@ -20,6 +20,7 @@ final class DuplicateDeclarationHelper
 {
 
 	/**
+	 * @param 'class'|'interface'|'trait'|'enum' $identifierType
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkClassLike(ClassLike $classLike, string $displayName, string $identifierType): array

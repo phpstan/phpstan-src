@@ -31,7 +31,8 @@ class NonworkingExample
 		assertType('array<int, array{foo?: bool}>', $this->arr);
 		if (!isset($this->arr[$index]['foo'])) {
 			$this->arr[$index]['foo'] = true;
-			assertType('non-empty-array<int, array{foo: true}>', $this->arr);
+			assertType('non-empty-array<int, array{foo?: bool}>', $this->arr);
+			assertType('true', $this->arr[$index]['foo']);
 		}
 		assertType('array<int, array{foo?: bool}>', $this->arr);
 		return $this->arr[$index]['foo']; // PHPStan does not realize 'foo' is set

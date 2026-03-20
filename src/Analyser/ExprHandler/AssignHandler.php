@@ -938,7 +938,7 @@ final class AssignHandler implements ExprHandler
 
 	/**
 	 * @param list<ArrayDimFetch> $dimFetchStack
-	 * @param list<array{Type|null, ArrayDimFetch}> $offsetTypes
+	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
 	 *
 	 * @return array{Type, list<array{Expr, Type}>}
 	 */

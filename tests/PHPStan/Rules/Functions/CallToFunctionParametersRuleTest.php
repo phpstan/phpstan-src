@@ -2816,6 +2816,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Constant SORT_REGULAR is not allowed for parameter $flags of function json_encode.',
 				70,
 			],
+			[
+				'Combining constants with | is not allowed for parameter #2 $flags of function array_unique.',
+				76,
+			],
+			[
+				'Combining constants with | is not allowed for parameter #2 $filter of function filter_var.',
+				79,
+			],
 		]);
 	}
 

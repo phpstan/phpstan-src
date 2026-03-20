@@ -70,6 +70,7 @@ final class CallToFunctionParametersRule implements Rule
 			'Function ' . $functionName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			'Constant %s is not allowed for %s of function ' . $functionName . '.',
 			'Constants %s cannot be combined for %s of function ' . $functionName . '.',
+			'Combining constants with | is not allowed for %s of function ' . $functionName . '.',
 		);
 	}
 

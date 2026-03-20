@@ -101,6 +101,7 @@ final class CallMethodsRule implements Rule
 			'Method ' . $messagesMethodName . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			'Constant %s is not allowed for %s of method ' . $messagesMethodName . '.',
 			'Constants %s cannot be combined for %s of method ' . $messagesMethodName . '.',
+			'Combining constants with | is not allowed for %s of method ' . $messagesMethodName . '.',
 		));
 	}
 

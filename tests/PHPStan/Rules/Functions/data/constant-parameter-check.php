@@ -68,3 +68,15 @@ json_decode('{}', flags: JSON_THROW_ON_ERROR);
 
 // named argument with wrong constant
 json_encode('{}', flags: SORT_REGULAR);
+
+// array_unique: single-value parameter - correct single constant
+array_unique($a, SORT_STRING);
+
+// array_unique: single-value parameter - bitmask not allowed
+array_unique($a, SORT_REGULAR | SORT_NUMERIC);
+
+// filter_var: single-value parameter - bitmask not allowed
+filter_var('foo', FILTER_VALIDATE_EMAIL | FILTER_VALIDATE_URL);
+
+// round: single-value parameter - correct
+round(1.5, 0, PHP_ROUND_HALF_UP);

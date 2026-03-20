@@ -48,6 +48,8 @@ final class ParameterAllowedConstants
 	 */
 	public function check(array $constants): AllowedConstantsResult
 	{
+		$bitmaskNotAllowed = !$this->isBitmask() && count($constants) > 1;
+
 		$disallowed = [];
 		$names = [];
 
@@ -63,24 +65,26 @@ final class ParameterAllowedConstants
 		}
 
 		$violated = [];
-		foreach ($this->exclusiveGroups as $group) {
-			$matched = [];
-			foreach ($names as $name) {
-				if (!in_array($name, $group, true)) {
+		if ($this->isBitmask()) {
+			foreach ($this->exclusiveGroups as $group) {
+				$matched = [];
+				foreach ($names as $name) {
+					if (!in_array($name, $group, true)) {
+						continue;
+					}
+
+					$matched[] = $name;
+				}
+
+				if (count($matched) < 2) {
 					continue;
 				}
 
-				$matched[] = $name;
+				$violated[] = $matched;
 			}
-
-			if (count($matched) < 2) {
-				continue;
-			}
-
-			$violated[] = $matched;
 		}
 
-		return new AllowedConstantsResult($disallowed, $violated);
+		return new AllowedConstantsResult($disallowed, $violated, $bitmaskNotAllowed);
 	}
 
 }

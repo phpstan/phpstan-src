@@ -222,6 +222,46 @@ class ParameterAllowedConstantsTest extends PHPStanTestCase
 		$this->assertTrue($result->isOk());
 	}
 
+	public function testBitmaskNotAllowedOnSingleParameter(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$function = $reflectionProvider->getFunction(new Name('array_unique'), null);
+		$flagsParam = $function->getVariants()[0]->getParameters()[1];
+
+		$this->assertSame('flags', $flagsParam->getName());
+		$this->assertNotNull($flagsParam->getAllowedConstants());
+		$this->assertFalse($flagsParam->getAllowedConstants()->isBitmask());
+
+		$sortRegular = $reflectionProvider->getConstant(new Name('SORT_REGULAR'), null);
+		$sortNumeric = $reflectionProvider->getConstant(new Name('SORT_NUMERIC'), null);
+
+		// Single constant is fine
+		$result = $flagsParam->checkAllowedConstants([$sortRegular]);
+		$this->assertTrue($result->isOk());
+		$this->assertFalse($result->isBitmaskNotAllowed());
+
+		// Bitmask on single-value parameter is not allowed
+		$result = $flagsParam->checkAllowedConstants([$sortRegular, $sortNumeric]);
+		$this->assertFalse($result->isOk());
+		$this->assertTrue($result->isBitmaskNotAllowed());
+	}
+
+	public function testBitmaskAllowedOnBitmaskParameter(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$function = $reflectionProvider->getFunction(new Name('json_encode'), null);
+		$flagsParam = $function->getVariants()[0]->getParameters()[1];
+
+		$this->assertTrue($flagsParam->getAllowedConstants()->isBitmask());
+
+		$prettyPrint = $reflectionProvider->getConstant(new Name('JSON_PRETTY_PRINT'), null);
+		$unescaped = $reflectionProvider->getConstant(new Name('JSON_UNESCAPED_SLASHES'), null);
+
+		$result = $flagsParam->checkAllowedConstants([$prettyPrint, $unescaped]);
+		$this->assertTrue($result->isOk());
+		$this->assertFalse($result->isBitmaskNotAllowed());
+	}
+
 	public function testBothDisallowedAndExclusiveViolation(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();

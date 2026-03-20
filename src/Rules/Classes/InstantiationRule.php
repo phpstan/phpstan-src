@@ -271,6 +271,7 @@ final class InstantiationRule implements Rule
 			'Class ' . $classDisplayName . ' constructor invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			'Constant %s is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
+			'Combining constants with | is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 		));
 	}
 

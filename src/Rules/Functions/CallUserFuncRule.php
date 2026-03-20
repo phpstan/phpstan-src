@@ -86,6 +86,7 @@ final class CallUserFuncRule implements Rule
 			ucfirst($callableDescription) . ' invoked with %s, but it\'s not allowed because of @no-named-arguments.',
 			'Constant %s is not allowed for %s of ' . $callableDescription . '.',
 			'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
+			'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
 		);
 	}
 

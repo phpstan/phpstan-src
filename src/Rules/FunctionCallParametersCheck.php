@@ -91,6 +91,7 @@ final class FunctionCallParametersCheck
 		string $namedArgumentMessage,
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
+		string $bitmaskNotAllowedMessage,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -437,6 +438,15 @@ final class FunctionCallParametersCheck
 								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
 							))
 								->identifier('argument.exclusiveConstants')
+								->line($argumentLine)
+								->build();
+						}
+						if ($result->isBitmaskNotAllowed()) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$bitmaskNotAllowedMessage,
+								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+							))
+								->identifier('argument.bitmaskNotAllowed')
 								->line($argumentLine)
 								->build();
 						}

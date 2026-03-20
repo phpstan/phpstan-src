@@ -12,13 +12,19 @@ final class AllowedConstantsResult
 	public function __construct(
 		private array $disallowedConstants,
 		private array $violatedExclusiveGroups,
+		private bool $bitmaskNotAllowed = false,
 	)
 	{
 	}
 
 	public function isOk(): bool
 	{
-		return $this->disallowedConstants === [] && $this->violatedExclusiveGroups === [];
+		return $this->disallowedConstants === [] && $this->violatedExclusiveGroups === [] && !$this->bitmaskNotAllowed;
+	}
+
+	public function isBitmaskNotAllowed(): bool
+	{
+		return $this->bitmaskNotAllowed;
 	}
 
 	/**

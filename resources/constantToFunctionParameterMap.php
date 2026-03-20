@@ -1909,67 +1909,8 @@ return [
 	// Methods with class constants
 	// ————————————————————————————————————————————
 
-	// PDO
-
-	'PDO::setAttribute' => [
-		'attribute' => [
-			'type' => 'single',
-			'constants' => [
-				'PDO::ATTR_AUTOCOMMIT',
-				'PDO::ATTR_PREFETCH',
-				'PDO::ATTR_TIMEOUT',
-				'PDO::ATTR_ERRMODE',
-				'PDO::ATTR_SERVER_VERSION',
-				'PDO::ATTR_CLIENT_VERSION',
-				'PDO::ATTR_SERVER_INFO',
-				'PDO::ATTR_CONNECTION_STATUS',
-				'PDO::ATTR_CASE',
-				'PDO::ATTR_CURSOR_NAME',
-				'PDO::ATTR_CURSOR',
-				'PDO::ATTR_ORACLE_NULLS',
-				'PDO::ATTR_PERSISTENT',
-				'PDO::ATTR_STATEMENT_CLASS',
-				'PDO::ATTR_FETCH_TABLE_NAMES',
-				'PDO::ATTR_FETCH_CATALOG_NAMES',
-				'PDO::ATTR_DRIVER_NAME',
-				'PDO::ATTR_STRINGIFY_FETCHES',
-				'PDO::ATTR_MAX_COLUMN_LEN',
-				'PDO::ATTR_EMULATE_PREPARES',
-				'PDO::ATTR_DEFAULT_FETCH_MODE',
-				'PDO::ATTR_DEFAULT_STR_PARAM',
-			],
-		],
-	],
-
-	'PDO::getAttribute' => [
-		'attribute' => [
-			'type' => 'single',
-			'constants' => [
-				'PDO::ATTR_AUTOCOMMIT',
-				'PDO::ATTR_PREFETCH',
-				'PDO::ATTR_TIMEOUT',
-				'PDO::ATTR_ERRMODE',
-				'PDO::ATTR_SERVER_VERSION',
-				'PDO::ATTR_CLIENT_VERSION',
-				'PDO::ATTR_SERVER_INFO',
-				'PDO::ATTR_CONNECTION_STATUS',
-				'PDO::ATTR_CASE',
-				'PDO::ATTR_CURSOR_NAME',
-				'PDO::ATTR_CURSOR',
-				'PDO::ATTR_ORACLE_NULLS',
-				'PDO::ATTR_PERSISTENT',
-				'PDO::ATTR_STATEMENT_CLASS',
-				'PDO::ATTR_FETCH_TABLE_NAMES',
-				'PDO::ATTR_FETCH_CATALOG_NAMES',
-				'PDO::ATTR_DRIVER_NAME',
-				'PDO::ATTR_STRINGIFY_FETCHES',
-				'PDO::ATTR_MAX_COLUMN_LEN',
-				'PDO::ATTR_EMULATE_PREPARES',
-				'PDO::ATTR_DEFAULT_FETCH_MODE',
-				'PDO::ATTR_DEFAULT_STR_PARAM',
-			],
-		],
-	],
+	// PDO::setAttribute/getAttribute are excluded because PDO drivers add
+	// their own attribute constants (PGSQL_ATTR_*, MYSQL_ATTR_*, etc.)
 
 	// PDOStatement
 

@@ -29,7 +29,7 @@ final class ParameterAllowedConstants
 	public function __construct(
 		private string $type,
 		private array $constants,
-		private array $exclusiveGroups = [],
+		private array $exclusiveGroups,
 	)
 	{
 	}

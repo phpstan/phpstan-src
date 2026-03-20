@@ -30,7 +30,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
-		private ?ParameterAllowedConstants $allowedConstants = null,
+		private ?ParameterAllowedConstants $allowedConstants,
 	)
 	{
 	}
@@ -108,7 +108,7 @@ final class ExtendedNativeParameterReflection implements ExtendedParameterReflec
 	public function checkAllowedConstants(array $constants): AllowedConstantsResult
 	{
 		if ($this->allowedConstants === null) {
-			return new AllowedConstantsResult([], []);
+			return new AllowedConstantsResult([], [], false);
 		}
 
 		return $this->allowedConstants->check($constants);

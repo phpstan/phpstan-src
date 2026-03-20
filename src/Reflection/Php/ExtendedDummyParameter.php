@@ -30,7 +30,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 		private TrinaryLogic $immediatelyInvokedCallable,
 		private ?Type $closureThisType,
 		private array $attributes,
-		private ?ParameterAllowedConstants $allowedConstants = null,
+		private ?ParameterAllowedConstants $allowedConstants,
 	)
 	{
 		parent::__construct($name, $type, $optional, $passedByReference, $variadic, $defaultValue);
@@ -79,7 +79,7 @@ final class ExtendedDummyParameter extends DummyParameter implements ExtendedPar
 	public function checkAllowedConstants(array $constants): AllowedConstantsResult
 	{
 		if ($this->allowedConstants === null) {
-			return new AllowedConstantsResult([], []);
+			return new AllowedConstantsResult([], [], false);
 		}
 
 		return $this->allowedConstants->check($constants);

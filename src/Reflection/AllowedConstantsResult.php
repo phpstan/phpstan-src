@@ -21,7 +21,7 @@ final class AllowedConstantsResult
 	public function __construct(
 		private array $disallowedConstants,
 		private array $violatedExclusiveGroups,
-		private bool $bitmaskNotAllowed = false,
+		private bool $bitmaskNotAllowed,
 	)
 	{
 	}

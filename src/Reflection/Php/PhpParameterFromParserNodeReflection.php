@@ -122,7 +122,7 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 
 	public function checkAllowedConstants(array $constants): AllowedConstantsResult
 	{
-		return new AllowedConstantsResult([], []);
+		return new AllowedConstantsResult([], [], false);
 	}
 
 }

@@ -89,7 +89,7 @@ final class AnnotationsMethodParameterReflection implements ExtendedParameterRef
 
 	public function checkAllowedConstants(array $constants): AllowedConstantsResult
 	{
-		return new AllowedConstantsResult([], []);
+		return new AllowedConstantsResult([], [], false);
 	}
 
 }

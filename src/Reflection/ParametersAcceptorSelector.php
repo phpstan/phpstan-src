@@ -831,6 +831,7 @@ final class ParametersAcceptorSelector
 					$immediatelyInvokedCallable,
 					$closureThisType,
 					$attributes,
+					null,
 				);
 
 				if ($isVariadic) {
@@ -929,6 +930,7 @@ final class ParametersAcceptorSelector
 			TrinaryLogic::createMaybe(),
 			null,
 			[],
+			null,
 		);
 	}
 

@@ -33,6 +33,21 @@ function testMultipleByRefInArray(): void
 	assertType("'bar'", $c);
 }
 
+function testNonConstantKeyBreaksImplicitIndex(int $key): void
+{
+	$a = 1;
+	$c = 'test';
+
+	$b = [$key => 'x', &$a, &$c];
+	assertType('1', $a);
+	assertType("'test'", $c);
+
+	// Since $key is non-constant, we don't know the implicit indices of &$a and &$c
+	// so we can't track the reference propagation
+	$b[0] = 2;
+	assertType('1', $a);
+}
+
 function testNested(): void
 {
 	$a = 1;

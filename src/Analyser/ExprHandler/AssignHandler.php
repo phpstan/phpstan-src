@@ -319,6 +319,7 @@ final class AssignHandler implements ExprHandler
 
 				if ($assignedExpr instanceof Expr\Array_) {
 					$implicitIndex = 0;
+					$implicitIndexCertain = true;
 					foreach ($assignedExpr->items as $arrayItem) {
 						if ($arrayItem->key !== null) {
 							$keyType = $scope->getType($arrayItem->key);
@@ -329,7 +330,11 @@ final class AssignHandler implements ExprHandler
 									if (is_int($keyValue) && $keyValue >= $implicitIndex) {
 										$implicitIndex = $keyValue + 1;
 									}
+								} else {
+									$implicitIndexCertain = false;
 								}
+							} else {
+								$implicitIndexCertain = false;
 							}
 						}
 
@@ -343,9 +348,12 @@ final class AssignHandler implements ExprHandler
 						$refVarName = $arrayItem->value->name;
 						if ($arrayItem->key !== null) {
 							$dimExpr = $arrayItem->key;
-						} else {
+						} elseif ($implicitIndexCertain) {
 							$dimExpr = new Node\Scalar\Int_($implicitIndex);
 							$implicitIndex++;
+						} else {
+							$implicitIndex++;
+							continue;
 						}
 
 						$dimFetchExpr = new ArrayDimFetch(new Variable($var->name), $dimExpr);

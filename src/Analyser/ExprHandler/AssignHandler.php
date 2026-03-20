@@ -36,6 +36,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
@@ -150,6 +151,34 @@ final class AssignHandler implements ExprHandler
 			true,
 		);
 		$scope = $result->getScope();
+
+		if (
+			$expr instanceof AssignRef
+			&& $expr->var instanceof Variable
+			&& is_string($expr->var->name)
+			&& $expr->expr instanceof Variable
+			&& is_string($expr->expr->name)
+		) {
+			$varName = $expr->var->name;
+			$refName = $expr->expr->name;
+			$type = $scope->getType($expr->var);
+			$nativeType = $scope->getNativeType($expr->var);
+
+			// When $varName is assigned, update $refName
+			$scope = $scope->assignExpression(
+				new IntertwinedVariableByReferenceWithExpr($varName, new Variable($refName), new Variable($varName)),
+				$type,
+				$nativeType,
+			);
+
+			// When $refName is assigned, update $varName
+			$scope = $scope->assignExpression(
+				new IntertwinedVariableByReferenceWithExpr($refName, new Variable($varName), new Variable($refName)),
+				$type,
+				$nativeType,
+			);
+		}
+
 		$vars = $nodeScopeResolver->getAssignedVariables($expr->var);
 		if (count($vars) > 0) {
 			$varChangedScope = false;

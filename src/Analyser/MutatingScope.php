@@ -2567,7 +2567,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty): self
+	/**
+	 * @param list<string> $intertwinedPropagatedFrom
+	 */
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, TrinaryLogic $certainty, array $intertwinedPropagatedFrom = []): self
 	{
 		$node = new Variable($variableName);
 		$scope = $this->assignExpression($node, $type, $nativeType);
@@ -2596,11 +2599,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				&& is_string($expressionType->getExpr()->getExpr()->name)
 				&& !$has->no()
 			) {
+				$targetVarName = $expressionType->getExpr()->getExpr()->name;
+				if (in_array($targetVarName, $intertwinedPropagatedFrom, true)) {
+					continue;
+				}
 				$scope = $scope->assignVariable(
-					$expressionType->getExpr()->getExpr()->name,
+					$targetVarName,
 					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
 					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
 					$has,
+					array_merge($intertwinedPropagatedFrom, [$variableName]),
 				);
 			} else {
 				$scope = $scope->assignExpression(
@@ -2825,6 +2833,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
+			if (
+				$exprExpr instanceof IntertwinedVariableByReferenceWithExpr
+				&& $exprExpr->isVariableToVariableReference()
+			) {
+				continue;
+			}
 			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}

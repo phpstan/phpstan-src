@@ -29,6 +29,7 @@ final class ParameterAllowedConstantsMapProvider
 			return null;
 		}
 
+		/** @var array{type: 'single'|'bitmask', constants: list<string>, exclusiveGroups?: list<list<string>>} $config */
 		$config = $map[$key][$parameterName];
 
 		return new ParameterAllowedConstants(

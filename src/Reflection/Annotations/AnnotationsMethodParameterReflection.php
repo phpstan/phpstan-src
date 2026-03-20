@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;

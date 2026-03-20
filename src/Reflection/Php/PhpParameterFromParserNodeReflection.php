@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\Reflection\AllowedConstantsResult;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;

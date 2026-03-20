@@ -27,14 +27,6 @@ final class ParameterAllowedConstants
 	}
 
 	/**
-	 * @return list<string>
-	 */
-	public function getConstants(): array
-	{
-		return $this->constants;
-	}
-
-	/**
 	 * @return list<list<string>>
 	 */
 	public function getExclusiveGroups(): array

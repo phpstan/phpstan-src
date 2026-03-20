@@ -48,6 +48,7 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 
 				$reflectionParameters = $variants[0]->getParameters();
 			} else {
+				$this->assertNotSame('', $entry);
 				// Function entry
 				$nameNode = new Name($entry);
 				$this->assertTrue(
@@ -103,6 +104,7 @@ class ConstantToFunctionParameterMapTest extends PHPStanTestCase
 							sprintf('Constant %s not found in reflection (used in %s($%s)).', $constantName, $entry, $parameterName),
 						);
 					} else {
+						$this->assertNotSame('', $constantName);
 						// Global constant
 						$constantNameNode = new Name($constantName);
 						$this->assertTrue(

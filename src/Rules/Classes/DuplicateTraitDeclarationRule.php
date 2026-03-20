@@ -5,15 +5,14 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Node\InClassNode;
+use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
-use function strtolower;
 
 /**
- * @implements Rule<InClassNode>
+ * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 0)]
-final class DuplicateDeclarationRule implements Rule
+final class DuplicateTraitDeclarationRule implements Rule
 {
 
 	public function __construct(private DuplicateDeclarationHelper $helper)
@@ -22,17 +21,15 @@ final class DuplicateDeclarationRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return InClassNode::class;
+		return InTraitNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$classReflection = $node->getClassReflection();
-
 		return $this->helper->checkClassLike(
 			$node->getOriginalNode(),
-			$classReflection->getDisplayName(),
-			strtolower($classReflection->getClassTypeDescription()),
+			$node->getTraitReflection()->getDisplayName(),
+			'trait',
 		);
 	}
 

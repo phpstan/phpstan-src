@@ -1590,6 +1590,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/file.php'], [
 			[
+				'Constant FILE_APPEND is not allowed for parameter #2 $flags of function file.',
+				16,
+			],
+			[
 				'Parameter #2 $flags of function file expects 0|1|2|3|4|5|6|7|16|17|18|19|20|21|22|23, 8 given.',
 				16,
 			],
@@ -1599,6 +1603,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testFlockParams(): void
 	{
 		$this->analyse([__DIR__ . '/data/flock.php'], [
+			[
+				'Constant FILE_APPEND is not allowed for parameter #2 $operation of function flock.',
+				45,
+			],
 			[
 				'Parameter #2 $operation of function flock expects int<0, 7>, 8 given.',
 				45,
@@ -1613,6 +1621,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $depth of function json_validate expects int<1, max>, 0 given.',
 				6,
+			],
+			[
+				'Constant JSON_BIGINT_AS_STRING is not allowed for parameter #3 $flags of function json_validate.',
+				7,
 			],
 			[
 				'Parameter #3 $flags of function json_validate expects 0|1048576, 2 given.',

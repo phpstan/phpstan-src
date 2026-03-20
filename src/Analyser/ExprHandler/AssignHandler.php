@@ -319,27 +319,19 @@ final class AssignHandler implements ExprHandler
 
 				if ($assignedExpr instanceof Expr\Array_) {
 					$implicitIndex = 0;
-					$implicitIndexCertain = true;
 					foreach ($assignedExpr->items as $arrayItem) {
-						if ($arrayItem->key !== null) {
-							$keyType = $scope->getType($arrayItem->key);
-							if ($keyType->isConstantScalarValue()->yes()) {
-								$keyValues = $keyType->getConstantScalarValues();
-								if (count($keyValues) === 1) {
-									$keyValue = $keyValues[0];
-									if (is_int($keyValue) && $keyValue >= $implicitIndex) {
-										$implicitIndex = $keyValue + 1;
-									}
-								} else {
-									$implicitIndexCertain = false;
+						if ($arrayItem->key !== null && $implicitIndex !== null) {
+							$keyValues = $scope->getType($arrayItem->key)->getConstantScalarValues();
+							if (count($keyValues) === 1) {
+								$keyValue = $keyValues[0];
+								if (is_int($keyValue) && $keyValue >= $implicitIndex) {
+									$implicitIndex = $keyValue + 1;
 								}
-							} else {
-								$implicitIndexCertain = false;
 							}
 						}
 
 						if (!$arrayItem->byRef || !$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
-							if ($arrayItem->key === null) {
+							if ($arrayItem->key === null && $implicitIndex !== null) {
 								$implicitIndex++;
 							}
 							continue;
@@ -348,11 +340,10 @@ final class AssignHandler implements ExprHandler
 						$refVarName = $arrayItem->value->name;
 						if ($arrayItem->key !== null) {
 							$dimExpr = $arrayItem->key;
-						} elseif ($implicitIndexCertain) {
+						} elseif ($implicitIndex !== null) {
 							$dimExpr = new Node\Scalar\Int_($implicitIndex);
 							$implicitIndex++;
 						} else {
-							$implicitIndex++;
 							continue;
 						}
 

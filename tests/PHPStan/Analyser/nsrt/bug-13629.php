@@ -27,6 +27,7 @@ function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces
 		$xsdFiles[$xmlNamespace] = [];
 		foreach ($mergedNamespace as $namespace) {
 			foreach ($groupedByNamespace[$namespace] ?? [] as $viewHelper) {
+				assertType('string', $viewHelper['name']);
 				$xsdFiles[$xmlNamespace][$viewHelper['name']] = $viewHelper;
 			}
 		}

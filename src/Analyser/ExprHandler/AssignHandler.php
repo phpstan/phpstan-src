@@ -948,7 +948,8 @@ final class AssignHandler implements ExprHandler
 
 		$offsetValueTypeStack = [$offsetValueType];
 		$generalizeOnWrite = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
-		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
+		$slicedOffsets = array_slice($offsetTypes, 0, -1);
+		foreach ($slicedOffsets as $k => [$offsetType, $dimFetch]) {
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
 				$generalizeOnWrite = false;
@@ -959,7 +960,13 @@ final class AssignHandler implements ExprHandler
 				} elseif ($has->maybe()) {
 					if ($scope->hasExpressionType($dimFetch)->yes()) {
 						$generalizeOnWrite = false;
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+						$scopeType = $scope->getType($dimFetch);
+						$nextOffsetType = $offsetTypes[$k + 1][0] ?? null;
+						if ($nextOffsetType !== null && $scopeType->hasOffsetValueType($nextOffsetType)->yes()) {
+							$offsetValueType = $scopeType;
+						} else {
+							$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+						}
 					} else {
 						$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 					}

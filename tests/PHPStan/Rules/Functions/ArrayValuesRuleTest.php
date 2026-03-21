@@ -91,7 +91,7 @@ class ArrayValuesRuleTest extends RuleTestCase
 
 	public function testBug13629(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-13629.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-13629.php'], []);
 	}
 
 }

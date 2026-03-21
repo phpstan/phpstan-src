@@ -992,6 +992,7 @@ final class AssignHandler implements ExprHandler
 				&& $arrayDimFetch !== null
 				&& $scope->hasExpressionType($arrayDimFetch)->yes()
 				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
+				&& (!$offsetValueType->isList()->yes() || IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($offsetType)->yes())
 			) {
 				$hasOffsetType = null;
 				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {

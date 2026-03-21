@@ -981,7 +981,9 @@ class IntersectionType implements CompoundType
 			}
 		}
 
-		if ($this->isList()->yes() && $this->getIterableValueType()->isArray()->yes()) {
+		if ($this->isList()->yes() && $this->getIterableValueType()->isArray()->yes()
+			&& ($offsetType === null || IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($offsetType)->yes())
+		) {
 			$result = TypeCombinator::intersect($result, new AccessoryArrayListType());
 		}
 

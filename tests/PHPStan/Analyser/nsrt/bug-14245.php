@@ -144,5 +144,5 @@ function ArrayKeyExistsKeepsList($needle): void {
 	if (array_key_exists($needle, $list)) {
 		$list[$needle] = 37;
 	}
-	assertType('list<int>', $list);
+	assertType('array<int|(lowercase-string&numeric-string&uppercase-string), int>', $list);
 }

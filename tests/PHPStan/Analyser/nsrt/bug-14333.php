@@ -68,6 +68,23 @@ function testNested(): void
 	assertType('2', $a);
 }
 
+function testMultipleScalarKeyValues(bool $key): void
+{
+	$a = 1;
+
+	// $key is true|false, so it maps to int 1 or 0 — two possible scalar values
+	$b = [$key => &$a];
+	assertType('1', $a);
+
+	// $key could be 0 (false) so $b[0] = 2 might update $a through the reference
+	$b[0] = 2;
+	assertType('1|2', $a);
+
+	// $key could be 1 (true) so $b[1] = 3 might also update $a
+	$b[1] = 3;
+	assertType('1|2|3', $a);
+}
+
 function foo(array &$a): void {}
 
 function testFunctionCall() {

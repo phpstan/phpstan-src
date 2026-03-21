@@ -48,9 +48,6 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 		}
 
 		$inCloneWith = (bool) $propertyFetch->getAttribute('inCloneWith', false);
-		if ($inCloneWith) {
-			return [];
-		}
 
 		$inFunction = $scope->getFunction();
 		if (
@@ -94,6 +91,10 @@ final class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyByPhpDocAssignOutOfClass')
 					->build();
+				continue;
+			}
+
+			if ($inCloneWith) {
 				continue;
 			}
 

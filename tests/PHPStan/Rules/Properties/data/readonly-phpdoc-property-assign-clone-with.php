@@ -29,6 +29,6 @@ function (Foo $foo): void {
 	clone ($foo, [
 		'priv' => 1, // reported in AccessPropertiesInAssignRule
 		'prot' => 1, // reported in AccessPropertiesInAssignRule
-		'pub' => 1, // reported in AccessPropertiesInAssignRule
+		'pub' => 1, // reported here - @readonly property assigned outside declaring class
 	]);
 };

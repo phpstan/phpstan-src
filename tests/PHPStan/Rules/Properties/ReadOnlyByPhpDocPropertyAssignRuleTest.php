@@ -188,7 +188,12 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.5')]
 	public function testCloneWith(): void
 	{
-		$this->analyse([__DIR__ . '/data/readonly-phpdoc-property-assign-clone-with.php'], []);
+		$this->analyse([__DIR__ . '/data/readonly-phpdoc-property-assign-clone-with.php'], [
+			[
+				'@readonly property ReadonlyPhpDocPropertyAssignCloneWith\Foo::$pub is assigned outside of its declaring class.',
+				29,
+			],
+		]);
 	}
 
 }

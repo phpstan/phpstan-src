@@ -177,7 +177,27 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.5')]
 	public function testCloneWith(): void
 	{
-		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
+		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], [
+			[
+				'Readonly property ReadonlyPropertyAssignCloneWith\Foo::$pubSet is assigned outside of its declaring class.',
+				28,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssignCloneWith\Bar::$value is assigned outside of its declaring class.',
+				47,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.5')]
+	public function testBug14063(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14063.php'], [
+			[
+				'Readonly property Bug14063\Obj::$value is assigned outside of its declaring class.',
+				18,
+			],
+		]);
 	}
 
 }

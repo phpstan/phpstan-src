@@ -47,9 +47,6 @@ final class ReadOnlyPropertyAssignRule implements Rule
 		}
 
 		$inCloneWith = (bool) $propertyFetch->getAttribute('inCloneWith', false);
-		if ($inCloneWith) {
-			return [];
-		}
 
 		$errors = [];
 		$reflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
@@ -81,6 +78,10 @@ final class ReadOnlyPropertyAssignRule implements Rule
 					->line($propertyFetch->name->getStartLine())
 					->identifier('property.readOnlyAssignOutOfClass')
 					->build();
+				continue;
+			}
+
+			if ($inCloneWith) {
 				continue;
 			}
 

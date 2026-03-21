@@ -646,7 +646,7 @@ class NodeScopeResolver
 					return;
 				}
 
-				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				$gatheredReturnStatements[] = new ReturnStatement($scope->toMutatingScope(), $node);
 			}, StatementContext::createTopLevel())->toPublic();
 
 			$this->callNodeCallback($nodeCallback, new FunctionReturnStatementsNode(
@@ -804,7 +804,7 @@ class NodeScopeResolver
 						return;
 					}
 
-					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+					$gatheredReturnStatements[] = new ReturnStatement($scope->toMutatingScope(), $node);
 				}, StatementContext::createTopLevel())->toPublic();
 
 				$methodReflection = $methodScope->getFunction();
@@ -842,11 +842,11 @@ class NodeScopeResolver
 
 					foreach ($gatheredReturnStatements as $statement) {
 						if ($finalScope === null) {
-							$finalScope = $statement->getScope()->toMutatingScope();
+							$finalScope = $statement->getScope();
 							continue;
 						}
 
-						$finalScope = $finalScope->mergeWith($statement->getScope()->toMutatingScope());
+						$finalScope = $finalScope->mergeWith($statement->getScope());
 					}
 
 					if ($finalScope !== null) {
@@ -855,7 +855,7 @@ class NodeScopeResolver
 
 				}
 			}
-			if (!$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
+			if ($scope->getClassReflection() !== null && !$scope->getClassReflection()->isAnonymous() && !$scope->isInAnonymousFunction()) {
 				$this->processPendingFibers($storage);
 			}
 		} elseif ($stmt instanceof Echo_) {
@@ -2763,7 +2763,7 @@ class NodeScopeResolver
 				return;
 			}
 
-			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+			$gatheredReturnStatements[] = new ReturnStatement($scope->toMutatingScope(), $node);
 		};
 
 		if (count($byRefUses) === 0) {
@@ -3142,7 +3142,7 @@ class NodeScopeResolver
 					return;
 				}
 
-				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
+				$gatheredReturnStatements[] = new ReturnStatement($scope->toMutatingScope(), $node);
 			}, StatementContext::createTopLevel())->toPublic();
 
 			$this->callNodeCallback($nodeCallback, new PropertyHookReturnStatementsNode(

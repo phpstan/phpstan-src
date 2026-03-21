@@ -10,7 +10,7 @@ use PhpParser\Node\Stmt;
 final class StatementExitPoint
 {
 
-	public function __construct(private Stmt $statement, private Scope $scope)
+	public function __construct(private Stmt $statement, private MutatingScope $scope)
 	{
 	}
 
@@ -19,7 +19,7 @@ final class StatementExitPoint
 		return $this->statement;
 	}
 
-	public function getScope(): Scope
+	public function getScope(): MutatingScope
 	{
 		return $this->scope;
 	}

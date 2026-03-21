@@ -4,7 +4,7 @@ namespace PHPStan\Node;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
-use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\MutatingScope;
 
 /**
  * @api
@@ -14,12 +14,12 @@ final class ReturnStatement
 
 	private Node\Stmt\Return_ $returnNode;
 
-	public function __construct(private Scope $scope, Return_ $returnNode)
+	public function __construct(private MutatingScope $scope, Return_ $returnNode)
 	{
 		$this->returnNode = $returnNode;
 	}
 
-	public function getScope(): Scope
+	public function getScope(): MutatingScope
 	{
 		return $this->scope;
 	}

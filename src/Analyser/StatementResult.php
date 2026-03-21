@@ -18,7 +18,7 @@ final class StatementResult
 	 * @param EndStatementResult[] $endStatements
 	 */
 	public function __construct(
-		private Scope $scope,
+		private MutatingScope $scope,
 		private bool $hasYield,
 		private bool $isAlwaysTerminating,
 		private array $exitPoints,
@@ -29,7 +29,7 @@ final class StatementResult
 	{
 	}
 
-	public function getScope(): Scope
+	public function getScope(): MutatingScope
 	{
 		return $this->scope;
 	}

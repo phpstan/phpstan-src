@@ -55,6 +55,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticTypeFactory;
@@ -953,10 +954,8 @@ final class AssignHandler implements ExprHandler
 					if (is_int($keyValue) && $keyValue >= $implicitIndex) {
 						$implicitIndex = $keyValue + 1;
 					}
-				} elseif ($keyType->isInteger()->no()) {
-					// All possible key values are strings, so they don't affect implicit int indices
-				} else {
-					// Key could be an integer but we don't know which one,
+				} elseif (!$keyType->isInteger()->no()) {
+					// Key could be an integer, but we don't know which one,
 					// so subsequent implicit indices are unpredictable
 					$implicitIndex = null;
 				}
@@ -968,7 +967,7 @@ final class AssignHandler implements ExprHandler
 				$dimExpr = new Node\Scalar\Int_($implicitIndex);
 				$implicitIndex++;
 			} else {
-				continue;
+				$dimExpr = new TypeExpr(new IntegerType());
 			}
 
 			if ($arrayItem->value instanceof Expr\Array_) {

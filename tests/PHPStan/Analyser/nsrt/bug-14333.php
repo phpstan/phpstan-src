@@ -43,9 +43,10 @@ function testNonConstantKeyBreaksImplicitIndex(int $key): void
 	assertType("'test'", $c);
 
 	// Since $key is non-constant, we don't know the implicit indices of &$a and &$c
-	// so we can't track the reference propagation
-	$b[0] = 2;
-	assertType('1', $a);
+	// so we can't correctly track the reference propagation
+	$b[2] = 2;
+	assertType("1|2|'test'|'x'", $a); // Could be 1|2
+	assertType("1|2|'test'|'x'", $c); // Could be 'test'|2
 }
 
 function testNested(): void
@@ -107,9 +108,9 @@ function testMultipleIntScalarKey(int $key): void
 	$b = [$key => 'x', &$a];
 	assertType('1', $a);
 
-	// $key could be 0 or 1, so implicit index could be 1 or 2 — unpredictable
-	$b[0] = 2;
-	assertType('1', $a);
+	// $key could be 0 or 1, so index could be 1 or 2 — unpredictable
+	$b[1] = 2;
+	assertType("1|2|'x'", $a); // Could be 1|2
 }
 
 function testStringNumericKey(): void
@@ -135,4 +136,30 @@ function testFunctionCall() {
 	foo($c);
 	assertType('array', $c);
 	assertType('mixed', $b);
+}
+
+function moreTest(bool $bool, int $int) {
+	$a = 1;
+	$b = 2;
+	$c = 3;
+	$d = 4;
+	$e = 5;
+	$f = 6;
+
+	$array = [&$a, '2' => &$b, &$c, $int => &$d, &$e, 'key' => &$f];
+
+	$array[0] = 'a0';
+	$array[1] = 'a1';
+	$array[2] = 'a2';
+	$array[3] = 'a3';
+	$array[4] = 'a4';
+	$array[5] = 'a5';
+	$array['key'] = 'aKey';
+
+	assertType("'a0'", $a);
+	assertType("'a2'", $b);
+	assertType("'a3'", $c);
+	assertType("1|2|3|4|5|6|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'|'aKey'", $d);
+	assertType("1|2|3|4|5|6|'a0'|'a1'|'a2'|'a3'|'a4'|'a5'|'aKey'", $e);
+	assertType("'aKey'", $f);
 }

@@ -948,9 +948,9 @@ final class AssignHandler implements ExprHandler
 		foreach ($arrayExpr->items as $arrayItem) {
 			if ($arrayItem->key !== null) {
 				$keyType = $scope->getType($arrayItem->key)->toArrayKey();
-				$keyValues = $keyType->getConstantScalarValues();
 
 				if ($implicitIndex !== null) {
+					$keyValues = $keyType->getConstantScalarValues();
 					if (count($keyValues) === 1) {
 						$keyValue = $keyValues[0];
 						if (is_int($keyValue) && $keyValue >= $implicitIndex) {
@@ -963,20 +963,7 @@ final class AssignHandler implements ExprHandler
 					}
 				}
 
-				// Use the coerced key value for the dim expression so that
-				// e.g. '2' => &$b creates ArrayDimFetch with Int_(2), matching $array[2] access
-				if (count($keyValues) === 1) {
-					$coercedKey = $keyValues[0];
-					if (is_int($coercedKey)) {
-						$dimExpr = new Node\Scalar\Int_($coercedKey);
-					} elseif (is_string($coercedKey)) {
-						$dimExpr = new Node\Scalar\String_($coercedKey);
-					} else {
-						$dimExpr = $arrayItem->key;
-					}
-				} else {
-					$dimExpr = $arrayItem->key;
-				}
+				$dimExpr = $arrayItem->key;
 			} elseif ($implicitIndex !== null) {
 				$dimExpr = new Node\Scalar\Int_($implicitIndex);
 				$implicitIndex++;

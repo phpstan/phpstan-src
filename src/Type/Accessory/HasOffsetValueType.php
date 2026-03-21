@@ -156,7 +156,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {
+		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->toArrayKey()->equals($this->offsetType)) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -165,7 +165,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->equals($this->offsetType)) {
+		if ($offsetType->isConstantScalarValue()->yes() && $offsetType->toArrayKey()->equals($this->offsetType)) {
 			return $this->valueType;
 		}
 

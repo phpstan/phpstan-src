@@ -137,6 +137,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FileTypeMapper;
@@ -1391,6 +1392,85 @@ class NodeScopeResolver
 			}
 			if ($context->isTopLevel() && $stmt->byRef) {
 				$finalScope = $finalScope->assignExpression(new ForeachValueByRefExpr($stmt->valueVar), new MixedType(), new MixedType());
+			}
+
+			// Propagate per-element type narrowings from foreach over constant arrays
+			if (
+				$context->isTopLevel()
+				&& count($breakExitPoints) === 0
+				&& $isIterableAtLeastOnce->yes()
+				&& !$stmt->byRef
+				&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
+				&& $exprType->isConstantArray()->yes()
+			) {
+				$constantArrays = $exprType->getConstantArrays();
+				if (
+					count($constantArrays) === 1
+					&& count($constantArrays[0]->getValueTypes()) > 0
+					&& count($constantArrays[0]->getValueTypes()) <= 32
+				) {
+					$constantArray = $constantArrays[0];
+					$offsetValueTypes = [];
+					foreach ($constantArray->getValueTypes() as $valueType) {
+						$constantStrings = $valueType->getConstantStrings();
+						if (count($constantStrings) === 1) {
+							$offsetValueTypes[] = $constantStrings[0];
+							continue;
+						}
+						$offsetValueTypes = [];
+						break;
+					}
+
+					if (count($offsetValueTypes) > 0) {
+						$bodyEndScope = $finalScopeResult->getScope();
+						$loopVar = $stmt->valueVar;
+						foreach ($finalScope->getDefinedVariables() as $varName) {
+							if ($varName === $loopVar->name) {
+								continue;
+							}
+							$varExpr = new Variable($varName);
+							$varType = $finalScope->getType($varExpr);
+							if (!$varType->isArray()->yes()) {
+								continue;
+							}
+
+							// Skip if the variable was modified (assigned) in the body
+							$preLoopVarType = $scope->getType($varExpr);
+							if (!$preLoopVarType->equals($varType)) {
+								continue;
+							}
+
+							$dimFetch = new ArrayDimFetch($varExpr, $loopVar);
+							// Only proceed if the body specifically narrowed $var[$field]
+							if (!$bodyEndScope->hasExpressionType($dimFetch)->yes()) {
+								continue;
+							}
+							// Skip if the pre-loop scope already had this expression type
+							if ($scope->hasExpressionType($dimFetch)->yes()) {
+								continue;
+							}
+
+							$dimFetchType = $bodyEndScope->getType($dimFetch);
+							$genericValueType = $varType->getIterableValueType();
+
+							if ($dimFetchType->equals($genericValueType)) {
+								continue;
+							}
+
+							$accessories = [];
+							foreach ($offsetValueTypes as $offsetType) {
+								$accessories[] = new HasOffsetValueType($offsetType, $dimFetchType);
+							}
+							$narrowedVarType = TypeCombinator::intersect($varType, ...$accessories);
+							$finalScope = $finalScope->assignVariable(
+								$varName,
+								$narrowedVarType,
+								TypeCombinator::intersect($finalScope->getNativeType($varExpr), ...$accessories),
+								TrinaryLogic::createYes(),
+							);
+						}
+					}
+				}
 			}
 
 			return new InternalStatementResult(

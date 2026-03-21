@@ -21,6 +21,9 @@ function test(array $xsdFiles, array $groupedByNamespace, array $extraNamespaces
 		}
 		$xmlNamespace = $groupedByNamespace[$targetNamespace][0]['xmlNamespace'];
 
+		assertType('string', $xmlNamespace);
+		assertType('non-empty-list<string>&hasOffsetValue(1, string)', $mergedNamespace);
+
 		$xsdFiles[$xmlNamespace] = [];
 		foreach ($mergedNamespace as $namespace) {
 			foreach ($groupedByNamespace[$namespace] ?? [] as $viewHelper) {

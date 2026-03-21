@@ -18,3 +18,6 @@ foreach ($arr as $id => $dummy) {
     $total[$id]['d'] = '0';
     assertType("non-empty-array<'a'|'b'|'c'|'d', '0'>&hasOffsetValue('d', '0')", $total[$id]);
 }
+
+$total[$id]['e'] = '1';
+assertType("non-empty-array<'a'|'b'|'c'|'d'|'e', '0'|'1'>&hasOffsetValue('e', '1')", $total[$id]);

@@ -946,15 +946,18 @@ final class AssignHandler implements ExprHandler
 		$implicitIndex = 0;
 		foreach ($arrayExpr->items as $arrayItem) {
 			if ($arrayItem->key !== null && $implicitIndex !== null) {
-				$keyValues = $scope->getType($arrayItem->key)->getConstantScalarValues();
+				$keyType = $scope->getType($arrayItem->key)->toArrayKey();
+				$keyValues = $keyType->getConstantScalarValues();
 				if (count($keyValues) === 1) {
 					$keyValue = $keyValues[0];
 					if (is_int($keyValue) && $keyValue >= $implicitIndex) {
 						$implicitIndex = $keyValue + 1;
 					}
+				} elseif ($keyType->isInteger()->no()) {
+					// All possible key values are strings, so they don't affect implicit int indices
 				} else {
-					// Non-constant key makes subsequent implicit indices unpredictable,
-					// so we stop tracking implicit indices for the rest of the array
+					// Key could be an integer but we don't know which one,
+					// so subsequent implicit indices are unpredictable
 					$implicitIndex = null;
 				}
 			}

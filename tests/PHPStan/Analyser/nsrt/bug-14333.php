@@ -85,6 +85,45 @@ function testMultipleScalarKeyValues(bool $key): void
 	assertType('1|2|3', $a);
 }
 
+/** @param 'a'|'b' $key */
+function testMultipleScalarKey(string $key): void
+{
+	$a = 1;
+
+	$b = [$key => 'x', &$a];
+	assertType('1', $a);
+
+	// $key has multiple possible values but both are strings,
+	// so the implicit index for &$a is still 0
+	$b[0] = 2;
+	assertType('2', $a);
+}
+
+/** @param 0|1 $key */
+function testMultipleIntScalarKey(int $key): void
+{
+	$a = 1;
+
+	$b = [$key => 'x', &$a];
+	assertType('1', $a);
+
+	// $key could be 0 or 1, so implicit index could be 1 or 2 — unpredictable
+	$b[0] = 2;
+	assertType('1', $a);
+}
+
+function testStringNumericKey(): void
+{
+	$a = 1;
+
+	// PHP coerces string "2" to int 2 as array key, so next implicit index is 3
+	$b = ['2' => 'x', &$a];
+	assertType('1', $a);
+
+	$b[3] = 2;
+	assertType('2', $a);
+}
+
 function foo(array &$a): void {}
 
 function testFunctionCall() {

@@ -991,13 +991,16 @@ final class AssignHandler implements ExprHandler
 				$offsetType !== null
 				&& $arrayDimFetch !== null
 				&& $scope->hasExpressionType($arrayDimFetch)->yes()
-				&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
 			) {
 				$hasOffsetType = null;
-				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
-					$hasOffsetType = new HasOffsetValueType($offsetType, $valueToWrite);
+				if ($offsetValueType->hasOffsetValueType($offsetType)->no()) {
+					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite);
+				} else {
+					if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
+						$hasOffsetType = new HasOffsetValueType($offsetType, $valueToWrite);
+					}
+					$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
 				}
-				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
 
 				if ($valueToWrite->isArray()->yes()) {
 					if ($hasOffsetType !== null) {

@@ -267,7 +267,7 @@ class ArrayColumnVisibilityNonFinalTest
 	public function testNonFinalConstant(array $objects): void
 	{
 		assertType('array{int}', array_column($objects, 'pub'));
-		assertType('list<int>', array_column($objects, 'prot'));
+		assertType('list<int>', array_column($objects, 'prot')); // Could be array{}|array{int}
 		assertType('list', array_column($objects, 'priv'));
 	}
 

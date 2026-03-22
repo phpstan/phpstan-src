@@ -453,7 +453,19 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9946.php'], []);
 	}
 
+	#[RequiresPhp('< 8.0')]
 	public function testBug10324(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10324.php'], [
+			[
+				'Parameter #3 $flags of class RecursiveIteratorIterator constructor expects 0|16, 2 given.',
+				23,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug10324On80(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10324.php'], [
 			[

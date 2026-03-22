@@ -7827,7 +7827,7 @@ return [
 'PDOStatement::bindValue' => ['bool', 'parameter'=>'mixed', 'value'=>'mixed', 'data_type='=>'int'],
 'PDOStatement::closeCursor' => ['bool'],
 'PDOStatement::columnCount' => ['0|positive-int'],
-'PDOStatement::debugDumpParams' => ['void'],
+'PDOStatement::debugDumpParams' => ['?bool'],
 'PDOStatement::errorCode' => ['string|null'],
 'PDOStatement::errorInfo' => ['array'],
 'PDOStatement::execute' => ['bool', 'bound_input_params='=>'?array'],

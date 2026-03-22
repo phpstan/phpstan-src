@@ -57,4 +57,14 @@ class CallMethodsRuleNamedArgumentRenamedParameterTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7434(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7434.php'], [
+			[
+				'Call to Bug7434\Contract::method() uses named argument for parameter $val, but Bug7434\ImplementationWithDifferentName renames it to $wrong.',
+				28,
+			],
+		]);
+	}
+
 }

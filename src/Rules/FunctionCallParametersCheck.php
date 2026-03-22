@@ -108,20 +108,24 @@ final class FunctionCallParametersCheck
 
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
-		$hasAllowedConstants = false;
+		$allowedConstantsTypes = [];
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			if (
 				$parameter instanceof ExtendedParameterReflection
-				&& !$hasAllowedConstants
 				&& $parameter->getAllowedConstants() !== null
 			) {
-				$hasAllowedConstants = true;
+				$allowedConstantsTypes[] = $parameter->getType();
 			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
 
 			$functionParametersMaxCount++;
+		}
+
+		$allowedConstantsType = null;
+		if (count($allowedConstantsTypes) > 0) {
+			$allowedConstantsType = TypeCombinator::union(...$allowedConstantsTypes);
 		}
 
 		if ($parametersAcceptor->isVariadic()) {
@@ -469,7 +473,7 @@ final class FunctionCallParametersCheck
 									->line($argumentLine)
 									->build();
 							}
-						} elseif ($isBuiltin && $hasAllowedConstants) {
+						} elseif ($isBuiltin && $allowedConstantsType !== null && $allowedConstantsType->isSuperTypeOf($parameterType)->yes()) {
 							foreach ($constantReflections as $constantReflection) {
 								if ($constantReflection->isBuiltin()->no()) {
 									continue;

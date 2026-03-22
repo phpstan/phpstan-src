@@ -102,3 +102,6 @@ json_decode('{}', null, JSON_THROW_ON_ERROR);
 json_decode($json, true);
 json_decode($json, null);
 json_decode($json, false);
+
+// PHP_OS passed to $subject of preg_match - should not report
+preg_match('/foo/', PHP_OS);

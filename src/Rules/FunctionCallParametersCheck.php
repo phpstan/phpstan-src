@@ -108,7 +108,15 @@ final class FunctionCallParametersCheck
 
 		$functionParametersMinCount = 0;
 		$functionParametersMaxCount = 0;
+		$hasAllowedConstants = false;
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
+			if (
+				$parameter instanceof ExtendedParameterReflection
+				&& !$hasAllowedConstants
+				&& $parameter->getAllowedConstants() !== null
+			) {
+				$hasAllowedConstants = true;
+			}
 			if (!$parameter->isOptional()) {
 				$functionParametersMinCount++;
 			}
@@ -426,40 +434,55 @@ final class FunctionCallParametersCheck
 
 				if (
 					$parameter instanceof ExtendedParameterReflection
-					&& $parameter->getAllowedConstants() !== null
 					&& $scope->getPhpVersion()->supportsNamedArguments()->yes()
 				) {
 					$constantReflections = $this->resolveConstantReflections($argumentValue, $scope);
 					if ($constantReflections !== null) {
-						$result = $parameter->checkAllowedConstants($constantReflections);
-						foreach ($result->getDisallowedConstants() as $disallowedConstant) {
-							$errors[] = RuleErrorBuilder::message(sprintf(
-								$invalidConstantMessage,
-								$disallowedConstant->describe(),
-								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
-							))
-								->identifier('argument.invalidConstant')
-								->line($argumentLine)
-								->build();
-						}
-						foreach ($result->getViolatedExclusiveGroups() as $group) {
-							$errors[] = RuleErrorBuilder::message(sprintf(
-								$exclusiveConstantsMessage,
-								implode(', ', $group),
-								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
-							))
-								->identifier('argument.exclusiveConstants')
-								->line($argumentLine)
-								->build();
-						}
-						if ($result->isBitmaskNotAllowed()) {
-							$errors[] = RuleErrorBuilder::message(sprintf(
-								$bitmaskNotAllowedMessage,
-								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
-							))
-								->identifier('argument.bitmaskNotAllowed')
-								->line($argumentLine)
-								->build();
+						if ($parameter->getAllowedConstants() !== null) {
+							$result = $parameter->checkAllowedConstants($constantReflections);
+							foreach ($result->getDisallowedConstants() as $disallowedConstant) {
+								$errors[] = RuleErrorBuilder::message(sprintf(
+									$invalidConstantMessage,
+									$disallowedConstant->describe(),
+									lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+								))
+									->identifier('argument.invalidConstant')
+									->line($argumentLine)
+									->build();
+							}
+							foreach ($result->getViolatedExclusiveGroups() as $group) {
+								$errors[] = RuleErrorBuilder::message(sprintf(
+									$exclusiveConstantsMessage,
+									implode(', ', $group),
+									lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+								))
+									->identifier('argument.exclusiveConstants')
+									->line($argumentLine)
+									->build();
+							}
+							if ($result->isBitmaskNotAllowed()) {
+								$errors[] = RuleErrorBuilder::message(sprintf(
+									$bitmaskNotAllowedMessage,
+									lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+								))
+									->identifier('argument.bitmaskNotAllowed')
+									->line($argumentLine)
+									->build();
+							}
+						} elseif ($isBuiltin && $hasAllowedConstants) {
+							foreach ($constantReflections as $constantReflection) {
+								if ($constantReflection->isBuiltin()->no()) {
+									continue;
+								}
+								$errors[] = RuleErrorBuilder::message(sprintf(
+									$invalidConstantMessage,
+									$constantReflection->describe(),
+									lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+								))
+									->identifier('argument.invalidConstant')
+									->line($argumentLine)
+									->build();
+							}
 						}
 					}
 				}
@@ -764,6 +787,11 @@ final class FunctionCallParametersCheck
 	private function resolveConstantReflections(Expr $expr, Scope $scope): ?array
 	{
 		if ($expr instanceof Expr\ConstFetch) {
+			$lowerName = $expr->name->toLowerString();
+			if (in_array($lowerName, ['null', 'true', 'false'], true)) {
+				return null;
+			}
+
 			if (!$this->reflectionProvider->hasConstant($expr->name, $scope)) {
 				return null;
 			}

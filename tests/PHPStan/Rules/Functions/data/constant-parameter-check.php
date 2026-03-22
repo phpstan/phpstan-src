@@ -95,3 +95,10 @@ class Foo
 // user-defined global constant wrapping a valid constant - should not report
 define('MY_JSON_FLAGS', JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 json_encode([], MY_JSON_FLAGS);
+
+json_decode('{}', null, JSON_THROW_ON_ERROR);
+
+// passing true/false/null should not report
+json_decode($json, true);
+json_decode($json, null);
+json_decode($json, false);

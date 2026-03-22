@@ -2824,6 +2824,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Combining constants with | is not allowed for parameter #2 $filter of function filter_var.',
 				79,
 			],
+			[
+				'Constant JSON_THROW_ON_ERROR is not allowed for parameter #3 $depth of function json_decode.',
+				99,
+			],
 		]);
 	}
 

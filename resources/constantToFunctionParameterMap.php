@@ -2512,4 +2512,35 @@ return [
 			],
 		],
 	],
+
+	// RecursiveIteratorIterator
+
+	'RecursiveIteratorIterator::__construct' => [
+		'mode' => [
+			'type' => 'single',
+			'constants' => [
+				'RecursiveIteratorIterator::LEAVES_ONLY',
+				'RecursiveIteratorIterator::SELF_FIRST',
+				'RecursiveIteratorIterator::CHILD_FIRST',
+			],
+		],
+		'flags' => [
+			'type' => 'bitmask',
+			'constants' => [
+				'RecursiveIteratorIterator::CATCH_GET_CHILD',
+			],
+		],
+	],
+
+	// DatePeriod
+
+	'DatePeriod::__construct' => [
+		'options' => [
+			'type' => 'bitmask',
+			'constants' => [
+				'DatePeriod::EXCLUDE_START_DATE',
+				'DatePeriod::INCLUDE_END_DATE',
+			],
+		],
+	],
 ];

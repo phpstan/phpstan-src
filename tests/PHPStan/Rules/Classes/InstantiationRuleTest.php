@@ -457,6 +457,10 @@ class InstantiationRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-10324.php'], [
 			[
+				'Constant RecursiveIteratorIterator::CHILD_FIRST is not allowed for parameter #3 $flags of class RecursiveIteratorIterator constructor.',
+				23,
+			],
+			[
 				'Parameter #3 $flags of class RecursiveIteratorIterator constructor expects 0|16, 2 given.',
 				23,
 			],

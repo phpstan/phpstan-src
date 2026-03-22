@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
@@ -25,7 +27,7 @@ final class ClassConstantAttributesRule implements Rule
 		return Node\Stmt\ClassConst::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		return $this->attributesCheck->check(
 			$scope,

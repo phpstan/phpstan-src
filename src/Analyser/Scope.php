@@ -307,6 +307,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * if-branch of `if ($x instanceof Foo)`.
 	 *
 	 * Uses the TypeSpecifier internally to determine type narrowing.
+	 *
+	 * @return static
 	 */
 	public function filterByTruthyValue(Expr $expr): self;
 
@@ -316,6 +318,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * The opposite of filterByTruthyValue(). Given `$x instanceof Foo`, returns
 	 * a scope where $x is known NOT to be of type Foo. This is the scope used
 	 * in the else-branch of `if ($x instanceof Foo)`.
+	 *
+	 * @return static
 	 */
 	public function filterByFalseyValue(Expr $expr): self;
 

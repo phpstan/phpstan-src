@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
@@ -32,7 +34,7 @@ final class CallUserFuncRule implements Rule
 		return FuncCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node->name instanceof Node\Name) {
 			return [];
@@ -87,6 +89,7 @@ final class CallUserFuncRule implements Rule
 			'Constant %s is not allowed for %s of ' . $callableDescription . '.',
 			'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
 			'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
+			null,
 		);
 	}
 

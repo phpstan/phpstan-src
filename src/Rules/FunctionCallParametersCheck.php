@@ -4,7 +4,9 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -14,6 +16,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
+use PHPStan\Rules\Methods\NamedArgumentParameterMethodCallsCollector;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
@@ -32,6 +35,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
 use function array_last;
+use function array_merge;
 use function count;
 use function implode;
 use function in_array;
@@ -65,11 +69,12 @@ final class FunctionCallParametersCheck
 
 	/**
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
+	 * @param array{class-string, string}|null $renamedNamedArgumentParameterData
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
 		ParametersAcceptor $parametersAcceptor,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		bool $isBuiltin,
 		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
 		string $nodeType,
@@ -92,6 +97,7 @@ final class FunctionCallParametersCheck
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
+		?array $renamedNamedArgumentParameterData,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -359,6 +365,11 @@ final class FunctionCallParametersCheck
 							->build();
 					}
 				}
+			} elseif ($argumentName !== null && $renamedNamedArgumentParameterData !== null) {
+				$scope->emitCollectedData(NamedArgumentParameterMethodCallsCollector::class, array_merge(
+					$renamedNamedArgumentParameterData,
+					[$parameter->getName(), $argumentLine],
+				));
 			}
 
 			if ($this->checkArgumentTypes) {

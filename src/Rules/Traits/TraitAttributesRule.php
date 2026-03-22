@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Traits;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InTraitNode;
@@ -32,7 +34,7 @@ final class TraitAttributesRule implements Rule
 		return InTraitNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$this->phpVersion->supportsDeprecatedTraits()) {
 			if (count($node->getTraitReflection()->getNativeReflection()->getAttributes('Deprecated')) > 0) {

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Functions;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClosureNode;
@@ -26,7 +28,7 @@ final class ClosureAttributesRule implements Rule
 		return InClosureNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		return $this->attributesCheck->check(
 			$scope,

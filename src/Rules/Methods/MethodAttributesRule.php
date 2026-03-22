@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
@@ -26,7 +28,7 @@ final class MethodAttributesRule implements Rule
 		return InClassMethodNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		return $this->attributesCheck->check(
 			$scope,

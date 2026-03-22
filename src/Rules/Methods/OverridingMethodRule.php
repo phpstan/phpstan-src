@@ -226,7 +226,7 @@ final class OverridingMethodRule implements Rule
 			}
 		}
 
-		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, false));
+		$messages = array_merge($messages, $this->methodParameterComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, $scope, false));
 
 		if (!$prototypeVariant instanceof ExtendedFunctionVariant) {
 			return $this->addErrors($messages, $node, $scope);

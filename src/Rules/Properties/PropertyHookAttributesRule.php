@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InPropertyHookNode;
@@ -29,7 +31,7 @@ final class PropertyHookAttributesRule implements Rule
 		return InPropertyHookNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$attrGroups = $node->getOriginalNode()->attrGroups;
 		$errors = $this->attributesCheck->check(

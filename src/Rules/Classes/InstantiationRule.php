@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Container;
@@ -58,7 +60,7 @@ final class InstantiationRule implements Rule
 		return New_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$errors = [];
 		foreach ($this->getClassNames($node, $scope) as [$class, $isName]) {
@@ -71,7 +73,7 @@ final class InstantiationRule implements Rule
 	 * @param Node\Expr\New_ $node
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
+	private function checkClassName(string $class, bool $isName, Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$lowercasedClass = strtolower($class);
 		$messages = [];
@@ -272,6 +274,7 @@ final class InstantiationRule implements Rule
 			'Constant %s is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
 			'Combining constants with | is not allowed for %s of class ' . $classDisplayName . ' constructor.',
+			null,
 		));
 	}
 

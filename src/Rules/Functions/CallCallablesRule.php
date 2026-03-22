@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -47,7 +49,7 @@ final class CallCallablesRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		if (!$node->name instanceof Node\Expr) {
@@ -142,6 +144,7 @@ final class CallCallablesRule implements Rule
 				'Constant %s is not allowed for %s of ' . $callableDescription . '.',
 				'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
 				'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
+				null,
 			),
 		);
 	}

@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
@@ -29,7 +31,7 @@ final class ConsistentConstructorRule implements Rule
 		return InClassMethodNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$method = $node->getMethodReflection();
 		if (strtolower($method->getName()) !== '__construct') {
@@ -47,7 +49,7 @@ final class ConsistentConstructorRule implements Rule
 		}
 
 		return array_merge(
-			$this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, true),
+			$this->methodParameterComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method, $scope, true),
 			$this->methodVisibilityComparisonHelper->compare($parentConstructor, $parentConstructor->getDeclaringClass(), $method),
 		);
 	}

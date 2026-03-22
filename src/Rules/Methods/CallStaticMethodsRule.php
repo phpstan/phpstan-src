@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
@@ -35,7 +37,7 @@ final class CallStaticMethodsRule implements Rule
 		return StaticCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$errors = [];
 		if ($node->name instanceof Node\Identifier) {
@@ -63,7 +65,7 @@ final class CallStaticMethodsRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleMethodCall(Scope $scope, StaticCall $node, string $methodName): array
+	private function processSingleMethodCall(Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, StaticCall $node, string $methodName): array
 	{
 		[$errors, $method] = $this->methodCallCheck->check($scope, $methodName, $node->class, $node->name);
 		if ($method === null) {
@@ -111,6 +113,7 @@ final class CallStaticMethodsRule implements Rule
 			'Constant %s is not allowed for %s of ' . $lowercasedMethodName . '.',
 			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 			'Combining constants with | is not allowed for %s of ' . $lowercasedMethodName . '.',
+			null,
 		));
 
 		return $errors;

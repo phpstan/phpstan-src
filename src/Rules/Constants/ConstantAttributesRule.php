@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Constants;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
@@ -31,7 +33,7 @@ final class ConstantAttributesRule implements Rule
 		return Node\Stmt\Const_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if ($node->attrGroups === []) {
 			return [];

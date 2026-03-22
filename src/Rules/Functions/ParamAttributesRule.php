@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Functions;
 
 use Attribute;
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
@@ -25,7 +27,7 @@ final class ParamAttributesRule implements Rule
 		return Node\Param::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$targetName = 'parameter';
 		$targetType = Attribute::TARGET_PARAMETER;

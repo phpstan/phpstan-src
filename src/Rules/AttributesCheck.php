@@ -5,6 +5,8 @@ namespace PHPStan\Rules;
 use Attribute;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -36,7 +38,7 @@ final class AttributesCheck
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		array $attrGroups,
 		int $requiredTarget,
 		string $targetName,
@@ -160,6 +162,7 @@ final class AttributesCheck
 					'Constant %s is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Combining constants with | is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
+					null,
 				);
 
 				foreach ($parameterErrors as $error) {

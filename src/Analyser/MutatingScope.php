@@ -146,10 +146,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
-	/** @var array<string, self> */
+	/** @var array<string, static> */
 	private array $truthyScopes = [];
 
-	/** @var array<string, self> */
+	/** @var array<string, static> */
 	private array $falseyScopes = [];
 
 	private ?self $fiberScope = null;
@@ -3115,6 +3115,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 		return $scope;
 	}
 
+	/**
+	 * @return static
+	 */
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
 	{
 		$typeSpecifications = [];
@@ -3224,6 +3227,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter
 			}
 		}
 
+		/** @var static */
 		return $scope->scopeFactory->create(
 			$scope->context,
 			$scope->isDeclareStrictTypes(),

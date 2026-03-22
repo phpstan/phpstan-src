@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
+use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
@@ -33,7 +36,13 @@ final class MethodParameterComparisonHelper
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	public function compare(ExtendedMethodReflection $prototype, ClassReflection $prototypeDeclaringClass, PhpMethodFromParserNodeReflection $method, bool $ignorable): array
+	public function compare(
+		ExtendedMethodReflection $prototype,
+		ClassReflection $prototypeDeclaringClass,
+		PhpMethodFromParserNodeReflection $method,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		bool $ignorable,
+	): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
@@ -64,6 +73,17 @@ final class MethodParameterComparisonHelper
 			}
 
 			$methodParameter = $methodParameters[$i];
+			if ($prototype->acceptsNamedArguments()->yes()) {
+				if ($prototypeParameter->getName() !== $methodParameter->getName()) {
+					$scope->emitCollectedData(OverridingMethodRenamesParameterCollector::class, [
+						$prototypeDeclaringClass->getName(),
+						$prototype->getName(),
+						$method->getDeclaringClass()->getName(),
+						$prototypeParameter->getName(),
+						$methodParameter->getName(),
+					]);
+				}
+			}
 			if ($prototypeParameter->passedByReference()->no()) {
 				if (!$methodParameter->passedByReference()->no()) {
 					$error = RuleErrorBuilder::message(sprintf(

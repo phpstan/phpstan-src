@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
@@ -34,7 +36,7 @@ final class CallMethodsRule implements Rule
 		return MethodCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$errors = [];
 		if ($node->name instanceof Node\Identifier) {
@@ -62,7 +64,7 @@ final class CallMethodsRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleMethodCall(Scope $scope, MethodCall $node, string $methodName): array
+	private function processSingleMethodCall(Scope&NodeCallbackInvoker&CollectedDataEmitter $scope, MethodCall $node, string $methodName): array
 	{
 		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodName, $node->var, $node->name);
 		if ($methodReflection === null) {
@@ -102,6 +104,10 @@ final class CallMethodsRule implements Rule
 			'Constant %s is not allowed for %s of method ' . $messagesMethodName . '.',
 			'Constants %s cannot be combined for %s of method ' . $messagesMethodName . '.',
 			'Combining constants with | is not allowed for %s of method ' . $messagesMethodName . '.',
+			!$methodReflection->isPrivate() && !$declaringClass->isFinal() ? [
+				$declaringClass->getName(),
+				$methodReflection->getName(),
+			] : null,
 		));
 	}
 

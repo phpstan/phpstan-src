@@ -237,3 +237,163 @@ final class Foo
 	}
 
 }
+
+class NonFinalObjectWithVisibility
+{
+	public int $pub = 1;
+	protected int $prot = 2;
+	private int $priv = 3;
+}
+
+final class FinalObjectWithVisibility
+{
+	public int $pub = 1;
+	protected int $prot = 2;
+	private int $priv = 3;
+}
+
+class ArrayColumnVisibilityNonFinalTest
+{
+
+	/** @param array<int, NonFinalObjectWithVisibility> $objects */
+	public function testNonFinal(array $objects): void
+	{
+		assertType('list<int>', array_column($objects, 'pub'));
+		assertType('list<int>', array_column($objects, 'prot'));
+		assertType('list', array_column($objects, 'priv'));
+	}
+
+	/** @param array{NonFinalObjectWithVisibility} $objects */
+	public function testNonFinalConstant(array $objects): void
+	{
+		assertType('array{int}', array_column($objects, 'pub'));
+		assertType('list<int>', array_column($objects, 'prot')); // Could be array{}|array{int}
+		assertType('list', array_column($objects, 'priv'));
+	}
+
+}
+
+class ArrayColumnVisibilityFinalTest
+{
+
+	/** @param array<int, FinalObjectWithVisibility> $objects */
+	public function testFinal(array $objects): void
+	{
+		assertType('list<int>', array_column($objects, 'pub'));
+		assertType('array{}', array_column($objects, 'prot'));
+		assertType('array{}', array_column($objects, 'priv'));
+	}
+
+	/** @param array{FinalObjectWithVisibility} $objects */
+	public function testFinalConstant(array $objects): void
+	{
+		assertType('array{int}', array_column($objects, 'pub'));
+		assertType('array{}', array_column($objects, 'prot'));
+		assertType('array{}', array_column($objects, 'priv'));
+	}
+
+	/** @param array<int, FinalObjectWithVisibility> $objects */
+	public function testNonPublicAsIndex(array $objects): void
+	{
+		assertType('array<int, int>', array_column($objects, 'pub', 'pub'));
+		assertType('array<int, int>', array_column($objects, 'pub', 'priv'));
+	}
+
+}
+
+class ArrayColumnVisibilityImplicitFinalTest
+{
+
+	public function testNewExpression(): void
+	{
+		$objects = [new NonFinalObjectWithVisibility()];
+		assertType('array{int}', array_column($objects, 'pub'));
+		assertType('array{}', array_column($objects, 'prot'));
+		assertType('array{}', array_column($objects, 'priv'));
+	}
+
+}
+
+class ArrayColumnVisibilityFromInsideTest
+{
+
+	public int $pub = 1;
+	private int $priv = 2;
+
+	/** @param list<self> $objects */
+	public function testFromInside(array $objects): void
+	{
+		assertType('list<int>', array_column($objects, 'pub'));
+		assertType('list<int>', array_column($objects, 'priv'));
+	}
+
+}
+
+class ArrayColumnVisibilityFromChildTest extends NonFinalObjectWithVisibility
+{
+
+	/** @param list<NonFinalObjectWithVisibility> $objects */
+	public function testFromChild(array $objects): void
+	{
+		assertType('list<int>', array_column($objects, 'pub'));
+		assertType('list<int>', array_column($objects, 'prot'));
+		assertType('list', array_column($objects, 'priv'));
+	}
+
+}
+
+final class ObjectWithIssetOnly
+{
+	private int $priv = 2;
+
+	public function __isset(string $name): bool
+	{
+		return true;
+	}
+}
+
+class ArrayColumnVisibilityWithIssetOnlyTest
+{
+
+	/** @param array<int, ObjectWithIssetOnly> $objects */
+	public function testWithIssetOnly(array $objects): void
+	{
+		assertType('array{}', array_column($objects, 'priv'));
+	}
+
+}
+
+class ObjectWithIsset
+{
+	public int $pub = 1;
+	private int $priv = 2;
+
+	public function __isset(string $name): bool
+	{
+		return true;
+	}
+
+	public function __get(string $name): mixed
+	{
+		return $this->$name;
+	}
+}
+
+class ArrayColumnVisibilityWithIssetTest
+{
+
+	/** @param array<int, ObjectWithIsset> $objects */
+	public function testWithIsset(array $objects): void
+	{
+		assertType('list<int>', array_column($objects, 'pub'));
+		assertType('list', array_column($objects, 'priv'));
+	}
+
+	/** @param array{ObjectWithIsset} $objects */
+	public function testWithIssetConstant(array $objects): void
+	{
+		assertType('array{int}', array_column($objects, 'pub'));
+		assertType('list', array_column($objects, 'priv'));
+	}
+
+}

@@ -42,6 +42,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateIntersectionType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
@@ -4916,6 +4917,21 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ObjectType::class,
 			$nonFinalClass->getDisplayName() . '=final',
+		];
+
+		// https://github.com/phpstan/phpstan/issues/14348
+		yield [
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('a'),
+					'T',
+					new IntersectionType([new ObjectType('Iterator'), new ObjectType('Countable')]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new MixedType(),
+			],
+			TemplateIntersectionType::class,
+			'T of Countable&Iterator (function a(), parameter)',
 		];
 	}
 

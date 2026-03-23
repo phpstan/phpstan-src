@@ -2582,7 +2582,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
 		}
 
-		foreach ($scope->expressionTypes as $expressionType) {
+		foreach ($scope->expressionTypes as $exprString => $expressionType) {
 			if (!$expressionType->getExpr() instanceof IntertwinedVariableByReferenceWithExpr) {
 				continue;
 			}
@@ -2590,6 +2590,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				continue;
 			}
 			if ($expressionType->getExpr()->getVariableName() !== $variableName) {
+				continue;
+			}
+
+			$assignedExpr = $expressionType->getExpr()->getAssignedExpr();
+			if (
+				$assignedExpr instanceof Expr\ArrayDimFetch
+				&& !$this->isDimFetchPathReachable($scope, $assignedExpr)
+			) {
+				unset($scope->expressionTypes[$exprString]);
+				unset($scope->nativeExpressionTypes[$exprString]);
 				continue;
 			}
 
@@ -2611,16 +2621,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 					array_merge($intertwinedPropagatedFrom, [$variableName]),
 				);
 			} else {
+				$targetRootVar = $this->getIntertwinedRefRootVariableName($expressionType->getExpr()->getExpr());
+				if ($targetRootVar !== null && in_array($targetRootVar, $intertwinedPropagatedFrom, true)) {
+					continue;
+				}
 				$scope = $scope->assignExpression(
 					$expressionType->getExpr()->getExpr(),
 					$scope->getType($expressionType->getExpr()->getAssignedExpr()),
 					$scope->getNativeType($expressionType->getExpr()->getAssignedExpr()),
 				);
 			}
-
 		}
 
 		return $scope;
+	}
+
+	private function isDimFetchPathReachable(self $scope, Expr\ArrayDimFetch $dimFetch): bool
+	{
+		if ($dimFetch->dim === null) {
+			return false;
+		}
+
+		if (!$dimFetch->var instanceof Expr\ArrayDimFetch) {
+			return true;
+		}
+
+		$varType = $scope->getType($dimFetch->var);
+		$dimType = $scope->getType($dimFetch->dim);
+
+		if (!$varType->hasOffsetValueType($dimType)->yes()) {
+			return false;
+		}
+
+		return $this->isDimFetchPathReachable($scope, $dimFetch->var);
 	}
 
 	private function unsetExpression(Expr $expr): self
@@ -2833,12 +2866,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (
-				$exprExpr instanceof IntertwinedVariableByReferenceWithExpr
-				&& $exprExpr->isVariableToVariableReference()
-			) {
-				continue;
-			}
 			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $exprString, $requireMoreCharacters, $invalidatingClass)) {
 				continue;
 			}
@@ -2906,8 +2933,32 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	private function getIntertwinedRefRootVariableName(Expr $expr): ?string
+	{
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			return $expr->name;
+		}
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			return $this->getIntertwinedRefRootVariableName($expr->var);
+		}
+		return null;
+	}
+
 	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): bool
 	{
+		if (
+			$expr instanceof IntertwinedVariableByReferenceWithExpr
+			&& $exprToInvalidate instanceof Variable
+			&& is_string($exprToInvalidate->name)
+			&& (
+				$expr->getVariableName() === $exprToInvalidate->name
+				|| $this->getIntertwinedRefRootVariableName($expr->getExpr()) === $exprToInvalidate->name
+				|| $this->getIntertwinedRefRootVariableName($expr->getAssignedExpr()) === $exprToInvalidate->name
+			)
+		) {
+			return false;
+		}
+
 		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
 			return false;
 		}

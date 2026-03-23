@@ -32,11 +32,12 @@ final class InvalidVariableAssignRule implements Rule
 		}
 
 		if ($variable->name === 'this') {
-			$expr = $node->getAssignedExpr();
-			$type = $scope->getType($expr);
+			if ($scope->isInClass()) {
+				$classReflection = $scope->getClassReflection();
 
-			if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($type)->yes()) {
-				return [];
+				if ($classReflection->is(ArrayAccess::class)) {
+					return [];
+				}
 			}
 
 			return [

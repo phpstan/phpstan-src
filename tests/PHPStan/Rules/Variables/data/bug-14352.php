@@ -35,6 +35,8 @@ final class FinalTestPlain
 	public function doFoo(string $key, string $value): void
 	{
 		$this[$key] = $value;
+
+		$this = $value;
 	}
 }
 
@@ -43,5 +45,20 @@ class TestPlain
 	public function doFoo(string $key, string $value): void
 	{
 		$this[$key] = $value;
+
+		$this = $value;
 	}
+}
+
+class TestStatic
+{
+	static public function doFoo(string $value): void
+	{
+		$this = $value;
+	}
+}
+
+function doFoo(string $value): void
+{
+	$this = $value;
 }

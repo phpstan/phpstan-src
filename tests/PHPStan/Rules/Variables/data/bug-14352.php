@@ -8,7 +8,9 @@ class TestArrayAccess implements ArrayAccess
 {
 	public function doFoo(string $key, string $value): void
 	{
-		$this[$key] = $value;
+		$this[$key] = $value; // fine because ArrayAccess
+
+		$this = $value; // should still fail
 	}
 
 	public function offsetExists(mixed $offset): bool

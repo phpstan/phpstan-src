@@ -57,7 +57,11 @@ class InvalidVariableAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14352.php'], [
 			[
 				'Cannot re-assign $this.',
-				35,
+				13,
+			],
+			[
+				'Cannot re-assign $this.',
+				37,
 			],
 		]);
 	}

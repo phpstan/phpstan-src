@@ -43,6 +43,10 @@ class InvalidVariableAssignRuleTest extends RuleTestCase
 				'Cannot re-assign $this.',
 				23,
 			],
+			[
+				'Cannot re-assign $this.',
+				28,
+			],
 		]);
 	}
 

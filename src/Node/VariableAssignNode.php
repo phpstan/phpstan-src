@@ -12,6 +12,7 @@ final class VariableAssignNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private Expr\Variable $variable,
 		private Expr $assignedExpr,
+		private bool $dimFetch = false,
 	)
 	{
 		parent::__construct($variable->getAttributes());
@@ -25,6 +26,11 @@ final class VariableAssignNode extends NodeAbstract implements VirtualNode
 	public function getAssignedExpr(): Expr
 	{
 		return $this->assignedExpr;
+	}
+
+	public function isDimFetch(): bool
+	{
+		return $this->dimFetch;
 	}
 
 	#[Override]

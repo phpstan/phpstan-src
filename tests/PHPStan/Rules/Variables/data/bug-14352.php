@@ -30,6 +30,30 @@ class TestArrayAccess implements ArrayAccess
 	}
 }
 
+class TestArrayAccessReassign implements ArrayAccess
+{
+	public function doFoo(self $other): void
+	{
+		$this = $other;
+	}
+
+	public function offsetExists(mixed $offset): bool
+	{
+	}
+
+	public function offsetGet(mixed $offset): mixed
+	{
+	}
+
+	public function offsetSet(mixed $offset, mixed $value): void
+	{
+	}
+
+	public function offsetUnset(mixed $offset): void
+	{
+	}
+}
+
 final class FinalTestPlain
 {
 	public function doFoo(string $key, string $value): void

@@ -1090,7 +1090,7 @@ final class TypeSpecifier
 							);
 						}
 
-						if ($scope->getNativeType($var->var)->isArray()->yes()) {
+						if ($varType->isArray()->yes()) {
 							$types = $types->unionWith(
 								$this->create(
 									$var->var,
@@ -1100,7 +1100,6 @@ final class TypeSpecifier
 								)->setRootExpr($expr),
 							);
 						}
-
 					}
 				}
 

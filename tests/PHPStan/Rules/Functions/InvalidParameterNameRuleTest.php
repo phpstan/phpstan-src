@@ -20,39 +20,39 @@ class InvalidParameterNameRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-14241.php'], [
 			[
-				'Cannot re-assign auto-global variable $_FILES.',
+				'Superglobal variable $_FILES cannot be used as a parameter.',
 				5,
 			],
 			[
-				'Cannot re-assign auto-global variable $_GET.',
+				'Superglobal variable $_GET cannot be used as a parameter.',
 				7,
 			],
 			[
-				'Cannot re-assign auto-global variable $_POST.',
+				'Superglobal variable $_POST cannot be used as a parameter.',
 				7,
 			],
 			[
-				'Cannot re-assign auto-global variable $_SERVER.',
+				'Superglobal variable $_SERVER cannot be used as a parameter.',
 				13,
 			],
 			[
-				'Cannot re-assign auto-global variable $_SESSION.',
+				'Superglobal variable $_SESSION cannot be used as a parameter.',
 				15,
 			],
 			[
-				'Cannot re-assign auto-global variable $_COOKIE.',
+				'Superglobal variable $_COOKIE cannot be used as a parameter.',
 				18,
 			],
 			[
-				'Cannot re-assign auto-global variable $_REQUEST.',
+				'Superglobal variable $_REQUEST cannot be used as a parameter.',
 				20,
 			],
 			[
-				'Cannot re-assign auto-global variable $_ENV.',
+				'Superglobal variable $_ENV cannot be used as a parameter.',
 				22,
 			],
 			[
-				'Cannot re-assign auto-global variable $GLOBALS.',
+				'Superglobal variable $GLOBALS cannot be used as a parameter.',
 				24,
 			],
 			[

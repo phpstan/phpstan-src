@@ -12,7 +12,7 @@ use function is_string;
 use function sprintf;
 
 /**
- * @implements Rule<Node\FunctionLike>
+ * @implements Rule<Node\Param>
  */
 #[RegisteredRule(level: 0)]
 final class InvalidParameterNameRule implements Rule
@@ -20,41 +20,40 @@ final class InvalidParameterNameRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\FunctionLike::class;
+		return Node\Param::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$errors = [];
-
-		foreach ($node->getParams() as $param) {
-			if (!$param->var instanceof Node\Expr\Variable) {
-				continue;
-			}
-
-			if (!is_string($param->var->name)) {
-				continue;
-			}
-
-			$variableName = $param->var->name;
-
-			if (in_array($variableName, Scope::SUPERGLOBAL_VARIABLES, true)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Cannot re-assign auto-global variable $%s.', $variableName))
-					->line($param->getStartLine())
-					->identifier('parameter.invalidExpr')
-					->nonIgnorable()
-					->build();
-			} elseif ($variableName === 'this') {
-				$errors[] = RuleErrorBuilder::message('Cannot use $this as parameter.')
-					->line($param->getStartLine())
-					->identifier('parameter.invalidExpr')
-					->nonIgnorable()
-					->build();
-			}
-
+		if (!$node->var instanceof Node\Expr\Variable) {
+			return [];
 		}
 
-		return $errors;
+		if (!is_string($node->var->name)) {
+			return [];
+		}
+
+		$variableName = $node->var->name;
+
+		if (in_array($variableName, Scope::SUPERGLOBAL_VARIABLES, true)) {
+			return [
+				RuleErrorBuilder::message(sprintf('Superglobal variable $%s cannot be used as a parameter.', $variableName))
+					->identifier('parameter.superglobal')
+					->nonIgnorable()
+					->build(),
+			];
+		}
+
+		if ($variableName === 'this') {
+			return [
+				RuleErrorBuilder::message('Cannot use $this as parameter.')
+					->identifier('parameter.this')
+					->nonIgnorable()
+					->build(),
+			];
+		}
+
+		return [];
 	}
 
 }

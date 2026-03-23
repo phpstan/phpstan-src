@@ -22,9 +22,9 @@ use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function is_string;
 use function key;
 use function ksort;
-use function is_string;
 use function max;
 use function sprintf;
 

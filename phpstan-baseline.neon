@@ -13,7 +13,7 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
-			rawMessage: 'PHPDoc tag @var with type int|string is not subtype of type string.'
+			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
 			identifier: varTag.type
 			count: 1
 			path: src/Analyser/ArgumentsNormalizer.php

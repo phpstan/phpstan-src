@@ -74,6 +74,7 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testRuleCallUserFuncArray(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], [

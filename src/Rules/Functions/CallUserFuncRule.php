@@ -12,6 +12,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use function count;
 use function ucfirst;
+use function sprintf;
 
 /**
  * @implements Rule<FuncCall>
@@ -47,20 +48,27 @@ final class CallUserFuncRule implements Rule
 		}
 
 		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
-		if ($functionReflection->getName() !== 'call_user_func') {
+
+		$functionName = $functionReflection->getName();
+		if ($functionName === 'call_user_func') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
+				$node,
+				$scope,
+			);
+		} elseif ($functionName === 'call_user_func_array') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArrayArguments(
+				$node,
+				$scope,
+			);
+		} else {
 			return [];
 		}
-
-		$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
-			$node,
-			$scope,
-		);
 		if ($result === null) {
 			return [];
 		}
 		[$parametersAcceptor, $funcCall, $acceptsNamedArguments] = $result;
 
-		$callableDescription = 'callable passed to call_user_func()';
+		$callableDescription = sprintf('callable passed to %s()', $functionName);
 
 		return $this->check->check(
 			$parametersAcceptor,

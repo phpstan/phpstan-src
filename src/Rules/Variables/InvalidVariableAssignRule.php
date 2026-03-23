@@ -2,12 +2,14 @@
 
 namespace PHPStan\Rules\Variables;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use function is_string;
 
 /**
@@ -30,6 +32,13 @@ final class InvalidVariableAssignRule implements Rule
 		}
 
 		if ($variable->name === 'this') {
+			$expr = $node->getAssignedExpr();
+			$type = $scope->getType($expr);
+
+			if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($type)->yes()) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message('Cannot re-assign $this.')
 					->identifier('assign.this')

@@ -133,6 +133,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Operators/data/bug-3585.php \
 		--exclude tests/PHPStan/Rules/EnumCases/data/bug-14252.php \
 		--exclude tests/PHPStan/Rules/Functions/data/bug-14241.php \
+		--exclude tests/PHPStan/Rules/Variables/data/bug-14349.php \
 		src tests
 
 install-paratest:

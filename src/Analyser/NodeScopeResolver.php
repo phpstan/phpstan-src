@@ -3535,8 +3535,39 @@ class NodeScopeResolver
 			}
 		}
 
+		// Invalidate variables passed by reference inside array arguments
+		// e.g. call_user_func_array($callback, [&$var, ...]) - $var might be modified
+		foreach ($args as $arg) {
+			$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arg->value);
+		}
+
 		// not storing this, it's scope after processing all args
 		return new ExpressionResult($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints);
+	}
+
+	private function invalidateByRefVariablesInArrayArg(MutatingScope $scope, Expr $expr): MutatingScope
+	{
+		if (!$expr instanceof Array_) {
+			return $scope;
+		}
+
+		foreach ($expr->items as $arrayItem) {
+			if ($arrayItem->value instanceof Array_) {
+				$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arrayItem->value);
+			}
+
+			if (!$arrayItem->byRef) {
+				continue;
+			}
+
+			if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+				continue;
+			}
+
+			$scope = $scope->assignVariable($arrayItem->value->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
+		}
+
+		return $scope;
 	}
 
 	/**

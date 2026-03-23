@@ -22,3 +22,9 @@ function baz(): void
 {
 	$this = 1; // PHP forbids this too
 }
+
+class Test {
+	public function foobar():void {
+		$this ??= 123;
+	}
+}

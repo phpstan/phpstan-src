@@ -125,6 +125,35 @@ function testStringNumericKey(): void
 	assertType('2', $a);
 }
 
+/** @param int<0, 10> $key */
+function testIntegerRangeKey(int $key): void
+{
+	$a = 1;
+	$c = 'test';
+
+	$b = [$key => 'x', &$a, &$c];
+	assertType('1', $a);
+	assertType("'test'", $c);
+
+	// $key is int<0, 10>, so implicit indices for &$a and &$c are unpredictable
+	$b[5] = 2;
+	assertType("1|2|'test'|'x'", $a);
+	assertType("1|2|'test'|'x'", $c);
+}
+
+/** @param int<0, 5> $key */
+function testIntegerRangeKeyDirect(int $key): void
+{
+	$a = 1;
+
+	// Direct by-ref with integer-range key
+	$b = [$key => &$a];
+	assertType('1', $a);
+
+	$b[3] = 2;
+	assertType('1|2', $a);
+}
+
 function foo(array &$a): void {}
 
 function testFunctionCall() {

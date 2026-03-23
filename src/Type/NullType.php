@@ -285,6 +285,11 @@ class NullType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isDecimalIntegerStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -1303,6 +1303,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isDecimalIntegerStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

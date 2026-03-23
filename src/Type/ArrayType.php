@@ -12,6 +12,7 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -32,6 +33,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 
 /** @api */
@@ -50,11 +52,14 @@ class ArrayType implements Type
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
-		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
+		if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 			$keyType = new MixedType();
 		}
 		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {
-			$keyType = new UnionType([new StringType(), new IntegerType()]);
+			$keyType = new UnionType([
+				new StringType(),
+				new IntegerType(),
+			]);
 		}
 
 		$this->keyType = $keyType;
@@ -200,10 +205,10 @@ class ArrayType implements Type
 	{
 		$keyType = $this->keyType;
 		if ($keyType instanceof MixedType && !$keyType instanceof TemplateMixedType) {
-			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+			return new BenevolentUnionType([new IntegerType(), new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)])]);
 		}
 		if ($keyType instanceof StrictMixedType) {
-			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+			return new BenevolentUnionType([new IntegerType(), new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)])]);
 		}
 
 		return $keyType;

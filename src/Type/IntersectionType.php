@@ -24,6 +24,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -403,6 +404,7 @@ class IntersectionType implements CompoundType
 				|| $type instanceof AccessoryNonFalsyStringType
 				|| $type instanceof AccessoryLowercaseStringType
 				|| $type instanceof AccessoryUppercaseStringType
+				|| $type instanceof AccessoryDecimalIntegerStringType
 			) {
 				if (
 					($type instanceof AccessoryLowercaseStringType || $type instanceof AccessoryUppercaseStringType)
@@ -800,6 +802,11 @@ class IntersectionType implements CompoundType
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
+	}
+
+	public function isDecimalIntegerStringType(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isDecimalIntegerStringType());
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
@@ -1295,6 +1302,10 @@ class IntersectionType implements CompoundType
 
 	public function toArrayKey(): Type
 	{
+		if ($this->isDecimalIntegerStringType()->yes()) {
+			return new IntegerType();
+		}
+
 		if ($this->isNumericString()->yes()) {
 			return TypeCombinator::union(
 				new IntegerType(),
@@ -1478,6 +1489,7 @@ class IntersectionType implements CompoundType
 				|| $type instanceof AccessoryNonFalsyStringType
 				|| $type instanceof AccessoryLowercaseStringType
 				|| $type instanceof AccessoryUppercaseStringType
+				|| $type instanceof AccessoryDecimalIntegerStringType
 			) {
 				if ($type instanceof AccessoryNonFalsyStringType) {
 					$nonFalsyStr = true;

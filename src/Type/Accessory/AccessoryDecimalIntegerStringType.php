@@ -5,6 +5,9 @@ namespace PHPStan\Type\Accessory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
@@ -13,7 +16,6 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -22,30 +24,41 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
-use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryNumericStringType implements CompoundType, AccessoryType
+/**
+ * This accessory type is coupled with `Type::isDecimalIntegerStringType()` method.
+ *
+ * When inverse=false, this represents strings containing decimal integers.
+ * These are guaranteed to be cast to an integer in an array key.
+ * Examples of constant values covered by this type: "0", "1", "1234", "-1"
+ *
+ * When inverse=true, this represents strings containing non-decimal integers and other text.
+ * These are guaranteed to stay as string in an array key.
+ * Examples of constant values covered by this type: "+1", "00", "18E+3", "1.2", "1,3", "foo"
+ *
+ * @api
+ */
+class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 {
 
 	use NonArrayTypeTrait;
-	use NonCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	/** @api */
-	public function __construct()
+	public function __construct(private bool $inverse = false)
 	{
 	}
 
@@ -71,9 +84,12 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		$isNumericString = $type->isNumericString();
+		$isDecimalIntegerStringType = $type->isDecimalIntegerStringType();
 
-		if ($isNumericString->yes()) {
+		if (
+			$type->isString()->yes()
+			&& ($this->inverse ? $isDecimalIntegerStringType->no() : $isDecimalIntegerStringType->yes())
+		) {
 			return AcceptsResult::createYes();
 		}
 
@@ -81,7 +97,9 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($isNumericString, []);
+		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerStringType->negate() : $isDecimalIntegerStringType);
+
+		return new AcceptsResult($result, []);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -94,7 +112,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult($type->isNumericString(), []);
+		$isDecimalIntegerStringType = $type->isDecimalIntegerStringType();
+		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerStringType->negate() : $isDecimalIntegerStringType);
+
+		return new IsSuperTypeOfResult($result, []);
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -103,8 +124,14 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof AccessoryNumericStringType && !$this->inverse) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
+		$otherTypeResult = $otherType->isString()->and($this->inverse ? $otherType->isDecimalIntegerStringType()->negate() : $otherType->isDecimalIntegerStringType());
+
 		return new IsSuperTypeOfResult(
-			$otherType->isNumericString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
+			$otherTypeResult->and($otherType->equals($this) ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
 			[],
 		);
 	}
@@ -116,12 +143,12 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self;
+		return $type instanceof self && $this->inverse === $type->inverse;
 	}
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'numeric-string';
+		return $this->inverse ? 'non-decimal-int-string' : 'decimal-int-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -171,15 +198,24 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function toNumber(): Type
 	{
-		return new UnionType([
-			$this->toInteger(),
-			$this->toFloat(),
-		]);
+		if ($this->inverse) {
+			return new UnionType([
+				$this->toInteger(),
+				$this->toFloat(),
+			]);
+		}
+
+		return $this->toInteger();
 	}
 
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->toNumber()->toAbsoluteNumber();
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		return $this->isNonFalsyString()->negate()->toBooleanType();
 	}
 
 	public function toInteger(): Type
@@ -209,13 +245,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function toArrayKey(): Type
 	{
-		return new UnionType([
-			new IntegerType(),
-			new IntersectionType([
-				new StringType(),
-				new AccessoryNumericStringType(),
-			]),
-		]);
+		if ($this->inverse) {
+			return new StringType();
+		}
+
+		return new IntegerType();
 	}
 
 	public function toCoercedArgumentType(bool $strictTypes): Type
@@ -252,6 +286,20 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function isCallable(): TrinaryLogic
+	{
+		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+	}
+
+	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
+	{
+		if ($this->inverse) {
+			return [new TrivialParametersAcceptor()];
+		}
+
+		throw new ShouldNotHappenException();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -284,22 +332,22 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
 	}
 
 	public function isDecimalIntegerStringType(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createFromBoolean(!$this->inverse);
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
 	}
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->inverse ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic
@@ -348,8 +396,14 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return new ConstantBooleanType(false);
 		}
 
-		if ($type->isString()->yes() && $type->isNumericString()->no()) {
-			return new ConstantBooleanType(false);
+		if ($type->isString()->yes()) {
+			if ($this->inverse) {
+				if ($type->isDecimalIntegerStringType()->yes()) {
+					return new ConstantBooleanType(false);
+				}
+			} elseif ($type->isDecimalIntegerStringType()->no()) {
+				return new ConstantBooleanType(false);
+			}
 		}
 
 		return new BooleanType();
@@ -370,15 +424,6 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return new StringType();
 	}
 
-	public function tryRemove(Type $typeToRemove): ?Type
-	{
-		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
-			return new IntersectionType([$this, new AccessoryNonFalsyStringType()]);
-		}
-
-		return null;
-	}
-
 	public function exponentiate(Type $exponent): Type
 	{
 		return new BenevolentUnionType([
@@ -394,7 +439,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode('numeric-string');
+		return new IdentifierTypeNode($this->inverse ? 'non-decimal-int-string' : 'decimal-int-string');
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

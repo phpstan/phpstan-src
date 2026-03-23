@@ -20,6 +20,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -931,6 +932,22 @@ class MixedType implements CompoundType, SubtractableType
 			]);
 
 			if ($this->subtractedType->isSuperTypeOf($numericString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isDecimalIntegerStringType(): TrinaryLogic
+	{
+		if ($this->subtractedType !== null) {
+			$decimalIntegerString = new IntersectionType([
+				new StringType(),
+				new AccessoryDecimalIntegerStringType(),
+			]);
+
+			if ($this->subtractedType->isSuperTypeOf($decimalIntegerString)->yes()) {
 				return TrinaryLogic::createNo();
 			}
 		}

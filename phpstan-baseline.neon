@@ -775,6 +775,12 @@ parameters:
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
+			path: src/Type/Accessory/AccessoryDecimalIntegerStringType.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
 			path: src/Type/Accessory/AccessoryLiteralStringType.php
 
 		-

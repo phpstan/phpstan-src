@@ -20,6 +20,7 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -4932,6 +4933,26 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			TemplateIntersectionType::class,
 			'T of Countable&Iterator (function a(), parameter)',
+		];
+
+		yield [
+			[
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryDecimalIntegerStringType(),
+			],
+			IntersectionType::class,
+			'decimal-int-string',
+		];
+
+		yield [
+			[
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryDecimalIntegerStringType(inverse: true),
+			],
+			IntersectionType::class,
+			'non-decimal-int-string&numeric-string',
 		];
 	}
 

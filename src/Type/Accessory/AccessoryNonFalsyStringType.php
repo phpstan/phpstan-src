@@ -290,6 +290,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isDecimalIntegerStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
@@ -342,6 +347,10 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
+		if ($type->isString()->yes() && $type->isNonFalsyString()->no()) {
+			return new ConstantBooleanType(false);
+		}
+
 		$falseyTypes = StaticTypeFactory::falsey();
 		if ($falseyTypes->isSuperTypeOf($type)->yes()) {
 			return new ConstantBooleanType(false);

@@ -14,3 +14,7 @@ class C {
 function foo(): void {
 	global $this; // should report: Cannot use $this as global variable
 }
+
+function bar(): void {
+	static $this; // should report: Cannot use $this as static variable
+}

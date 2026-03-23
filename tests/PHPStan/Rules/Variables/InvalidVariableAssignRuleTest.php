@@ -16,6 +16,36 @@ class InvalidVariableAssignRuleTest extends RuleTestCase
 		return new InvalidVariableAssignRule();
 	}
 
+	public function testBug3585(): void
+	{
+		$this->analyse([__DIR__ . '/../Operators/data/bug-3585.php'], [
+			[
+				'Cannot re-assign $this.',
+				9,
+			],
+			[
+				'Cannot re-assign $this.',
+				10,
+			],
+			[
+				'Cannot re-assign $this.',
+				11,
+			],
+			[
+				'Cannot re-assign $this.',
+				12,
+			],
+			[
+				'Cannot re-assign $this.',
+				17,
+			],
+			[
+				'Cannot re-assign $this.',
+				23,
+			],
+		]);
+	}
+
 	public function testBug14349(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14349.php'], [

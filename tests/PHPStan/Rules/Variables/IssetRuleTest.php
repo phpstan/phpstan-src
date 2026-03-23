@@ -493,7 +493,7 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/pr-4374.php'], [
 			[
-				'Offset string on array<PR4374\Foo> in isset() always exists and is not nullable.',
+				'Offset string on non-empty-array<PR4374\Foo> in isset() always exists and is not nullable.',
 				23,
 			],
 		]);

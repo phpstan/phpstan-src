@@ -53,6 +53,8 @@ class Foo
 		call_user_func_array($f, ['1' => 'foo']); // Same as call_user_func_array($f, ['foo'])
 		call_user_func_array($f, [1 => 42]); // Same as call_user_func_array($f, [42])
 		call_user_func_array($f, ['1' => 42]); // Same as call_user_func_array($f, [42])
+
+		call_user_func_array($f, ['' => 42]); // Could be reported but should at least not crash PHPStan
 	}
 
 }

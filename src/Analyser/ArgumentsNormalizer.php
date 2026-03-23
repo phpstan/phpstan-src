@@ -22,7 +22,9 @@ use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function key;
 use function ksort;
+use function is_string;
 use function max;
 use function sprintf;
 
@@ -120,16 +122,17 @@ final class ArgumentsNormalizer
 				}
 			}
 
-			if ($argsArrayArg === null) {
-				if ($arg->name === null && $i === 1) {
-					$argsArrayArg = $arg;
-					continue;
-				}
-				if ($arg->name !== null && $arg->name->toString() === 'args') {
-					$argsArrayArg = $arg;
-					continue;
-				}
+			if ($argsArrayArg !== null) {
+				continue;
 			}
+			if ($arg->name === null && $i === 1) {
+				$argsArrayArg = $arg;
+				continue;
+			}
+			if ($arg->name === null || $arg->name->toString() !== 'args') {
+				continue;
+			}
+			$argsArrayArg = $arg;
 		}
 
 		if ($callbackArg === null || $argsArrayArg === null) {
@@ -149,8 +152,11 @@ final class ArgumentsNormalizer
 		foreach ($argsArrayArg->value->items as $item) {
 			$key = null;
 			if ($item->key instanceof String_) {
-				/** @var int|string $offsetValue */
+				/** @var int|string $key */
 				$key = key([$item->key->value => null]);
+				if ($key === '') {
+					return null;
+				}
 			} elseif ($item->key !== null && !$item->key instanceof Int_) {
 				// Dynamic key, we cannot be sure.
 				return null;
@@ -161,7 +167,7 @@ final class ArgumentsNormalizer
 				$item->byRef,
 				$item->unpack,
 				$item->getAttributes(),
-				\is_string($key) ? new Identifier($key) : null,
+				is_string($key) ? new Identifier($key) : null,
 			);
 		}
 

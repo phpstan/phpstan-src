@@ -11,8 +11,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use function count;
-use function ucfirst;
 use function sprintf;
+use function ucfirst;
 
 /**
  * @implements Rule<FuncCall>

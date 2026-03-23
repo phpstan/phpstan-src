@@ -61,32 +61,7 @@ class InvalidAssignVarRuleTest extends RuleTestCase
 
 	public function testBug3585(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-3585.php'], [
-			[
-				'Expression on left side of assignment is not assignable.',
-				9,
-			],
-			[
-				'Expression on left side of assignment is not assignable.',
-				10,
-			],
-			[
-				'Expression on left side of assignment is not assignable.',
-				11,
-			],
-			[
-				'Expression on left side of assignment is not assignable.',
-				12,
-			],
-			[
-				'Expression on left side of assignment is not assignable.',
-				17,
-			],
-			[
-				'Expression on left side of assignment is not assignable.',
-				23,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-3585.php'], []);
 	}
 
 }

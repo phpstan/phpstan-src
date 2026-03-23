@@ -111,14 +111,6 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
 	{
-		if ($acceptingType->isNonFalsyString()->yes()) {
-			return AcceptsResult::createMaybe();
-		}
-
-		if ($acceptingType->isNonEmptyString()->yes()) {
-			return AcceptsResult::createYes();
-		}
-
 		return $this->isSubTypeOf($acceptingType)->toAcceptsResult();
 	}
 

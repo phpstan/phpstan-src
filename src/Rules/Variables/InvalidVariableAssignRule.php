@@ -34,7 +34,7 @@ final class InvalidVariableAssignRule implements Rule
 			if ($scope->isInClass()) {
 				$classReflection = $scope->getClassReflection();
 
-				if ($classReflection->is(ArrayAccess::class)) {
+				if ($classReflection->implementsInterface(ArrayAccess::class)) {
 					return [];
 				}
 			}

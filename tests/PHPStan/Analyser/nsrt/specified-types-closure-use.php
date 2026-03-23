@@ -48,10 +48,10 @@ class Foo
 	public function doBuzz(array $arr, string $key): void
 	{
 		if (isset($arr[$key])) {
-			assertType('array', $arr);
+			assertType('non-empty-array', $arr);
 			assertType("mixed~null", $arr[$key]);
 			function () use ($arr, $key): void {
-				assertType('array', $arr);
+				assertType('non-empty-array', $arr);
 				assertType("mixed~null", $arr[$key]);
 			};
 		}
@@ -60,10 +60,10 @@ class Foo
 	public function doBuzz(array $arr, string $key): void
 	{
 		if (isset($arr[$key])) {
-			assertType('array', $arr);
+			assertType('non-empty-array', $arr);
 			assertType("mixed~null", $arr[$key]);
 			function ($key) use ($arr): void {
-				assertType('array', $arr);
+				assertType('non-empty-array', $arr);
 				assertType("mixed", $arr[$key]);
 			};
 		}

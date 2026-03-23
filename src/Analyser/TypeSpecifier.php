@@ -1077,12 +1077,24 @@ final class TypeSpecifier
 						);
 					} else {
 						$varType = $scope->getType($var->var);
+
 						$narrowedKey = AllowedArrayKeysTypes::narrowOffsetKeyType($varType, $dimType);
 						if ($narrowedKey !== null) {
 							$types = $types->unionWith(
 								$this->create(
 									$var->dim,
 									$narrowedKey,
+									$context,
+									$scope,
+								)->setRootExpr($expr),
+							);
+						}
+
+						if ($varType->isArray()->yes()) {
+							$types = $types->unionWith(
+								$this->create(
+									$var->var,
+									new NonEmptyArrayType(),
 									$context,
 									$scope,
 								)->setRootExpr($expr),

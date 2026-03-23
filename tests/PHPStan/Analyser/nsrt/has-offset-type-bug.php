@@ -26,7 +26,7 @@ class Foo
 				continue;
 			}
 
-			assertType('array<string, int<1, max>>', $fileErrorsCounts);
+			assertType('non-empty-array<string, int<1, max>>', $fileErrorsCounts);
 			assertType('int<1, max>', $fileErrorsCounts[$errorMessage]);
 
 			$fileErrorsCounts[$errorMessage]++;

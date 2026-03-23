@@ -59,6 +59,7 @@ use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\OperatorTypeSpecifyingExtension;
+use PHPStan\Type\UnaryOperatorTypeSpecifyingExtension;
 use PHPStan\Type\StaticMethodParameterClosureThisExtension;
 use PHPStan\Type\StaticMethodParameterClosureTypeExtension;
 use PHPStan\Type\StaticMethodParameterOutTypeExtension;
@@ -80,6 +81,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 		DynamicStaticMethodReturnTypeExtension::class => BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG,
 		DynamicFunctionReturnTypeExtension::class => BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG,
 		OperatorTypeSpecifyingExtension::class => BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG,
+		UnaryOperatorTypeSpecifyingExtension::class => BrokerFactory::UNARY_OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG,
 		ExpressionTypeResolverExtension::class => BrokerFactory::EXPRESSION_TYPE_RESOLVER_EXTENSION_TAG,
 		TypeNodeResolverExtension::class => TypeNodeResolverExtension::EXTENSION_TAG,
 		Rule::class => LazyRegistry::RULE_TAG,

@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 
 /**
@@ -20,6 +21,12 @@ use PHPStan\Type\Type;
 #[AutowiredService]
 final class UnaryPlusHandler implements ExprHandler
 {
+
+	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+	)
+	{
+	}
 
 	public function supports(Expr $expr): bool
 	{
@@ -41,7 +48,7 @@ final class UnaryPlusHandler implements ExprHandler
 
 	public function resolveType(MutatingScope $scope, Expr $expr): Type
 	{
-		return $scope->getType($expr->expr)->toNumber();
+		return $this->initializerExprTypeResolver->getUnaryPlusType($expr->expr, static fn (Expr $expr): Type => $scope->getType($expr));
 	}
 
 }

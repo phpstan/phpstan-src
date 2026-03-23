@@ -11,6 +11,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\ExpressionTypeResolverExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\ComposerPhpVersionFactory;
@@ -82,6 +83,7 @@ abstract class PHPStanTestCase extends TestCase
 			$reflectionProviderProvider,
 			$container->getByType(PhpVersion::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
+			$container->getByType(UnaryOperatorTypeSpecifyingExtensionRegistryProvider::class),
 			new OversizedArrayBuilder(),
 			$container->getParameter('usePathConstantsAsConstantString'),
 		);

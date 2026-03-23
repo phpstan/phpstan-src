@@ -52,7 +52,8 @@ class ArrayType implements Type
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
-		if (in_array($keyType->describe(VerbosityLevel::value()), ['(int|string)', '(int|non-decimal-int-string)'], true)) {
+		$desc = $keyType->describe(VerbosityLevel::value());
+		if (in_array($desc, ['(int|string)', '(int|non-decimal-int-string)'], true)) {
 			$keyType = new MixedType();
 		}
 		if ($keyType instanceof StrictMixedType && !$keyType instanceof TemplateStrictMixedType) {
@@ -120,7 +121,7 @@ class ArrayType implements Type
 	{
 		if ($type instanceof self || $type instanceof ConstantArrayType) {
 			return $this->getItemType()->isSuperTypeOf($type->getItemType())
-				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+				->and($this->getKeyType()->isSuperTypeOf($type->getKeyType()));
 		}
 
 		if ($type instanceof CompoundType) {

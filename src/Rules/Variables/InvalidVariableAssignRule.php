@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -30,6 +31,14 @@ final class InvalidVariableAssignRule implements Rule
 		}
 
 		if ($variable->name === 'this') {
+			if ($scope->isInClass()) {
+				$classReflection = $scope->getClassReflection();
+
+				if ($classReflection->implementsInterface(ArrayAccess::class)) {
+					return [];
+				}
+			}
+
 			return [
 				RuleErrorBuilder::message('Cannot re-assign $this.')
 					->identifier('assign.this')

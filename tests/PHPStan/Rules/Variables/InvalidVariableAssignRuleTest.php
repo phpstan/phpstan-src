@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidVariableAssignRule>
@@ -46,6 +47,43 @@ class InvalidVariableAssignRuleTest extends RuleTestCase
 			[
 				'Cannot re-assign $this.',
 				28,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug14352(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14352.php'], [
+			/*
+			[
+				'Cannot re-assign $this.',
+				13,
+			],
+			*/
+			[
+				'Cannot re-assign $this.',
+				37,
+			],
+			[
+				'Cannot re-assign $this.',
+				39,
+			],
+			[
+				'Cannot re-assign $this.',
+				47,
+			],
+			[
+				'Cannot re-assign $this.',
+				49,
+			],
+			[
+				'Cannot re-assign $this.',
+				57,
+			],
+			[
+				'Cannot re-assign $this.',
+				63,
 			],
 		]);
 	}

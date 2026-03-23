@@ -1294,6 +1294,27 @@ final class TypeSpecifier
 					return $result;
 				}
 			}
+
+			// Fallback: directly filter constant arrays by their exact sizes.
+			// This avoids using TypeCombinator::remove() with falsey context,
+			// which can incorrectly remove arrays whose count doesn't match
+			// but whose shape is a subtype of the matched array.
+			$keptTypes = [];
+			foreach ($type->getConstantArrays() as $arrayType) {
+				if ($sizeType->isSuperTypeOf($arrayType->getArraySize())->yes()) {
+					continue;
+				}
+
+				$keptTypes[] = $arrayType;
+			}
+			if ($keptTypes !== []) {
+				return $this->create(
+					$countFuncCall->getArgs()[0]->value,
+					TypeCombinator::union(...$keptTypes),
+					$context->negate(),
+					$scope,
+				)->setRootExpr($rootExpr);
+			}
 		}
 
 		$resultTypes = [];

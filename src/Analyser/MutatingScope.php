@@ -2758,6 +2758,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
 
+		$conditionalExpressions = $this->conditionalExpressions;
+		if ($certainty->yes() && array_key_exists($exprString, $conditionalExpressions)) {
+			$conditionalExpressions[$exprString] = array_filter(
+				$conditionalExpressions[$exprString],
+				static fn (ConditionalExpressionHolder $holder) => !$holder->getTypeHolder()->getCertainty()->no(),
+			);
+			if ($conditionalExpressions[$exprString] === []) {
+				unset($conditionalExpressions[$exprString]);
+			}
+		}
+
 		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -2765,7 +2776,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 			$this->getNamespace(),
 			$expressionTypes,
 			$nativeTypes,
-			$this->conditionalExpressions,
+			$conditionalExpressions,
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

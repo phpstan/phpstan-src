@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 use function is_string;
 
 /**

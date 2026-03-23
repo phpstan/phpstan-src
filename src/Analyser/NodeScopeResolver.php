@@ -3535,10 +3535,76 @@ class NodeScopeResolver
 			}
 		}
 
-		// Invalidate variables passed by reference inside array arguments
-		// e.g. call_user_func_array($callback, [&$var, ...]) - $var might be modified
-		foreach ($args as $arg) {
-			$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arg->value);
+		// For call_user_func_array with a resolvable callback, use the callback's
+		// parameter types for by-reference variables instead of blindly using mixed
+		if (
+			$calleeReflection instanceof FunctionReflection
+			&& $calleeReflection->getName() === 'call_user_func_array'
+			&& $callLike instanceof FuncCall
+		) {
+			$rewriteResult = ArgumentsNormalizer::reorderCallUserFuncArrayArguments($callLike, $scope);
+			if ($rewriteResult !== null) {
+				[$callbackParametersAcceptor] = $rewriteResult;
+				$callbackParameters = $callbackParametersAcceptor->getParameters();
+				$callArgs = $callLike->getArgs();
+				if (isset($callArgs[1]) && $callArgs[1]->value instanceof Array_) {
+					foreach ($callArgs[1]->value->items as $i => $arrayItem) {
+						// Handle nested by-ref items in sub-arrays
+						if ($arrayItem->value instanceof Array_) {
+							$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arrayItem->value);
+						}
+
+						if (!$arrayItem->byRef) {
+							continue;
+						}
+
+						if (!$arrayItem->value instanceof Variable || !is_string($arrayItem->value->name)) {
+							continue;
+						}
+
+						$matchedParam = null;
+						if (isset($callbackParameters[$i])) {
+							$matchedParam = $callbackParameters[$i];
+						} elseif (count($callbackParameters) > 0 && $callbackParametersAcceptor->isVariadic()) {
+							$matchedParam = $callbackParameters[count($callbackParameters) - 1];
+						}
+
+						if ($matchedParam !== null && $matchedParam->passedByReference()->createsNewVariable()) {
+							$byRefType = $matchedParam->getType();
+							if (
+								$matchedParam instanceof ExtendedParameterReflection
+								&& $matchedParam->getOutType() !== null
+							) {
+								$byRefType = $matchedParam->getOutType();
+							}
+
+							$scope = $this->processVirtualAssign(
+								$scope,
+								$storage,
+								$stmt,
+								$arrayItem->value,
+								new TypeExpr($byRefType),
+								$nodeCallback,
+							)->getScope();
+						} else {
+							// Callback parameter is not by-ref or unknown - invalidate to mixed
+							// since we can't determine what happens with the reference
+							$scope = $scope->assignVariable($arrayItem->value->name, new MixedType(), new MixedType(), TrinaryLogic::createYes());
+						}
+					}
+				}
+			} else {
+				// Could not resolve the callback - fall back to generic invalidation
+				foreach ($args as $arg) {
+					$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arg->value);
+				}
+			}
+		} else {
+			// Invalidate variables passed by reference inside array arguments
+			// e.g. some_function([&$var, ...]) - $var might be modified
+			foreach ($args as $arg) {
+				$scope = $this->invalidateByRefVariablesInArrayArg($scope, $arg->value);
+			}
 		}
 
 		// not storing this, it's scope after processing all args

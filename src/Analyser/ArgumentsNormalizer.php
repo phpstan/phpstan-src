@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
@@ -86,6 +87,88 @@ final class ArgumentsNormalizer
 			$callbackArg->value,
 			$passThruArgs,
 			$callUserFuncCall->getAttributes(),
+		), $acceptsNamedArguments];
+	}
+
+	/**
+	 * @return array{ParametersAcceptor, FuncCall, TrinaryLogic}|null
+	 */
+	public static function reorderCallUserFuncArrayArguments(
+		FuncCall $callUserFuncArrayCall,
+		Scope $scope,
+	): ?array
+	{
+		$args = $callUserFuncArrayCall->getArgs();
+		if (count($args) < 2) {
+			return null;
+		}
+
+		$callbackArg = null;
+		$argsArrayArg = null;
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && ($arg->name->toString() === 'callback' || $arg->name->toString() === 'function')) {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			if ($argsArrayArg === null) {
+				if ($arg->name === null && $i === 1) {
+					$argsArrayArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && ($arg->name->toString() === 'args' || $arg->name->toString() === 'parameters')) {
+					$argsArrayArg = $arg;
+					continue;
+				}
+			}
+		}
+
+		if ($callbackArg === null || $argsArrayArg === null) {
+			return null;
+		}
+
+		if (!$argsArrayArg->value instanceof Array_) {
+			return null;
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
+		}
+
+		$passThruArgs = [];
+		foreach ($argsArrayArg->value->items as $item) {
+			$passThruArgs[] = new Arg(
+				$item->value,
+				$item->byRef,
+				$item->unpack,
+				$item->getAttributes(),
+			);
+		}
+
+		$callableParametersAcceptors = $calledOnType->getCallableParametersAcceptors($scope);
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$passThruArgs,
+			$callableParametersAcceptors,
+			null,
+		);
+
+		$acceptsNamedArguments = TrinaryLogic::createYes();
+		foreach ($callableParametersAcceptors as $callableParametersAcceptor) {
+			$acceptsNamedArguments = $acceptsNamedArguments->and($callableParametersAcceptor->acceptsNamedArguments());
+		}
+
+		return [$parametersAcceptor, new FuncCall(
+			$callbackArg->value,
+			$passThruArgs,
+			$callUserFuncArrayCall->getAttributes(),
 		), $acceptsNamedArguments];
 	}
 

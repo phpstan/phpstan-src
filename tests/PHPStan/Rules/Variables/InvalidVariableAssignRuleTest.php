@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<InvalidVariableAssignRule>
@@ -50,6 +51,7 @@ class InvalidVariableAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug14352(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14352.php'], [

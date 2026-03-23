@@ -463,7 +463,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
-					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scopeBeforeAssignEval, $storage);
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite), true), $scopeBeforeAssignEval, $storage);
 					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
@@ -480,7 +480,7 @@ final class AssignHandler implements ExprHandler
 				}
 			} else {
 				if ($var instanceof Variable) {
-					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scopeBeforeAssignEval, $storage);
+					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr, true), $scopeBeforeAssignEval, $storage);
 				} elseif ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
 					if ($var instanceof PropertyFetch && $var->name instanceof Node\Identifier && !$isAssignOp) {
@@ -799,7 +799,7 @@ final class AssignHandler implements ExprHandler
 			}
 
 			if ($var instanceof Variable && is_string($var->name)) {
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scope, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr, true), $scope, $storage);
 				$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {

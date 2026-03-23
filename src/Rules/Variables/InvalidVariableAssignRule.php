@@ -32,10 +32,7 @@ final class InvalidVariableAssignRule implements Rule
 		}
 
 		if ($variable->name === 'this') {
-			$expr = $node->getAssignedExpr();
-			$type = $scope->getType($expr);
-
-			if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($type)->yes()) {
+			if ($node->isDimFetch() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($variable))->no()) {
 				return [];
 			}
 

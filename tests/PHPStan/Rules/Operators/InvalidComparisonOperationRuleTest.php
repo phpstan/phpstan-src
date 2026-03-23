@@ -215,4 +215,9 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7280-comment.php'], []);
 	}
 
+	public function testBug14355(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14355.php'], []);
+	}
+
 }

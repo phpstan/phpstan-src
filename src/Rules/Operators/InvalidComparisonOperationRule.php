@@ -17,6 +17,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
@@ -57,6 +58,10 @@ final class InvalidComparisonOperationRule implements Rule
 			&& !$node instanceof Node\Expr\BinaryOp\GreaterOrEqual
 			&& !$node instanceof Node\Expr\BinaryOp\Spaceship
 		) {
+			return [];
+		}
+
+		if ($scope->getType($node->left) instanceof NeverType || $scope->getType($node->right) instanceof NeverType) {
 			return [];
 		}
 

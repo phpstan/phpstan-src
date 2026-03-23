@@ -12,12 +12,16 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypehintHelper;
+use Nette\Utils\Strings;
 use ReflectionFunctionAbstract;
 use function array_change_key_case;
 use function array_key_exists;
 use function array_keys;
+use function implode;
 use function is_array;
 use function sprintf;
+use function str_contains;
+use function str_replace;
 use function strtolower;
 use const CASE_LOWER;
 
@@ -30,6 +34,9 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private static ?array $functionMetadata = null;
+
+	/** @var array<string, array<string, list<string>>>|null */
+	private static ?array $constantParameterMap = null;
 
 	public function __construct(
 		private SignatureMapParser $parser,
@@ -223,7 +230,56 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php85delta.php');
 		}
 
+		$signatureMap = $this->applyConstantParameterMap($signatureMap);
+
 		return self::$signatureMaps[$cacheKey] = $signatureMap;
+	}
+
+	/**
+	 * @return array<string, array<string, list<string>>>
+	 */
+	private static function getConstantToFunctionParameterMap(): array
+	{
+		if (self::$constantParameterMap === null) {
+			/** @var array<string, array<string, list<string>>> $map */
+			$map = require __DIR__ . '/../../../resources/constantToFunctionParameterMap.php';
+			self::$constantParameterMap = array_change_key_case($map, CASE_LOWER);
+		}
+
+		return self::$constantParameterMap;
+	}
+
+	/**
+	 * @param array<string, mixed> $signatureMap
+	 * @return array<string, mixed>
+	 */
+	private function applyConstantParameterMap(array $signatureMap): array
+	{
+		$constantMap = self::getConstantToFunctionParameterMap();
+		foreach ($constantMap as $functionName => $parameterConstants) {
+			if (!array_key_exists($functionName, $signatureMap)) {
+				continue;
+			}
+			$signature = $signatureMap[$functionName];
+			$newSignature = [];
+			foreach ($signature as $paramKey => $typeString) {
+				if ($paramKey === 0) {
+					$newSignature[$paramKey] = $typeString;
+					continue;
+				}
+				$matches = Strings::match($paramKey, '/^(?:&(?:\.\.\.)?r?w?_?)?(?:\.\.\.)?([^=]+)/');
+				$baseName = $matches !== null ? $matches[1] : '';
+				if ($baseName !== '' && array_key_exists($baseName, $parameterConstants) && str_contains($typeString, 'int')) {
+					$constantUnion = implode('|', $parameterConstants[$baseName]);
+					$newSignature[$paramKey] = str_replace('int', $constantUnion, $typeString);
+				} else {
+					$newSignature[$paramKey] = $typeString;
+				}
+			}
+			$signatureMap[$functionName] = $newSignature;
+		}
+
+		return $signatureMap;
 	}
 
 	/**

@@ -2711,4 +2711,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-14012.php'], []);
 	}
 
+	public function testBug14357(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14357.php'], [
+			[
+				'Parameter #2 ...$rest of function array_multisort expects 0|1|2|3|4|5|6|8|array, 999 given.',
+				21,
+			],
+		]);
+	}
+
 }

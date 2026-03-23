@@ -1212,7 +1212,7 @@ final class TypeCombinator
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 
-			if ($type instanceof IntersectionType) {
+			if ($type instanceof IntersectionType && !$type instanceof TemplateType) {
 				// transform A & (B & C) to A & B & C
 				array_splice($types, $i--, 1, $type->getTypes());
 				$typesCount = count($types);

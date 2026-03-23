@@ -28,6 +28,8 @@ class HelloWorld
 			throw new \Exception;
 		}
 
+		assertType('(Bug9961\A&T of T of Bug9961\Ia&Bug9961\Ib (method Bug9961\HelloWorld::sayHello(), argument) (method Bug9961\HelloWorld::sayHello(), argument))|T of Bug9961\Ic&Bug9961\Id (method Bug9961\HelloWorld::sayHello(), argument)', $a);
+
 		return $a;
 	}
 }

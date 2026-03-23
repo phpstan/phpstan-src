@@ -131,6 +131,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/bug-14250.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-14250-promoted-properties.php \
 		--exclude tests/PHPStan/Rules/Operators/data/bug-3585.php \
+		--exclude tests/PHPStan/Rules/EnumCases/data/bug-14252.php \
 		src tests
 
 install-paratest:

@@ -110,6 +110,12 @@ final class TableErrorFormatter implements ErrorFormatter
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
+				if (
+					$error->getIdentifier() !== null
+					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
+				) {
+					$message = '<fg=red>' . OutputFormatter::escape($message) . '</>';
+				}
 				if ($error->getIdentifier() !== null) {
 					$message .= "\n";
 					$message .= '🪪  ' . $error->getIdentifier();
@@ -155,13 +161,6 @@ final class TableErrorFormatter implements ErrorFormatter
 					}
 
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
-				}
-
-				if (
-					$error->getIdentifier() !== null
-					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
-				) {
-					$message = '<fg=red>' . $message . '</>';
 				}
 
 				$rows[] = [

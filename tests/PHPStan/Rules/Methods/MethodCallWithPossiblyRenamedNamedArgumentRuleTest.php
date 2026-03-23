@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
  * @extends RuleTestCase<CompositeRule>
  */
 #[RequiresPhp('>= 8.0')]
-class CallMethodsRuleNamedArgumentRenamedParameterTest extends RuleTestCase
+class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule

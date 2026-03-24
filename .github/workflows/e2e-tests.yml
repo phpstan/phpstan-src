@@ -438,13 +438,11 @@ jobs:
               ../../bin/phpstan analyze
           - script: |
               cd e2e/vvv-with-debug
-              composer install
               OUTPUT=$(../../bin/phpstan analyze test.php -vvv --debug)
               echo "$OUTPUT"
               ../bashunit -a contains '# of spawned processes:    1' "$OUTPUT"
           - script: |
               cd e2e/vvv-with-debug
-              composer install
               OUTPUT=$(../../bin/phpstan analyze test.php -vvv --debug --configuration parallel.neon)
               echo "$OUTPUT"
               ../bashunit -a contains '# of spawned processes:    1' "$OUTPUT"

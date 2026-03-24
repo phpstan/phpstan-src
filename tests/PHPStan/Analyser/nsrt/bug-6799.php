@@ -51,4 +51,43 @@ class HelloWorld
 		call_user_func_array([$this, 'processWithParamOut'], [&$items]);
 		assertType('list<int>', $items);
 	}
+
+	/**
+	 * @param array<mixed> $items
+	 * @param-out list<string> $items
+	 */
+	protected function processWithParamOutStrings(array &$items): void
+	{
+		$items = ['a', 'b'];
+	}
+
+	/**
+	 * @param 'processWithParamOut'|'processWithParamOutStrings' $method
+	 */
+	protected function testUnionStringCallbacks(string $method): void
+	{
+		$items = [];
+		call_user_func_array([$this, $method], [&$items]);
+		assertType('list<int|string>', $items);
+	}
+
+	/**
+	 * @param array{$this, 'processWithParamOut'}|array{$this, 'processWithParamOutStrings'} $callback
+	 */
+	protected function testUnionArrayCallbacks(array $callback): void
+	{
+		$items = [];
+		call_user_func_array($callback, [&$items]);
+		assertType('list<int|string>', $items);
+	}
+
+	/**
+	 * @param 'processWithParamOut'|array{$this, 'processWithParamOutStrings'} $callback
+	 */
+	protected function testMixedUnionCallback($callback): void
+	{
+		$items = [];
+		call_user_func_array($callback, [&$items]);
+		assertType('array{}', $items);
+	}
 }

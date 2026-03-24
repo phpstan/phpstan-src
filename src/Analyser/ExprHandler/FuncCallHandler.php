@@ -882,24 +882,21 @@ final class FuncCallHandler implements ExprHandler
 
 		$callbackType = $scope->getType($innerFuncCall->name);
 
-		foreach ($callbackType->getConstantStrings() as $constantString) {
-			if ($constantString->getValue() === '') {
-				continue;
-			}
-			$funcName = new Name($constantString->getValue());
+		$constantStrings = $callbackType->getConstantStrings();
+		if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
+			$funcName = new Name($constantStrings[0]->getValue());
 			if ($this->reflectionProvider->hasFunction($funcName, $scope)) {
 				return $this->reflectionProvider->getFunction($funcName, $scope);
 			}
 		}
 
-		foreach ($callbackType->getConstantArrays() as $constantArray) {
-			foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
-				if ($typeAndMethod->isUnknown() || !$typeAndMethod->getCertainty()->yes()) {
-					continue;
-				}
-				$methodType = $typeAndMethod->getType();
-				if ($methodType->hasMethod($typeAndMethod->getMethod())->yes()) {
-					return $methodType->getMethod($typeAndMethod->getMethod(), $scope);
+		$constantArrays = $callbackType->getConstantArrays();
+		if (count($constantArrays) === 1) {
+			$typeAndMethods = $constantArrays[0]->findTypeAndMethodNames();
+			if (count($typeAndMethods) === 1 && !$typeAndMethods[0]->isUnknown() && $typeAndMethods[0]->getCertainty()->yes()) {
+				$methodType = $typeAndMethods[0]->getType();
+				if ($methodType->hasMethod($typeAndMethods[0]->getMethod())->yes()) {
+					return $methodType->getMethod($typeAndMethods[0]->getMethod(), $scope);
 				}
 			}
 		}

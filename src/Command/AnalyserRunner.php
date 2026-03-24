@@ -71,7 +71,7 @@ final class AnalyserRunner
 			);
 		}
 
-		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
+		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files, $debug);
 		$mainScript = null;
 		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];

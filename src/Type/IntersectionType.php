@@ -47,7 +47,6 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_filter;
 use function array_intersect_key;
 use function array_map;
-use function array_merge;
 use function array_shift;
 use function array_unique;
 use function array_values;
@@ -1144,7 +1143,7 @@ class IntersectionType implements CompoundType
 
 		if (count($yesAcceptors) > 0) {
 			$acceptors = $yesAcceptors;
-		} elseif(count($maybeAcceptors) > 0) {
+		} elseif (count($maybeAcceptors) > 0) {
 			$acceptors = $maybeAcceptors;
 		} else {
 			throw new ShouldNotHappenException();

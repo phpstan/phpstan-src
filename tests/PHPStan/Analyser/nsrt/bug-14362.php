@@ -58,7 +58,7 @@ class H {
 	}
 }
 
-function () : void {
+function doBar() : void {
 	assertType('Closure(Bug14362\B): int', C::u()(...));
 	assertType('Closure(Bug14362\B): int', D::u()(...));
 
@@ -67,7 +67,7 @@ function () : void {
 
 	// Intersection with only maybe-callable types (neither has __invoke)
 	assertType('Closure', H::u()(...));
-};
+}
 
 function doFoo(string $c):void {
 	if (is_callable($c)) {

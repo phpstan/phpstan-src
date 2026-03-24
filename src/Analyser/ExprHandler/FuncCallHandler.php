@@ -32,10 +32,10 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
-use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -222,6 +222,8 @@ final class FuncCallHandler implements ExprHandler
 				$innerParameters = $innerParametersAcceptor->getParameters();
 				$innerArgs = $innerFuncCall->getArgs();
 
+				$innerCalleeReflection = $this->resolveCallUserFuncCalleeReflection($innerFuncCall, $scope);
+
 				foreach ($innerArgs as $i => $innerArg) {
 					$innerParameter = null;
 					if (isset($innerParameters[$i])) {
@@ -239,9 +241,7 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					$byRefType = $innerParameter instanceof ExtendedParameterReflection && $innerParameter->getOutType() !== null
-						? $innerParameter->getOutType()
-						: $innerParameter->getType();
+					$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection, $innerParameter, $scope);
 					$scope = $nodeScopeResolver->processVirtualAssign(
 						$scope,
 						$storage,
@@ -250,6 +250,7 @@ final class FuncCallHandler implements ExprHandler
 						new TypeExpr($byRefType),
 						$nodeCallback,
 					)->getScope();
+					$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 				}
 			}
 		}
@@ -864,6 +865,46 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
+	}
+
+	/**
+	 * @return FunctionReflection|MethodReflection|null
+	 */
+	private function resolveCallUserFuncCalleeReflection(FuncCall $innerFuncCall, MutatingScope $scope)
+	{
+		if ($innerFuncCall->name instanceof Name && $this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
+			return $this->reflectionProvider->getFunction($innerFuncCall->name, $scope);
+		}
+
+		if (!$innerFuncCall->name instanceof Expr) {
+			return null;
+		}
+
+		$callbackType = $scope->getType($innerFuncCall->name);
+
+		foreach ($callbackType->getConstantStrings() as $constantString) {
+			if ($constantString->getValue() === '') {
+				continue;
+			}
+			$funcName = new Name($constantString->getValue());
+			if ($this->reflectionProvider->hasFunction($funcName, $scope)) {
+				return $this->reflectionProvider->getFunction($funcName, $scope);
+			}
+		}
+
+		foreach ($callbackType->getConstantArrays() as $constantArray) {
+			foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
+				if ($typeAndMethod->isUnknown() || !$typeAndMethod->getCertainty()->yes()) {
+					continue;
+				}
+				$methodType = $typeAndMethod->getType();
+				if ($methodType->hasMethod($typeAndMethod->getMethod())->yes()) {
+					return $methodType->getMethod($typeAndMethod->getMethod(), $scope);
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

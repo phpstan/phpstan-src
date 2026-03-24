@@ -3475,27 +3475,7 @@ class NodeScopeResolver
 
 					$argValue = $arg->value;
 					if (!$argValue instanceof Variable || $argValue->name !== 'this') {
-						$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
-						if ($paramOutType !== null) {
-							$byRefType = $paramOutType;
-						} elseif (
-							$currentParameter instanceof ExtendedParameterReflection
-							&& $currentParameter->getOutType() !== null
-						) {
-							$byRefType = $currentParameter->getOutType();
-						} elseif (
-							$calleeReflection instanceof MethodReflection
-							&& !$calleeReflection->getDeclaringClass()->isBuiltin()
-						) {
-							$byRefType = $currentParameter->getType();
-						} elseif (
-							$calleeReflection instanceof FunctionReflection
-							&& !$calleeReflection->isBuiltin()
-						) {
-							$byRefType = $currentParameter->getType();
-						} else {
-							$byRefType = new MixedType();
-						}
+						$byRefType = $this->resolveByRefParameterType($callLike, $calleeReflection, $currentParameter, $scope);
 
 						$scope = $this->processVirtualAssign(
 							$scope,
@@ -3603,6 +3583,40 @@ class NodeScopeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 */
+	public function resolveByRefParameterType(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): Type
+	{
+		$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
+		if ($paramOutType !== null) {
+			return $paramOutType;
+		}
+
+		if (
+			$currentParameter instanceof ExtendedParameterReflection
+			&& $currentParameter->getOutType() !== null
+		) {
+			return $currentParameter->getOutType();
+		}
+
+		if (
+			$calleeReflection instanceof MethodReflection
+			&& !$calleeReflection->getDeclaringClass()->isBuiltin()
+		) {
+			return $currentParameter->getType();
+		}
+
+		if (
+			$calleeReflection instanceof FunctionReflection
+			&& !$calleeReflection->isBuiltin()
+		) {
+			return $currentParameter->getType();
+		}
+
+		return new MixedType();
 	}
 
 	/**

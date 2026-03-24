@@ -91,4 +91,19 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14124b.php'], []);
 	}
 
+	public function testCatchVariable(): void
+	{
+		$this->analyse([__DIR__ . '/data/parameter-out-catch-variable.php'], [
+			[
+				'Parameter &$p @param-out type of function ParameterOutCatchVariable\foo() expects int, Exception given.',
+				11,
+			],
+			[
+				'Parameter &$p by-ref type of function ParameterOutCatchVariable\bar() expects int, Exception given.',
+				19,
+				'You can change the parameter out type with @param-out PHPDoc tag.',
+			],
+		]);
+	}
+
 }

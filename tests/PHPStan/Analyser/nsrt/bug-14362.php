@@ -68,3 +68,12 @@ function () : void {
 	// Intersection with only maybe-callable types (neither has __invoke)
 	assertType('Closure', H::u()(...));
 };
+
+function doFoo(string $c):void {
+	if (is_callable($c)) {
+		$a = $c;
+	} else {
+		$a = C::u()(...);
+	}
+	assertType('callable-string|(Closure(Bug14362\B): int)', $a);
+}

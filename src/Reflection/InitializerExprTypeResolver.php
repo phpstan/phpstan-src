@@ -33,6 +33,7 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\Tag\TemplateTag;
@@ -136,6 +137,7 @@ final class InitializerExprTypeResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private PhpVersion $phpVersion,
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		private UnaryOperatorTypeSpecifyingExtensionRegistryProvider $unaryOperatorTypeSpecifyingExtensionRegistryProvider,
 		private OversizedArrayBuilder $oversizedArrayBuilder,
 		#[AutowiredParameter]
 		private bool $usePathConstantsAsConstantString,
@@ -270,7 +272,7 @@ final class InitializerExprTypeResolver
 			return $this->getClassConstFetchType($expr->class, $expr->name->toString(), $context->getClassName(), fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\UnaryPlus) {
-			return $this->getType($expr->expr, $context)->toNumber();
+			return $this->getUnaryPlusType($expr->expr, fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\UnaryMinus) {
 			return $this->getUnaryMinusType($expr->expr, fn (Expr $expr): Type => $this->getType($expr, $context));
@@ -2607,9 +2609,31 @@ final class InitializerExprTypeResolver
 	/**
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
+	public function getUnaryPlusType(Expr $expr, callable $getTypeCallback): Type
+	{
+		$type = $getTypeCallback($expr);
+
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callUnaryOperatorTypeSpecifyingExtensions('+', $type);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
+
+		return $type->toNumber();
+	}
+
+	/**
+	 * @param callable(Expr): Type $getTypeCallback
+	 */
 	public function getUnaryMinusType(Expr $expr, callable $getTypeCallback): Type
 	{
 		$type = $getTypeCallback($expr);
+
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callUnaryOperatorTypeSpecifyingExtensions('-', $type);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
 
 		$type = $this->getUnaryMinusTypeFromType($expr, $type);
 		if ($type instanceof IntegerRangeType) {
@@ -2651,6 +2675,12 @@ final class InitializerExprTypeResolver
 	public function getBitwiseNotType(Expr $expr, callable $getTypeCallback): Type
 	{
 		$exprType = $getTypeCallback($expr);
+
+		$specifiedTypes = $this->unaryOperatorTypeSpecifyingExtensionRegistryProvider->getRegistry()
+			->callUnaryOperatorTypeSpecifyingExtensions('~', $exprType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
+		}
 
 		return $this->getBitwiseNotTypeFromType($exprType);
 	}

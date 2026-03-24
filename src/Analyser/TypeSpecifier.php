@@ -289,9 +289,15 @@ final class TypeSpecifier
 					$sizeType = $leftType;
 				}
 
-				$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
-				if ($specifiedTypes !== null) {
-					$result = $result->unionWith($specifiedTypes);
+				// For range-typed left operands in falsey context ($left <= count($right)
+				// being false means count < $left), specifyTypesForCountFuncCall would
+				// incorrectly narrow the array because "count not in sizeType" is stricter
+				// than "count < some value in sizeType range".
+				if (!($context->falsey() && $leftType instanceof IntegerRangeType)) {
+					$specifiedTypes = $this->specifyTypesForCountFuncCall($expr->right, $argType, $sizeType, $context, $scope, $expr);
+					if ($specifiedTypes !== null) {
+						$result = $result->unionWith($specifiedTypes);
+					}
 				}
 
 				if (

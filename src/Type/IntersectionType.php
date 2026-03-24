@@ -16,7 +16,6 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MissingConstantFromReflectionException;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
-use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -46,6 +45,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_filter;
 use function array_intersect_key;
 use function array_map;
+use function array_merge;
 use function array_shift;
 use function array_unique;
 use function array_values;
@@ -1124,11 +1124,31 @@ class IntersectionType implements CompoundType
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		if ($this->isCallable()->no()) {
-			throw new ShouldNotHappenException();
+		$yesAcceptors = [];
+		$maybeAcceptors = [];
+
+		foreach ($this->types as $type) {
+			$isCallable = $type->isCallable();
+			if ($isCallable->no()) {
+				continue;
+			}
+
+			if ($isCallable->yes()) {
+				$yesAcceptors = array_merge($yesAcceptors, $type->getCallableParametersAcceptors($scope));
+			} else {
+				$maybeAcceptors = array_merge($maybeAcceptors, $type->getCallableParametersAcceptors($scope));
+			}
 		}
 
-		return [new TrivialParametersAcceptor()];
+		if (count($yesAcceptors) > 0) {
+			return $yesAcceptors;
+		}
+
+		if (count($maybeAcceptors) > 0) {
+			return $maybeAcceptors;
+		}
+
+		throw new ShouldNotHappenException();
 	}
 
 	public function isCloneable(): TrinaryLogic

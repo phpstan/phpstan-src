@@ -1134,18 +1134,18 @@ class IntersectionType implements CompoundType
 			}
 
 			if ($isCallable->yes()) {
-				$yesAcceptors = array_merge($yesAcceptors, $type->getCallableParametersAcceptors($scope));
+				$yesAcceptors[] = $type->getCallableParametersAcceptors($scope);
 			} else {
-				$maybeAcceptors = array_merge($maybeAcceptors, $type->getCallableParametersAcceptors($scope));
+				$maybeAcceptors[] = $type->getCallableParametersAcceptors($scope);
 			}
 		}
 
 		if (count($yesAcceptors) > 0) {
-			return $yesAcceptors;
+			return array_merge(...$yesAcceptors);
 		}
 
 		if (count($maybeAcceptors) > 0) {
-			return $maybeAcceptors;
+			return array_merge(...$maybeAcceptors);
 		}
 
 		throw new ShouldNotHappenException();

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
@@ -16,6 +17,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MissingConstantFromReflectionException;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -1141,14 +1143,20 @@ class IntersectionType implements CompoundType
 		}
 
 		if (count($yesAcceptors) > 0) {
-			return array_merge(...$yesAcceptors);
+			$acceptors = $yesAcceptors;
+		} elseif(count($maybeAcceptors) > 0) {
+			$acceptors = $maybeAcceptors;
+		} else {
+			throw new ShouldNotHappenException();
 		}
 
-		if (count($maybeAcceptors) > 0) {
-			return array_merge(...$maybeAcceptors);
+		$result = [];
+		$combinations = CombinationsHelper::combinations($acceptors);
+		foreach ($combinations as $combination) {
+			$result[] = ParametersAcceptorSelector::combineAcceptors($combination);
 		}
 
-		throw new ShouldNotHappenException();
+		return $result;
 	}
 
 	public function isCloneable(): TrinaryLogic

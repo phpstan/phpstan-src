@@ -38,13 +38,18 @@ class D {
 
 interface E
 {
+	public function __invoke(B $b, bool $option = true): int;
+}
+
+interface F
+{
 
 }
 
 class G {
-	public static function u(): A&B&E {
-		return new class() implements A, B, E {
-			public function __invoke(B $b): int {
+	public static function u(): A&E {
+		return new class() implements A, E {
+			public function __invoke(B $b, bool $option = true): int {
 				return 1;
 			}
 		};
@@ -52,8 +57,8 @@ class G {
 }
 
 class H {
-	public static function u(): B&E {
-		return new class() implements B, E {
+	public static function u(): B&F {
+		return new class() implements B, F {
 		};
 	}
 }
@@ -62,8 +67,8 @@ function doBar() : void {
 	assertType('Closure(Bug14362\B): int', C::u()(...));
 	assertType('Closure(Bug14362\B): int', D::u()(...));
 
-	// Intersection with one yes-callable and multiple maybe-callable types
-	assertType('Closure(Bug14362\B): int', G::u()(...));
+	// Intersection with two yes-callable compatible
+	assertType('Closure(Bug14362\B, bool=): int', G::u()(...));
 
 	// Intersection with only maybe-callable types (neither has __invoke)
 	assertType('Closure', H::u()(...));

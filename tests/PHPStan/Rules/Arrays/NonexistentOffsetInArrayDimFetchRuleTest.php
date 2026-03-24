@@ -1263,4 +1263,12 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14308.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug14347(): void
+	{
+		$this->reportPossiblyNonexistentConstantArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14347.php'], []);
+	}
+
 }

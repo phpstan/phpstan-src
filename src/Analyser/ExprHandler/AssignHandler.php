@@ -469,6 +469,7 @@ final class AssignHandler implements ExprHandler
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
+					$preservedDimFetchTypes = $scope->getDynamicArrayDimFetchExpressionTypes($var->name);
 					$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, new TypeExpr($valueToWrite)), $scopeBeforeAssignEval, $storage);
 					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite, TrinaryLogic::createYes());
 				} else {
@@ -503,6 +504,11 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$scope = $scope->assignExpression($expr, $type, $nativeType);
+			}
+
+			if (isset($preservedDimFetchTypes)) {
+				$scope = $scope->restoreExpressionTypes($preservedDimFetchTypes);
+				unset($preservedDimFetchTypes);
 			}
 
 			$setVarType = $scope->getType($originalVar->var);

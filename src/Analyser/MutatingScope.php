@@ -2857,6 +2857,68 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		return $this->assignExpression(new PropertyInitializationExpr($propertyName), new MixedType(), new MixedType());
 	}
 
+	/**
+	 * @return list<array{string, ExpressionTypeHolder, ExpressionTypeHolder}>
+	 */
+	public function getDynamicArrayDimFetchExpressionTypes(string $variableName): array
+	{
+		$result = [];
+		foreach ($this->expressionTypes as $exprString => $exprTypeHolder) {
+			$expr = $exprTypeHolder->getExpr();
+			if (!$expr instanceof Expr\ArrayDimFetch) {
+				continue;
+			}
+			if (!$expr->var instanceof Variable || !is_string($expr->var->name) || $expr->var->name !== $variableName) {
+				continue;
+			}
+			if ($expr->dim === null || $expr->dim instanceof Scalar) {
+				continue;
+			}
+			$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? $exprTypeHolder;
+			$result[] = [$exprString, $exprTypeHolder, $nativeHolder];
+		}
+		return $result;
+	}
+
+	/**
+	 * @param list<array{string, ExpressionTypeHolder, ExpressionTypeHolder}> $holders
+	 */
+	public function restoreExpressionTypes(array $holders): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$changed = false;
+		foreach ($holders as [$exprString, $holder, $nativeHolder]) {
+			if (isset($expressionTypes[$exprString])) {
+				continue;
+			}
+			$expressionTypes[$exprString] = $holder;
+			$nativeExpressionTypes[$exprString] = $nativeHolder;
+			$changed = true;
+		}
+		if (!$changed) {
+			return $this;
+		}
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null): self
 	{
 		$expressionTypes = $this->expressionTypes;

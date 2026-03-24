@@ -36,7 +36,27 @@ class D {
 	}
 }
 
+interface E
+{
+	public function __invoke(string $s): bool;
+}
+
+interface F
+{
+
+}
+
 function () : void {
 	assertType('Closure(Bug14362\B): int', C::u()(...));
 	assertType('Closure(Bug14362\B): int', D::u()(...));
+
+	// Intersection with only yes-callable types (both have __invoke)
+	/** @var A&E $yesCallable */
+	$yesCallable = C::u();
+	assertType('(Closure(Bug14362\B): int)|(Closure(string): bool)', $yesCallable(...));
+
+	// Intersection with only maybe-callable types (neither has __invoke)
+	/** @var B&F $maybeCallable */
+	$maybeCallable = C::u();
+	assertType('Closure', $maybeCallable(...));
 };

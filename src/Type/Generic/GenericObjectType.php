@@ -19,6 +19,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -95,7 +96,11 @@ class GenericObjectType extends ObjectType
 	{
 		$classes = parent::getReferencedClasses();
 		foreach ($this->types as $type) {
-			foreach ($type->getReferencedClasses() as $referencedClass) {
+			$referencedClasses = RecursionGuard::runOnObjectIdentity($type, static fn() => $type->getReferencedClasses());
+			if ($referencedClasses instanceof ErrorType) {
+				continue;
+			}
+			foreach ($referencedClasses as $referencedClass) {
 				$classes[] = $referencedClass;
 			}
 		}

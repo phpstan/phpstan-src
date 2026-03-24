@@ -208,6 +208,49 @@ final class FuncCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
+		if (
+			$functionReflection !== null
+			&& in_array($functionReflection->getName(), ['call_user_func_array', 'call_user_func'], true)
+		) {
+			$innerResult = $functionReflection->getName() === 'call_user_func_array'
+				? ArgumentsNormalizer::reorderCallUserFuncArrayArguments($expr, $scope)
+				: ArgumentsNormalizer::reorderCallUserFuncArguments($expr, $scope);
+
+			if ($innerResult !== null) {
+				[$innerParametersAcceptor, $innerFuncCall] = $innerResult;
+				$innerParameters = $innerParametersAcceptor->getParameters();
+				$innerArgs = $innerFuncCall->getArgs();
+
+				foreach ($innerArgs as $i => $innerArg) {
+					$innerParameter = null;
+					if (isset($innerParameters[$i])) {
+						$innerParameter = $innerParameters[$i];
+					} elseif (count($innerParameters) > 0 && $innerParametersAcceptor->isVariadic()) {
+						$innerParameter = $innerParameters[count($innerParameters) - 1];
+					}
+
+					if ($innerParameter === null || !$innerParameter->passedByReference()->createsNewVariable()) {
+						continue;
+					}
+
+					$argValue = $innerArg->value;
+					if ($argValue instanceof Variable && $argValue->name === 'this') {
+						continue;
+					}
+
+					$byRefType = $innerParameter->getType();
+					$scope = $nodeScopeResolver->processVirtualAssign(
+						$scope,
+						$storage,
+						$stmt,
+						$argValue,
+						new TypeExpr($byRefType),
+						$nodeCallback,
+					)->getScope();
+				}
+			}
+		}
+
 		if ($normalizedExpr->name instanceof Expr) {
 			$nameType = $scope->getType($normalizedExpr->name);
 			if (

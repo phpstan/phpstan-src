@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -26,6 +27,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_merge;
@@ -562,6 +564,24 @@ final class TypeCombinator
 			}
 		}
 
+		// numeric-string | non-decimal-int-string → string (preserving common accessories)
+		// Works because decimal-int-string ⊂ numeric-string, so together they cover all strings
+		if ($a->isString()->yes() && $b->isString()->yes()) {
+			$decimalIntString = new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]);
+			if ($b->isDecimalIntegerString()->no()) {
+				$bBase = self::removeDecimalIntStringAccessory($b);
+				if ($bBase->isSuperTypeOf($a)->yes() && $a->isSuperTypeOf($decimalIntString)->yes()) {
+					return [null, $bBase];
+				}
+			}
+			if ($a->isDecimalIntegerString()->no()) {
+				$aBase = self::removeDecimalIntStringAccessory($a);
+				if ($aBase->isSuperTypeOf($b)->yes() && $b->isSuperTypeOf($decimalIntString)->yes()) {
+					return [$aBase, null];
+				}
+			}
+		}
+
 		return null;
 	}
 
@@ -579,6 +599,18 @@ final class TypeCombinator
 		}
 
 		return $accessory;
+	}
+
+	private static function removeDecimalIntStringAccessory(Type $type): Type
+	{
+		if (!$type instanceof IntersectionType) {
+			return $type;
+		}
+
+		return self::intersect(...array_filter(
+			$type->getTypes(),
+			static fn (Type $t): bool => !$t instanceof AccessoryDecimalIntegerStringType,
+		));
 	}
 
 	private static function unionWithSubtractedType(

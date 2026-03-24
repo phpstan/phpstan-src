@@ -6,6 +6,7 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -521,6 +522,16 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield [
 			new ConstantFloatType(-0.0),
 			'-0.0',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
+			'decimal-int-string',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)]),
+			'non-decimal-int-string',
 		];
 	}
 

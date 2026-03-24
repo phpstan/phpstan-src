@@ -392,6 +392,17 @@ interface Type
 
 	public function isNumericString(): TrinaryLogic;
 
+	/**
+	 * When isDecimalIntegerString() returns yes(), the type
+	 * is guaranteed to be cast to an integer in an array key.
+	 * Examples of constant values covered by this type: "0", "1", "1234", "-1"
+	 *
+	 * When isDecimalIntegerString() returns no(), the type represents strings containing non-decimal integers and other text.
+	 * These are guaranteed to stay as string in an array key.
+	 * Examples of constant values covered by this type: "+1", "00", "18E+3", "1.2", "1,3", "foo"
+	 */
+	public function isDecimalIntegerString(): TrinaryLogic;
+
 	public function isNonEmptyString(): TrinaryLogic;
 
 	/**

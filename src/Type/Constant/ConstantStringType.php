@@ -329,6 +329,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createFromBoolean(is_numeric($this->getValue()));
 	}
 
+	public function isDecimalIntegerString(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean((string) (int) $this->value === $this->value);
+	}
+
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->getValue() !== '');

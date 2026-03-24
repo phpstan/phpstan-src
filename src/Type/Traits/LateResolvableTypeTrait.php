@@ -494,6 +494,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isNumericString();
 	}
 
+	public function isDecimalIntegerString(): TrinaryLogic
+	{
+		return $this->resolve()->isDecimalIntegerString();
+	}
+
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return $this->resolve()->isNonEmptyString();

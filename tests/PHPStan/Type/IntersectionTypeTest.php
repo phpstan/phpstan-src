@@ -8,6 +8,7 @@ use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -746,6 +747,30 @@ class IntersectionTypeTest extends PHPStanTestCase
 			new IntersectionType([new StringType(), new AccessoryUppercaseStringType()]),
 			VerbosityLevel::precise(),
 			'uppercase-string',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
+			VerbosityLevel::typeOnly(),
+			'string',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)]),
+			VerbosityLevel::typeOnly(),
+			'string',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]),
+			VerbosityLevel::value(),
+			'decimal-int-string',
+		];
+
+		yield [
+			new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType(inverse: true)]),
+			VerbosityLevel::value(),
+			'non-decimal-int-string',
 		];
 	}
 

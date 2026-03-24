@@ -185,4 +185,63 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
+	public static function dataIsDecimalIntegerString(): iterable
+	{
+		yield [
+			'0',
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			'1',
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			'1234',
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			'-1',
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			'+1',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'00',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'01',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'18E+3',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'1.2',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'1,3',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'foo',
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			'1foo',
+			TrinaryLogic::createNo(),
+		];
+	}
+
+	#[DataProvider('dataIsDecimalIntegerString')]
+	public function testIsDecimalIntegerString(string $value, TrinaryLogic $expected): void
+	{
+		$type = new ConstantStringType($value);
+		$this->assertSame($expected->describe(), $type->isDecimalIntegerString()->describe());
+	}
+
 }

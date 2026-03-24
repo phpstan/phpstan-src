@@ -2822,6 +2822,58 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ObjectType::class,
 			$nonFinalClass->getDisplayName(),
 		];
+
+		$decimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(),
+		]);
+		$nonDecimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(inverse: true),
+		]);
+
+		yield [
+			[
+				$decimalIntString,
+				new StringType(),
+			],
+			StringType::class,
+			'string',
+		];
+		yield [
+			[
+				$nonDecimalIntString,
+				new StringType(),
+			],
+			StringType::class,
+			'string',
+		];
+		yield [
+			[
+				$decimalIntString,
+				$nonDecimalIntString,
+			],
+			StringType::class,
+			'string',
+		];
+
+		yield [
+			[
+				$decimalIntString,
+				new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+			],
+			IntersectionType::class,
+			'numeric-string',
+		];
+
+		yield [
+			[
+				$nonDecimalIntString,
+				new IntersectionType([new StringType(), new AccessoryNumericStringType()]),
+			],
+			StringType::class,
+			'string',
+		];
 	}
 
 	/**
@@ -4953,6 +5005,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'non-decimal-int-string&numeric-string',
+		];
+
+		$decimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(),
+		]);
+		$nonDecimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(inverse: true),
+		]);
+
+		yield [
+			[
+				$decimalIntString,
+				$nonDecimalIntString,
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
 		];
 	}
 

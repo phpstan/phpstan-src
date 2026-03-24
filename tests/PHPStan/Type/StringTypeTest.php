@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use Exception;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -173,12 +174,87 @@ class StringTypeTest extends PHPStanTestCase
 			)->toArgument(),
 			TrinaryLogic::createYes(),
 		];
+
+		$decimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(),
+		]);
+		$nonDecimalIntString = new IntersectionType([
+			new StringType(),
+			new AccessoryDecimalIntegerStringType(inverse: true),
+		]);
+
+		yield [
+			$decimalIntString,
+			new ConstantStringType('1'),
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			$decimalIntString,
+			$decimalIntString,
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			$decimalIntString,
+			$nonDecimalIntString,
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$nonDecimalIntString,
+			$decimalIntString,
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$decimalIntString,
+			new StringType(),
+			TrinaryLogic::createMaybe(),
+		];
+		yield [
+			$decimalIntString,
+			new ConstantStringType('10'),
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			$nonDecimalIntString,
+			new ConstantStringType('10'),
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$decimalIntString,
+			new ConstantStringType('foo'),
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$nonDecimalIntString,
+			new ConstantStringType('foo'),
+			TrinaryLogic::createYes(),
+		];
+		yield [
+			$nonDecimalIntString,
+			new StringType(),
+			TrinaryLogic::createMaybe(),
+		];
+		yield [
+			$nonDecimalIntString,
+			new ConstantStringType('1'),
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$decimalIntString,
+			new ConstantStringType('+1'),
+			TrinaryLogic::createNo(),
+		];
+		yield [
+			$nonDecimalIntString,
+			new ConstantStringType('+1'),
+			TrinaryLogic::createYes(),
+		];
 	}
 
 	#[DataProvider('dataAccepts')]
 	public function testAccepts(Type $stringType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
-		$this->assertInstanceOf(StringType::class, $stringType);
+		$this->assertSame('Yes', $stringType->isString()->describe());
 
 		$actualResult = $stringType->accepts($otherType, true)->result;
 		$this->assertSame(

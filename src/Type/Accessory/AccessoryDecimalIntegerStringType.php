@@ -347,7 +347,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
-		return $this->inverse ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic

@@ -3,10 +3,14 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -18,6 +22,8 @@ use function array_key_exists;
 use function array_keys;
 use function array_values;
 use function count;
+use function is_string;
+use function key;
 use function ksort;
 use function max;
 use function sprintf;
@@ -86,6 +92,102 @@ final class ArgumentsNormalizer
 			$callbackArg->value,
 			$passThruArgs,
 			$callUserFuncCall->getAttributes(),
+		), $acceptsNamedArguments];
+	}
+
+	/**
+	 * @return array{ParametersAcceptor, FuncCall, TrinaryLogic}|null
+	 */
+	public static function reorderCallUserFuncArrayArguments(
+		FuncCall $callUserFuncArrayCall,
+		Scope $scope,
+	): ?array
+	{
+		$args = $callUserFuncArrayCall->getArgs();
+		if (count($args) < 2) {
+			return null;
+		}
+
+		$callbackArg = null;
+		$argsArrayArg = null;
+		foreach ($args as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			if ($argsArrayArg !== null) {
+				continue;
+			}
+			if ($arg->name === null && $i === 1) {
+				$argsArrayArg = $arg;
+				continue;
+			}
+			if ($arg->name === null || $arg->name->toString() !== 'args') {
+				continue;
+			}
+			$argsArrayArg = $arg;
+		}
+
+		if ($callbackArg === null || $argsArrayArg === null) {
+			return null;
+		}
+
+		if (!$argsArrayArg->value instanceof Array_) {
+			return null;
+		}
+
+		$passThruArgs = [];
+		foreach ($argsArrayArg->value->items as $item) {
+			$key = null;
+			if ($item->key instanceof String_) {
+				/** @var int|string $key */
+				$key = key([$item->key->value => null]);
+				if ($key === '') {
+					return null;
+				}
+			} elseif ($item->key !== null && !$item->key instanceof Int_) {
+				// Dynamic key, we cannot be sure.
+				return null;
+			}
+
+			$passThruArgs[] = new Arg(
+				$item->value,
+				$item->byRef,
+				$item->unpack,
+				$item->getAttributes(),
+				is_string($key) ? new Identifier($key) : null,
+			);
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
+		}
+
+		$callableParametersAcceptors = $calledOnType->getCallableParametersAcceptors($scope);
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$passThruArgs,
+			$callableParametersAcceptors,
+			null,
+		);
+
+		$acceptsNamedArguments = TrinaryLogic::createYes();
+		foreach ($callableParametersAcceptors as $callableParametersAcceptor) {
+			$acceptsNamedArguments = $acceptsNamedArguments->and($callableParametersAcceptor->acceptsNamedArguments());
+		}
+
+		return [$parametersAcceptor, new FuncCall(
+			$callbackArg->value,
+			$passThruArgs,
+			$callUserFuncArrayCall->getAttributes(),
 		), $acceptsNamedArguments];
 	}
 

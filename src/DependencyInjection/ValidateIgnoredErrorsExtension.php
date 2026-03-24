@@ -12,6 +12,7 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
+use PHPStan\DependencyInjection\Type\UnaryOperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileExcluder;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
@@ -35,6 +36,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
+use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use function array_keys;
 use function array_map;
 use function count;
@@ -127,6 +129,13 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 							public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
 							{
 								return new OperatorTypeSpecifyingExtensionRegistry([]);
+							}
+
+						}, new class implements UnaryOperatorTypeSpecifyingExtensionRegistryProvider {
+
+							public function getRegistry(): UnaryOperatorTypeSpecifyingExtensionRegistry
+							{
+								return new UnaryOperatorTypeSpecifyingExtensionRegistry([]);
 							}
 
 						}, new OversizedArrayBuilder(), true),

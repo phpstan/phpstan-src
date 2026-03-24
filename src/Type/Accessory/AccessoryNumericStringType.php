@@ -287,7 +287,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

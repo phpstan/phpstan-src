@@ -49,7 +49,7 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

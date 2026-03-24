@@ -804,9 +804,9 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
-		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isDecimalIntegerStringType());
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isDecimalIntegerString());
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
@@ -1302,7 +1302,7 @@ class IntersectionType implements CompoundType
 
 	public function toArrayKey(): Type
 	{
-		if ($this->isDecimalIntegerStringType()->yes()) {
+		if ($this->isDecimalIntegerString()->yes()) {
 			return new IntegerType();
 		}
 

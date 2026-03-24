@@ -35,7 +35,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * This accessory type is coupled with `Type::isDecimalIntegerStringType()` method.
+ * This accessory type is coupled with `Type::isDecimalIntegerString()` method.
  *
  * When inverse=false, this represents strings containing decimal integers.
  * These are guaranteed to be cast to an integer in an array key.
@@ -84,11 +84,11 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
-		$isDecimalIntegerStringType = $type->isDecimalIntegerStringType();
+		$isDecimalIntegerString = $type->isDecimalIntegerString();
 
 		if (
 			$type->isString()->yes()
-			&& ($this->inverse ? $isDecimalIntegerStringType->no() : $isDecimalIntegerStringType->yes())
+			&& ($this->inverse ? $isDecimalIntegerString->no() : $isDecimalIntegerString->yes())
 		) {
 			return AcceptsResult::createYes();
 		}
@@ -97,7 +97,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerStringType->negate() : $isDecimalIntegerStringType);
+		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerString->negate() : $isDecimalIntegerString);
 
 		return new AcceptsResult($result, []);
 	}
@@ -112,8 +112,8 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		$isDecimalIntegerStringType = $type->isDecimalIntegerStringType();
-		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerStringType->negate() : $isDecimalIntegerStringType);
+		$isDecimalIntegerString = $type->isDecimalIntegerString();
+		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerString->negate() : $isDecimalIntegerString);
 
 		return new IsSuperTypeOfResult($result, []);
 	}
@@ -128,7 +128,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		$otherTypeResult = $otherType->isString()->and($this->inverse ? $otherType->isDecimalIntegerStringType()->negate() : $otherType->isDecimalIntegerStringType());
+		$otherTypeResult = $otherType->isString()->and($this->inverse ? $otherType->isDecimalIntegerString()->negate() : $otherType->isDecimalIntegerString());
 
 		return new IsSuperTypeOfResult(
 			$otherTypeResult->and($otherType->equals($this) ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
@@ -335,7 +335,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return $this->inverse ? TrinaryLogic::createMaybe() : TrinaryLogic::createYes();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(!$this->inverse);
 	}
@@ -398,10 +398,10 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 		if ($type->isString()->yes()) {
 			if ($this->inverse) {
-				if ($type->isDecimalIntegerStringType()->yes()) {
+				if ($type->isDecimalIntegerString()->yes()) {
 					return new ConstantBooleanType(false);
 				}
-			} elseif ($type->isDecimalIntegerStringType()->no()) {
+			} elseif ($type->isDecimalIntegerString()->no()) {
 				return new ConstantBooleanType(false);
 			}
 		}

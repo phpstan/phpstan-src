@@ -383,7 +383,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
 	}

@@ -185,4 +185,6 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
+	public function test
+
 }

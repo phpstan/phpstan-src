@@ -286,7 +286,7 @@ class StrictMixedType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

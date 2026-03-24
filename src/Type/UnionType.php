@@ -701,9 +701,9 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isDecimalIntegerStringType());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isDecimalIntegerString());
 	}
 
 	public function isNonEmptyString(): TrinaryLogic

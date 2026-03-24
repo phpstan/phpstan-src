@@ -939,7 +939,7 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
 			$decimalIntegerString = new IntersectionType([

@@ -790,7 +790,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
-	public function isDecimalIntegerStringType(): TrinaryLogic
+	public function isDecimalIntegerString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

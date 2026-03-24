@@ -46,17 +46,25 @@ interface F
 
 }
 
+class G {
+	public static function u(): A&E {
+		throw new \Exception();
+	}
+}
+
+class H {
+	public static function u(): B&F {
+		throw new \Exception();
+	}
+}
+
 function () : void {
 	assertType('Closure(Bug14362\B): int', C::u()(...));
 	assertType('Closure(Bug14362\B): int', D::u()(...));
 
 	// Intersection with only yes-callable types (both have __invoke)
-	/** @var A&E $yesCallable */
-	$yesCallable = C::u();
-	assertType('(Closure(Bug14362\B): int)|(Closure(string): bool)', $yesCallable(...));
+	assertType('(Closure(Bug14362\B): int)|(Closure(string): bool)', G::u()(...));
 
 	// Intersection with only maybe-callable types (neither has __invoke)
-	/** @var B&F $maybeCallable */
-	$maybeCallable = C::u();
-	assertType('Closure', $maybeCallable(...));
+	assertType('Closure', H::u()(...));
 };

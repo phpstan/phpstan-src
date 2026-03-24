@@ -42,10 +42,11 @@ final class Scheduler implements DiagnoseExtension
 	public function scheduleWork(
 		int $cpuCores,
 		array $files,
+		bool $debug
 	): Schedule
 	{
 		$jobs = array_chunk($files, $this->jobSize);
-		$numberOfProcesses = min(
+		$numberOfProcesses = $debug ? 1 : min(
 			max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
 			$cpuCores,
 		);

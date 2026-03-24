@@ -143,11 +143,6 @@ final class ArgumentsNormalizer
 			return null;
 		}
 
-		$calledOnType = $scope->getType($callbackArg->value);
-		if (!$calledOnType->isCallable()->yes()) {
-			return null;
-		}
-
 		$passThruArgs = [];
 		foreach ($argsArrayArg->value->items as $item) {
 			$key = null;
@@ -169,6 +164,11 @@ final class ArgumentsNormalizer
 				$item->getAttributes(),
 				is_string($key) ? new Identifier($key) : null,
 			);
+		}
+
+		$calledOnType = $scope->getType($callbackArg->value);
+		if (!$calledOnType->isCallable()->yes()) {
+			return null;
 		}
 
 		$callableParametersAcceptors = $calledOnType->getCallableParametersAcceptors($scope);

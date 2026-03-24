@@ -1974,6 +1974,7 @@ class NodeScopeResolver
 					}
 
 					$variableName = $catchNode->var->name;
+					$this->callNodeCallback($nodeCallback, new VariableAssignNode($catchNode->var, new TypeExpr($catchType)), $scope, $storage);
 				}
 
 				$catchScopeResult = $this->processStmtNodesInternal($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $storage, $nodeCallback, $context);

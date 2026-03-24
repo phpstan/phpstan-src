@@ -68,16 +68,6 @@ class SchedulerTest extends TestCase
 				1,
 				[1],
 			],
-			[
-				16,
-				16,
-				2,
-				20,
-				100,
-				1,
-				[20, 20, 20, 20, 20],
-				true,
-			],
 		];
 	}
 
@@ -97,12 +87,11 @@ class SchedulerTest extends TestCase
 		int $numberOfFiles,
 		int $expectedNumberOfProcesses,
 		array $expectedJobSizes,
-		bool $debug = false,
 	): void
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');
 		$scheduler = new Scheduler($jobSize, $maximumNumberOfProcesses, $minimumNumberOfJobsPerProcess);
-		$schedule = $scheduler->scheduleWork($cpuCores, $files, $debug);
+		$schedule = $scheduler->scheduleWork($cpuCores, $files);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());
 		$jobSizes = array_map(static fn (array $job): int => count($job), $schedule->getJobs());

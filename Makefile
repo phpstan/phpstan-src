@@ -135,6 +135,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Functions/data/bug-14241.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14349.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14352.php \
+		--exclude tests/PHPStan/Rules/Variables/data/bug-14351.php \
 		src tests
 
 install-paratest:

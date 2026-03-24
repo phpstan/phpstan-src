@@ -438,12 +438,12 @@ jobs:
               ../../bin/phpstan analyze
           - script: |
               cd e2e/vvv-with-debug
-              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug test.php)
+              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug test.php 2>&1)
               echo "$OUTPUT"
               ../bashunit -a contains '# of spawned processes:    1' "$OUTPUT"
           - script: |
               cd e2e/vvv-with-debug
-              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug --configuration parallel.neon test.php)
+              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug --configuration parallel.neon test.php 2>&1)
               echo "$OUTPUT"
               ../bashunit -a contains '# of spawned processes:    1' "$OUTPUT"
 

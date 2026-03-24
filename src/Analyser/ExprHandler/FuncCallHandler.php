@@ -770,6 +770,15 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
+		if ($functionReflection->getName() === 'call_user_func_array') {
+			$result = ArgumentsNormalizer::reorderCallUserFuncArrayArguments($expr, $scope);
+			if ($result !== null) {
+				[, $innerFuncCall] = $result;
+
+				return $scope->getType($innerFuncCall);
+			}
+		}
+
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$expr->getArgs(),

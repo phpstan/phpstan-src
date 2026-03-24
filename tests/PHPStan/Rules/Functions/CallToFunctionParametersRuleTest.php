@@ -1128,7 +1128,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				],
 			];
 		}
-		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], $errors);
+		$this->analyse([__DIR__ . '/data/call-user-func-array-named-args.php'], $errors);
 	}
 
 	public function testFirstClassCallables(): void

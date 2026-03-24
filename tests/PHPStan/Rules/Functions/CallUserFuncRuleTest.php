@@ -74,6 +74,65 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testRuleCallUserFuncArray(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], [
+			[
+				'Callable passed to call_user_func_array() invoked with 0 parameters, 1 required.',
+				15,
+			],
+			[
+				'Parameter #1 $i of callable passed to call_user_func_array() expects int, string given.',
+				17,
+			],
+			[
+				'Parameter $i of callable passed to call_user_func_array() expects int, string given.',
+				18,
+			],
+			[
+				'Parameter $i of callable passed to call_user_func_array() expects int, string given.',
+				19,
+			],
+			[
+				'Unknown parameter $j in call to callable passed to call_user_func_array().',
+				22,
+			],
+			[
+				'Missing parameter $i (int) in call to callable passed to call_user_func_array().',
+				22,
+			],
+			[
+				'Callable passed to call_user_func_array() invoked with 0 parameters, 2-4 required.',
+				30,
+			],
+			[
+				'Callable passed to call_user_func_array() invoked with 1 parameter, 2-4 required.',
+				31,
+			],
+			[
+				'Callable passed to call_user_func_array() invoked with 0 parameters, at least 2 required.',
+				40,
+			],
+			[
+				'Callable passed to call_user_func_array() invoked with 1 parameter, at least 2 required.',
+				41,
+			],
+			[
+				'Result of callable passed to call_user_func_array() (void) is used.',
+				43,
+			],
+			[
+				'Parameter #1 $i of callable passed to call_user_func_array() expects int|null, string given.',
+				52,
+			],
+			[
+				'Parameter #1 $i of callable passed to call_user_func_array() expects int|null, string given.',
+				53,
+			],
+		]);
+	}
+
 	public function testBug7057(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-7057.php'], []);

@@ -413,7 +413,7 @@ final class FixerWorkerCommand extends Command
 		/** @var CpuCoreCounter $cpuCoreCounter */
 		$cpuCoreCounter = $container->getByType(CpuCoreCounter::class);
 
-		$schedule = $scheduler->scheduleWork($cpuCoreCounter->getNumberOfCpuCores(), $files);
+		$schedule = $scheduler->scheduleWork($cpuCoreCounter->getNumberOfCpuCores(), $files, false);
 		$mainScript = null;
 		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
 			$mainScript = $_SERVER['argv'][0];

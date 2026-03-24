@@ -96,7 +96,7 @@ class GenericObjectType extends ObjectType
 	{
 		$classes = parent::getReferencedClasses();
 		foreach ($this->types as $type) {
-			$referencedClasses = RecursionGuard::runOnObjectIdentity($type, static fn() => $type->getReferencedClasses());
+			$referencedClasses = RecursionGuard::runOnObjectIdentity($type, static fn () => $type->getReferencedClasses());
 			if ($referencedClasses instanceof ErrorType) {
 				continue;
 			}

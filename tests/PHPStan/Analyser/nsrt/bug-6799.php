@@ -35,4 +35,20 @@ class HelloWorld
 			assertType('array<string>', $whereFilter);
 		}
 	}
+
+	/**
+	 * @param array<mixed> $items
+	 * @param-out list<int> $items
+	 */
+	protected function processWithParamOut(array &$items): void
+	{
+		$items = [1, 2, 3];
+	}
+
+	protected function testParamOut(): void
+	{
+		$items = [];
+		call_user_func_array([$this, 'processWithParamOut'], [&$items]);
+		assertType('list<int>', $items);
+	}
 }

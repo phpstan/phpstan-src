@@ -32,6 +32,7 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\FunctionReflection;
@@ -238,7 +239,9 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					$byRefType = $innerParameter->getType();
+					$byRefType = $innerParameter instanceof ExtendedParameterReflection && $innerParameter->getOutType() !== null
+						? $innerParameter->getOutType()
+						: $innerParameter->getType();
 					$scope = $nodeScopeResolver->processVirtualAssign(
 						$scope,
 						$storage,

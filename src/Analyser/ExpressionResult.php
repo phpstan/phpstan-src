@@ -29,6 +29,7 @@ final class ExpressionResult
 		private array $impurePoints,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
+		private ?MutatingScope $scopeBeforeArgInvalidation = null,
 	)
 	{
 		$this->truthyScopeCallback = $truthyScopeCallback;
@@ -94,6 +95,11 @@ final class ExpressionResult
 	public function isAlwaysTerminating(): bool
 	{
 		return $this->isAlwaysTerminating;
+	}
+
+	public function getScopeBeforeArgInvalidation(): MutatingScope
+	{
+		return $this->scopeBeforeArgInvalidation ?? $this->scope;
 	}
 
 }

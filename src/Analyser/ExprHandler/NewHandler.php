@@ -196,7 +196,7 @@ final class NewHandler implements ExprHandler
 
 		if ($constructorReflection !== null && $parametersAcceptor !== null) {
 			$className ??= $constructorReflection->getDeclaringClass()->getName();
-			$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $expr, new Name\FullyQualified($className), $expr->getArgs(), $scope);
+			$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $expr, new Name\FullyQualified($className), $expr->getArgs(), $argsResult->getScopeBeforeArgInvalidation());
 			if ($constructorThrowPoint !== null) {
 				$throwPoints[] = $constructorThrowPoint;
 			}

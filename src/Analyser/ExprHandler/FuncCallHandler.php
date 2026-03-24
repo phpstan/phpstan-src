@@ -230,7 +230,7 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		if ($functionReflection !== null) {
-			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $scope);
+			$functionThrowPoint = $this->getFunctionThrowPoint($functionReflection, $parametersAcceptor, $normalizedExpr, $argsResult->getScopeBeforeArgInvalidation());
 			if ($functionThrowPoint !== null) {
 				$throwPoints[] = $functionThrowPoint;
 			}

@@ -35,7 +35,6 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -241,8 +240,17 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					$innerCalleeReflection ??= $this->resolveCallUserFuncCalleeReflection($innerFuncCall, $scope);
-					$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection, $innerParameter, $scope);
+					if ($innerCalleeReflection === null && $innerFuncCall->name instanceof Expr) {
+						$calledOnType = $scope->getType($innerFuncCall->name);
+						$callableAcceptors = $calledOnType->getCallableParametersAcceptors($scope);
+						$innerCalleeReflection = count($callableAcceptors) === 1
+							? $callableAcceptors[0]->getCalleeReflection()
+							: false;
+					}
+					if ($innerCalleeReflection === null) {
+						$innerCalleeReflection = false;
+					}
+					$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection !== false ? $innerCalleeReflection : null, $innerParameter, $scope);
 					$scope = $nodeScopeResolver->processVirtualAssign(
 						$scope,
 						$storage,
@@ -866,41 +874,6 @@ final class FuncCallHandler implements ExprHandler
 		}
 
 		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
-	}
-
-	private function resolveCallUserFuncCalleeReflection(FuncCall $innerFuncCall, MutatingScope $scope): FunctionReflection|MethodReflection|null
-	{
-		if ($innerFuncCall->name instanceof Name) {
-			if ($this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
-				return $this->reflectionProvider->getFunction($innerFuncCall->name, $scope);
-			}
-			return null;
-		}
-
-		$callbackType = $scope->getType($innerFuncCall->name);
-
-		$constantStrings = $callbackType->getConstantStrings();
-		if (count($constantStrings) === 1 && $constantStrings[0]->getValue() !== '') {
-			$funcName = new Name($constantStrings[0]->getValue());
-			if ($this->reflectionProvider->hasFunction($funcName, $scope)) {
-				return $this->reflectionProvider->getFunction($funcName, $scope);
-			}
-
-			return null;
-		}
-
-		$constantArrays = $callbackType->getConstantArrays();
-		if (count($constantArrays) === 1) {
-			$typeAndMethods = $constantArrays[0]->findTypeAndMethodNames();
-			if (count($typeAndMethods) === 1 && !$typeAndMethods[0]->isUnknown() && $typeAndMethods[0]->getCertainty()->yes()) {
-				$methodType = $typeAndMethods[0]->getType();
-				if ($methodType->hasMethod($typeAndMethods[0]->getMethod())->yes()) {
-					return $methodType->getMethod($typeAndMethods[0]->getMethod(), $scope);
-				}
-			}
-		}
-
-		return null;
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

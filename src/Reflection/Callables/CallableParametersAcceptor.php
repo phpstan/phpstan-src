@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\Callables;
 
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 
@@ -59,5 +61,7 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 	public function mustUseReturnValue(): TrinaryLogic;
 
 	public function getAsserts(): Assertions;
+
+	public function getCalleeReflection(): FunctionReflection|MethodReflection|null;
 
 }

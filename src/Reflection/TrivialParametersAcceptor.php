@@ -4,6 +4,8 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -106,6 +108,11 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function getCalleeReflection(): FunctionReflection|MethodReflection|null
+	{
+		return null;
 	}
 
 }

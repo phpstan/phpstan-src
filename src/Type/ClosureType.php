@@ -18,6 +18,8 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassConstantReflection;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -136,6 +138,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions;
+	}
+
+	public function getCalleeReflection(): FunctionReflection|MethodReflection|null
+	{
+		return null;
 	}
 
 	/**

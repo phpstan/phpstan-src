@@ -17,6 +17,8 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -402,6 +404,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function getCalleeReflection(): FunctionReflection|MethodReflection|null
+	{
+		return null;
 	}
 
 	public function toNumber(): Type

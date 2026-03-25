@@ -6,6 +6,8 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -122,6 +124,11 @@ final class ResolvedFunctionVariantWithCallable implements ResolvedFunctionVaria
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions ?? Assertions::createEmpty();
+	}
+
+	public function getCalleeReflection(): FunctionReflection|MethodReflection|null
+	{
+		return null;
 	}
 
 }

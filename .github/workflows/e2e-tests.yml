@@ -436,6 +436,21 @@ jobs:
               cd e2e/bug-14036
               composer install
               ../../bin/phpstan analyze
+          - script: |
+              cd e2e/vvv-with-debug
+              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug test.php 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Parallel processing scheduler' "$OUTPUT"
+          - script: |
+              cd e2e/vvv-with-debug
+              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug --configuration parallel.neon test.php 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a not_contains 'Parallel processing scheduler' "$OUTPUT"
+          - script: |
+              cd e2e/vvv-with-debug
+              OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv test.php 2>&1)
+              echo "$OUTPUT"
+              ../bashunit -a contains 'Parallel processing scheduler' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

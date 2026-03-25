@@ -6,6 +6,7 @@ class PlaygroundResult
 {
 
 	/**
+	 * @param array<string, mixed> $options
 	 * @param array<int, list<PlaygroundError>> $versionedErrors
 	 */
 	public function __construct(
@@ -16,6 +17,7 @@ class PlaygroundResult
 		private bool $strictRules,
 		private bool $bleedingEdge,
 		private bool $treatPhpDocTypesAsCertain,
+		private array $options,
 		private array $versionedErrors,
 	)
 	{
@@ -54,6 +56,14 @@ class PlaygroundResult
 	public function isTreatPhpDocTypesAsCertain(): bool
 	{
 		return $this->treatPhpDocTypesAsCertain;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function getOptions(): array
+	{
+		return $this->options;
 	}
 
 	/**

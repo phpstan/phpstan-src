@@ -181,15 +181,35 @@ class RunCommand extends Command
 		}
 		$tmpDir = sys_get_temp_dir() . '/phpstan-issue-bot-' . $result->getHash();
 		@mkdir($tmpDir, 0777, true);
+
+		$options = $result->getOptions();
+		$parameters = [
+			'level' => $result->getLevel(),
+			'inferPrivatePropertyTypeFromConstructor' => $options['inferPrivatePropertyTypeFromConstructor'] ?? true,
+			'treatPhpDocTypesAsCertain' => $result->isTreatPhpDocTypesAsCertain(),
+			'phpVersion' => $phpVersion,
+			'tmpDir' => $tmpDir,
+			'rememberPossiblyImpureFunctionValues' => $options['rememberPossiblyImpureFunctionValues'] ?? true,
+			'checkBenevolentUnionTypes' => $options['checkBenevolentUnionTypes'] ?? false,
+			'checkTooWideReturnTypesInProtectedAndPublicMethods' => $options['checkTooWideTypesInProtectedAndPublicMethods'] ?? false,
+			'checkTooWideParameterOutInProtectedAndPublicMethods' => $options['checkTooWideTypesInProtectedAndPublicMethods'] ?? false,
+			'checkTooWideThrowTypesInProtectedAndPublicMethods' => $options['checkTooWideTypesInProtectedAndPublicMethods'] ?? false,
+		];
+		$parameters['exceptions'] = [
+			'implicitThrows' => $options['implicitThrows'] ?? true,
+			'reportUncheckedExceptionDeadCatch' => $options['reportUncheckedExceptionDeadCatch'] ?? false,
+			'uncheckedExceptionClasses' => $options['uncheckedExceptionClasses'] ?? [],
+			'checkedExceptionClasses' => $options['checkedExceptionClasses'] ?? [],
+			'check' => [
+				'missingCheckedExceptionInThrows' => $options['missingCheckedExceptionInThrows'] ?? false,
+				'tooWideThrowType' => $options['tooWideThrowType'] ?? false,
+				'tooWideImplicitThrowType' => $options['tooWideImplicitThrowType'] ?? false,
+			],
+		];
+
 		$neon = Neon::encode([
 			'includes' => $configFiles,
-			'parameters' => [
-				'level' => $result->getLevel(),
-				'inferPrivatePropertyTypeFromConstructor' => true,
-				'treatPhpDocTypesAsCertain' => $result->isTreatPhpDocTypesAsCertain(),
-				'phpVersion' => $phpVersion,
-				'tmpDir' => $tmpDir,
-			],
+			'parameters' => $parameters,
 		]);
 
 		$hash = $result->getHash();

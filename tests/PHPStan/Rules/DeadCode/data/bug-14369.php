@@ -13,6 +13,18 @@ function test(string|null $test): void
 	echo $test;
 }
 
+function testMaybeNull(): void
+{
+	if (rand(0, 1)) {
+		$test = null;
+	} else {
+		$test = 'hello';
+	}
+	$test ??= throw new Exception();
+
+	echo $test;
+}
+
 function testAlwaysNull(): void
 {
 	$test = null;

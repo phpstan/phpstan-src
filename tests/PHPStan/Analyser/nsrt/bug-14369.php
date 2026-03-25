@@ -14,6 +14,18 @@ function test(string|null $test): void
 	assertType('string', $test);
 }
 
+function testMaybeNull(): void
+{
+	if (rand(0, 1)) {
+		$test = null;
+	} else {
+		$test = 'hello';
+	}
+	$test ??= throw new Exception();
+
+	assertType("'hello'", $test);
+}
+
 function testAlwaysNull(): void
 {
 	$test = null;

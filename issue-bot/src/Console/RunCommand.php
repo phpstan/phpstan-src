@@ -202,7 +202,6 @@ class RunCommand extends Command
 			'checkedExceptionClasses' => $options['checkedExceptionClasses'] ?? [],
 			'check' => [
 				'missingCheckedExceptionInThrows' => $options['missingCheckedExceptionInThrows'] ?? false,
-				'tooWideThrowType' => $options['tooWideThrowType'] ?? false,
 				'tooWideImplicitThrowType' => $options['tooWideImplicitThrowType'] ?? false,
 			],
 		];

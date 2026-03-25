@@ -891,14 +891,6 @@ final class PhpClassReflectionExtension
 				}
 				$phpDocParameterTypes[$paramName] = $paramTag->getType();
 			}
-			foreach ($phpDocParameterTypes as $paramName => $paramType) {
-				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
-					$paramType,
-					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-					$phpDocBlockClassReflection->getCallSiteVarianceMap(),
-					TemplateTypeVariance::createContravariant(),
-				);
-			}
 			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
 				$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 					$paramOutTag->getType(),
@@ -936,6 +928,15 @@ final class PhpClassReflectionExtension
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
+		}
+
+		foreach ($phpDocParameterTypes as $paramName => $paramType) {
+			$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+				$paramType,
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+				$phpDocBlockClassReflection->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createContravariant(),
+			);
 		}
 
 		return $this->methodReflectionFactory->create(

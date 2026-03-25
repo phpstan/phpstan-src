@@ -71,30 +71,27 @@ final class AnalyserRunner
 			);
 		}
 
-		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
-		$mainScript = null;
-		if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
-			$mainScript = $_SERVER['argv'][0];
-		}
+		if (!$debug && $allowParallel && function_exists('proc_open')) {
+			$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);
 
-		if (
-			!$debug
-			&& $allowParallel
-			&& function_exists('proc_open')
-			&& $mainScript !== null
-			&& $schedule->getNumberOfProcesses() > 0
-		) {
-			$loop = new StreamSelectLoop();
-			$result = null;
-			$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null);
-			$promise->then(static function (AnalyserResult $tmp) use (&$result): void {
-				$result = $tmp;
-			});
-			$loop->run();
-			if ($result === null) {
-				throw new ShouldNotHappenException();
+			$mainScript = null;
+			if (isset($_SERVER['argv'][0]) && is_file($_SERVER['argv'][0])) {
+				$mainScript = $_SERVER['argv'][0];
 			}
-			return $result;
+
+			if ($mainScript !== null && $schedule->getNumberOfProcesses() > 0) {
+				$loop = new StreamSelectLoop();
+				$result = null;
+				$promise = $this->parallelAnalyser->analyse($loop, $schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input, null);
+				$promise->then(static function (AnalyserResult $tmp) use (&$result): void {
+					$result = $tmp;
+				});
+				$loop->run();
+				if ($result === null) {
+					throw new ShouldNotHappenException();
+				}
+				return $result;
+			}
 		}
 
 		return $this->analyser->analyse(

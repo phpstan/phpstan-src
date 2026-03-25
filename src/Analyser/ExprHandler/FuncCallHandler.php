@@ -225,6 +225,11 @@ final class FuncCallHandler implements ExprHandler
 				$innerCalleeReflection = $this->resolveCallUserFuncCalleeReflection($innerFuncCall, $scope);
 
 				foreach ($innerArgs as $i => $innerArg) {
+					$argValue = $innerArg->value;
+					if ($argValue instanceof Variable && $argValue->name === 'this') {
+						continue;
+					}
+
 					$innerParameter = null;
 					if (isset($innerParameters[$i])) {
 						$innerParameter = $innerParameters[$i];
@@ -233,11 +238,6 @@ final class FuncCallHandler implements ExprHandler
 					}
 
 					if ($innerParameter === null || !$innerParameter->passedByReference()->createsNewVariable()) {
-						continue;
-					}
-
-					$argValue = $innerArg->value;
-					if ($argValue instanceof Variable && $argValue->name === 'this') {
 						continue;
 					}
 
@@ -867,10 +867,7 @@ final class FuncCallHandler implements ExprHandler
 		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
 	}
 
-	/**
-	 * @return FunctionReflection|MethodReflection|null
-	 */
-	private function resolveCallUserFuncCalleeReflection(FuncCall $innerFuncCall, MutatingScope $scope)
+	private function resolveCallUserFuncCalleeReflection(FuncCall $innerFuncCall, MutatingScope $scope): FunctionReflection|MethodReflection|null
 	{
 		if ($innerFuncCall->name instanceof Name && $this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
 			return $this->reflectionProvider->getFunction($innerFuncCall->name, $scope);

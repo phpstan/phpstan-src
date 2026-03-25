@@ -885,6 +885,8 @@ final class FuncCallHandler implements ExprHandler
 			if ($this->reflectionProvider->hasFunction($funcName, $scope)) {
 				return $this->reflectionProvider->getFunction($funcName, $scope);
 			}
+
+			return null;
 		}
 
 		$constantArrays = $callbackType->getConstantArrays();

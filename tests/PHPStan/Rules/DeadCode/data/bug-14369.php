@@ -12,3 +12,24 @@ function test(string|null $test): void
 
 	echo $test;
 }
+
+function testAlwaysNull(): void
+{
+	$test = null;
+	$test ??= throw new Exception();
+
+	echo $test;
+}
+
+function testAlwaysTerminatingLhs(): void
+{
+	alwaysThrows()->prop ??= throw new Exception();
+
+	echo 'unreachable';
+}
+
+/** @return never */
+function alwaysThrows(): never
+{
+	throw new Exception();
+}

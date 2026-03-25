@@ -13,3 +13,11 @@ function test(string|null $test): void
 
 	assertType('string', $test);
 }
+
+function testAlwaysNull(): void
+{
+	$test = null;
+	$test ??= throw new Exception();
+
+	assertType('*NEVER*', $test);
+}

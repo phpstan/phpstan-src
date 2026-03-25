@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Nette\Utils\Json;
 use function array_map;
 use function array_values;
+use function is_array;
 use function sprintf;
 
 class PlaygroundClient
@@ -27,6 +28,11 @@ class PlaygroundClient
 			$versionedErrors[(int) $phpVersion] = array_map(static fn (array $error) => new PlaygroundError($error['line'] ?? -1, $error['message'], $error['identifier'] ?? null), array_values($errors));
 		}
 
+		$options = [];
+		if (isset($json['config']['options']) && is_array($json['config']['options'])) {
+			$options = $json['config']['options'];
+		}
+
 		return new PlaygroundResult(
 			sprintf('https://phpstan.org/r/%s', $hash),
 			$hash,
@@ -35,6 +41,7 @@ class PlaygroundClient
 			$json['config']['strictRules'],
 			$json['config']['bleedingEdge'],
 			$json['config']['treatPhpDocTypesAsCertain'],
+			$options,
 			$versionedErrors,
 		);
 	}

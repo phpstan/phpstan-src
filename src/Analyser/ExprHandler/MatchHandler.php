@@ -454,11 +454,18 @@ final class MatchHandler implements ExprHandler
 		}
 
 		if ($isExhaustive) {
+			$preMatchConditionalExpressions = $scope->getConditionalExpressions();
 			$armBodyFinalScope = null;
 			foreach ($armBodyScopes as $armBodyScope) {
 				$armBodyFinalScope = $armBodyScope->mergeWith($armBodyFinalScope);
 			}
-			$scope = $armBodyFinalScope ?? $scope;
+			if ($armBodyFinalScope !== null) {
+				// Prevent conditional expressions created during arm scope merging
+				// from leaking into the post-match scope. These encode relationships
+				// between arm-narrowed types (e.g. "if equals(A) is false, then
+				// equals(B) is true") that should not affect subsequent code.
+				$scope = $armBodyFinalScope->replaceConditionalExpressions($preMatchConditionalExpressions);
+			}
 		} else {
 			$armBodyFinalScope = null;
 			foreach ($armBodyScopes as $armBodyScope) {

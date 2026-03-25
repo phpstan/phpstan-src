@@ -3320,6 +3320,39 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 		);
 	}
 
+	/**
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	public function getConditionalExpressions(): array
+	{
+		return $this->conditionalExpressions;
+	}
+
+	/**
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 */
+	public function replaceConditionalExpressions(array $conditionalExpressions): self
+	{
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
 	public function exitFirstLevelStatements(): self
 	{
 		if (!$this->inFirstLevelStatement) {

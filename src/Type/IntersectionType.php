@@ -19,6 +19,7 @@ use PHPStan\Reflection\MissingConstantFromReflectionException;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -1127,31 +1128,23 @@ class IntersectionType implements CompoundType
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$yesAcceptors = [];
-		$maybeAcceptors = [];
 
 		foreach ($this->types as $type) {
-			$isCallable = $type->isCallable();
-			if ($isCallable->no()) {
-				continue;
-			}
-
-			if ($isCallable->yes()) {
+			if ($type->isCallable()->yes()) {
 				$yesAcceptors[] = $type->getCallableParametersAcceptors($scope);
-			} else {
-				$maybeAcceptors[] = $type->getCallableParametersAcceptors($scope);
 			}
 		}
 
-		if (count($yesAcceptors) > 0) {
-			$acceptors = $yesAcceptors;
-		} elseif (count($maybeAcceptors) > 0) {
-			$acceptors = $maybeAcceptors;
-		} else {
-			throw new ShouldNotHappenException();
+		if (count($yesAcceptors) === 0) {
+			if ($this->isCallable()->no()) {
+				throw new ShouldNotHappenException();
+			}
+
+			return [new TrivialParametersAcceptor()];
 		}
 
 		$result = [];
-		$combinations = CombinationsHelper::combinations($acceptors);
+		$combinations = CombinationsHelper::combinations($yesAcceptors);
 		foreach ($combinations as $combination) {
 			$combined = ParametersAcceptorSelector::combineAcceptors($combination);
 			if (!$combined instanceof CallableParametersAcceptor) {

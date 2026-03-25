@@ -693,8 +693,6 @@ final class ParametersAcceptorSelector
 
 	/**
 	 * @param ParametersAcceptor[] $acceptors
-	 *
-	 * @return ($acceptors is array<CallableParametersAcceptor> ? CallableParametersAcceptor : ExtendedParametersAcceptor)
 	 */
 	public static function combineAcceptors(array $acceptors): ExtendedParametersAcceptor
 	{

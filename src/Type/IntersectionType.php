@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -1152,7 +1153,11 @@ class IntersectionType implements CompoundType
 		$result = [];
 		$combinations = CombinationsHelper::combinations($acceptors);
 		foreach ($combinations as $combination) {
-			$result[] = ParametersAcceptorSelector::combineAcceptors($combination);
+			$combined = ParametersAcceptorSelector::combineAcceptors($combination);
+			if (!$combined instanceof CallableParametersAcceptor) {
+				throw new ShouldNotHappenException();
+			}
+			$result[] = $combined;
 		}
 
 		return $result;

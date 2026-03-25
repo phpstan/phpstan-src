@@ -11,6 +11,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function str_ends_with;
 
 /**
  * @implements Rule<MethodCallableNode>
@@ -69,6 +70,13 @@ final class RestrictedMethodCallableUsageRule implements Rule
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedMethodUsage($methodReflection, $scope);
 				if ($restrictedUsage === null) {
+					continue;
+				}
+
+				if (
+					str_ends_with($restrictedUsage->identifier, '.deprecated')
+					&& DeprecatedSinceVersionHelper::isScopeVersionBeforeDeprecation($methodReflection->getAttributes(), $scope->getPhpVersion())
+				) {
 					continue;
 				}
 

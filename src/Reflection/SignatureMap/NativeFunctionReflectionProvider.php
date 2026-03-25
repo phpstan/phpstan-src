@@ -11,12 +11,14 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\Native\ExtendedNativeParameterReflection;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -24,6 +26,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
+use function is_string;
 use function str_contains;
 use function strtolower;
 
@@ -160,6 +163,11 @@ final class NativeFunctionReflectionProvider
 			$hasSideEffects = TrinaryLogic::createMaybe();
 		}
 
+		$phpstanAttributes = $this->attributeReflectionFactory->fromNativeReflection($attributes, InitializerExprContext::fromFunction($realFunctionName, $fileName));
+		if ($reflectionFunctionAdapter !== null) {
+			$phpstanAttributes = $this->addDeprecatedSinceAttribute($reflectionFunctionAdapter, $phpstanAttributes);
+		}
+
 		$functionReflection = new NativeFunctionReflection(
 			$realFunctionName,
 			$variantsByType['positional'],
@@ -171,7 +179,7 @@ final class NativeFunctionReflectionProvider
 			$docComment,
 			$returnsByReference,
 			$acceptsNamedArguments,
-			$this->attributeReflectionFactory->fromNativeReflection($attributes, InitializerExprContext::fromFunction($realFunctionName, $fileName)),
+			$phpstanAttributes,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 
@@ -197,6 +205,40 @@ final class NativeFunctionReflectionProvider
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param list<AttributeReflection> $phpstanAttributes
+	 * @return list<AttributeReflection>
+	 */
+	private function addDeprecatedSinceAttribute(ReflectionFunction $reflectionFunction, array $phpstanAttributes): array
+	{
+		foreach ($phpstanAttributes as $attr) {
+			if (strtolower($attr->getName()) === 'deprecated') {
+				return $phpstanAttributes;
+			}
+		}
+
+		foreach ($reflectionFunction->getAttributes() as $brAttr) {
+			if ($brAttr->getName() !== 'JetBrains\\PhpStorm\\Deprecated') {
+				continue;
+			}
+			$arguments = $brAttr->getArguments();
+			if (!isset($arguments['since']) || !is_string($arguments['since'])) {
+				continue;
+			}
+
+			$argTypes = ['since' => new ConstantStringType($arguments['since'])];
+			if (isset($arguments['message']) && is_string($arguments['message'])) {
+				$argTypes['message'] = new ConstantStringType($arguments['message']);
+			}
+
+			$phpstanAttributes[] = new AttributeReflection('Deprecated', $argTypes);
+
+			return $phpstanAttributes;
+		}
+
+		return $phpstanAttributes;
 	}
 
 }

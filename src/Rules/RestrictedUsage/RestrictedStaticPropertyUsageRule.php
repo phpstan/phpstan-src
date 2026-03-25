@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use function str_ends_with;
 
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
@@ -88,6 +89,13 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedPropertyUsage($propertyReflection, $scope);
 				if ($restrictedUsage === null) {
+					continue;
+				}
+
+				if (
+					str_ends_with($restrictedUsage->identifier, '.deprecated')
+					&& DeprecatedSinceVersionHelper::isScopeVersionBeforeDeprecation($propertyReflection->getAttributes(), $scope->getPhpVersion())
+				) {
 					continue;
 				}
 

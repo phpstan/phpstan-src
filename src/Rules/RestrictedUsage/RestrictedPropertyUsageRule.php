@@ -10,6 +10,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function str_ends_with;
 
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
@@ -68,6 +69,13 @@ final class RestrictedPropertyUsageRule implements Rule
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedPropertyUsage($propertyReflection, $scope);
 				if ($restrictedUsage === null) {
+					continue;
+				}
+
+				if (
+					str_ends_with($restrictedUsage->identifier, '.deprecated')
+					&& DeprecatedSinceVersionHelper::isScopeVersionBeforeDeprecation($propertyReflection->getAttributes(), $scope->getPhpVersion())
+				) {
 					continue;
 				}
 

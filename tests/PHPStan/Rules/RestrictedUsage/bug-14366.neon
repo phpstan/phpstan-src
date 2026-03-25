@@ -1,0 +1,5 @@
+parameters:
+	phpVersion: 80500
+
+includes:
+	- ../../../../vendor/phpstan/phpstan-deprecation-rules/rules.neon

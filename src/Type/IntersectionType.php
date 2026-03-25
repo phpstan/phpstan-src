@@ -1130,9 +1130,10 @@ class IntersectionType implements CompoundType
 		$yesAcceptors = [];
 
 		foreach ($this->types as $type) {
-			if ($type->isCallable()->yes()) {
-				$yesAcceptors[] = $type->getCallableParametersAcceptors($scope);
+			if (!$type->isCallable()->yes()) {
+				continue;
 			}
+			$yesAcceptors[] = $type->getCallableParametersAcceptors($scope);
 		}
 
 		if (count($yesAcceptors) === 0) {

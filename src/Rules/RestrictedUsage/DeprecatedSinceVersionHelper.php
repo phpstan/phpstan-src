@@ -13,6 +13,7 @@ final class DeprecatedSinceVersionHelper
 {
 
 	/**
+	 * @api
 	 * @param list<AttributeReflection> $attributes
 	 */
 	public static function isScopeVersionBeforeDeprecation(array $attributes, PhpVersions $phpVersions): bool

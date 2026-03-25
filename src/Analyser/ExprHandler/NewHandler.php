@@ -53,6 +53,7 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
+use function is_string;
 use function sprintf;
 
 /**
@@ -308,7 +309,39 @@ final class NewHandler implements ExprHandler
 		}
 
 		$exprType = $scope->getType($expr->class);
-		return $exprType->getObjectTypeOrClassStringObjectType();
+		$objectType = $exprType->getObjectTypeOrClassStringObjectType();
+
+		// When $class has been narrowed from class-string<T> to a concrete class string,
+		// preserve the template type relationship by intersecting with the template type.
+		// This ensures that `new $class()` is still compatible with return type T.
+		if (
+			$expr->class instanceof Expr\Variable
+			&& is_string($expr->class->name)
+			&& !$objectType->hasTemplateOrLateResolvableType()
+		) {
+			$function = $scope->getFunction();
+			if ($function !== null) {
+				foreach ($function->getParameters() as $param) {
+					if ($param->getName() !== $expr->class->name) {
+						continue;
+					}
+					$paramType = $param->getType();
+					if (!$paramType->isClassString()->yes()) {
+						break;
+					}
+					$classStringObjectType = $paramType->getClassStringObjectType();
+					if (!$classStringObjectType instanceof TemplateType) {
+						break;
+					}
+					if ($classStringObjectType->getBound()->isSuperTypeOf($objectType)->yes()) {
+						$objectType = TypeCombinator::intersect($classStringObjectType, $objectType);
+					}
+					break;
+				}
+			}
+		}
+
+		return $objectType;
 	}
 
 	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className): Type

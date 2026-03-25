@@ -4,11 +4,18 @@ declare(strict_types = 1);
 
 namespace Bug10345;
 
+use function PHPStan\Testing\assertType;
+
 $container = new \stdClass();
 $container->items = [];
 
+assertType('stdClass', $container);
+assertType('array{}', $container->items);
 $func = function() use ($container): int {
-	foreach ($container->items as $item) {}
+	assertType('stdClass', $container);
+	assertType('mixed', $container->items);
+	foreach ($container->items as $item) {
+	}
 	return 1;
 };
 
@@ -24,7 +31,11 @@ class Foo {
 $container2 = new Foo();
 $container2->items = [];
 
+assertType('Bug10345\Foo', $container2);
+assertType('array{}', $container2->items);
 $func2 = function() use ($container2): int {
+	assertType('Bug10345\Foo', $container2);
+	assertType('list<string>', $container2->items);
 	foreach ($container2->items as $item) {}
 	return 1;
 };
@@ -52,7 +63,11 @@ class Bar {
 
 $container3 = new Bar();
 if ($container3->getItems() === []) {
+	assertType('Bug10345\Bar', $container3);
+	assertType('array{}', $container3->getItems());
 	$func3 = function() use ($container3): int {
+		assertType('Bug10345\Bar', $container3);
+		assertType('list<string>', $container3->getItems());
 		foreach ($container3->getItems() as $item) {}
 		return 1;
 	};
@@ -66,7 +81,11 @@ if ($container3->getItems() === []) {
 $container4 = new Foo();
 $container4->items = [];
 
+assertType('Bug10345\Foo', $container4);
+assertType('array{}', $container4->items);
 $func4 = function() use ($container4): int {
+	assertType('Bug10345\Foo', $container4);
+	assertType('list<string>', $container4->items);
 	foreach ($container4?->items as $item) {}
 	return 1;
 };
@@ -95,7 +114,9 @@ class Baz {
 
 Baz::$items = [];
 
+assertType('array{}', Baz::$items);
 $func5 = function(): int {
+	assertType('list<string>', Baz::$items);
 	foreach (Baz::$items as $item) {}
 	return 1;
 };
@@ -107,7 +128,9 @@ $a5 = $func5();
 // Static method call
 Baz::setItems([]);
 if (Baz::getItems() === []) {
+	assertType('array{}', Baz::getItems());
 	$func6 = function(): int {
+		assertType('list<string>', Baz::getItems());
 		foreach (Baz::getItems() as $item) {}
 		return 1;
 	};

@@ -590,7 +590,11 @@ class UnionType implements CompoundType
 				continue;
 			}
 
-			$methodPrototypes[] = $type->getUnresolvedMethodPrototype($methodName, $scope)->withCalledOnType($this);
+			$prototype = $type->getUnresolvedMethodPrototype($methodName, $scope);
+			if ($this instanceof TemplateType) {
+				$prototype = $prototype->withCalledOnType($this);
+			}
+			$methodPrototypes[] = $prototype;
 		}
 
 		$methodsCount = count($methodPrototypes);

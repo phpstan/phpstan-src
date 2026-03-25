@@ -222,7 +222,7 @@ final class FuncCallHandler implements ExprHandler
 				$innerParameters = $innerParametersAcceptor->getParameters();
 				$innerArgs = $innerFuncCall->getArgs();
 
-				$innerCalleeReflection = $this->resolveCallUserFuncCalleeReflection($innerFuncCall, $scope);
+				$innerCalleeReflection = null;
 
 				foreach ($innerArgs as $i => $innerArg) {
 					$argValue = $innerArg->value;
@@ -241,6 +241,7 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
+					$innerCalleeReflection ??= $this->resolveCallUserFuncCalleeReflection($innerFuncCall, $scope);
 					$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection, $innerParameter, $scope);
 					$scope = $nodeScopeResolver->processVirtualAssign(
 						$scope,

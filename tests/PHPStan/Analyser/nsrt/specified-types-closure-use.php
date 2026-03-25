@@ -34,6 +34,24 @@ class Foo
 		}
 	}
 
+	public function doImmediatelyInvoked(MethodCall $call): void
+	{
+		if ($call->name instanceof Identifier) {
+			array_map(function () use ($call): void {
+				assertType('PhpParser\Node\Identifier', $call->name);
+			}, [1]);
+		}
+	}
+
+	public function doIife(MethodCall $call): void
+	{
+		if ($call->name instanceof Identifier) {
+			(function () use ($call): void {
+				assertType('PhpParser\Node\Identifier', $call->name);
+			})();
+		}
+	}
+
 	public function doBaz(array $arr, string $key): void
 	{
 		$arr[$key] = 'test';

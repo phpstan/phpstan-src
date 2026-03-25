@@ -36,6 +36,7 @@ use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
@@ -2088,7 +2089,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				|| $expr instanceof Expr\StaticPropertyFetch
 				|| $expr instanceof Expr\StaticCall
 			) {
-				continue;
+				if (
+					$closure->getAttribute(ImmediatelyInvokedClosureVisitor::ATTRIBUTE_NAME) !== true
+					&& $closure->getAttribute(NodeScopeResolver::IMMEDIATELY_CALLED_CALLBACK_ATTRIBUTE_NAME) !== true
+				) {
+					continue;
+				}
 			}
 
 			$expressionTypes[$exprString] = $typeHolder;

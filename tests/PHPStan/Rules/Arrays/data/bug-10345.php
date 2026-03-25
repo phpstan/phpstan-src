@@ -139,3 +139,50 @@ if (Baz::getItems() === []) {
 
 	$a6 = $func6();
 }
+
+// Immediately invoked closure should keep the type
+$container7 = new \stdClass();
+$container7->items = [];
+
+assertType('stdClass', $container7);
+assertType('array{}', $container7->items);
+$result7 = array_map(
+	function() use ($container7): int {
+		assertType('stdClass', $container7);
+		assertType('array{}', $container7->items);
+		foreach ($container7->items as $item) {
+		}
+		return 1;
+	},
+	[1, 2, 3],
+);
+
+// Immediately invoked closure with declared property should also keep the type
+$container8 = new Foo();
+$container8->items = [];
+
+assertType('Bug10345\Foo', $container8);
+assertType('array{}', $container8->items);
+$result8 = array_map(
+	function() use ($container8): int {
+		assertType('Bug10345\Foo', $container8);
+		assertType('array{}', $container8->items);
+		foreach ($container8->items as $item) {}
+		return 1;
+	},
+	[1, 2, 3],
+);
+
+// IIFE should keep the type
+$container9 = new \stdClass();
+$container9->items = [];
+
+assertType('stdClass', $container9);
+assertType('array{}', $container9->items);
+$result9 = (function() use ($container9): int {
+	assertType('stdClass', $container9);
+	assertType('array{}', $container9->items);
+	foreach ($container9->items as $item) {
+	}
+	return 1;
+})();

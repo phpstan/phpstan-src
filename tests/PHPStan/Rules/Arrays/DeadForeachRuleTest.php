@@ -62,7 +62,20 @@ class DeadForeachRuleTest extends RuleTestCase
 
 	public function testBug10345(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-10345.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-10345.php'], [
+			[
+				'Empty array passed to foreach.',
+				153,
+			],
+			[
+				'Empty array passed to foreach.',
+				170,
+			],
+			[
+				'Empty array passed to foreach.',
+				185,
+			],
+		]);
 	}
 
 }

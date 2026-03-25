@@ -187,6 +187,8 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
+	public const IMMEDIATELY_CALLED_CALLBACK_ATTRIBUTE_NAME = 'isImmediatelyCalledCallback';
+
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -3332,8 +3334,12 @@ class NodeScopeResolver
 				}
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
+				$callImmediately = $this->callCallbackImmediately($parameter, $parameterType, $calleeReflection);
+				if ($callImmediately) {
+					$arg->value->setAttribute(self::IMMEDIATELY_CALLED_CALLBACK_ATTRIBUTE_NAME, true);
+				}
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
-				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
+				if ($callImmediately) {
 					$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
 					$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 					$isAlwaysTerminating = $isAlwaysTerminating || $closureResult->isAlwaysTerminating();

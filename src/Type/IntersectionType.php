@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -16,6 +18,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MissingConstantFromReflectionException;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\IntersectionTypeUnresolvedPropertyPrototypeReflection;
@@ -1124,11 +1127,34 @@ class IntersectionType implements CompoundType
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		if ($this->isCallable()->no()) {
-			throw new ShouldNotHappenException();
+		$yesAcceptors = [];
+
+		foreach ($this->types as $type) {
+			if (!$type->isCallable()->yes()) {
+				continue;
+			}
+			$yesAcceptors[] = $type->getCallableParametersAcceptors($scope);
 		}
 
-		return [new TrivialParametersAcceptor()];
+		if (count($yesAcceptors) === 0) {
+			if ($this->isCallable()->no()) {
+				throw new ShouldNotHappenException();
+			}
+
+			return [new TrivialParametersAcceptor()];
+		}
+
+		$result = [];
+		$combinations = CombinationsHelper::combinations($yesAcceptors);
+		foreach ($combinations as $combination) {
+			$combined = ParametersAcceptorSelector::combineAcceptors($combination);
+			if (!$combined instanceof CallableParametersAcceptor) {
+				throw new ShouldNotHappenException();
+			}
+			$result[] = $combined;
+		}
+
+		return $result;
 	}
 
 	public function isCloneable(): TrinaryLogic

@@ -869,11 +869,10 @@ final class FuncCallHandler implements ExprHandler
 
 	private function resolveCallUserFuncCalleeReflection(FuncCall $innerFuncCall, MutatingScope $scope): FunctionReflection|MethodReflection|null
 	{
-		if ($innerFuncCall->name instanceof Name && $this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
-			return $this->reflectionProvider->getFunction($innerFuncCall->name, $scope);
-		}
-
-		if (!$innerFuncCall->name instanceof Expr) {
+		if ($innerFuncCall->name instanceof Name) {
+			if ($this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
+				return $this->reflectionProvider->getFunction($innerFuncCall->name, $scope);
+			}
 			return null;
 		}
 

@@ -221,8 +221,6 @@ final class FuncCallHandler implements ExprHandler
 				$innerParameters = $innerParametersAcceptor->getParameters();
 				$innerArgs = $innerFuncCall->getArgs();
 
-				$innerCalleeReflection = null;
-
 				foreach ($innerArgs as $i => $innerArg) {
 					$argValue = $innerArg->value;
 					if ($argValue instanceof Variable && $argValue->name === 'this') {
@@ -240,17 +238,29 @@ final class FuncCallHandler implements ExprHandler
 						continue;
 					}
 
-					if ($innerCalleeReflection === null && $innerFuncCall->name instanceof Expr) {
+					$innerCalleeReflections = [];
+					if ($innerFuncCall->name instanceof Expr) {
 						$calledOnType = $scope->getType($innerFuncCall->name);
-						$callableAcceptors = $calledOnType->getCallableParametersAcceptors($scope);
-						$innerCalleeReflection = count($callableAcceptors) === 1
-							? $callableAcceptors[0]->getCalleeReflection()
-							: false;
+						if (!$calledOnType->isCallable()->no()) {
+							$innerCalleeReflections = array_map(
+								static fn (CallableParametersAcceptor $callableAcceptor) => $callableAcceptor->getCalleeReflection(),
+								$calledOnType->getCallableParametersAcceptors($scope),
+							);
+						}
+					} elseif ($this->reflectionProvider->hasFunction($innerFuncCall->name, $scope)) {
+						$innerCalleeReflections = [$this->reflectionProvider->getFunction($innerFuncCall->name, $scope)];
 					}
-					if ($innerCalleeReflection === null) {
-						$innerCalleeReflection = false;
+
+					if ($innerCalleeReflections === []) {
+						$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, null, $innerParameter, $scope);
+					} else {
+						$byRefTypes = [];
+						foreach ($innerCalleeReflections as $innerCalleeReflection) {
+							$byRefTypes[] = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection, $innerParameter, $scope);
+						}
+						$byRefType = TypeCombinator::union(...$byRefTypes);
 					}
-					$byRefType = $nodeScopeResolver->resolveByRefParameterType($innerFuncCall, $innerCalleeReflection !== false ? $innerCalleeReflection : null, $innerParameter, $scope);
+
 					$scope = $nodeScopeResolver->processVirtualAssign(
 						$scope,
 						$storage,

@@ -66,10 +66,11 @@ final class AssignOpHandler implements ExprHandler
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $expr->expr, $scope, $storage, $nodeCallback, $context->enterDeep());
 				if ($expr instanceof Expr\AssignOp\Coalesce) {
 					$nodeScopeResolver->storeBeforeScope($storage, $expr, $originalScope);
+					$isAlwaysTerminating = $exprResult->isAlwaysTerminating() && $originalScope->getType($expr->var)->isNull()->yes();
 					return new ExpressionResult(
 						$exprResult->getScope()->mergeWith($originalScope),
 						$exprResult->hasYield(),
-						$exprResult->isAlwaysTerminating(),
+						$isAlwaysTerminating,
 						$exprResult->getThrowPoints(),
 						$exprResult->getImpurePoints(),
 					);

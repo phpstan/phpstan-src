@@ -197,7 +197,7 @@ class RunCommand extends Command
 		];
 		$parameters['exceptions'] = [
 			'implicitThrows' => $options['implicitThrows'] ?? true,
-			'reportUncheckedExceptionDeadCatch' => $options['reportUncheckedExceptionDeadCatch'] ?? false,
+			'reportUncheckedExceptionDeadCatch' => $options['reportUncheckedExceptionDeadCatch'] ?? true,
 			'uncheckedExceptionClasses' => $options['uncheckedExceptionClasses'] ?? [],
 			'checkedExceptionClasses' => $options['checkedExceptionClasses'] ?? [],
 			'check' => [

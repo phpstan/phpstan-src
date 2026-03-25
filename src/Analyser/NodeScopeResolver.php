@@ -3585,10 +3585,7 @@ class NodeScopeResolver
 		return null;
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 */
-	public function resolveByRefParameterType(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): Type
+	public function resolveByRefParameterType(CallLike $callLike, MethodReflection|FunctionReflection|null $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): Type
 	{
 		$paramOutType = $this->getParameterOutExtensionsType($callLike, $calleeReflection, $currentParameter, $scope);
 		if ($paramOutType !== null) {

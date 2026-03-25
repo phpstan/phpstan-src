@@ -319,4 +319,47 @@ class CommandHelperTest extends TestCase
 		}
 	}
 
+	public function testErrorFormatFromCli(): void
+	{
+		$result = CommandHelper::begin(
+			new StringInput(''),
+			new NullOutput(),
+			[__DIR__],
+			null,
+			null,
+			[],
+			null,
+			null,
+			'0',
+			false,
+			false,
+			null,
+			null,
+			false,
+			'json',
+		);
+		$this->assertSame('json', $result->getContainer()->getParameter('errorFormat'));
+	}
+
+	public function testErrorFormatDefault(): void
+	{
+		$result = CommandHelper::begin(
+			new StringInput(''),
+			new NullOutput(),
+			[__DIR__],
+			null,
+			null,
+			[],
+			null,
+			null,
+			'0',
+			false,
+			false,
+			null,
+			null,
+			false,
+		);
+		$this->assertNull($result->getContainer()->getParameter('errorFormat'));
+	}
+
 }

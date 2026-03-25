@@ -85,7 +85,7 @@ class B extends A
         assertType('static(StaticLateBinding\B)', parent::retStatic());
         assertType('static(StaticLateBinding\B)', $this->retStatic());
         assertType('bool', X::retStatic());
-        assertType('bool|StaticLateBinding\A|StaticLateBinding\X', $clUnioned::retStatic()); // should be bool|StaticLateBinding\A https://github.com/phpstan/phpstan/issues/11687
+        assertType('bool|StaticLateBinding\A', $clUnioned::retStatic());
 
         assertType('StaticLateBinding\A', A::retStatic(...)());
         assertType('StaticLateBinding\B', B::retStatic(...)());

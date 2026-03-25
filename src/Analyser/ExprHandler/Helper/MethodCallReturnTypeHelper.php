@@ -9,8 +9,10 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
 
 #[AutowiredService]
@@ -32,6 +34,21 @@ final class MethodCallReturnTypeHelper
 	{
 		$typeWithMethod = $scope->filterTypeWithMethod($typeWithMethod, $methodName);
 		if ($typeWithMethod === null) {
+			return null;
+		}
+
+		if ($typeWithMethod instanceof UnionType && !$typeWithMethod instanceof TemplateType) {
+			$memberTypes = [];
+			foreach ($typeWithMethod->getTypes() as $memberType) {
+				$memberResult = $this->methodCallReturnType($scope, $memberType, $methodName, $methodCall);
+				if ($memberResult === null) {
+					continue;
+				}
+				$memberTypes[] = $memberResult;
+			}
+			if (count($memberTypes) > 0) {
+				return TypeCombinator::union(...$memberTypes);
+			}
 			return null;
 		}
 

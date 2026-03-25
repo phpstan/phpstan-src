@@ -191,3 +191,16 @@ function gmpWithNumericString(\GMP $a, string $s): void
 	assertType('GMP', gmp_add($a, '123'));
 	assertType('GMP', gmp_mul($a, '456'));
 }
+
+/**
+ * @param object $obj
+ */
+function nonGmpObjectsDoNotGetGmpTreatment($obj, int $i): void
+{
+	// Generic object should NOT be treated as GMP - the extension should not activate
+	// (object is a supertype of GMP, but GMP is not a supertype of object)
+	/** @phpstan-ignore binaryOp.invalid */
+	assertType('*ERROR*', $obj + $i);
+	/** @phpstan-ignore binaryOp.invalid */
+	assertType('*ERROR*', $i + $obj);
+}

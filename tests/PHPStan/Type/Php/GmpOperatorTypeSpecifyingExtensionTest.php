@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use InvalidArgumentException;
+use Override;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -18,6 +19,7 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 
 	private GmpOperatorTypeSpecifyingExtension $extension;
 
+	#[Override]
 	protected function setUp(): void
 	{
 		$this->extension = new GmpOperatorTypeSpecifyingExtension();
@@ -113,15 +115,22 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 
 	private function createType(string $type): Type
 	{
-		return match ($type) {
-			'GMP' => new ObjectType('GMP'),
-			'int' => new IntegerType(),
-			'float' => new FloatType(),
-			'object' => new ObjectType('object'),
-			'stdClass' => new ObjectType('stdClass'),
-			'GMP|int' => new UnionType([new ObjectType('GMP'), new IntegerType()]),
-			default => throw new InvalidArgumentException(sprintf('Unknown type: %s', $type)),
-		};
+		switch ($type) {
+			case 'GMP':
+				return new ObjectType('GMP');
+			case 'int':
+				return new IntegerType();
+			case 'float':
+				return new FloatType();
+			case 'object':
+				return new ObjectType('object');
+			case 'stdClass':
+				return new ObjectType('stdClass');
+			case 'GMP|int':
+				return new UnionType([new ObjectType('GMP'), new IntegerType()]);
+			default:
+				throw new InvalidArgumentException(sprintf('Unknown type: %s', $type));
+		}
 	}
 
 }

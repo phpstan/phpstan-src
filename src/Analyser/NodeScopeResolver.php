@@ -2719,6 +2719,7 @@ class NodeScopeResolver
 
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
+		$closureScope = $this->applyArrayKeysSourceToScope($expr, $closureScope);
 		$closureType = $closureScope->getAnonymousFunctionReflection();
 		if (!$closureType instanceof ClosureType) {
 			throw new ShouldNotHappenException();
@@ -2881,6 +2882,7 @@ class NodeScopeResolver
 			$arrowFunctionCallArgs,
 			$passedToType,
 		));
+		$arrowFunctionScope = $this->applyArrayKeysSourceToScope($expr, $arrowFunctionScope);
 		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
 		if ($arrowFunctionType === null) {
 			throw new ShouldNotHappenException();
@@ -3331,6 +3333,8 @@ class NodeScopeResolver
 					}
 				}
 
+				$this->detectArrayKeysInSiblingArgs($args, $i, $arg->value);
+
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$closureResult = $this->processClosureNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType ?? null);
 				if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
@@ -3388,6 +3392,8 @@ class NodeScopeResolver
 						$parameterType = $overwritingParameterType;
 					}
 				}
+
+				$this->detectArrayKeysInSiblingArgs($args, $i, $arg->value);
 
 				$this->callNodeCallbackWithExpression($nodeCallback, $arg->value, $scopeToPass, $storage, $context);
 				$arrowFunctionResult = $this->processArrowFunctionNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType ?? null);
@@ -3918,6 +3924,78 @@ class NodeScopeResolver
 		}
 
 		return $this->processVarAnnotation($scope, $vars, $stmt);
+	}
+
+	private const ARRAY_KEYS_SOURCE_ATTRIBUTE = 'arrayKeysSourceExprs';
+
+	/**
+	 * @param Arg[] $args
+	 */
+	private function detectArrayKeysInSiblingArgs(array $args, int $currentIndex, Expr $callbackExpr): void
+	{
+		$arrayKeysSourceExprs = [];
+		foreach ($args as $j => $otherArg) {
+			if ($j === $currentIndex) {
+				continue;
+			}
+			if (
+				!($otherArg->value instanceof FuncCall)
+				|| !($otherArg->value->name instanceof Name)
+				|| $otherArg->value->name->toLowerString() !== 'array_keys'
+			) {
+				continue;
+			}
+
+			$funcArgs = $otherArg->value->getArgs();
+			if (count($funcArgs) !== 1) {
+				continue;
+			}
+
+			$arrayKeysSourceExprs[] = $funcArgs[0]->value;
+		}
+		if ($arrayKeysSourceExprs === []) {
+			return;
+		}
+
+		$callbackExpr->setAttribute(self::ARRAY_KEYS_SOURCE_ATTRIBUTE, $arrayKeysSourceExprs);
+	}
+
+	private function applyArrayKeysSourceToScope(Expr $callbackExpr, MutatingScope $scope): MutatingScope
+	{
+		/** @var Expr[]|null $arrayKeysSourceExprs */
+		$arrayKeysSourceExprs = $callbackExpr->getAttribute(self::ARRAY_KEYS_SOURCE_ATTRIBUTE);
+		if ($arrayKeysSourceExprs === null) {
+			return $scope;
+		}
+
+		$params = [];
+		if ($callbackExpr instanceof Expr\ArrowFunction || $callbackExpr instanceof Expr\Closure) {
+			$params = $callbackExpr->params;
+		}
+
+		foreach ($arrayKeysSourceExprs as $sourceExpr) {
+			$sourceType = $scope->getType($sourceExpr);
+			$sourceNativeType = $scope->getNativeType($sourceExpr);
+			$keyType = $sourceType->getIterableKeyType();
+
+			foreach ($params as $param) {
+				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+					continue;
+				}
+				$paramType = $scope->getVariableType($param->var->name);
+				if (!$keyType->isSuperTypeOf($paramType)->yes()) {
+					continue;
+				}
+
+				$scope = $scope->assignExpression(
+					new ArrayDimFetch($sourceExpr, $param->var),
+					$sourceType->getIterableValueType(),
+					$sourceNativeType->getIterableValueType(),
+				);
+			}
+		}
+
+		return $scope;
 	}
 
 	/**

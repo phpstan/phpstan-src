@@ -69,7 +69,7 @@ final class AssignOpHandler implements ExprHandler
 					return new ExpressionResult(
 						$exprResult->getScope()->mergeWith($originalScope),
 						$exprResult->hasYield(),
-						$exprResult->isAlwaysTerminating(),
+						false,
 						$exprResult->getThrowPoints(),
 						$exprResult->getImpurePoints(),
 					);

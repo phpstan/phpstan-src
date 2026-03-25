@@ -9,6 +9,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -93,6 +94,21 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 		yield 'GMP + stdClass' => ['+', 'GMP', 'stdClass'];
 		yield 'stdClass + GMP' => ['+', 'stdClass', 'GMP'];
 		yield 'GMP + float' => ['+', 'GMP', 'float'];
+
+		// object is a supertype of GMP - these catch line 37 IsSuperTypeOfCalleeAndArgumentMutator
+		// When mutation swaps callee/argument, $otherSide incorrectly becomes GMP instead of object
+		yield 'object + GMP' => ['+', 'object', 'GMP'];
+		yield 'GMP + object' => ['+', 'GMP', 'object'];
+
+		// GMP|int is Maybe-GMP - catches line 37 TrinaryLogicMutator
+		// When mutation changes .yes() to !.no(), $otherSide incorrectly becomes int instead of GMP|int
+		// Note: int + GMP|int returns GMP (other=int which is valid), only GMP|int + int returns error
+		yield 'GMP|int + int (specifyType)' => ['+', 'GMP|int', 'int'];
+
+		// int|stdClass has isInteger()=Maybe - catches line 52 TrinaryLogicMutator
+		// When mutation changes .yes() to !.no(), isInteger() incorrectly returns true
+		yield 'GMP + int|stdClass' => ['+', 'GMP', 'int|stdClass'];
+		yield 'int|stdClass + GMP' => ['+', 'int|stdClass', 'GMP'];
 	}
 
 	#[DataProvider('dataSpecifyTypeReturnsGmp')]
@@ -111,6 +127,9 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 		yield 'GMP + GMP' => ['+', 'GMP', 'GMP'];
 		yield 'GMP + int' => ['+', 'GMP', 'int'];
 		yield 'int + GMP' => ['+', 'int', 'GMP'];
+
+		// When left is int and right is GMP|int, other=int which is valid
+		yield 'int + GMP|int' => ['+', 'int', 'GMP|int'];
 	}
 
 	private function createType(string $type): Type
@@ -123,11 +142,13 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 			case 'float':
 				return new FloatType();
 			case 'object':
-				return new ObjectType('object');
+				return new ObjectWithoutClassType();
 			case 'stdClass':
 				return new ObjectType('stdClass');
 			case 'GMP|int':
 				return new UnionType([new ObjectType('GMP'), new IntegerType()]);
+			case 'int|stdClass':
+				return new UnionType([new IntegerType(), new ObjectType('stdClass')]);
 			default:
 				throw new InvalidArgumentException(sprintf('Unknown type: %s', $type));
 		}

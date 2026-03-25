@@ -91,7 +91,7 @@ class HelloWorld
 	{
 		$items = [];
 		call_user_func_array($function, [&$items]);
-		assertType('mixed', $items); // Could be array<int>|array<string>
+		assertType('array<int|string>', $items);
 	}
 
 	/**
@@ -101,7 +101,7 @@ class HelloWorld
 	{
 		$items = [];
 		call_user_func_array($callback, [&$items]);
-		assertType('mixed', $items); // Could be array<int>|array<string>
+		assertType('array<int|string>', $items);
 	}
 
 	/**
@@ -111,6 +111,6 @@ class HelloWorld
 	{
 		$items = [];
 		call_user_func_array($callback, [&$items]);
-		assertType('mixed', $items); // Could be array<int>|array<string>
+		assertType('array<int|string>', $items);
 	}
 }

@@ -18,7 +18,16 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 	{
 		$broker = self::createReflectionProvider();
 		return new CallToStaticMethodStatementWithoutSideEffectsRule(
-			new RuleLevelHelper($broker, true, false, true, false, false, false, true),
+			new RuleLevelHelper(
+				$broker,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			$broker,
 		);
 	}

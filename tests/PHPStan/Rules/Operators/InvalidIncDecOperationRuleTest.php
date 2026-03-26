@@ -22,7 +22,16 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidIncDecOperationRule(
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: $this->checkImplicitMixed,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			new PhpVersion(PHP_VERSION_ID),
 		);
 	}

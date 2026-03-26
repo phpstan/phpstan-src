@@ -20,7 +20,18 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
-		return new SortParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, true, true, true, false, true)));
+		return new SortParameterCastableToStringRule($broker, new ParameterCastableToStringCheck(
+			new RuleLevelHelper(
+				$broker,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: true,
+				checkImplicitMixed: true,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+		));
 	}
 
 	public function testRule(): void

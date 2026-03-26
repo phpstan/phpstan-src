@@ -19,9 +19,18 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidComparisonOperationRule(
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnion, false, false, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: $this->checkUnion,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			$this->getContainer()->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-			true,
+			checkExtensionsForComparisonOperators: true,
 		);
 	}
 

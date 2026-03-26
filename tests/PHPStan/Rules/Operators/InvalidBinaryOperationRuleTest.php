@@ -23,7 +23,16 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: $this->checkImplicitMixed,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

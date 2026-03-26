@@ -27,15 +27,24 @@ class ClassConstantRuleTest extends RuleTestCase
 		$container = self::getContainer();
 		return new ClassConstantRule(
 			$reflectionProvider,
-			new RuleLevelHelper($reflectionProvider, true, false, true, true, true, false, true),
+			new RuleLevelHelper(
+				$reflectionProvider,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: true,
+				checkImplicitMixed: true,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
 				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
 				$container,
 			),
 			new PhpVersion($this->phpVersion),
-			true,
+			checkNonStringableDynamicAccess: true,
 		);
 	}
 

@@ -23,7 +23,16 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	{
 		return new ArrayUnpackingRule(
 			self::getContainer()->getByType(PhpVersion::class),
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, $this->checkUnions, false, false, $this->checkBenevolentUnions, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: $this->checkUnions,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: $this->checkBenevolentUnions,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

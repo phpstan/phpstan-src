@@ -19,7 +19,19 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: $this->checkImplicitMixed,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+			new PropertyReflectionFinder(),
+		);
 	}
 
 	public function testTypesAssignedToProperties(): void

@@ -19,7 +19,16 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, true, true, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			self::createReflectionProvider(),
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: true,
+			checkImplicitMixed: true,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new InvalidKeyInArrayDimFetchRule(
 			$ruleLevelHelper,
 			self::getContainer()->getByType(PhpVersion::class),

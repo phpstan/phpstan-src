@@ -23,7 +23,19 @@ class InvalidCastRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
-		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true));
+		return new InvalidCastRule(
+			$broker,
+			new RuleLevelHelper(
+				$broker,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: $this->checkImplicitMixed,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+		);
 	}
 
 	public function testRule(): void

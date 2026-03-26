@@ -32,21 +32,33 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: $this->checkThisOnly,
+			checkUnionTypes: true,
+			checkExplicitMixed: $this->checkExplicitMixed,
+			checkImplicitMixed: $this->checkImplicitMixed,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		$container = self::getContainer();
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
 				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassCaseSensitivityCheck(
+						$reflectionProvider,
+						checkInternalClassCaseSensitivity: true,
+					),
 					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
 					$container,
 				),
-				true,
-				true,
-				true,
+				checkFunctionNameCase: true,
+				discoveringSymbolsTip: true,
+				reportMagicMethods: true,
 			),
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
@@ -54,10 +66,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$reflectionProvider,
-				true,
-				true,
-				true,
-				true,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
 			),
 		);
 	}

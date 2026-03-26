@@ -23,7 +23,16 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 
 		$container = self::getContainer();
 		return new StaticMethodCallableRule(
@@ -31,14 +40,17 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				$reflectionProvider,
 				$ruleLevelHelper,
 				new ClassNameCheck(
-					new ClassCaseSensitivityCheck($reflectionProvider, true),
+					new ClassCaseSensitivityCheck(
+						$reflectionProvider,
+						checkInternalClassCaseSensitivity: true,
+					),
 					new ClassForbiddenNameCheck($container),
 					$reflectionProvider,
 					$container,
 				),
-				true,
-				true,
-				true,
+				checkFunctionNameCase: true,
+				discoveringSymbolsTip: true,
+				reportMagicMethods: true,
 			),
 			new PhpVersion($this->phpVersion),
 		);

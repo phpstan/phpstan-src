@@ -19,7 +19,16 @@ class RestrictedStaticMethodUsageRuleTest extends RuleTestCase
 		return new RestrictedStaticMethodUsageRule(
 			self::getContainer(),
 			$reflectionProvider,
-			new RuleLevelHelper($reflectionProvider, true, false, true, true, true, false, true),
+			new RuleLevelHelper(
+				$reflectionProvider,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: true,
+				checkImplicitMixed: true,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

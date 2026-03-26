@@ -21,10 +21,34 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, true, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: true,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new CallMethodsRule(
-			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+			new MethodCallCheck(
+				$reflectionProvider,
+				$ruleLevelHelper,
+				checkFunctionNameCase: true,
+				reportMagicMethods: true,
+			),
+			new FunctionCallParametersCheck(
+				$ruleLevelHelper,
+				new NullsafeCheck(),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				$reflectionProvider,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
+			),
 		);
 	}
 

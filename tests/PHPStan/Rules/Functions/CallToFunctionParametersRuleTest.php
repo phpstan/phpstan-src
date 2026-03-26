@@ -30,7 +30,26 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$broker = self::createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $broker, true, true, true, true),
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper(
+					$broker,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: $this->checkExplicitMixed,
+					checkImplicitMixed: $this->checkImplicitMixed,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				new NullsafeCheck(),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				$broker,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
+			),
 		);
 	}
 

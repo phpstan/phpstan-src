@@ -20,10 +20,24 @@ class MethodCallableRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 
 		return new MethodCallableRule(
-			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
+			new MethodCallCheck(
+				$reflectionProvider,
+				$ruleLevelHelper,
+				checkFunctionNameCase: true,
+				reportMagicMethods: true,
+			),
 			new PhpVersion($this->phpVersion),
 		);
 	}

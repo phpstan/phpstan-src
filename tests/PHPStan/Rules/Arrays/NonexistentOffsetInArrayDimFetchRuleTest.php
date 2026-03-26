@@ -25,11 +25,25 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			self::createReflectionProvider(),
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: $this->checkExplicitMixed,
+			checkImplicitMixed: $this->checkImplicitMixed,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->reportPossiblyNonexistentGeneralArrayOffset, $this->reportPossiblyNonexistentConstantArrayOffset),
+			new NonexistentOffsetInArrayDimFetchCheck(
+				$ruleLevelHelper,
+				reportMaybes: true,
+				reportPossiblyNonexistentGeneralArrayOffset: $this->reportPossiblyNonexistentGeneralArrayOffset,
+				reportPossiblyNonexistentConstantArrayOffset: $this->reportPossiblyNonexistentConstantArrayOffset,
+			),
 			true,
 		);
 	}

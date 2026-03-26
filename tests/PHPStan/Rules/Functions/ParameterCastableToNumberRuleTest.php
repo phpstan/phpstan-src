@@ -29,7 +29,18 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 		$broker = self::createReflectionProvider();
 		return new ParameterCastableToNumberRule(
 			$broker,
-			new ParameterCastableToStringCheck(new RuleLevelHelper($broker, true, false, $this->checkUnion, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true)),
+			new ParameterCastableToStringCheck(
+				new RuleLevelHelper(
+					$broker,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: $this->checkUnion,
+					checkExplicitMixed: $this->checkExplicitMixed,
+					checkImplicitMixed: $this->checkImplicitMixed,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+			),
 			self::getContainer()->getByType(PhpVersion::class),
 		);
 	}

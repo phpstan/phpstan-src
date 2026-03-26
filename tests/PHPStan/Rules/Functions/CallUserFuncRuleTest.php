@@ -20,7 +20,29 @@ class CallUserFuncRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		return new CallUserFuncRule($reflectionProvider, new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, true, false, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true));
+		return new CallUserFuncRule(
+			$reflectionProvider,
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper(
+					$reflectionProvider,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: true,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				new NullsafeCheck(),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				$reflectionProvider,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
+			),
+		);
 	}
 
 	#[RequiresPhp('>= 8.0')]

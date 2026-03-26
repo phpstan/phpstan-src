@@ -24,15 +24,15 @@ class PrintfParameterTypeRuleTest extends RuleTestCase
 			$reflectionProvider,
 			new RuleLevelHelper(
 				$reflectionProvider,
-				true,
-				false,
-				true,
-				true,
-				true,
-				true,
-				false,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: true,
+				checkImplicitMixed: true,
+				checkBenevolentUnionTypes: true,
+				discoveringSymbolsTip: false,
 			),
-			$this->checkStrictPrintfPlaceholderTypes,
+			checkStrictPrintfPlaceholderTypes: $this->checkStrictPrintfPlaceholderTypes,
 		);
 	}
 

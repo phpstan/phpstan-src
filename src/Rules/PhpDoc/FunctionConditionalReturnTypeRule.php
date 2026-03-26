@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
 use function count;
@@ -13,6 +14,7 @@ use function count;
  * @implements Rule<InFunctionNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class FunctionConditionalReturnTypeRule implements Rule
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
@@ -19,6 +20,7 @@ use function sprintf;
  * @implements Rule<ClassPropertyNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 

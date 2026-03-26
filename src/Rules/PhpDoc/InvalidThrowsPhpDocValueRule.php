@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -22,6 +23,7 @@ use function sprintf;
  * @implements Rule<NodeAbstract>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class InvalidThrowsPhpDocValueRule implements Rule
 {
 

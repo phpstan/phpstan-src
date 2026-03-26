@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Generics;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
@@ -14,6 +15,7 @@ use function sprintf;
  * @implements Rule<InFunctionNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class FunctionSignatureVarianceRule implements Rule
 {
 

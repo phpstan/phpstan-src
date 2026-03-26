@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
 
@@ -12,6 +13,7 @@ use PHPStan\Rules\Rule;
  * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class PropertyTagTraitUseRule implements Rule
 {
 

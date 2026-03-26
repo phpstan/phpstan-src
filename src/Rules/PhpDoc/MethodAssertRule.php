@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use function count;
@@ -13,6 +14,7 @@ use function count;
  * @implements Rule<InClassMethodNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class MethodAssertRule implements Rule
 {
 

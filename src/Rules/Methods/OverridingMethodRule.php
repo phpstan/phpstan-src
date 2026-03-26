@@ -8,6 +8,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ExtendedFunctionVariant;
@@ -27,6 +28,7 @@ use function strtolower;
  * @implements Rule<InClassMethodNode>
  */
 #[RegisteredRule(level: 0)]
+#[ValidatesStubFiles]
 final class OverridingMethodRule implements Rule
 {
 

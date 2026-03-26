@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
@@ -18,6 +19,7 @@ use function sprintf;
 /**
  * @implements Rule<InFunctionNode>
  */
+#[ValidatesStubFiles]
 final class DuplicateFunctionDeclarationRule implements Rule
 {
 

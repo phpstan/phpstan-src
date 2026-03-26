@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use function strtolower;
@@ -13,6 +14,7 @@ use function strtolower;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 0)]
+#[ValidatesStubFiles]
 final class DuplicateDeclarationRule implements Rule
 {
 

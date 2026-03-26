@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -20,6 +21,7 @@ use function sprintf;
  * @implements Rule<Node\Stmt\TraitUse>
  */
 #[RegisteredRule(level: 0)]
+#[ValidatesStubFiles]
 final class ExistingClassInTraitUseRule implements Rule
 {
 

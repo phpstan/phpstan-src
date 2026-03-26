@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
@@ -17,6 +18,7 @@ use function sprintf;
  * @implements Rule<InFunctionNode>
  */
 #[RegisteredRule(level: 6)]
+#[ValidatesStubFiles]
 final class MissingFunctionReturnTypehintRule implements Rule
 {
 

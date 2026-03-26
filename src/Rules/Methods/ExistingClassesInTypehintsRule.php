@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\FunctionDefinitionCheck;
@@ -15,6 +16,7 @@ use function sprintf;
  * @implements Rule<InClassMethodNode>
  */
 #[RegisteredRule(level: 0)]
+#[ValidatesStubFiles]
 final class ExistingClassesInTypehintsRule implements Rule
 {
 

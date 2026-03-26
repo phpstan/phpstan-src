@@ -14,3 +14,8 @@ function foo(): void
 {
 	throw new MyException();
 }
+
+class DifferentException extends \Exception
+{
+
+}

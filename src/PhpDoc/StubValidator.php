@@ -58,14 +58,17 @@ final class StubValidator
 
 			$analysedFiles = array_fill_keys($stubFiles, true);
 
+			$ruleRegistry = new DirectRuleRegistry($container->getServicesByTag(self::SERVICE_RULE_TAG));
+			$collectorRegistry = new CollectorRegistry([]);
+
 			$errors = [];
 			foreach ($stubFiles as $stubFile) {
 				try {
 					$tmpErrors = $fileAnalyser->analyseFile(
 						$stubFile,
 						$analysedFiles,
-						new DirectRuleRegistry($container->getServicesByTag(self::SERVICE_RULE_TAG)),
-						new CollectorRegistry([]),
+						$ruleRegistry,
+						$collectorRegistry,
 						static function (): void {
 						},
 					)->getErrors();

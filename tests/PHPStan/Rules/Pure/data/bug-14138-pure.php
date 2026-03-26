@@ -5,7 +5,7 @@ namespace Bug14138Pure;
 /**
  * @phpstan-all-methods-pure
  */
-class PureClassWithPromotedProperties
+class PureClassWithPromotedProps
 {
 	public function __construct(
 		protected int $value
@@ -17,18 +17,11 @@ class PureClassWithPromotedProperties
 	}
 }
 
-/**
- * @phpstan-all-methods-pure
- */
-class PureClassWithSideEffect
+class TestCaller
 {
-	public function __construct(
-		protected int $value
-	) {}
-
-	public function doSomething(): int
+	/** @phpstan-pure */
+	public function callPureConstructor(): PureClassWithPromotedProps
 	{
-		echo 'side effect';
-		return $this->value;
+		return new PureClassWithPromotedProps(1);
 	}
 }

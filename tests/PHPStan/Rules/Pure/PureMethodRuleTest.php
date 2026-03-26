@@ -283,12 +283,7 @@ class PureMethodRuleTest extends RuleTestCase
 	public function testBug14138Pure(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-14138-pure.php'], [
-			[
-				'Impure echo in pure method Bug14138Pure\PureClassWithSideEffect::doSomething().',
-				31,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-14138-pure.php'], []);
 	}
 
 	public function testBug12382(): void

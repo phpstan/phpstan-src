@@ -6,7 +6,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use ThrowsVoidPropertyHook\DifferentException;
 
 /**
  * @extends RuleTestCase<ThrowsVoidPropertyHookWithExplicitThrowPointRule>
@@ -40,7 +39,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				false,
-				[DifferentException::class],
+				['DifferentException'],
 				[
 					[
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',
@@ -59,7 +58,7 @@ class ThrowsVoidPropertyHookWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				true,
-				[DifferentException::class],
+				['DifferentException'],
 				[
 					[
 						'Get hook for property ThrowsVoidPropertyHook\Foo::$i throws exception ThrowsVoidPropertyHook\MyException but the PHPDoc contains @throws void.',

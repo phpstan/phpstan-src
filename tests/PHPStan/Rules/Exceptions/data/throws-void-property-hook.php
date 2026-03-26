@@ -27,8 +27,3 @@ class Foo
 	}
 
 }
-
-class DifferentException extends \Exception
-{
-
-}

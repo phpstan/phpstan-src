@@ -6,7 +6,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use ThrowsVoidMethod\DifferentException;
 use ThrowsVoidMethod\MyException;
 use UnhandledMatchError;
 use ValueError;
@@ -43,7 +42,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				false,
-				[DifferentException::class],
+				['DifferentException'],
 				[
 					[
 						'Method ThrowsVoidMethod\Foo::doFoo() throws exception ThrowsVoidMethod\MyException but the PHPDoc contains @throws void.',
@@ -58,7 +57,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				true,
-				[DifferentException::class],
+				['DifferentException'],
 				[
 					[
 						'Method ThrowsVoidMethod\Foo::doFoo() throws exception ThrowsVoidMethod\MyException but the PHPDoc contains @throws void.',

@@ -10,6 +10,7 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -109,6 +110,11 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 		// When mutation changes .yes() to !.no(), isInteger() incorrectly returns true
 		yield 'GMP + int|stdClass' => ['+', 'GMP', 'int|stdClass'];
 		yield 'int|stdClass + GMP' => ['+', 'int|stdClass', 'GMP'];
+
+		// string has isNumericString()=Maybe - catches line 53 TrinaryLogicMutator
+		// When mutation changes .yes() to !.no(), isNumericString() incorrectly returns true
+		yield 'GMP + string' => ['+', 'GMP', 'string'];
+		yield 'string + GMP' => ['+', 'string', 'GMP'];
 	}
 
 	#[DataProvider('dataSpecifyTypeReturnsGmp')]
@@ -149,6 +155,8 @@ class GmpOperatorTypeSpecifyingExtensionTest extends PHPStanTestCase
 				return new UnionType([new ObjectType('GMP'), new IntegerType()]);
 			case 'int|stdClass':
 				return new UnionType([new IntegerType(), new ObjectType('stdClass')]);
+			case 'string':
+				return new StringType();
 			default:
 				throw new InvalidArgumentException(sprintf('Unknown type: %s', $type));
 		}

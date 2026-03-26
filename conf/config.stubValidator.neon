@@ -7,6 +7,9 @@ parameters:
 	reportMaybes: true
 	reportStatic: true
 
+parametersSchema:
+	allStubFiles: listOf(string())
+
 extensions:
 	stubValidatorRules: PHPStan\DependencyInjection\StubValidatorRuleServicesExtension
 
@@ -14,6 +17,7 @@ services:
 	-
 		class: PHPStan\PhpDoc\StubSourceLocatorFactory
 		arguments:
+			allStubFiles: %allStubFiles%
 			php8Parser: @php8PhpParser
 
 	# overrides service from parsers.neon

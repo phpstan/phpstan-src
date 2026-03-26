@@ -43,8 +43,9 @@ final class DerivativeContainerFactory
 
 	/**
 	 * @param string[] $additionalConfigFiles
+	 * @param array<mixed> $additionalParameters
 	 */
-	public function create(array $additionalConfigFiles): Container
+	public function create(array $additionalConfigFiles, array $additionalParameters = []): Container
 	{
 		$containerFactory = new ContainerFactory(
 			$this->currentWorkingDirectory,
@@ -62,6 +63,7 @@ final class DerivativeContainerFactory
 			$this->cliAutoloadFile,
 			$this->singleReflectionFile,
 			$this->singleReflectionInsteadOfFile,
+			$additionalParameters,
 		);
 	}
 

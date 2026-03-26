@@ -14,7 +14,6 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
-use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -181,7 +180,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 		$variantsResult = null;
 		foreach ($type->getCallableParametersAcceptors($scope) as $variant) {
-			$isBuiltinCallable = $variant instanceof FunctionCallableVariant && $variant->isBuiltin()->yes();
+			$isBuiltinCallable = $variant->isBuiltin()->yes();
 			$variant = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$variant], false);
 			if (!$variant instanceof CallableParametersAcceptor) {
 				return IsSuperTypeOfResult::createNo([]);
@@ -404,6 +403,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
+	}
+
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
 	}
 
 	public function toNumber(): Type

@@ -138,6 +138,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->assertions;
 	}
 
+	public function isBuiltin(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @return array<non-empty-string, TemplateTag>
 	 */

@@ -24,7 +24,16 @@ class CallCallablesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: $this->checkExplicitMixed,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new CallCallablesRule(
 			new FunctionCallParametersCheck(
 				$ruleLevelHelper,
@@ -32,13 +41,13 @@ class CallCallablesRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$reflectionProvider,
-				true,
-				true,
-				true,
-				true,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
 			),
 			$ruleLevelHelper,
-			true,
+			reportMaybes: true,
 		);
 	}
 

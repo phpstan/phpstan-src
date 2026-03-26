@@ -23,7 +23,16 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		return new AccessStaticPropertiesRule(
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
-				new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
+				new RuleLevelHelper(
+					$reflectionProvider,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: false,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true),
 					new ClassForbiddenNameCheck(self::getContainer()),
@@ -31,7 +40,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 					self::getContainer(),
 				),
 				new PhpVersion(PHP_VERSION_ID),
-				true,
+				discoveringSymbolsTip: true,
 			),
 		);
 	}

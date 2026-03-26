@@ -32,10 +32,34 @@ class CallMethodsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			$reflectionProvider,
+			checkNullables: $this->checkNullables,
+			checkThisOnly: $this->checkThisOnly,
+			checkUnionTypes: $this->checkUnionTypes,
+			checkExplicitMixed: $this->checkExplicitMixed,
+			checkImplicitMixed: $this->checkImplicitMixed,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 		return new CallMethodsRule(
-			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+			new MethodCallCheck(
+				$reflectionProvider,
+				$ruleLevelHelper,
+				checkFunctionNameCase: true,
+				reportMagicMethods: true,
+			),
+			new FunctionCallParametersCheck(
+				$ruleLevelHelper,
+				new NullsafeCheck(),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				$reflectionProvider,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
+			),
 		);
 	}
 

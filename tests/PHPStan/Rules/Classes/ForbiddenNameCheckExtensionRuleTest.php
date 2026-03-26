@@ -27,15 +27,34 @@ class ForbiddenNameCheckExtensionRuleTest extends RuleTestCase
 		return new InstantiationRule(
 			$container,
 			$reflectionProvider,
-			new FunctionCallParametersCheck(new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, true, true, true, true),
+			new FunctionCallParametersCheck(
+				new RuleLevelHelper(
+					$reflectionProvider,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: false,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				new NullsafeCheck(),
+				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
+				$reflectionProvider,
+				checkArgumentTypes: true,
+				checkArgumentsPassedByReference: true,
+				checkExtraArguments: true,
+				checkMissingTypehints: true,
+			),
 			new ClassNameCheck(
-				new ClassCaseSensitivityCheck($reflectionProvider, true),
+				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true),
 				new ClassForbiddenNameCheck($container),
 				$reflectionProvider,
 				$container,
 			),
 			new ConsistentConstructorHelper(),
-			true,
+			discoveringSymbolsTip: true,
 		);
 	}
 

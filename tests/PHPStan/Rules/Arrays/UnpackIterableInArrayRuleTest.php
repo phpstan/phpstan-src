@@ -22,7 +22,18 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnpackIterableInArrayRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, $this->checkExplicitMixed, $this->checkImplicitMixed, false, true));
+		return new UnpackIterableInArrayRule(
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: $this->checkExplicitMixed,
+				checkImplicitMixed: $this->checkImplicitMixed,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+		);
 	}
 
 	public function testRule(): void

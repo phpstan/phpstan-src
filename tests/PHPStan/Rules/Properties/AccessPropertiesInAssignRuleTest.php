@@ -19,7 +19,23 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesCheck($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID), true, true, true),
+			new AccessPropertiesCheck(
+				$reflectionProvider,
+				new RuleLevelHelper(
+					$reflectionProvider,
+					checkNullables: true,
+					checkThisOnly: false,
+					checkUnionTypes: true,
+					checkExplicitMixed: false,
+					checkImplicitMixed: false,
+					checkBenevolentUnionTypes: false,
+					discoveringSymbolsTip: true,
+				),
+				new PhpVersion(PHP_VERSION_ID),
+				reportMagicProperties: true,
+				checkDynamicProperties: true,
+				checkNonStringableDynamicAccess: true,
+			),
 		);
 	}
 

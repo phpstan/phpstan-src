@@ -15,7 +15,18 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new OffsetAccessValueAssignmentRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true));
+		return new OffsetAccessValueAssignmentRule(
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+		);
 	}
 
 	public function testRule(): void

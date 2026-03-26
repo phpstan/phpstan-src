@@ -19,7 +19,16 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 	{
 		return new InvalidPartOfEncapsedStringRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

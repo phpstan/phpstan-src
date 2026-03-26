@@ -22,13 +22,22 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true);
+		$ruleLevelHelper = new RuleLevelHelper(
+			self::createReflectionProvider(),
+			checkNullables: true,
+			checkThisOnly: false,
+			checkUnionTypes: true,
+			checkExplicitMixed: false,
+			checkImplicitMixed: false,
+			checkBenevolentUnionTypes: false,
+			discoveringSymbolsTip: true,
+		);
 
 		return new ImpossibleInstanceOfRule(
 			$ruleLevelHelper,
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
+			treatPhpDocTypesAsCertain: $this->treatPhpDocTypesAsCertain,
+			reportAlwaysTrueInLastCondition: $this->reportAlwaysTrueInLastCondition,
+			treatPhpDocTypesAsCertainTip: true,
 		);
 	}
 

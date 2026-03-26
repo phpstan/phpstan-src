@@ -21,7 +21,16 @@ class FunctionCallableRuleTest extends RuleTestCase
 
 		return new FunctionCallableRule(
 			$reflectionProvider,
-			new RuleLevelHelper($reflectionProvider, true, false, true, false, false, false, true),
+			new RuleLevelHelper(
+				$reflectionProvider,
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 			new PhpVersion(PHP_VERSION_ID),
 			true,
 			true,

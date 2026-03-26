@@ -16,7 +16,16 @@ class PipeOperatorRuleTest extends RuleTestCase
 	protected function getRule(): TRule
 	{
 		return new PipeOperatorRule(
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, true, true, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: true,
+				checkImplicitMixed: true,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

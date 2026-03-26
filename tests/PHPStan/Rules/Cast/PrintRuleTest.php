@@ -16,7 +16,16 @@ class PrintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new PrintRule(
-			new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true),
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
 		);
 	}
 

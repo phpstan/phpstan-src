@@ -17,7 +17,19 @@ class CallToMethodStatementWithNoDiscardRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CallToMethodStatementWithNoDiscardRule(new RuleLevelHelper(self::createReflectionProvider(), true, false, true, false, false, false, true), new PhpVersion(PHP_VERSION_ID));
+		return new CallToMethodStatementWithNoDiscardRule(
+			new RuleLevelHelper(
+				self::createReflectionProvider(),
+				checkNullables: true,
+				checkThisOnly: false,
+				checkUnionTypes: true,
+				checkExplicitMixed: false,
+				checkImplicitMixed: false,
+				checkBenevolentUnionTypes: false,
+				discoveringSymbolsTip: true,
+			),
+			new PhpVersion(PHP_VERSION_ID),
+		);
 	}
 
 	#[RequiresPhp('>= 8.5')]

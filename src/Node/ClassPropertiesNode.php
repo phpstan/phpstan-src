@@ -211,7 +211,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($usage instanceof PropertyWrite) {
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
 					$hasInitialization = $initializedPropertiesMap[$propertyName];
-					if (strtolower($function->getName()) === '__construct') {
+					if (in_array($function->getName(), $constructors, true)) {
 						$hasInitialization = $hasInitialization->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
 					}
 					if (

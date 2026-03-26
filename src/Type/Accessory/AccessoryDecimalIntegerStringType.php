@@ -246,7 +246,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	public function toArrayKey(): Type
 	{
 		if ($this->inverse) {
-			return new StringType();
+			return $this;
 		}
 
 		return new IntegerType();

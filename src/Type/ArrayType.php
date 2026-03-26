@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -12,6 +13,7 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -46,6 +48,8 @@ class ArrayType implements Type
 	use NonGeneralizableTypeTrait;
 
 	private Type $keyType;
+
+	private ?Type $cachedIterableKeyType = null;
 
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
@@ -198,15 +202,44 @@ class ArrayType implements Type
 
 	public function getIterableKeyType(): Type
 	{
+		if ($this->cachedIterableKeyType !== null) {
+			return $this->cachedIterableKeyType;
+		}
 		$keyType = $this->keyType;
 		if ($keyType instanceof MixedType && !$keyType instanceof TemplateMixedType) {
-			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+			$keyType = new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($keyType instanceof StrictMixedType) {
-			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+			$keyType = new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 
-		return $keyType;
+		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
+		if ($level === null) {
+			return $this->cachedIterableKeyType = $keyType;
+		}
+
+		if ($level === ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
+			return $this->cachedIterableKeyType = $keyType;
+		}
+
+		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::DETECT) { // @phpstan-ignore notIdentical.alwaysFalse
+			throw new ShouldNotHappenException();
+		}
+
+		return $this->cachedIterableKeyType = TypeTraverser::map($keyType, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnionType) {
+				return $traverse($type);
+			}
+
+			if ($type->isString()->yes() && !$type->isDecimalIntegerString()->no()) {
+				return TypeCombinator::union(
+					new IntegerType(),
+					TypeCombinator::intersect($type, new AccessoryDecimalIntegerStringType(inverse: true)),
+				);
+			}
+
+			return $type;
+		});
 	}
 
 	public function getFirstIterableKeyType(): Type

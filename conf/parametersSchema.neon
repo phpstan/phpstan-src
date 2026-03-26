@@ -91,6 +91,7 @@ parametersSchema:
 	reportWrongPhpDocTypeInVarTag: bool()
 	reportAnyTypeWideningInVarTag: bool()
 	reportNonIntStringArrayKey: bool()
+	reportUnsafeArrayStringKeyCasting: schema(string(), pattern('detect|prevent'), nullable())
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()

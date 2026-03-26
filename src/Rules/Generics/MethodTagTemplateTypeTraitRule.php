@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Generics;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
@@ -12,6 +13,7 @@ use PHPStan\Rules\Rule;
  * @implements Rule<Node\Stmt\Trait_>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class MethodTagTemplateTypeTraitRule implements Rule
 {
 

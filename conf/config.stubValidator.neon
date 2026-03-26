@@ -4,6 +4,11 @@ parameters:
 	checkMissingTypehints: true
 	checkMissingCallableSignature: false
 	__validate: false
+	reportMaybes: true
+	reportStatic: true
+
+extensions:
+	stubValidatorRules: PHPStan\DependencyInjection\StubValidatorRuleServicesExtension
 
 services:
 	-
@@ -17,6 +22,10 @@ services:
 
 	# overrides service from services.neon
 	nodeScopeResolverReflector:
+		factory: @stubReflector
+
+	# overrides service from services.neon so that Reflector autowires to stubReflector
+	originalBetterReflectionReflector!:
 		factory: @stubReflector
 
 	# overrides service from services.neon

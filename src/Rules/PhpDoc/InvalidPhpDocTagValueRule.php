@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\VirtualNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TypeAliasTagValueNode;
@@ -22,6 +23,7 @@ use function str_starts_with;
  * @implements Rule<NodeAbstract>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class InvalidPhpDocTagValueRule implements Rule
 {
 

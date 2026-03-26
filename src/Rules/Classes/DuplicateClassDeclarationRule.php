@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
@@ -20,6 +21,7 @@ use function strtolower;
 /**
  * @implements Rule<InClassNode>
  */
+#[ValidatesStubFiles]
 final class DuplicateClassDeclarationRule implements Rule
 {
 

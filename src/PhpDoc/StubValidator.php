@@ -26,6 +26,7 @@ final class StubValidator
 
 	public function __construct(
 		private DerivativeContainerFactory $derivativeContainerFactory,
+		private StubFilesProvider $stubFilesProvider,
 	)
 	{
 	}
@@ -46,6 +47,8 @@ final class StubValidator
 		try {
 			$container = $this->derivativeContainerFactory->create([
 				__DIR__ . '/../../conf/config.stubValidator.neon',
+			], [
+				'allStubFiles' => $this->stubFilesProvider->getStubFiles(),
 			]);
 
 			$fileAnalyser = $container->getByType(FileAnalyser::class);

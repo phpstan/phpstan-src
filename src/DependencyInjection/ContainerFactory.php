@@ -97,6 +97,7 @@ final class ContainerFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
+	 * @param array<mixed> $additionalParameters
 	 */
 	public function create(
 		string $tempDirectory,
@@ -109,6 +110,7 @@ final class ContainerFactory
 		?string $cliAutoloadFile = null,
 		?string $singleReflectionFile = null,
 		?string $singleReflectionInsteadOfFile = null,
+		array $additionalParameters = [],
 	): Container
 	{
 		[$allConfigFiles, $projectConfig] = $this->detectDuplicateIncludedFiles(
@@ -133,7 +135,7 @@ final class ContainerFactory
 		];
 		$configurator->setDebugMode(true);
 		$configurator->setTempDirectory($tempDirectory);
-		$configurator->addParameters([
+		$configurator->addParameters(array_merge([
 			'rootDir' => $this->rootDirectory,
 			'currentWorkingDirectory' => $this->currentWorkingDirectory,
 			'cliArgumentsVariablesRegistered' => ini_get('register_argc_argv') === '1',
@@ -145,7 +147,7 @@ final class ContainerFactory
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
 			'env' => getenv(),
-		]);
+		], $additionalParameters));
 		$configurator->addDynamicParameters([
 			'singleReflectionFile' => $singleReflectionFile,
 			'singleReflectionInsteadOfFile' => $singleReflectionInsteadOfFile,

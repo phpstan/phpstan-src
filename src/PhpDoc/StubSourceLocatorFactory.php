@@ -17,12 +17,15 @@ use function dirname;
 final class StubSourceLocatorFactory
 {
 
+	/**
+	 * @param string[] $allStubFiles
+	 */
 	public function __construct(
 		private Parser $php8Parser,
 		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
-		private StubFilesProvider $stubFilesProvider,
+		private array $allStubFiles,
 	)
 	{
 	}
@@ -31,7 +34,7 @@ final class StubSourceLocatorFactory
 	{
 		$locators = [];
 		$astPhp8Locator = new Locator($this->php8Parser);
-		foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
+		foreach ($this->allStubFiles as $stubFile) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
 		}
 

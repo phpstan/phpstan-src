@@ -40,6 +40,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -1736,8 +1737,16 @@ final class ClassReflection
 
 		$map = [];
 		$i = 0;
+		$className = $this->getName();
 		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
-			$map[$tag->getName()] = $types[$i] ?? $tag->getDefault() ?? $tag->getBound();
+			$type = $types[$i] ?? $tag->getDefault() ?? $tag->getBound();
+			if ($type instanceof TemplateType && $type->getScope()->getClassName() === $className) {
+				$resolved = $map[$type->getName()] ?? null;
+				if ($resolved !== null && !$resolved instanceof TemplateType) {
+					$type = $resolved;
+				}
+			}
+			$map[$tag->getName()] = $type;
 			$i++;
 		}
 

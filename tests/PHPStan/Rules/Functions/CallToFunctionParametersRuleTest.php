@@ -2747,6 +2747,21 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11619.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11619Strict(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11619-strict.php'], [
+			[
+				'Parameter #2 $callback of function uasort expects callable(Bug11619Strict\Foo, Bug11619Strict\Foo): int, \'strnatcasecmp\' given.',
+				28,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(Bug11619Strict\Foo, Bug11619Strict\Foo): int, \'strnatcasecmp\' given.',
+				29,
+			],
+		]);
+	}
+
 	public function testBug13247(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13247.php'], []);

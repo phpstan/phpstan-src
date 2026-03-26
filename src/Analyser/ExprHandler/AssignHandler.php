@@ -10,6 +10,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -863,6 +864,7 @@ final class AssignHandler implements ExprHandler
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
+				&& !$expr instanceof FuncCall
 			) {
 				continue;
 			}
@@ -901,6 +903,7 @@ final class AssignHandler implements ExprHandler
 			} elseif (
 				!$expr instanceof PropertyFetch
 				&& !$expr instanceof ArrayDimFetch
+				&& !$expr instanceof FuncCall
 			) {
 				continue;
 			}

@@ -25,3 +25,25 @@ function collect($elt, ...$elts) {
 
 assertType("'a'", collect("a"));
 assertType("'a'|'b'|'c'", collect("a", "b", "c"));
+
+/**
+ * @template TValue
+ * @template TArgs
+ *
+ * @param  TValue|\Closure(TArgs): TValue  $value
+ * @param  TArgs  ...$args
+ * @return TValue
+ */
+function value($value, ...$args)
+{
+	return $value instanceof \Closure ? $value(...$args) : $value;
+}
+
+assertType("'foo'", value('foo'));
+assertType("'foo'", value('foo', 42));
+assertType('42', value(fn () => 42));
+assertType('42', value(function ($foo) {
+	assertType('true', $foo);
+
+	return 42;
+}, true));

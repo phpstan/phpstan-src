@@ -63,7 +63,7 @@ final class GenericParametersAcceptorResolver
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} elseif ($param->isVariadic()) {
-				$argType = new NeverType();
+				$argType = new NeverType(true);
 			} else {
 				continue;
 			}

@@ -2696,6 +2696,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-2572.php'], []);
 	}
 
+	public function testBug7704(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-7704.php'], []);
+	}
+
+	public function testBug9360(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9360.php'], []);
+	}
+
 	public function testDumpFunctions(): void
 	{
 		$this->analyse([__DIR__ . '/data/dump-functions.php'], [

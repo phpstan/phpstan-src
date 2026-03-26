@@ -110,7 +110,7 @@ final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, Cal
 
 	public function isBuiltin(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 }

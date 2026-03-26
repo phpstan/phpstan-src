@@ -37,8 +37,8 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 		private array $usedVariables,
 		private TrinaryLogic $acceptsNamedArguments,
 		private TrinaryLogic $mustUseReturnValue,
+		private TrinaryLogic $isBuiltinCallable,
 		private ?Assertions $assertions = null,
-		private ?TrinaryLogic $isBuiltinCallable = null,
 	)
 	{
 		parent::__construct(
@@ -95,7 +95,7 @@ final class ExtendedCallableFunctionVariant extends ExtendedFunctionVariant impl
 
 	public function isBuiltin(): TrinaryLogic
 	{
-		return $this->isBuiltinCallable ?? TrinaryLogic::createNo();
+		return $this->isBuiltinCallable;
 	}
 
 }

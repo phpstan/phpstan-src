@@ -100,7 +100,7 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 
 	public function isBuiltin(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 }

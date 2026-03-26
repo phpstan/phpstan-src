@@ -140,7 +140,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function isBuiltin(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 	/**

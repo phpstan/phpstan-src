@@ -407,7 +407,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function isBuiltin(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function toNumber(): Type

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +15,7 @@ use function count;
  * @implements Rule<Node\Stmt\Trait_>
  */
 #[RegisteredRule(level: 0)]
+#[ValidatesStubFiles]
 final class SealedDefinitionTraitRule implements Rule
 {
 

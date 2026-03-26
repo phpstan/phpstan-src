@@ -190,6 +190,15 @@ function gmpWithNumericString(\GMP $a, string $s): void
 	// GMP functions accept numeric strings
 	assertType('GMP', gmp_add($a, '123'));
 	assertType('GMP', gmp_mul($a, '456'));
+
+	// General string (not numeric-string) has isNumericString()=Maybe
+	// This catches TrinaryLogicMutator on line 53: isNumericString()->yes() → !isNumericString()->no()
+	// Without mutation: Maybe.yes()=false → ErrorType
+	// With mutation: !Maybe.no()=true → GMP (incorrect!)
+	/** @phpstan-ignore binaryOp.invalid */
+	assertType('*ERROR*', $a + $s);
+	/** @phpstan-ignore binaryOp.invalid */
+	assertType('*ERROR*', $s + $a);
 }
 
 /**
@@ -203,4 +212,26 @@ function nonGmpObjectsDoNotGetGmpTreatment($obj, int $i): void
 	assertType('*ERROR*', $obj + $i);
 	/** @phpstan-ignore binaryOp.invalid */
 	assertType('*ERROR*', $i + $obj);
+}
+
+/**
+ * Tests for unary operators on non-GMP objects.
+ * This catches IsSuperTypeOfCalleeAndArgumentMutator and TrinaryLogicMutator
+ * on GmpUnaryOperatorTypeSpecifyingExtension line 27.
+ *
+ * When mutation swaps $gmpType->isSuperTypeOf($operand) to $operand->isSuperTypeOf($gmpType),
+ * `object` would incorrectly activate the extension and return GMP.
+ *
+ * @param object $obj
+ */
+function unaryOperatorsOnObjectShouldError($obj): void
+{
+	// Without mutation: extension doesn't activate (GMP not supertype of object)
+	// With mutation: extension activates (object IS supertype of GMP), returns GMP!
+	/** @phpstan-ignore unaryOp.invalid */
+	assertType('*ERROR*', -$obj);
+	/** @phpstan-ignore unaryOp.invalid */
+	assertType('*ERROR*', +$obj);
+	/** @phpstan-ignore unaryOp.invalid */
+	assertType('*ERROR*', ~$obj);
 }

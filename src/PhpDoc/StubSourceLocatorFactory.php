@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\LazySourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use function dirname;
@@ -30,10 +31,14 @@ final class StubSourceLocatorFactory
 	public function create(): SourceLocator
 	{
 		$locators = [];
-		$astPhp8Locator = new Locator($this->php8Parser);
-		foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
-		}
+		$locators[] = new LazySourceLocator(function () {
+			$locators = [];
+			foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
+				$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
+			}
+
+			return new AggregateSourceLocator($locators);
+		});
 
 		$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
 			Psr4Mapping::fromArrayMappings([
@@ -46,6 +51,7 @@ final class StubSourceLocatorFactory
 			]),
 		);
 
+		$astPhp8Locator = new Locator($this->php8Parser);
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpStormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));

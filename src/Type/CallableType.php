@@ -14,6 +14,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
+use PHPStan\Reflection\Callables\FunctionCallableVariant;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
@@ -139,7 +140,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true, $strictTypes)->toAcceptsResult();
+		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -148,10 +149,10 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return $type->isSubTypeOf($this);
 		}
 
-		return $this->isSuperTypeOfInternal($type, false, true);
+		return $this->isSuperTypeOfInternal($type, false);
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny, bool $strictTypes): IsSuperTypeOfResult
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): IsSuperTypeOfResult
 	{
 		$isCallable = new IsSuperTypeOfResult($type->isCallable(), []);
 		if ($isCallable->no()) {
@@ -180,11 +181,12 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 		$variantsResult = null;
 		foreach ($type->getCallableParametersAcceptors($scope) as $variant) {
+			$isBuiltinCallable = $variant instanceof FunctionCallableVariant && $variant->isBuiltin();
 			$variant = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$variant], false);
 			if (!$variant instanceof CallableParametersAcceptor) {
 				return IsSuperTypeOfResult::createNo([]);
 			}
-			$isSuperType = CallableTypeHelper::isParametersAcceptorSuperTypeOf($this, $variant, $treatMixedAsAny, $strictTypes);
+			$isSuperType = CallableTypeHelper::isParametersAcceptorSuperTypeOf($this, $variant, $treatMixedAsAny, !$isBuiltinCallable);
 			if ($variantsResult === null) {
 				$variantsResult = $isSuperType;
 			} else {

@@ -202,6 +202,7 @@ final class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
+		ReportUnsafeArrayStringKeyCastingToggle::setLevel($container->getParameter('reportUnsafeArrayStringKeyCasting'));
 	}
 
 	public function getCurrentWorkingDirectory(): string

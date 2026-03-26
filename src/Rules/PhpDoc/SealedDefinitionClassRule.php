@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -22,6 +23,7 @@ use function sprintf;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class SealedDefinitionClassRule implements Rule
 {
 

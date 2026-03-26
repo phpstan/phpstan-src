@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -22,6 +23,7 @@ use function strtolower;
  * @implements Rule<Node\Stmt\Trait_>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class RequireImplementsDefinitionTraitRule implements Rule
 {
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -15,6 +16,7 @@ use function sprintf;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 2)]
+#[ValidatesStubFiles]
 final class RequireExtendsDefinitionClassRule implements Rule
 {
 

@@ -546,6 +546,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10353(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-10353.php'], []);
+	}
+
 	public function testBug12267(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

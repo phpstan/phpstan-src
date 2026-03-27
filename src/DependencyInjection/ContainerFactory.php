@@ -162,8 +162,8 @@ final class ContainerFactory
 
 		$container = $configurator->createContainer()->getByType(Container::class);
 		$this->validateParameters($container->getParameters(), $projectConfig['parametersSchema']);
-		$this->validateExceptionClasses($container->getByType(ReflectionProvider::class), $container->getParameters());
 		self::postInitializeContainer($container);
+		$this->validateExceptionClasses($container->getByType(ReflectionProvider::class), $container->getParameters());
 
 		return $container;
 	}

@@ -46,6 +46,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
@@ -70,6 +71,7 @@ use function count;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
+use function substr;
 
 /**
  * @implements ExprHandler<FuncCall>
@@ -817,7 +819,107 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $expr);
+		$returnType = $parametersAcceptor->getReturnType();
+		$returnType = $this->narrowReturnTypeByAssertions($returnType, $functionReflection, $normalizedNode ?? $expr, $scope, $parametersAcceptor);
+
+		return VoidToNullTypeTransformer::transform($returnType, $expr);
+	}
+
+	private function narrowReturnTypeByAssertions(
+		Type $returnType,
+		FunctionReflection $functionReflection,
+		FuncCall $call,
+		MutatingScope $scope,
+		ParametersAcceptor $parametersAcceptor,
+	): Type
+	{
+		if (!$returnType->isBoolean()->yes() || $returnType->isTrue()->yes() || $returnType->isFalse()->yes()) {
+			return $returnType;
+		}
+
+		$assertions = $functionReflection->getAsserts();
+		$assertsIfFalse = $assertions->getAssertsIfFalse();
+		$assertsIfTrue = $assertions->getAssertsIfTrue();
+
+		if (count($assertsIfFalse) === 0 && count($assertsIfTrue) === 0) {
+			return $returnType;
+		}
+
+		$argTypes = $this->buildArgTypesForAssertions($call, $scope, $parametersAcceptor);
+
+		foreach ($assertsIfFalse as $assert) {
+			$param = $assert->getParameter();
+			if ($param->describe() !== $param->getParameterName()) {
+				continue;
+			}
+
+			$paramName = substr($param->getParameterName(), 1);
+			if (!isset($argTypes[$paramName])) {
+				continue;
+			}
+
+			$actualType = $argTypes[$paramName];
+			$assertedType = $assert->getType();
+
+			if ($assert->isNegated()) {
+				if ($assertedType->isSuperTypeOf($actualType)->yes()) {
+					return new ConstantBooleanType(true);
+				}
+			} else {
+				if ($assertedType->isSuperTypeOf($actualType)->no()) {
+					return new ConstantBooleanType(true);
+				}
+			}
+		}
+
+		foreach ($assertsIfTrue as $assert) {
+			$param = $assert->getParameter();
+			if ($param->describe() !== $param->getParameterName()) {
+				continue;
+			}
+
+			$paramName = substr($param->getParameterName(), 1);
+			if (!isset($argTypes[$paramName])) {
+				continue;
+			}
+
+			$actualType = $argTypes[$paramName];
+			$assertedType = $assert->getType();
+
+			if ($assert->isNegated()) {
+				if ($assertedType->isSuperTypeOf($actualType)->yes()) {
+					return new ConstantBooleanType(false);
+				}
+			} else {
+				if ($assertedType->isSuperTypeOf($actualType)->no()) {
+					return new ConstantBooleanType(false);
+				}
+			}
+		}
+
+		return $returnType;
+	}
+
+	/**
+	 * @return array<string, Type>
+	 */
+	private function buildArgTypesForAssertions(FuncCall $call, MutatingScope $scope, ParametersAcceptor $parametersAcceptor): array
+	{
+		$argTypes = [];
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($call->getArgs() as $i => $arg) {
+			$name = null;
+			if ($arg->name !== null) {
+				$name = $arg->name->toString();
+			} elseif (isset($parameters[$i])) {
+				$name = $parameters[$i]->getName();
+			}
+			if ($name !== null) {
+				$argTypes[$name] = $scope->getType($arg->value);
+			}
+		}
+
+		return $argTypes;
 	}
 
 	private function getDynamicFunctionReturnType(MutatingScope $scope, FuncCall $normalizedNode, FunctionReflection $functionReflection): ?Type

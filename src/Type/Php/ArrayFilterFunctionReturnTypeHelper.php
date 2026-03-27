@@ -260,22 +260,12 @@ final class ArrayFilterFunctionReturnTypeHelper
 			return [new NeverType(), new NeverType(), false];
 		}
 
-		$truthyScope = $scope->filterByTruthyValue($expr);
-
-		$optional = !$booleanResult->isTrue()->yes();
-		if ($optional) {
-			$falseyScope = $scope->filterByFalseyValue($expr);
-			$falseyItemType = $itemVarName !== null ? $falseyScope->getVariableType($itemVarName) : $itemType;
-			$falseyKeyType = $keyVarName !== null ? $falseyScope->getVariableType($keyVarName) : $keyType;
-			if ($falseyItemType instanceof NeverType || $falseyKeyType instanceof NeverType) {
-				$optional = false;
-			}
-		}
+		$scope = $scope->filterByTruthyValue($expr);
 
 		return [
-			$keyVarName !== null ? $truthyScope->getVariableType($keyVarName) : $keyType,
-			$itemVarName !== null ? $truthyScope->getVariableType($itemVarName) : $itemType,
-			$optional,
+			$keyVarName !== null ? $scope->getVariableType($keyVarName) : $keyType,
+			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
+			!$booleanResult->isTrue()->yes(),
 		];
 	}
 

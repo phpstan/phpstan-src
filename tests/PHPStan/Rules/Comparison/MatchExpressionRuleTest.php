@@ -3,11 +3,12 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<MatchExpressionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class MatchExpressionRuleTest extends RuleTestCase
 {
@@ -16,19 +17,24 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MatchExpressionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new MatchExpressionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->treatPhpDocTypesAsCertain,
+					),
 					$this->treatPhpDocTypesAsCertain,
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -474,6 +480,18 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between 1|2|3|4|5|6 and 0 is always false.',
 				74,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/match-in-trait.php'], [
+			[
+				'Match arm comparison between true and false is always false.',
+				21,
 			],
 		]);
 	}

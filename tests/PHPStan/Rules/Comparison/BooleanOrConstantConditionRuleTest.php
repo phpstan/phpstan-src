@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<BooleanOrConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class BooleanOrConstantConditionRuleTest extends RuleTestCase
 {
@@ -19,21 +20,26 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BooleanOrConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new BooleanOrConstantConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->treatPhpDocTypesAsCertain,
+					),
 					$this->treatPhpDocTypesAsCertain,
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -380,6 +386,18 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 			[
 				'Result of || is always true.',
 				10,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = true;
+		$this->analyse([__DIR__ . '/data/boolean-or-in-trait.php'], [
+			[
+				'Left side of || is always true.',
+				19,
 			],
 		]);
 	}

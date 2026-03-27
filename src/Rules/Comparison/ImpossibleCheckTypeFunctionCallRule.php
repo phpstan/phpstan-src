@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -21,6 +23,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -36,7 +39,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		return Node\Expr\FuncCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node->name instanceof Node\Name) {
 			return [];
@@ -45,6 +48,7 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		$functionName = (string) $node->name;
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -67,17 +71,22 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 		};
 
 		if (!$isAlways) {
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Call to function %s()%s will always evaluate to false.',
-					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-				)))->identifier('function.impossibleType')->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Call to function %s()%s will always evaluate to false.',
+				$functionName,
+				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+			)))->identifier('function.impossibleType')->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
 		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -92,7 +101,13 @@ final class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 		$errorBuilder->identifier('function.alreadyNarrowedType');
 
-		return [$errorBuilder->build()];
+		$ruleError = $errorBuilder->build();
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			return [];
+		}
+
+		return [$ruleError];
 	}
 
 }

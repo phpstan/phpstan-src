@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<ImpossibleCheckTypeStaticMethodCallRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 {
@@ -19,18 +20,23 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new ImpossibleCheckTypeStaticMethodCallRule(
-			new ImpossibleCheckTypeHelper(
-				self::createReflectionProvider(),
-				$this->getTypeSpecifier(),
-				[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new ImpossibleCheckTypeStaticMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					[],
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -166,6 +172,17 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-13566.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-static-method-call-in-trait.php'], [
+			[
+				'Call to static method ImpossibleStaticMethodCallInTrait\TypeChecker::isString() with int will always evaluate to false.',
+				28,
+			],
+		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

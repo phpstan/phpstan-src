@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -24,6 +26,7 @@ final class BooleanOrConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -41,7 +44,7 @@ final class BooleanOrConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		$originalNode = $node->getOriginalNode();
@@ -49,6 +52,8 @@ final class BooleanOrConstantConditionRule implements Rule
 		$messages = [];
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$identifierType = $originalNode instanceof Node\Expr\BinaryOp\BooleanOr ? 'booleanOr' : 'logicalOr';
+		$isInTrait = $scope->isInTrait();
+		$hasLeftOrRightError = false;
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
@@ -80,8 +85,18 @@ final class BooleanOrConstantConditionRule implements Rule
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
-				$messages[] = $errorBuilder->build();
+				$ruleError = $errorBuilder->build();
+				$hasLeftOrRightError = true;
+				if ($isInTrait) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->left, $leftType->getValue(), $ruleError);
+				} else {
+					$messages[] = $ruleError;
+				}
+			} else {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->left);
 			}
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->left);
 		}
 
 		$rightScope = $node->getRightScope();
@@ -123,11 +138,21 @@ final class BooleanOrConstantConditionRule implements Rule
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
-				$messages[] = $errorBuilder->build();
+				$ruleError = $errorBuilder->build();
+				$hasLeftOrRightError = true;
+				if ($isInTrait) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->right, $rightType->getValue(), $ruleError);
+				} else {
+					$messages[] = $ruleError;
+				}
+			} else {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->right);
 			}
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->right);
 		}
 
-		if (count($messages) === 0 && !$scope->isInFirstLevelStatement()) {
+		if (count($messages) === 0 && !$hasLeftOrRightError && !$scope->isInFirstLevelStatement()) {
 			$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($originalNode) : $scope->getNativeType($originalNode);
 			if ($nodeType instanceof ConstantBooleanType) {
 				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
@@ -161,8 +186,17 @@ final class BooleanOrConstantConditionRule implements Rule
 
 					$errorBuilder->identifier(sprintf('%s.always%s', $identifierType, $nodeType->getValue() ? 'True' : 'False'));
 
-					$messages[] = $errorBuilder->build();
+					$ruleError = $errorBuilder->build();
+					if ($isInTrait) {
+						$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode, $nodeType->getValue(), $ruleError);
+					} else {
+						$messages[] = $ruleError;
+					}
+				} else {
+					$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode);
 				}
+			} else {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode);
 			}
 		}
 

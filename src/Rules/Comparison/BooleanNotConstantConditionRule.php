@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -22,6 +24,7 @@ final class BooleanNotConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -39,7 +42,7 @@ final class BooleanNotConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->expr);
@@ -74,12 +77,17 @@ final class BooleanNotConstantConditionRule implements Rule
 
 				$errorBuilder->identifier(sprintf('booleanNot.always%s', $exprType->getValue() ? 'False' : 'True'));
 
-				return [
-					$errorBuilder->build(),
-				];
+				$ruleError = $errorBuilder->build();
+				if ($scope->isInTrait()) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->expr, !$exprType->getValue(), $ruleError);
+					return [];
+				}
+
+				return [$ruleError];
 			}
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->expr);
 		return [];
 	}
 

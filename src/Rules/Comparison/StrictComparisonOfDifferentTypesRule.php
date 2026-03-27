@@ -3,7 +3,9 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -28,6 +30,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 	public function __construct(
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -43,7 +46,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		return Node\Expr\BinaryOp::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$scope instanceof MutatingScope) {
 			throw new ShouldNotHappenException();
@@ -59,6 +62,7 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 
 		$nodeType = $nodeTypeResult->type;
 		if (!$nodeType instanceof ConstantBooleanType) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -116,18 +120,26 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		}
 
 		if (!$nodeType->getValue()) {
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Strict comparison using %s between %s and %s will always evaluate to false.',
-					$node->getOperatorSigil(),
-					$leftType->describe($verbosity),
-					$rightType->describe($verbosity),
-				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Strict comparison using %s between %s and %s will always evaluate to false.',
+				$node->getOperatorSigil(),
+				$leftType->describe($verbosity),
+				$rightType->describe($verbosity),
+			)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'))->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
 		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+				return [];
+			}
 			return [];
 		}
 
@@ -150,10 +162,13 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		}
 
 		$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Identical ? 'identical' : 'notIdentical'));
+		$ruleError = $errorBuilder->build();
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			return [];
+		}
 
-		return [
-			$errorBuilder->build(),
-		];
+		return [$ruleError];
 	}
 
 }

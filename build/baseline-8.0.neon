@@ -13,19 +13,7 @@ parameters:
 			path: ../src/Type/ClosureTypeFactory.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between list\<non\-falsy\-string\> and false will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: ../src/Type/Php/MbFunctionsReturnTypeExtension.php
-
-		-
 			message: '#^Strict comparison using \=\=\= between int\<0, max\> and false will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: ../src/Type/Php/MbStrlenFunctionReturnTypeExtension.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between list\<non\-falsy\-string\> and false will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
 			path: ../src/Type/Php/MbStrlenFunctionReturnTypeExtension.php

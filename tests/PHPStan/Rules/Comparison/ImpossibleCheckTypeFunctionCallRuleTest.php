@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -13,7 +14,7 @@ use function array_values;
 use function count;
 
 /**
- * @extends RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 {
@@ -24,18 +25,23 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ImpossibleCheckTypeFunctionCallRule(
-			new ImpossibleCheckTypeHelper(
-				self::createReflectionProvider(),
-				$this->getTypeSpecifier(),
-				[stdClass::class],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new ImpossibleCheckTypeFunctionCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					[stdClass::class],
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -1141,6 +1147,51 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13628.php'], []);
 	}
 
+	public function testBug13023(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13023.php'], []);
+	}
+
+	public function testBug9095(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-9095.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug7599(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7599.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug13474(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13474.php'], []);
+	}
+
+	public function testBug13687(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13687.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12798(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12798.php'], []);
+	}
+
+	public function testBug4570(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4570.php'], []);
+	}
+
 	public function testBug9666(): void
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
@@ -1203,6 +1254,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				'Call to function in_array() with arguments \'c\', list<\'a\'|\'b\'> and true will always evaluate to false.',
 				24,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-function-call-in-trait.php'], [
+			[
+				'Call to function is_string() with int will always evaluate to false.',
+				19,
 			],
 		]);
 	}

@@ -3,10 +3,12 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<TernaryOperatorConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 {
@@ -15,20 +17,25 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TernaryOperatorConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new TernaryOperatorConstantConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->treatPhpDocTypesAsCertain,
+					),
 					$this->treatPhpDocTypesAsCertain,
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -100,10 +107,28 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7580.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug11949(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11949.php'], []);
+	}
+
 	public function testBug3370(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3370.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/ternary-in-trait.php'], [
+			[
+				'Ternary operator condition is always true.',
+				17,
+			],
+		]);
 	}
 
 }

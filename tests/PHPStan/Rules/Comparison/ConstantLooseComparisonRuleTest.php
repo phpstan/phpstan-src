@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -10,7 +11,7 @@ use function array_merge;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<ConstantLooseComparisonRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ConstantLooseComparisonRuleTest extends RuleTestCase
 {
@@ -21,12 +22,17 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ConstantLooseComparisonRule(
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new ConstantLooseComparisonRule(
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -246,6 +252,17 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-13098.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/loose-comparison-in-trait.php'], [
+			[
+				'Loose comparison using == between 1 and null will always evaluate to false.',
+				19,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
 	}
 
 }

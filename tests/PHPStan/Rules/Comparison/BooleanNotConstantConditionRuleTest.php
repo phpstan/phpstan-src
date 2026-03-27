@@ -3,11 +3,12 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * @extends RuleTestCase<BooleanNotConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class BooleanNotConstantConditionRuleTest extends RuleTestCase
 {
@@ -18,21 +19,26 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BooleanNotConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new BooleanNotConstantConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->treatPhpDocTypesAsCertain,
+					),
 					$this->treatPhpDocTypesAsCertain,
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -230,10 +236,27 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5984.php'], []);
 	}
 
+	public function testBug12267(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12267.php'], []);
+	}
+
 	public function testBug6702(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6702.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/boolean-not-in-trait.php'], [
+			[
+				'Negated boolean expression is always false.',
+				19,
+			],
+		]);
 	}
 
 }

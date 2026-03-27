@@ -132,7 +132,7 @@ trait TemplateTypeTrait
 	public function getTypeWithoutSubtractedType(): Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
+		if (!$bound instanceof SubtractableType) {
 			return $this;
 		}
 
@@ -149,7 +149,7 @@ trait TemplateTypeTrait
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
+		if (!$bound instanceof SubtractableType) {
 			return $this;
 		}
 
@@ -166,7 +166,7 @@ trait TemplateTypeTrait
 	public function getSubtractedType(): ?Type
 	{
 		$bound = $this->getBound();
-		if (!$bound instanceof SubtractableType) { // @phpstan-ignore instanceof.alwaysTrue
+		if (!$bound instanceof SubtractableType) {
 			return null;
 		}
 

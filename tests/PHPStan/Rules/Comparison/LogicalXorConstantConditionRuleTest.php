@@ -3,31 +3,38 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule as TRule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<LogicalXorConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class LogicalXorConstantConditionRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): TRule
 	{
-		return new LogicalXorConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new LogicalXorConstantConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->shouldTreatPhpDocTypesAsCertain(),
+					),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->shouldTreatPhpDocTypesAsCertain(),
+				false,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->shouldTreatPhpDocTypesAsCertain(),
-			false,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -67,6 +74,17 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 			[
 				'Right side of xor is always false.',
 				24,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/logical-xor-in-trait.php'], [
+			[
+				'Left side of xor is always false.',
+				19,
 			],
 		]);
 	}

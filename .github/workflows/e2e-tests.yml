@@ -268,6 +268,12 @@ jobs:
               composer install
               ../../bin/phpstan
           - script: |
+              cd e2e/in-trait
+              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Bar):18:Strict comparison using === between E2EInTrait\Bar and null will always evaluate to false.' "$OUTPUT"
+              ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Foo):18:Strict comparison using === between E2EInTrait\Foo and null will always evaluate to false.' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv

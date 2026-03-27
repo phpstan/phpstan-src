@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\While_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -21,6 +23,7 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -36,7 +39,7 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
@@ -59,13 +62,18 @@ final class WhileLoopAlwaysFalseConditionRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 			};
 
-			return [
-				$addTip(RuleErrorBuilder::message('While loop condition is always false.'))->line($node->cond->getStartLine())
-					->identifier('while.alwaysFalse')
-					->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message('While loop condition is always false.'))->line($node->cond->getStartLine())
+				->identifier('while.alwaysFalse')
+				->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
 		return [];
 	}
 

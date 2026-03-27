@@ -907,6 +907,8 @@ class NodeScopeResolver
 			return new InternalStatementResult($scope, $hasYield, true, [
 				new InternalStatementExitPoint($stmt, $scope),
 			], $overridingThrowPoints ?? $throwPoints, $impurePoints);
+		} elseif ($stmt instanceof Node\Stmt\Goto_) {
+			return new InternalStatementResult($scope, false, true, [], $overridingThrowPoints ?? [], []);
 		} elseif ($stmt instanceof Node\Stmt\Expression) {
 			if ($stmt->expr instanceof Expr\Throw_) {
 				$scope = $stmtScope;

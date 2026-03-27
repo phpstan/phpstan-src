@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<NumberComparisonOperatorsConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 {
@@ -19,11 +20,16 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NumberComparisonOperatorsConstantConditionRule(
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			true,
-		);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new NumberComparisonOperatorsConstantConditionRule(
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldPolluteScopeWithAlwaysIterableForeach(): bool
@@ -294,6 +300,17 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 			[
 				'Comparison operation "<" between int<min, 0> and int<1, max> is always true.',
 				41,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/number-comparison-in-trait.php'], [
+			[
+				'Comparison operation ">" between 1 and 0 is always true.',
+				19,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

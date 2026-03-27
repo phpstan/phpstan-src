@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -21,6 +23,7 @@ final class ConstantLooseComparisonRule implements Rule
 
 	public function __construct(
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -36,7 +39,7 @@ final class ConstantLooseComparisonRule implements Rule
 		return Node\Expr\BinaryOp::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node instanceof Node\Expr\BinaryOp\Equal && !$node instanceof Node\Expr\BinaryOp\NotEqual) {
 			return [];
@@ -44,6 +47,7 @@ final class ConstantLooseComparisonRule implements Rule
 
 		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$nodeType->isTrue()->yes() && !$nodeType->isFalse()->yes()) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -66,18 +70,23 @@ final class ConstantLooseComparisonRule implements Rule
 		};
 
 		if ($nodeType->isFalse()->yes()) {
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Loose comparison using %s between %s and %s will always evaluate to false.',
-					$node->getOperatorSigil(),
-					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-				)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'))->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Loose comparison using %s between %s and %s will always evaluate to false.',
+				$node->getOperatorSigil(),
+				$scope->getType($node->left)->describe(VerbosityLevel::value()),
+				$scope->getType($node->right)->describe(VerbosityLevel::value()),
+			)))->identifier(sprintf('%s.alwaysFalse', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'))->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
 		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -93,7 +102,13 @@ final class ConstantLooseComparisonRule implements Rule
 
 		$errorBuilder->identifier(sprintf('%s.alwaysTrue', $node instanceof Node\Expr\BinaryOp\Equal ? 'equal' : 'notEqual'));
 
-		return [$errorBuilder->build()];
+		$ruleError = $errorBuilder->build();
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			return [];
+		}
+
+		return [$ruleError];
 	}
 
 }

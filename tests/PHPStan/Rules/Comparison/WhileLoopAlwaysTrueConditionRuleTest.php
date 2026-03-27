@@ -3,31 +3,37 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<WhileLoopAlwaysTrueConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new WhileLoopAlwaysTrueConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new WhileLoopAlwaysTrueConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->shouldTreatPhpDocTypesAsCertain(),
+					),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->shouldTreatPhpDocTypesAsCertain(),
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -70,6 +76,16 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 			[
 				'While loop condition is always true.',
 				44,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/while-true-in-trait.php'], [
+			[
+				'While loop condition is always true.',
+				19,
 			],
 		]);
 	}

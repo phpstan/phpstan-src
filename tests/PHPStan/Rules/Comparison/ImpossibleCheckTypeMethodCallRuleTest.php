@@ -3,12 +3,13 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<ImpossibleCheckTypeMethodCallRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 {
@@ -19,18 +20,23 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new ImpossibleCheckTypeMethodCallRule(
-			new ImpossibleCheckTypeHelper(
-				self::createReflectionProvider(),
-				$this->getTypeSpecifier(),
-				[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new ImpossibleCheckTypeMethodCallRule(
+				new ImpossibleCheckTypeHelper(
+					self::createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					[],
+					$this->treatPhpDocTypesAsCertain,
+				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -301,6 +307,17 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-10337.php'], []);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-method-call-in-trait.php'], [
+			[
+				'Call to method ImpossibleMethodCallInTrait\TypeChecker::isString() with int will always evaluate to false.',
+				30,
+			],
+		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

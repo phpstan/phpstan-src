@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -25,6 +27,7 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -40,7 +43,7 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		foreach ($node->getExitPoints() as $exitPoint) {
@@ -70,12 +73,14 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 		$exprType = $this->helper->getBooleanType($scope, $originalNode->cond);
 		if ($exprType->isTrue()->yes()) {
 			if ($node->hasYield()) {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
 				return [];
 			}
 
 			$ref = $scope->getFunction() ?? $scope->getAnonymousFunctionReflection();
 
 			if ($ref !== null && $ref->getReturnType() instanceof NeverType) {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
 				return [];
 			}
 
@@ -97,13 +102,18 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->cond, $ruleErrorBuilder);
 			};
 
-			return [
-				$addTip(RuleErrorBuilder::message('While loop condition is always true.'))->line($originalNode->cond->getStartLine())
-					->identifier('while.alwaysTrue')
-					->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message('While loop condition is always true.'))->line($originalNode->cond->getStartLine())
+				->identifier('while.alwaysTrue')
+				->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $originalNode->cond, true, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $originalNode->cond);
 		return [];
 	}
 

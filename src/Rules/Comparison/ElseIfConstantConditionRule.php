@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -22,6 +24,7 @@ final class ElseIfConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -39,7 +42,7 @@ final class ElseIfConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
@@ -75,10 +78,17 @@ final class ElseIfConstantConditionRule implements Rule
 
 				$errorBuilder->identifier(sprintf('elseif.always%s', $exprType->getValue() ? 'True' : 'False'));
 
-				return [$errorBuilder->build()];
+				$ruleError = $errorBuilder->build();
+				if ($scope->isInTrait()) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
+					return [];
+				}
+
+				return [$ruleError];
 			}
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
 		return [];
 	}
 

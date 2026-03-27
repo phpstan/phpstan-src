@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\LogicalXor;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -23,6 +25,7 @@ final class LogicalXorConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -38,9 +41,10 @@ final class LogicalXorConstantConditionRule implements Rule
 		return LogicalXor::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		$errors = [];
+		$isInTrait = $scope->isInTrait();
 		$leftType = $this->helper->getBooleanType($scope, $node->left);
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
@@ -72,8 +76,17 @@ final class LogicalXorConstantConditionRule implements Rule
 				if ($leftType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
-				$errors[] = $errorBuilder->build();
+				$ruleError = $errorBuilder->build();
+				if ($isInTrait) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->left, $leftType->getValue(), $ruleError);
+				} else {
+					$errors[] = $ruleError;
+				}
+			} else {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->left);
 			}
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->left);
 		}
 
 		$rightType = $this->helper->getBooleanType($scope, $node->right);
@@ -110,8 +123,17 @@ final class LogicalXorConstantConditionRule implements Rule
 				if ($rightType->getValue() && $isLast === false && !$this->reportAlwaysTrueInLastCondition) {
 					$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
 				}
-				$errors[] = $errorBuilder->build();
+				$ruleError = $errorBuilder->build();
+				if ($isInTrait) {
+					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->right, $rightType->getValue(), $ruleError);
+				} else {
+					$errors[] = $ruleError;
+				}
+			} else {
+				$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->right);
 			}
+		} else {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->right);
 		}
 
 		return $errors;

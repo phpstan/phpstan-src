@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -21,6 +23,7 @@ final class IfConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -36,7 +39,7 @@ final class IfConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
@@ -59,16 +62,21 @@ final class IfConstantConditionRule implements Rule
 				return $this->possiblyImpureTipHelper->addTip($scope, $node->cond, $ruleErrorBuilder);
 			};
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'If condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false',
-				)))
-					->identifier(sprintf('if.always%s', $exprType->getValue() ? 'True' : 'False'))
-					->line($node->cond->getStartLine())->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'If condition is always %s.',
+				$exprType->getValue() ? 'true' : 'false',
+			)))
+				->identifier(sprintf('if.always%s', $exprType->getValue() ? 'True' : 'False'))
+				->line($node->cond->getStartLine())->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node->cond, $exprType->getValue(), $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node->cond);
 		return [];
 	}
 

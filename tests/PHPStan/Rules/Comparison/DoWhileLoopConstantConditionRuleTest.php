@@ -3,30 +3,36 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<DoWhileLoopConstantConditionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new DoWhileLoopConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					self::createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new DoWhileLoopConstantConditionRule(
+				new ConstantConditionRuleHelper(
+					new ImpossibleCheckTypeHelper(
+						self::createReflectionProvider(),
+						$this->getTypeSpecifier(),
+						[],
+						$this->shouldTreatPhpDocTypesAsCertain(),
+					),
 					$this->shouldTreatPhpDocTypesAsCertain(),
 				),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->shouldTreatPhpDocTypesAsCertain(),
+				true,
 			),
-			new PossiblyImpureTipHelper(true),
-			$this->shouldTreatPhpDocTypesAsCertain(),
-			true,
-		);
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testBug6189(): void
@@ -72,6 +78,16 @@ class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 			[
 				'Do-while loop condition is always false.',
 				152,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/do-while-in-trait.php'], [
+			[
+				'Do-while loop condition is always false.',
+				19,
 			],
 		]);
 	}

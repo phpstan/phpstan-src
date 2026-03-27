@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -24,6 +26,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -39,7 +42,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		return Node\Expr\StaticCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node->name instanceof Node\Identifier) {
 			return [];
@@ -47,6 +50,7 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 
 		$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope, $node);
 		if ($isAlways === null) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -71,18 +75,23 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 		if (!$isAlways) {
 			$method = $this->getMethod($node->class, $node->name->name, $scope);
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Call to static method %s::%s()%s will always evaluate to false.',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
-				)))->identifier('staticMethod.impossibleType')->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Call to static method %s::%s()%s will always evaluate to false.',
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+				$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
+			)))->identifier('staticMethod.impossibleType')->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
 		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -99,7 +108,13 @@ final class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 
 		$errorBuilder->identifier('staticMethod.alreadyNarrowedType');
 
-		return [$errorBuilder->build()];
+		$ruleError = $errorBuilder->build();
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			return [];
+		}
+
+		return [$ruleError];
 	}
 
 	/**

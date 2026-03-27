@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -24,6 +26,7 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 
 	public function __construct(
 		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -39,7 +42,7 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 	): array
 	{
 		if (
@@ -88,17 +91,22 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 					throw new ShouldNotHappenException();
 			}
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Comparison operation "%s" between %s and %s is always %s.',
-					$node->getOperatorSigil(),
-					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-					$exprType->getValue() ? 'true' : 'false',
-				)))->identifier(sprintf('%s.always%s', $nodeType, $exprType->getValue() ? 'True' : 'False'))->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Comparison operation "%s" between %s and %s is always %s.',
+				$node->getOperatorSigil(),
+				$scope->getType($node->left)->describe(VerbosityLevel::value()),
+				$scope->getType($node->right)->describe(VerbosityLevel::value()),
+				$exprType->getValue() ? 'true' : 'false',
+			)))->identifier(sprintf('%s.always%s', $nodeType, $exprType->getValue() ? 'True' : 'False'))->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, $exprType->getValue(), $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
+		$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 		return [];
 	}
 

@@ -17,5 +17,6 @@ class HelloWorld
 		assertType('mixed', $class?->foo());
 		assertType('mixed', $class::$method());
 		assertType('mixed', $class->$property);
+		assertType('mixed', $class?->$property);
 	}
 }

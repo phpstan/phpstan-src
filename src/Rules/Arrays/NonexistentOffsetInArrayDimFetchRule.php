@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -33,6 +34,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
+		private ExprPrinter $exprPrinter,
 		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
@@ -120,10 +122,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
+				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {
@@ -146,10 +145,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayType = $scope->getType($arrayArg);
 
 			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
+				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 				&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
@@ -170,10 +166,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->left->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
+				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isList()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {

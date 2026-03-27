@@ -2,6 +2,8 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -44,6 +46,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				reportPossiblyNonexistentGeneralArrayOffset: $this->reportPossiblyNonexistentGeneralArrayOffset,
 				reportPossiblyNonexistentConstantArrayOffset: $this->reportPossiblyNonexistentConstantArrayOffset,
 			),
+			new ExprPrinter(new Printer()),
 			true,
 		);
 	}
@@ -1275,6 +1278,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->reportPossiblyNonexistentConstantArrayOffset = true;
 
 		$this->analyse([__DIR__ . '/data/bug-14308.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.2')]
+	public function testBug14390(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14390.php'], []);
 	}
 
 }

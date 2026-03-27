@@ -106,6 +106,28 @@ final class Error implements JsonSerializable
 		);
 	}
 
+	public function removeTraitContext(): self
+	{
+		if ($this->traitFilePath === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return new self(
+			$this->message,
+			$this->traitFilePath,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			null,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiff,
+		);
+	}
+
 	public function getTraitFilePath(): ?string
 	{
 		return $this->traitFilePath;

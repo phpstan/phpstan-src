@@ -77,7 +77,7 @@ final class ConstantConditionInTraitRule implements Rule
 
 					if (count($uniquedErrors) === 1) {
 						// report directly in trait, no "in context of"
-						$transformedErrors[] = new TransformedRuleError($uniquedErrors[0]);
+						$transformedErrors[] = new TransformedRuleError($uniquedErrors[0]->removeTraitContext());
 						continue;
 					}
 

@@ -1147,6 +1147,50 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13628.php'], []);
 	}
 
+	public function testBug13023(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13023.php'], []);
+	}
+
+	public function testBug9095(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-9095.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug7599(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7599.php'], []);
+	}
+
+	public function testBug13474(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13474.php'], []);
+	}
+
+	public function testBug13687(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-13687.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1')]
+	public function testBug12798(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-12798.php'], []);
+	}
+
+	public function testBug4570(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4570.php'], []);
+	}
+
 	public function testBug9666(): void
 	{
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';

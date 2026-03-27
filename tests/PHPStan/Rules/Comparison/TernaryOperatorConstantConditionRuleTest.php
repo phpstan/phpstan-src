@@ -106,6 +106,12 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7580.php'], []);
 	}
 
+	public function testBug11949(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11949.php'], []);
+	}
+
 	public function testBug3370(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

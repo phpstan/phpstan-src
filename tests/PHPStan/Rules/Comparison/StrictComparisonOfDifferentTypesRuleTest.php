@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Analyser\RicherScopeGetTypeHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -11,7 +12,7 @@ use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<StrictComparisonOfDifferentTypesRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 {
@@ -22,13 +23,18 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule(
-			self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
-			new PossiblyImpureTipHelper(true),
-			$this->treatPhpDocTypesAsCertain,
-			$this->reportAlwaysTrueInLastCondition,
-			true,
-		);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new StrictComparisonOfDifferentTypesRule(
+				self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				$this->treatPhpDocTypesAsCertain,
+				$this->reportAlwaysTrueInLastCondition,
+				true,
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -1152,6 +1158,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using !== between string and null will always evaluate to true.',
 				328,
+			],
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/strict-comparison-in-trait.php'], [
+			[
+				'Strict comparison using !== between string and null will always evaluate to true.',
+				19,
 			],
 		]);
 	}

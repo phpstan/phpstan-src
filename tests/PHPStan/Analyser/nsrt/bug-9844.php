@@ -10,10 +10,11 @@ class HelloWorld
 	/**
 	 * @param class-string $class
 	 */
-	public function sayHello(string $class): void
+	public function sayHello(string $class, string $method): void
 	{
 		assertType('mixed', $class::foo());
 		assertType('mixed', $class->foo());
 		assertType('mixed', $class?->foo());
+		assertType('mixed', $class::$method());
 	}
 }

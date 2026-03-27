@@ -22,6 +22,7 @@ use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
+use PHPStan\Rules\RuleErrors\TransformedRuleError;
 use PHPStan\Rules\TipRuleError;
 use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
@@ -55,6 +56,10 @@ final class RuleErrorTransformer
 		Node $node,
 	): Error
 	{
+		if ($ruleError instanceof TransformedRuleError) {
+			return $ruleError->getError();
+		}
+
 		$line = $node->getStartLine();
 		$canBeIgnored = true;
 		$fileName = $scope->getFileDescription();

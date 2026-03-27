@@ -335,14 +335,17 @@ final class StaticCallHandler implements ExprHandler
 				$staticMethodCalledOnType = TypeCombinator::removeNull($scope->getType($expr->class))->getObjectTypeOrClassStringObjectType();
 			}
 
+			$methodName = $expr->name->toString();
 			$callType = $this->methodCallReturnTypeHelper->methodCallReturnType(
 				$scope,
 				$staticMethodCalledOnType,
-				$expr->name->toString(),
+				$methodName,
 				$expr,
 			);
 			if ($callType === null) {
-				$callType = new ErrorType();
+				$callType = $staticMethodCalledOnType->isObject()->yes() && $staticMethodCalledOnType->getObjectClassNames() === []
+					? new MixedType()
+					: new ErrorType();
 			}
 
 			if ($expr->class instanceof Expr) {

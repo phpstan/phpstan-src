@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php // lint >= 8.2
 
 namespace MatchInTrait;
 

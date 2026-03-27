@@ -1321,4 +1321,9 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9669.php'], []);
 	}
 
+	public function testBug10924(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10924.php'], []);
+	}
+
 }

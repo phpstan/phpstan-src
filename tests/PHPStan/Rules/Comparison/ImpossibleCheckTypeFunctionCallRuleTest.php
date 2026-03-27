@@ -1166,6 +1166,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7599.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
 	public function testBug13474(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

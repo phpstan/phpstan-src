@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -77,6 +78,7 @@ class LogicalXorConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testInTrait(): void
 	{
 		$this->analyse([__DIR__ . '/data/logical-xor-in-trait.php'], [

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -106,6 +107,7 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7580.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
 	public function testBug11949(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

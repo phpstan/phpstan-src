@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -50,6 +51,7 @@ class WhileLoopAlwaysFalseConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testInTrait(): void
 	{
 		$this->analyse([__DIR__ . '/data/while-false-in-trait.php'], [

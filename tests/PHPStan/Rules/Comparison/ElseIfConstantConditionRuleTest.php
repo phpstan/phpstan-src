@@ -158,6 +158,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2')]
 	public function testInTrait(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

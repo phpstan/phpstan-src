@@ -371,6 +371,10 @@ final class ContainerFactory
 	 */
 	private function validateExceptionClasses(ReflectionProvider $reflectionProvider, array $parameters): void
 	{
+		if (!(bool) $parameters['__validate']) {
+			return;
+		}
+
 		if (
 			!array_key_exists('featureToggles', $parameters)
 			|| !is_array($parameters['featureToggles'])

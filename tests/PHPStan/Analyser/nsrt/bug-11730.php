@@ -22,3 +22,8 @@ $data = [new Foo, new Foo];
 
 assertType('array{Bug11730\Foo, Bug11730\Foo}', array_filter($data, isFoo(...)));
 assertType('array{Bug11730\Foo, Bug11730\Foo}', array_filter($data, checkFoo(...)));
+
+/** @var array{Foo|int, Foo|int} $mixed */
+$mixed = [new Foo, new Foo];
+assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($mixed, isFoo(...)));
+assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($mixed, checkFoo(...)));

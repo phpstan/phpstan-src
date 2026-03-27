@@ -3,10 +3,14 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\PossiblyImpureTipHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -29,6 +33,8 @@ final class ImpossibleInstanceOfRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
+		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter]
@@ -44,7 +50,7 @@ final class ImpossibleInstanceOfRule implements Rule
 		return Node\Expr\Instanceof_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if ($node->class instanceof Node\Name) {
 			$className = $scope->resolveName($node->class);
@@ -74,40 +80,48 @@ final class ImpossibleInstanceOfRule implements Rule
 
 		$instanceofType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$instanceofType instanceof ConstantBooleanType) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $ruleErrorBuilder;
+				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 			}
 
-			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
+
+			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
 		};
 
 		if (!$instanceofType->getValue()) {
 			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Instanceof between %s and %s will always evaluate to false.',
-					$exprType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
-				)))->identifier('instanceof.alwaysFalse')->build(),
-			];
+			$ruleError = $addTip(RuleErrorBuilder::message(sprintf(
+				'Instanceof between %s and %s will always evaluate to false.',
+				$exprType->describe(VerbosityLevel::typeOnly()),
+				$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
+			)))->identifier('instanceof.alwaysFalse')->build();
+			if ($scope->isInTrait()) {
+				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, false, $ruleError);
+				return [];
+			}
+
+			return [$ruleError];
 		}
 
 		$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
 		if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
 			return [];
 		}
 
@@ -123,7 +137,13 @@ final class ImpossibleInstanceOfRule implements Rule
 
 		$errorBuilder->identifier('instanceof.alwaysTrue');
 
-		return [$errorBuilder->build()];
+		$ruleError = $errorBuilder->build();
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $ruleError);
+			return [];
+		}
+
+		return [$ruleError];
 	}
 
 }

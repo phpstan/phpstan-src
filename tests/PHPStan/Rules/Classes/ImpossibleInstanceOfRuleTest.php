@@ -2,8 +2,12 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
+use PHPStan\Rules\Comparison\PossiblyImpureTipHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -11,7 +15,7 @@ use function sprintf;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<ImpossibleInstanceOfRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class ImpossibleInstanceOfRuleTest extends RuleTestCase
 {
@@ -33,12 +37,18 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			discoveringSymbolsTip: true,
 		);
 
-		return new ImpossibleInstanceOfRule(
-			$ruleLevelHelper,
-			treatPhpDocTypesAsCertain: $this->treatPhpDocTypesAsCertain,
-			reportAlwaysTrueInLastCondition: $this->reportAlwaysTrueInLastCondition,
-			treatPhpDocTypesAsCertainTip: true,
-		);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new ImpossibleInstanceOfRule(
+				$ruleLevelHelper,
+				new PossiblyImpureTipHelper(true),
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+				treatPhpDocTypesAsCertain: $this->treatPhpDocTypesAsCertain,
+				reportAlwaysTrueInLastCondition: $this->reportAlwaysTrueInLastCondition,
+				treatPhpDocTypesAsCertainTip: true,
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -600,6 +610,44 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([$file], []);
+	}
+
+	public function testPossiblyImpureTip(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$learnMore = ' Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>';
+		$this->analyse([__DIR__ . '/data/possibly-impure-instanceof-tip.php'], [
+			// maybe-impure: tip expected
+			[
+				'Instanceof between PossiblyImpureInstanceofTip\Cat and PossiblyImpureInstanceofTip\Cat will always evaluate to true.',
+				41,
+				'If PossiblyImpureInstanceofTip\Holder::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
+			],
+			// pure: no tip, error explained by type
+			[
+				'Instanceof between PossiblyImpureInstanceofTip\Cat and PossiblyImpureInstanceofTip\Cat will always evaluate to true.',
+				53,
+			],
+			// impure: no error - $holder invalidated
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/data/impossible-instanceof-in-trait.php'], [
+			[
+				'Instanceof between ImpossibleInstanceofInTrait\Cat and stdClass will always evaluate to false.',
+				25,
+				$tipText,
+			],
+			[
+				'Instanceof between ImpossibleInstanceofInTrait\Dog and stdClass will always evaluate to false.',
+				25,
+				$tipText,
+			],
+		]);
 	}
 
 }

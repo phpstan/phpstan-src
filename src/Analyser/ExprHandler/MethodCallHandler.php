@@ -288,12 +288,16 @@ final class MethodCallHandler implements ExprHandler
 	{
 		if ($expr->name instanceof Identifier) {
 			if ($scope->nativeTypesPromoted) {
+				$nativeType = $scope->getNativeType($expr->var);
 				$methodReflection = $scope->getMethodReflection(
-					$scope->getNativeType($expr->var),
+					$nativeType,
 					$expr->name->name,
 				);
 				if ($methodReflection === null) {
-					$returnType = new ErrorType();
+					$nativeObjectType = $nativeType->getObjectTypeOrClassStringObjectType();
+					$returnType = $nativeObjectType->isObject()->yes() && $nativeObjectType->getObjectClassNames() === []
+						? new MixedType()
+						: new ErrorType();
 				} else {
 					$returnType = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
 				}
@@ -301,14 +305,18 @@ final class MethodCallHandler implements ExprHandler
 				return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $returnType);
 			}
 
+			$calledOnType = $scope->getType($expr->var);
 			$returnType = $this->methodCallReturnTypeHelper->methodCallReturnType(
 				$scope,
-				$scope->getType($expr->var),
+				$calledOnType,
 				$expr->name->name,
 				$expr,
 			);
 			if ($returnType === null) {
-				$returnType = new ErrorType();
+				$objectType = $calledOnType->getObjectTypeOrClassStringObjectType();
+				$returnType = $objectType->isObject()->yes() && $objectType->getObjectClassNames() === []
+					? new MixedType()
+					: new ErrorType();
 			}
 			return NullsafeShortCircuitingHelper::getType($scope, $expr->var, $returnType);
 		}

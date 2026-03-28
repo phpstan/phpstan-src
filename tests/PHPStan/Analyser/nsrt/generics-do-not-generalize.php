@@ -97,7 +97,7 @@ function (): void {
 	/** @var list<string> $a */
 	$a = doFoo();
 
-	assertType('ArrayIterator<int, string>', new ArrayIterator($a));
+	assertType('ArrayIterator<int<0, max>, string>', new ArrayIterator($a));
 };
 
 /**
@@ -115,7 +115,7 @@ function (): void {
 	/** @var list<string> $a */
 	$a = doFoo();
 
-	assertType('ArrayIterator<int, string>', createArrayIterator($a));
+	assertType('ArrayIterator<int<0, max>, string>', createArrayIterator($a));
 };
 
 /** @template T */

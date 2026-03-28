@@ -142,9 +142,7 @@ final class TemplateTypeHelper
 	{
 		if (!$templateType->getVariance()->covariant()) {
 			$isArrayKey = $templateType->getBound()->describe(VerbosityLevel::precise()) === '(int|string)';
-			if ($type->isScalar()->yes() && $isArrayKey) {
-				$type = $type->generalize(GeneralizePrecision::templateArgument());
-			} elseif ($type->isConstantValue()->yes() && (!$templateType->getBound()->isScalar()->yes() || $isArrayKey)) {
+			if ($type->isConstantValue()->yes() && ($isArrayKey || !$templateType->getBound()->isScalar()->yes())) {
 				$type = $type->generalize(GeneralizePrecision::templateArgument());
 			}
 		}

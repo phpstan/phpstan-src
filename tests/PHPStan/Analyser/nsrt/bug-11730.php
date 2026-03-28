@@ -73,7 +73,7 @@ function doBaz(array $data): void {
 	assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($data, Asserter::checkFooStatic(...)));
 }
 
-class CallableAsserter {
+class CallableAsserterConditionalReturn {
 	/** @return ($value is Foo ? true : false) */
 	function __invoke(mixed $value): bool {
 		return $value instanceof Foo;
@@ -81,4 +81,14 @@ class CallableAsserter {
 }
 
 $data = [new Foo, new Foo];
-assertType('array<0|1, Bug11730\Foo>', array_filter($data, new CallableAsserter())); // could be array{Foo, Foo}
+assertType('array<0|1, Bug11730\Foo>', array_filter($data, new CallableAsserterConditionalReturn())); // could be array{Foo, Foo}
+
+class CallableAssertIfTrue {
+	/** @phpstan-assert-if-true Foo $value */
+	function __invoke(mixed $value): bool {
+		return $value instanceof Foo;
+	}
+}
+
+$data = [new Foo, new Foo];
+assertType('array<0|1, Bug11730\Foo>', array_filter($data, new CallableAssertIfTrue())); // could be array{Foo, Foo}

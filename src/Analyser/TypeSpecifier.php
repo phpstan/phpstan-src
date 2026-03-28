@@ -19,6 +19,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\ExprHandler\BooleanAndHandler;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -98,6 +99,8 @@ final class TypeSpecifier
 {
 
 	private const MAX_ACCESSORIES_LIMIT = 8;
+
+	private const BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH = 4;
 
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
@@ -731,6 +734,13 @@ final class TypeSpecifier
 			if (!$scope instanceof MutatingScope) {
 				throw new ShouldNotHappenException();
 			}
+
+			// For deep BooleanOr chains, flatten and process all arms at once
+			// to avoid O(n^2) recursive filterByFalseyValue calls
+			if (BooleanAndHandler::getBooleanExpressionDepth($expr) > self::BOOLEAN_EXPRESSION_MAX_PROCESS_DEPTH) {
+				return $this->specifyTypesForFlattenedBooleanOr($scope, $expr, $context);
+			}
+
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context)->setRootExpr($expr);
 			$rightScope = $scope->filterByFalseyValue($expr->left);
 			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context)->setRootExpr($expr);
@@ -1965,6 +1975,60 @@ final class TypeSpecifier
 		}
 
 		return [];
+	}
+
+	/**
+	 * Flatten a deep BooleanOr chain into leaf expressions and process them
+	 * without recursive filterByFalseyValue calls. This reduces O(n^2) to O(n)
+	 * for chains with many arms (e.g., 80+ === comparisons in ||).
+	 */
+	private function specifyTypesForFlattenedBooleanOr(
+		MutatingScope $scope,
+		BooleanOr|LogicalOr $expr,
+		TypeSpecifierContext $context,
+	): SpecifiedTypes
+	{
+		// Collect all leaf expressions from the chain
+		$arms = [];
+		$current = $expr;
+		while ($current instanceof BooleanOr || $current instanceof LogicalOr) {
+			$arms[] = $current->right;
+			$current = $current->left;
+		}
+		$arms[] = $current; // leftmost leaf
+		$arms = array_reverse($arms);
+
+		if ($context->false() || $context->falsey()) {
+			// Falsey: all arms are false → union all SpecifiedTypes
+			$result = new SpecifiedTypes([], []);
+			foreach ($arms as $arm) {
+				$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
+				$result = $result->unionWith($armTypes);
+			}
+			return $result->setRootExpr($expr);
+		}
+
+		// Truthy: at least one arm is true → intersect all normalized SpecifiedTypes
+		$armSpecifiedTypes = [];
+		foreach ($arms as $arm) {
+			$armTypes = $this->specifyTypesInCondition($scope, $arm, $context);
+			$armSpecifiedTypes[] = $armTypes->normalize($scope);
+		}
+
+		$types = $armSpecifiedTypes[0];
+		for ($i = 1; $i < count($armSpecifiedTypes); $i++) {
+			$types = $types->intersectWith($armSpecifiedTypes[$i]);
+		}
+
+		$result = new SpecifiedTypes(
+			$types->getSureTypes(),
+			$types->getSureNotTypes(),
+		);
+		if ($types->shouldOverwrite()) {
+			$result = $result->setAlwaysOverwriteTypes();
+		}
+
+		return $result->setRootExpr($expr);
 	}
 
 	/**

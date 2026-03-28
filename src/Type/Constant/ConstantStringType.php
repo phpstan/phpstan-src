@@ -19,6 +19,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -459,7 +460,9 @@ class ConstantStringType extends StringType implements ConstantScalarType
 				new AccessoryLiteralStringType(),
 			];
 
-			if (is_numeric($this->getValue())) {
+			if ((string) (int) $this->getValue() === $this->getValue()) {
+				$accessories[] = new AccessoryDecimalIntegerStringType();
+			} elseif (is_numeric($this->getValue())) {
 				$accessories[] = new AccessoryNumericStringType();
 			}
 

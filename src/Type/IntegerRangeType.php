@@ -10,9 +10,9 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -509,7 +509,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 				new StringType(),
 				new AccessoryLowercaseStringType(),
 				new AccessoryUppercaseStringType(),
-				new AccessoryNumericStringType(),
+				new AccessoryDecimalIntegerStringType(),
 				new AccessoryNonFalsyStringType(),
 			]);
 		}
@@ -518,7 +518,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			new StringType(),
 			new AccessoryLowercaseStringType(),
 			new AccessoryUppercaseStringType(),
-			new AccessoryNumericStringType(),
+			new AccessoryDecimalIntegerStringType(),
 		]);
 	}
 

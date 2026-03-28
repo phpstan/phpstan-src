@@ -200,11 +200,21 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return true;
 		}
 
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			if ($expr->dim === null) {
+				return false;
+			}
+
+			return $this->isDeterministicExpr($expr->var, $scope)
+				&& $this->isDeterministicExpr($expr->dim, $scope);
+		}
+
 		if ($expr instanceof Expr\MethodCall && $expr->name instanceof Node\Identifier) {
 			$callerType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($callerType, $expr->name->name);
 			if ($methodReflection !== null && $methodReflection->hasSideEffects()->no()) {
-				return $this->isDeterministicExpr($expr->var, $scope);
+				return $this->isDeterministicExpr($expr->var, $scope)
+					&& $this->areDeterministicArgs($expr->getArgs(), $scope);
 			}
 
 			return false;
@@ -214,13 +224,27 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$classType = $scope->resolveTypeByName($expr->class);
 			$methodReflection = $scope->getMethodReflection($classType, $expr->name->name);
 			if ($methodReflection !== null && $methodReflection->hasSideEffects()->no()) {
-				return true;
+				return $this->areDeterministicArgs($expr->getArgs(), $scope);
 			}
 
 			return false;
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param Node\Arg[] $args
+	 */
+	private function areDeterministicArgs(array $args, Scope $scope): bool
+	{
+		foreach ($args as $arg) {
+			if (!$this->isDeterministicExpr($arg->value, $scope)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private function isImplicitArrayCreation(Node\Expr\ArrayDimFetch $node, Scope $scope): TrinaryLogic

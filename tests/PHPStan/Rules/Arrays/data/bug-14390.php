@@ -133,6 +133,7 @@ class StaticProps
 function doWithMethods(WithMethods $withMethods) {
 	echo $withMethods->pureMethod()[array_key_first($withMethods->pureMethod())];
 	echo $withMethods->impureMethod()[array_key_first($withMethods->impureMethod())];
+	echo $withMethods->pureMethod($withMethods->impureMethod())[array_key_first($withMethods->pureMethod($withMethods->impureMethod()))];
 }
 
 class WithMethods {
@@ -140,10 +141,31 @@ class WithMethods {
 	 * @phpstan-pure
 	 * @return non-empty-array
 	 */
-	public function pureMethod():array {}
+	public function pureMethod(mixed ...$args):array {}
 	/**
 	 * @phpstan-impure
 	 * @return non-empty-array
 	 */
 	public function impureMethod():array {}
+}
+
+class NestedArray
+{
+	/**
+	 * @param array<string, non-empty-array<string, string>> $nested
+	 */
+	public function dimFetchDeterministic(array $nested, string $key): void
+	{
+		if (isset($nested[$key])) {
+			echo $nested[$key][array_key_first($nested[$key])];
+		}
+	}
+
+	/**
+	 * @param non-empty-array<string, non-empty-array<string, string>> $nested
+	 */
+	public function dimFetchWithMethodKey(WithMethods $w, array $nested): void
+	{
+		echo $nested[$w->impureMethod()][array_key_first($nested[$w->impureMethod()])];
+	}
 }

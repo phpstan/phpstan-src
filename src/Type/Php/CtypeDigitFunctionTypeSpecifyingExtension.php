@@ -13,7 +13,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;

@@ -129,3 +129,21 @@ class StaticProps
 		}
 	}
 }
+
+function doWithMethods(WithMethods $withMethods) {
+	echo $withMethods->pureMethod()[array_key_first($withMethods->pureMethod())];
+	echo $withMethods->impureMethod()[array_key_first($withMethods->impureMethod())];
+}
+
+class WithMethods {
+	/**
+	 * @phpstan-pure
+	 * @return non-empty-array
+	 */
+	public function pureMethod():array {}
+	/**
+	 * @phpstan-impure
+	 * @return non-empty-array
+	 */
+	public function impureMethod():array {}
+}

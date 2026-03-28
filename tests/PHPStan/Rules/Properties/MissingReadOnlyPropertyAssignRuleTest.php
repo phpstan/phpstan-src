@@ -26,6 +26,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'Bug10523\\Controller::init',
 					'Bug10523\\MultipleWrites::init',
 					'Bug10523\\SingleWriteInConstructorCalledMethod::init',
+					'Bug12253\\PayloadWithAdditionalConstructor::setUp',
 				],
 			),
 		);

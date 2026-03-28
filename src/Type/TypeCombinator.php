@@ -153,6 +153,33 @@ final class TypeCombinator
 			return new NeverType();
 		}
 
+		// Fast path for common 2-type cases
+		if ($typesCount === 2) {
+			$a = $types[0];
+			$b = $types[1];
+
+			// union(never, X) = X and union(X, never) = X
+			if ($a instanceof NeverType && !$a->isExplicit()) {
+				return $b;
+			}
+			if ($b instanceof NeverType && !$b->isExplicit()) {
+				return $a;
+			}
+
+			// union(mixed, X) = mixed (non-explicit, non-template, no subtracted)
+			if ($a instanceof MixedType && !$a->isExplicitMixed() && !$a instanceof TemplateMixedType && $a->getSubtractedType() === null) {
+				return $a;
+			}
+			if ($b instanceof MixedType && !$b->isExplicitMixed() && !$b instanceof TemplateMixedType && $b->getSubtractedType() === null) {
+				return $b;
+			}
+
+			// union(X, X) = X (same object identity)
+			if ($a === $b) {
+				return $a;
+			}
+		}
+
 		$alreadyNormalized = [];
 		$alreadyNormalizedCounter = 0;
 

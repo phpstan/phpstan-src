@@ -13,7 +13,7 @@ class HelloWorld
 	public function sayHello($mixed, int $int, string $string, $numericString, $nonEmptyString, bool $bool): void
 	{
 		if (ctype_digit((string) $mixed)) {
-			assertType('int<0, max>|numeric-string|true', $mixed);
+			assertType('int<0, max>|decimal-int-string|true', $mixed);
 		} else {
 			assertType('mixed~(int<0, max>|numeric-string|true)', $mixed);
 		}
@@ -41,7 +41,7 @@ class HelloWorld
 		assertType('int', $int);
 
 		if (ctype_digit((string) $string)) {
-			assertType('numeric-string', $string);
+			assertType('decimal-int-string', $string);
 		} else {
 			assertType('string', $string);
 		}
@@ -54,10 +54,11 @@ class HelloWorld
 		}
 		assertType('string', $string);
 
+		// see https://3v4l.org/1Qrlg#veol
 		if (ctype_digit((string) $numericString)) {
 			assertType('numeric-string', $numericString);
 		} else {
-			assertType('*NEVER*', $numericString);
+			assertType('numeric-string', $numericString);
 		}
 		assertType('numeric-string', $numericString);
 

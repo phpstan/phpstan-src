@@ -12,6 +12,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -56,7 +57,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 		if ($context->true()) {
 			$types[] = new IntersectionType([
 				new StringType(),
-				new AccessoryNumericStringType(),
+				new AccessoryDecimalIntegerStringType(),
 			]);
 		}
 
@@ -68,7 +69,7 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 				IntegerRangeType::fromInterval(0, null),
 				new IntersectionType([
 					new StringType(),
-					new AccessoryNumericStringType(),
+					new AccessoryDecimalIntegerStringType(),
 				]),
 				new ConstantBooleanType(true),
 			]);

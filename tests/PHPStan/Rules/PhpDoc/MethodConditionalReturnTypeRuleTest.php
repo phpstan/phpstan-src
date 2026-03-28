@@ -104,7 +104,12 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug9634(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-9634.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9634.php'], []);
+	}
+
+	public function testBug10938(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10938.php'], []);
 	}
 
 }

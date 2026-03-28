@@ -206,10 +206,7 @@ final class ClassStatementsGatherer
 			$assignedExpr = $node->getAssignedExpr();
 			if ($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
 				$propertyType = $scope->getType($propertyFetch);
-				if (
-					!$propertyType->isArray()->yes()
-					&& $propertyType->isObject()->yes()
-				) {
+				if (!$propertyType->isObject()->no()) {
 					$this->propertyUsages[] = new PropertyRead($propertyFetch, $scope);
 				}
 			}

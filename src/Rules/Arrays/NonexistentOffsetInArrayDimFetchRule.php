@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\NullsafeOperatorHelper;
@@ -122,7 +123,8 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
+				$this->isDeterministicExpr($node->var, $scope)
+				&& $this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {
@@ -145,7 +147,8 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayType = $scope->getType($arrayArg);
 
 			if (
-				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
+				$this->isDeterministicExpr($node->var, $scope)
+				&& $this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isArray()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 				&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
@@ -166,7 +169,8 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$arrayArg = $node->dim->left->getArgs()[0]->value;
 			$arrayType = $scope->getType($arrayArg);
 			if (
-				$this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
+				$this->isDeterministicExpr($node->var, $scope)
+				&& $this->exprPrinter->printExpr($arrayArg) === $this->exprPrinter->printExpr($node->var)
 				&& $arrayType->isList()->yes()
 				&& $arrayType->isIterableAtLeastOnce()->yes()
 			) {
@@ -180,6 +184,43 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$unknownClassPattern,
 			$dimType,
 		);
+	}
+
+	private function isDeterministicExpr(Expr $expr, Scope $scope): bool
+	{
+		if ($expr instanceof Variable) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return $this->isDeterministicExpr($expr->var, $scope);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\MethodCall && $expr->name instanceof Node\Identifier) {
+			$callerType = $scope->getType($expr->var);
+			$methodReflection = $scope->getMethodReflection($callerType, $expr->name->name);
+			if ($methodReflection !== null && $methodReflection->hasSideEffects()->no()) {
+				return $this->isDeterministicExpr($expr->var, $scope);
+			}
+
+			return false;
+		}
+
+		if ($expr instanceof Expr\StaticCall && $expr->name instanceof Node\Identifier && $expr->class instanceof Node\Name) {
+			$classType = $scope->resolveTypeByName($expr->class);
+			$methodReflection = $scope->getMethodReflection($classType, $expr->name->name);
+			if ($methodReflection !== null && $methodReflection->hasSideEffects()->no()) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return false;
 	}
 
 	private function isImplicitArrayCreation(Node\Expr\ArrayDimFetch $node, Scope $scope): TrinaryLogic

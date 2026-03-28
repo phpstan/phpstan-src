@@ -26,6 +26,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'Bug10523\\Controller::init',
 					'Bug10523\\MultipleWrites::init',
 					'Bug10523\\SingleWriteInConstructorCalledMethod::init',
+					'Bug12253\\PayloadWithAdditionalConstructor::setUp',
 				],
 			),
 		);
@@ -340,6 +341,12 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	public function testBug11828(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11828.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4')]
+	public function testBug12253(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12253.php'], []);
 	}
 
 }

@@ -166,10 +166,9 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			$initializedInConstructor = array_diff_key($uninitializedProperties, $this->collectUninitializedProperties([$classReflection->getConstructor()->getName()], $uninitializedProperties));
 		}
 
-		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $constructors, $initializedInConstructor);
+		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $constructors, $initializedInConstructor, $constructors);
 		$prematureAccess = [];
 		$additionalAssigns = [];
-
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
@@ -211,7 +210,10 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 			if ($usage instanceof PropertyWrite) {
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
-					$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+					$hasInitialization = $initializedPropertiesMap[$propertyName];
+					if (in_array($function->getName(), $constructors, true)) {
+						$hasInitialization = $hasInitialization->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+					}
 					if (
 						!$hasInitialization->no()
 						&& !$usage->isPromotedPropertyWrite()
@@ -318,6 +320,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @param array<string, TrinaryLogic> $initialInitializedProperties
 	 * @param array<string, array<string, TrinaryLogic>> $initializedProperties
 	 * @param array<string, ClassPropertyNode> $initializedInConstructorProperties
+	 * @param string[] $originalConstructors
 	 *
 	 * @return array<string, array<string, TrinaryLogic>>
 	 */
@@ -327,6 +330,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		array $initializedProperties,
 		array $methods,
 		array $initializedInConstructorProperties,
+		array $originalConstructors,
 	): array
 	{
 		$originalMap = $initializedProperties;
@@ -363,7 +367,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 
-			if ($inMethod->getName() !== '__construct') {
+			if ($inMethod->getName() !== '__construct' && in_array($inMethod->getName(), $originalConstructors, true)) {
 				foreach (array_keys($initializedInConstructorProperties) as $propertyName) {
 					$initializedProperties[$inMethod->getName()][$propertyName] = TrinaryLogic::createYes();
 				}
@@ -391,7 +395,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			return $initializedProperties;
 		}
 
-		return $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $methods, $initializedInConstructorProperties);
+		return $this->getMethodsCalledFromConstructor($classReflection, $initialInitializedProperties, $initializedProperties, $methods, $initializedInConstructorProperties, $originalConstructors);
 	}
 
 	/**

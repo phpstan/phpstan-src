@@ -13,8 +13,8 @@ class HelloWorld
 	public function sayHello(string $class, string $method, string $property): void
 	{
 		assertType('mixed', $class::foo());
-		assertType('mixed', $class->foo());
-		assertType('mixed', $class?->foo());
+		assertType('*ERROR*', $class->foo());
+		assertType('*ERROR*', $class?->foo());
 		assertType('mixed', $class::$method());
 		assertType('mixed', $class->$property);
 		assertType('mixed', $class?->$property);

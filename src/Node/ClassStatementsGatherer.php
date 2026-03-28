@@ -20,7 +20,6 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use ReflectionProperty;
 use function count;
@@ -209,7 +208,7 @@ final class ClassStatementsGatherer
 				$propertyType = $scope->getType($propertyFetch);
 				if (
 					!$propertyType->isArray()->yes()
-					&& (new ObjectType(\ArrayAccess::class))->isSuperTypeOf($propertyType)->yes()
+					&& $propertyType->isObject()->yes()
 				) {
 					$this->propertyUsages[] = new PropertyRead($propertyFetch, $scope);
 				}

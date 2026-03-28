@@ -281,6 +281,30 @@ class TemplateTypeTest extends PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createYes(),
 			],
+			23 => [
+				$templateType('T', null),
+				new NeverType(),
+				TrinaryLogic::createYes(), // T isSuperTypeTo *NEVER* - never is bottom type
+				TrinaryLogic::createMaybe(), // *NEVER* isSuperTypeTo T - T could be never
+			],
+			24 => [
+				$templateType('T', null),
+				new NonAcceptingNeverType(),
+				TrinaryLogic::createYes(), // T isSuperTypeTo never - never is bottom type
+				TrinaryLogic::createMaybe(), // never isSuperTypeTo T - T could be never
+			],
+			25 => [
+				$templateType('T', new ObjectType('DateTime')),
+				new NeverType(),
+				TrinaryLogic::createYes(), // (T of DateTime) isSuperTypeTo *NEVER* - never is bottom type
+				TrinaryLogic::createMaybe(), // *NEVER* isSuperTypeTo (T of DateTime) - T could be never
+			],
+			26 => [
+				$templateType('T', new ObjectType('DateTime')),
+				new NonAcceptingNeverType(),
+				TrinaryLogic::createYes(), // (T of DateTime) isSuperTypeTo never - never is bottom type
+				TrinaryLogic::createMaybe(), // never isSuperTypeTo (T of DateTime) - T could be never
+			],
 		];
 	}
 

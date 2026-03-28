@@ -52,4 +52,43 @@ class Foo
 			echo $sample->fields[array_key_last($sample->fields)];
 		}
 	}
+
+	public function arrayRand(
+		Sample $sample,
+	): void {
+		if ($sample->fields !== []) {
+			echo $sample->fields[array_rand($sample->fields)];
+		}
+	}
+
+	/**
+	 * @param non-empty-list<string> $list
+	 */
+	public function countMinus1(
+		array $list,
+	): void {
+		echo $list[count($list) - 1];
+	}
+}
+
+readonly class SampleList
+{
+	/**
+	 * @param list<string> $items
+	 */
+	public function __construct(
+		public array $items = [],
+	) {
+	}
+}
+
+class Bar
+{
+	public function countMinus1Property(
+		SampleList $sample,
+	): void {
+		if ($sample->items !== []) {
+			echo $sample->items[count($sample->items) - 1];
+		}
+	}
 }

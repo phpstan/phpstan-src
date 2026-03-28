@@ -56,7 +56,7 @@ class HelloWorld
 
 		// see https://3v4l.org/1Qrlg#veol
 		if (ctype_digit((string) $numericString)) {
-			assertType('numeric-string', $numericString);
+			assertType('decimal-int-string', $numericString);
 		} else {
 			assertType('numeric-string', $numericString);
 		}

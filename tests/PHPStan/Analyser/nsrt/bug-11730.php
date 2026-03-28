@@ -72,3 +72,13 @@ function doBaz(array $data): void {
 	assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($data, Asserter::isFooStatic(...)));
 	assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($data, Asserter::checkFooStatic(...)));
 }
+
+class CallableAsserter {
+	/** @return ($value is Foo ? true : false) */
+	function __invoke(mixed $value): bool {
+		return $value instanceof Foo;
+	}
+}
+
+$data = [new Foo, new Foo];
+assertType('array<0|1, Bug11730\Foo>', array_filter($data, new CallableAsserter())); // could be array{Foo, Foo}

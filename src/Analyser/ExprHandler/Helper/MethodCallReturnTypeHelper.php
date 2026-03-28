@@ -8,13 +8,10 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
-use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
-use function substr;
 
 #[AutowiredService]
 final class MethodCallReturnTypeHelper
@@ -93,96 +90,7 @@ final class MethodCallReturnTypeHelper
 			return VoidToNullTypeTransformer::transform(TypeCombinator::union(...$resolvedTypes), $methodCall);
 		}
 
-		$returnType = $parametersAcceptor->getReturnType();
-		$returnType = $this->narrowReturnTypeByAssertions($returnType, $methodReflection->getAsserts(), $normalizedMethodCall, $scope, $parametersAcceptor);
-
-		return VoidToNullTypeTransformer::transform($returnType, $methodCall);
-	}
-
-	private function narrowReturnTypeByAssertions(
-		Type $returnType,
-		\PHPStan\Reflection\Assertions $assertions,
-		MethodCall|Expr\StaticCall $call,
-		MutatingScope $scope,
-		ParametersAcceptor $parametersAcceptor,
-	): Type
-	{
-		if (!$returnType->isBoolean()->yes() || $returnType->isTrue()->yes() || $returnType->isFalse()->yes()) {
-			return $returnType;
-		}
-
-		$assertsIfFalse = $assertions->getAssertsIfFalse();
-		$assertsIfTrue = $assertions->getAssertsIfTrue();
-
-		if (count($assertsIfFalse) === 0 && count($assertsIfTrue) === 0) {
-			return $returnType;
-		}
-
-		$argTypes = [];
-		$parameters = $parametersAcceptor->getParameters();
-		foreach ($call->getArgs() as $i => $arg) {
-			$name = null;
-			if ($arg->name !== null) {
-				$name = $arg->name->toString();
-			} elseif (isset($parameters[$i])) {
-				$name = $parameters[$i]->getName();
-			}
-			if ($name !== null) {
-				$argTypes[$name] = $scope->getType($arg->value);
-			}
-		}
-
-		foreach ($assertsIfFalse as $assert) {
-			$param = $assert->getParameter();
-			if ($param->describe() !== $param->getParameterName()) {
-				continue;
-			}
-
-			$paramName = substr($param->getParameterName(), 1);
-			if (!isset($argTypes[$paramName])) {
-				continue;
-			}
-
-			$actualType = $argTypes[$paramName];
-			$assertedType = $assert->getType();
-
-			if ($assert->isNegated()) {
-				if ($assertedType->isSuperTypeOf($actualType)->yes()) {
-					return new ConstantBooleanType(true);
-				}
-			} else {
-				if ($assertedType->isSuperTypeOf($actualType)->no()) {
-					return new ConstantBooleanType(true);
-				}
-			}
-		}
-
-		foreach ($assertsIfTrue as $assert) {
-			$param = $assert->getParameter();
-			if ($param->describe() !== $param->getParameterName()) {
-				continue;
-			}
-
-			$paramName = substr($param->getParameterName(), 1);
-			if (!isset($argTypes[$paramName])) {
-				continue;
-			}
-
-			$actualType = $argTypes[$paramName];
-			$assertedType = $assert->getType();
-
-			if ($assert->isNegated()) {
-				if ($assertedType->isSuperTypeOf($actualType)->yes()) {
-					return new ConstantBooleanType(false);
-				}
-			} else {
-				if ($assertedType->isSuperTypeOf($actualType)->no()) {
-					return new ConstantBooleanType(false);
-				}
-			}
-		}
-
-		return $returnType;
+		return VoidToNullTypeTransformer::transform($parametersAcceptor->getReturnType(), $methodCall);
 	}
 
 }

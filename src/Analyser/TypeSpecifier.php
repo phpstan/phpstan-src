@@ -494,19 +494,11 @@ final class TypeSpecifier
 
 			$leftExpr = $expr->left;
 			if ($leftExpr instanceof Expr\Cast) {
-				$castedType = $scope->getType($leftExpr);
-				$innerType = $scope->getType($leftExpr->expr);
-				if ($castedType->equals($innerType)) {
-					$leftExpr = $leftExpr->expr;
-				}
+				$leftExpr = $leftExpr->expr;
 			}
 			$rightExpr = $expr->right;
 			if ($rightExpr instanceof Expr\Cast) {
-				$castedType = $scope->getType($rightExpr);
-				$innerType = $scope->getType($rightExpr->expr);
-				if ($castedType->equals($innerType)) {
-					$rightExpr = $rightExpr->expr;
-				}
+				$rightExpr = $rightExpr->expr;
 			}
 
 			if ($context->true()) {

@@ -2,9 +2,12 @@
 
 namespace PHPStan\Node\Property;
 
+use PhpParser\Node\Expr\AssignRef;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Node\PropertyAssignNode;
 
 /**
  * @api
@@ -12,7 +15,7 @@ use PHPStan\Analyser\Scope;
 final class PropertyWrite
 {
 
-	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite)
+	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope, private bool $promotedPropertyWrite, private ClassPropertyNode|PropertyAssignNode|AssignRef|null $originalNode = null)
 	{
 	}
 
@@ -32,6 +35,11 @@ final class PropertyWrite
 	public function isPromotedPropertyWrite(): bool
 	{
 		return $this->promotedPropertyWrite;
+	}
+
+	public function getOriginalNode(): ClassPropertyNode|PropertyAssignNode|AssignRef|null
+	{
+		return $this->originalNode;
 	}
 
 }

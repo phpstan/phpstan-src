@@ -813,6 +813,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4918(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4918.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.1')]
 	public function testBug4061(): void
 	{

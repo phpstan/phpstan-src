@@ -92,3 +92,40 @@ class Bar
 		}
 	}
 }
+
+class StaticProps
+{
+	/** @var array<string, string> */
+	public static array $fields = [];
+
+	/** @var list<string> */
+	public static array $items = [];
+
+	public function arrayKeyFirstStatic(): void
+	{
+		if (self::$fields !== []) {
+			echo self::$fields[array_key_first(self::$fields)];
+		}
+	}
+
+	public function arrayKeyLastStatic(): void
+	{
+		if (self::$fields !== []) {
+			echo self::$fields[array_key_last(self::$fields)];
+		}
+	}
+
+	public function arrayRandStatic(): void
+	{
+		if (self::$fields !== []) {
+			echo self::$fields[array_rand(self::$fields)];
+		}
+	}
+
+	public function countMinus1Static(): void
+	{
+		if (self::$items !== []) {
+			echo self::$items[count(self::$items) - 1];
+		}
+	}
+}

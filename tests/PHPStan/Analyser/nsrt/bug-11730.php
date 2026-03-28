@@ -6,7 +6,9 @@ namespace Bug11730;
 
 use function PHPStan\Testing\assertType;
 
-class Foo {}
+class Foo {
+	public bool $active = false;
+}
 
 /** @return ($value is Foo ? true : false) */
 function isFoo(mixed $value): bool {
@@ -92,3 +94,11 @@ class CallableAssertIfTrue {
 
 $data = [new Foo, new Foo];
 assertType('array<0|1, Bug11730\Foo>', array_filter($data, new CallableAssertIfTrue())); // could be array{Foo, Foo}
+
+/** @phpstan-assert-if-true =Foo $value */
+function checkFooAndMore(mixed $value): bool {
+	return $value instanceof Foo && $value->active;
+}
+
+$data = [new Foo, new Foo];
+assertType('array{0?: Bug11730\Foo, 1?: Bug11730\Foo}', array_filter($data, checkFooAndMore(...)));

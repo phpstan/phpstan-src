@@ -210,10 +210,6 @@ class IssetRuleTest extends RuleTestCase
 				'Property IssetNativePropertyTypes\Foo::$isAssignedBefore (int) in isset() is not nullable.',
 				20,
 			],
-			[
-				'Property IssetNativePropertyTypes\Foo::$canBeUninitialized (int) in isset() is not nullable.',
-				22,
-			],
 		]);
 	}
 

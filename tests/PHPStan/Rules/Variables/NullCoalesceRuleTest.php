@@ -114,10 +114,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 			],
 		];
 		$errors[] = [
-			'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
-			136,
-		];
-		$errors[] = [
 			'Variable $foo on left side of ?? is never defined.',
 			141,
 		];
@@ -379,7 +375,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
 			[
 				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
-				12,
+				17,
 			],
 		]);
 	}

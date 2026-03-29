@@ -197,6 +197,11 @@ final class IssetCheck
 
 						return null;
 					}
+
+					$nativeReflection = $propertyReflection->getNativeReflection();
+					if ($nativeReflection !== null && !$nativeReflection->getNativeReflection()->hasDefaultValue()) {
+						return $this->checkUndefined($expr->var, $scope, $operatorDescription, $identifier);
+					}
 				}
 			}
 

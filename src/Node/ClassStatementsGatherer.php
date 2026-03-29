@@ -13,6 +13,8 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
+use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
@@ -200,7 +202,15 @@ final class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof PropertyAssignNode) {
-			$this->propertyUsages[] = new PropertyWrite($node->getPropertyFetch(), $scope, false);
+			$propertyFetch = $node->getPropertyFetch();
+			$assignedExpr = $node->getAssignedExpr();
+			if ($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof SetExistingOffsetValueTypeExpr) {
+				$propertyType = $scope->getType($propertyFetch);
+				if (!$propertyType->isObject()->no()) {
+					$this->propertyUsages[] = new PropertyRead($propertyFetch, $scope);
+				}
+			}
+			$this->propertyUsages[] = new PropertyWrite($propertyFetch, $scope, false);
 			$this->propertyAssigns[] = new PropertyAssign($node, $scope);
 			return;
 		}

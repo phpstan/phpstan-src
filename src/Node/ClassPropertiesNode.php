@@ -212,7 +212,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				if (array_key_exists($propertyName, $initializedPropertiesMap)) {
 					$hasInitialization = $initializedPropertiesMap[$propertyName];
 					if (in_array($function->getName(), $constructors, true)) {
-						$hasInitialization = $hasInitialization->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+						$hasInitialization = $hasInitialization->or(self::hasPropertyInitialization($usageScope, $propertyName));
 					}
 					if (
 						!$hasInitialization->no()
@@ -234,9 +234,9 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				) {
 					continue;
 				}
-				$hasInitialization = $initializedPropertiesMap[$propertyName]->or($usageScope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+				$hasInitialization = $initializedPropertiesMap[$propertyName]->or(self::hasPropertyInitialization($usageScope, $propertyName));
 				if (!$hasInitialization->yes() && $usageScope->isInAnonymousFunction() && $usageScope->getParentScope() !== null) {
-					$hasInitialization = $hasInitialization->or($usageScope->getParentScope()->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+					$hasInitialization = $hasInitialization->or(self::hasPropertyInitialization($usageScope->getParentScope(), $propertyName));
 				}
 				if (!$hasInitialization->yes()) {
 					$prematureAccess[] = [
@@ -304,7 +304,7 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			foreach (array_keys($uninitializedProperties) as $propertyName) {
-				if (!$methodScope->hasExpressionType(new PropertyInitializationExpr($propertyName))->yes()) {
+				if (!self::hasPropertyInitialization($methodScope, $propertyName)->yes()) {
 					continue;
 				}
 
@@ -405,10 +405,21 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	private function getInitializedProperties(Scope $scope, array $initialInitializedProperties): array
 	{
 		foreach ($initialInitializedProperties as $propertyName => $isInitialized) {
-			$initialInitializedProperties[$propertyName] = $isInitialized->or($scope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+			$initialInitializedProperties[$propertyName] = $isInitialized->or(self::hasPropertyInitialization($scope, $propertyName));
 		}
 
 		return $initialInitializedProperties;
+	}
+
+	private static function hasPropertyInitialization(Scope $scope, string $propertyName): TrinaryLogic
+	{
+		$initExpr = new PropertyInitializationExpr($propertyName);
+		$has = $scope->hasExpressionType($initExpr);
+		if ($has->yes() && $scope->getType($initExpr) instanceof NeverType) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $has;
 	}
 
 	/**

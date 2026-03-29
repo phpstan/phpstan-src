@@ -180,4 +180,15 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug13853(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13853.php'], [
+			[
+				'Readonly property Bug13853\NoIssetGuard::$prop is assigned outside of the constructor.',
+				58,
+			],
+		]);
+	}
+
 }

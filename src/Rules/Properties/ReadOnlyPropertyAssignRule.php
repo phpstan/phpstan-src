@@ -6,6 +6,7 @@ use ArrayAccess;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\UnsetOffsetExpr;
 use PHPStan\Node\PropertyAssignNode;
@@ -14,6 +15,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use function in_array;
@@ -107,6 +109,16 @@ final class ReadOnlyPropertyAssignRule implements Rule
 			if (
 				($assignedExpr instanceof SetOffsetValueTypeExpr || $assignedExpr instanceof UnsetOffsetExpr)
 				&& (new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($assignedExpr->getVar()))->yes()
+			) {
+				continue;
+			}
+
+			if (
+				$propertyFetch->var instanceof Node\Expr\Variable
+				&& $propertyFetch->var->name === 'this'
+				&& $propertyFetch->name instanceof Node\Identifier
+				&& $scope->hasExpressionType(new PropertyInitializationExpr($propertyFetch->name->toString()))->yes()
+				&& $scope->getType(new PropertyInitializationExpr($propertyFetch->name->toString())) instanceof NeverType
 			) {
 				continue;
 			}

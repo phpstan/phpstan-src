@@ -21,6 +21,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -1028,7 +1029,21 @@ final class TypeSpecifier
 					}
 				}
 
-				return new SpecifiedTypes();
+				if (
+						$issetExpr instanceof PropertyFetch
+						&& $issetExpr->var instanceof Expr\Variable
+						&& $issetExpr->var->name === 'this'
+						&& $issetExpr->name instanceof Node\Identifier
+					) {
+						return $this->create(
+							new PropertyInitializationExpr($issetExpr->name->toString()),
+							new NeverType(),
+							TypeSpecifierContext::createTrue(),
+							$scope,
+						)->setRootExpr($expr);
+				}
+
+					return new SpecifiedTypes();
 			}
 
 			$tmpVars = [$issetExpr];

@@ -156,6 +156,7 @@ final class IssetCheck
 					&& $expr->var instanceof Expr\Variable
 					&& $expr->var->name === 'this'
 					&& $scope->hasExpressionType(new PropertyInitializationExpr($propertyReflection->getName()))->yes()
+					&& !$scope->getType(new PropertyInitializationExpr($propertyReflection->getName())) instanceof NeverType
 				) {
 					return $this->generateError(
 						$propertyReflection->getNativeType(),

@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -177,7 +179,15 @@ class StringType implements Type
 
 	public function toArrayKey(): Type
 	{
-		return $this;
+		$level = ReportUnsafeArrayStringKeyCastingToggle::getLevel();
+		if ($level !== ReportUnsafeArrayStringKeyCastingToggle::PREVENT) {
+			return $this;
+		}
+
+		return new UnionType([
+			new IntegerType(),
+			TypeCombinator::intersect($this, new AccessoryDecimalIntegerStringType(inverse: true)),
+		]);
 	}
 
 	public function toCoercedArgumentType(bool $strictTypes): Type

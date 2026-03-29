@@ -396,15 +396,15 @@ class NullCoalesceRuleTest extends RuleTestCase
 			],
 			[
 				'Property Bug14393\MyClassPhpDoc::$i (int) on left side of ?? is not nullable.',
-				32,
+				34,
 			],
 			[
 				'Property Bug14393\MyClass::$i (int) on left side of ?? is not nullable.',
-				68,
+				74,
 			],
 			[
 				'Property Bug14393\MyClassPhpDoc::$i (int) on left side of ?? is not nullable.',
-				76,
+				84,
 			],
 		]);
 	}

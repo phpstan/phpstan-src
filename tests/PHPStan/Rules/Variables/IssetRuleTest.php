@@ -526,4 +526,28 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9503.php'], []);
 	}
 
+	public function testBug14393(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-14393.php'], [
+			[
+				'Property Bug14393\MyClass::$i (int) in isset() is not nullable.',
+				12,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) in isset() is not nullable.',
+				35,
+			],
+			[
+				'Property Bug14393\MyClass::$i (int) in isset() is not nullable.',
+				75,
+			],
+			[
+				'Property Bug14393\MyClassPhpDoc::$i (int) in isset() is not nullable.',
+				85,
+			],
+		]);
+	}
+
 }

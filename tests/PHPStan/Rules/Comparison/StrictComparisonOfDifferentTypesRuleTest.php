@@ -1161,4 +1161,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11054(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11054.php'], [
+			[
+				'Strict comparison using === between mixed and array{INF} will always evaluate to false.',
+				47,
+				'Type array{INF} has already been eliminated from mixed.',
+			],
+		]);
+	}
+
 }

@@ -1,0 +1,5 @@
+parameters:
+    treatPhpDocTypesAsCertain: false
+    exceptions:
+        check:
+            missingCheckedExceptionInThrows: true

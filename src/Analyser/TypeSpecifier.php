@@ -2998,12 +2998,14 @@ final class TypeSpecifier
 				$never = new NeverType();
 				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
 				if ($leftExpr instanceof AlwaysRememberedExpr) {
-					$leftTypes = $this->create($unwrappedLeftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
+					$leftTypes = $this->create($leftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr)
+						->unionWith($this->create($unwrappedLeftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr));
 				} else {
 					$leftTypes = $this->create($leftExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				}
 				if ($rightExpr instanceof AlwaysRememberedExpr) {
-					$rightTypes = $this->create($unwrappedRightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
+					$rightTypes = $this->create($rightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr)
+						->unionWith($this->create($unwrappedRightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr));
 				} else {
 					$rightTypes = $this->create($rightExpr, $never, $contextForTypes, $scope)->setRootExpr($expr);
 				}

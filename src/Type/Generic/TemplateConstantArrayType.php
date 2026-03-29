@@ -35,4 +35,37 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		$this->default = $default;
 	}
 
+	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
+	{
+		$result = parent::setOffsetValueType($offsetType, $valueType, $unionValues);
+
+		if ($this->getBound()->isSuperTypeOf($result)->yes()) {
+			return $this;
+		}
+
+		return $result;
+	}
+
+	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type
+	{
+		$result = parent::setExistingOffsetValueType($offsetType, $valueType);
+
+		if ($this->getBound()->isSuperTypeOf($result)->yes()) {
+			return $this;
+		}
+
+		return $result;
+	}
+
+	public function unsetOffset(Type $offsetType, bool $preserveListCertainty = false): Type
+	{
+		$result = parent::unsetOffset($offsetType, $preserveListCertainty);
+
+		if ($this->getBound()->isSuperTypeOf($result)->yes()) {
+			return $this;
+		}
+
+		return $result;
+	}
+
 }

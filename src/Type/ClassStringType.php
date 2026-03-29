@@ -46,7 +46,7 @@ class ClassStringType extends StringType
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createNo();
 	}
 
 	public function isDecimalIntegerString(): TrinaryLogic

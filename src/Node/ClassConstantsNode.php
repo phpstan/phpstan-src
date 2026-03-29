@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Reflection\ClassReflection;
+use function array_map;
 
 /**
  * @api
@@ -16,7 +17,7 @@ final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 
 	/**
-	 * @param ClassConst[] $constants
+	 * @param ClassConstant[] $constants
 	 * @param ClassConstantFetch[] $fetches
 	 */
 	public function __construct(private ClassLike $class, private array $constants, private array $fetches, private ClassReflection $classReflection)
@@ -33,6 +34,14 @@ final class ClassConstantsNode extends NodeAbstract implements VirtualNode
 	 * @return ClassConst[]
 	 */
 	public function getConstants(): array
+	{
+		return array_map(static fn (ClassConstant $constant) => $constant->getNode(), $this->constants);
+	}
+
+	/**
+	 * @return ClassConstant[]
+	 */
+	public function getClassConstants(): array
 	{
 		return $this->constants;
 	}

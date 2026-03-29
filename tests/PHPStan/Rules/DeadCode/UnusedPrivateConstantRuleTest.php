@@ -88,6 +88,12 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9765.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testBug10690(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10690.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.3')]
 	public function testDynamicConstantFetch(): void
 	{

@@ -38,8 +38,13 @@ final class UnusedPrivateConstantRule implements Rule
 		$classType = new ObjectType($classReflection->getName(), classReflection: $classReflection);
 
 		$constants = [];
-		foreach ($node->getConstants() as $constant) {
+		foreach ($node->getClassConstants() as $classConstant) {
+			$constant = $classConstant->getNode();
 			if (!$constant->isPrivate()) {
+				continue;
+			}
+
+			if ($classConstant->isDeclaredInTrait()) {
 				continue;
 			}
 

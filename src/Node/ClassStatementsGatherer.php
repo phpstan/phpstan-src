@@ -47,7 +47,7 @@ final class ClassStatementsGatherer
 	/** @var array<int, PropertyWrite|PropertyRead> */
 	private array $propertyUsages = [];
 
-	/** @var Node\Stmt\ClassConst[] */
+	/** @var ClassConstant[] */
 	private array $constants = [];
 
 	/** @var ClassConstantFetch[] */
@@ -103,7 +103,7 @@ final class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return Node\Stmt\ClassConst[]
+	 * @return ClassConstant[]
 	 */
 	public function getConstants(): array
 	{
@@ -165,7 +165,7 @@ final class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof Node\Stmt\ClassConst) {
-			$this->constants[] = $node;
+			$this->constants[] = new ClassConstant($node, $scope->isInTrait());
 			return;
 		}
 		if ($node instanceof MethodCall || $node instanceof StaticCall) {

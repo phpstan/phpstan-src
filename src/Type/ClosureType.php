@@ -225,7 +225,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			return $this->objectType->accepts($type, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
+		return $this->isSuperTypeOfInternal($type, true, $strictTypes)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -237,7 +237,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->isSuperTypeOfInternal($type, false);
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): IsSuperTypeOfResult
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny, bool $strictTypes = true): IsSuperTypeOfResult
 	{
 		if ($type instanceof self) {
 			$parameterTypes = array_map(static fn ($parameter) => $parameter->getType(), $this->getParameters());
@@ -249,6 +249,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 				$this,
 				$variant,
 				$treatMixedAsAny,
+				$strictTypes,
 			);
 		}
 

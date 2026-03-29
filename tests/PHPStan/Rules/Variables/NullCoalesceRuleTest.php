@@ -8,6 +8,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NullCoalesceRule>
@@ -113,6 +114,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 				131,
 			],
 		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
+				136,
+			];
+		}
 		$errors[] = [
 			'Variable $foo on left side of ?? is never defined.',
 			141,

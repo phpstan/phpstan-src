@@ -377,6 +377,16 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4846(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4846.php'], [
+			[
+				'Property Bug4846\Foo::$alwaysString (string) on left side of ?? is not nullable.',
+				13,
+			],
+		]);
+	}
+
 	public function testBug14393(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14393.php'], [

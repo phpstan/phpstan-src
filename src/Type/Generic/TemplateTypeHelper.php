@@ -3,8 +3,11 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -147,6 +150,14 @@ final class TemplateTypeHelper
 			} elseif ($type->isConstantValue()->yes() && (!$templateType->getBound()->isScalar()->yes() || $isArrayKey)) {
 				$type = $type->generalize(GeneralizePrecision::templateArgument());
 			}
+
+			$type = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+				if ($type instanceof HasOffsetValueType || $type instanceof HasOffsetType) {
+					return new MixedType();
+				}
+
+				return $traverse($type);
+			});
 		}
 
 		return $type;

@@ -2070,7 +2070,7 @@ final class InitializerExprTypeResolver
 		return new TypeResult($resultType->toBoolean(), []);
 	}
 
-	private function containsNan(Type $type): bool
+	public function containsNan(Type $type): bool
 	{
 		if ($type instanceof ConstantFloatType && is_nan($type->getValue())) {
 			return true;

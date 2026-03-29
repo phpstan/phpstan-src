@@ -36,7 +36,10 @@ final class RicherScopeGetTypeHelper
 			&& is_string($expr->right->name)
 			&& $expr->left->name === $expr->right->name
 		) {
-			return new TypeResult(new ConstantBooleanType(true), []);
+			$varType = $scope->getType($expr->left);
+			if (!$this->initializerExprTypeResolver->containsNan($varType)) {
+				return new TypeResult(new ConstantBooleanType(true), []);
+			}
 		}
 
 		$leftType = $scope->getType($expr->left);

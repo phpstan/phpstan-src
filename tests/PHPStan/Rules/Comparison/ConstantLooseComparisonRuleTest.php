@@ -260,6 +260,14 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				'Loose comparison using == between list<mixed> and array{NAN} will always evaluate to false.',
 				10,
 			],
+			[
+				'Loose comparison using == between NAN and NAN will always evaluate to false.',
+				16,
+			],
+			[
+				'Loose comparison using == between array{NAN} and array{NAN} will always evaluate to false.',
+				18,
+			],
 		]);
 	}
 

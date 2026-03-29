@@ -109,7 +109,10 @@ final class BinaryOpHandler implements ExprHandler
 				&& is_string($expr->right->name)
 				&& $expr->left->name === $expr->right->name
 			) {
-				return new ConstantBooleanType(true);
+				$varType = $scope->getType($expr->left);
+				if (!$this->initializerExprTypeResolver->containsNan($varType)) {
+					return new ConstantBooleanType(true);
+				}
 			}
 
 			$leftType = $scope->getType($expr->left);

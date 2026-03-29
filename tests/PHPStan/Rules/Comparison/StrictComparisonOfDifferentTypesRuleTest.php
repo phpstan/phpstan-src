@@ -1195,6 +1195,14 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				'Strict comparison using === between list<mixed> and array{NAN} will always evaluate to false.',
 				11,
 			],
+			[
+				'Strict comparison using === between NAN and NAN will always evaluate to false.',
+				17,
+			],
+			[
+				'Strict comparison using === between array{NAN} and array{NAN} will always evaluate to false.',
+				19,
+			],
 		]);
 	}
 

@@ -27,6 +27,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_merge;
@@ -165,23 +166,62 @@ final class FilterFunctionReturnTypeHelper
 			return $mixedType;
 		}
 
-		$inputValueType = null;
+		// When input is definitely an array with REQUIRE/FORCE_ARRAY,
+		// use TypeTraverser to recursively filter each component of the value type
 		if ($inputIsArray->yes() && ($hasRequireArrayFlag->yes() || $hasForceArrayFlag->yes())) {
 			$inputArrayKeyType = $inputType->getIterableKeyType();
-			$inputType = $inputType->getIterableValueType();
-			$inputValueType = $inputType;
+			$inputValueType = $inputType->getIterableValueType();
 
-			// When the value type is a union of scalar and array types (e.g. int|array<int>),
-			// only use the scalar part for scalar filtering - array parts are handled separately
-			// via recursive filtering in addNestedArrayType
-			if ($inputType->isArray()->maybe()) {
-				$scalarPart = TypeCombinator::remove($inputType, new ArrayType($mixedType, $mixedType));
-				if (!$scalarPart instanceof NeverType) {
-					$inputType = $scalarPart;
+			$filteredValueType = TypeTraverser::map($inputValueType, function (Type $type, callable $traverse) use ($filterType, $flagsType, $filterValue, $defaultType, $mixedType, $hasOptions, $options): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
 				}
+				if ($type->isArray()->yes()) {
+					return $this->getType($type, $filterType, $flagsType);
+				}
+				$scalarResult = $this->filterScalarType($type, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
+				if ($type->isArray()->maybe()) {
+					return TypeCombinator::union($scalarResult, new ArrayType($mixedType, $mixedType));
+				}
+				return $scalarResult;
+			});
+
+			return new ArrayType($inputArrayKeyType, $filteredValueType);
+		}
+
+		$type = $this->filterScalarType($inputType, $filterValue, $defaultType, $flagsType, $mixedType, $hasOptions, $options);
+
+		if ($hasRequireArrayFlag->yes()) {
+			if (!$inputIsArray->no()) {
+				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+			}
+			$type = new ArrayType($mixedType, $type);
+			if (!$inputIsArray->yes()) {
+				$type = TypeCombinator::union($type, $defaultType);
 			}
 		}
 
+		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
+			if (!$inputIsArray->no()) {
+				$type = TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
+			}
+			return new ArrayType($mixedType, $type);
+		}
+
+		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
+			$type = TypeCombinator::remove($type, $defaultType);
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Applies the filter to a scalar input type (no array wrapping).
+	 *
+	 * @param array<string, ?Type> $options
+	 */
+	private function filterScalarType(Type $inputType, int $filterValue, Type $defaultType, ?Type $flagsType, MixedType $mixedType, TrinaryLogic $hasOptions, array $options): Type
+	{
 		if ($inputType->isScalar()->no() && $inputType->isNull()->no()) {
 			$exactType = $defaultType;
 		} else {
@@ -207,57 +247,6 @@ final class FilterFunctionReturnTypeHelper
 			if (!$defaultType->isSuperTypeOf($type)->yes()) {
 				$type = TypeCombinator::union($type, $defaultType);
 			}
-		}
-
-		if ($hasRequireArrayFlag->yes()) {
-			$type = $this->addNestedArrayType($type, $inputValueType, $inputIsArray, $filterType, $flagsType, $mixedType);
-			$type = new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-			if (!$inputIsArray->yes()) {
-				$type = TypeCombinator::union($type, $defaultType);
-			}
-		}
-
-		if ($hasRequireArrayFlag->no() && $hasForceArrayFlag->yes()) {
-			$type = $this->addNestedArrayType($type, $inputValueType, $inputIsArray, $filterType, $flagsType, $mixedType);
-			return new ArrayType($inputArrayKeyType ?? $mixedType, $type);
-		}
-
-		if ($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->yes()) {
-			$type = TypeCombinator::remove($type, $defaultType);
-		}
-
-		return $type;
-	}
-
-	private function addNestedArrayType(Type $type, ?Type $inputValueType, TrinaryLogic $inputIsArray, ?Type $filterType, ?Type $flagsType, MixedType $mixedType): Type
-	{
-		if ($inputValueType !== null) {
-			// Input was unwrapped - check if the value type could be an array
-			$valueTypeIsArray = $inputValueType->isArray();
-			if ($valueTypeIsArray->yes()) {
-				// Value type is definitely an array - recursively compute precise nested type
-				// Replace $type entirely since the scalar filtering path produces incorrect
-				// results for array inputs (arrays are recursively filtered, not failed)
-				return $this->getType($inputValueType, $filterType, $flagsType);
-			}
-			if ($valueTypeIsArray->maybe()) {
-				// Value type is a union of scalar and array types (e.g. int|array<int>)
-				// Try to extract the array part for precise recursive filtering
-				$inputArrayPart = TypeCombinator::intersect($inputValueType, new ArrayType($mixedType, $mixedType));
-				if (!$inputArrayPart instanceof NeverType && !$inputArrayPart->getIterableValueType() instanceof MixedType) {
-					$nestedType = $this->getType($inputArrayPart, $filterType, $flagsType);
-					return TypeCombinator::union($type, $nestedType);
-				}
-				// Fall back to generic array for mixed-like value types
-				return TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
-			}
-			// Value type is definitely not an array - don't add array to type
-			return $type;
-		}
-
-		// No unwrap happened (input is maybe-array, e.g. from filter_input with mixed)
-		if (!$inputIsArray->no()) {
-			return TypeCombinator::union($type, new ArrayType($mixedType, $mixedType));
 		}
 
 		return $type;

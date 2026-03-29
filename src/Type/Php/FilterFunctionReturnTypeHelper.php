@@ -151,7 +151,9 @@ final class FilterFunctionReturnTypeHelper
 
 		$inputIsArray = $inputType->isArray();
 		$hasRequireArrayFlag = $this->hasFlag('FILTER_REQUIRE_ARRAY', $flagsType);
-		$hasThrowOnFailureFlag = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+		$hasThrowOnFailureFlag = $this->phpVersion->getVersionId() >= 80500
+			? $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)
+			: TrinaryLogic::createNo();
 		if ($inputIsArray->no() && $hasRequireArrayFlag->yes()) {
 			if ($hasThrowOnFailureFlag->yes()) {
 				return new ErrorType();

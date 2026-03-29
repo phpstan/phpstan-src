@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
@@ -16,6 +17,7 @@ class FilterVarRuleTest extends RuleTestCase
 		return new FilterVarRule(
 			self::createReflectionProvider(),
 			self::getContainer()->getByType(FilterFunctionReturnTypeHelper::class),
+			self::getContainer()->getByType(PhpVersion::class),
 		);
 	}
 

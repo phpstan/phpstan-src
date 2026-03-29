@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -20,6 +21,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -29,6 +31,7 @@ final class FilterVarThrowTypeExtension implements DynamicFunctionThrowTypeExten
 	): bool
 	{
 		return $functionReflection->getName() === 'filter_var'
+			&& $this->phpVersion->getVersionId() >= 80500
 			&& $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null);
 	}
 

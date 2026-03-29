@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -23,6 +24,7 @@ final class FilterVarRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -44,7 +46,7 @@ final class FilterVarRule implements Rule
 
 		$args = $node->getArgs();
 
-		if ($this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)) {
+		if ($this->phpVersion->getVersionId() >= 80500 && $this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)) {
 			if (count($args) < 3) {
 				return [];
 			}

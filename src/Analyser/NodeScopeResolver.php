@@ -1393,6 +1393,61 @@ class NodeScopeResolver
 				$finalScope = $finalScope->assignExpression(new ForeachValueByRefExpr($stmt->valueVar), new MixedType(), new MixedType());
 			}
 
+			if (
+				$context->isTopLevel()
+				&& $isIterableAtLeastOnce->yes()
+				&& !$finalScopeResult->isAlwaysTerminating()
+				&& !$stmt->byRef
+				&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
+				&& $exprType->isConstantArray()->yes()
+			) {
+				$constantArrays = $exprType->getConstantArrays();
+				if (count($constantArrays) === 1 && count($constantArrays[0]->getValueTypes()) <= 32) {
+					$constArray = $constantArrays[0];
+					$unrolledScope = $scope;
+					$allIterationsComplete = true;
+
+					foreach ($constArray->getKeyTypes() as $i => $keyType) {
+						$valueType = $constArray->getValueTypes()[$i];
+						$iterScope = $unrolledScope->assignVariable(
+							$stmt->valueVar->name,
+							$valueType,
+							$valueType,
+							TrinaryLogic::createYes(),
+						);
+						if ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
+							$iterScope = $iterScope->assignVariable(
+								$stmt->keyVar->name,
+								$keyType,
+								$keyType,
+								TrinaryLogic::createYes(),
+							);
+						}
+
+						$unrollStorage = $originalStorage->duplicate();
+						$iterResult = $this->processStmtNodesInternal(
+							$stmt,
+							$stmt->stmts,
+							$iterScope,
+							$unrollStorage,
+							new NoopNodeCallback(),
+							$context->enterDeep(),
+						)->filterOutLoopExitPoints();
+
+						if ($iterResult->isAlwaysTerminating()) {
+							$allIterationsComplete = false;
+							break;
+						}
+
+						$unrolledScope = $iterResult->getScope();
+					}
+
+					if ($allIterationsComplete) {
+						$finalScope = $finalScope->applyNarrowingsFromForeachUnroll($scope, $unrolledScope);
+					}
+				}
+			}
+
 			return new InternalStatementResult(
 				$finalScope,
 				$finalScopeResult->hasYield() || $condResult->hasYield(),

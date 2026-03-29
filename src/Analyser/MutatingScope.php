@@ -62,6 +62,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -3830,6 +3831,122 @@ class MutatingScope implements Scope, NodeCallbackInvoker
 				$variableTypeHolder->getType(),
 				$variableTypeHolder->getCertainty()->and($nativeTypes[$variableExprString]->getCertainty()),
 			);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClasses,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
+	}
+
+	public function applyNarrowingsFromForeachUnroll(self $preLoopScope, self $unrolledScope): self
+	{
+		$expressionTypes = $this->expressionTypes;
+		$nativeTypes = $this->nativeExpressionTypes;
+		$changed = false;
+
+		foreach ($unrolledScope->expressionTypes as $exprString => $holder) {
+			if (!isset($preLoopScope->expressionTypes[$exprString])) {
+				continue;
+			}
+
+			if (!isset($expressionTypes[$exprString])) {
+				continue;
+			}
+
+			$unrolledType = $holder->getType();
+			$currentType = $expressionTypes[$exprString]->getType();
+
+			if ($unrolledType->equals($currentType)) {
+				continue;
+			}
+
+			// Extract accessory types from the unrolled type that the current type doesn't have
+			$newAccessories = [];
+			foreach (TypeUtils::getAccessoryTypes($unrolledType) as $accessoryType) {
+				if (!($accessoryType instanceof HasOffsetValueType) && !($accessoryType instanceof HasOffsetType)) {
+					continue;
+				}
+				$found = false;
+				foreach (TypeUtils::getAccessoryTypes($currentType) as $currentAccessory) {
+					if ($accessoryType->equals($currentAccessory)) {
+						$found = true;
+						break;
+					}
+				}
+				if ($found) {
+					continue;
+				}
+
+				$newAccessories[] = $accessoryType;
+			}
+
+			if ($newAccessories === []) {
+				continue;
+			}
+
+			$newType = TypeCombinator::intersect($currentType, ...$newAccessories);
+
+			$expressionTypes[$exprString] = new ExpressionTypeHolder(
+				$holder->getExpr(),
+				$newType,
+				$expressionTypes[$exprString]->getCertainty(),
+			);
+			$changed = true;
+
+			if (!isset($unrolledScope->nativeExpressionTypes[$exprString]) || !isset($nativeTypes[$exprString])) {
+				continue;
+			}
+
+			$unrolledNativeType = $unrolledScope->nativeExpressionTypes[$exprString]->getType();
+			$currentNativeType = $nativeTypes[$exprString]->getType();
+
+			$nativeAccessories = [];
+			foreach (TypeUtils::getAccessoryTypes($unrolledNativeType) as $accessoryType) {
+				if (!($accessoryType instanceof HasOffsetValueType) && !($accessoryType instanceof HasOffsetType)) {
+					continue;
+				}
+				$found = false;
+				foreach (TypeUtils::getAccessoryTypes($currentNativeType) as $currentAccessory) {
+					if ($accessoryType->equals($currentAccessory)) {
+						$found = true;
+						break;
+					}
+				}
+				if ($found) {
+					continue;
+				}
+
+				$nativeAccessories[] = $accessoryType;
+			}
+
+			if ($nativeAccessories === []) {
+				continue;
+			}
+
+			$nativeTypes[$exprString] = new ExpressionTypeHolder(
+				$holder->getExpr(),
+				TypeCombinator::intersect($currentNativeType, ...$nativeAccessories),
+				$nativeTypes[$exprString]->getCertainty(),
+			);
+		}
+
+		if (!$changed) {
+			return $this;
 		}
 
 		return $this->scopeFactory->create(

@@ -363,7 +363,11 @@ final class FunctionCallParametersCheck
 					!$parameter->passedByReference()->createsNewVariable()
 					|| (!$isBuiltin && !$argumentValueType instanceof ErrorType)
 				) {
-					$accepts = $this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
+					$callableStrictTypes = $scope->isDeclareStrictTypes();
+					if ($isBuiltin && $parameterType->isCallable()->yes()) {
+						$callableStrictTypes = false;
+					}
+					$accepts = $this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $callableStrictTypes);
 
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);

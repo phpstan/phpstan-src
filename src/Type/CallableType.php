@@ -139,7 +139,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true)->toAcceptsResult();
+		return $this->isSuperTypeOfInternal($type, true, $strictTypes)->toAcceptsResult();
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -151,7 +151,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->isSuperTypeOfInternal($type, false);
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny): IsSuperTypeOfResult
+	private function isSuperTypeOfInternal(Type $type, bool $treatMixedAsAny, bool $strictTypes = true): IsSuperTypeOfResult
 	{
 		$isCallable = new IsSuperTypeOfResult($type->isCallable(), []);
 		if ($isCallable->no()) {
@@ -180,12 +180,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 		$variantsResult = null;
 		foreach ($type->getCallableParametersAcceptors($scope) as $variant) {
-			$isBuiltinCallable = $variant->isBuiltin()->yes();
 			$variant = ParametersAcceptorSelector::selectFromTypes($parameterTypes, [$variant], false);
 			if (!$variant instanceof CallableParametersAcceptor) {
 				return IsSuperTypeOfResult::createNo([]);
 			}
-			$isSuperType = CallableTypeHelper::isParametersAcceptorSuperTypeOf($this, $variant, $treatMixedAsAny, !$isBuiltinCallable);
+			$isSuperType = CallableTypeHelper::isParametersAcceptorSuperTypeOf($this, $variant, $treatMixedAsAny, $strictTypes);
 			if ($variantsResult === null) {
 				$variantsResult = $isSuperType;
 			} else {
@@ -403,11 +402,6 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();
-	}
-
-	public function isBuiltin(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function toNumber(): Type

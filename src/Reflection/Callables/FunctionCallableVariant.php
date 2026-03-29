@@ -179,14 +179,4 @@ final class FunctionCallableVariant implements CallableParametersAcceptor, Exten
 		return $this->function->getAsserts();
 	}
 
-	public function isBuiltin(): TrinaryLogic
-	{
-		$isBuiltin = $this->function->isBuiltin();
-		if ($isBuiltin instanceof TrinaryLogic) {
-			return $isBuiltin;
-		}
-
-		return TrinaryLogic::createFromBoolean($isBuiltin);
-	}
-
 }

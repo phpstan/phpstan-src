@@ -60,6 +60,4 @@ interface CallableParametersAcceptor extends ParametersAcceptor
 
 	public function getAsserts(): Assertions;
 
-	public function isBuiltin(): TrinaryLogic;
-
 }

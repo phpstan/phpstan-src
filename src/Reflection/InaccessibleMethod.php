@@ -98,9 +98,4 @@ final class InaccessibleMethod implements CallableParametersAcceptor
 		return Assertions::createEmpty();
 	}
 
-	public function isBuiltin(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 }

@@ -130,7 +130,6 @@ final class GenericParametersAcceptorResolver
 				$originalParametersAcceptor->getUsedVariables(),
 				$originalParametersAcceptor->acceptsNamedArguments(),
 				$originalParametersAcceptor->mustUseReturnValue(),
-				$originalParametersAcceptor->isBuiltin(),
 				$originalParametersAcceptor->getAsserts(),
 			);
 		}

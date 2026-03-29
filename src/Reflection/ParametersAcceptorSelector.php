@@ -736,7 +736,6 @@ final class ParametersAcceptorSelector
 		$usedVariables = [];
 		$acceptsNamedArguments = TrinaryLogic::createNo();
 		$mustUseReturnValue = TrinaryLogic::createMaybe();
-		$isBuiltin = TrinaryLogic::createMaybe();
 
 		foreach ($acceptors as $acceptor) {
 			$returnTypes[] = $acceptor->getReturnType();
@@ -754,7 +753,6 @@ final class ParametersAcceptorSelector
 				$usedVariables = array_merge($usedVariables, $acceptor->getUsedVariables());
 				$acceptsNamedArguments = $acceptsNamedArguments->or($acceptor->acceptsNamedArguments());
 				$mustUseReturnValue = $mustUseReturnValue->or($acceptor->mustUseReturnValue());
-				$isBuiltin = $isBuiltin->or($acceptor->isBuiltin());
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
@@ -862,7 +860,6 @@ final class ParametersAcceptorSelector
 				$usedVariables,
 				$acceptsNamedArguments,
 				$mustUseReturnValue,
-				$isBuiltin,
 			);
 		}
 
@@ -900,7 +897,6 @@ final class ParametersAcceptorSelector
 				$acceptor->getUsedVariables(),
 				$acceptor->acceptsNamedArguments(),
 				$acceptor->mustUseReturnValue(),
-				$acceptor->isBuiltin(),
 				$acceptor->getAsserts(),
 			);
 		}

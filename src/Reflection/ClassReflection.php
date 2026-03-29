@@ -48,6 +48,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Generic\TypeProjectionHelper;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
@@ -237,7 +238,7 @@ final class ClassReflection
 			if ($this->isGeneric()) {
 				$extendedType = TemplateTypeHelper::resolveTemplateTypes(
 					$extendedType,
-					$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+					$this->getActiveTemplateTypeMapForAncestorResolution(),
 					$this->getCallSiteVarianceMap(),
 					TemplateTypeVariance::createStatic(),
 				);
@@ -1164,7 +1165,7 @@ final class ClassReflection
 				if ($this->isGeneric()) {
 					$implementedType = TemplateTypeHelper::resolveTemplateTypes(
 						$implementedType,
-						$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+						$this->getActiveTemplateTypeMapForAncestorResolution(),
 						$this->getCallSiteVarianceMap(),
 						TemplateTypeVariance::createStatic(),
 						true,
@@ -1684,6 +1685,37 @@ final class ClassReflection
 	public function getPossiblyIncompleteActiveTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->resolvedTemplateTypeMap ?? $this->getTemplateTypeMap();
+	}
+
+	/**
+	 * Returns a template type map for resolving ancestor type declarations (@extends, @implements).
+	 * Like getPossiblyIncompleteActiveTemplateTypeMap(), but resolves ErrorType entries
+	 * to their template bounds when the bound is not mixed. This ensures that when a child
+	 * class narrows a template bound (e.g. `@template T of SpecificType`), the narrowed bound
+	 * is propagated to ancestor declarations instead of being lost as ErrorType.
+	 */
+	private function getActiveTemplateTypeMapForAncestorResolution(): TemplateTypeMap
+	{
+		$map = $this->getPossiblyIncompleteActiveTemplateTypeMap();
+		$templateTypeMap = $this->getTemplateTypeMap();
+
+		return $map->map(static function (string $name, Type $type) use ($templateTypeMap): Type {
+			if (!$type instanceof ErrorType) {
+				return $type;
+			}
+
+			$templateType = $templateTypeMap->getType($name);
+			if (!$templateType instanceof TemplateType) {
+				return $type;
+			}
+
+			$bound = $templateType->getBound();
+			if ($bound instanceof MixedType) {
+				return $type;
+			}
+
+			return TemplateTypeHelper::resolveToDefaults($templateType);
+		});
 	}
 
 	private function getDefaultCallSiteVarianceMap(): TemplateTypeVarianceMap

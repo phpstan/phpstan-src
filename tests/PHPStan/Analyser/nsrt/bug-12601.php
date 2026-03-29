@@ -24,6 +24,20 @@ class HelloWorld implements IteratorAggregate
 	}
 }
 
+class HelloWorld3
+{
+	/** @var ArrayIterator<int, string> */
+	private ArrayIterator $a;
+
+	/** @param list<string> $map */
+	public function __construct(private array $map) {
+		$a = new ArrayIterator($this->map);
+		assertType('ArrayIterator<int<0, max>, string>', $a);
+
+		$this->a = $a;
+	}
+}
+
 /** @implements IteratorAggregate<int<0, max>, non-empty-string> */
 class HelloWorld2 implements IteratorAggregate
 {

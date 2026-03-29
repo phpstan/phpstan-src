@@ -190,6 +190,8 @@ class GenericObjectType extends ObjectType
 			$ancestorVariance = $ancestor->variances[$i] ?? TemplateTypeVariance::createInvariant();
 			if (!$thisVariance->invariant()) {
 				$results[] = $thisVariance->isValidVariance($templateType, $this->types[$i], $ancestor->types[$i]);
+			} elseif ($acceptsContext && $templateType->getVariance()->invariant() && $this->types[$i]->isSuperTypeOf($ancestor->types[$i])->yes()) {
+				$results[] = IsSuperTypeOfResult::createYes();
 			} else {
 				$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
 			}

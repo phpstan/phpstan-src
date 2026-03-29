@@ -411,4 +411,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12397.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2')]
+	public function testBug10290(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-10290.php'], [
+			[
+				'Function Bug10290\g() should return Bug10290\Err<string>|Bug10290\Ok<true> but returns Bug10290\Ok<bool>.',
+				56,
+			],
+		]);
+	}
+
 }

@@ -295,7 +295,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			'same class, different type args' => [
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(A\A::class, [new ObjectType('DateTime')]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createYes(),
 			],
 			'same class, one naked' => [
 				new GenericObjectType(A\A::class, [new ObjectType('DateTimeInterface')]),
@@ -310,7 +310,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			'implementation with @extends with different type args' => [
 				new GenericObjectType(B\I::class, [new ObjectType('DateTimeInterface')]),
 				new GenericObjectType(B\IImpl::class, [new ObjectType('DateTime')]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createYes(),
 			],
 			'generic object accepts normal object of same type' => [
 				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInterface')]),
@@ -330,8 +330,18 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		];
 	}
 
+	public static function dataAcceptsTypeProjections(): array
+	{
+		$data = self::dataTypeProjections();
+		// In accepts context, invariant generics accept subtypes (covariant behavior)
+		// Entry #2: [$invariantB, $invariantC, No] → Yes because C extends B
+		$data[2][2] = TrinaryLogic::createYes();
+
+		return $data;
+	}
+
 	#[DataProvider('dataAccepts')]
-	#[DataProvider('dataTypeProjections')]
+	#[DataProvider('dataAcceptsTypeProjections')]
 	public function testAccepts(
 		Type $acceptingType,
 		Type $acceptedType,

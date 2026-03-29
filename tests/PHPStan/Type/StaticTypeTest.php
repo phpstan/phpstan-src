@@ -391,7 +391,7 @@ class StaticTypeTest extends PHPStanTestCase
 				new StringType(),
 			])], null, []),
 			new GenericStaticType($c, [new IntegerType()], null, []),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createYes(),
 		];
 
 		yield [

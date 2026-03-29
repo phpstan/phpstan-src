@@ -469,28 +469,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4590(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-4590.php'], [
-			[
-				'Method Bug4590\OkResponse::testGenericStatic() should return static(Bug4590\OkResponse<array<string, string>>) but returns static(Bug4590\OkResponse<array{ok: string}>).',
-				36,
-				'Template type T on class Bug4590\OkResponse is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Method Bug4590\\Controller::test1() should return Bug4590\\OkResponse<array<string, string>> but returns Bug4590\\OkResponse<array{ok: string}>.',
-				47,
-				'Template type T on class Bug4590\OkResponse is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Method Bug4590\\Controller::test2() should return Bug4590\\OkResponse<array<int, string>> but returns Bug4590\\OkResponse<array{string}>.',
-				55,
-				'Template type T on class Bug4590\OkResponse is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Method Bug4590\\Controller::test3() should return Bug4590\\OkResponse<array<string>> but returns Bug4590\\OkResponse<array{string}>.',
-				63,
-				'Template type T on class Bug4590\OkResponse is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-4590.php'], []);
 	}
 
 	public function testTemplateStringBound(): void

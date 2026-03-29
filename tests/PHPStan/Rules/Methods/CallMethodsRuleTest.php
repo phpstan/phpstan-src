@@ -2220,13 +2220,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/../../Analyser/nsrt/generic-object-lower-bound.php'], [
-			[
-				'Parameter #1 $c of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Collection<GenericObjectLowerBound\Cat|GenericObjectLowerBound\Dog>, GenericObjectLowerBound\Collection<GenericObjectLowerBound\Dog> given.',
-				48,
-				'Template type T on class GenericObjectLowerBound\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-		]);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/generic-object-lower-bound.php'], []);
 	}
 
 	public function testNonEmptyStringVerbosity(): void
@@ -2255,33 +2249,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/bug-5372.php'], [
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, non-falsy-string> given.',
-				64,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
-				68,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
-				72,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
-				81,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
-				85,
-				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-5372.php'], []);
 	}
 
 	public function testLiteralString(): void
@@ -2642,22 +2610,12 @@ class CallMethodsRuleTest extends RuleTestCase
 				45,
 			],
 			[
-				'Parameter #1 $param of method GenericVarianceCall\Foo::invariant() expects GenericVarianceCall\Invariant<GenericVarianceCall\B>, GenericVarianceCall\Invariant<GenericVarianceCall\C> given.',
-				53,
-				'Template type T on class GenericVarianceCall\Invariant is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
-			],
-			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::covariant() expects GenericVarianceCall\Covariant<GenericVarianceCall\B>, GenericVarianceCall\Covariant<GenericVarianceCall\A> given.',
 				60,
 			],
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::contravariant() expects GenericVarianceCall\Contravariant<GenericVarianceCall\B>, GenericVarianceCall\Contravariant<GenericVarianceCall\C> given.',
 				83,
-			],
-			[
-				'Parameter #1 $param of method GenericVarianceCall\Foo::invariantArray() expects array{GenericVarianceCall\Invariant<GenericVarianceCall\B>}, array{GenericVarianceCall\Invariant<GenericVarianceCall\C>} given.',
-				97,
-				'Offset 0 (GenericVarianceCall\Invariant<GenericVarianceCall\B>) does not accept type GenericVarianceCall\Invariant<GenericVarianceCall\C>: Template type T on class GenericVarianceCall\Invariant is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}

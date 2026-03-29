@@ -27,4 +27,29 @@ function test(): void
 
 	uasort($options, 'strnatcasecmp');
 	usort($options, 'strnatcasecmp');
+
+	uasort($options, fn($a, $b) => strnatcasecmp($a, $b));
+	uasort($options, fn(string $a, string $b) => strnatcasecmp($a, $b));
+}
+
+/**
+ * @param array<\Stringable> $a
+ * @param callable(\Stringable, \Stringable): int $f
+ */
+function customUsort(array &$a, callable $f): void
+{
+	for ($i = 1; $i < count($a); $i++)
+		for ($j = $i; $j > 0 && $f($a[$j-1], $a[$j]) > 0; $j--)
+			[$a[$j-1], $a[$j]] = [$a[$j], $a[$j-1]];
+}
+
+function test2(): void
+{
+	$options = [
+		Foo::fromString('c'),
+		Foo::fromString('b'),
+		Foo::fromString('a'),
+	];
+
+	customUsort($options, 'strnatcasecmp');
 }

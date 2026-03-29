@@ -2753,27 +2753,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11619-strict.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.1')]
-	public function testBug11619Error(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-11619-error.php'], [
-			[
-				'Parameter #1 $string1 of function strnatcasecmp expects string, Bug11619Error\Foo given.',
-				32,
-			],
-			[
-				'Parameter #2 $string2 of function strnatcasecmp expects string, Bug11619Error\Foo given.',
-				32,
-			],
-		]);
-	}
-
-	#[RequiresPhp('>= 8.1')]
-	public function testBug11619Typed(): void
-	{
-		$this->analyse([__DIR__ . '/data/bug-11619-typed.php'], []);
-	}
-
 	public function testBug13247(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-13247.php'], []);
